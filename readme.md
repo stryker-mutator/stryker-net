@@ -11,7 +11,7 @@ Want to help develop Stryker.NET? Check out our [contributing guide](/CONTRIBUTI
 In the meantime, start by [mutation testing your JavaScript](https://stryker-mutator.github.io)
 
 ## Compatibility
-Only compatible with .NET Core version > 1.1
+Only compatible with .NET Core version 1.1+
 
 ## Supported Mutators
 Right now, Stryker.NET supports the following mutators:
