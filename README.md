@@ -5,9 +5,11 @@
 ## Getting started
 Stryker.NET offers you mutation testing for your .NET Core projects. It allows you to test your tests by temporarily inserting bugs.
 
-### ! The project is still in its early days and is not ready to use on your applications. !
+## Note
+This project is still in its early days and is not yet available on NuGet
 
-Want to help develop Stryker.NET? Check out our [contributing guide](/CONTRIBUTING.md)!
+## Contributing
+Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
 In the meantime, start by [mutation testing your JavaScript](https://stryker-mutator.github.io)
 
 ## Compatibility
