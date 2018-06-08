@@ -65,7 +65,7 @@ namespace Stryker.Core.Options
                 mutators = new Collection<IMutator>
                 {
                     // the default list of mutators
-                    new BinairyExpressionMutator(),
+                    new BinaryExpressionMutator(),
                     new BooleanMutator(),
                 };
             }
