@@ -44,7 +44,7 @@ namespace Stryker.Core.Mutators
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
                         DisplayName = "Binary expression mutation",
-                        Type = "MathMutator"
+                        Type = "BinaryExpressionMutator"
                     };
                 }
             }
