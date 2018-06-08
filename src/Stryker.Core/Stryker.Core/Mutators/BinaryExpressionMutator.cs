@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class BinairyExpressionMutator : Mutator<BinaryExpressionSyntax>, IMutator
+    public class BinaryExpressionMutator : Mutator<BinaryExpressionSyntax>, IMutator
     {
         private Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate { get; set; }
 
-        public BinairyExpressionMutator()
+        public BinaryExpressionMutator()
         {
             _kindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>
             {
@@ -43,8 +43,8 @@ namespace Stryker.Core.Mutators
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = "Binairy expression mutation",
-                        Type = "MathMutator"
+                        DisplayName = "Binary expression mutation",
+                        Type = "BinaryExpressionMutator"
                     };
                 }
             }
