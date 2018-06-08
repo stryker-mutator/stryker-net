@@ -15,7 +15,7 @@ While developing on Stryker.NET we advise to work in [Visual Studio 2017](https:
 *	Create a new Debug profile
 *	Set `Launch` as `Project` 
 *	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\stryker-net\src\Stryker.Core\Stryker.Core.UnitTest)`
-*	Run the program with the newly created Debug profile
+*	Run the program with `Stryker.CLI` as the startup project with the newly created Debug profile
 
 ## Adding new features
 New features are welcome! Either as requests or proposals.
