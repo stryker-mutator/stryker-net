@@ -19,8 +19,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `=<` | `<` |
 | `==` | `!=` |
 | `!=` | `==` |
-| `&&` | `||` |
-| `||` | `&&` |
+| `&&` | `\|\|`
+| `\|\|` | `&&`
 
 ## Boolean mutator
 | Original | Mutated | 
