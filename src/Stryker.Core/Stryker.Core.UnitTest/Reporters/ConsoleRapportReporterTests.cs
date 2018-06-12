@@ -6,6 +6,7 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -31,13 +32,9 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(folder);
 
-            output.ToString().ShouldBe(
-$@"
-
-All mutants have been tested, and your mutationscore has been calculated
-- {Path.DirectorySeparatorChar}RootFolder [0/0 (- %)]
---- SomeFile.cs [0/0 (- %)]
-");
+            output.ToString().ShouldBe($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutationscore has been calculated{Environment.NewLine}"+
+$"- {Path.DirectorySeparatorChar}RootFolder [0/0 (- %)]{Environment.NewLine}" +
+$"--- SomeFile.cs [0/0 (- %)]{ Environment.NewLine }");
             chalkMock.Verify(x => x.DarkGray(It.IsAny<string>()), Times.Exactly(2));
         }
 
@@ -73,13 +70,10 @@ All mutants have been tested, and your mutationscore has been calculated
             target.OnAllMutantsTested(folder);
 
             output.ShouldBe(
-$@"
-
-All mutants have been tested, and your mutationscore has been calculated
-- {Path.DirectorySeparatorChar}RootFolder [1/1 (100.00 %)]
---- SomeFile.cs [1/1 (100.00 %)]
-[Killed] This name should display on line 0: '0 + 8' ==> '0 -8'
-");
+$"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutationscore has been calculated{Environment.NewLine}" +
+$"- {Path.DirectorySeparatorChar}RootFolder [1/1 (100.00 %)]{Environment.NewLine}" + 
+$"--- SomeFile.cs [1/1 (100.00 %)]{Environment.NewLine}" +
+$"[Killed] This name should display on line 0: '0 + 8' ==> '0 -8'{Environment.NewLine}");
             chalkMock.Verify(x => x.Green(It.IsAny<string>()), Times.Exactly(3));
         }
 
@@ -115,13 +109,11 @@ All mutants have been tested, and your mutationscore has been calculated
             target.OnAllMutantsTested(folder);
 
             output.ShouldBe(
-$@"
+$"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutationscore has been calculated{Environment.NewLine}" +
+$"- {Path.DirectorySeparatorChar}RootFolder [0/1 (0.00 %)]{Environment.NewLine}" +
+$"--- SomeFile.cs [0/1 (0.00 %)]{Environment.NewLine}" +
+$"[Survived] This name should display on line 0: '0 + 8' ==> '0 -8'{Environment.NewLine}");
 
-All mutants have been tested, and your mutationscore has been calculated
-- {Path.DirectorySeparatorChar}RootFolder [0/1 (0.00 %)]
---- SomeFile.cs [0/1 (0.00 %)]
-[Survived] This name should display on line 0: '0 + 8' ==> '0 -8'
-");
             // All percentages should be red and the [Survived] too
             chalkMock.Verify(x => x.Red(It.IsAny<string>()), Times.Exactly(3));
         }
