@@ -17,7 +17,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = 1 });
 
             var target = new InitialBuildProcess(processMock.Object);
@@ -33,7 +34,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = 0 });
 
             var target = new InitialBuildProcess(processMock.Object);

@@ -18,7 +18,7 @@ namespace Stryker.Core.TestRunners
 
         public DotnetTestRunner(string path) : this(path, new ProcessExecutor()) { }
 
-        public TestRunResult RunAll()
+        public TestRunResult RunAll(int timeoutMS = 0)
         {
             var result = _processExecutor.Start(
                 _path,
@@ -26,7 +26,8 @@ namespace Stryker.Core.TestRunners
                 "test --no-build --no-restore",
                 new Collection<KeyValuePair<string, string>>() {
                     new KeyValuePair<string, string>("ActiveMutation", _activeMutation.ToString())
-                });
+                },
+                timeoutMS);
 
             return new TestRunResult() {
                 Success = result.ExitCode == 0,

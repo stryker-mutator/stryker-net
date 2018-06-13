@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using System;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -36,7 +34,7 @@ namespace Stryker.Core.Initialisation
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options)
+        public MutationTestInput Initialize(ValidatedStrykerOptions options)
         {
             _reporter.OnInitialisationStarted();
             // resolve project info
@@ -62,7 +60,8 @@ namespace Stryker.Core.Initialisation
 
             // initial test
             _reporter.OnInitialTestRunStarted();
-            _initialTestProcess.InitialTest(input.TestRunner);
+            var initialTestDuration = _initialTestProcess.InitialTest(input.TestRunner);
+            input.TimeoutMS = new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
 
             _reporter.OnInitialisationDone();
             return input;

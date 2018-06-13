@@ -41,18 +41,18 @@ namespace Stryker.Core
             try
             {
                 // validate options
-                options = new StrykerOptionsValidator().Validate(options);
+                var validatedOptions = new StrykerOptionsValidator().Validate(options);
 
                 // initialyze 
-                _reporter = ReporterFactory.Create(options.Reporter);
+                _reporter = ReporterFactory.Create(validatedOptions.Reporter);
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess(_reporter);
-                _input = _initialisationProcess.Initialize(options);
+                _input = _initialisationProcess.Initialize(validatedOptions);
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
-                    options: options,
+                    options: validatedOptions,
                     reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner));
+                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 
                 // mutate
                 _mutationTestProcess.Mutate();

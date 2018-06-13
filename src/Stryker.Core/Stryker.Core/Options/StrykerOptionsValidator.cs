@@ -15,20 +15,38 @@ namespace Stryker.Core.Options
         /// </summary>
         /// <exception cref="ValidationException">When a option is not valid</exception>
         /// <param name="options"></param>
-        public StrykerOptions Validate(StrykerOptions options)
+        public ValidatedStrykerOptions Validate(StrykerOptions options)
         {
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerOptionsValidator>();
             logger.LogDebug("Validating options {@options}", options);
 
-            var validatedOptions = new StrykerOptions(
+            var validatedOptions = new ValidatedStrykerOptions(
                 reporter: ValidateReporter(options.Reporter),
                 projectUnderTestNameFilter: ValidateProjectUnderTestNameFilter(options.ProjectUnderTestNameFilter),
                 basePath: ValidateBasePath(options.BasePath),
+                additionalTimeoutMS: ValidateAdditionalTimeoutMS(options.AdditionalTimeoutMS),
                 logOptions: options.LogOptions,
                 mutators: ValidateMutators(options.Mutators));
 
-            logger.LogDebug("Validated options {@options}", options);
+            logger.LogDebug("Validated options {@validatedOptions}", validatedOptions);
             return validatedOptions;
+        }
+
+        private int ValidateAdditionalTimeoutMS(string additionalTimeoutMS)
+        {
+            if (string.IsNullOrEmpty(additionalTimeoutMS))
+            {
+                return 2000;
+            }
+            if (!int.TryParse(additionalTimeoutMS, out int value))
+            {
+                throw new ValidationException("The additional timeout value was not a number");
+            }
+            if (value < 0)
+            {
+                throw new ValidationException("The additional timeout value may not be negative");
+            }
+            return value;
         }
 
         private string ValidateBasePath(string basePath)
@@ -64,7 +82,8 @@ namespace Stryker.Core.Options
             {
                 mutators = new Collection<IMutator>
                 {
-                    new BinaryExpressionMutator(),
+                    // the default list of mutators
+                    new BinairyExpressionMutator(),
                     new BooleanMutator(),
                 };
             }

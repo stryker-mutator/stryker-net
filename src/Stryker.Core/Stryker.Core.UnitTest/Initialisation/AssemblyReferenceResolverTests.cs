@@ -24,7 +24,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                null))
+                null,
+                It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
@@ -45,7 +46,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             processExecutorMock.Verify(x => x.Start(
                 Path.GetDirectoryName(project), 
                 "dotnet", "msbuild ExampleProject.Test.csproj /nologo /t:PrintReferences", 
-                null), 
+                null,
+                It.IsAny<int>()), 
                 Times.Once);
             foundReferences.ShouldBeSubsetOf(new List<string>()
             {
@@ -65,7 +67,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
@@ -96,7 +99,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 1,
@@ -127,7 +131,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,

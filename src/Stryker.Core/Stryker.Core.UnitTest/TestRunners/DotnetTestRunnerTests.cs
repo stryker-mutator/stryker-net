@@ -17,7 +17,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = 0 });
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
@@ -25,7 +26,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var result = target.RunAll();
 
             Assert.True(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -36,7 +37,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = 1 });
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
@@ -44,7 +46,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var result = target.RunAll();
 
             Assert.False(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -55,7 +57,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
                 It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = -100 });
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
@@ -63,7 +66,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var result = target.RunAll();
 
             Assert.False(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -74,7 +77,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()))
                 .Returns(new ProcessResult() { ExitCode = -100 });
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
@@ -89,7 +93,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.Is<string>(s => s.Contains("test")), 
                 It.Is<IEnumerable<KeyValuePair<string, string>>>(
                     x => x.Where(y => y.Value == "1" && y.Key == "ActiveMutation").Any()
-                )));
+                ),
+                It.IsAny<int>()));
         }
     }
 }

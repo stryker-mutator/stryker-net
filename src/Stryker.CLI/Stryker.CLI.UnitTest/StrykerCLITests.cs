@@ -109,5 +109,21 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile == true)));
         }
+
+        [Theory]
+        [InlineData("--timeoutMS")]
+        [InlineData("-t")]
+        public void StrykerCLI_ShouldPassTimeoutArgumentsToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "2000" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.AdditionalTimeoutMS == "2000")));
+        }
     }
 }

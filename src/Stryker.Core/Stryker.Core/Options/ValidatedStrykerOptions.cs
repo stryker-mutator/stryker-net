@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerOptions
+    public class ValidatedStrykerOptions
     {
         public string BasePath { get; }
         public string Reporter { get; }
@@ -20,21 +20,21 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
 
-        public string AdditionalTimeoutMS { get; }
+        public int AdditionalTimeoutMS { get; }
 
-        public StrykerOptions(string basePath,
+        public ValidatedStrykerOptions(string basePath,
             string reporter, 
             string projectUnderTestNameFilter,
-            string additionalTimeoutMS = "2000",
-            LogOptions logOptions = null,
-            ICollection<IMutator> mutators = null)
+            int additionalTimeoutMS,
+            LogOptions logOptions,
+            ICollection<IMutator> mutators)
         {
             BasePath = basePath;
             Reporter = reporter;
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
             Mutators = mutators;
-            LogOptions = logOptions ?? new LogOptions(null, false);
+            LogOptions = logOptions;
         }
 
     }

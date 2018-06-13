@@ -26,7 +26,7 @@ namespace Stryker.Core.MutationTest
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
-            StrykerOptions options,
+            ValidatedStrykerOptions options,
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
