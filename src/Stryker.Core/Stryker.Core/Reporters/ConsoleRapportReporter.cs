@@ -61,7 +61,7 @@ namespace Stryker.Core.Reporters
             };
             
             // print empty line for readability
-            _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutationscore has been calculated{Environment.NewLine}");
+            _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
             // start recursive invocation of handlers
             inputComponent.Display(1);
         }
