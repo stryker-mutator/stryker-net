@@ -52,19 +52,19 @@ namespace Stryker.Core.Testing
                         output = process.StandardOutput.ReadToEnd();
                     }
                     process.WaitForExit();
-                    // when the process exited, trigger the processDoneEvent
+                    // When the process exited, trigger the processDoneEvent
                     processDoneHandle.Set();
                 });
 
 
-                // this handle will wait till the process has exited, or the timeoutMS has passed
+                // This handle will wait till the process has exited, or the timeoutMS has passed
                 int timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
                 var processDone = processDoneHandle.WaitOne(timeoutValue);
 
                 if (!processDone)
                 {
-                    KillAllChildProcesses(process.Id);
-                    process.Kill();
+                    // The process is still running. Kill the process and all it's child processes.
+                    process.KillTree();
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
                 return new ProcessResult()
@@ -72,18 +72,6 @@ namespace Stryker.Core.Testing
                     ExitCode = process.ExitCode,
                     Output = output
                 };
-            }
-        }
-
-        private void KillAllChildProcesses(int parentId)
-        {
-            ManagementObjectSearcher mos = new ManagementObjectSearcher(String.Format("Select * From Win32_Process Where ParentProcessID={0}", parentId));
-
-            foreach (ManagementObject mo in mos.Get())
-            {
-                var id = Convert.ToInt32(mo["ProcessID"]);
-                KillAllChildProcesses(id);
-                Process.GetProcessById(id).Kill();
             }
         }
     }
