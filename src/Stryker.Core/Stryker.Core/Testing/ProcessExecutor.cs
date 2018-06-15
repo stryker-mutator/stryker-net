@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,6 +63,7 @@ namespace Stryker.Core.Testing
 
                 if (!processDone)
                 {
+                    KillAllChildProcesses(process.Id);
                     process.Kill();
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
@@ -70,6 +72,18 @@ namespace Stryker.Core.Testing
                     ExitCode = process.ExitCode,
                     Output = output
                 };
+            }
+        }
+
+        private void KillAllChildProcesses(int parentId)
+        {
+            ManagementObjectSearcher mos = new ManagementObjectSearcher(String.Format("Select * From Win32_Process Where ParentProcessID={0}", parentId));
+
+            foreach (ManagementObject mo in mos.Get())
+            {
+                var id = Convert.ToInt32(mo["ProcessID"]);
+                KillAllChildProcesses(id);
+                Process.GetProcessById(id).Kill();
             }
         }
     }
