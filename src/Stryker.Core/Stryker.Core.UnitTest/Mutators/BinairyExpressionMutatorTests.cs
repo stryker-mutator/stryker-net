@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
         public void MathMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind optionalExpectedOutput = SyntaxKind.None)
         {
-            var target = new BinairyExpressionMutator();
+            var target = new BinaryExpressionMutator();
             var originalNode = SyntaxFactory.BinaryExpression(input,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
