@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
-using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,8 +30,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(folder);
 
-            output.ToString().ShouldBeWithNewlineReplace(
-$@"
+            output.ToString().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [0/0 (- %)]
