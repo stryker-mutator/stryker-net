@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(folder);
 
-            output.ToString().ShouldBe(
+            output.ToString().ShouldBeWithNewlineReplace(
 $@"
 
 All mutants have been tested, and your mutation score has been calculated
@@ -73,7 +73,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            output.ShouldBe(
+            output.ShouldBeWithNewlineReplace(
 $@"
 
 All mutants have been tested, and your mutation score has been calculated
@@ -115,7 +115,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            output.ShouldBe(
+            output.ShouldBeWithNewlineReplace(
 $@"
 
 All mutants have been tested, and your mutation score has been calculated
