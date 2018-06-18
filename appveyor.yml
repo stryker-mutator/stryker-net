@@ -1,0 +1,14 @@
+version: 0.0.1.{build}
+image:
+- Ubuntu
+- Visual Studio 2017
+build_script:
+- ps: >-
+    dotnet build src/Stryker.CLI
+
+    dotnet build src/Stryker.Core
+test_script:
+- ps: >-
+    dotnet test src/Stryker.CLI
+
+    dotnet test src/Stryker.Core
