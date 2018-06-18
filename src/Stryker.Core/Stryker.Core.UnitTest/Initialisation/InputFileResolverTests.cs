@@ -1,5 +1,6 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
@@ -17,7 +18,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
-        [Fact]
+        [SkippableFact(typeof(TypeInitializationException))]
         public void InputFileResolver_InitializeShouldCrawlFiles()
         {
             string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.TestProjectPath.ShouldBe(@"c:\TestProject\");
         }
 
-        [Fact]
+        [SkippableFact(typeof(TypeInitializationException))]
         public void InputFileResolver_InitializeShouldCrawlFilesRecursively()
         {
             string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
@@ -97,7 +98,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.Children.Count.ShouldBe(2);
         }
 
-        [Theory]
+        [SkippableTheory(typeof(TypeInitializationException))]
         [InlineData("bin")]
         [InlineData("obj")]
         [InlineData("node_modules")]
@@ -143,7 +144,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.Children.Count.ShouldBe(1);
         }
 
-        [Fact]
+        [SkippableFact(typeof(TypeInitializationException))]
         public void InputFileResolver_ShouldThrowExceptionOnNoProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
