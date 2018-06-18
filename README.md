@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/853yby19lvrrd435/branch/master?svg=true)](https://ci.appveyor.com/project/stryker-mutator/stryker-net/branch/master)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/stryker-mutator/stryker-net.svg?columns=all)](https://waffle.io/stryker-mutator/stryker-net)
 
 # Stryker.NET
 *Professor X: For someone who hates mutants... you certainly keep some strange company.*  
