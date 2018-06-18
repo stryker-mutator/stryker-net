@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)
         {
-            string replaced = expected.Replace("\r\n", Environment.NewLine);
+            string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
         }
     }

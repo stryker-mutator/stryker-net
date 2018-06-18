@@ -1,14 +1,19 @@
 version: 0.0.1.{build}
+pull_requests:
+  do_not_increment_build_number: true
 image:
 - Ubuntu
 - Visual Studio 2017
-build_script:
-- ps: >-
-    dotnet build src/Stryker.CLI
-
-    dotnet build src/Stryker.Core
-test_script:
-- ps: >-
-    dotnet test src/Stryker.CLI
-
-    dotnet test src/Stryker.Core
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+before_build:
+- ps: dotnet restore src/Stryker.CLI/Stryker.CLI.sln
+build:
+  project: src/Stryker.CLI/Stryker.CLI.sln
+  verbosity: minimal

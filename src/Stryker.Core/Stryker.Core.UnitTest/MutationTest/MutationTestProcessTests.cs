@@ -12,20 +12,23 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
     public class MutationTestProcessTests
     {
+        private static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private string _currentDirectory { get; set; }
 
         public MutationTestProcessTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Skip.IfNot(RunningOnWindows);
         }
 
-        [Fact]
+        [SkippableFact]
         public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
         {
             string file1 = @"using System;
@@ -117,7 +120,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
-        [Fact]
+        [SkippableFact]
         public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             string file1 = @"using System;

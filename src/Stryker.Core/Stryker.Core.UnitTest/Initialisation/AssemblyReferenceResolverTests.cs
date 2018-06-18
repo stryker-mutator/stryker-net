@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class AssemblyReferenceResolverTests
     {
         [Fact]
-        public void AssemblyReferenceResolver_ShouldAnalyzeProjectDependencies()
+        public void ShouldAnalyzeProjectDependencies()
         {
             var foundReferences = new List<string>();
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InitialBuildProcess_FoundPathsShouldBeReturnedAsPortableExecutionReferences()
+        public void FoundPathsShouldBeReturnedAsPortableExecutionReferences()
         {
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
