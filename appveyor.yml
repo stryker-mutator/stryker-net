@@ -4,6 +4,8 @@ pull_requests:
 image:
 - Ubuntu
 - Visual Studio 2017
+init:
+- ps: git config --global core.autocrlf false
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
