@@ -80,42 +80,49 @@ namespace ExampleProject
         public string Subtract(string first, string second)
         {
             if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""6"") {
-                if(first.Length > 2)
+                while (first.Length > 2)
                 {
                     return first - second;
-                } else
+                } 
+                while (first.Length < 2)
                 {
                     return second + first;
                 }
+                return null;
             } else {
                 if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"") {
-                    if(first.Length > 2)
+                    while (first.Length > 2)
                     {
                         return first + second;
-                    } else
+                    }
+                    while (first.Length < 2)
                     {
                         return second - first;
                     }
+                    return null;
                 } else {
-                    if(first.Length > 2)
+                    while (first.Length > 2)
                     {
                         return first + second;
-                    } else
+                    } 
+                    while (first.Length < 2)
                     {
                         return second + first;
                     }
+                    return null;
                 }
             }
         }
     }
 }");
             var root = syntaxTree.GetRoot();
-            var mutantIf1 = root.FindNode(new TextSpan(154, 921));
+
+            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
                 mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "6"))
             );
-            var mutantIf2 = root.FindNode(new TextSpan(462, 598));
+            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
             root = root.ReplaceNode(
                 mutantIf2,
                 mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
