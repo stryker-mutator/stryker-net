@@ -30,13 +30,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ExitCode = 0,
                     Output = @"  ExampleProject.Contracts -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll
   ExampleProject -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.dll
-  C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll".Replace('\\', Path.DirectorySeparatorChar)
+  C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>()))
                 .Returns(() => null)
                 .Callback((string reference) => foundReferences.Add(reference));
 
-            string project = "C:/ProjectFolder/ExampleProject/ExampleProject.Test.csproj";
+            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj".Replace('\\', Path.DirectorySeparatorChar);
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
@@ -52,6 +53,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 @"C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll",
                 @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll",
                 @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+.Replace('\\', Path.DirectorySeparatorChar)
             });
         }
 
@@ -72,10 +74,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     Output = @"  AnotherExampleProject -> C:\Repos\ExampleTestProject\ExampleTestProject\Bin\Debug\netcoreapp2.0\AnotherExampleProject.dll
   ExampleProject -> C:\Repos\ExampleProject\ExampleProject\Bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>())).Returns(() => null);
 
-            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj";
+            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj".Replace('\\', Path.DirectorySeparatorChar);
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
@@ -101,8 +104,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ExitCode = 1,
                     Output = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj : error MSB4057: The target ""PrintReferences"" does not exist in the project."
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
-            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj";
+            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj".Replace('\\', Path.DirectorySeparatorChar);
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
@@ -138,6 +142,7 @@ namespace Stryker.Core.UnitTest.Initialisation
   MGA.MaandstaatKeuringsFrontend.Infrastructure -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Infrastructure\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Infrastructure.dll
   MGA.MaandstaatKeuringsFrontend.Facade -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Facade\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Facade.dll
   C:\Mrak\IS-MarkW\Product\MGA.Contracts\MGA.Contracts\bin\Debug\netcoreapp2.0\MGA.Contracts.dll;C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Facade\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Facade.dll;"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>()))
                 .Returns(() => null)
@@ -159,9 +164,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(null, null);
 
             // The string should be split at " -> " and not at "-"
-            var result = target.GetReferencePathsFromOutput(new Collection<string>() { @"InfoSupport.BestuurdersCoach.MessageBus -> U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll" });
+            var result = target.GetReferencePathsFromOutput(new Collection<string>() { @"InfoSupport.BestuurdersCoach.MessageBus -> U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll"
+            .Replace('\\', Path.DirectorySeparatorChar)});
 
-            result.Single().ShouldBe(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll");
+            result.Single().ShouldBe(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll".Replace('\\', Path.DirectorySeparatorChar));
         }
 
 
@@ -171,7 +177,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(null, null);
 
             // The string should be split at " -> " and not at "-"
-            var result = target.GetAssemblyPathsFromOutput(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.exe");
+            var result = target.GetAssemblyPathsFromOutput(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.exe"
+.Replace('\\', Path.DirectorySeparatorChar));
 
             result.ShouldBeEmpty();
         }
