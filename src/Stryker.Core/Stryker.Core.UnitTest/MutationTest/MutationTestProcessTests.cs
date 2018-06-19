@@ -25,12 +25,13 @@ namespace Stryker.Core.UnitTest.MutationTest
         public MutationTestProcessTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            Skip.IfNot(RunningOnWindows);
         }
 
         [SkippableFact]
         public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
         {
+            Skip.IfNot(RunningOnWindows);
+
             string file1 = @"using System;
 
                 namespace ExampleProject
@@ -123,6 +124,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         [SkippableFact]
         public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
+            Skip.IfNot(RunningOnWindows);
+
             string file1 = @"using System;
 
                 namespace ExampleProject
