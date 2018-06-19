@@ -69,8 +69,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
-                    Output = @"  AnotherExampleProject -> C/Repos/ExampleTestProject/ExampleTestProject/Bin/Debug/netcoreapp2.0/AnotherExampleProject.dll
-  ExampleProject -> C/Repos/ExampleProject/ExampleProject/Bin/Debug/netcoreapp2.0/ExampleProject.dll
+                    Output = @"  AnotherExampleProject -> C:\Repos\ExampleTestProject\ExampleTestProject\Bin\Debug\netcoreapp2.0\AnotherExampleProject.dll
+  ExampleProject -> C:\Repos\ExampleProject\ExampleProject\Bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>())).Returns(() => null);
@@ -80,10 +80,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
             var result = target.ResolveReferences(Path.GetDirectoryName(project), Path.GetFileName(project), "ExampleProject");
-            foreach (var path in result)
-            {
-                Console.WriteLine(path.FilePath);
-            }
+
             // three references should be found in the above output
             result.Count().ShouldBe(3);
             metadataReferenceProviderMock.Verify(x => x.CreateFromFile(It.IsAny<string>()), Times.Exactly(3));
