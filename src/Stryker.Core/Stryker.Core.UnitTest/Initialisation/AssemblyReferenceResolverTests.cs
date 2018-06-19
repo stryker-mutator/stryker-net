@@ -80,8 +80,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
             var result = target.ResolveReferences(Path.GetDirectoryName(project), Path.GetFileName(project), "ExampleProject");
-
-            // two references should be found in the above output
+            foreach (var path in result)
+            {
+                Console.WriteLine(path.FilePath);
+            }
+            // three references should be found in the above output
             result.Count().ShouldBe(3);
             metadataReferenceProviderMock.Verify(x => x.CreateFromFile(It.IsAny<string>()), Times.Exactly(3));
         }
