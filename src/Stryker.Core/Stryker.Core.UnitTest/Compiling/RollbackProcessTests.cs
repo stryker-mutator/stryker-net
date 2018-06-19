@@ -164,65 +164,61 @@ namespace ExampleProject
     {
         public string AddTwoStrings(string first, string second)
         {
-            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            if(first.Length > 2)
-            {
-                return first + second;
-            } else
-            {
-                return second - first;
-            }
-        }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            if(first.Length > 2)
-            {
-                return first - second;
-            } else
-            {
-                return second + first;
-            }
-}else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            if(first.Length >= 2)
-            {
-                return first + second;
-            } else
-            {
-                return second + first;
-            }
-}else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""5""){            if(first.Length< 2)
-            {
-                return first + second;
-            } else
-            {
-                return second + first;
-            }
-}else{            if(first.Length > 2)
-            {
-                return first + second;
-            } else
-            {
-                return second + first;
-            }
-}}}}        }
+            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+                while (first.Length > 2)
+                {
+                    return first - second;
+                } 
+                while (first.Length < 2)
+                {
+                    return second + first;
+                }
+                return null;
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+                while (first.Length > 2)
+                {
+                    return first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    return second - first;
+                }
+                return null;
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+                while (first.Length == 2)
+                {
+                    return first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    return second + first;
+                }
+                return null;
+            }else{
+                while (first.Length == 2)
+                {
+                    return first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    return second + first;
+                }
+                return null;
+            }}}
+        }
     }
 }");
             var root = syntaxTree.GetRoot();
-            var ifStatements = root.DescendantNodes().Where(x => x is IfStatementSyntax).ToList();
-            var mutantIf1 = root.FindNode(new TextSpan(172, 1207));
+
+            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
                 mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "8"))
             );
-            var mutantIf2 = root.FindNode(new TextSpan(434, 944));
+            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
             root = root.ReplaceNode(
                 mutantIf2,
                 mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
-            );
-            var mutantIf3 = root.FindNode(new TextSpan(688, 689));
-            root = root.ReplaceNode(
-                mutantIf3,
-                mutantIf3.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "6"))
-            );
-            var mutantIf4 = root.FindNode(new TextSpan(943, 433));
-            root = root.ReplaceNode(
-                mutantIf4,
-                mutantIf4.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "5"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;
@@ -246,6 +242,7 @@ namespace ExampleProject
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
+                // validate that only mutation 8 and 7 were rollbacked
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
             }
         }
