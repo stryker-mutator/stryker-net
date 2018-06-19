@@ -79,7 +79,7 @@ namespace ExampleProject
     {
         public string Subtract(string first, string second)
         {
-            if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""6"") {
+            if(Environment.GetEnvironmentVariable('ActiveMutation') == '6') {
                 if(first.Length > 2)
                 {
                     return first - second;
@@ -88,7 +88,7 @@ namespace ExampleProject
                     return second + first;
                 }
             } else {
-                if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"") {
+                if(Environment.GetEnvironmentVariable('ActiveMutation') == '7') {
                     if(first.Length > 2)
                     {
                         return first + second;
@@ -112,6 +112,7 @@ namespace ExampleProject
             var syntaxTree = CSharpSyntaxTree.ParseText(code);
             var root = syntaxTree.GetRoot();
             Console.WriteLine(code);
+            Console.WriteLine(code.Length);
             Console.WriteLine("Fullspan should be 1094 but was " + root.FullSpan);
             var mutantIf1 = root.FindNode(new TextSpan(154, 921));
             root = root.ReplaceNode(
