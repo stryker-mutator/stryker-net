@@ -71,7 +71,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
         [Fact]
         public void RollbackProcess_ShouldRollbackAllCompileErrors()
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+            var code = @"using System;
 
 namespace ExampleProject
 {
@@ -108,8 +108,10 @@ namespace ExampleProject
             }
         }
     }
-}");
+}";
+            var syntaxTree = CSharpSyntaxTree.ParseText(code);
             var root = syntaxTree.GetRoot();
+            Console.WriteLine(code);
             Console.WriteLine("Fullspan should be 1094 but was " + root.FullSpan);
             var mutantIf1 = root.FindNode(new TextSpan(154, 921));
             root = root.ReplaceNode(
