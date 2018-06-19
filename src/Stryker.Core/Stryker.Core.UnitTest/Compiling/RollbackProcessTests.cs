@@ -110,6 +110,7 @@ namespace ExampleProject
     }
 }");
             var root = syntaxTree.GetRoot();
+            Console.WriteLine("Fullspan should be 1094 but was " + root.FullSpan);
             var mutantIf1 = root.FindNode(new TextSpan(154, 921));
             root = root.ReplaceNode(
                 mutantIf1,
