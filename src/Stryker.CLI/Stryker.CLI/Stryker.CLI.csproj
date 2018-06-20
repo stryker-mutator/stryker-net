@@ -4,12 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageId>dotnet-stryker</PackageId>
+    <PackageId>Stryker.NET.Runner.DotNetCore</PackageId>
     <Authors>Richard</Authors>
     <Company>InfoSupport</Company>
     <Product>Mutation Testing</Product>
     <AssemblyName>dotnet-stryker</AssemblyName>
     <RootNamespace>Stryker.CLI</RootNamespace>
+    <Version>0.0.1</Version>
+    <Description>The Stryker.NET Command Line Interface Runner for .NET Core. Adds the dotnet stryker command to your test project.</Description>
   </PropertyGroup>
 
   <ItemGroup>
