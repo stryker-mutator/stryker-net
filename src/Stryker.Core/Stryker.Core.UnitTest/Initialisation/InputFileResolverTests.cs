@@ -1,23 +1,27 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
     public class InputFileResolverTests
     {
+        private static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private string _currentDirectory { get; set; }
 
         public InputFileResolverTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Skip.IfNot(RunningOnWindows);
         }
 
-        [Fact]
+        [SkippableFact]
         public void InputFileResolver_InitializeShouldCrawlFiles()
         {
             string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
@@ -55,7 +59,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.TestProjectPath.ShouldBe(@"c:\TestProject\");
         }
 
-        [Fact]
+        [SkippableFact]
         public void InputFileResolver_InitializeShouldCrawlFilesRecursively()
         {
             string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
@@ -97,7 +101,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.Children.Count.ShouldBe(2);
         }
 
-        [Theory]
+        [SkippableTheory]
         [InlineData("bin")]
         [InlineData("obj")]
         [InlineData("node_modules")]
@@ -143,7 +147,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.Children.Count.ShouldBe(1);
         }
 
-        [Fact]
+        [SkippableFact]
         public void InputFileResolver_ShouldThrowExceptionOnNoProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -156,7 +160,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var exception = Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(@"c:\ExampleProject"));
         }
 
-        [Fact]
+        [SkippableFact]
         public void InputFileResolver_ShouldThrowExceptionOnTwoProjectFiles()
         {
             string projectFile = @"

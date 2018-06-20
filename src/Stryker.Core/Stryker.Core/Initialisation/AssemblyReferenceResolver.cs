@@ -77,7 +77,7 @@ namespace Stryker.Core.Initialisation
         /// <returns>All references this project has</returns>
         public IEnumerable<string> GetAssemblyPathsFromOutput(string paths)
         {
-            foreach (var path in paths.Split(Path.PathSeparator))
+            foreach (var path in paths.Split(';'))
             {
                 if (Path.GetExtension(path) == ".dll")
                 {
@@ -95,6 +95,7 @@ namespace Stryker.Core.Initialisation
             foreach (var pathPrintOutput in paths)
             {
                 var path = pathPrintOutput.Split(new string[] { " -> " }, StringSplitOptions.None).Last();
+
                 if (Path.GetExtension(path) == ".dll")
                 {
                     yield return path;

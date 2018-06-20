@@ -11,10 +11,14 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    /// <summary>
+    /// msbuild will return a string with all referenced assemblies for the given test project. 
+    /// The AssemblyReferenceResolver should parse this string correctly into seperate dependencies for Roslyn.
+    /// </summary>
     public class AssemblyReferenceResolverTests
     {
         [Fact]
-        public void AssemblyReferenceResolver_ShouldAnalyzeProjectDependencies()
+        public void ShouldAnalyzeProjectDependencies()
         {
             var foundReferences = new List<string>();
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -31,12 +35,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                     Output = @"  ExampleProject.Contracts -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll
   ExampleProject -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>()))
                 .Returns(() => null)
                 .Callback((string reference) => foundReferences.Add(reference));
 
-            string project = "C:/ProjectFolder/ExampleProject/ExampleProject.Test.csproj";
+            string project = Path.Combine("C:", "ProjectFolder", "ExampleProject", "ExampleProject.Test.csproj");
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
@@ -49,14 +54,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Times.Once);
             foundReferences.ShouldBeSubsetOf(new List<string>()
             {
-                @"C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll",
-                @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll",
-                @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Repos", "ExampleProject", "ExampleProject", "bin", "Debug", "netcoreapp2.0", "ExampleProject.Contracts.dll"),
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.netcore.app", "2.0.0", "ref", "netcoreapp2.0", "Microsoft.CSharp.dll"),
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.aspnetcore.mvc.formatters.json", "2.0.2", "lib", "netstandard2.0", "Microsoft.AspNetCore.Mvc.Formatters.Json.dll")
             });
         }
 
         [Fact]
-        public void InitialBuildProcess_FoundPathsShouldBeReturnedAsPortableExecutionReferences()
+        public void FoundPathsShouldBeReturnedAsPortableExecutionReferences()
         {
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
@@ -69,19 +74,20 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
-                    Output = @"  AnotherExampleProject -> C/Repos/ExampleTestProject/ExampleTestProject/Bin/Debug/netcoreapp2.0/AnotherExampleProject.dll
-  ExampleProject -> C/Repos/ExampleProject/ExampleProject/Bin/Debug/netcoreapp2.0/ExampleProject.dll
+                    Output = @"  AnotherExampleProject -> C:\Repos\ExampleTestProject\ExampleTestProject\Bin\Debug\netcoreapp2.0\AnotherExampleProject.dll
+  ExampleProject -> C:\Repos\ExampleProject\ExampleProject\Bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>())).Returns(() => null);
 
-            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj";
+            string project = Path.Combine("C:", "ProjectFolder", "ExampleProject", "ExampleProject.Test.csproj");
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
             var result = target.ResolveReferences(Path.GetDirectoryName(project), Path.GetFileName(project), "ExampleProject");
 
-            // two references should be found in the above output
+            // three references should be found in the above output
             result.Count().ShouldBe(3);
             metadataReferenceProviderMock.Verify(x => x.CreateFromFile(It.IsAny<string>()), Times.Exactly(3));
         }
@@ -101,8 +107,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ExitCode = 1,
                     Output = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj : error MSB4057: The target ""PrintReferences"" does not exist in the project."
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
-            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj";
+            string project = Path.Combine("C:", "ProjectFolder", "ExampleProject", "ExampleProject.Test.csproj");
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
@@ -138,19 +145,23 @@ namespace Stryker.Core.UnitTest.Initialisation
   MGA.MaandstaatKeuringsFrontend.Infrastructure -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Infrastructure\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Infrastructure.dll
   MGA.MaandstaatKeuringsFrontend.Facade -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Facade\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Facade.dll
   C:\Mrak\IS-MarkW\Product\MGA.Contracts\MGA.Contracts\bin\Debug\netcoreapp2.0\MGA.Contracts.dll;C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Facade\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Facade.dll;"
+.Replace('\\', Path.DirectorySeparatorChar)
                 });
             metadataReferenceProviderMock.Setup(x => x.CreateFromFile(It.IsAny<string>()))
                 .Returns(() => null)
                 .Callback((string reference) => foundReferences.Add(reference));
 
-            string project = @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj";
+            string project = Path.Combine("C:", "ProjectFolder", "ExampleProject", "ExampleProject.Test.csproj");
 
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
             var result = target.ResolveReferences(Path.GetDirectoryName(project), Path.GetFileName(project), "MGA.MaandstaatKeuringsFrontend.Facade").ToList();
 
             // the project under test should be skipped, even when it is in the nuget packages list
-            foundReferences.ShouldNotContain(@"C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Facade\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Facade.dll");
+            foundReferences.ShouldNotContain(
+                Path.Combine("C:", "Mrak", "IS-MarkW", "Product", 
+                "MGA.MaandstaatKeuringsFrontend", "MGA.MaandstaatKeuringsFrontend.Facade", "bin", 
+                "Debug", "netcoreapp2.0", "MGA.MaandstaatKeuringsFrontend.Facade.dll"));
         }
 
         [Fact]
@@ -159,9 +170,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(null, null);
 
             // The string should be split at " -> " and not at "-"
-            var result = target.GetReferencePathsFromOutput(new Collection<string>() { @"InfoSupport.BestuurdersCoach.MessageBus -> U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll" });
+            var result = target.GetReferencePathsFromOutput(new Collection<string>() { @"InfoSupport.BestuurdersCoach.MessageBus -> U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll"
+            .Replace('\\', Path.DirectorySeparatorChar)});
 
-            result.Single().ShouldBe(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll");
+            result.Single().ShouldBe(
+                Path.Combine($@"U:{Path.DirectorySeparatorChar}source", "IS-StefanK", "InfoSupport.BestuurdersCoach", 
+                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0", 
+                "InfoSupport.BestuurdersCoach.MessageBus.dll"));
         }
 
 
@@ -170,8 +185,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new AssemblyReferenceResolver(null, null);
 
-            // The string should be split at " -> " and not at "-"
-            var result = target.GetAssemblyPathsFromOutput(@"U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.exe");
+            // The path should not end with .exe
+            var result = target.GetAssemblyPathsFromOutput(
+                Path.Combine($@"U:{Path.DirectorySeparatorChar}source", "IS-StefanK", "InfoSupport.BestuurdersCoach", 
+                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0", 
+                "InfoSupport.BestuurdersCoach.MessageBus.exe"));
 
             result.ShouldBeEmpty();
         }

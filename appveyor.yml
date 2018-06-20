@@ -1,0 +1,21 @@
+version: 0.0.1.{build}
+pull_requests:
+  do_not_increment_build_number: true
+image:
+- Ubuntu
+- Visual Studio 2017
+init:
+- ps: git config --global core.autocrlf false
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+before_build:
+- ps: dotnet restore src/Stryker.CLI/Stryker.CLI.sln
+build:
+  project: src/Stryker.CLI/Stryker.CLI.sln
+  verbosity: minimal
