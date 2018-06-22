@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnInitialisationStarted();
 
             chalkMock.Verify(x => x.Default(It.IsAny<string>()));
-            output.ShouldBe(@"Analyzing project
+            output.ShouldBeWithNewlineReplace(@"Analyzing project
 ");
         }
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnInitialBuildStarted();
 
             chalkMock.Verify(x => x.Default(It.IsAny<string>()));
-            output.ShouldBe(@"Building project
+            output.ShouldBeWithNewlineReplace(@"Building project
 ");
         }
 
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnInitialTestRunStarted();
 
             chalkMock.Verify(x => x.Default(It.IsAny<string>()));
-            output.ShouldBe(@"Starting initial testrun
+            output.ShouldBeWithNewlineReplace(@"Starting initial testrun
 ");
         }
 
@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnInitialisationDone();
 
             chalkMock.Verify(x => x.Default(It.IsAny<string>()));
-            output.ShouldBe(@"Project OK
+            output.ShouldBeWithNewlineReplace(@"Project OK
 Generating mutants
 ");
         }

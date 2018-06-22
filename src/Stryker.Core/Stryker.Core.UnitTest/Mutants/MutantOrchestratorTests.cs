@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using System;
+using Stryker.Core.UnitTest;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -50,33 +50,6 @@ namespace StrykerNet.UnitTest.Mutants
             var result = _target.Mutate(tree.GetRoot());
 
             _target.GetLatestMutantBatch().Count().ShouldBe(numberOfMutations);
-        }
-    }
-
-    /// <summary>
-    /// Making asserting syntax trees more easy
-    /// </summary>
-    public static class AssertionExtensions
-    {
-        /// <summary>
-        /// Compares two code strings and asserts equality 
-        /// </summary>
-        /// <param name="actual">Resulted code</param>
-        /// <param name="expected">Expected code</param>
-        public static void ShouldBeSemantically(this string actual, string expected)
-        {
-            ShouldBeSemantically(CSharpSyntaxTree.ParseText(actual).GetRoot(), CSharpSyntaxTree.ParseText(expected).GetRoot());
-        }
-
-        /// <summary>
-        /// Compares two syntax trees and asserts equality 
-        /// </summary>
-        /// <param name="actual">Resulted code</param>
-        /// <param name="expected">Expected code</param>
-        public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
-        {
-            SyntaxFactory.AreEquivalent(actual, expected)
-                .ShouldBeTrue($"AST's are not equavalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
         }
     }
 }

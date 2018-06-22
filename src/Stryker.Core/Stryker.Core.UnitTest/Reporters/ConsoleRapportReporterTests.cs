@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
-using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
@@ -31,10 +30,9 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(folder);
 
-            output.ToString().ShouldBe(
-$@"
+            output.ToString().ShouldBeWithNewlineReplace($@"
 
-All mutants have been tested, and your mutationscore has been calculated
+All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [0/0 (- %)]
 --- SomeFile.cs [0/0 (- %)]
 ");
@@ -72,10 +70,10 @@ All mutants have been tested, and your mutationscore has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            output.ShouldBe(
+            output.ShouldBeWithNewlineReplace(
 $@"
 
-All mutants have been tested, and your mutationscore has been calculated
+All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [1/1 (100.00 %)]
 --- SomeFile.cs [1/1 (100.00 %)]
 [Killed] This name should display on line 0: '0 + 8' ==> '0 -8'
@@ -114,10 +112,10 @@ All mutants have been tested, and your mutationscore has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            output.ShouldBe(
+            output.ShouldBeWithNewlineReplace(
 $@"
 
-All mutants have been tested, and your mutationscore has been calculated
+All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [0/1 (0.00 %)]
 --- SomeFile.cs [0/1 (0.00 %)]
 [Survived] This name should display on line 0: '0 + 8' ==> '0 -8'
