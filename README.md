@@ -9,16 +9,18 @@
 
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/).
 
-## Note
-This project is still in its early days and is not yet available on NuGet. In the meantime, start by [mutation testing your JavaScript](https://stryker-mutator.github.io).
-
 ## Getting started
 Stryker.NET offers you mutation testing for your .NET Core projects. It allows you to test your tests by temporarily inserting bugs.
 
-## Contributing
-Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
+#### Note
+This project is still in its early days and is not yet available on NuGet. In the meantime, start by [mutation testing your JavaScript](https://stryker-mutator.github.io).
 
-## Compatibility
+#### Usage
+Stryker.NET can be used by executing the `dotnet stryker` command inside your test project folder, using the Stryker.CLI package.
+
+For the full documentation on how to use Stryker.NET, see the [Stryker.CLI readme](/src/Stryker.CLI/README.md).
+
+#### Compatibility
 Only compatible with .NET Core version 1.1+
 
 ## Usage
@@ -30,3 +32,6 @@ Right now, Stryker.NET supports the following mutators:
 - BooleanMutator
 
 For the full list of all avalable mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
+
+## Contributing
+Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
