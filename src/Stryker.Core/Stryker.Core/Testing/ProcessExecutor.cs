@@ -63,7 +63,7 @@ namespace Stryker.Core.Testing
                 if (!processDone)
                 {
                     // The process is still running. Kill the process and all it's child processes.
-                    process.KillTree();
+                    process.KillTree(TimeSpan.FromSeconds(60));
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
                 return new ProcessResult()
