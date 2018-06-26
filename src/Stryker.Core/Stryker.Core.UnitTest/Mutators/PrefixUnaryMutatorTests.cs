@@ -24,6 +24,7 @@ namespace Stryker.Core.UnitTest.Mutators
             Assert.Single(result);
             Assert.True(result.First().ReplacementNode.IsKind(expected));
         }
+        
         [Theory]
         [InlineData(SyntaxKind.BitwiseNotExpression)]
         [InlineData(SyntaxKind.LogicalNotExpression)]
@@ -37,6 +38,19 @@ namespace Stryker.Core.UnitTest.Mutators
 
             Assert.Single(result);
             Assert.True(result.First().ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression));
+        }
+        
+        [Theory]
+        [InlineData(SyntaxKind.AddressOfExpression)]
+        [InlineData(SyntaxKind.PointerIndirectionExpression)]
+        public void ShouldNotMutate(SyntaxKind orginal)
+        {
+            var target = new PrefixUnaryMutator();
+            
+            var originalNode = SyntaxFactory.PrefixUnaryExpression(orginal, SyntaxFactory.IdentifierName("a"));
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            Assert.Empty(result);
         }
     }
 }

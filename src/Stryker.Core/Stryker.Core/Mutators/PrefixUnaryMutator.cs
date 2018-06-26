@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -8,12 +7,18 @@ namespace Stryker.Core.Mutators
 {
     public class PrefixUnaryMutator : Mutator<PrefixUnaryExpressionSyntax>, IMutator
     {
-        private readonly Dictionary<SyntaxKind, SyntaxKind> _unaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>()
+        private readonly Dictionary<SyntaxKind, SyntaxKind> _unaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
             {SyntaxKind.UnaryMinusExpression, SyntaxKind.UnaryPlusExpression},
             {SyntaxKind.UnaryPlusExpression, SyntaxKind.UnaryMinusExpression},
             {SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression},
             {SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression},
+        };
+
+        private readonly HashSet<SyntaxKind> _unaryToInitial = new HashSet<SyntaxKind>
+        {
+            SyntaxKind.BitwiseNotExpression,
+            SyntaxKind.LogicalNotExpression
         };
 
         public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node)
@@ -25,27 +30,17 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand),
-                    DisplayName = unaryKind + " to " + oppositeKind + " mutation",
+                    DisplayName = $"{unaryKind} to {oppositeKind} mutation",
                     Type = nameof(PrefixUnaryMutator)
                 };
             }
-            else if (node.IsKind(SyntaxKind.BitwiseNotExpression))
+            else if (_unaryToInitial.Contains(unaryKind))
             {
                 yield return new Mutation
                 {
                     OriginalNode = node,
                     ReplacementNode = node.Operand,
-                    DisplayName = "Bitwise Not to un-Bitwise",
-                    Type = nameof(PrefixUnaryMutator)
-                };
-            }
-            else if (node.IsKind(SyntaxKind.LogicalNotExpression))
-            {
-                yield return new Mutation
-                {
-                    OriginalNode = node,
-                    ReplacementNode = node.Operand,
-                    DisplayName = "Bitwise Not to un-Bitwise",
+                    DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
                     Type = nameof(PrefixUnaryMutator)
                 };
             }
