@@ -30,6 +30,7 @@ For the full documentation about the `dotnet stryker` command, see the [Stryker.
 Right now, Stryker.NET supports the following mutators:
 - BinaryExpressionMutator
 - BooleanMutator
+- AssignmentStatementMutator
 
 For the full list of all avalable mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
 
