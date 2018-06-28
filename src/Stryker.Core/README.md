@@ -27,3 +27,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ------------- | 
 | `true` | `false` |
 | `false` | `true` |
+
+## Checked mutator
+| Original | Mutated |
+| ------------- | ------------- | 
+| `checked(2 + 4)` | `2 + 4` |
