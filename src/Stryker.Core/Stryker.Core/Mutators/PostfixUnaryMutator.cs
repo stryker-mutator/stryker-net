@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutators
 {
     public class PostfixUnaryMutator : Mutator<PostfixUnaryExpressionSyntax>, IMutator
     {
-        private readonly Dictionary<SyntaxKind, SyntaxKind> _unaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
+        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
             {SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression},
             {SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression},
@@ -17,14 +17,14 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node)
         {
             var unaryKind = node.Kind();
-            if (_unaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
+            if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
             {
                 yield return new Mutation
                 {
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PostfixUnaryExpression(oppositeKind, node.Operand),
                     DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = nameof(PrefixUnaryMutator)
+                    Type = nameof(PostfixUnaryMutator)
                 };
             }
         }

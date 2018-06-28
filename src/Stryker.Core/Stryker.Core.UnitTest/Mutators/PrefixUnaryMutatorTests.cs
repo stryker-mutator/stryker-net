@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Mutators;
 using System.Linq;
+using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -21,8 +22,10 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            Assert.Single(result);
-            Assert.True(result.First().ReplacementNode.IsKind(expected));
+            result.ShouldHaveSingleItem();
+            var mutation = result.First();
+            Assert.True(mutation.ReplacementNode.IsKind(expected));
+            Assert.Equal("PrefixUnaryMutator", mutation.Type);
         }
         
         [Theory]

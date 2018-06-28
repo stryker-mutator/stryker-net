@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutators
 {
     public class PrefixUnaryMutator : Mutator<PrefixUnaryExpressionSyntax>, IMutator
     {
-        private readonly Dictionary<SyntaxKind, SyntaxKind> _unaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
+        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
             {SyntaxKind.UnaryMinusExpression, SyntaxKind.UnaryPlusExpression},
             {SyntaxKind.UnaryPlusExpression, SyntaxKind.UnaryMinusExpression},
@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutators
             {SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression},
         };
 
-        private readonly HashSet<SyntaxKind> _unaryToInitial = new HashSet<SyntaxKind>
+        private static readonly HashSet<SyntaxKind> UnaryToInitial = new HashSet<SyntaxKind>
         {
             SyntaxKind.BitwiseNotExpression,
             SyntaxKind.LogicalNotExpression
@@ -24,7 +24,7 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node)
         {
             var unaryKind = node.Kind();
-            if (_unaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
+            if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
             {
                 yield return new Mutation
                 {
@@ -34,7 +34,7 @@ namespace Stryker.Core.Mutators
                     Type = nameof(PrefixUnaryMutator)
                 };
             }
-            else if (_unaryToInitial.Contains(unaryKind))
+            else if (UnaryToInitial.Contains(unaryKind))
             {
                 yield return new Mutation
                 {
