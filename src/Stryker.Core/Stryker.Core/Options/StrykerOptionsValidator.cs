@@ -67,6 +67,7 @@ namespace Stryker.Core.Options
                     // the default list of mutators
                     new BinaryExpressionMutator(),
                     new BooleanMutator(),
+                    new AssignmentStatementMutator()
                 };
             }
             return mutators;
