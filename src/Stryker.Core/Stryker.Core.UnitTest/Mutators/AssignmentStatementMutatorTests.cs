@@ -32,6 +32,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldHaveSingleItem();
             result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
+            result.ShouldContain(x => x.Type.Equals("AssignmentStatementMutator"));
         }
 
         [Fact]
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Mutators
             );
             var result = target.ApplyMutations(originalNode).ToList();
 
-            Assert.Empty(result);
+            result.ShouldBeEmpty();
         }
     }
 }
