@@ -14,6 +14,7 @@
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
+    <Compile Remove="Mutators\LogicalMutatorTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
