@@ -13,12 +13,12 @@ namespace Stryker.Core.UnitTest.Mutators
     public class CheckedMutatorTests
     {
         [Theory]
-        [InlineData(SyntaxKind.CheckedExpression, SyntaxKind.AddExpression)]
-        public void ShouldMutate(SyntaxKind original, SyntaxKind expected)
+        [InlineData(SyntaxKind.CheckedExpression, "4 + 2", SyntaxKind.AddExpression)]
+        public void ShouldMutate(SyntaxKind original, string expression, SyntaxKind expected)
         {
             var target = new CheckedMutator();
 
-            ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
+            ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
 
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
