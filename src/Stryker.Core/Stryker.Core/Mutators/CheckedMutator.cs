@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = node.Expression,
-                    DisplayName = "Checked expression to expression mutation",
+                    DisplayName = "Remove checked expression",
                     Type = nameof(CheckedMutator)
                 };
             }
