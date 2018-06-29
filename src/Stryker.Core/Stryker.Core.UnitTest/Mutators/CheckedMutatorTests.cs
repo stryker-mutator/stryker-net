@@ -19,7 +19,6 @@ namespace Stryker.Core.UnitTest.Mutators
             var target = new CheckedMutator();
 
             ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
-
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
             Assert.Single(result);
@@ -34,7 +33,6 @@ namespace Stryker.Core.UnitTest.Mutators
             var target = new CheckedMutator();
 
             ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
-
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(orginal, es)).ToList();
 
             Assert.Empty(result);
