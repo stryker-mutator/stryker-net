@@ -17,8 +17,8 @@ Stryker.NET offers you mutation testing for your .NET Core projects. It allows y
 
 ``` XML
 <ItemGroup>
-    <DotNetCliToolReference Include="Stryker.Runner.DotNetCore.CLI" Version="*" />
-    <PackageReference Include="Stryker.Runner.DotNetCore.CLI" Version="*" />
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
 </ItemGroup>
 ```
 

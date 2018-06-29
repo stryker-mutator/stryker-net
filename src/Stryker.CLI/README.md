@@ -6,8 +6,8 @@ To install Stryker.NET on your *test project* add the following lines to the roo
 
 ``` XML
 <ItemGroup>
-    <DotNetCliToolReference Include="Stryker.Runner.DotNetCore.CLI" Version="*" />
-    <PackageReference Include="Stryker.Runner.DotNetCore.CLI" Version="*" />
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
 </ItemGroup>
 ```
 
