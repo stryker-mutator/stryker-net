@@ -19,11 +19,11 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)));
 
             var result = target.ApplyMutations(originalNode).ToList();
-            
+
             result.ShouldHaveSingleItem();
             var mutation = result.First();
-            Assert.True(mutation.ReplacementNode.IsKind(expected));
-            Assert.Equal("PostfixUnaryMutator", mutation.Type);
+            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.Type.ShouldBe("PostfixUnaryMutator");
         }
     }
 }

@@ -24,8 +24,8 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldHaveSingleItem();
             var mutation = result.First();
-            Assert.True(mutation.ReplacementNode.IsKind(expected));
-            Assert.Equal("PrefixUnaryMutator", mutation.Type);
+            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.Type.ShouldBe("PrefixUnaryMutator");
         }
         
         [Theory]
@@ -39,8 +39,8 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            Assert.Single(result);
-            Assert.True(result.First().ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression));
+            result.ShouldHaveSingleItem();
+            result.First().ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression).ShouldBeTrue();
         }
         
         [Theory]
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalNode = SyntaxFactory.PrefixUnaryExpression(orginal, SyntaxFactory.IdentifierName("a"));
             var result = target.ApplyMutations(originalNode).ToList();
 
-            Assert.Empty(result);
+            result.ShouldBeEmpty();
         }
     }
 }
