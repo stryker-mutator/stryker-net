@@ -1,6 +1,16 @@
 # Mutators
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
+<!-- TOC -->
+
+- [Mutators](#mutators)
+    - [Binary mutator](#binary-mutator)
+    - [Boolean mutator](#boolean-mutator)
+    - [PrefixUnaryStatements](#prefixunarystatements)
+    - [PostfixUnaryStatements](#postfixunarystatements)
+
+<!-- /TOC -->
+
 ## Binary mutator
 | Original | Mutated | 
 | ------------- | ------------- | 
@@ -27,3 +37,19 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ------------- | 
 | `true` | `false` |
 | `false` | `true` |
+
+## PrefixUnaryStatements
+|    Original   |   Mutated  | 
+| ------------- | ---------- | 
+|  `!variable` 	| `variable` |
+|  `-variable`  | `+variable`|
+|  `+variable` 	| `-variable`|
+|  `~variable` 	| `variable` |
+|  `++variable` | `--variable` |
+|  `--variable` | `++variable` |
+`
+## PostfixUnaryStatements
+|    Original   |   Mutated  | 
+| ------------- | ---------- | 
+| `variable++`  | `variable--` |
+| `variable--`  | `variable++` |
