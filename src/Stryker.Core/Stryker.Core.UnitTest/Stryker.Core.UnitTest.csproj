@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
@@ -15,7 +12,6 @@
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="Initialisation\TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -39,7 +35,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
@@ -47,19 +42,16 @@
     <PackageReference Include="Shouldly" Version="3.0.0" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="2.1.0.178" />
     <PackageReference Include="xunit" Version="2.3.1" />
-	<PackageReference Include="Xunit.SkippableFact" Version="1.3.6" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.3.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
   <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
     <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
   </Target>
