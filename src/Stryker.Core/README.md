@@ -61,7 +61,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |  `~variable` 	| `variable` |
 |  `++variable` | `--variable` |
 |  `--variable` | `++variable` |
-`
+
 ## PostfixUnaryStatements
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
