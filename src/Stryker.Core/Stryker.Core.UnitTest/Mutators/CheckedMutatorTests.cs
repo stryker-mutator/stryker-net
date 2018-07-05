@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xunit;
+using Shouldly;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
@@ -21,9 +22,9 @@ namespace Stryker.Core.UnitTest.Mutators
             ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
-            Assert.Single(result);
+            result.Count.ShouldBe(1);
 
-            Assert.True(result.First().ReplacementNode.IsKind(expected));
+            result.First().ReplacementNode.IsKind(expected).ShouldBeTrue();
         }
 
         [Theory]
@@ -35,7 +36,7 @@ namespace Stryker.Core.UnitTest.Mutators
             ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(orginal, es)).ToList();
 
-            Assert.Empty(result);
+            result.ShouldBeEmpty();
         }
     }
 }
