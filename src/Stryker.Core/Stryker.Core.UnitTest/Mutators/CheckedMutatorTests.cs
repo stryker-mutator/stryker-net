@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Mutators
             ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
-            result.Count.ShouldBe(1);
+            result.ShouldHaveSingleItem();
 
             result.First().ReplacementNode.IsKind(expected).ShouldBeTrue();
         }
