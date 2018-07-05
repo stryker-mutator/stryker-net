@@ -31,8 +31,10 @@ Right now, Stryker.NET supports the following mutators:
 - BinaryExpressionMutator
 - BooleanMutator
 - AssignmentStatementMutator
+- PrefixUnaryStatements
+- PostfixUnaryStatements
 
-For the full list of all avalable mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
+For the full list of all available mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
 
 ## Contributing
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).

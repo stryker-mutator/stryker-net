@@ -7,6 +7,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
     - [Binary mutator](#binary-mutator)
     - [Boolean mutator](#boolean-mutator)
     - [Assignment mutator](#assignment-mutator)
+    - [PrefixUnaryStatements](#prefixunarystatements)
+    - [PostfixUnaryStatements](#postfixunarystatements)
 
 <!-- /TOC -->
 
@@ -49,3 +51,20 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`>>=`  | `<<=` |
 |`&= `	| `\|= ` |
 |`\|= `	| `&= ` |
+
+## PrefixUnaryStatements
+|    Original   |   Mutated  | 
+| ------------- | ---------- | 
+|  `!variable` 	| `variable` |
+|  `-variable`  | `+variable`|
+|  `+variable` 	| `-variable`|
+|  `~variable` 	| `variable` |
+|  `++variable` | `--variable` |
+|  `--variable` | `++variable` |
+`
+## PostfixUnaryStatements
+|    Original   |   Mutated  | 
+| ------------- | ---------- | 
+| `variable++`  | `variable--` |
+| `variable--`  | `variable++` |
+
