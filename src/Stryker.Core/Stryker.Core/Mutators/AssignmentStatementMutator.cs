@@ -36,33 +36,3 @@ namespace Stryker.Core.Mutators
         }
     }
 }
-/*
-
-        case SyntaxKind.LeftShiftAssignmentExpression:
-          return SyntaxKind.LessThanLessThanEqualsToken;
-        case SyntaxKind.RightShiftAssignmentExpression:
-          return SyntaxKind.GreaterThanGreaterThanEqualsToken;
- 
- 
- 
-        case SyntaxKind.AndAssignmentExpression:
-          return SyntaxKind.AmpersandEqualsToken;
-        case SyntaxKind.ExclusiveOrAssignmentExpression:
-          return SyntaxKind.CaretEqualsToken;
-        case SyntaxKind.OrAssignmentExpression:
-          return SyntaxKind.BarEqualsToken;
-        case SyntaxKind.ModuloAssignmentExpression:
-          return SyntaxKind.PercentEqualsToken;         
-                  case SyntaxKind.MultiplyAssignmentExpression:
-          return SyntaxKind.AsteriskEqualsToken;
-        case SyntaxKind.DivideAssignmentExpression:
-          return SyntaxKind.SlashEqualsToken;
-          
-        case SyntaxKind.SimpleAssignmentExpression:
-          return SyntaxKind.EqualsToken;
-        case SyntaxKind.AddAssignmentExpression:
-          return SyntaxKind.PlusEqualsToken;
-        case SyntaxKind.SubtractAssignmentExpression:
-          return SyntaxKind.MinusEqualsToken;
-          
-          */
