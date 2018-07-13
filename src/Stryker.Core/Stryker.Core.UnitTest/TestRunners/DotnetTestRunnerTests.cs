@@ -13,13 +13,8 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void RunAllExitCode0SuccessShouldBeTrue()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = 0 });
+            processMock.SetupProcessMockToReturn("Testrun successful");
+
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
@@ -33,13 +28,8 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void RunAllExitCode1SuccessShouldBeFalse()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = 1 });
+            processMock.SetupProcessMockToReturn("Testrun failed", 1);
+
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
@@ -53,13 +43,8 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void RunAllExceptionStatusCodeSuccessShouldBeFalse()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = -100 });
+            processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
+
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
@@ -73,13 +58,8 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void EnvironmentVariableGetsPassed()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = -100 });
+            processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
+
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
