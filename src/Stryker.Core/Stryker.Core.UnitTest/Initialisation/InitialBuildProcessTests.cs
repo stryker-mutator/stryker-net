@@ -13,13 +13,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialBuildProcess_ShouldThrowExceptionOnFail()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = 1 });
+
+            processMock.SetupProcessMockToReturn("", 1);
 
             var target = new InitialBuildProcess(processMock.Object);
 
@@ -30,13 +25,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialBuildProcess_ShouldNotThrowExceptionOnSuccess()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processMock.Setup(x => x.Start(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()))
-                .Returns(new ProcessResult() { ExitCode = 0 });
+
+            processMock.SetupProcessMockToReturn("");
 
             var target = new InitialBuildProcess(processMock.Object);
 

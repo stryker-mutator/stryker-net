@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
 
-            SetupProcessMockToReturn(processExecutorMock, @"  ExampleProject.Contracts -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll
+            processExecutorMock.SetupProcessMockToReturn(@"  ExampleProject.Contracts -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.Contracts.dll
   ExampleProject -> C:\Repos\ExampleProject\ExampleProject\bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll");
 
@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
 
-            SetupProcessMockToReturn(processExecutorMock, @"  AnotherExampleProject -> C:\Repos\ExampleTestProject\ExampleTestProject\Bin\Debug\netcoreapp2.0\AnotherExampleProject.dll
+            processExecutorMock.SetupProcessMockToReturn(@"  AnotherExampleProject -> C:\Repos\ExampleTestProject\ExampleTestProject\Bin\Debug\netcoreapp2.0\AnotherExampleProject.dll
   ExampleProject -> C:\Repos\ExampleProject\ExampleProject\Bin\Debug\netcoreapp2.0\ExampleProject.dll
   C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\Microsoft.CSharp.dll;C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.formatters.json\2.0.2\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll");
 
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
 
-            SetupProcessMockToReturn(processExecutorMock, @"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj : error MSB4057: The target ""PrintReferences"" does not exist in the project.", 1);
+            processExecutorMock.SetupProcessMockToReturn(@"C:\ProjectFolder\ExampleProject\ExampleProject.Test.csproj : error MSB4057: The target ""PrintReferences"" does not exist in the project.", 1);
 
             string project = Path.Combine("C:", "ProjectFolder", "ExampleProject", "ExampleProject.Test.csproj");
 
@@ -104,7 +104,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var metadataReferenceProviderMock = new Mock<IMetadataReferenceProvider>(MockBehavior.Strict);
 
-            SetupProcessMockToReturn(processExecutorMock, @"  MGA.Contracts -> C:\Mrak\IS-MarkW\Product\MGA.Contracts\MGA.Contracts\bin\Debug\netcoreapp2.0\MGA.Contracts.dll
+            processExecutorMock.SetupProcessMockToReturn(@"  MGA.Contracts -> C:\Mrak\IS-MarkW\Product\MGA.Contracts\MGA.Contracts\bin\Debug\netcoreapp2.0\MGA.Contracts.dll
   MGA.MaandstaatKeuringsFrontend.Domain -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.Domain\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.Domain.dll
   MGA.MaandstaatKeuringsFrontend.DomainServices -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.DomainServices\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.DomainServices.dll
   MGA.MaandstaatKeuringsFrontend.DAL -> C:\Mrak\IS-MarkW\Product\MGA.MaandstaatKeuringsFrontend\MGA.MaandstaatKeuringsFrontend.DAL\bin\Debug\netcoreapp2.0\MGA.MaandstaatKeuringsFrontend.DAL.dll
@@ -157,21 +157,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                 "InfoSupport.BestuurdersCoach.MessageBus.exe"));
 
             result.ShouldBeEmpty();
-        }
-
-        private void SetupProcessMockToReturn(Mock<IProcessExecutor> processExecutorMock, string result, int exitCode = 0)
-        {
-            processExecutorMock.Setup(x => x.Start(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                null,
-                It.IsAny<int>()))
-            .Returns(new ProcessResult()
-            {
-                ExitCode = exitCode,
-                Output = result.Replace('\\', Path.DirectorySeparatorChar)
-            });
         }
     }
 }
