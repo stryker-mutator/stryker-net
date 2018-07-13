@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageId>Stryker.NET.Runner.DotNetCore</PackageId>
+    <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard</Authors>
     <Company>InfoSupport</Company>
     <Product>Mutation Testing</Product>
