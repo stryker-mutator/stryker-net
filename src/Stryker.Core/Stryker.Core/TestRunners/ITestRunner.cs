@@ -2,7 +2,7 @@
 {
     public interface ITestRunner
     {
-        TestRunResult RunAll(int timeoutMS);
+        TestRunResult RunAll(int? timeoutMS);
         void SetActiveMutation(int? id);
     }
 }
