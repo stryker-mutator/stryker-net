@@ -9,6 +9,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
     - [Assignment mutator](#assignment-mutator)
     - [PrefixUnaryStatements](#prefixunarystatements)
     - [PostfixUnaryStatements](#postfixunarystatements)
+	- [Checked mutator](#checked-mutator)
 
 <!-- /TOC -->
 
@@ -68,3 +69,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `variable++`  | `variable--` |
 | `variable--`  | `variable++` |
 
+## Checked mutator
+| Original | Mutated |
+| ------------- | ------------- | 
+| `checked(2 + 4)` | `2 + 4` |

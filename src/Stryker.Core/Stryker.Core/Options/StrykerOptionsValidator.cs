@@ -69,7 +69,8 @@ namespace Stryker.Core.Options
                     new BooleanMutator(),
                     new AssignmentStatementMutator(),
                     new PrefixUnaryMutator(),
-                    new PostfixUnaryMutator()
+                    new PostfixUnaryMutator(),
+                    new CheckedMutator()
                 };
             }
             return mutators;
