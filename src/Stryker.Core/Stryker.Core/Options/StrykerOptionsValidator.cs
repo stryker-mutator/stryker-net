@@ -25,8 +25,7 @@ namespace Stryker.Core.Options
                 projectUnderTestNameFilter: ValidateProjectUnderTestNameFilter(options.ProjectUnderTestNameFilter),
                 basePath: ValidateBasePath(options.BasePath),
                 additionalTimeoutMS: ValidateAdditionalTimeoutMS(options.AdditionalTimeoutMS),
-                logOptions: options.LogOptions,
-                mutators: ValidateMutators(options.Mutators));
+                logOptions: options.LogOptions);
 
             logger.LogDebug("Validated options {@validatedOptions}", validatedOptions);
             return validatedOptions;
@@ -74,23 +73,6 @@ namespace Stryker.Core.Options
                 throw new ValidationException("The reporter options are [Console, RapportOnly]");
             }
             return reporter;
-        }
-
-        private ICollection<IMutator> ValidateMutators(ICollection<IMutator> mutators)
-        {
-            if (mutators == null || !mutators.Any())
-            {
-                mutators = new Collection<IMutator>
-                {
-                    // the default list of mutators
-                    new BinaryExpressionMutator(),
-                    new BooleanMutator(),
-                    new PrefixUnaryMutator(),
-                    new PostfixUnaryMutator(),
-                    new CheckedMutator()
-                };
-            }
-            return mutators;
         }
     }
 }

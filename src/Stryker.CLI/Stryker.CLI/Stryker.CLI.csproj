@@ -10,13 +10,6 @@
     <Product>Mutation Testing</Product>
     <AssemblyName>dotnet-stryker</AssemblyName>
     <RootNamespace>Stryker.CLI</RootNamespace>
-    <Version>0.0.1</Version>
-    <Description>The Stryker.NET Command Line Interface Runner for .NET Core. Adds the dotnet stryker command to your test project.</Description>
-    <PackageProjectUrl>https://github.com/stryker-mutator/stryker-net</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
-    <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
-    <NeutralLanguage>ar-KW</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

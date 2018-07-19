@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
-            var result = target.RunAll();
+            var result = target.RunAll(null);
 
             Assert.True(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
-            var result = target.RunAll();
+            var result = target.RunAll(null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object);
 
-            var result = target.RunAll();
+            var result = target.RunAll(null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var target = new DotnetTestRunner(path, processMock.Object);
 
             target.SetActiveMutation(1);
-            var result = target.RunAll();
+            var result = target.RunAll(null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(

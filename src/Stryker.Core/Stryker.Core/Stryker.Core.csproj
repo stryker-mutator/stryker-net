@@ -8,13 +8,12 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install a Stryker.NET.Runner.* package to use this package.</Description>
+    <Description>The main package for stryker.net</Description>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageId>Stryker.NET.Core</PackageId>
+    <PackageId>Stryker.Core</PackageId>
     <DebugType>Full</DebugType>
     <AssemblyName>Stryker.Core</AssemblyName>
     <RootNamespace>Stryker.Core</RootNamespace>
-    <Version>0.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.2" />

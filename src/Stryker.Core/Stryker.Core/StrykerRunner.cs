@@ -2,9 +2,11 @@
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Stryker.Core
@@ -50,7 +52,15 @@ namespace Stryker.Core
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
-                    options: validatedOptions,
+                    mutators: new List<IMutator> ()
+                        {
+                            // the default list of mutators
+                            new BinaryExpressionMutator(),
+                            new BooleanMutator(),
+                            new PrefixUnaryMutator(),
+                            new PostfixUnaryMutator(),
+                            new CheckedMutator()
+                        },
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 

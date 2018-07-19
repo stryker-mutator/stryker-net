@@ -39,6 +39,19 @@ namespace Stryker.Core.Testing
                 info.EnvironmentVariables[environmentVariable.Key] = environmentVariable.Value;
             }
 
+            return RunProcess(info, timeoutMS);
+        }
+
+        /// <summary>
+        /// Starts a process with the given info. 
+        /// Checks for timeout after <paramref name="timeoutMS"/> miliseconds if the process is still running. 
+        /// </summary>
+        /// <param name="info">The start info for the process</param>
+        /// <param name="timeoutMS">The miliseconds to check for a timeout</param>
+        /// <exception cref="OperationCanceledException"></exception>
+        /// <returns></returns>
+        private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
+        {
             using (var process = Process.Start(info))
             {
                 string output = "";

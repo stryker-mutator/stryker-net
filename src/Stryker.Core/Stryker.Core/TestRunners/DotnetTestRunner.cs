@@ -18,7 +18,7 @@ namespace Stryker.Core.TestRunners
 
         public DotnetTestRunner(string path) : this(path, new ProcessExecutor()) { }
 
-        public TestRunResult RunAll(int? timeoutMS = null)
+        public TestRunResult RunAll(int? timeoutMS)
         {
             var result = _processExecutor.Start(
                 _path,
