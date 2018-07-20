@@ -57,6 +57,7 @@ namespace Stryker.Core
                             // the default list of mutators
                             new BinaryExpressionMutator(),
                             new BooleanMutator(),
+                            new AssignmentStatementMutator(),
                             new PrefixUnaryMutator(),
                             new PostfixUnaryMutator(),
                             new CheckedMutator()

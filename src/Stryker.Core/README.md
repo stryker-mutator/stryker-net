@@ -6,6 +6,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Mutators](#mutators)
     - [Binary mutator](#binary-mutator)
     - [Boolean mutator](#boolean-mutator)
+    - [Assignment mutator](#assignment-mutator)
     - [PrefixUnaryStatements](#prefixunarystatements)
     - [PostfixUnaryStatements](#postfixunarystatements)
 	- [Checked mutator](#checked-mutator)
@@ -39,6 +40,19 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `true` | `false` |
 | `false` | `true` |
 
+## Assignment mutator
+| Original | Mutated | 
+| ------------- | ------------- | 
+|`+= `	| `-= ` |
+|`-= `	| `+= ` |
+|`*= `	| `/= ` |
+|`/= `	| `*= ` |
+|`%= `	| `*= ` |
+|`<<=`  | `>>=` |
+|`>>=`  | `<<=` |
+|`&= `	| `\|= ` |
+|`\|= `	| `&= ` |
+
 ## PrefixUnaryStatements
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
@@ -48,7 +62,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |  `~variable` 	| `variable` |
 |  `++variable` | `--variable` |
 |  `--variable` | `++variable` |
-`
+
 ## PostfixUnaryStatements
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
