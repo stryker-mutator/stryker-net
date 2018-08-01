@@ -1,0 +1,30 @@
+version: 0.0.{build}
+branches:
+  only:
+  - master
+image: Visual Studio 2017
+init:
+- ps: git config --global core.autocrlf false
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+before_build:
+- ps: dotnet restore src/Stryker.CLI/Stryker.CLI.sln
+build:
+  project: src/Stryker.CLI/Stryker.CLI.sln
+  publish_nuget: true
+  include_nuget_references: true
+  verbosity: minimal
+artifacts:
+- path: '**\*.nupkg'
+deploy:
+- provider: NuGet
+  server: https://ci.appveyor.com/nuget/stryker-mutator-2f6sybqrq13d
+  api_key:
+    secure: luYiGBpmMqhFR/FRXEXxa9bAOsZvmCzrj0QYsAACEQk=
+  skip_symbols: true

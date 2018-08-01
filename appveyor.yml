@@ -6,14 +6,6 @@ image:
 - Visual Studio 2017
 init:
 - ps: git config --global core.autocrlf false
-dotnet_csproj:
-  patch: true
-  file: '**\*.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
-  informational_version: '{version}'
 before_build:
 - ps: dotnet restore src/Stryker.CLI/Stryker.CLI.sln
 build:
