@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.CLI
+﻿namespace Stryker.CLI
 {
     public static class CLIOptions
     {
