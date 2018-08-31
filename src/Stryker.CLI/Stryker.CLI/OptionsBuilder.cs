@@ -8,6 +8,7 @@ namespace Stryker.CLI
     public class OptionsBuilder
     {
         private IConfiguration config = null;
+
         public StrykerOptions Build(
             string basePath,
             CommandOption reporter,
@@ -31,16 +32,17 @@ namespace Stryker.CLI
                 GetOption(projectUnderTestNameFilter, CLIOptions.ProjectName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
-                logToFile.HasValue());
+                GetOption(logToFile, CLIOptions.UseLogFile));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 
             if (value.HasValue())
             {
-                //Convert commandOption to desired type
+                //Convert commandOptionValue to desired type
                 return (T)Convert.ChangeType(value.Value(), typeof(T));
             }
-            if(config != null && !string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()) )
+            if(config != null &! 
+                string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
             {
                 //Else return config value                
                 return config.GetValue<T>(defaultValue.JsonKey);

@@ -8,16 +8,16 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        public string BasePath { get; private set; }
-        public string Reporter { get; private set; }
+        public string BasePath { get; }
+        public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
 
         /// <summary>
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
-        public string ProjectUnderTestNameFilter { get; private set; }
+        public string ProjectUnderTestNameFilter { get; }
 
-        public int AdditionalTimeoutMS { get; private set;}
+        public int AdditionalTimeoutMS { get; }
 
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile)
         {

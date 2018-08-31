@@ -41,6 +41,23 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
+        public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 9999 &&
+                                                                        c.LogOptions.LogLevel == LogEventLevel.Verbose &&
+                                                                        c.LogOptions.LogToFile == true &&
+                                                                        c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
+                                                                        c.Reporter == "RapportOnly"))).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { "-cp", "filled-stryker-config.json" });
+
+            mock.VerifyAll();
+        }
+
+        [Fact]
         public void StrykerCLI_OnException_ShouldExit()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -109,7 +126,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "-c", "false" });
+            target.Run(new string[] { argName, "true", "-c", "false" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile == true)));
         }

@@ -50,7 +50,7 @@ namespace Stryker.CLI
 
             var fileLogParam = app.Option($"{CLIOptions.UseLogFile.ArgumentName} | {CLIOptions.UseLogFile.ArgumentShortName}",
                 CLIOptions.UseLogFile.ArgumentDescription, 
-                CommandOptionType.NoValue);
+                CommandOptionType.SingleValue);
 
             var projectNameParam = app.Option($"{CLIOptions.ProjectName.ArgumentName} | {CLIOptions.ProjectName.ArgumentShortName}",
                 CLIOptions.ProjectName.ArgumentDescription,

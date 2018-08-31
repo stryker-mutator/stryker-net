@@ -5,7 +5,7 @@
         public static readonly CLIOption<bool> UseConfigFile = new CLIOption<bool> {
             ArgumentName = "--configFile",
             ArgumentShortName = "-c <useConfigFile>",
-            ArgumentDescription = "Use configFile | Options [true (default), false]",
+            ArgumentDescription = "Use configFile. When not defined you must have a config file called stryker-config.json | Options [true (default), false]",
             DefaultValue = true
         };
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
@@ -34,8 +34,8 @@
         public static readonly CLIOption<bool> UseLogFile = new CLIOption<bool>
         {
             ArgumentName = "--logFile",
-            ArgumentShortName = "-f",
-            ArgumentDescription = "When passed, a logfile will be created for this mutationtest run on trace level",
+            ArgumentShortName = "-f <useLogFile>",
+            ArgumentDescription = "Use logFile | Options [false (Default), true]",
             DefaultValue = false,
             JsonKey = "logFile"
         };
@@ -53,7 +53,6 @@
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
             JsonKey = "projectName"
-        };
-        
+        };        
     }
 }
