@@ -8,6 +8,7 @@
             ArgumentDescription = "Use configFile. When not defined you must have a config file and configFilePath must be set | Options [true (default), false]",
             DefaultValue = true
         };
+
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
             ArgumentName = "--configFilePath",
@@ -15,6 +16,7 @@
             ArgumentDescription = "Sets the configFilePath relative to current workingDirectory | stryker-config.json (default)",
             DefaultValue = "stryker-config.json"
         };
+
         public static readonly CLIOption<string> Reporter = new CLIOption<string>
         {
             ArgumentName = "--reporter",
@@ -23,6 +25,7 @@
             DefaultValue = "Console",
             JsonKey = "reporter"
         };
+
         public static readonly CLIOption<string> LogLevel = new CLIOption<string>
         {
             ArgumentName = "--logConsole",
@@ -31,6 +34,7 @@
             DefaultValue = "info",
             JsonKey = "logLevel"
         };
+
         public static readonly CLIOption<bool> UseLogFile = new CLIOption<bool>
         {
             ArgumentName = "--logFile",
@@ -39,6 +43,7 @@
             DefaultValue = false,
             JsonKey = "logFile"
         };
+
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
         {
             ArgumentName = "--timeoutMS",
@@ -47,6 +52,7 @@
             DefaultValue = 2000,
             JsonKey = "timeoutMS"
         };
+
         public static readonly CLIOption<string> ProjectName = new CLIOption<string>
         {
             ArgumentName = "--project",
