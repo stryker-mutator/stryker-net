@@ -34,16 +34,16 @@ namespace Stryker.CLI
                 GetOption(projectUnderTestNameFilter, CLIOptions.ProjectName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
-                GetOption(logToFile, CLIOptions.UseLogFile));
+                logToFile.HasValue());
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
-        {
+        { 
             if (value.HasValue())
             {
                 //Convert commandOption to desired type
                 return (T)Convert.ChangeType(value.Value(), typeof(T));
             }
-            if(config != null && !string.IsNullOrEmpty(config.GetValue<T>(defaultValue.JsonKey).ToString()) )
+            if(config != null && !string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()) )
             {
                 //Else return config value                
                 return config.GetValue<T>(defaultValue.JsonKey);

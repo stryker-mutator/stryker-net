@@ -56,7 +56,6 @@ namespace Stryker.CLI
             ArgumentName = "--project",
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            DefaultValue = "ExampleProject.csproj",
             JsonKey = "projectName"
         };
         
