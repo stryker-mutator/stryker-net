@@ -21,6 +21,11 @@
     <ProjectReference Include="..\Stryker.CLI\Stryker.CLI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="stryker-config.json" CopyToOutputDirectory="Always" />
+    <None Include="filled-stryker-config.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
   <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
     <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
   </Target>

@@ -1,4 +1,8 @@
-﻿using Stryker.Core.Logging;
+﻿using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Options
 {
@@ -13,20 +17,24 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
 
-        public string AdditionalTimeoutMS { get; }
+        public int AdditionalTimeoutMS { get; }
 
-        public StrykerOptions(string basePath,
-            string reporter, 
-            string projectUnderTestNameFilter,
-            string additionalTimeoutMS = "2000",
-            LogOptions logOptions = null)
+        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile)
         {
             BasePath = basePath;
-            Reporter = reporter;
+            Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            LogOptions = logOptions ?? new LogOptions(null, false);
+            LogOptions = new LogOptions(logLevel, logToFile);
         }
 
+        private string ValidateReporter(string reporter)
+        {
+            if (reporter != "Console" && reporter != "RapportOnly")
+            {
+                throw new ValidationException("The reporter options are [Console, RapportOnly]");
+            }
+            return reporter;
+        }
     }
 }

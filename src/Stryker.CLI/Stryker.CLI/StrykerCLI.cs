@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
-using Serilog.Events;
 using Stryker.Core;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 using System.IO;
@@ -30,50 +28,61 @@ namespace Stryker.CLI
                 ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
             };
 
-            var reporterParam = app.Option("--reporter | -r <reporter>",
-                "Sets the reporter | Opions [Console (default), RapportOnly]",
+            var useConfigFileParam = app.Option($"{CLIOptions.UseConfigFile.ArgumentName} | {CLIOptions.UseConfigFile.ArgumentShortName}",
+                CLIOptions.UseConfigFile.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
-            var logConsoleParam = app.Option("--logConsole | -l <logLevel>",
-                "Sets the logging level | Opions [info (default), warning, debug, trace]",
+            var configFilePathParam = app.Option($"{CLIOptions.ConfigFilePath.ArgumentName} | {CLIOptions.ConfigFilePath.ArgumentShortName}",
+                CLIOptions.ConfigFilePath.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
-            var timeoutParam = app.Option("--timeoutMS | -t <ms>",
-                "Adds milliseconds to the timeout treshold | Default: 2000",
+            var reporterParam = app.Option($"{CLIOptions.Reporter.ArgumentName} | {CLIOptions.Reporter.ArgumentShortName}",
+                CLIOptions.Reporter.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
-            var fileLogParam = app.Option("--logFile | -f",
-                "When passed, a logfile will be created for this mutationtest run on trace level", 
-                CommandOptionType.NoValue);
+            var logConsoleParam = app.Option($"{CLIOptions.LogLevel.ArgumentName} | {CLIOptions.LogLevel.ArgumentShortName}",
+                CLIOptions.LogLevel.ArgumentDescription,
+                CommandOptionType.SingleValue);
 
-            var projectNameParam = app.Option("--project | -p <projectName>",
-                @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
+            var timeoutParam = app.Option($"{CLIOptions.AdditionalTimeoutMS.ArgumentName} | {CLIOptions.AdditionalTimeoutMS.ArgumentShortName}",
+                CLIOptions.AdditionalTimeoutMS.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
+            var fileLogParam = app.Option($"{CLIOptions.UseLogFile.ArgumentName} | {CLIOptions.UseLogFile.ArgumentShortName}",
+                CLIOptions.UseLogFile.ArgumentDescription, 
+                CommandOptionType.SingleValue);
+
+            var projectNameParam = app.Option($"{CLIOptions.ProjectName.ArgumentName} | {CLIOptions.ProjectName.ArgumentShortName}",
+                CLIOptions.ProjectName.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
             app.HelpOption("--help | -h | -?");
 
             app.OnExecute(() => {
                 // app started
-                return RunStryker(reporterParam.Value(), projectNameParam.Value(), logConsoleParam.Value(), timeoutParam.Value(), fileLogParam.HasValue());
+                var options = new OptionsBuilder().Build(
+                    Directory.GetCurrentDirectory(),
+                    reporterParam,
+                    projectNameParam,
+                    timeoutParam,
+                    logConsoleParam,
+                    fileLogParam,
+                    configFilePathParam,
+                    useConfigFileParam);
+
+                return RunStryker(options);
             });
 
             app.Execute(args);
         }
-
-        private int RunStryker(string reporter, string projectName, string logConsoleLevel, string timeout, bool logToFile)
+        
+        private int RunStryker(StrykerOptions options)
         {
             // start with the stryker header
             PrintStykerASCIIName();
 
             try
-            {
-                var options = new StrykerOptions(
-                    basePath: Directory.GetCurrentDirectory(),
-                    reporter: reporter,
-                    additionalTimeoutMS: timeout,
-                    projectUnderTestNameFilter: projectName,
-                    logOptions: new LogOptions(logConsoleLevel, logToFile));
-
+            {  
                 _stryker.RunMutationTest(options);
             }
             catch (Exception)

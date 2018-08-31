@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
 
             var result = target.Initialize(options);
 
@@ -108,7 +108,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
 
             var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));
 
