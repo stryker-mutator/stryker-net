@@ -6,7 +6,7 @@ using Xunit;
 
 namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
 {
-    public class InputComponentTests
+    public class ProjectComponentTests
     {
         [Fact]
         public void RapportComponent_ShouldCalculateMutationScore_NoMutations()
@@ -73,9 +73,9 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
 
         [Theory]
         [InlineData(MutantStatus.Killed, 1)]
-        [InlineData(MutantStatus.RuntimeError, 0)]
+        [InlineData(MutantStatus.RuntimeError, 1)]
+        [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
-        [InlineData(MutantStatus.Timeout, 0)]
         [InlineData(MutantStatus.NotRun, 0)]
         public void RapportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, decimal expectedScore)
         {

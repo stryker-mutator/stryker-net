@@ -50,7 +50,9 @@ namespace Stryker.Core.Reporters
                 DisplayComponent(current);
                 foreach (var mutant in current.TotalMutants)
                 {
-                    if (mutant.ResultStatus == MutantStatus.Killed) {
+                    if (mutant.ResultStatus == MutantStatus.Killed ||
+                    mutant.ResultStatus == MutantStatus.Timeout ||
+                    mutant.ResultStatus == MutantStatus.RuntimeError) {
                         _chalk.Green($"[{mutant.ResultStatus}] ");
                     } else
                     {
@@ -69,7 +71,7 @@ namespace Stryker.Core.Reporters
         private void DisplayComponent(IReadOnlyInputComponent inputComponent)
         {
             var score = inputComponent.GetMutationScore();
-            _chalk.Default($"[{ inputComponent.KilledMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
+            _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
             {
                 _chalk.DarkGray($"(- %)");

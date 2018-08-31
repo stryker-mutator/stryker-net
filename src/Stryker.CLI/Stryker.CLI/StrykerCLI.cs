@@ -34,8 +34,12 @@ namespace Stryker.CLI
                 "Sets the reporter | Opions [Console (default), RapportOnly]",
                 CommandOptionType.SingleValue);
 
-            var logConsoleParam = app.Option("--logConsole | -l <logging>",
+            var logConsoleParam = app.Option("--logConsole | -l <logLevel>",
                 "Sets the logging level | Opions [info (default), warning, debug, trace]",
+                CommandOptionType.SingleValue);
+
+            var timeoutParam = app.Option("--timeoutMS | -t <ms>",
+                "Adds milliseconds to the timeout treshold | Default: 2000",
                 CommandOptionType.SingleValue);
 
             var fileLogParam = app.Option("--logFile | -f",
@@ -50,13 +54,13 @@ namespace Stryker.CLI
 
             app.OnExecute(() => {
                 // app started
-                return RunStryker(reporterParam.Value(), projectNameParam.Value(), logConsoleParam.Value(), fileLogParam.HasValue());
+                return RunStryker(reporterParam.Value(), projectNameParam.Value(), logConsoleParam.Value(), timeoutParam.Value(), fileLogParam.HasValue());
             });
 
             app.Execute(args);
         }
 
-        private int RunStryker(string reporter, string projectName, string logConsoleLevel, bool logToFile)
+        private int RunStryker(string reporter, string projectName, string logConsoleLevel, string timeout, bool logToFile)
         {
             // start with the stryker header
             PrintStykerASCIIName();
@@ -66,6 +70,7 @@ namespace Stryker.CLI
                 var options = new StrykerOptions(
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporter,
+                    additionalTimeoutMS: timeout,
                     projectUnderTestNameFilter: projectName,
                     logOptions: new LogOptions(logConsoleLevel, logToFile));
 

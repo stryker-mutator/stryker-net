@@ -26,7 +26,7 @@ namespace Stryker.Core.Logging
         {
             get
             {
-                if (_factory is null)
+                if (_factory == null)
                 {
                     _factory = new LoggerFactory();
                 }

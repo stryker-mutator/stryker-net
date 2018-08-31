@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Moq;
-using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
@@ -25,7 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll())
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>()))
                 .Returns(new TestRunResult() { Success = true }); // testrun is successful
             reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
@@ -48,7 +47,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectUnderTestPath = @"c:\ExampleProject\",
                     TargetFramework = "netcoreapp2.0"
                 });
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>()));
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Returns(999);
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<string>(), It.IsAny<string>()));
             assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
@@ -59,8 +58,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions("c:/test", "console", "");
-            
+            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+
             var result = target.Initialize(options);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
@@ -77,7 +76,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll());
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>()));
             reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
@@ -109,7 +108,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions("c:/test", "debug", "");
+            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
 
             var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));
 

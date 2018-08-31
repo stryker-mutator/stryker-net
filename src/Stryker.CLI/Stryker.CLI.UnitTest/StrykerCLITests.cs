@@ -13,7 +13,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("--help")]
         [InlineData("-h")]
         [InlineData("-?")]
-        public void StrykerCLI_HelpShouldNotStartStryker(string argName)
+        public void StrykerCLI_WithHelpArgument_ShouldNotStartStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var target = new StrykerCLI(mock.Object);
@@ -24,7 +24,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_ShouldStartStryker()
+        public void StrykerCLI_WithNoArguments_ShouldStartStrykerWithDefaultOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Verifiable();
@@ -37,7 +37,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_ShouldExitOnExceptionInStryker()
+        public void StrykerCLI_OnException_ShouldExit()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Throws(new Exception("Initial testrun failed")).Verifiable();
@@ -52,7 +52,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--reporter")]
         [InlineData("-r")]
-        public void StrykerCLI_ShouldPassReporterArgumentsToStryker(string argName)
+        public void StrykerCLI_WithReporterArgument_ShouldPassReporterArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
@@ -67,7 +67,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--project")]
         [InlineData("-p")]
-        public void StrykerCLI_ShouldPassProjectArgumentsToStryker(string argName)
+        public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
@@ -82,7 +82,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--logConsole")]
         [InlineData("-l")]
-        public void StrykerCLI_ShouldPassLogConsoleArgumentsToStryker(string argName)
+        public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
@@ -98,7 +98,7 @@ namespace Stryker.CLI.UnitTest
 
         [Theory]
         [InlineData("--logFile")]
-        public void StrykerCLI_ShouldPassLogFileArgumentsToStryker(string argName)
+        public void StrykerCLI_WithLogFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
@@ -108,6 +108,22 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile == true)));
+        }
+
+        [Theory]
+        [InlineData("--timeoutMS")]
+        [InlineData("-t")]
+        public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "2000" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.AdditionalTimeoutMS == "2000")));
         }
     }
 }

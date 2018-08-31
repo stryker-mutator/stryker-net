@@ -10,7 +10,10 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public abstract IEnumerable<Mutant> Mutants { get; set; }
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants.Cast<IReadOnlyMutant>();
         public IEnumerable<IReadOnlyMutant> TotalMutants => ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError);
-        public IEnumerable<IReadOnlyMutant> KilledMutants => ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed);
+        public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(m => 
+        m.ResultStatus == MutantStatus.Killed ||
+        m.ResultStatus == MutantStatus.Timeout ||
+        m.ResultStatus == MutantStatus.RuntimeError);
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
@@ -28,7 +31,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public decimal? GetMutationScore()
         {
             var totalCount = TotalMutants.Count();
-            var killedCount = KilledMutants.Count();
+            var killedCount = DetectedMutants.Count();
             if(totalCount > 0)
             {
                 return killedCount / (decimal)totalCount;

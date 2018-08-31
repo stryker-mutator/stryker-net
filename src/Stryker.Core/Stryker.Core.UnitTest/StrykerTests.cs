@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest
             var initialisationMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
 
-            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(new MutationTestInput()
+            initialisationMock.Setup(x => x.Initialize(It.IsAny<ValidatedStrykerOptions>())).Returns(new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest
 
             target.RunMutationTest(options);
 
-            initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);
+            initialisationMock.Verify(x => x.Initialize(It.IsAny<ValidatedStrykerOptions>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.Mutate(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(), Times.Once);
         }

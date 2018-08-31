@@ -29,13 +29,12 @@ namespace Stryker.Core.Reporters
                     _chalk.Red("S");
                     break;
                 case MutantStatus.RuntimeError:
-                    _chalk.Red("E");
+                    _chalk.Default("E");
                     break;
                 case MutantStatus.Timeout:
-                    _chalk.Red("T");
+                    _chalk.Default("T");
                     break;
             };
-            Console.ResetColor();
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent) { }

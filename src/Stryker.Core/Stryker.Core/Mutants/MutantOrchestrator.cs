@@ -19,12 +19,12 @@ namespace Stryker.Core.Mutants
     {
         private ICollection<Mutant> _mutants { get; set; }
         private int _mutantCount { get; set; } = 0;
-        private ICollection<IMutator> _mutators { get; set; }
+        private IEnumerable<IMutator> _mutators { get; set; }
         private ILogger _logger { get; set; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         /// <param name="mutantFactory">An instance of the mutantFactory, use the same for every file to keep the mutationcount increment</param>
-        public MutantOrchestrator(ICollection<IMutator> mutators)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators)
         {
             _mutators = mutators;
             _mutants = new Collection<Mutant>();

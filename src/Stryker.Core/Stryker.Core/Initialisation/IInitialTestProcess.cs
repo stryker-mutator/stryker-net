@@ -4,6 +4,6 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
-        void InitialTest(ITestRunner testRunner);
+        int InitialTest(ITestRunner testRunner);
     }
 }

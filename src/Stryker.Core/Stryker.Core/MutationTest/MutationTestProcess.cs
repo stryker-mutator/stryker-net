@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
@@ -26,7 +28,7 @@ namespace Stryker.Core.MutationTest
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
-            StrykerOptions options,
+            IEnumerable<IMutator> mutators,
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
@@ -35,7 +37,7 @@ namespace Stryker.Core.MutationTest
             _input = mutationTestInput;
             _reporter = reporter;
             _mutationTestExecutor = mutationTestExecutor;
-            _orchestrator = orchestrator ?? new MutantOrchestrator(options.Mutators);
+            _orchestrator = orchestrator ?? new MutantOrchestrator(mutators);
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();

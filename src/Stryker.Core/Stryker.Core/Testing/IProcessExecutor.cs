@@ -15,6 +15,6 @@ namespace Stryker.Core.Testing
         /// <param name="arguments">example: --no-build</param>
         /// <param name="activeMutationId">this value will be used to set an environment variable for the process</param>
         /// <returns>ProcessResult</returns>
-        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null);
+        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
     }
 }
