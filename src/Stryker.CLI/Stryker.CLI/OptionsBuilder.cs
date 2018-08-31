@@ -41,8 +41,8 @@ namespace Stryker.CLI
                 //Convert commandOptionValue to desired type
                 return (T)Convert.ChangeType(value.Value(), typeof(T));
             }
-            if(config != null &! 
-                string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+            if(config != null && 
+                !string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
             {
                 //Else return config value                
                 return config.GetValue<T>(defaultValue.JsonKey);
