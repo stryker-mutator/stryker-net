@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+            var options = new StrykerOptions("c:/test", "debug", "", 2000, null, false);
 
             var target = new MutationTestProcess(input, 
                 reporterMock.Object,
@@ -194,7 +194,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+            var options = new StrykerOptions("c:/test", "debug", "", 2000, null, false);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -244,7 +244,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new ValidatedStrykerOptions("c:/test", "debug", "", 2000, null);
+            var options = new StrykerOptions("c:/test", "debug", "", 2000, null, false);
             var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object);
 
             target.Test();

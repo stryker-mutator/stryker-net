@@ -1,32 +1,40 @@
-﻿using Stryker.Core.Logging;
+﻿using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        public string BasePath { get; }
-        public string Reporter { get; }
+        public string BasePath { get; private set; }
+        public string Reporter { get; private set; }
         public LogOptions LogOptions { get; set; }
 
         /// <summary>
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
-        public string ProjectUnderTestNameFilter { get; }
+        public string ProjectUnderTestNameFilter { get; private set; }
 
-        public string AdditionalTimeoutMS { get; }
+        public int AdditionalTimeoutMS { get; private set;}
 
-        public StrykerOptions(string basePath,
-            string reporter, 
-            string projectUnderTestNameFilter,
-            string additionalTimeoutMS = "2000",
-            LogOptions logOptions = null)
+        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile)
         {
             BasePath = basePath;
-            Reporter = reporter;
+            Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            LogOptions = logOptions ?? new LogOptions(null, false);
+            LogOptions = new LogOptions(logLevel, logToFile);
         }
 
+        private string ValidateReporter(string reporter)
+        {
+            if (reporter != "Console" && reporter != "RapportOnly")
+            {
+                throw new ValidationException("The reporter options are [Console, RapportOnly]");
+            }
+            return reporter;
+        }
     }
 }

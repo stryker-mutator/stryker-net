@@ -5,6 +5,6 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(ValidatedStrykerOptions options);
+        MutationTestInput Initialize(StrykerOptions options);
     }
 }

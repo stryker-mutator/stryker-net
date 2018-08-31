@@ -123,7 +123,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "2000" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.AdditionalTimeoutMS == "2000")));
+                o.AdditionalTimeoutMS == 2000)));
         }
     }
 }

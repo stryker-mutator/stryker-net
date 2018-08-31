@@ -34,7 +34,7 @@ namespace Stryker.Core.Initialisation
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
-        public MutationTestInput Initialize(ValidatedStrykerOptions options)
+        public MutationTestInput Initialize(StrykerOptions options)
         {
             _reporter.OnInitialisationStarted();
             // resolve project info
