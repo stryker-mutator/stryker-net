@@ -2,13 +2,6 @@
 {
     public static class CLIOptions
     {
-        public static readonly CLIOption<bool> UseConfigFile = new CLIOption<bool> {
-            ArgumentName = "--configFile",
-            ArgumentShortName = "-c <useConfigFile>",
-            ArgumentDescription = "Use configFile. When not defined you must have a config file and configFilePath must be set | Options [true (default), false]",
-            DefaultValue = true
-        };
-
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
             ArgumentName = "--configFilePath",
