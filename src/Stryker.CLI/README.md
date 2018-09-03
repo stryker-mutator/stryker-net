@@ -49,3 +49,22 @@ All available loglevels are:
 #### Logging to a file
 
 `dotnet stryker --logFile`
+
+#### Use a config file
+There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
+
+Example:
+```json
+{
+    "stryker-config":
+    {
+        "reporter":"Console",
+        "logLevel":"info",
+        "timeout-ms":2000,
+        "logFile":true,
+        "projectName":"ExampleProject.csproj"
+    }
+}
+```
+
+If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--configFilePath <relativePathToFile>` or `-cp <relativePathToFile>`.
