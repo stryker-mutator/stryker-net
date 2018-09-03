@@ -33,7 +33,7 @@ Some mutations can create endless loops inside your code. To detect and stop the
 
 `dotnet stryker --timeoutMS 5000`
 
-Defaults to `2000`
+Defaults to `30000`
 
 #### Logging to console
 
