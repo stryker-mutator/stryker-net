@@ -2,6 +2,7 @@
 using System;
 using Microsoft.Extensions.CommandLineUtils;
 using Stryker.Core.Options;
+using System.IO;
 
 namespace Stryker.CLI
 {
@@ -16,10 +17,10 @@ namespace Stryker.CLI
             CommandOption additionalTimeoutMS,
             CommandOption logLevel,
             CommandOption logToFile,
-            CommandOption configFilePath,
-            CommandOption useConfigFile)
+            CommandOption configFilePath)
         {
-            if (GetOption(useConfigFile, CLIOptions.UseConfigFile))
+            var fileLocation = Path.Combine(basePath, GetOption(configFilePath, CLIOptions.ConfigFilePath));
+            if (File.Exists(fileLocation))
             {
                 config = new ConfigurationBuilder()
                         .SetBasePath(basePath)

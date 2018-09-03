@@ -28,10 +28,6 @@ namespace Stryker.CLI
                 ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
             };
 
-            var useConfigFileParam = app.Option($"{CLIOptions.UseConfigFile.ArgumentName} | {CLIOptions.UseConfigFile.ArgumentShortName}",
-                CLIOptions.UseConfigFile.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
             var configFilePathParam = app.Option($"{CLIOptions.ConfigFilePath.ArgumentName} | {CLIOptions.ConfigFilePath.ArgumentShortName}",
                 CLIOptions.ConfigFilePath.ArgumentDescription,
                 CommandOptionType.SingleValue);
@@ -67,8 +63,7 @@ namespace Stryker.CLI
                     timeoutParam,
                     logConsoleParam,
                     fileLogParam,
-                    configFilePathParam,
-                    useConfigFileParam);
+                    configFilePathParam);
 
                 return RunStryker(options);
             });
