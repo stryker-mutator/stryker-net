@@ -60,7 +60,7 @@ Example:
     {
         "reporter":"Console",
         "logLevel":"info",
-        "timeout-ms":2000,
+        "timeoutMS":2000,
         "logFile":true,
         "projectName":"ExampleProject.csproj"
     }
