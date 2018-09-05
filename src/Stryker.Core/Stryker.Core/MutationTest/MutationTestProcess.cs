@@ -7,11 +7,13 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
@@ -94,12 +96,16 @@ namespace Stryker.Core.MutationTest
 
         public void Test()
         {
-            // mutation tests
-            foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun))
-            {
-                _mutationTestExecutor.Test(mutant);
-                _reporter.OnMutantTested(mutant);
-            }
+            var logicalProsessorCount = Environment.ProcessorCount;
+            var usableProcessorCount = logicalProsessorCount / 2;
+            Parallel.ForEach(_input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun),
+                new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
+                mutant =>
+                {
+                    _mutationTestExecutor.Test(mutant);
+                    _reporter.OnMutantTested(mutant);
+                });
+
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
         }
     }
