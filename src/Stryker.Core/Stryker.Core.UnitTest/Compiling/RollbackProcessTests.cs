@@ -43,7 +43,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
-                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "1"))
+                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
             var compiler = CSharpCompilation.Create("TestCompilation",
@@ -120,12 +120,12 @@ namespace ExampleProject
             var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "6"))
+                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "6"))
             );
             var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
             root = root.ReplaceNode(
                 mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
+                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "7"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;
@@ -213,12 +213,12 @@ namespace ExampleProject
             var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "8"))
+                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "8"))
             );
             var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
             root = root.ReplaceNode(
                 mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
+                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "7"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;
