@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/853yby19lvrrd435/branch/master?svg=true)](https://ci.appveyor.com/project/stryker-mutator/stryker-net/branch/master)
+[![Gitter](https://badges.gitter.im/stryker-mutator/stryker-net.svg)](https://gitter.im/stryker-mutator/stryker-net?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/stryker-mutator/stryker-net.svg?columns=To%20Do,In%20Progress,Needs%20Review)](https://waffle.io/stryker-mutator/stryker-net)
 
 # Stryker.NET
