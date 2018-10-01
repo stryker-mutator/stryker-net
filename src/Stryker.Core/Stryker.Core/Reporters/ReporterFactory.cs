@@ -11,12 +11,12 @@ namespace Stryker.Core.Reporters
         {
             switch (type.ToLower())
             {
-                case "rapportonly":
-                    return new ConsoleRapportReporter();
+                case "reportonly":
+                    return new ConsoleReportReporter();
                 default:
                     return new BroadcastReporter(new Collection<IReporter>()
                     {
-                        new ConsoleRapportReporter(),
+                        new ConsoleReportReporter(),
                         new ConsoleDotProgressReporter(),
                         new ConsoleStatusReporter()
                     });
