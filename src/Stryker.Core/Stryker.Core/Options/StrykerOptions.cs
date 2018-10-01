@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Extensions.Configuration;
+﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 
@@ -25,7 +23,7 @@ namespace Stryker.Core.Options
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            LogOptions = new LogOptions(logLevel, logToFile);
+            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
         }
 
         private string ValidateReporter(string reporter)
@@ -35,6 +33,26 @@ namespace Stryker.Core.Options
                 throw new ValidationException("The reporter options are [Console, RapportOnly]");
             }
             return reporter;
+        }
+
+        private LogEventLevel ValidateLogLevel(string levelText)
+        {
+            switch (levelText?.ToLower() ?? "")
+            {
+                case "error":
+                case "":
+                    return LogEventLevel.Error;
+                case "warning":
+                    return LogEventLevel.Warning;
+                case "info":
+                    return LogEventLevel.Information;
+                case "debug":
+                    return LogEventLevel.Debug;
+                case "trace":
+                    return LogEventLevel.Verbose;
+                default:
+                    throw new ValidationException("The log level options are [Error, Warning, Info, Debug, Trace]");
+            }
         }
     }
 }
