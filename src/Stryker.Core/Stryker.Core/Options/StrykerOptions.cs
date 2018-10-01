@@ -40,9 +40,9 @@ namespace Stryker.Core.Options
             switch (levelText?.ToLower() ?? "")
             {
                 case "error":
-                case "":
                     return LogEventLevel.Error;
                 case "warning":
+                case "":
                     return LogEventLevel.Warning;
                 case "info":
                     return LogEventLevel.Information;

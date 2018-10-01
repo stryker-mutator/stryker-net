@@ -68,24 +68,19 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logConsole", "debug", LogEventLevel.Debug)]
-        [InlineData("-l", "debug", LogEventLevel.Debug)]
-        [InlineData("-l", "", LogEventLevel.Error)]
-        [InlineData("-l", "error", LogEventLevel.Error)]
-        [InlineData("-l", "warning", LogEventLevel.Warning)]
-        [InlineData("-l", "info", LogEventLevel.Information)]
-        [InlineData("-l", "trace", LogEventLevel.Verbose)]
-        public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName, string argValue, LogEventLevel expectedLogLevel)
+        [InlineData("--logConsole")]
+        [InlineData("-l")]
+        public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, argValue });
+            target.Run(new[] { argName, "debug" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
-                o.LogOptions.LogLevel == expectedLogLevel && 
+                o.LogOptions.LogLevel == LogEventLevel.Debug && 
                 o.LogOptions.LogToFile == false)));
         }
 

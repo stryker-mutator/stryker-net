@@ -40,8 +40,8 @@ Defaults to `30000`
 `dotnet stryker --logConsole <loglevel>`
 
 All available loglevels are:
-* error (default)
-* warning
+* error
+* warning (default)
 * info
 * debug
 * trace
