@@ -5,6 +5,11 @@ using System;
 
 namespace Stryker.Core.Initialisation
 {
+    public interface IInitialBuildProcess
+    {
+        void InitialBuild(string path, string projectName);
+    }
+    
     public class InitialBuildProcess : IInitialBuildProcess
     {
         private IProcessExecutor _processExecutor { get; set; }

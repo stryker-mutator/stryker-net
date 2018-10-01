@@ -17,6 +17,12 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
+    public interface IMutationTestProcess
+    {
+        void Mutate();
+        void Test();
+    }
+    
     public class MutationTestProcess : IMutationTestProcess
     {
         private MutationTestInput _input { get; set; }
