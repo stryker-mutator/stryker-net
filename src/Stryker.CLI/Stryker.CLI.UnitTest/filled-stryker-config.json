@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "reporter": "RapportOnly",
+    "reporter": "ReportOnly",
     "logLevel": "trace",
     "timeoutMS": 9999,
     "logFile": true,

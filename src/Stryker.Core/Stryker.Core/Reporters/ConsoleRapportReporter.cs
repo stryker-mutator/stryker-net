@@ -11,11 +11,11 @@ namespace Stryker.Core.Reporters
     /// <summary>
     /// The default reporter, prints a simple progress and end result.
     /// </summary>
-    public class ConsoleRapportReporter : IReporter
+    public class ConsoleReportReporter : IReporter
     {
         private IChalk _chalk { get; set; }
 
-        public ConsoleRapportReporter(IChalk chalk = null)
+        public ConsoleReportReporter(IChalk chalk = null)
         {
             _chalk = chalk ?? new Chalk();
         }

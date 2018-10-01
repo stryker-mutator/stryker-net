@@ -55,7 +55,7 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&
                                                                         c.LogOptions.LogToFile == true &&
                                                                         c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
-                                                                        c.Reporter == "RapportOnly"))).Verifiable();
+                                                                        c.Reporter == "ReportOnly"))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 

@@ -30,9 +30,9 @@ namespace Stryker.Core.Options
 
         private string ValidateReporter(string reporter)
         {
-            if (reporter != "Console" && reporter != "RapportOnly")
+            if (reporter != "Console" && reporter != "ReportOnly")
             {
-                throw new ValidationException("The reporter options are [Console, RapportOnly]");
+                throw new ValidationException("The reporter options are [Console, ReportOnly]");
             }
             return reporter;
         }

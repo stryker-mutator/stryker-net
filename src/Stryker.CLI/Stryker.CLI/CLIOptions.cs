@@ -14,7 +14,7 @@
         {
             ArgumentName = "--reporter",
             ArgumentShortName = "-r <reporter>",
-            ArgumentDescription = "Sets the reporter | Options [Console (default), RapportOnly]",
+            ArgumentDescription = "Sets the reporter | Options [Console (default), ReportOnly]",
             DefaultValue = "Console",
             JsonKey = "reporter"
         };

@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
