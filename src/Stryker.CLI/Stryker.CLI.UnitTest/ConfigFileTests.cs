@@ -18,7 +18,9 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Information &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
-                                                                        c.Reporter == "Console"))).Verifiable();
+                                                                        c.Reporter == "Console" &&
+                                                                        c.MaxConcurrentTestrunners == int.MaxValue
+                                                                        ))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
@@ -35,7 +37,9 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Information &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
-                                                                        c.Reporter == "Console"))).Verifiable();
+                                                                        c.Reporter == "Console" &&
+                                                                        c.MaxConcurrentTestrunners == int.MaxValue
+                                                                        ))).Verifiable();
             File.Move("stryker-config.json", "temp.json");
             var target = new StrykerCLI(mock.Object);
 
@@ -55,7 +59,9 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&
                                                                         c.LogOptions.LogToFile == true &&
                                                                         c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
-                                                                        c.Reporter == "RapportOnly"))).Verifiable();
+                                                                        c.Reporter == "RapportOnly" &&
+                                                                        c.MaxConcurrentTestrunners == 10
+                                                                        ))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 

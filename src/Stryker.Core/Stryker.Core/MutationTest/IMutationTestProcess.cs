@@ -3,6 +3,6 @@
     public interface IMutationTestProcess
     {
         void Mutate();
-        void Test();
+        void Test(int maxConcurrentTestRunners);
     }
 }

@@ -94,10 +94,15 @@ namespace Stryker.Core.MutationTest
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
-        public void Test()
+        public void Test(int maxConcurrentTestRunners)
         {
-            var logicalProsessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = logicalProsessorCount / 2;
+            var logicalProcessorCount = Environment.ProcessorCount;
+            if(maxConcurrentTestRunners <= logicalProcessorCount)
+            {
+                logicalProcessorCount = maxConcurrentTestRunners;
+            }
+            
+            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
             Parallel.ForEach(_input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun),
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
                 mutant =>

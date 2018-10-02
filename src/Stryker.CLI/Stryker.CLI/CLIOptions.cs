@@ -52,6 +52,15 @@
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
             JsonKey = "projectName"
-        };        
+        };
+
+        public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
+        {
+            ArgumentName = "--maxConcurrentTestRunners",
+            ArgumentShortName = "-m <maxConcurrentTestRunners>",
+            ArgumentDescription = @"Used for running tests with parallel testrunners",
+            DefaultValue = int.MaxValue,
+            JsonKey = "maxConcurrentTestRunners"
+        };
     }
 }

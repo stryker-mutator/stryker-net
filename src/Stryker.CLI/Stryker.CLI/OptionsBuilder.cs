@@ -17,7 +17,8 @@ namespace Stryker.CLI
             CommandOption additionalTimeoutMS,
             CommandOption logLevel,
             CommandOption logToFile,
-            CommandOption configFilePath)
+            CommandOption configFilePath,
+            CommandOption maxConcurrentTestRunners)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath, CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -33,7 +34,8 @@ namespace Stryker.CLI
                 GetOption(projectUnderTestNameFilter, CLIOptions.ProjectName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
-                GetOption(logToFile, CLIOptions.UseLogFile));
+                GetOption(logToFile, CLIOptions.UseLogFile),
+                GetOption(maxConcurrentTestRunners, CLIOptions.MaxConcurrentTestRunners));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 
