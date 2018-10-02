@@ -1,9 +1,9 @@
 {
   "stryker-config": {
     "reporter": "ReportOnly",
-    "logLevel": "trace",
-    "timeoutMS": 9999,
-    "logFile": true,
-    "projectName": "ExampleProject.csproj"
+    "log-level": "trace",
+    "timeout-ms": 9999,
+    "log-file": true,
+    "project-name": "ExampleProject.csproj"
   }
 }

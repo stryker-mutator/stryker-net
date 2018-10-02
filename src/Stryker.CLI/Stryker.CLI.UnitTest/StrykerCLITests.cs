@@ -68,7 +68,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logConsole")]
+        [InlineData("--log-console")]
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
@@ -85,7 +85,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logFile")]
+        [InlineData("--log-file")]
         public void StrykerCLI_WithLogFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -99,7 +99,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--timeoutMS")]
+        [InlineData("--timeout-ms")]
         [InlineData("-t")]
         public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
         {
