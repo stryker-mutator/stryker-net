@@ -3,13 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Stryker.Core.TestRunners
-{
-    public interface ITestRunner
-    {
-        TestRunResult RunAll(int? timeoutMS);
-        void SetActiveMutation(int? id);
-    }
-    
+{    
     public class DotnetTestRunner : ITestRunner
     {
         private string _path { get; set; }
