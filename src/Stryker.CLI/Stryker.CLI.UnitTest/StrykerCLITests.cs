@@ -77,7 +77,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "debug" });
+            target.Run(new[] { argName, "debug" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
                 o.LogOptions.LogLevel == LogEventLevel.Debug && 

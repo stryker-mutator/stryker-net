@@ -15,7 +15,7 @@ namespace Stryker.CLI.UnitTest
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 30000 &&
-                                                                        c.LogOptions.LogLevel == LogEventLevel.Information &&
+                                                                        c.LogOptions.LogLevel == LogEventLevel.Warning &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console"))).Verifiable();
@@ -32,7 +32,7 @@ namespace Stryker.CLI.UnitTest
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 30000 &&
-                                                                        c.LogOptions.LogLevel == LogEventLevel.Information &&
+                                                                        c.LogOptions.LogLevel == LogEventLevel.Warning &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console"))).Verifiable();
