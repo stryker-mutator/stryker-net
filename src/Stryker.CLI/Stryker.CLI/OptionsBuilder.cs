@@ -33,7 +33,7 @@ namespace Stryker.CLI
                 GetOption(projectUnderTestNameFilter, CLIOptions.ProjectName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
-                GetOption(logToFile, CLIOptions.UseLogFile));
+                GetOption(logToFile, CLIOptions.UseLogLevelFile));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 

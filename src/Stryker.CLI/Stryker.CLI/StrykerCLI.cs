@@ -44,8 +44,8 @@ namespace Stryker.CLI
                 CLIOptions.AdditionalTimeoutMS.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
-            var fileLogParam = app.Option($"{CLIOptions.UseLogFile.ArgumentName} | {CLIOptions.UseLogFile.ArgumentShortName}",
-                CLIOptions.UseLogFile.ArgumentDescription, 
+            var fileLogParam = app.Option($"{CLIOptions.UseLogLevelFile.ArgumentName} | {CLIOptions.UseLogLevelFile.ArgumentShortName}",
+                CLIOptions.UseLogLevelFile.ArgumentDescription, 
                 CommandOptionType.SingleValue);
 
             var projectNameParam = app.Option($"{CLIOptions.ProjectName.ArgumentName} | {CLIOptions.ProjectName.ArgumentShortName}",

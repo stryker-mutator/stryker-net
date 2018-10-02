@@ -3,7 +3,7 @@
     "reporter": "RapportOnly",
     "logLevel": "trace",
     "timeoutMS": 9999,
-    "logFile": true,
+    "log-level-file": true,
     "projectName": "ExampleProject.csproj"
   }
 }

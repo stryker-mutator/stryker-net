@@ -85,8 +85,8 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logFile")]
-        public void StrykerCLI_WithLogFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
+        [InlineData("--log-level-file")]
+        public void StrykerCLI_WithLogLevelFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));

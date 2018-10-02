@@ -28,13 +28,13 @@
             JsonKey = "logLevel"
         };
 
-        public static readonly CLIOption<bool> UseLogFile = new CLIOption<bool>
+        public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
         {
-            ArgumentName = "--logFile",
-            ArgumentShortName = "-f <useLogFile>",
-            ArgumentDescription = "Use logFile | Options [false (Default), true]",
+            ArgumentName = "--log-level-file",
+            ArgumentShortName = "-f <useLogLevelFile>",
+            ArgumentDescription = "Use logLevelFile | Options [false (Default), true]",
             DefaultValue = false,
-            JsonKey = "logFile"
+            JsonKey = "log-level-file"
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
