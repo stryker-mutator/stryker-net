@@ -7,6 +7,11 @@ using System.Diagnostics;
 
 namespace Stryker.Core.Initialisation
 {
+    public interface IInitialTestProcess
+    {
+        int InitialTest(ITestRunner testRunner);
+    }
+    
     public class InitialTestProcess : IInitialTestProcess
     {
         private ILogger _logger { get; set; }

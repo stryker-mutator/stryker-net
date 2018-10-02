@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Stryker.Core.TestRunners
-{
+{    
     public class DotnetTestRunner : ITestRunner
     {
         private string _path { get; set; }

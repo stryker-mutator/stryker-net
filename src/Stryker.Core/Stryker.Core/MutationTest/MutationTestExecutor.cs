@@ -9,6 +9,11 @@ namespace Stryker.Core.MutationTest
     /// <summary>
     /// Executes exactly one mutationtest and stores the result
     /// </summary>
+    public interface IMutationTestExecutor
+    {
+        void Test(Mutant mutant);
+    }
+
     public class MutationTestExecutor : IMutationTestExecutor
     {
         private ITestRunner _testRunner { get; set; }
