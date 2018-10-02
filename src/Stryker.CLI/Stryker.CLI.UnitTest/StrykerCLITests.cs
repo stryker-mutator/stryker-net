@@ -115,7 +115,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--maxConcurrentTestRunners")]
+        [InlineData("--max-concurrent-test-runners")]
         [InlineData("-m")]
         public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassMaxConcurrentTestrunnerToStryker(string argName)
         {
