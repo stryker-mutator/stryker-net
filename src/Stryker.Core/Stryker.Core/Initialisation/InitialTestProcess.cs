@@ -4,6 +4,9 @@ using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
 using System;
 using System.Diagnostics;
+using Stryker.Core.Logging.TotalNumberOfTests;
+using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -14,10 +17,12 @@ namespace Stryker.Core.Initialisation
     
     public class InitialTestProcess : IInitialTestProcess
     {
+        private ITotalNumberOfTestsLogger _totalNumberOfTestsLogger;
         private ILogger _logger { get; set; }
 
-        public InitialTestProcess()
+        public InitialTestProcess(ITotalNumberOfTestsLogger totalNumberOfTestsLogger)
         {
+            _totalNumberOfTestsLogger = totalNumberOfTestsLogger;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
 
@@ -35,6 +40,7 @@ namespace Stryker.Core.Initialisation
             stopwatch.Start();
 
             var testResult = testRunner.RunAll(0);
+            _totalNumberOfTestsLogger.LogTotalNumberOfTests(testResult.ResultMessage);
 
             var duration = (int)stopwatch.ElapsedMilliseconds;
 

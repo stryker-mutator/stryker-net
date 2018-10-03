@@ -5,6 +5,8 @@ using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
+using Stryker.Core.Logging.TotalNumberOfTests;
+using Stryker.Core.Parsers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -15,7 +17,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
         public InitialTestProcessTests()
         {
-            _target = new InitialTestProcess();
+            var totalNumberOfTestsLogger = new Mock<ITotalNumberOfTestsLogger>();
+            _target = new InitialTestProcess(totalNumberOfTestsLogger.Object);
         }
 
         [Fact]

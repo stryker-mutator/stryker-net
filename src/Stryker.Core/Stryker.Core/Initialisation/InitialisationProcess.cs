@@ -5,6 +5,9 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Linq;
+using Stryker.Core.Logging.TotalNumberOfTests;
+using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -33,10 +36,19 @@ namespace Stryker.Core.Initialisation
             _reporter = reporter;
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
-            _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
+            _initialTestProcess = initialTestProcess ?? CreateInitionTestProcess();
             _testRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
+        }
+
+        private static InitialTestProcess CreateInitionTestProcess()
+        {
+            var chalk = new Chalk();
+            var totalNumberOfTestsParser = new TotalNumberOfTestsParser();
+            var totalNumberOfTestsLogger = new TotalNumberOfTestsLogger(chalk, totalNumberOfTestsParser);
+
+            return new InitialTestProcess(totalNumberOfTestsLogger);
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
