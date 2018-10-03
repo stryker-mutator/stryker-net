@@ -69,5 +69,32 @@
             DefaultValue = int.MaxValue,
             JsonKey = "max-concurrent-test-runners"
         };
+
+        public static readonly CLIOption<int> ThresholdBreak = new CLIOption<int>
+        {
+            ArgumentName = "--threshold-break",
+            ArgumentShortName = "-tb <thresholdBreak>",
+            ArgumentDescription = "Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | 60 (default)",
+            DefaultValue = 60,
+            JsonKey = "threshold-break"
+        };      
+
+        public static readonly CLIOption<int> ThresholdLow = new CLIOption<int>
+        {
+            ArgumentName = "--threshold-low",
+            ArgumentShortName = "-tl <thresholdLow>",
+            ArgumentDescription = "Set the lower bound of the mutation score threshold. It will not fail the test. | 70 (default)",
+            DefaultValue = 70,
+            JsonKey = "threshold-low"
+        };    
+        
+        public static readonly CLIOption<int> ThresholdHigh = new CLIOption<int>
+        {
+            ArgumentName = "--threshold-high",
+            ArgumentShortName = "-th <thresholdHigh>",
+            ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
+            DefaultValue = 80,
+            JsonKey = "threshold-high"
+        };                    
     }
 }

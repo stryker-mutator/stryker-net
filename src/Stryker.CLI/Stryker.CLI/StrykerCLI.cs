@@ -55,6 +55,18 @@ namespace Stryker.CLI
             var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
                 CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
                 CommandOptionType.SingleValue);
+            
+            var thresholdBreakParam = app.Option($"{CLIOptions.ThresholdBreak.ArgumentName} | {CLIOptions.ThresholdBreak.ArgumentShortName}",
+                CLIOptions.ThresholdBreak.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
+            var thresholdLowParam = app.Option($"{CLIOptions.ThresholdLow.ArgumentName} | {CLIOptions.ThresholdLow.ArgumentShortName}",
+                CLIOptions.ThresholdLow.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
+            var thresholdHighParam = app.Option($"{CLIOptions.ThresholdHigh.ArgumentName} | {CLIOptions.ThresholdHigh.ArgumentShortName}",
+                CLIOptions.ThresholdHigh.ArgumentDescription,
+                CommandOptionType.SingleValue);
 
             app.HelpOption("--help | -h | -?");
 
@@ -68,8 +80,10 @@ namespace Stryker.CLI
                     logConsoleParam,
                     fileLogParam,
                     configFilePathParam,
-                    maxConcurrentTestRunnersParam);
-
+                    maxConcurrentTestRunnersParam,
+                    thresholdBreakParam,
+                    thresholdLowParam,
+                    thresholdHighParam);
                 return RunStryker(options);
             });
 

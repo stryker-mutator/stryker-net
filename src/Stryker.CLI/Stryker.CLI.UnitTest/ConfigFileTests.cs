@@ -18,10 +18,11 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Warning &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
-                                                                        c.Reporter == "Console" &&
-                                                                        c.MaxConcurrentTestrunners == int.MaxValue
-                                                                        ))).Verifiable();
-
+                                                                        c.Reporter == "Console" && 
+                                                                        c.MaxConcurrentTestrunners == int.MaxValue &&
+                                                                        c.ThresholdBreak == 60 &&
+                                                                        c.ThresholdLow == 70 &&
+                                                                        c.ThresholdHigh == 80))).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
@@ -38,8 +39,10 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console" &&
-                                                                        c.MaxConcurrentTestrunners == int.MaxValue
-                                                                        ))).Verifiable();
+                                                                        c.MaxConcurrentTestrunners == int.MaxValue &&
+                                                                        c.ThresholdBreak == 60 &&
+                                                                        c.ThresholdLow == 70 &&
+                                                                        c.ThresholdHigh == 80))).Verifiable();
             File.Move("stryker-config.json", "temp.json");
             var target = new StrykerCLI(mock.Object);
 
@@ -60,8 +63,10 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogToFile == true &&
                                                                         c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
                                                                         c.Reporter == "ReportOnly" &&
-                                                                        c.MaxConcurrentTestrunners == 10
-                                                                        ))).Verifiable();
+                                                                        c.MaxConcurrentTestrunners == 10 &&
+                                                                        c.ThresholdBreak == 20 &&
+                                                                        c.ThresholdLow == 30 &&
+                                                                        c.ThresholdHigh == 40))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 

@@ -73,3 +73,10 @@ Example:
 ```
 
 If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--config-file-path <relativePathToFile>` or `-cp <relativePathToFile>`.
+
+#### Custom thresholds
+If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
+
+`dotnet stryker --threshold-break 50 --threshold-low 75 --threshold-high 90`
+
+The defaults are respectivly: `60` `70` `80`

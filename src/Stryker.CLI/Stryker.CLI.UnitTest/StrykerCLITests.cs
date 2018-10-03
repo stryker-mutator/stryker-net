@@ -123,11 +123,58 @@ namespace Stryker.CLI.UnitTest
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
 
             var target = new StrykerCLI(mock.Object);
-
+            
             target.Run(new string[] { argName, "4" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.MaxConcurrentTestrunners == 4)));
+        }
+        [Theory]
+        [InlineData("--threshold-break")]
+        [InlineData("-tb")]
+        public void StrykerCLI_WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName) 
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "20" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.ThresholdBreak == 20)));
+        }
+
+        [Theory]
+        [InlineData("--threshold-low")]
+        [InlineData("-tl")]
+        public void StrykerCLI_WithCustomThresholdLowParameter_ShouldPassThresholdLowToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "65" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.ThresholdLow == 65)));
+        }
+
+        [Theory]
+        [InlineData("--threshold-high")]
+        [InlineData("-th")]
+        public void StrykerCLI_WithCustomThresholdHighParameter_ShouldPassThresholdHighToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "90" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.ThresholdHigh == 90)));
         }
     }
 }
