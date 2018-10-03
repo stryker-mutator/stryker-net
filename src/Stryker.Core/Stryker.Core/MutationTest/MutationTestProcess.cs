@@ -5,7 +5,6 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
@@ -102,8 +101,8 @@ namespace Stryker.Core.MutationTest
 
         public void Test()
         {
-            var logicalProsessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = logicalProsessorCount / 2;
+            var logicalProcessorCount = Environment.ProcessorCount;
+            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
             Parallel.ForEach(_input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun),
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
                 mutant =>
@@ -111,7 +110,6 @@ namespace Stryker.Core.MutationTest
                     _mutationTestExecutor.Test(mutant);
                     _reporter.OnMutantTested(mutant);
                 });
-
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
         }
     }
