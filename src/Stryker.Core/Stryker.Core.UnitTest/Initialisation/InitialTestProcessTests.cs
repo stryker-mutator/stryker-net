@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
@@ -25,7 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>())).Returns(new TestRunResult() { Success = false });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
 
             var exception = Assert.Throws<InitialTestRunFailedException>(() => _target.InitialTest(testRunnerMock.Object));
         }
@@ -34,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>())).Returns(new TestRunResult() { Success = true });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
 
             var result = _target.InitialTest(testRunnerMock.Object);
         }

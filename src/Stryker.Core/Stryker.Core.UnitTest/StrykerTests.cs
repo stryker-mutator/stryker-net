@@ -38,16 +38,16 @@ namespace Stryker.Core.UnitTest
                 },
             });
             mutationTestProcessMock.Setup(x => x.Mutate());
-            mutationTestProcessMock.Setup(x => x.Test());
+            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<int>()));
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object);
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
 
             target.RunMutationTest(options);
 
             initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.Mutate(), Times.Once);
-            mutationTestProcessMock.Verify(x => x.Test(), Times.Once);
+            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<int>()), Times.Once);
         }
     }
 }

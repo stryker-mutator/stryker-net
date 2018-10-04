@@ -39,7 +39,7 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.RunAll(0);
+            var testResult = testRunner.RunAll(0, null);
             _totalNumberOfTestsLogger.LogTotalNumberOfTests(testResult.ResultMessage);
 
             var duration = (int)stopwatch.ElapsedMilliseconds;
