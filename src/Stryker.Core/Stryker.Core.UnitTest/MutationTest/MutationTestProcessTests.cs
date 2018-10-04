@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
 
             var target = new MutationTestProcess(input, 
                 reporterMock.Object,
@@ -194,7 +194,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -244,10 +244,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
             var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object);
 
-            target.Test();
+            target.Test(options.MaxConcurrentTestrunners);
 
             executorMock.Verify(x => x.Test(mutant), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
