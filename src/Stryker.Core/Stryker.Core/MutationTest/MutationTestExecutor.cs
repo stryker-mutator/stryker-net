@@ -29,10 +29,9 @@ namespace Stryker.Core.MutationTest
 
         public void Test(Mutant mutant)
         {
-            _testRunner.SetActiveMutation(mutant.Id);
             try
             {
-                var result = _testRunner.RunAll(_timeoutMS);
+                var result = _testRunner.RunAll(_timeoutMS, mutant.Id);
                 _logger.LogTrace("Testrun with output {0}", result.ResultMessage);
 
                 if (result.Success)
