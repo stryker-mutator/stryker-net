@@ -75,8 +75,8 @@ namespace Stryker.Core.Reporters
         {
             var score = inputComponent.GetMutationScore();
             // Convert the threshold integer values to decimal values
-            decimal thresholdHigh = (decimal) this.options.ThresholdHigh/100;
-            decimal thresholdLow = (decimal) this.options.ThresholdLow/100;
+            decimal thresholdHigh = (decimal) this.options.ThresholdOptions.ThresholdHigh/100;
+            decimal thresholdLow = (decimal) this.options.ThresholdOptions.ThresholdLow/100;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
@@ -94,7 +94,8 @@ namespace Stryker.Core.Reporters
                 else if (score > thresholdLow)
                 {
                     _chalk.Yellow(scoreText);
-                } else
+                } 
+                else
                 {
                     _chalk.Red(scoreText);
                 }

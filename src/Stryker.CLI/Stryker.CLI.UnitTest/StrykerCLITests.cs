@@ -142,7 +142,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "20" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ThresholdBreak == 20)));
+                o.ThresholdOptions.ThresholdBreak == 20)));
         }
 
         [Theory]
@@ -158,7 +158,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "65" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ThresholdLow == 65)));
+                o.ThresholdOptions.ThresholdLow == 65)));
         }
 
         [Theory]
@@ -174,7 +174,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "90" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ThresholdHigh == 90)));
+                o.ThresholdOptions.ThresholdHigh == 90)));
         }
     }
 }

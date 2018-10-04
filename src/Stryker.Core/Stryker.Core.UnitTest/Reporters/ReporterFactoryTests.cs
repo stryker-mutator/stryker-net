@@ -12,8 +12,8 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public static IEnumerable<object[]> getParameters()
         {
-            yield return new object[] {new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 60, 70, 80), typeof(ConsoleReportReporter)};
-            yield return new object[] {new StrykerOptions("", "Console", "", 1000, "debug", false, 1, 60, 70, 80), typeof(BroadcastReporter)};
+            yield return new object[] {new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 70, 60), typeof(ConsoleReportReporter)};
+            yield return new object[] {new StrykerOptions("", "Console", "", 1000, "debug", false, 1, 80, 70, 60), typeof(BroadcastReporter)};
         }
 
         [Theory]

@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest
         [InlineData("trace", LogEventLevel.Verbose)]
         public void Constructor_WithCorrectLoglevelArgument_ShouldAssignCorrectLogLevel(string argValue, LogEventLevel expectedLogLevel)
         {
-            var options = new StrykerOptions("c:/test", "Console", "", 0, argValue, false, 1, 60, 70, 80);
+            var options = new StrykerOptions("c:/test", "Console", "", 0, argValue, false, 1, 80, 70, 60);
 
             Assert.NotNull(options.LogOptions);
             Assert.Equal(expectedLogLevel, options.LogOptions.LogLevel);
@@ -29,8 +29,7 @@ namespace Stryker.Core.UnitTest
         {
             var logLevel = "incorrect";
 
-            Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 60, 70, 80);
-
+            Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 70, 60);
 
             Assert.Throws<ValidationException>(createOptions);
         }

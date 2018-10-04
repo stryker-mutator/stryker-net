@@ -56,16 +56,16 @@ namespace Stryker.CLI
                 CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
                 CommandOptionType.SingleValue);
             
-            var thresholdBreakParam = app.Option($"{CLIOptions.ThresholdBreak.ArgumentName} | {CLIOptions.ThresholdBreak.ArgumentShortName}",
-                CLIOptions.ThresholdBreak.ArgumentDescription,
+            var thresholdHighParam = app.Option($"{CLIOptions.ThresholdHigh.ArgumentName} | {CLIOptions.ThresholdHigh.ArgumentShortName}",
+                CLIOptions.ThresholdHigh.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
             var thresholdLowParam = app.Option($"{CLIOptions.ThresholdLow.ArgumentName} | {CLIOptions.ThresholdLow.ArgumentShortName}",
                 CLIOptions.ThresholdLow.ArgumentDescription,
                 CommandOptionType.SingleValue);
-
-            var thresholdHighParam = app.Option($"{CLIOptions.ThresholdHigh.ArgumentName} | {CLIOptions.ThresholdHigh.ArgumentShortName}",
-                CLIOptions.ThresholdHigh.ArgumentDescription,
+                
+            var thresholdBreakParam = app.Option($"{CLIOptions.ThresholdBreak.ArgumentName} | {CLIOptions.ThresholdBreak.ArgumentShortName}",
+                CLIOptions.ThresholdBreak.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
             app.HelpOption("--help | -h | -?");
@@ -81,9 +81,10 @@ namespace Stryker.CLI
                     fileLogParam,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
-                    thresholdBreakParam,
+                    thresholdHighParam,
                     thresholdLowParam,
-                    thresholdHighParam);
+                    thresholdBreakParam
+                    );
                 return RunStryker(options);
             });
 

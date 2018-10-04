@@ -6,8 +6,10 @@
     "log-level-file": true,
     "project-file": "ExampleProject.csproj",
     "max-concurrent-test-runners": 10,
-    "threshold-break": 20,
-    "threshold-low": 30,
-    "threshold-high": 40
+    "threshold-options": {
+      "threshold-high": 40,
+      "threshold-low": 30,
+      "threshold-break": 20
+    }
   }
 }

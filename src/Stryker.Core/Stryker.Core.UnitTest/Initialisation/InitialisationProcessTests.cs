@@ -60,8 +60,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
+<<<<<<< HEAD
             var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 60, 70, 80);
 
+=======
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 80, 70, 60);
+>>>>>>> Make object for threshold configuration
 
             var result = target.Initialize(options);
 
@@ -113,7 +117,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 60, 70, 80);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 80, 70, 60);
 
 
             var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));

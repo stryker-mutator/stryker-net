@@ -68,6 +68,11 @@ Example:
         "log-file":true,
         "project-file":"ExampleProject.csproj",
 		"max-concurrent-test-runners": 4
+        "threshold-options": {
+            "threshold-high":80,
+            "threshold-low":70,
+            "threshold-break":60
+        }
     }
 }
 ```
@@ -77,6 +82,6 @@ If you want to integrate these settings in your existing settings json, make sur
 #### Custom thresholds
 If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
 
-`dotnet stryker --threshold-break 50 --threshold-low 75 --threshold-high 90`
+`dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50  `
 
-The defaults are respectivly: `60` `70` `80`
+The defaults are respectivly: `80` `70` `60`

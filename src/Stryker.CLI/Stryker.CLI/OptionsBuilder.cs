@@ -3,7 +3,7 @@ using System;
 using Microsoft.Extensions.CommandLineUtils;
 using Stryker.Core.Options;
 using System.IO;
-
+using System.Linq;
 namespace Stryker.CLI
 {
     public class OptionsBuilder
@@ -19,9 +19,9 @@ namespace Stryker.CLI
             CommandOption logToFile,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
-            CommandOption thresholdBreak,
+            CommandOption thresholdHigh,
             CommandOption thresholdLow,
-            CommandOption thresholdHigh)
+            CommandOption thresholdBreak)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath, CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -39,9 +39,9 @@ namespace Stryker.CLI
                 GetOption(logLevel, CLIOptions.LogLevel),
                 GetOption(logToFile, CLIOptions.UseLogLevelFile),
                 GetOption(maxConcurrentTestRunners, CLIOptions.MaxConcurrentTestRunners),
-                GetOption(thresholdBreak, CLIOptions.ThresholdBreak),
+                GetOption(thresholdHigh, CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow, CLIOptions.ThresholdLow),
-                GetOption(thresholdHigh, CLIOptions.ThresholdHigh));
+                GetOption(thresholdBreak, CLIOptions.ThresholdBreak));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 
@@ -53,7 +53,14 @@ namespace Stryker.CLI
             if(config != null && 
                 !string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
             {
-                //Else return config value                
+                // Check if there is a threshold options object and use it when it's available
+                string thresholdOptionsSectionKey = "threshold-options";
+                if(config.GetSection(thresholdOptionsSectionKey).Exists() && 
+                    !string.IsNullOrEmpty(config.GetSection(thresholdOptionsSectionKey).GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+                {   
+                    return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
+                }
+                //Else return config value                               
                 return config.GetValue<T>(defaultValue.JsonKey);
             }
             //Else return default
