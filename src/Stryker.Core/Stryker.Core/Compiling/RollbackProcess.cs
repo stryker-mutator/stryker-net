@@ -99,7 +99,9 @@ namespace Stryker.Core.Compiling
                 }
 
                 if (!brokenMutation.Contains(mutationIf))
+                {
                     brokenMutations.Add(mutationIf);
+                }
             }
             // mark the if statements to track
             var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
