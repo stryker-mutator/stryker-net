@@ -46,12 +46,12 @@
             JsonKey = "timeout-ms"
         };
 
-        public static readonly CLIOption<string> ProjectName = new CLIOption<string>
+        public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
         {
-            ArgumentName = "--project",
-            ArgumentShortName = "-p <projectName>",
+            ArgumentName = "--project-file",
+            ArgumentShortName = "-p <projectFileName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            JsonKey = "project-name"
+            JsonKey = "project-file"
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>

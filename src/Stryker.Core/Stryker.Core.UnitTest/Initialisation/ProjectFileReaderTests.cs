@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
 </Project>");
             var exception = Assert.Throws<NotSupportedException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
-            exception.Message.ShouldContain("--project");
+            exception.Message.ShouldContain("--project-file");
         }
 
         [Theory]

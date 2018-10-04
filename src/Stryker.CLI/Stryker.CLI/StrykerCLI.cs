@@ -48,8 +48,8 @@ namespace Stryker.CLI
                 CLIOptions.UseLogFile.ArgumentDescription, 
                 CommandOptionType.SingleValue);
 
-            var projectNameParam = app.Option($"{CLIOptions.ProjectName.ArgumentName} | {CLIOptions.ProjectName.ArgumentShortName}",
-                CLIOptions.ProjectName.ArgumentDescription,
+            var projectNameParam = app.Option($"{CLIOptions.ProjectFileName.ArgumentName} | {CLIOptions.ProjectFileName.ArgumentShortName}",
+                CLIOptions.ProjectFileName.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
             var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
