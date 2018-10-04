@@ -97,7 +97,9 @@ namespace Stryker.Core.Compiling
                 {
                     _logger.LogError("Unable to rollback mutation for node {0} with diagnosticmessage {1}", brokenMutation, diagnostic.GetMessage());
                 }
-                brokenMutations.Add(mutationIf);
+
+                if (!brokenMutation.Contains(mutationIf))
+                    brokenMutations.Add(mutationIf);
             }
             // mark the if statements to track
             var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
