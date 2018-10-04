@@ -250,14 +250,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("netcoreapp2.1")]
         public void ProjectFileReader_ShouldParseWhenMultipleFrameworks(string target)
         {
-            var xDocument = new XDocument();
-
-            if (target.Contains(";"))
-            {
-                xDocument = XDocument.Parse($@"
+            var xDocument = XDocument.Parse($@"
 <Project Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
-        <TargetFrameworks>{target}</TargetFrameworks>
+    <PropertyGroup>{(
+        target.Contains(";") ? $"<TargetFrameworks>{target}</TargetFrameworks>" : $"<TargetFramework>{target}</TargetFramework>"
+    )}        
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 
@@ -273,29 +270,6 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            }
-            else
-            {
-                xDocument = XDocument.Parse($@"
-<Project Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
-        <TargetFramework>{target}</TargetFramework>
-        <IsPackable>false</IsPackable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
-        <PackageReference Include=""xunit"" Version=""2.3.1"" />
-        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
-        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
-    </ItemGroup>
-               
-    <ItemGroup>
-        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
-    </ItemGroup>
-                
-</Project>");
-            }
             
             var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
 
