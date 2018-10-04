@@ -19,7 +19,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestProcess
     {
         void Mutate();
-        void Test();
+        void Test(int maxConcurrentTestRunners);
     }
     
     public class MutationTestProcess : IMutationTestProcess

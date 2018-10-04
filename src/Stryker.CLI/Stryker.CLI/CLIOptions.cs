@@ -67,7 +67,7 @@
                                                                  -You're running on a shared server and/or
                                                                  -Your hard disk cannot handle the I/O of all test runners",
             DefaultValue = int.MaxValue,
-            JsonKey = "maxConcurrentTestRunners"
+            JsonKey = "max-concurrent-test-runners"
         };
     }
 }
