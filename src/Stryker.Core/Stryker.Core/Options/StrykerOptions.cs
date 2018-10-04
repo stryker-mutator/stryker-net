@@ -21,12 +21,6 @@ namespace Stryker.Core.Options
 
         public int MaxConcurrentTestrunners { get; }
 
-        public int ThresholdBreak { get; }
-
-        public int ThresholdLow { get; }
-
-        public int ThresholdHigh { get; }
-
         public ThresholdOptions ThresholdOptions { get; set; }
 
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 

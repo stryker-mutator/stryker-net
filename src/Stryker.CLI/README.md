@@ -67,7 +67,7 @@ Example:
         "timeout-ms":2000,
         "log-file":true,
         "project-file":"ExampleProject.csproj",
-		"max-concurrent-test-runners": 4
+		"max-concurrent-test-runners": 4,
         "threshold-options": {
             "threshold-high":80,
             "threshold-low":70,
