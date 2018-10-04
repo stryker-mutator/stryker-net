@@ -10,7 +10,11 @@ using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
-
+    public interface IRollbackProcess
+    {
+        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics);
+    }
+    
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>

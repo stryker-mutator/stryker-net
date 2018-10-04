@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.Extensions.Configuration;
+﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 
@@ -28,17 +26,37 @@ namespace Stryker.Core.Options
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            LogOptions = new LogOptions(logLevel, logToFile);
+            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
         }
 
         private string ValidateReporter(string reporter)
         {
-            if (reporter != "Console" && reporter != "RapportOnly")
+            if (reporter != "Console" && reporter != "ReportOnly")
             {
-                throw new ValidationException("The reporter options are [Console, RapportOnly]");
+                throw new ValidationException("The reporter options are [Console, ReportOnly]");
             }
             return reporter;
+        }
+
+        private LogEventLevel ValidateLogLevel(string levelText)
+        {
+            switch (levelText?.ToLower() ?? "")
+            {
+                case "error":
+                    return LogEventLevel.Error;
+                case "warning":
+                case "":
+                    return LogEventLevel.Warning;
+                case "info":
+                    return LogEventLevel.Information;
+                case "debug":
+                    return LogEventLevel.Debug;
+                case "trace":
+                    return LogEventLevel.Verbose;
+                default:
+                    throw new ValidationException("The log level options are [Error, Warning, Info, Debug, Trace]");
+            }
         }
 
         private int ValidateMaxConcurrentTestrunners(int maxConcurrentTestRunners)

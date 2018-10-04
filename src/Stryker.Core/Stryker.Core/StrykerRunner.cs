@@ -11,6 +11,11 @@ using System.Diagnostics;
 
 namespace Stryker.Core
 {
+    public interface IStrykerRunner
+    {
+        void RunMutationTest(StrykerOptions options);
+    }
+    
     public class StrykerRunner : IStrykerRunner
     {
         private IReporter _reporter { get; set; }

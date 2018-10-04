@@ -15,7 +15,7 @@ namespace Stryker.CLI.UnitTest
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 30000 &&
-                                                                        c.LogOptions.LogLevel == LogEventLevel.Information &&
+                                                                        c.LogOptions.LogLevel == LogEventLevel.Warning &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console" &&
@@ -34,7 +34,7 @@ namespace Stryker.CLI.UnitTest
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 30000 &&
-                                                                        c.LogOptions.LogLevel == LogEventLevel.Information &&
+                                                                        c.LogOptions.LogLevel == LogEventLevel.Warning &&
                                                                         c.LogOptions.LogToFile == false &&
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console" &&
@@ -50,7 +50,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--configFilePath")]
+        [InlineData("--config-file-path")]
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
@@ -59,7 +59,7 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&
                                                                         c.LogOptions.LogToFile == true &&
                                                                         c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
-                                                                        c.Reporter == "RapportOnly" &&
+                                                                        c.Reporter == "ReportOnly" &&
                                                                         c.MaxConcurrentTestrunners == 10
                                                                         ))).Verifiable();
 

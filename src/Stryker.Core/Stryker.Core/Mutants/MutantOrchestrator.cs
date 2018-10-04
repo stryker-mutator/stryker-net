@@ -11,6 +11,17 @@ using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
+    public interface IMutantOrchestrator
+    {
+        SyntaxNode Mutate(SyntaxNode rootNode);
+        /// <summary>
+        /// Gets the stored mutants and resets the mutant list to an empty collection
+        /// </summary>
+        /// <returns>Mutants</returns>
+        IEnumerable<Mutant> GetLatestMutantBatch();
+    }
+
+
     /// <summary>
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.

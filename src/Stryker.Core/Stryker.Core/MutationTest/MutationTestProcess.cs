@@ -5,7 +5,6 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,12 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
+    public interface IMutationTestProcess
+    {
+        void Mutate();
+        void Test();
+    }
+    
     public class MutationTestProcess : IMutationTestProcess
     {
         private MutationTestInput _input { get; set; }
@@ -111,7 +116,6 @@ namespace Stryker.Core.MutationTest
                     _mutationTestExecutor.Test(mutant);
                     _reporter.OnMutantTested(mutant);
                 });
-
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
         }
     }
