@@ -53,7 +53,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--project")]
+        [InlineData("--project-file")]
         [InlineData("-p")]
         public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
         {
@@ -112,6 +112,22 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.AdditionalTimeoutMS == 1000)));
+        }
+
+        [Theory]
+        [InlineData("--max-concurrent-test-runners")]
+        [InlineData("-m")]
+        public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassMaxConcurrentTestrunnerToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "4" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MaxConcurrentTestrunners == 4)));
         }
     }
 }

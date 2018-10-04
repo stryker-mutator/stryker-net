@@ -46,12 +46,28 @@
             JsonKey = "timeout-ms"
         };
 
-        public static readonly CLIOption<string> ProjectName = new CLIOption<string>
+        public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
         {
-            ArgumentName = "--project",
-            ArgumentShortName = "-p <projectName>",
+            ArgumentName = "--project-file",
+            ArgumentShortName = "-p <projectFileName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            JsonKey = "project-name"
-        };        
+            JsonKey = "project-file"
+        };
+
+        public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
+        {
+            ArgumentName = "--max-concurrent-test-runners",
+            ArgumentShortName = "-m <maxConcurrentTestRunners>",
+            ArgumentDescription = @"Mutation testing is time consuming. By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
+                                                                 This setting allows you to override this default behavior.
+
+                                                                 Reasons you might want to lower this setting:
+                                                                 
+                                                                 -Your test runner starts a browser (another CPU-intensive process)
+                                                                 -You're running on a shared server and/or
+                                                                 -Your hard disk cannot handle the I/O of all test runners",
+            DefaultValue = int.MaxValue,
+            JsonKey = "max-concurrent-test-runners"
+        };
     }
 }

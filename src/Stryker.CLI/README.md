@@ -24,7 +24,7 @@ While Stryker.NET wants to be a non configuration needed tool, some settings are
 #### Specify your project to mutate
 When Stryker finds two or more project references inside your test project, it needs to know what project should be mutated. Pass the name of this project using:
 
-`dotnet stryker --project SomeProjectName.csproj`
+`dotnet stryker --project-file SomeProjectName.csproj`
 
 The name will be matched to the full path. You won't have to pass the full path, as long as the name is unique for the found references.
 
@@ -66,7 +66,7 @@ Example:
         "log-level":"info",
         "timeout-ms":2000,
         "log-file":true,
-        "project-name":"ExampleProject.csproj",
+        "project-file":"ExampleProject.csproj",
 		"max-concurrent-test-runners": 4
     }
 }
