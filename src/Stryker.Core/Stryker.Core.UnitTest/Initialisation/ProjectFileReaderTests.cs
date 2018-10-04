@@ -243,5 +243,63 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = new ProjectFileReader().ReadProjectFile(xDocument, "");
             result.AssemblyName.ShouldBeNull();
         }
+
+        [Theory]
+        [InlineData("netcoreapp2.0;net461;netstandard2.0")]
+        [InlineData("netcoreapp1.1;net45")]
+        [InlineData("netcoreapp2.1")]
+        public void ProjectFileReader_ShouldParseWhenMultipleFrameworks(string target)
+        {
+            var xDocument = new XDocument();
+
+            if (target.Contains(";"))
+            {
+                xDocument = XDocument.Parse($@"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFrameworks>{target}</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+               
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+                
+</Project>");
+            }
+            else
+            {
+                xDocument = XDocument.Parse($@"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>{target}</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+               
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+                
+</Project>");
+            }
+            
+            var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
+
+            result.TargetFramework.ShouldBe(target.Split(';')[0]);
+        }
     }
 }
