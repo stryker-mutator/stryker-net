@@ -248,7 +248,7 @@ namespace ExampleProject
         }
 
         [Fact]
-        public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhen()
+        public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
