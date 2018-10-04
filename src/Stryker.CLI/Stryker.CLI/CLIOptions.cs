@@ -48,7 +48,7 @@
 
         public static readonly CLIOption<string> ProjectName = new CLIOption<string>
         {
-            ArgumentName = "--project",
+            ArgumentName = "--project-file",
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
             JsonKey = "project-name"

@@ -53,7 +53,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--project")]
+        [InlineData("--project-file")]
         [InlineData("-p")]
         public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
         {
