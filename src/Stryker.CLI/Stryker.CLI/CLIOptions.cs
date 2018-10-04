@@ -4,9 +4,9 @@
     {
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
-            ArgumentName = "--configFilePath",
+            ArgumentName = "--config-file-path",
             ArgumentShortName = "-cp <path>",
-            ArgumentDescription = "Sets the configFilePath relative to current workingDirectory | stryker-config.json (default)",
+            ArgumentDescription = "Sets the config-file-path relative to current workingDirectory | stryker-config.json (default)",
             DefaultValue = "stryker-config.json"
         };
 
@@ -21,29 +21,29 @@
 
         public static readonly CLIOption<string> LogLevel = new CLIOption<string>
         {
-            ArgumentName = "--logConsole",
+            ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
             ArgumentDescription = "Sets the logging level | Options [error, warning (default), info, debug, trace]",
             DefaultValue = "warning",
-            JsonKey = "logLevel"
+            JsonKey = "log-level"
         };
 
         public static readonly CLIOption<bool> UseLogFile = new CLIOption<bool>
         {
-            ArgumentName = "--logFile",
+            ArgumentName = "--log-file",
             ArgumentShortName = "-f <useLogFile>",
-            ArgumentDescription = "Use logFile | Options [false (Default), true]",
+            ArgumentDescription = "Use log-file | Options [false (Default), true]",
             DefaultValue = false,
-            JsonKey = "logFile"
+            JsonKey = "log-file"
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
         {
-            ArgumentName = "--timeoutMS",
+            ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
             ArgumentDescription = "When passed, a logfile will be created for this mutationtest run on trace level",
             DefaultValue = 30000,
-            JsonKey = "timeoutMS"
+            JsonKey = "timeout-ms"
         };
 
         public static readonly CLIOption<string> ProjectName = new CLIOption<string>
@@ -51,7 +51,7 @@
             ArgumentName = "--project",
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            JsonKey = "projectName"
+            JsonKey = "project-name"
         };        
     }
 }
