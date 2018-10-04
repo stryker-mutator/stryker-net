@@ -4,6 +4,7 @@
     "log-level": "trace",
     "timeout-ms": 9999,
     "log-file": true,
-    "project-name": "ExampleProject.csproj"
+    "project-name": "ExampleProject.csproj",
+    "max-concurrent-test-runners": 10
   }
 }

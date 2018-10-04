@@ -52,6 +52,10 @@ namespace Stryker.CLI
                 CLIOptions.ProjectName.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
+            var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
+                CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
             app.HelpOption("--help | -h | -?");
 
             app.OnExecute(() => {
@@ -63,7 +67,8 @@ namespace Stryker.CLI
                     timeoutParam,
                     logConsoleParam,
                     fileLogParam,
-                    configFilePathParam);
+                    configFilePathParam,
+                    maxConcurrentTestRunnersParam);
 
                 return RunStryker(options);
             });

@@ -71,7 +71,7 @@ namespace Stryker.Core
                 _mutationTestProcess.Mutate();
 
                 // test mutations
-                _mutationTestProcess.Test();
+                _mutationTestProcess.Test(options.MaxConcurrentTestrunners);
             }
             catch (Exception ex)
             {
