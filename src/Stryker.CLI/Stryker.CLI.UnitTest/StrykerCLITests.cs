@@ -68,7 +68,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logConsole")]
+        [InlineData("--log-console")]
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
@@ -77,7 +77,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "debug" });
+            target.Run(new[] { argName, "debug" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
                 o.LogOptions.LogLevel == LogEventLevel.Debug && 
@@ -99,7 +99,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--timeoutMS")]
+        [InlineData("--timeout-ms")]
         [InlineData("-t")]
         public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
         {

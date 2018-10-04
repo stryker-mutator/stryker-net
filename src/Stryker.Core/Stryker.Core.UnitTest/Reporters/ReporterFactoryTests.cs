@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Reporters
     public class ReporterFactoryTests
     {
         [Theory]
-        [InlineData("RapportOnly", typeof(ConsoleRapportReporter))]
+        [InlineData("ReportOnly", typeof(ConsoleReportReporter))]
         [InlineData("Console", typeof(BroadcastReporter))]
         [InlineData("someRandomName", typeof(BroadcastReporter))]
         [InlineData("", typeof(BroadcastReporter))]

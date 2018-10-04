@@ -31,24 +31,24 @@ The name will be matched to the full path. You won't have to pass the full path,
 #### Specify extra timeout time
 Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker generates timeouts after some time. Using this parameter you can increase or decrease the time before a timeout will be thrown.
 
-`dotnet stryker --timeoutMS 5000`
+`dotnet stryker --timeout-ms 5000`
 
 Defaults to `30000`
 
 #### Logging to console
 
-`dotnet stryker --logConsole <loglevel>`
+`dotnet stryker --log-console <loglevel>`
 
 All available loglevels are:
-* error (default)
-* warning
+* error
+* warning (default)
 * info
 * debug
 * trace
 
 #### Logging to a file
 
-`dotnet stryker --logFile`
+`dotnet stryker --log-file`
 
 #### Number of maximum concurrent test runners  
 
@@ -63,13 +63,13 @@ Example:
     "stryker-config":
     {
         "reporter":"Console",
-        "logLevel":"info",
-        "timeoutMS":2000,
-        "logFile":true,
-        "projectName":"ExampleProject.csproj",
-		"maxConcurrentTestRunners": 4
+        "log-level":"info",
+        "timeout-ms":2000,
+        "log-file":true,
+        "project-name":"ExampleProject.csproj",
+		"max-concurrent-test-runners": 4
     }
 }
 ```
 
-If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--configFilePath <relativePathToFile>` or `-cp <relativePathToFile>`.
+If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--config-file-path <relativePathToFile>` or `-cp <relativePathToFile>`.

@@ -8,6 +8,11 @@ using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
+    public interface IInitialisationProcess
+    {
+        MutationTestInput Initialize(StrykerOptions options);
+    }
+    
     public class InitialisationProcess : IInitialisationProcess
     {
         private IReporter _reporter { get; set; }

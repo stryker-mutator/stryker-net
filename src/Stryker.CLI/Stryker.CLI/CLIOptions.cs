@@ -4,9 +4,9 @@
     {
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
-            ArgumentName = "--configFilePath",
+            ArgumentName = "--config-file-path",
             ArgumentShortName = "-cp <path>",
-            ArgumentDescription = "Sets the configFilePath relative to current workingDirectory | stryker-config.json (default)",
+            ArgumentDescription = "Sets the config-file-path relative to current workingDirectory | stryker-config.json (default)",
             DefaultValue = "stryker-config.json"
         };
 
@@ -14,18 +14,18 @@
         {
             ArgumentName = "--reporter",
             ArgumentShortName = "-r <reporter>",
-            ArgumentDescription = "Sets the reporter | Options [Console (default), RapportOnly]",
+            ArgumentDescription = "Sets the reporter | Options [Console (default), ReportOnly]",
             DefaultValue = "Console",
             JsonKey = "reporter"
         };
 
         public static readonly CLIOption<string> LogLevel = new CLIOption<string>
         {
-            ArgumentName = "--logConsole",
+            ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = "Sets the logging level | Options [info (default), warning, debug, trace]",
-            DefaultValue = "info",
-            JsonKey = "logLevel"
+            ArgumentDescription = "Sets the logging level | Options [error, warning (default), info, debug, trace]",
+            DefaultValue = "warning",
+            JsonKey = "log-level"
         };
 
         public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
@@ -39,11 +39,11 @@
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
         {
-            ArgumentName = "--timeoutMS",
+            ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
             ArgumentDescription = "When passed, a logfile will be created for this mutationtest run on trace level",
             DefaultValue = 30000,
-            JsonKey = "timeoutMS"
+            JsonKey = "timeout-ms"
         };
 
         public static readonly CLIOption<string> ProjectName = new CLIOption<string>
@@ -51,7 +51,7 @@
             ArgumentName = "--project",
             ArgumentShortName = "-p <projectName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            JsonKey = "projectName"
+            JsonKey = "project-name"
         };        
     }
 }

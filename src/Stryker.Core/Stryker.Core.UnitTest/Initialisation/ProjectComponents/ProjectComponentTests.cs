@@ -9,7 +9,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
     public class ProjectComponentTests
     {
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_NoMutations()
+        public void ReportComponent_ShouldCalculateMutationScore_NoMutations()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { } });
@@ -19,7 +19,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         }
 
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_OneMutation()
+        public void ReportComponent_ShouldCalculateMutationScore_OneMutation()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
@@ -29,7 +29,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         }
 
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_TwoFolders()
+        public void ReportComponent_ShouldCalculateMutationScore_TwoFolders()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
@@ -40,7 +40,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         }
 
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_Recursive()
+        public void ReportComponent_ShouldCalculateMutationScore_Recursive()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             var subFolder = new FolderComposite() { Name = "SubFolder" };
@@ -54,7 +54,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         }
 
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_Recursive2()
+        public void ReportComponent_ShouldCalculateMutationScore_Recursive2()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             var subFolder = new FolderComposite() { Name = "SubFolder" };
@@ -77,7 +77,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
         [InlineData(MutantStatus.NotRun, 0)]
-        public void RapportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, decimal expectedScore)
+        public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, decimal expectedScore)
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             var subFolder = new FolderComposite() { Name = "SubFolder" };
@@ -88,7 +88,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         }
 
         [Fact]
-        public void RapportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
+        public void ReportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             var subFolder = new FolderComposite() { Name = "SubFolder" };

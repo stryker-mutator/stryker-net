@@ -1,8 +1,7 @@
-﻿namespace Stryker.Core.TestRunners
-{
+namespace Stryker.Core.TestRunners
+{   
     public interface ITestRunner
     {
-        TestRunResult RunAll(int? timeoutMS);
-        void SetActiveMutation(int? id);
+        TestRunResult RunAll(int? timeoutMS, int? activeMutationId);
     }
 }
