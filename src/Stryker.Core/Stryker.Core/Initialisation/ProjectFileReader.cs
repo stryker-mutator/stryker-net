@@ -54,7 +54,7 @@ namespace Stryker.Core.Initialisation
                         throw new ArgumentException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", innerException: new Exception($"Found the following references: {referencesString}"));
                     } else if (searchResult.Count() > 1)
                     {
-                        throw new ArgumentException($"More than one project reference matched your --project={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
+                        throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
                     }
                     return searchResult.Single();
                 }
