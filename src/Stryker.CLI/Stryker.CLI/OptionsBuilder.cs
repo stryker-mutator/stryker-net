@@ -30,7 +30,7 @@ namespace Stryker.CLI
             return new StrykerOptions(
                 basePath,
                 GetOption(reporter, CLIOptions.Reporter),
-                GetOption(projectUnderTestNameFilter, CLIOptions.ProjectName),
+                GetOption(projectUnderTestNameFilter, CLIOptions.ProjectFileName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
                 GetOption(logToFile, CLIOptions.UseLogFile));

@@ -62,7 +62,7 @@ Example:
         "log-level":"info",
         "timeout-ms":2000,
         "log-file":true,
-        "project-name":"ExampleProject.csproj"
+        "project-file":"ExampleProject.csproj"
     }
 }
 ```
