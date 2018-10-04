@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
+using System;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 
-namespace Stryker.Core.Initialisation {
+namespace Stryker.Core.Initialisation
+{
     public class ProjectFileReader {
         private ILogger _logger { get; set; }
 
