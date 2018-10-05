@@ -149,7 +149,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }
                 }
                 ";
-            string basePath = @"c:\ExampleProject.Test";
+            string basePath = @"C:\ExampleProject.Test";
             var input = new MutationTestInput()
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
@@ -166,7 +166,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }
                     },
                     ProjectUnderTestAssemblyName = "ExampleProject",
-                    ProjectUnderTestPath = @"c:\ExampleProject\",
+                    ProjectUnderTestPath = @"C:\ExampleProject\",
                     TargetFramework = "netcoreapp2.0"
                 },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
@@ -180,7 +180,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { @"c:\SomeFile.cs", new MockFileData("SomeFile")},
+                { @"C:\SomeFile.cs", new MockFileData("SomeFile")},
             });
 
             // setup mocks
@@ -194,7 +194,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("C:\test", "Console", "", 2000, null, false);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
