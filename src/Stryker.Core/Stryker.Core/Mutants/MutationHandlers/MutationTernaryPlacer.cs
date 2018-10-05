@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.MutationHandlers
     {
         public override SyntaxNode HandleInsertMutation(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
-            if(original is LocalDeclarationStatementSyntax)
+            if(!(original is LocalDeclarationStatementSyntax))
             {
                 return _successor.HandleInsertMutation(original, mutated, mutantId);
             } else
