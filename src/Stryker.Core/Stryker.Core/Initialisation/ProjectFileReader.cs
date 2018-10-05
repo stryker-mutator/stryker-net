@@ -53,7 +53,8 @@ namespace Stryker.Core.Initialisation
                     if (!searchResult.Any())
                     {
                         throw new ArgumentException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", innerException: new Exception($"Found the following references: {referencesString}"));
-                    } else if (searchResult.Count() > 1)
+                    }
+                    else if (searchResult.Count() > 1)
                     {
                         throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
                     }
@@ -69,11 +70,15 @@ namespace Stryker.Core.Initialisation
 
         private static string ConvertPathSeparators(string filePath)
         {
-            if (Path.DirectorySeparatorChar == '\\')
+            const char windowsDirectorySeparator = '\\';
+            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
             {
                 return filePath;
             }
-            return filePath.Replace('\\', Path.DirectorySeparatorChar);
+            else
+            {
+                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
+            }
         }
 
         private string FindTargetFrameworkReference(XDocument document)
