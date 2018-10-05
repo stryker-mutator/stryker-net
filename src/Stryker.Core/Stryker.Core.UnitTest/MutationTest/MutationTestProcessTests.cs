@@ -149,7 +149,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }
                 }
                 ";
-            string basePath = @"c\ExampleProject.Test";
+            string basePath = @"c:\ExampleProject.Test";
             var input = new MutationTestInput()
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
