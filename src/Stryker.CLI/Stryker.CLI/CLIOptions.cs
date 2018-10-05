@@ -75,7 +75,7 @@
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
             ArgumentDescription = "Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | 60 (default)",
-            DefaultValue = 60,
+            DefaultValue = 0,
             JsonKey = "threshold-break"
         };      
 
@@ -84,7 +84,7 @@
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
             ArgumentDescription = "Set the lower bound of the mutation score threshold. It will not fail the test. | 70 (default)",
-            DefaultValue = 70,
+            DefaultValue = 60,
             JsonKey = "threshold-low"
         };    
         

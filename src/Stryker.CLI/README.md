@@ -84,4 +84,4 @@ If you want to decide on your own mutation score thresholds, you can configure t
 
 `dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50  `
 
-The defaults are respectivly: `80` `70` `60`
+The defaults are respectivly: `80` `60` `0`

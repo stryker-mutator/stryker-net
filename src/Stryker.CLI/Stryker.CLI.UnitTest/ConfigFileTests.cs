@@ -20,8 +20,8 @@ namespace Stryker.CLI.UnitTest
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console" && 
                                                                         c.MaxConcurrentTestrunners == int.MaxValue &&
-                                                                        c.ThresholdOptions.ThresholdBreak == 60 &&
-                                                                        c.ThresholdOptions.ThresholdLow == 70 &&
+                                                                        c.ThresholdOptions.ThresholdBreak == 0 &&
+                                                                        c.ThresholdOptions.ThresholdLow == 60 &&
                                                                         c.ThresholdOptions.ThresholdHigh == 80))).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
@@ -40,8 +40,8 @@ namespace Stryker.CLI.UnitTest
                                                                         c.ProjectUnderTestNameFilter == null &&
                                                                         c.Reporter == "Console" &&
                                                                         c.MaxConcurrentTestrunners == int.MaxValue &&
-                                                                        c.ThresholdOptions.ThresholdBreak == 60 &&
-                                                                        c.ThresholdOptions.ThresholdLow == 70 &&
+                                                                        c.ThresholdOptions.ThresholdBreak == 0 &&
+                                                                        c.ThresholdOptions.ThresholdLow == 60 &&
                                                                         c.ThresholdOptions.ThresholdHigh == 80))).Verifiable();
             File.Move("stryker-config.json", "temp.json");
             var target = new StrykerCLI(mock.Object);
