@@ -6,6 +6,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.Options;
+using Stryker.Core.Exceptions;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         
         [Fact]
-        public void ConsoleDotReporter_ShouldPrintOnReportDone()
+        public void ConsoleReportReporter_ShouldPrintOnReportDone()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -41,7 +42,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleDotReporter_ShouldPrintKilledMutation()
+        public void ConsoleReportReporter_ShouldPrintKilledMutation()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -83,7 +84,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleDotReporter_ShouldPrintSurvivedMutation()
+        public void ConsoleReportReporter_ShouldPrintSurvivedMutation()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -126,7 +127,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleDotReporter_ShouldPrintRedOn60PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintRedOn60PercentAndLower()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -167,7 +168,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleDotReporter_ShouldPrintYellowOn80PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintYellowOn80PercentAndLower()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -207,6 +208,45 @@ All mutants have been tested, and your mutation score has been calculated
             target.OnAllMutantsTested(folder);
 
             chalkMock.Verify(x => x.Yellow(It.IsAny<string>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void ConsoleReportReporter_ShouldGreenOn80PercentAndHigher()
+        {
+            string output = "";
+            var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
+            chalkMock.Setup(x => x.Red(It.IsAny<string>())).Callback((string text) => { output += text; });
+            chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
+            chalkMock.Setup(x => x.Green(It.IsAny<string>())).Callback((string text) => { output += text; });
+            chalkMock.Setup(x => x.Yellow(It.IsAny<string>())).Callback((string text) => { output += text; });
+
+            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+            var mutation = new Mutation()
+            {
+                OriginalNode = originalNode,
+                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+                DisplayName = "This name should display",
+                Type = "Not relevant"
+            };
+
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), chalkMock.Object);
+
+
+            var folder = new FolderComposite() { Name = "RootFolder" };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>()
+                {
+                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                }
+            });
+
+            target.OnAllMutantsTested(folder);
+
+            chalkMock.Verify(x => x.Green(It.IsAny<string>()), Times.Exactly(3));
         }
     }
 }

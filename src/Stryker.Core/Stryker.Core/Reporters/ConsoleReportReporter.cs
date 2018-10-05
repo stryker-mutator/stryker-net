@@ -77,6 +77,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             decimal thresholdHigh = (decimal) this.options.ThresholdOptions.ThresholdHigh/100;
             decimal thresholdLow = (decimal) this.options.ThresholdOptions.ThresholdLow/100;
+            decimal thresholdBreak = (decimal) this.options.ThresholdOptions.ThresholdBreak/100;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
@@ -95,9 +96,13 @@ namespace Stryker.Core.Reporters
                 {
                     _chalk.Yellow(scoreText);
                 } 
-                else
+                else if (score <= thresholdLow && score >= thresholdBreak)
                 {
                     _chalk.Red(scoreText);
+                } 
+                else 
+                {
+                    Environment.Exit(1);
                 }
             }
             _chalk.Default($"]{Environment.NewLine}");
