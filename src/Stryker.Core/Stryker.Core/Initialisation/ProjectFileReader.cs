@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -19,13 +20,13 @@ namespace Stryker.Core.Initialisation
         {
             _logger.LogDebug("Reading the project file {0}", projectFileContents.ToString());
 
-            var rererence = FindProjectReference(projectFileContents, projectUnderTestNameFilter);
+            var reference = FindProjectReference(projectFileContents, projectUnderTestNameFilter);
             var targetFramework = FindTargetFrameworkReference(projectFileContents);
             var assemblyName = FindAssemblyName(projectFileContents);
 
             return new ProjectFile()
             {
-                ProjectReference = rererence,
+                ProjectReference = reference,
                 TargetFramework = targetFramework
             };
         }
@@ -49,22 +50,35 @@ namespace Stryker.Core.Initialisation
                 else
                 {
                     var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
-                    if(!searchResult.Any())
+                    if (!searchResult.Any())
                     {
                         throw new ArgumentException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", innerException: new Exception($"Found the following references: {referencesString}"));
-                    } else if (searchResult.Count() > 1)
+                    }
+                    else if (searchResult.Count() > 1)
                     {
                         throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
                     }
-                    return searchResult.Single();
+                    return ConvertPathSeparators(searchResult.Single());
                 }
             }
             else if (!projectReferences.Any())
             {
                 throw new NotSupportedException("No project references found in test project file, unable to find project to mutate.");
             }
-            return projectReferences.Single();
+            return ConvertPathSeparators(projectReferences.Single());
+        }
 
+        private static string ConvertPathSeparators(string filePath)
+        {
+            const char windowsDirectorySeparator = '\\';
+            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
+            {
+                return filePath;
+            }
+            else
+            {
+                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
+            }
         }
 
         private string FindTargetFrameworkReference(XDocument document)
