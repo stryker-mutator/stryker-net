@@ -75,7 +75,7 @@ namespace Stryker.Core
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred during the mutationtest run ");
+                logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
             finally {

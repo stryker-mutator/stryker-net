@@ -32,7 +32,7 @@ namespace Stryker.Core.Compiling
         {
             _rollbackedIds = new List<int>();
 
-            // match the diagnotics with their syntaxtrees
+            // match the diagnostics with their syntaxtrees
             var syntaxTreeMapping = new Dictionary<SyntaxTree, ICollection<Diagnostic>>();
             foreach (var syntaxTree in compiler.SyntaxTrees)
             {
@@ -56,7 +56,7 @@ namespace Stryker.Core.Compiling
                 compiler = compiler.ReplaceSyntaxTree(syntaxTreeMap.Key, updatedSyntaxTree);
             }
 
-            // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyns incremental compilation
+            // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
             return new RollbackProcessResult() {
                 Compilation = compiler,
                 RollbackedIds = _rollbackedIds
@@ -95,7 +95,7 @@ namespace Stryker.Core.Compiling
                 var mutationIf = FindMutationIf(brokenMutation);
                 if(mutationIf == null)
                 {
-                    _logger.LogError("Unable to rollback mutation for node {0} with diagnosticmessage {1}", brokenMutation, diagnostic.GetMessage());
+                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
                 }
                 brokenMutations.Add(mutationIf);
             }
@@ -103,9 +103,9 @@ namespace Stryker.Core.Compiling
             var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
             foreach (var brokenMutation in brokenMutations)
             {
-                // find the ifstatement in the new tree
+                // find the if statement in the new tree
                 var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
-                // remove the ifstatement and update the tree
+                // remove the if statement and update the tree
                 trackedTree = trackedTree.ReplaceNode(nodeToRemove, nodeToRemove.Else.Statement);
             }
             return trackedTree.SyntaxTree;

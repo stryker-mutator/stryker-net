@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
             SyntaxFactory.AreEquivalent(actual, expected)
-                .ShouldBeTrue($"AST's are not equavalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
+                .ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
         }
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)

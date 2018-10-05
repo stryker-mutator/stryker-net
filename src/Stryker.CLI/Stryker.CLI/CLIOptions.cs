@@ -41,7 +41,7 @@
         {
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
-            ArgumentDescription = "When passed, a logfile will be created for this mutationtest run on trace level",
+            ArgumentDescription = "When passed, a logfile will be created for this mutation test run on trace level",
             DefaultValue = 30000,
             JsonKey = "timeout-ms"
         };

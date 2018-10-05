@@ -61,7 +61,7 @@ namespace Stryker.Core.MutationTest
                 var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-                // Store the generated mutatants in the file
+                // Store the generated mutants in the file
                 file.Mutants = _orchestrator.GetLatestMutantBatch();
             }
 
