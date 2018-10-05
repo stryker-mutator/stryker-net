@@ -85,13 +85,14 @@ namespace Stryker.CLI
                     thresholdLowParam,
                     thresholdBreakParam
                     );
-                return RunStryker(options);
+                RunStryker(options);
+                return Environment.ExitCode;
             });
 
             app.Execute(args);
         }
         
-        private int RunStryker(StrykerOptions options)
+        private void RunStryker(StrykerOptions options)
         {
             // start with the stryker header
             PrintStykerASCIIName();
@@ -102,9 +103,8 @@ namespace Stryker.CLI
             }
             catch (Exception)
             {
-                return 1;
+                Environment.ExitCode = 1;
             }
-            return 0;
         }
 
         private void PrintStrykerASCIILogo()

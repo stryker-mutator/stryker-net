@@ -34,6 +34,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
+            Assert.Equal(1, Environment.ExitCode);
             mock.VerifyAll();
         }
 
