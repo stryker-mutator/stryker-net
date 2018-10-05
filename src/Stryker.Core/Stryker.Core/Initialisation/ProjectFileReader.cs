@@ -83,7 +83,14 @@ namespace Stryker.Core.Initialisation
 
         private string FindTargetFrameworkReference(XDocument document)
         {
-            return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFramework", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
+            if (document.Elements().Descendants("TargetFrameworks").Any())
+            {
+                return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFrameworks", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value.Split(';')[0];
+            }
+            else
+            {
+                return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFramework", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
+            }
         }
 
         public string FindAssemblyName(XDocument document)
