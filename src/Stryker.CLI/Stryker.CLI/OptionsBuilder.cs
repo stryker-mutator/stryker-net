@@ -50,8 +50,7 @@ namespace Stryker.CLI
                 //Convert commandOptionValue to desired type
                 return (T)Convert.ChangeType(value.Value(), typeof(T));
             }
-            if(config != null && 
-                !string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+            if(config != null)
             {
                 // Check if there is a threshold options object and use it when it's available
                 string thresholdOptionsSectionKey = "threshold-options";
@@ -60,8 +59,11 @@ namespace Stryker.CLI
                 {   
                     return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
                 }
-                //Else return config value                               
-                return config.GetValue<T>(defaultValue.JsonKey);
+                //Else return config value            
+                else if(!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+                {
+                    return config.GetValue<T>(defaultValue.JsonKey);
+                }                   
             }
             //Else return default
             return defaultValue.DefaultValue;
