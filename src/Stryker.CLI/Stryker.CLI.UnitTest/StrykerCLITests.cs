@@ -53,7 +53,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--project")]
+        [InlineData("--project-file")]
         [InlineData("-p")]
         public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
         {
@@ -68,7 +68,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logConsole")]
+        [InlineData("--log-console")]
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
@@ -85,8 +85,8 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--logFile")]
-        public void StrykerCLI_WithLogFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
+        [InlineData("--log-level-file")]
+        public void StrykerCLI_WithLogLevelFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
@@ -99,7 +99,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--timeoutMS")]
+        [InlineData("--timeout-ms")]
         [InlineData("-t")]
         public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
         {
@@ -112,6 +112,22 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.AdditionalTimeoutMS == 1000)));
+        }
+
+        [Theory]
+        [InlineData("--max-concurrent-test-runners")]
+        [InlineData("-m")]
+        public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassMaxConcurrentTestrunnerToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "4" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MaxConcurrentTestrunners == 4)));
         }
     }
 }

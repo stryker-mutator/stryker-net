@@ -44,12 +44,16 @@ namespace Stryker.CLI
                 CLIOptions.AdditionalTimeoutMS.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
-            var fileLogParam = app.Option($"{CLIOptions.UseLogFile.ArgumentName} | {CLIOptions.UseLogFile.ArgumentShortName}",
-                CLIOptions.UseLogFile.ArgumentDescription, 
+            var fileLogParam = app.Option($"{CLIOptions.UseLogLevelFile.ArgumentName} | {CLIOptions.UseLogLevelFile.ArgumentShortName}",
+                CLIOptions.UseLogLevelFile.ArgumentDescription, 
                 CommandOptionType.SingleValue);
 
-            var projectNameParam = app.Option($"{CLIOptions.ProjectName.ArgumentName} | {CLIOptions.ProjectName.ArgumentShortName}",
-                CLIOptions.ProjectName.ArgumentDescription,
+            var projectNameParam = app.Option($"{CLIOptions.ProjectFileName.ArgumentName} | {CLIOptions.ProjectFileName.ArgumentShortName}",
+                CLIOptions.ProjectFileName.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
+            var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
+                CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
             app.HelpOption("--help | -h | -?");
@@ -63,7 +67,8 @@ namespace Stryker.CLI
                     timeoutParam,
                     logConsoleParam,
                     fileLogParam,
-                    configFilePathParam);
+                    configFilePathParam,
+                    maxConcurrentTestRunnersParam);
 
                 return RunStryker(options);
             });

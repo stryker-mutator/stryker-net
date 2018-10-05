@@ -24,21 +24,23 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>()))
-                .Returns(new TestRunResult() { Success = true }); // testrun is successful
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(new TestRunResult { Success = true }); // testrun is successful
             reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialisationDone()).Verifiable();
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new Core.Initialisation.ProjectInfo()
+                .Returns(new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
-                    ProjectContents = new FolderComposite()
+                    ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
+                        Children = new Collection<ProjectComponent>
+                        {
+                            new FileLeaf
+                            {
                                 Name = "SomeFile.cs"
                             }
                         }
@@ -58,7 +60,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
 
             var result = target.Initialize(options);
 
@@ -76,19 +78,21 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>()));
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()));
             reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
             reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>())).Returns(
-                new Core.Initialisation.ProjectInfo()
+                new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
-                    ProjectContents = new FolderComposite()
+                    ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
+                        Children = new Collection<ProjectComponent>
+                        {
+                            new FileLeaf
+                            {
                                 Name = "SomeFile.cs"
                             }
                         }
@@ -108,7 +112,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object, 
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false);
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
 
             var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));
 
