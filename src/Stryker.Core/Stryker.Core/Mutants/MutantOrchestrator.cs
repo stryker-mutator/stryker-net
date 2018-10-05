@@ -67,7 +67,7 @@ namespace Stryker.Core.Mutants
                 StatementSyntax ast = statement as StatementSyntax;
 
                 // this is a temporary fix for mutating LocalDeclarationStatements because mutating withing these statements breaks the application
-                // TODO: backlog item Ternary assignment statements mutates
+                // TODO: backlog item Ternary assignment statements mutations
                 if (!(statement is LocalDeclarationStatementSyntax))
                 {
                     foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
