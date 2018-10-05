@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     /// <summary>
     /// msbuild will return a string with all referenced assemblies for the given test project. 
-    /// The AssemblyReferenceResolver should parse this string correctly into seperate dependencies for Roslyn.
+    /// The AssemblyReferenceResolver should parse this string correctly into separate dependencies for Roslyn.
     /// </summary>
     public class AssemblyReferenceResolverTests
     {

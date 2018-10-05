@@ -14,7 +14,7 @@ namespace Stryker.Core.Reporters
         void OnMutantsCreated(IReadOnlyInputComponent reportComponent);
         // Will get called when a mutation has been tested
         void OnMutantTested(IReadOnlyMutant result);
-        // Wille get callen when all mutations have been tested
+        // Will get called when all mutations have been tested
         void OnAllMutantsTested(IReadOnlyInputComponent reportComponent);
     }
 }

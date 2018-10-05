@@ -67,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 yield return _metadataReference.CreateFromFile(reference.Trim());
             }
 
-            // the last part contains the package dependencies, seperated by the path seperator char
+            // the last part contains the package dependencies, seperated by the path separator char
             foreach (var reference in GetAssemblyPathsFromOutput(rows.Last())
                 .Distinct()
                 .Where(x => Path.GetFileNameWithoutExtension(x) != projectUnderTestAssemblyName))
