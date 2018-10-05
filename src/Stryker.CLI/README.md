@@ -54,6 +54,19 @@ All available loglevels are:
 
 `dotnet stryker --max-concurrent-test-runners`
 
+
+#### Custom thresholds
+If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
+
+`dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50  `
+
+- `mutation score > threshold-high` : Awesome! Your reporters will color this green and happy.
+- `threshold-high > mutation score > threshold-low`: Warning! Your reporters will display yellow/orange colors, watch out!
+- `mutation score < threshold-low`: Danger! Your reporters will display red colors, you're in the danger zone now.
+
+The defaults are respectivly: `80` `60` `0`
+
+
 #### Use a config file
 There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
 
@@ -78,10 +91,3 @@ Example:
 ```
 
 If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--config-file-path <relativePathToFile>` or `-cp <relativePathToFile>`.
-
-#### Custom thresholds
-If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
-
-`dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50  `
-
-The defaults are respectivly: `80` `60` `0`
