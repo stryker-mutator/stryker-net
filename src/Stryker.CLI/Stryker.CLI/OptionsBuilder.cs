@@ -34,7 +34,7 @@ namespace Stryker.CLI
                 GetOption(projectUnderTestNameFilter, CLIOptions.ProjectFileName),
                 GetOption(additionalTimeoutMS, CLIOptions.AdditionalTimeoutMS),
                 GetOption(logLevel, CLIOptions.LogLevel),
-                GetOption(logToFile, CLIOptions.UseLogFile),
+                GetOption(logToFile, CLIOptions.UseLogLevelFile),
                 GetOption(maxConcurrentTestRunners, CLIOptions.MaxConcurrentTestRunners));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible

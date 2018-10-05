@@ -3,7 +3,7 @@
     "reporter": "ReportOnly",
     "log-level": "trace",
     "timeout-ms": 9999,
-    "log-file": true,
+    "log-level-file": true,
     "project-file": "ExampleProject.csproj",
     "max-concurrent-test-runners": 10
   }

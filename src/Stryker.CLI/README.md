@@ -50,6 +50,10 @@ All available loglevels are:
 
 `dotnet stryker --log-file`
 
+#### Number of maximum concurrent test runners  
+
+`dotnet stryker --max-concurrent-test-runners`
+
 #### Use a config file
 There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
 
@@ -62,7 +66,8 @@ Example:
         "log-level":"info",
         "timeout-ms":2000,
         "log-file":true,
-        "project-file":"ExampleProject.csproj"
+        "project-file":"ExampleProject.csproj",
+		"max-concurrent-test-runners": 4
     }
 }
 ```
