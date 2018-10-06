@@ -41,7 +41,8 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<int>()));
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object);
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1);
+
+            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 80, 60, 0);
 
             target.RunMutationTest(options);
 

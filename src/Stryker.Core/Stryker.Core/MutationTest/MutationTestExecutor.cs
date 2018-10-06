@@ -7,7 +7,7 @@ using System;
 namespace Stryker.Core.MutationTest
 {
     /// <summary>
-    /// Executes exactly one mutationtest and stores the result
+    /// Executes exactly one mutation test and stores the result
     /// </summary>
     public interface IMutationTestExecutor
     {

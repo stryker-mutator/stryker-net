@@ -47,8 +47,8 @@ namespace Stryker.Core
 
             try
             {
-                // initialyze 
-                _reporter = ReporterFactory.Create(options.Reporter);
+                // initialize 
+                _reporter = ReporterFactory.Create(options);
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess(_reporter);
                 _input = _initialisationProcess.Initialize(options);
 
@@ -75,7 +75,7 @@ namespace Stryker.Core
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred during the mutationtest run ");
+                logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
             finally {

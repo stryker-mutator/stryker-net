@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>0.0.1</Version>
+    <Version>0.3.0</Version>
     <PackageId>StrykerMutator.Core</PackageId>
     <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install a Stryker.Runner.* package to use this package.</Description>
     <PackageProjectUrl>https://github.com/stryker-mutator/stryker-net</PackageProjectUrl>
@@ -28,6 +28,6 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="System.IO.Abstractions" Version="2.1.0.178" />
+    <PackageReference Include="System.IO.Abstractions" Version="2.1.0.232" />
   </ItemGroup>
 </Project>

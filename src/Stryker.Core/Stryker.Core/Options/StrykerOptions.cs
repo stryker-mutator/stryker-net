@@ -1,6 +1,8 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Options
 {
@@ -19,8 +21,10 @@ namespace Stryker.Core.Options
 
         public int MaxConcurrentTestrunners { get; }
 
-        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile,
-            int maxConcurrentTestRunners)
+        public ThresholdOptions ThresholdOptions { get; set; }
+
+        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
+        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
@@ -28,6 +32,7 @@ namespace Stryker.Core.Options
             AdditionalTimeoutMS = additionalTimeoutMS;
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
+            ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
         private string ValidateReporter(string reporter)
@@ -66,6 +71,22 @@ namespace Stryker.Core.Options
                 throw new ValidationException("Amount of maximum concurrent testrunners must be greater than zero.");
             }
             return maxConcurrentTestRunners;
+        }
+
+        private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak) 
+        {
+            List<int> thresholdList = new List<int> {thresholdHigh, thresholdLow, thresholdBreak};
+            if(thresholdList.Any(x => x > 100 || x < 0)) {
+                throw new ValidationException("The thresholds must be between 0 and 100");
+            }
+
+            // ThresholdLow and ThresholdHigh can be the same value
+            if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh) 
+            {
+                throw new ValidationException("The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
+            }
+
+            return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
         }
     }
 }
