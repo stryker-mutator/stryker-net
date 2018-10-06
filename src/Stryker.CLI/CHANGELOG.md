@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+<a name="0.3.0"></a>
+## [0.3.0](https://github.com/stryker-mutator/stryker/compare/stryker.cli@0.2.0...stryker.cli@0.3.0) (2018-10-06)
+
+
+**Note:** Version bump only for package StrykerMutator.DotNetCoreCli
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker.cli@0.0.0...stryker.cli@0.2.0) (2018-10-05)
 
