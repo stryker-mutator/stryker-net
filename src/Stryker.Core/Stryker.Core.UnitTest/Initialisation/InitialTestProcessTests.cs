@@ -1,11 +1,8 @@
 ﻿using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
-using System;
-using System.Collections.Generic;
-using Stryker.Core.Logging.TotalNumberOfTests;
-using Stryker.Core.Parsers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -16,8 +13,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
         public InitialTestProcessTests()
         {
-            var totalNumberOfTestsLogger = new Mock<ITotalNumberOfTestsLogger>();
-            _target = new InitialTestProcess(totalNumberOfTestsLogger.Object);
+            var chalk = new Mock<IChalk>();
+            _target = new InitialTestProcess(chalk.Object);
         }
 
         [Fact]

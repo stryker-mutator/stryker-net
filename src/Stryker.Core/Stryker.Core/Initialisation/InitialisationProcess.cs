@@ -5,7 +5,6 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Linq;
-using Stryker.Core.Logging.TotalNumberOfTests;
 using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
 
@@ -45,10 +44,7 @@ namespace Stryker.Core.Initialisation
         private static InitialTestProcess CreateInitionTestProcess()
         {
             var chalk = new Chalk();
-            var totalNumberOfTestsParser = new TotalNumberOfTestsParser();
-            var totalNumberOfTestsLogger = new TotalNumberOfTestsLogger(chalk, totalNumberOfTestsParser);
-
-            return new InitialTestProcess(totalNumberOfTestsLogger);
+            return new InitialTestProcess(chalk);
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
