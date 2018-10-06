@@ -57,7 +57,7 @@ namespace Stryker.Core.Initialisation
         }
 
         /// <summary>
-        /// Resursively scans the given directory for files to mutate
+        /// Recursively scans the given directory for files to mutate
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>

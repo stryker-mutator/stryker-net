@@ -17,7 +17,7 @@ namespace Stryker.Core.MutationTest
         public Initialisation.ProjectInfo ProjectInfo { get; set; }
 
         /// <summary>
-        /// The testrunner that will be used for the mutationtest run
+        /// The testrunner that will be used for the mutation test run
         /// </summary>
         public ITestRunner TestRunner { get; set; }
 
