@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <ProjectGuid>{2E54030E-33F8-492D-8062-8C7E867B268E}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
