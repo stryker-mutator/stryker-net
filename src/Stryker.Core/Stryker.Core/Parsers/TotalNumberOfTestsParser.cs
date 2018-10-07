@@ -2,6 +2,11 @@
 
 namespace Stryker.Core.Parsers
 {
+    public interface ITotalNumberOfTestsParser
+    {
+        int ParseTotalNumberOfTests(string testProcessRunnerOutput);
+    }
+
     public class TotalNumberOfTestsParser : ITotalNumberOfTestsParser
     {
         private const string TotalTestsStartToken = "Total tests:";

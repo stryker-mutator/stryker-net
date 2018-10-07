@@ -35,13 +35,13 @@ namespace Stryker.Core.Initialisation
             _reporter = reporter;
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
-            _initialTestProcess = initialTestProcess ?? CreateInitionTestProcess();
+            _initialTestProcess = initialTestProcess ?? CreateInitialTestProcess();
             _testRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
-        private static InitialTestProcess CreateInitionTestProcess()
+        private static InitialTestProcess CreateInitialTestProcess()
         {
             var chalk = new Chalk();
             return new InitialTestProcess(chalk);
