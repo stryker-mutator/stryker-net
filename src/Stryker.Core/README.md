@@ -4,16 +4,16 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 <!-- TOC -->
 
 - [Mutators](#mutators)
-    - [Binary mutator](#binary-mutator)
-    - [Boolean mutator](#boolean-mutator)
-    - [Assignment mutator](#assignment-mutator)
-    - [PrefixUnaryStatements](#prefixunarystatements)
-    - [PostfixUnaryStatements](#postfixunarystatements)
-	- [Checked mutator](#checked-mutator)
+    - [Binary Operators](#binary-operators)
+    - [Boolean Substitutions](#boolean-substitutions)
+    - [Assignment Mutators](#assignment-mutators)
+    - [Unary Operators](#unary-operators)
+    - [Update Operators](#update-operators)
+	- [Checked Mutator](#checked-mutator)
 
 <!-- /TOC -->
 
-## Binary mutator
+## Binary Operators
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `+` | `-` |
@@ -34,13 +34,14 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `&&` | `\|\|`
 | `\|\|` | `&&`
 
-## Boolean mutator
+## Boolean Substitutions
 | Original | Mutated | 
 | ------------- | ------------- | 
-| `true` | `false` |
-| `false` | `true` |
+| `true`	| `false` |
+| `false`	| `true` |
+| `!`		| ` ` |
 
-## Assignment mutator
+## Assignment Mutators
 | Original | Mutated | 
 | ------------- | ------------- | 
 |`+= `	| `-= ` |
@@ -53,23 +54,25 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`&= `	| `\|= ` |
 |`\|= `	| `&= ` |
 
-## PrefixUnaryStatements
+## Unary Operators
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
-|  `!variable` 	| `variable` |
-|  `-variable`  | `+variable`|
-|  `+variable` 	| `-variable`|
-|  `~variable` 	| `variable` |
-|  `++variable` | `--variable` |
-|  `--variable` | `++variable` |
+| `-variable`	| `+variable`|
+| `+variable` 	| `-variable`|
+| `~variable` 	| `variable` |
 
-## PostfixUnaryStatements
+## Update Operators
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
-| `variable++`  | `variable--` |
-| `variable--`  | `variable++` |
+| `variable++`	| `variable--` |
+| `variable--`	| `variable++` |
+| `-variable`	| `+variable`|
+| `+variable` 	| `-variable`|
+| `~variable` 	| `variable` |
+| `++variable`	| `--variable` |
+| `--variable`	| `++variable` |
 
-## Checked mutator
+## Checked Mutator
 | Original | Mutated |
 | ------------- | ------------- | 
 | `checked(2 + 4)` | `2 + 4` |
