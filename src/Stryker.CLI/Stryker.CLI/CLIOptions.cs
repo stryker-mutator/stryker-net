@@ -23,7 +23,7 @@
         {
             ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = "Sets the logging level | Options [error, warning (default), info, debug, trace]",
+            ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
             DefaultValue = "Info",
             JsonKey = "log-level"
         };

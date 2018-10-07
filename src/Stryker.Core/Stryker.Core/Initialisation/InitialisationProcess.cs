@@ -2,7 +2,6 @@
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Linq;
 
@@ -15,7 +14,6 @@ namespace Stryker.Core.Initialisation
     
     public class InitialisationProcess : IInitialisationProcess
     {
-        private IReporter _reporter { get; set; }
         private IInputFileResolver _inputFileResolver { get; set; }
         private IInitialBuildProcess _initialBuildProcess { get; set; }
         private IInitialTestProcess _initialTestProcess { get; set; }
@@ -23,14 +21,13 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger { get; set; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
 
-        public InitialisationProcess(IReporter reporter, 
+        public InitialisationProcess( 
             IInputFileResolver inputFileResolver = null, 
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
             IAssemblyReferenceResolver assemblyReferenceResolver = null)
         {
-            _reporter = reporter;
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
