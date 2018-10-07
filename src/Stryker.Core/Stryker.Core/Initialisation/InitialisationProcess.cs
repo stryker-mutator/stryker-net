@@ -41,12 +41,10 @@ namespace Stryker.Core.Initialisation
 
         public MutationTestInput Initialize(StrykerOptions options)
         {
-            _reporter.OnInitialisationStarted();
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter);
 
             // initial build
-            _reporter.OnInitialBuildStarted();
             _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
 
             // resolve assembly references
@@ -64,11 +62,9 @@ namespace Stryker.Core.Initialisation
             };
 
             // initial test
-            _reporter.OnInitialTestRunStarted();
             var initialTestDuration = _initialTestProcess.InitialTest(input.TestRunner);
             input.TimeoutMS = new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
 
-            _reporter.OnInitialisationDone();
             return input;
         }
     }

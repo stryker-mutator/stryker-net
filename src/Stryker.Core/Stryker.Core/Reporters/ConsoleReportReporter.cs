@@ -102,13 +102,5 @@ namespace Stryker.Core.Reporters
             }
             _chalk.Default($"]{Environment.NewLine}");
         }
-
-        public void OnInitialisationStarted() { }
-
-        public void OnInitialBuildStarted() { }
-
-        public void OnInitialTestRunStarted() { }
-
-        public void OnInitialisationDone() { }
     }
 }

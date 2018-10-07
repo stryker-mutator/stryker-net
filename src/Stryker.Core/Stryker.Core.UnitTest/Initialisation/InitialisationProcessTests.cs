@@ -26,10 +26,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new TestRunResult { Success = true }); // testrun is successful
-            reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialisationDone()).Verifiable();
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Core.Initialisation.ProjectInfo
                 {
@@ -81,9 +77,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()));
-            reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>())).Returns(
                 new Core.Initialisation.ProjectInfo
                 {
