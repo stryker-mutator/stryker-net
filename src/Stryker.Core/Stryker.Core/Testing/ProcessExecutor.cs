@@ -8,6 +8,22 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.Testing
 {
+    /// <summary>
+    /// Used for mocking System.Process 
+    /// </summary>
+    public interface IProcessExecutor
+    {
+        /// <summary>
+        /// Starts an process and returns the result when done. Takes an environment variable for active mutation
+        /// </summary>
+        /// <param name="path">The path the process will use as base path</param>
+        /// <param name="application">example: dotnet</param>
+        /// <param name="arguments">example: --no-build</param>
+        /// <param name="activeMutationId">this value will be used to set an environment variable for the process</param>
+        /// <returns>ProcessResult</returns>
+        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
+    }
+    
     [ExcludeFromCodeCoverage]
     public class ProcessExecutor : IProcessExecutor
     {
@@ -44,10 +60,10 @@ namespace Stryker.Core.Testing
 
         /// <summary>
         /// Starts a process with the given info. 
-        /// Checks for timeout after <paramref name="timeoutMS"/> miliseconds if the process is still running. 
+        /// Checks for timeout after <paramref name="timeoutMS"/> milliseconds if the process is still running. 
         /// </summary>
         /// <param name="info">The start info for the process</param>
-        /// <param name="timeoutMS">The miliseconds to check for a timeout</param>
+        /// <param name="timeoutMS">The milliseconds to check for a timeout</param>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)

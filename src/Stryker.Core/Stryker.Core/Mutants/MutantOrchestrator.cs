@@ -12,6 +12,17 @@ using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
+    public interface IMutantOrchestrator
+    {
+        SyntaxNode Mutate(SyntaxNode rootNode);
+        /// <summary>
+        /// Gets the stored mutants and resets the mutant list to an empty collection
+        /// </summary>
+        /// <returns>Mutants</returns>
+        IEnumerable<Mutant> GetLatestMutantBatch();
+    }
+
+
     /// <summary>
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
@@ -25,7 +36,7 @@ namespace Stryker.Core.Mutants
         private MutationHandler _mutationHandler { get; set; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        /// <param name="mutantFactory">An instance of the mutantFactory, use the same for every file to keep the mutationcount increment</param>
+        /// <param name="mutantFactory">An instance of the mutantFactory, use the same for every file to keep the mutation count increment</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators)
         {
             _mutators = mutators;
@@ -59,7 +70,7 @@ namespace Stryker.Core.Mutants
                 StatementSyntax ast = statement as StatementSyntax;
 
                 // this is a temporary fix for mutating LocalDeclarationStatements because mutating withing these statements breaks the application
-                // TODO: backlog item Ternary assignment statements mutaties
+                // TODO: backlog item Ternary assignment statements mutations
                 if (!(statement is LocalDeclarationStatementSyntax))
                 {
                     foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))

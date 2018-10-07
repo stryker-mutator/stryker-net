@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Stryker.Core.Initialisation.ProjectComponent
 {
     /// <summary>
-    /// This interface should only contain readonly properties to ensure that others than the mutationtest proces cannot modify components.
+    /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify components.
     /// </summary>
     public interface IReadOnlyInputComponent
     {

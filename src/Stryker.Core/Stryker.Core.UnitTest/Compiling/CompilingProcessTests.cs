@@ -34,7 +34,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
                 {
-                    ProjectUnderTestAssemblyName = "The asssembly name"
+                    ProjectUnderTestAssemblyName = "The assembly name"
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
@@ -71,7 +71,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
                 {
-                    ProjectUnderTestAssemblyName = "The asssembly name"
+                    ProjectUnderTestAssemblyName = "The assembly name"
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
@@ -112,7 +112,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
                 {
-                    ProjectUnderTestAssemblyName = "The asssembly name"
+                    ProjectUnderTestAssemblyName = "The assembly name"
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)

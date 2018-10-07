@@ -13,6 +13,15 @@ using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
+    public interface ICompilingProcess
+    {
+        /// <summary>
+        /// Compiles the given input onto the memorystream
+        /// </summary>
+        /// <param name="ms">The memorystream to function as output</param>
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms);
+    }
+    
     /// <summary>
     /// This process is in control of compiling the assembly and rollbacking mutations that cannot compile
     /// </summary>

@@ -5,6 +5,7 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
+using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class ConsoleRapportReporterTests
+    public class ConsoleReportReporterTests
     {
         
         [Fact]
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest.Reporters
             chalkMock.Setup(x => x.DarkGray(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
 
-            var target = new ConsoleRapportReporter(chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf() { Name = "SomeFile.cs", Mutants = new Collection<Mutant>() { } });
@@ -58,7 +59,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = "Not relevant"
             };
 
-            var target = new ConsoleRapportReporter(chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -99,8 +100,8 @@ All mutants have been tested, and your mutation score has been calculated
                 DisplayName = "This name should display",
                 Type = "Not relevant"
             };
-
-            var target = new ConsoleRapportReporter(chalkMock.Object);
+            
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -144,7 +145,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = "Not relevant"
             };
 
-            var target = new ConsoleRapportReporter(chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "info", false, 1, 80, 60, 0), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -186,7 +187,8 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = "Not relevant"
             };
 
-            var target = new ConsoleRapportReporter(chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), chalkMock.Object);
+
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()

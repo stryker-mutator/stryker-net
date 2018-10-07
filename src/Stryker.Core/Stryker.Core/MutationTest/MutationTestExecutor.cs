@@ -7,8 +7,13 @@ using System;
 namespace Stryker.Core.MutationTest
 {
     /// <summary>
-    /// Executes exactly one mutationtest and stores the result
+    /// Executes exactly one mutation test and stores the result
     /// </summary>
+    public interface IMutationTestExecutor
+    {
+        void Test(Mutant mutant);
+    }
+
     public class MutationTestExecutor : IMutationTestExecutor
     {
         private ITestRunner _testRunner { get; set; }
@@ -24,10 +29,9 @@ namespace Stryker.Core.MutationTest
 
         public void Test(Mutant mutant)
         {
-            _testRunner.SetActiveMutation(mutant.Id);
             try
             {
-                var result = _testRunner.RunAll(_timeoutMS);
+                var result = _testRunner.RunAll(_timeoutMS, mutant.Id);
                 _logger.LogTrace("Testrun with output {0}", result.ResultMessage);
 
                 if (result.Success)

@@ -1,6 +1,7 @@
 ﻿using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
+using Stryker.Core.Options;
 using System;
 using System.Globalization;
 using System.IO;
@@ -11,12 +12,14 @@ namespace Stryker.Core.Reporters
     /// <summary>
     /// The default reporter, prints a simple progress and end result.
     /// </summary>
-    public class ConsoleRapportReporter : IReporter
+    public class ConsoleReportReporter : IReporter
     {
         private IChalk _chalk { get; set; }
+        private StrykerOptions options { get; }
 
-        public ConsoleRapportReporter(IChalk chalk = null)
+        public ConsoleReportReporter(StrykerOptions strykerOptions, IChalk chalk = null)
         {
+            options =  strykerOptions;
             _chalk = chalk ?? new Chalk();
         }
 
@@ -71,6 +74,10 @@ namespace Stryker.Core.Reporters
         private void DisplayComponent(IReadOnlyInputComponent inputComponent)
         {
             var score = inputComponent.GetMutationScore();
+            // Convert the threshold integer values to decimal values
+            decimal thresholdHigh = (decimal) this.options.ThresholdOptions.ThresholdHigh/100;
+            decimal thresholdLow = (decimal) this.options.ThresholdOptions.ThresholdLow/100;
+
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
             {
@@ -80,14 +87,15 @@ namespace Stryker.Core.Reporters
             {
                 // print the score as a percentage
                 string scoreText = $"({ score.Value.ToString("P", CultureInfo.InvariantCulture)})";
-                if (score > 0.8M)
+                if (score > thresholdHigh)
                 {
                     _chalk.Green(scoreText);
                 }
-                else if (score > 0.6M)
+                else if (score > thresholdLow)
                 {
                     _chalk.Yellow(scoreText);
-                } else
+                } 
+                else
                 {
                     _chalk.Red(scoreText);
                 }

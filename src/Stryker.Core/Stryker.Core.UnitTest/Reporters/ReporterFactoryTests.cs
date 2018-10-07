@@ -1,20 +1,26 @@
 ﻿using Shouldly;
 using Stryker.Core.Reporters;
+using Stryker.Core.Options;
 using System;
+using System.Collections.Generic;
+
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
     public class ReporterFactoryTests
     {
-        [Theory]
-        [InlineData("RapportOnly", typeof(ConsoleRapportReporter))]
-        [InlineData("Console", typeof(BroadcastReporter))]
-        [InlineData("someRandomName", typeof(BroadcastReporter))]
-        [InlineData("", typeof(BroadcastReporter))]
-        public void ReporterFactory_NameShouldCreateJustReporterType(string name, Type type)
+        public static IEnumerable<object[]> getParameters()
         {
-            var result = ReporterFactory.Create(name);
+            yield return new object[] {new StrykerOptions("", "ReportOnly", "", 1000, "debug", false, 1, 80, 60, 0), typeof(ConsoleReportReporter)};
+            yield return new object[] {new StrykerOptions("", "Console", "", 1000, "debug", false, 1, 80, 60, 0), typeof(BroadcastReporter)};
+        }
+
+        [Theory]
+        [MemberData(nameof(getParameters))]
+        public void ReporterFactory_NameShouldCreateJustReporterType(StrykerOptions options, Type type)
+        {
+            var result = ReporterFactory.Create(options);
             result.ShouldBeOfType(type);
         }
     }

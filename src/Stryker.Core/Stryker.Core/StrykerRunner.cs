@@ -11,6 +11,11 @@ using System.Diagnostics;
 
 namespace Stryker.Core
 {
+    public interface IStrykerRunner
+    {
+        void RunMutationTest(StrykerOptions options);
+    }
+    
     public class StrykerRunner : IStrykerRunner
     {
         private IReporter _reporter { get; set; }
@@ -42,8 +47,8 @@ namespace Stryker.Core
 
             try
             {
-                // initialyze 
-                _reporter = ReporterFactory.Create(options.Reporter);
+                // initialize 
+                _reporter = ReporterFactory.Create(options);
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess(_reporter);
                 _input = _initialisationProcess.Initialize(options);
 
@@ -66,11 +71,11 @@ namespace Stryker.Core
                 _mutationTestProcess.Mutate();
 
                 // test mutations
-                _mutationTestProcess.Test();
+                _mutationTestProcess.Test(options.MaxConcurrentTestrunners);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred during the mutationtest run ");
+                logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
             finally {

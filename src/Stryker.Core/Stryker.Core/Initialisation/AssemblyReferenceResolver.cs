@@ -9,6 +9,13 @@ using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
+    public interface IAssemblyReferenceResolver
+    {
+        IEnumerable<PortableExecutableReference> ResolveReferences(string projectPath, string projectFileName, string projectUnderTestAssemblyName);
+        IEnumerable<string> GetAssemblyPathsFromOutput(string paths);
+        IEnumerable<string> GetReferencePathsFromOutput(IEnumerable<string> paths);
+    }
+
     /// <summary>
     /// Resolving the MetadataReferences for compiling later
     /// This has to be done using msbuild because currently msbuild is the only reliable way of resolving all referenced assembly locations
@@ -60,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 yield return _metadataReference.CreateFromFile(reference.Trim());
             }
 
-            // the last part contains the package dependencies, seperated by the path seperator char
+            // the last part contains the package dependencies, seperated by the path separator char
             foreach (var reference in GetAssemblyPathsFromOutput(rows.Last())
                 .Distinct()
                 .Where(x => Path.GetFileNameWithoutExtension(x) != projectUnderTestAssemblyName))

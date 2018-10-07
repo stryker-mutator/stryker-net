@@ -9,6 +9,11 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
+    public interface IInputFileResolver
+    {
+        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter);
+    }
+
     /// <summary>
     ///  - Reads .csproj to find project under test
     ///  - Scans project under test and store files to mutate
@@ -52,7 +57,7 @@ namespace Stryker.Core.Initialisation
         }
 
         /// <summary>
-        /// Resursively scans the given directory for files to mutate
+        /// Recursively scans the given directory for files to mutate
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>

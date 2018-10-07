@@ -5,7 +5,6 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,12 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
+    public interface IMutationTestProcess
+    {
+        void Mutate();
+        void Test(int maxConcurrentTestRunners);
+    }
+    
     public class MutationTestProcess : IMutationTestProcess
     {
         private MutationTestInput _input { get; set; }
@@ -56,7 +61,7 @@ namespace Stryker.Core.MutationTest
                 var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-                // Store the generated mutatants in the file
+                // Store the generated mutants in the file
                 file.Mutants = _orchestrator.GetLatestMutantBatch();
             }
 
@@ -68,6 +73,9 @@ namespace Stryker.Core.MutationTest
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms);
                 if (compileResult.Success)
                 {
+                    if (!_fileSystem.Directory.Exists(_input.GetInjectionPath()) && !_fileSystem.File.Exists(_input.GetInjectionPath()) ) {
+                        _fileSystem.Directory.CreateDirectory(_input.GetInjectionPath());
+                    }
                     // inject the mutated Assembly into the test project
                     using (var fs = _fileSystem.File.Create(_input.GetInjectionPath()))
                     {
@@ -94,10 +102,16 @@ namespace Stryker.Core.MutationTest
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
-        public void Test()
+        public void Test(int maxConcurrentTestRunners)
         {
-            var logicalProsessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = logicalProsessorCount / 2;
+            var logicalProcessorCount = Environment.ProcessorCount;                  
+            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
+
+            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            {
+                usableProcessorCount = maxConcurrentTestRunners;
+            }
+
             Parallel.ForEach(_input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun),
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
                 mutant =>
@@ -105,7 +119,6 @@ namespace Stryker.Core.MutationTest
                     _mutationTestExecutor.Test(mutant);
                     _reporter.OnMutantTested(mutant);
                 });
-
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
         }
     }
