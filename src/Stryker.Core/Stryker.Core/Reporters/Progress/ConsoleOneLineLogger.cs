@@ -1,42 +1,48 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 
 namespace Stryker.Core.Reporters.Progress
 {
+    public interface IConsoleOneLineLogger
+    {
+        void StartLog(string text, params object[] args);
+        void ReplaceLog(string text, params object[] args);
+    }
+
     public class ConsoleOneLineLogger : IConsoleOneLineLogger
     {
         private int _cursorTop;
 
-        private readonly object _mutex = new object();
+        private readonly ILogger _logger;
 
-        public void StartLog(string text)
+        public ConsoleOneLineLogger(ILogger logger)
         {
-            lock (_mutex)
-            {
-                _cursorTop = Console.CursorTop;
-                Console.Write(text + Environment.NewLine);
-            }
+            _logger = logger;
         }
 
-        public void ReplaceLog(string text)
+        public void StartLog(string text, params object[] args)
         {
-            lock (_mutex)
-            {
-                var currentCursorTop = Console.CursorTop;
-                var currentCursorLeft = Console.CursorLeft;
-
-                Console.SetCursorPosition(0, _cursorTop);
-                ClearLine();
-
-                Console.SetCursorPosition(0, _cursorTop);
-                Console.Write(text + Environment.NewLine);
-
-                Console.SetCursorPosition(currentCursorLeft, currentCursorTop);
-            }
+            _cursorTop = Console.CursorTop;
+            _logger.LogInformation(text, args);
         }
 
-        private static void ClearLine()
+        public void ReplaceLog(string text, params object[] args)
         {
-            Console.Write(new string(' ', Console.WindowWidth));
+            var currentCursorTop = Console.CursorTop;
+            var currentCursorLeft = Console.CursorLeft;
+
+            Console.SetCursorPosition(0, _cursorTop);
+            ClearLine();
+
+            Console.SetCursorPosition(0, _cursorTop);
+            _logger.LogInformation(text, args);
+
+            Console.SetCursorPosition(currentCursorLeft, currentCursorTop);
+        }
+
+        private void ClearLine()
+        {
+            _logger.LogInformation(new string(' ', Console.WindowWidth));
         }
     }
 }
