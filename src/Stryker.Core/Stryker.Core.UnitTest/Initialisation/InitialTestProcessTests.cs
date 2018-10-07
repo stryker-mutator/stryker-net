@@ -13,8 +13,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
         public InitialTestProcessTests()
         {
-            var chalk = new Mock<IChalk>();
-            _target = new InitialTestProcess(chalk.Object);
+            _target = new InitialTestProcess();
         }
 
         [Fact]

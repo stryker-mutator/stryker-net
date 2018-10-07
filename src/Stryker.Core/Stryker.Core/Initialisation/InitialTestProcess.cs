@@ -15,12 +15,10 @@ namespace Stryker.Core.Initialisation
     
     public class InitialTestProcess : IInitialTestProcess
     {
-        private IChalk _chalk;
         private ILogger _logger { get; set; }
 
-        public InitialTestProcess(IChalk chalk)
+        public InitialTestProcess()
         {
-            _chalk = chalk;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
 
@@ -38,7 +36,7 @@ namespace Stryker.Core.Initialisation
             stopwatch.Start();
 
             var testResult = testRunner.RunAll(0, null);
-            _chalk.Default($"Total number of tests found in initial test run: {testResult.TotalNumberOfTests} {Environment.NewLine}");
+            _logger.LogInformation($"Total number of tests found in initial test run: {testResult.TotalNumberOfTests} {Environment.NewLine}");
 
             var duration = (int)stopwatch.ElapsedMilliseconds;
 
