@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
-using Stryker.Core.Mutants.MutationHandlers;
+using Stryker.Core.Mutants;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -23,12 +23,10 @@ namespace Stryker.Core.Compiling
     {
         private List<int> _rollbackedIds { get; set; }
         private ILogger _logger { get; set; }
-        private MutationHandler _mutationHandler { get; set; }
 
         public RollbackProcess()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
-            _mutationHandler = new MutationTernaryPlacer().SetSuccessor(new MutationIfPlacer());
         }
 
         public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics)
@@ -109,7 +107,7 @@ namespace Stryker.Core.Compiling
                 // find the if statement in the new tree
                 var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
                 // remove the if statement and update the tree
-                trackedTree = trackedTree.ReplaceNode(nodeToRemove, _mutationHandler.HandleRemoveMutation(nodeToRemove));
+                trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveByIfStatement(nodeToRemove));
             }
             return trackedTree.SyntaxTree;
         }
