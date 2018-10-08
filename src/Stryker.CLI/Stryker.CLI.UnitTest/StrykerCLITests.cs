@@ -2,9 +2,12 @@ using Moq;
 using Serilog.Events;
 using Stryker.Core;
 using Stryker.Core.Options;
+using Stryker.Core.Logging;
+using Stryker.Core.Initialisation.ProjectComponent;
 using System;
 using System.IO;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -176,6 +179,43 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.ThresholdOptions.ThresholdHigh == 90)));
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
+        {
+            Environment.ExitCode = 0;
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            var resultMock = new Mock<IStrykerRunResult>(MockBehavior.Strict);
+
+            resultMock.Setup(x => x.isScoreAboveThresholdBreak()).Returns(false).Verifiable();
+            resultMock.Setup(x => x.mutationScore).Returns(0.0M).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(resultMock.Object).Verifiable();
+            
+            var target = new StrykerCLI(mock.Object);
+            target.Run(new string[] { });
+
+            mock.Verify();
+            resultMock.VerifyAll();
+            Assert.Equal(1, Environment.ExitCode);
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
+        {
+            Environment.ExitCode = 0;
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            var resultMock = new Mock<IStrykerRunResult>(MockBehavior.Strict);
+
+            resultMock.Setup(x => x.isScoreAboveThresholdBreak()).Returns(true).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(resultMock.Object).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+            target.Run(new string[] { });
+
+            resultMock.Verify();
+            mock.Verify();
+            Assert.Equal(0, Environment.ExitCode);
         }
     }
 }

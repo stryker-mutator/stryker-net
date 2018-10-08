@@ -18,13 +18,11 @@ namespace Stryker.Core.Reporters
     {
         private IChalk _chalk { get; set; }
         private StrykerOptions options { get; }
-        private ILogger _logger { get; set; }
 
         public ConsoleReportReporter(StrykerOptions strykerOptions, IChalk chalk = null)
         {
             options =  strykerOptions;
             _chalk = chalk ?? new Chalk();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<ConsoleReportReporter>();
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent)
@@ -100,19 +98,9 @@ namespace Stryker.Core.Reporters
                 {
                     _chalk.Yellow(scoreText);
                 } 
-                else if (score <= thresholdLow && score >= thresholdBreak)
+                else if (score <= thresholdLow)
                 {
                     _chalk.Red(scoreText);
-                } 
-                else 
-                {
-                    // Threshold break value has been reached, set a non-zero exit code
-                    _logger.LogError("Final mutation score " 
-                        + score + "under breaking threshold " 
-                        + this.options.ThresholdOptions.ThresholdBreak 
-                        + " , setting exit code to 1 (failure)");
-                    _logger.LogInformation("Improve mutation score or set '--thresholds-break' lower to prevent this error in the future");
-                    Environment.ExitCode = 1;
                 }
             }
             _chalk.Default($"]{Environment.NewLine}");

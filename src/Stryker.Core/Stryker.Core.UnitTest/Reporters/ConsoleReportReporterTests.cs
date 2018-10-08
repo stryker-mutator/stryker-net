@@ -215,10 +215,8 @@ All mutants have been tested, and your mutation score has been calculated
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
-            chalkMock.Setup(x => x.Red(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Green(It.IsAny<string>())).Callback((string text) => { output += text; });
-            chalkMock.Setup(x => x.Yellow(It.IsAny<string>())).Callback((string text) => { output += text; });
 
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
             var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
