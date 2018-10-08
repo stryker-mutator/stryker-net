@@ -37,7 +37,7 @@ Only compatible with .NET Core version 1.1+
 Right now, Stryker.NET supports the following mutators:
 - Binary Operators
 - Boolean Substitutions
-- Assignment Mutators
+- Assignment Mutator
 - Unary Operators
 - Update Operators
 - Checked Mutator

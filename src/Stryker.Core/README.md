@@ -6,7 +6,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Mutators](#mutators)
     - [Binary Operators](#binary-operators)
     - [Boolean Substitutions](#boolean-substitutions)
-    - [Assignment Mutators](#assignment-mutators)
+    - [Assignment Mutator](#assignment-mutator)
     - [Unary Operators](#unary-operators)
     - [Update Operators](#update-operators)
 	- [Checked Mutator](#checked-mutator)
@@ -41,7 +41,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `false`	| `true` |
 | `!`		| ` ` |
 
-## Assignment Mutators
+## Assignment Mutator
 | Original | Mutated | 
 | ------------- | ------------- | 
 |`+= `	| `-= ` |
