@@ -2,12 +2,10 @@
 using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
 using Stryker.Core.Options;
-using Stryker.Core.Logging;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Reporters
 {
