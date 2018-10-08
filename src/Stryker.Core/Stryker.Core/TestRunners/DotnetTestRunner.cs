@@ -17,8 +17,6 @@ namespace Stryker.Core.TestRunners
             _processExecutor = processProxy;
         }
 
-        public DotnetTestRunner(string path) : this(path, new ProcessExecutor(), new TotalNumberOfTestsParser()) { }
-
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             var result = _processExecutor.Start(

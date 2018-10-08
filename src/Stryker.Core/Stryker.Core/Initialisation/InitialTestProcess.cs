@@ -38,7 +38,7 @@ namespace Stryker.Core.Initialisation
             stopwatch.Start();
 
             var testResult = testRunner.RunAll(0, null);
-            _chalk.Default($"Total number of tests found in initial test run: {testResult.TotalNumberOfTests} {Environment.NewLine}");
+            _logger.LogInformation("Total number of tests found in initial test run: {0}", testResult.TotalNumberOfTests);
 
             var duration = (int)stopwatch.ElapsedMilliseconds;
 

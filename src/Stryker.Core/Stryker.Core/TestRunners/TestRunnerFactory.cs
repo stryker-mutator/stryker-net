@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.TestRunners
 {
@@ -19,10 +21,10 @@ namespace Stryker.Core.TestRunners
             switch (type)
             {
                 case("dotnet test"):
-                    testRunner = new DotnetTestRunner(path);
+                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
                 default:
-                    testRunner = new DotnetTestRunner(path);
+                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
             _logger.LogInformation("Using testrunner {0}", testRunner.GetType().Name);
