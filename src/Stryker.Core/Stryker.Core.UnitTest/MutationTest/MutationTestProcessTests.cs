@@ -13,6 +13,7 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Stryker.Core.Reporters.Progress;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -99,12 +100,13 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(file1).GetRoot());
             orchestratorMock.SetupAllProperties();
             compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>()))
-                .Returns(new CompilingProcessResult() {
+                .Returns(new CompilingProcessResult()
+                {
                     Success = true
                 });
 
             var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 80, 60, 0);
-            var target = new MutationTestProcess(input, 
+            var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 null,
                 mutationTestExecutorMock.Object,
@@ -192,9 +194,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     Success = true
                 });
-          
+
             var options = new StrykerOptions("C:\test", "Console", "", 2000, null, false, 1, 80, 60, 0);
-          
+
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 null,
@@ -206,7 +208,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate();
 
             // Verify the created assembly is written to disk on the right location
-            Assert.True(fileSystem.FileExists($@"{basePath}\bin\Debug\netcoreapp2.0\ExampleProject.dll"), 
+            Assert.True(fileSystem.FileExists($@"{basePath}\bin\Debug\netcoreapp2.0\ExampleProject.dll"),
                 "The mutated Assembly was not written to disk, or not to the right location.");
         }
 
@@ -233,7 +235,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestAssemblyName = "ExampleProject",
                     ProjectUnderTestPath = @"c:\ExampleProject\",
                     TargetFramework = "netcoreapp2.0",
-                },                
+                },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -245,7 +247,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions("c:/test", "Console", "", 2000, null, false, 1, 80, 60, 0);
 
-            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object);
+            var progressReporter = new Mock<IProgressReporter>();
+            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null, progressReporter.Object);
 
             target.Test(options.MaxConcurrentTestrunners);
 

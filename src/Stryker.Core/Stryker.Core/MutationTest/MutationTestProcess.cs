@@ -57,11 +57,14 @@ namespace Stryker.Core.MutationTest
         private static ProgressReporter CreateProgressReporter()
         {
             var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
-            return new ProgressReporter(consoleOneLineLoggerFactory.Create(),
-                                        consoleOneLineLoggerFactory.Create(),
-                                        consoleOneLineLoggerFactory.Create(),
-                                        consoleOneLineLoggerFactory.Create(),
-                                        consoleOneLineLoggerFactory.Create());
+            var progressBarReporter = new ProgressBarReporter(consoleOneLineLoggerFactory.Create());
+            var mutantsResultReporter = new MutantsResultReporter(
+                consoleOneLineLoggerFactory.Create(),
+                consoleOneLineLoggerFactory.Create(),
+                consoleOneLineLoggerFactory.Create(),
+                consoleOneLineLoggerFactory.Create());
+
+            return new ProgressReporter(mutantsResultReporter, progressBarReporter);
         }
 
         public void Mutate()
@@ -128,8 +131,8 @@ namespace Stryker.Core.MutationTest
             }
 
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
-            
-            _progressReporter.StartReporting(mutantsNotRun.Count());
+
+            _progressReporter.ReportInitialState(mutantsNotRun.Count());
 
             Parallel.ForEach(mutantsNotRun,
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
