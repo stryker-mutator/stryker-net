@@ -205,8 +205,8 @@ namespace Stryker.CLI.UnitTest
         {
             Environment.ExitCode = 0;
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 20);
-            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
             
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
 
