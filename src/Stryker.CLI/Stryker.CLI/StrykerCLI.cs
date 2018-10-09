@@ -104,7 +104,7 @@ namespace Stryker.CLI
 
             try
             {  
-               IStrykerRunResult results = _stryker.RunMutationTest(options);
+               StrykerRunResult results = _stryker.RunMutationTest(options);
                
                if(!results.isScoreAboveThresholdBreak()) 
                {
@@ -117,10 +117,10 @@ namespace Stryker.CLI
             }
         }
 
-        private void HandleBreakingThresholdScore(StrykerOptions options, IStrykerRunResult results) {
-            _logger.LogError("Final mutation score: {0} under breaking threshold value {1}"
-            + ", setting exit code to 1 (failure)", results.mutationScore, options.ThresholdOptions.ThresholdBreak);
-            _logger.LogError("Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future");
+        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results) {
+            _logger.LogError(@"Final mutation score: {results.mutationScore} under breaking threshold value {options.ThresholdOptions.ThresholdBreak},
+                                ,setting exit code to 1 (failure).
+                                Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future");
             Environment.ExitCode = 1;
         }
 

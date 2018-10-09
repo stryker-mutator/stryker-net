@@ -13,7 +13,7 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        IStrykerRunResult RunMutationTest(StrykerOptions options);
+        StrykerRunResult RunMutationTest(StrykerOptions options);
     }
     
     public class StrykerRunner : IStrykerRunner
@@ -35,7 +35,7 @@ namespace Stryker.Core
         /// </summary>
         /// <exception cref="StrykerException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
-        public IStrykerRunResult RunMutationTest(StrykerOptions options)
+        public StrykerRunResult RunMutationTest(StrykerOptions options)
         {
             // start stopwatch
             var stopwatch = new Stopwatch();

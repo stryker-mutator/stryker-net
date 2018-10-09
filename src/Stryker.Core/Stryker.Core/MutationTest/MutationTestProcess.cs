@@ -21,7 +21,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestProcess
     {
         void Mutate();
-        IStrykerRunResult Test(StrykerOptions options);
+        StrykerRunResult Test(StrykerOptions options);
     }
     
     public class MutationTestProcess : IMutationTestProcess
@@ -102,7 +102,7 @@ namespace Stryker.Core.MutationTest
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
-        public IStrykerRunResult Test(StrykerOptions options)
+        public StrykerRunResult Test(StrykerOptions options)
         {
             var logicalProcessorCount = Environment.ProcessorCount;                  
             var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);

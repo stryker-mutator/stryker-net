@@ -186,18 +186,18 @@ namespace Stryker.CLI.UnitTest
         {
             Environment.ExitCode = 0;
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var resultMock = new Mock<IStrykerRunResult>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
 
-            resultMock.Setup(x => x.isScoreAboveThresholdBreak()).Returns(false).Verifiable();
-            resultMock.Setup(x => x.mutationScore).Returns(0.0M).Verifiable();
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(resultMock.Object).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
             
             var target = new StrykerCLI(mock.Object);
             target.Run(new string[] { });
 
             mock.Verify();
-            resultMock.VerifyAll();
             Assert.Equal(1, Environment.ExitCode);
+            // Linux environment will fail the test if it exits with an non-zero exit code
+            Environment.ExitCode = 0;
         }
 
         [Fact]
@@ -205,15 +205,14 @@ namespace Stryker.CLI.UnitTest
         {
             Environment.ExitCode = 0;
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var resultMock = new Mock<IStrykerRunResult>(MockBehavior.Strict);
-
-            resultMock.Setup(x => x.isScoreAboveThresholdBreak()).Returns(true).Verifiable();
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(resultMock.Object).Verifiable();
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 20);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
+            
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             target.Run(new string[] { });
 
-            resultMock.Verify();
             mock.Verify();
             Assert.Equal(0, Environment.ExitCode);
         }

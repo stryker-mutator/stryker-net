@@ -2,12 +2,7 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
 
 namespace Stryker.Core {
-    public interface IStrykerRunResult
-    {
-        decimal? mutationScore {get; }
-        bool isScoreAboveThresholdBreak();
-    }
-    public class StrykerRunResult : IStrykerRunResult {
+    public class StrykerRunResult {
         private StrykerOptions _options { get; }
         public decimal? mutationScore { get; }
 
