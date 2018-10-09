@@ -35,16 +35,10 @@ namespace Stryker.Core.Initialisation
             _reporter = reporter;
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
-            _initialTestProcess = initialTestProcess ?? CreateInitionTestProcess();
+            _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
-        }
-
-        private static InitialTestProcess CreateInitionTestProcess()
-        {
-            var chalk = new Chalk();
-            return new InitialTestProcess(chalk);
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
