@@ -15,12 +15,10 @@ namespace Stryker.Core.Initialisation
     
     public class InitialTestProcess : IInitialTestProcess
     {
-        private IChalk _chalk;
         private ILogger _logger { get; set; }
 
-        public InitialTestProcess(IChalk chalk)
+        public InitialTestProcess()
         {
-            _chalk = chalk;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
 
