@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Xunit;
 

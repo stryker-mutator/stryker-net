@@ -1,8 +1,5 @@
 ﻿using Stryker.Core.Mutants;
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
 
 namespace Stryker.Core.Reporters.Progress
 {
