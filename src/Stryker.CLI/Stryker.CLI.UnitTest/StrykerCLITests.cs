@@ -192,10 +192,11 @@ namespace Stryker.CLI.UnitTest
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
             
             var target = new StrykerCLI(mock.Object);
-            target.Run(new string[] { });
+            int result = target.Run(new string[] { });
 
             mock.Verify();
             Assert.Equal(1, target.ExitCode);
+            Assert.Equal(1, result);
         }
 
         [Fact]
@@ -208,10 +209,11 @@ namespace Stryker.CLI.UnitTest
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
-            target.Run(new string[] { });
+            int result = target.Run(new string[] { });
 
             mock.Verify();
             Assert.Equal(0, target.ExitCode);
+            Assert.Equal(0, result);
         }
     }
 }

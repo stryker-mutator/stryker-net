@@ -4,6 +4,7 @@ using Stryker.Core.Options;
 using Stryker.Core.Logging;
 using System;
 using System.IO;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI
@@ -25,7 +26,7 @@ namespace Stryker.CLI
         /// Analyses the arguments and displays an interface to the user. Kicks off the program.
         /// </summary>
         /// <param name="args">User input</param>
-        public void Run(string[] args)
+        public int Run(string[] args)
         {
             var app = new CommandLineApplication
             {
@@ -95,8 +96,7 @@ namespace Stryker.CLI
                 RunStryker(options);
                 return this.ExitCode;
             });
-
-            app.Execute(args);
+            return app.Execute(args);
         }
         
         private void RunStryker(StrykerOptions options)
@@ -107,7 +107,6 @@ namespace Stryker.CLI
             try
             {  
                StrykerRunResult results = _stryker.RunMutationTest(options);
-               
                if(!results.isScoreAboveThresholdBreak()) 
                {
                    this.HandleBreakingThresholdScore(options, results);
