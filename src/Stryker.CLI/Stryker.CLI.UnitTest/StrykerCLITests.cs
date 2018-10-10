@@ -4,6 +4,7 @@ using Stryker.Core;
 using Stryker.Core.Options;
 using Stryker.Core.Logging;
 using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Testing;
 using System;
 using System.IO;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
-            Assert.Equal(1, Environment.ExitCode);
+            Assert.Equal(1, target.ExitCode);
             mock.VerifyAll();
         }
 
@@ -184,7 +185,6 @@ namespace Stryker.CLI.UnitTest
         [Fact]
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
-            Environment.ExitCode = 0;
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70);
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
@@ -195,15 +195,12 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(1, Environment.ExitCode);
-            // Linux environment will fail the test if it exits with an non-zero exit code
-            Environment.ExitCode = 0;
+            Assert.Equal(1, target.ExitCode);
         }
 
         [Fact]
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
-            Environment.ExitCode = 0;
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0);
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
@@ -214,7 +211,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(0, Environment.ExitCode);
+            Assert.Equal(0, target.ExitCode);
         }
     }
 }

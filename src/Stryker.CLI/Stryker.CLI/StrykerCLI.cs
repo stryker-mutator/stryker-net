@@ -12,10 +12,13 @@ namespace Stryker.CLI
     {
         private IStrykerRunner _stryker { get; set; }
         private ILogger _logger { get; set; }
+        public int ExitCode {get; set; }
+
         public StrykerCLI(IStrykerRunner stryker)
         {
             _stryker = stryker;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            ExitCode = 0;
         }
 
         /// <summary>
@@ -90,8 +93,7 @@ namespace Stryker.CLI
                     thresholdBreakParam
                     );
                 RunStryker(options);
-                // Default ExitCode = 0
-                return Environment.ExitCode;
+                return this.ExitCode;
             });
 
             app.Execute(args);
@@ -113,7 +115,7 @@ namespace Stryker.CLI
             }
             catch (Exception)
             {
-                Environment.ExitCode = 1;
+                this.ExitCode = 1;
             }
         }
 
@@ -121,7 +123,7 @@ namespace Stryker.CLI
             _logger.LogError(@"Final mutation score: {results.mutationScore} under breaking threshold value {options.ThresholdOptions.ThresholdBreak},
                                 ,setting exit code to 1 (failure).
                                 Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future");
-            Environment.ExitCode = 1;
+            this.ExitCode = 1;
         }
 
         private void PrintStrykerASCIILogo()
