@@ -77,7 +77,7 @@ $@"
 All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [1/1 (100.00 %)]
 --- SomeFile.cs [1/1 (100.00 %)]
-[Killed] This name should display on line 0: '0 + 8' ==> '0 -8'
+[Killed] This name should display on line 1: '0 + 8' ==> '0 -8'
 ");
             chalkMock.Verify(x => x.Green(It.IsAny<string>()), Times.Exactly(3));
         }
@@ -119,7 +119,7 @@ $@"
 All mutants have been tested, and your mutation score has been calculated
 - {Path.DirectorySeparatorChar}RootFolder [0/1 (0.00 %)]
 --- SomeFile.cs [0/1 (0.00 %)]
-[Survived] This name should display on line 0: '0 + 8' ==> '0 -8'
+[Survived] This name should display on line 1: '0 + 8' ==> '0 -8'
 ");
             // All percentages should be red and the [Survived] too
             chalkMock.Verify(x => x.Red(It.IsAny<string>()), Times.Exactly(3));
