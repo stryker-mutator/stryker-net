@@ -49,7 +49,7 @@ namespace Stryker.Core
             {
                 // initialize 
                 _reporter = ReporterFactory.Create(options);
-                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess(_reporter);
+                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
