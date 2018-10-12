@@ -6,6 +6,19 @@ using System.IO;
 
 namespace Stryker.CLI
 {
+    internal static class Helpers
+    {
+        /// <summary>
+        /// Simplify app option creation to prevent code duplication
+        /// </summary>
+        public static CommandOption Option<T>(this CommandLineApplication app, CLIOption<T> option) where T : IConvertible
+        {
+            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
+                option.ArgumentDescription,
+                CommandOptionType.SingleValue);
+        }
+    }
+
     public class StrykerCLI
     {
         private IStrykerRunner _stryker { get; set; }
@@ -28,45 +41,16 @@ namespace Stryker.CLI
                 ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
             };
 
-            var configFilePathParam = app.Option($"{CLIOptions.ConfigFilePath.ArgumentName} | {CLIOptions.ConfigFilePath.ArgumentShortName}",
-                CLIOptions.ConfigFilePath.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var reporterParam = app.Option($"{CLIOptions.Reporter.ArgumentName} | {CLIOptions.Reporter.ArgumentShortName}",
-                CLIOptions.Reporter.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var logConsoleParam = app.Option($"{CLIOptions.LogLevel.ArgumentName} | {CLIOptions.LogLevel.ArgumentShortName}",
-                CLIOptions.LogLevel.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var timeoutParam = app.Option($"{CLIOptions.AdditionalTimeoutMS.ArgumentName} | {CLIOptions.AdditionalTimeoutMS.ArgumentShortName}",
-                CLIOptions.AdditionalTimeoutMS.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var fileLogParam = app.Option($"{CLIOptions.UseLogLevelFile.ArgumentName} | {CLIOptions.UseLogLevelFile.ArgumentShortName}",
-                CLIOptions.UseLogLevelFile.ArgumentDescription, 
-                CommandOptionType.SingleValue);
-
-            var projectNameParam = app.Option($"{CLIOptions.ProjectFileName.ArgumentName} | {CLIOptions.ProjectFileName.ArgumentShortName}",
-                CLIOptions.ProjectFileName.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
-                CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
-                CommandOptionType.SingleValue);
-            
-            var thresholdHighParam = app.Option($"{CLIOptions.ThresholdHigh.ArgumentName} | {CLIOptions.ThresholdHigh.ArgumentShortName}",
-                CLIOptions.ThresholdHigh.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var thresholdLowParam = app.Option($"{CLIOptions.ThresholdLow.ArgumentName} | {CLIOptions.ThresholdLow.ArgumentShortName}",
-                CLIOptions.ThresholdLow.ArgumentDescription,
-                CommandOptionType.SingleValue);
-                
-            var thresholdBreakParam = app.Option($"{CLIOptions.ThresholdBreak.ArgumentName} | {CLIOptions.ThresholdBreak.ArgumentShortName}",
-                CLIOptions.ThresholdBreak.ArgumentDescription,
-                CommandOptionType.SingleValue);
+            var configFilePathParam = app.Option(CLIOptions.ConfigFilePath);
+            var reporterParam = app.Option(CLIOptions.Reporter);
+            var logConsoleParam = app.Option(CLIOptions.LogLevel);
+            var timeoutParam = app.Option(CLIOptions.AdditionalTimeoutMS);
+            var fileLogParam = app.Option(CLIOptions.UseLogLevelFile);
+            var projectNameParam = app.Option(CLIOptions.ProjectFileName);
+            var maxConcurrentTestRunnersParam = app.Option(CLIOptions.MaxConcurrentTestRunners);
+            var thresholdHighParam = app.Option(CLIOptions.ThresholdHigh);
+            var thresholdLowParam = app.Option(CLIOptions.ThresholdLow);
+            var thresholdBreakParam = app.Option(CLIOptions.ThresholdBreak);
 
             app.HelpOption("--help | -h | -?");
 
