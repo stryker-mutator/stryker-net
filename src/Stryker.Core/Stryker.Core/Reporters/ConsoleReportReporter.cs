@@ -61,7 +61,7 @@ namespace Stryker.Core.Reporters
                     {
                         _chalk.Red($"[{mutant.ResultStatus}] ");
                     }
-                    _chalk.Default($"{mutant.Mutation.DisplayName} on line {mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line}: '{mutant.Mutation.OriginalNode}' ==> '{mutant.Mutation.ReplacementNode}'{Environment.NewLine}");
+                    _chalk.Default($"{mutant.Mutation.DisplayName} on line {mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{mutant.Mutation.OriginalNode}' ==> '{mutant.Mutation.ReplacementNode}'{Environment.NewLine}");
                 }
             };
             
@@ -102,13 +102,5 @@ namespace Stryker.Core.Reporters
             }
             _chalk.Default($"]{Environment.NewLine}");
         }
-
-        public void OnInitialisationStarted() { }
-
-        public void OnInitialBuildStarted() { }
-
-        public void OnInitialTestRunStarted() { }
-
-        public void OnInitialisationDone() { }
     }
 }

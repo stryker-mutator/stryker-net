@@ -40,38 +40,5 @@ namespace Stryker.Core.Reporters
                 reporter.OnAllMutantsTested(inputComponent);
             }
         }
-
-
-        public void OnInitialisationStarted()
-        {
-            foreach (var reporter in _reporters)
-            {
-                reporter.OnInitialisationStarted();
-            }
-        }
-
-        public void OnInitialBuildStarted()
-        {
-            foreach (var reporter in _reporters)
-            {
-                reporter.OnInitialBuildStarted();
-            }
-        }
-
-        public void OnInitialTestRunStarted()
-        {
-            foreach (var reporter in _reporters)
-            {
-                reporter.OnInitialTestRunStarted();
-            }
-        }
-
-        public void OnInitialisationDone()
-        {
-            foreach (var reporter in _reporters)
-            {
-                reporter.OnInitialisationDone();
-            }
-        }
     }
 }
