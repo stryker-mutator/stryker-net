@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Stryker.Core.Enumerations
 {
+    /// <summary>
+    ///     Enumeration for the different kinds of linq expressions
+    /// </summary>
     public enum LinqExpression
     {
         FirstOrDefault,

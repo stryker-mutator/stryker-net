@@ -15,7 +15,12 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class LinqMutatorTest
     {
-        private IEnumerable<InvocationExpressionSyntax> GetExpressions(LinqExpression expression)
+        /// <summary>
+        ///     Generator for different Linqexpressions
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        private IEnumerable<InvocationExpressionSyntax> GenerateExpressions(LinqExpression expression)
         {
 
             SyntaxTree tree = CSharpSyntaxTree.ParseText(
@@ -52,6 +57,11 @@ namespace TestApplication
             return expressions;
         }
 
+        /// <summary>
+        ///     Test method to check for correct mutation of different Linq Expression Mutations
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="expected"></param>
         [Theory]
         [InlineData(LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault)]
         [InlineData(LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault)]
@@ -71,7 +81,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            var expressions = GetExpressions(original);
+            var expressions = GenerateExpressions(original);
 
             foreach (var expression in expressions)
             {
@@ -90,15 +100,12 @@ namespace TestApplication
                     .ShouldBeTrue();
 
             }
-
-            //ExpressionSyntax es = SyntaxFactory.MemberAccessExpression();
-            //var result = target.ApplyMutations(SyntaxFactory.IdentifierName(original)).ToList();
-
-            //result.ShouldHaveSingleItem();
-
-            //result.First().ReplacementNode.IsKind(expected).ShouldBeTrue();
         }
 
+        /// <summary>
+        ///     Test Method to check, if different expressions aren't mutated
+        /// </summary>
+        /// <param name="orginal"></param>
         [Theory]
         [InlineData(SyntaxKind.UncheckedExpression)]
         public void ShouldNotMutate(SyntaxKind orginal)

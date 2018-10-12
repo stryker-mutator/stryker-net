@@ -9,11 +9,25 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
+    /// <summary>
+    ///     Mutator Implementation for LINQ Mutations
+    /// </summary>
     public class LinqMutator : Mutator<InvocationExpressionSyntax>, IMutator
     {
-
+        #region Private Properties
+    
+        /// <summary>
+        ///     Dictionary which maps original linq expressions to the target mutation
+        /// </summary>
         private Dictionary<LinqExpression, LinqExpression> _kindsToMutate { get; }
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        ///     Constructor for the <see cref="LinqMutator"/>
+        /// </summary>
         public LinqMutator()
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
@@ -35,6 +49,15 @@ namespace Stryker.Core.Mutators
             };
         }
 
+        #endregion
+
+        #region Mutation Overrider
+
+        /// <summary>
+        ///     Apply mutations to an <see cref="InvocationExpressionSyntax"/>
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
         public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
         {
             // Determine if it's an linq node
@@ -68,7 +91,9 @@ namespace Stryker.Core.Mutators
 
                 }
             }
-
         }
+
+    #endregion
+
     }
 }
