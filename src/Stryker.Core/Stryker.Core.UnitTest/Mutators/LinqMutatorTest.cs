@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Mutators
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        private IEnumerable<InvocationExpressionSyntax> GenerateExpressions(LinqExpression expression)
+        private IEnumerable<IdentifierNameSyntax> GenerateExpressions(LinqExpression expression)
         {
 
             SyntaxTree tree = CSharpSyntaxTree.ParseText(
@@ -44,15 +44,10 @@ namespace TestApplication
 }}");
             CompilationUnitSyntax root = (CompilationUnitSyntax)tree.GetRoot();
 
-            IEnumerable<InvocationExpressionSyntax> expressions =
+            IEnumerable<IdentifierNameSyntax> expressions =
                 root.DescendantNodes()
-                    .Where(d => d.Kind().Equals(SyntaxKind.InvocationExpression) &&
-                                d.DescendantNodes()
-                                    .Any(e => e.Kind().Equals(SyntaxKind.IdentifierName) &&
-                                                ((IdentifierNameSyntax)e).Identifier
-                                                .ValueText.Equals(
-                                                    expression.ToString())))
-                .Cast<InvocationExpressionSyntax>();
+                    .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName))
+                .Cast<IdentifierNameSyntax>();
 
             return expressions;
         }
@@ -105,15 +100,19 @@ namespace TestApplication
         /// <summary>
         ///     Test Method to check, if different expressions aren't mutated
         /// </summary>
-        /// <param name="orginal"></param>
+        /// <param name="methodName"></param>
         [Theory]
-        [InlineData(SyntaxKind.UncheckedExpression)]
-        public void ShouldNotMutate(SyntaxKind orginal)
+        [InlineData("AllData")]
+        [InlineData("PriceFirstOrDefault")]
+        [InlineData("TakeEntry")]
+        [InlineData("ShouldNotMutate")]
+        [InlineData("WriteLine")]
+        public void ShouldNotMutate(string methodName)
         {
-            var target = new CheckedMutator();
+            var target = new LinqMutator();
 
-            ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
-            var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(orginal, es)).ToList();
+            IdentifierNameSyntax es = (IdentifierNameSyntax) SyntaxFactory.ParseName(methodName);
+            var result = target.ApplyMutations(es);
 
             result.ShouldBeEmpty();
         }

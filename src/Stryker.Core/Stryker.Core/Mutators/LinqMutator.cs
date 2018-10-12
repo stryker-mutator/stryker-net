@@ -12,10 +12,10 @@ namespace Stryker.Core.Mutators
     /// <summary>
     ///     Mutator Implementation for LINQ Mutations
     /// </summary>
-    public class LinqMutator : Mutator<InvocationExpressionSyntax>, IMutator
+    public class LinqMutator : Mutator<IdentifierNameSyntax>, IMutator
     {
         #region Private Properties
-    
+
         /// <summary>
         ///     Dictionary which maps original linq expressions to the target mutation
         /// </summary>
@@ -51,49 +51,31 @@ namespace Stryker.Core.Mutators
 
         #endregion
 
-        #region Mutation Overrider
+        #region Mutation Overrides
 
         /// <summary>
-        ///     Apply mutations to an <see cref="InvocationExpressionSyntax"/>
+        ///     Apply mutations to an <see cref="IdentifierNameSyntax"/>
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(IdentifierNameSyntax node)
         {
-            // Determine if it's an linq node
-            bool isLinqNode = node.DescendantNodes().Any(
-                d => d.Kind().Equals(SyntaxKind.IdentifierName));
-
-            if (!isLinqNode)
+            if (Enum.TryParse(node.Identifier.ValueText, out LinqExpression expression) &&
+                _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
             {
-                yield break;
-            }
+                var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
 
-            IEnumerable<IdentifierNameSyntax> identifierNodes =
-                node.DescendantNodes()
-                    .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName))
-                    .Cast<IdentifierNameSyntax>();
-
-            foreach (var identifierNode in identifierNodes)
-            {
-                if (Enum.TryParse(identifierNode.Identifier.ValueText, out LinqExpression expression) &&
-                    _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
+                yield return new Mutation()
                 {
-                    var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
-
-                    yield return new Mutation()
-                    {
-                        DisplayName = $"{identifierNode.Identifier.ValueText} to {replacement} mutation",
-                        OriginalNode = node,
-                        ReplacementNode = replacement,
-                        Type = nameof(LinqMutator)
-                    };
-
-                }
+                    DisplayName = $"{node.Identifier.ValueText} to {replacement} mutation",
+                    OriginalNode = node,
+                    ReplacementNode = replacement,
+                    Type = nameof(LinqMutator)
+                };
             }
         }
 
-    #endregion
+        #endregion
 
     }
 }
