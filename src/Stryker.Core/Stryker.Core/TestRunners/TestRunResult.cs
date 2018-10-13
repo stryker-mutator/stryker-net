@@ -4,5 +4,6 @@
     {
         public bool Success { get; set; }
         public string ResultMessage { get; set; }
+        public int TotalNumberOfTests { get; set; }
     }
 }

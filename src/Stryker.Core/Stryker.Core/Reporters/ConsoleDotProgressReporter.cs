@@ -38,13 +38,5 @@ namespace Stryker.Core.Reporters
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent) { }
-
-        public void OnInitialisationStarted() { }
-
-        public void OnInitialBuildStarted() { }
-
-        public void OnInitialTestRunStarted() { }
-
-        public void OnInitialisationDone() { }
     }
 }
