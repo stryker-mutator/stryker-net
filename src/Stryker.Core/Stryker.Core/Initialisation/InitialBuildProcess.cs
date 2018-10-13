@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using System;
@@ -29,7 +30,7 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new Exception(result.Output);
+                throw new StrykerInputException($"Initial build of targeted project failed. Please make targeted project buildable.");
             }
             _logger.LogInformation("Initial build successful");
         }

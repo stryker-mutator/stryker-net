@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using System;
 using System.IO;
@@ -58,7 +59,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            Assert.Throws<NotSupportedException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
+            Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<NotSupportedException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
+            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
             exception.Message.ShouldContain("--project-file");
         }
 
@@ -145,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<ArgumentException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne));
+            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne));
             exception.Message.ShouldContain("more than one", Case.Insensitive);
         }
 
@@ -174,7 +175,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<ArgumentException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone));
+            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone));
             exception.Message.ShouldContain("no project", Case.Insensitive);
         }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
 using System.Collections.Generic;
@@ -90,10 +91,10 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
             if (projectFiles.Count() > 1)
             {
-                throw new FileNotFoundException("Expected exactly one .csproj file, found more than one. Please fix your project contents");
+                throw new StrykerInputException("Expected exactly one .csproj file, found more than one. Please fix your project contents");
             } else if (!projectFiles.Any())
             {
-                throw new FileNotFoundException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }
             _logger.LogInformation("Using {0} as project file", projectFiles.First());
             return projectFiles.First();

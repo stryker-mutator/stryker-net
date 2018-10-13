@@ -25,13 +25,13 @@ namespace Stryker.Core.UnitTest
         }
 
         [Fact]
-        public void Constructor_WithIncorrectLoglevelArgument_ShouldThrowValidationException()
+        public void Constructor_WithIncorrectLoglevelArgument_ShouldThrowStrykerInputException()
         {
             var logLevel = "incorrect";
 
             Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
 
-            Assert.Throws<ValidationException>(createOptions);
+            Assert.Throws<StrykerInputException>(createOptions);
         }
     }
 }

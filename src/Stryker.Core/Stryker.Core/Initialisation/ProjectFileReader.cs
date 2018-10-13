@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System;
 using System.IO;
@@ -45,25 +46,25 @@ namespace Stryker.Core.Initialisation
                 string referencesString = string.Join(", ", projectReferences);
                 if (string.IsNullOrEmpty(projectUnderTestNameFilter))
                 {
-                    throw new NotSupportedException("Only one referenced project is supported, please add the --project-file=[projectname] argument to specify the project to mutate", innerException: new Exception($"Found the following references: {referencesString}"));
+                    throw new StrykerInputException("Only one referenced project is supported, please add the --project-file=[projectname] argument to specify the project to mutate", inner: new Exception($"Found the following references: {referencesString}"));
                 }
                 else
                 {
                     var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
                     if (!searchResult.Any())
                     {
-                        throw new ArgumentException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", innerException: new Exception($"Found the following references: {referencesString}"));
+                        throw new StrykerInputException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", inner: new Exception($"Found the following references: {referencesString}"));
                     }
                     else if (searchResult.Count() > 1)
                     {
-                        throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
+                        throw new StrykerInputException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", inner: new Exception($"Found the following references: {referencesString}"));
                     }
                     return FilePathUtils.ConvertPathSeparators(searchResult.Single());
                 }
             }
             else if (!projectReferences.Any())
             {
-                throw new NotSupportedException("No project references found in test project file, unable to find project to mutate.");
+                throw new StrykerInputException("No project references found in test project file, unable to find project to mutate.");
             }
             return FilePathUtils.ConvertPathSeparators(projectReferences.Single());
         }
