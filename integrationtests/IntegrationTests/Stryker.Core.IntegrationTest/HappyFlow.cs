@@ -1,6 +1,8 @@
 using Shouldly;
+using Stryker.CLI;
 using Stryker.Core.Options;
 using System;
+using System.IO;
 using Xunit;
 
 namespace Stryker.Core.IntegrationTest
@@ -10,10 +12,12 @@ namespace Stryker.Core.IntegrationTest
         [Fact]
         public void HappyFlowReturns0ExitCode()
         {
-            var runner = new StrykerRunner();
-            string pathToExampleProject = "../../../ExampleProject/ExampleProject.XUnit/";
-            var options = new StrykerOptions(pathToExampleProject, "Console", "", 30000, "", false, int.MaxValue, 80, 60, 0);
-            runner.RunMutationTest(options);
+            string pathToExampleProject = Path.GetFullPath("../../../ExampleProject/ExampleProject.XUnit/");
+            Environment.CurrentDirectory = pathToExampleProject;
+
+            var runner = new StrykerCLI(new StrykerRunner());
+
+            runner.Run(new string[] { });
 
             Environment.ExitCode.ShouldBe(0);
         }
