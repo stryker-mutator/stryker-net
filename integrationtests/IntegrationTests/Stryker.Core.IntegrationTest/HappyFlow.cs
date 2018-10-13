@@ -17,9 +17,9 @@ namespace Stryker.Core.IntegrationTest
 
             var runner = new StrykerCLI(new StrykerRunner());
 
-            runner.Run(new string[] { });
+            int exitCode = runner.Run(new string[] { });
 
-            Environment.ExitCode.ShouldBe(0);
+            exitCode.ShouldBe(0);
         }
     }
 }
