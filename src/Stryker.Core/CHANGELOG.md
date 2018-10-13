@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 <a name="0.3.0"></a>
-# [0.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker.core@0.2.0...stryker.core@0.3.0) (2018-10-06)
+# [0.3.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.Core@0.2.0...StrykerMutator.Core@0.3.0) (2018-10-06)
 
 
 ### Bug Fixes
@@ -17,7 +17,7 @@ All notable changes to this project will be documented in this file.
 
 
 <a name="0.2.0"></a>
-# [0.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker.core@0.0.0...stryker.core@0.2.0) (2018-10-05)
+# [0.2.0](https://github.com/stryker-mutator/stryker-net/compare/80742de...StrykerMutator.Core@0.2.0) (2018-10-05)
 
 
 ### Bug Fixes
