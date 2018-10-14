@@ -46,7 +46,9 @@ namespace TestApplication
 
             IEnumerable<IdentifierNameSyntax> expressions =
                 root.DescendantNodes()
-                    .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName))
+                    .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName) &&
+                                ((IdentifierNameSyntax)d).Identifier.ValueText.Equals(
+                                    expression.ToString()))
                 .Cast<IdentifierNameSyntax>();
 
             return expressions;
