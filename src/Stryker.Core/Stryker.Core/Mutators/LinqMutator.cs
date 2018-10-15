@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Enumerations;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
@@ -60,12 +59,12 @@ namespace Stryker.Core.Mutators
         /// <returns></returns>
         public override IEnumerable<Mutation> ApplyMutations(IdentifierNameSyntax node)
         {
-            if (Enum.TryParse(node.Identifier.ValueText, out LinqExpression expression) &&
-                _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
+            if (Enum.TryParse(node.Identifier.ValueText, out LinqExpression expression))
             {
+                var replacementExpression = _kindsToMutate[expression];
                 var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
 
-                yield return new Mutation()
+                yield return new Mutation
                 {
                     DisplayName = $"{node.Identifier.ValueText} to {replacement} mutation",
                     OriginalNode = node,
@@ -77,5 +76,26 @@ namespace Stryker.Core.Mutators
 
         #endregion
 
+    }
+
+    /// <summary>
+    ///     Enumeration for the different kinds of linq expressions
+    /// </summary>
+    public enum LinqExpression
+    {
+        FirstOrDefault,
+        SingleOrDefault,
+        First,
+        Last,
+        All,
+        Any,
+        Skip,
+        Take,
+        SkipWhile,
+        TakeWhile,
+        Min,
+        Max,
+        Sum,
+        Count
     }
 }

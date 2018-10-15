@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.Enumerations;
 using Stryker.Core.Mutators;
 using Xunit;
 
