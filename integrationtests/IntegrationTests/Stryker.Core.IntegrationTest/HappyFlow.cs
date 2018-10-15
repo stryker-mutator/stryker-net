@@ -1,6 +1,5 @@
 using Shouldly;
 using Stryker.CLI;
-using Stryker.Core.Options;
 using System;
 using System.IO;
 using Xunit;

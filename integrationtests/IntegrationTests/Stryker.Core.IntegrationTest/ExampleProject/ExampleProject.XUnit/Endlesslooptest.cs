@@ -5,12 +5,12 @@ using Xunit;
 
 namespace ExampleProject.XUnit
 {
-    public class Endlesslooptest
+    public class EndlessLoopTest
     {
         [Fact]
         public void Loop()
         {
-            var target = new Endlessloop();
+            var target = new EndlessLoop();
             target.SomeLoop();
         }
     }

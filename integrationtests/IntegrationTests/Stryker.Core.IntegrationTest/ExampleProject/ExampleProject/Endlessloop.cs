@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ExampleProject
 {
-    public class Endlessloop
+    public class EndlessLoop
     {
         public void SomeLoop()
         {
