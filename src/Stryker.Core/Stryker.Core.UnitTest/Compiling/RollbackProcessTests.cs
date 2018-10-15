@@ -246,5 +246,61 @@ namespace ExampleProject
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
             }
         }
+
+        [Fact]
+        public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+using System;
+
+namespace ExampleProject
+{
+    public class Query
+    {
+        public void Break()
+        {
+            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""1"")
+            {
+                string someQuery = ""test"";
+                new Uri(new Uri(string.Empty), ""/API?"" + someQuery);
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}");
+            var ifStatement = syntaxTree.GetRoot()
+                .DescendantNodes()
+                .Where(x => x is IfStatementSyntax)
+                .First();
+            var annotatedSyntaxTree = syntaxTree.GetRoot()
+                .ReplaceNode(
+                    ifStatement, 
+                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "1"))
+                ).SyntaxTree;
+
+            var compiler = CSharpCompilation.Create("TestCompilation",
+                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+                });
+
+            var target = new RollbackProcess();
+
+            using (var ms = new MemoryStream())
+            {
+                var compileResult = compiler.Emit(ms);
+
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                
+                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+
+                rollbackedResult.Success.ShouldBeTrue();
+            }
+        }
     }
 }
