@@ -6,19 +6,6 @@ using System.IO;
 
 namespace Stryker.CLI
 {
-    internal static class Helpers
-    {
-        /// <summary>
-        /// Simplify app option creation to prevent code duplication
-        /// </summary>
-        public static CommandOption Option<T>(this CommandLineApplication app, CLIOption<T> option) where T : IConvertible
-        {
-            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
-                option.ArgumentDescription,
-                CommandOptionType.SingleValue);
-        }
-    }
-
     public class StrykerCLI
     {
         private IStrykerRunner _stryker { get; set; }
@@ -41,16 +28,16 @@ namespace Stryker.CLI
                 ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
             };
 
-            var configFilePathParam = app.Option(CLIOptions.ConfigFilePath);
-            var reporterParam = app.Option(CLIOptions.Reporter);
-            var logConsoleParam = app.Option(CLIOptions.LogLevel);
-            var timeoutParam = app.Option(CLIOptions.AdditionalTimeoutMS);
-            var fileLogParam = app.Option(CLIOptions.UseLogLevelFile);
-            var projectNameParam = app.Option(CLIOptions.ProjectFileName);
-            var maxConcurrentTestRunnersParam = app.Option(CLIOptions.MaxConcurrentTestRunners);
-            var thresholdHighParam = app.Option(CLIOptions.ThresholdHigh);
-            var thresholdLowParam = app.Option(CLIOptions.ThresholdLow);
-            var thresholdBreakParam = app.Option(CLIOptions.ThresholdBreak);
+            var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
+            var reporterParam = CreateOption(app, CLIOptions.Reporter);
+            var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
+            var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
+            var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
+            var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
+            var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
+            var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
+            var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
+            var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
 
             app.HelpOption("--help | -h | -?");
 
@@ -126,6 +113,15 @@ namespace Stryker.CLI
             Console.WriteLine(@"
 Beta version
 "); 
+        }
+
+        /// <summary>
+        /// Simplify app option creation to prevent code duplication
+        /// </summary>
+        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option) where T : IConvertible {
+            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
+                option.ArgumentDescription,
+                CommandOptionType.SingleValue);
         }
     }
 }
