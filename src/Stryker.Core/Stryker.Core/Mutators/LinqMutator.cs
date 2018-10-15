@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -31,6 +32,10 @@ namespace Stryker.Core.Mutators
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
             {
+                { LinqExpression.Distinct, LinqExpression.None },
+                { LinqExpression.Reverse, LinqExpression.None },
+                { LinqExpression.OrderBy, LinqExpression.None },
+                { LinqExpression.OrderByDescending, LinqExpression.None },
                 { LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault },
                 { LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault },
                 { LinqExpression.First, LinqExpression.Last },
@@ -62,11 +67,19 @@ namespace Stryker.Core.Mutators
             if (Enum.TryParse(node.Identifier.ValueText, out LinqExpression expression))
             {
                 var replacementExpression = _kindsToMutate[expression];
-                var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
+
+                SyntaxNode replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
+                string displayName = $"{node.Identifier.ValueText} to {replacement} mutation";
+
+                if (replacementExpression.Equals(LinqExpression.None))
+                {
+                    replacement = SyntaxFactory.IdentifierName(string.Empty);
+                    displayName = $"{node.Identifier.ValueText} to None mutation";
+                }
 
                 yield return new Mutation
                 {
-                    DisplayName = $"{node.Identifier.ValueText} to {replacement} mutation",
+                    DisplayName = displayName,
                     OriginalNode = node,
                     ReplacementNode = replacement,
                     Type = nameof(LinqMutator)
@@ -83,6 +96,11 @@ namespace Stryker.Core.Mutators
     /// </summary>
     public enum LinqExpression
     {
+        None,
+        Distinct,
+        Reverse,
+        OrderBy,
+        OrderByDescending,
         FirstOrDefault,
         SingleOrDefault,
         First,

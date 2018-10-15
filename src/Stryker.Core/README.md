@@ -81,6 +81,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## LINQ Mutator
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
+| `Distinct()`          | ` `                   |
+| `Reverse()`           | ` `                   |
+| `OrderBy()`           | ` `                   |
+| `OrderByDescending()` | ` `                   |
 | `SingleOrDefault()`   | `FirstOrDefault()`    |
 | `FirstOrDefault()`    | `SingleOrDefault()`   |
 | `First()`             | `Last()`              |

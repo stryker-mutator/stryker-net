@@ -21,9 +21,8 @@ namespace Stryker.Core.UnitTest.Mutators
         /// <returns></returns>
         private IEnumerable<IdentifierNameSyntax> GenerateExpressions(LinqExpression expression)
         {
-
             SyntaxTree tree = CSharpSyntaxTree.ParseText(
-$@"using System;
+                $@"using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +47,7 @@ namespace TestApplication
                     .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName) &&
                                 ((IdentifierNameSyntax)d).Identifier.ValueText.Equals(
                                     expression.ToString()))
-                .Cast<IdentifierNameSyntax>();
+                    .Cast<IdentifierNameSyntax>();
 
             return expressions;
         }
@@ -73,6 +72,10 @@ namespace TestApplication
         [InlineData(LinqExpression.Max, LinqExpression.Min)]
         [InlineData(LinqExpression.Sum, LinqExpression.Count)]
         [InlineData(LinqExpression.Count, LinqExpression.Sum)]
+        [InlineData(LinqExpression.Distinct, LinqExpression.None)]
+        [InlineData(LinqExpression.OrderBy, LinqExpression.None)]
+        [InlineData(LinqExpression.OrderByDescending, LinqExpression.None)]
+        [InlineData(LinqExpression.Reverse, LinqExpression.None)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();
@@ -89,12 +92,20 @@ namespace TestApplication
 
                 first.ReplacementNode.IsKind(SyntaxKind.IdentifierName)
                     .ShouldBeTrue();
-
-                ((IdentifierNameSyntax) first.ReplacementNode)
-                    .Identifier.ValueText.Equals(
-                        expected.ToString())
-                    .ShouldBeTrue();
-
+                if (expected.Equals(LinqExpression.None))
+                {
+                    string.IsNullOrEmpty(
+                            ((IdentifierNameSyntax)first.ReplacementNode)
+                            .Identifier.ValueText)
+                        .ShouldBeTrue();
+                }
+                else
+                {
+                    ((IdentifierNameSyntax)first.ReplacementNode)
+                        .Identifier.ValueText.Equals(
+                            expected.ToString())
+                        .ShouldBeTrue();
+                }
             }
         }
 
@@ -112,7 +123,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            IdentifierNameSyntax es = (IdentifierNameSyntax) SyntaxFactory.ParseName(methodName);
+            IdentifierNameSyntax es = (IdentifierNameSyntax)SyntaxFactory.ParseName(methodName);
             var result = target.ApplyMutations(es);
 
             result.ShouldBeEmpty();
