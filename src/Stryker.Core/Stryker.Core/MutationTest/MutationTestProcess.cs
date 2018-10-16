@@ -1,12 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Stryker.Core;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Progress;
+using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +23,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestProcess
     {
         void Mutate();
-        void Test(int maxConcurrentTestRunners);
+        StrykerRunResult Test(StrykerOptions options);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -120,14 +122,14 @@ namespace Stryker.Core.MutationTest
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
-        public void Test(int maxConcurrentTestRunners)
+        public StrykerRunResult Test(StrykerOptions options)
         {
             var logicalProcessorCount = Environment.ProcessorCount;
             var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
 
-            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            if (options.MaxConcurrentTestrunners <= logicalProcessorCount)
             {
-                usableProcessorCount = maxConcurrentTestRunners;
+                usableProcessorCount = options.MaxConcurrentTestrunners;
             }
 
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
@@ -147,6 +149,8 @@ namespace Stryker.Core.MutationTest
                     _progressReporter.ReportRunTest(timer.Elapsed, mutant);
                 });
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
+            
+            return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
     }
 }

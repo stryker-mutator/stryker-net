@@ -61,7 +61,7 @@ namespace Stryker.Core.Reporters
                     {
                         _chalk.Red($"[{mutant.ResultStatus}] ");
                     }
-                    _chalk.Default($"{mutant.Mutation.DisplayName} on line {mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line}: '{mutant.Mutation.OriginalNode}' ==> '{mutant.Mutation.ReplacementNode}'{Environment.NewLine}");
+                    _chalk.Default($"{mutant.Mutation.DisplayName} on line {mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{mutant.Mutation.OriginalNode}' ==> '{mutant.Mutation.ReplacementNode}'{Environment.NewLine}");
                 }
             };
             
@@ -77,6 +77,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             decimal thresholdHigh = (decimal) this.options.ThresholdOptions.ThresholdHigh/100;
             decimal thresholdLow = (decimal) this.options.ThresholdOptions.ThresholdLow/100;
+            decimal thresholdBreak = (decimal) this.options.ThresholdOptions.ThresholdBreak/100;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
@@ -95,20 +96,12 @@ namespace Stryker.Core.Reporters
                 {
                     _chalk.Yellow(scoreText);
                 } 
-                else
+                else if (score <= thresholdLow)
                 {
                     _chalk.Red(scoreText);
                 }
             }
             _chalk.Default($"]{Environment.NewLine}");
         }
-
-        public void OnInitialisationStarted() { }
-
-        public void OnInitialBuildStarted() { }
-
-        public void OnInitialTestRunStarted() { }
-
-        public void OnInitialisationDone() { }
     }
 }

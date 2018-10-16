@@ -13,7 +13,7 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        void RunMutationTest(StrykerOptions options);
+        StrykerRunResult RunMutationTest(StrykerOptions options);
     }
     
     public class StrykerRunner : IStrykerRunner
@@ -35,7 +35,7 @@ namespace Stryker.Core
         /// </summary>
         /// <exception cref="StrykerException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
-        public void RunMutationTest(StrykerOptions options)
+        public StrykerRunResult RunMutationTest(StrykerOptions options)
         {
             // start stopwatch
             var stopwatch = new Stopwatch();
@@ -49,7 +49,7 @@ namespace Stryker.Core
             {
                 // initialize 
                 _reporter = ReporterFactory.Create(options);
-                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess(_reporter);
+                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
@@ -70,8 +70,8 @@ namespace Stryker.Core
                 // mutate
                 _mutationTestProcess.Mutate();
 
-                // test mutations
-                _mutationTestProcess.Test(options.MaxConcurrentTestrunners);
+                // test mutations and return results
+                return _mutationTestProcess.Test(options);
             }
             catch (Exception ex)
             {

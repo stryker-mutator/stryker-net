@@ -250,7 +250,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var progressReporter = new Mock<IProgressReporter>();
             var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null, progressReporter.Object);
 
-            target.Test(options.MaxConcurrentTestrunners);
+            target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);

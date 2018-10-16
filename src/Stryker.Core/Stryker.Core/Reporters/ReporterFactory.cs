@@ -1,27 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-
+﻿using System.Collections.ObjectModel;
 using Stryker.Core.Options;
+
 namespace Stryker.Core.Reporters
 {
     public static class ReporterFactory
     {
         public static IReporter Create(StrykerOptions options)
         {
-            switch (options.Reporter.ToLower())
+            return new BroadcastReporter(new Collection<IReporter>()
             {
-                case "reportonly":
-                    return new ConsoleReportReporter(options);
-                default:
-                    return new BroadcastReporter(new Collection<IReporter>()
-                    {
-                        new ConsoleReportReporter(options),
-                        new ConsoleDotProgressReporter(),
-                        new ConsoleStatusReporter()
-                    });
-            }
+                new ConsoleReportReporter(options),
+                new ConsoleDotProgressReporter()
+            });
         }
     }
 }
