@@ -14,7 +14,7 @@ namespace Stryker.Core.Compiling
     {
         RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics);
     }
-
+    
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>
@@ -44,7 +44,7 @@ namespace Stryker.Core.Compiling
             }
 
             // remove the broken mutations from the syntaxtrees
-            foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
+            foreach(var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
                 _logger.LogDebug("Rollbacking mutations from {0}", syntaxTreeMap.Key.FilePath);
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
@@ -57,8 +57,7 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return new RollbackProcessResult()
-            {
+            return new RollbackProcessResult() {
                 Compilation = compiler,
                 RollbackedIds = _rollbackedIds
             };
@@ -77,9 +76,9 @@ namespace Stryker.Core.Compiling
             }
             else
             {
-                if (node.Parent == null)
+                if(node.Parent == null)
                 {
-                    return null;
+                    return null; 
                 }
                 return FindMutationIf(node.Parent);
             }
@@ -94,7 +93,7 @@ namespace Stryker.Core.Compiling
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                 var mutationIf = FindMutationIf(brokenMutation);
-                if (mutationIf == null)
+                if(mutationIf == null)
                 {
                     _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
                 }
@@ -106,16 +105,8 @@ namespace Stryker.Core.Compiling
             {
                 // find the if statement in the new tree
                 var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
-
-                if (nodeToRemove != null)
-                {
-                    // remove the if statement and update the tree
-                    trackedTree = trackedTree.ReplaceNode(nodeToRemove, nodeToRemove.Else.Statement);
-                }
-                else
-                {
-                    _logger.LogDebug($"Unable to remove node {brokenMutation}");
-                }
+                // remove the if statement and update the tree
+                trackedTree = trackedTree.ReplaceNode(nodeToRemove, nodeToRemove.Else.Statement);
             }
             return trackedTree.SyntaxTree;
         }

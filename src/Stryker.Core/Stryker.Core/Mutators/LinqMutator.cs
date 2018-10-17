@@ -68,12 +68,12 @@ namespace Stryker.Core.Mutators
                 _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
             {
                 SyntaxNode replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
-                string displayName = $"{node.Identifier.ValueText} to {replacement} mutation";
+                string displayName = $"Linq method mutation ({node.Identifier.ValueText}() to {replacement}())";
 
                 if (replacementExpression.Equals(LinqExpression.None))
                 {
                     replacement = SyntaxFactory.IdentifierName(string.Empty);
-                    displayName = $"{node.Identifier.ValueText} to None mutation";
+                    displayName = $"Linq method mutation (removed {node.Identifier.ValueText})";
                 }
 
                 yield return new Mutation
