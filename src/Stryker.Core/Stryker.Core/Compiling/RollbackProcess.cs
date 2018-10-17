@@ -63,24 +63,23 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private IfStatementSyntax FindMutationIf(SyntaxNode node)
+        private (IfStatementSyntax, int) FindMutationIfAndId(SyntaxNode node)
         {
             var annotation = node.GetAnnotations("MutantIf");
             if (annotation.Any() && node is IfStatementSyntax mutantIf)
             {
                 string data = annotation.First().Data;
                 int mutantId = int.Parse(data);
-                _rollbackedIds.Add(mutantId);
                 _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-                return mutantIf;
+                return (mutantIf, mutantId);
             }
             else
             {
                 if(node.Parent == null)
                 {
-                    return null; 
+                    return (null, 0); 
                 }
-                return FindMutationIf(node.Parent);
+                return FindMutationIfAndId(node.Parent);
             }
         }
 
@@ -92,8 +91,8 @@ namespace Stryker.Core.Compiling
             foreach (var diagnostic in diagnosticInfo)
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
-                var mutationIf = FindMutationIf(brokenMutation);
-                if(mutationIf == null)
+                var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
+                if (mutationIf == null)
                 {
                     _logger.LogError("Unable to rollback mutation for node {0} with diagnosticmessage {1}", brokenMutation, diagnostic.GetMessage());
                 }
@@ -101,6 +100,7 @@ namespace Stryker.Core.Compiling
                 if (!brokenMutations.Contains(mutationIf))
                 {
                     brokenMutations.Add(mutationIf);
+                    _rollbackedIds.Add(mutantId);
                 }
             }
             // mark the if statements to track

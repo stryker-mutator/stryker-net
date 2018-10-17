@@ -262,11 +262,12 @@ namespace ExampleProject
             if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""1"")
             {
                 string someQuery = ""test"";
-                new Uri(new Uri(string.Empty), ""/API?"" + someQuery);
+                new Uri(new Uri(string.Empty), ""/API?"" - someQuery);
             }
             else
             {
-                return;
+                string someQuery = ""test"";
+                new System.Uri(new System.Uri(string.Empty), ""/API?"" + someQuery);
             }
         }
     }
@@ -286,7 +287,8 @@ namespace ExampleProject
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 });
 
             var target = new RollbackProcess();
@@ -300,6 +302,9 @@ namespace ExampleProject
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
+                
+                // validate that only one of the compile errors marked the mutation as rollbacked.
+                fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
             }
         }
     }
