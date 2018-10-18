@@ -23,10 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Stryker.Core\Stryker.Core\Stryker.Core.csproj" />
+    <None Include="build\**" Pack="True" PackagePath="build\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="build\**" Pack="True" PackagePath="build\" />
+    <ProjectReference Include="..\..\Stryker.Core\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -38,7 +38,8 @@ namespace Stryker.Core.UnitTest
                 },
             });
             mutationTestProcessMock.Setup(x => x.Mutate());
-            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<int>()));
+            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
+                .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object);
 
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest
 
             initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.Mutate(), Times.Once);
-            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<int>()), Times.Once);
+            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<StrykerOptions>()), Times.Once);
         }
     }
 }

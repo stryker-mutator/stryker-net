@@ -4,11 +4,11 @@ namespace Stryker.CLI
 {
     public class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             var stryker = new StrykerRunner();
             var app = new StrykerCLI(stryker);
-            app.Run(args);
+            return app.Run(args);
         }
     }
 }
