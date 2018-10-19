@@ -10,6 +10,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
     - [Unary Operators](#unary-operators)
     - [Update Operators](#update-operators)
 	- [Checked Mutator](#checked-mutator)
+    - [LINQ Mutator](#linq-mutator)
 
 <!-- /TOC -->
 
@@ -76,3 +77,25 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | Original | Mutated |
 | ------------- | ------------- | 
 | `checked(2 + 4)` | `2 + 4` |
+
+## LINQ Mutator
+|      Original         |       Mutated         |
+| --------------------- | --------------------- |
+| `Distinct()`          | ` `                   |
+| `Reverse()`           | ` `                   |
+| `OrderBy()`           | ` `                   |
+| `OrderByDescending()` | ` `                   |
+| `SingleOrDefault()`   | `FirstOrDefault()`    |
+| `FirstOrDefault()`    | `SingleOrDefault()`   |
+| `First()`             | `Last()`              |
+| `Last()`              | `First()`             |
+| `All()`               | `Any()`               |
+| `Any()`               | `All()`               |
+| `Skip()`              | `Take()`              |
+| `Take()`              | `Skip()`              |
+| `SkipWhile()`         | `TakeWhile()`         |
+| `TakeWhile()`         | `SkipWhile()`         |
+| `Min()`               | `Max()`               |
+| `Max()`               | `Min()`               |
+| `Sum()`               | `Count()`             |
+| `Count()`             | `Sum()`               |
