@@ -1,4 +1,6 @@
-﻿using Stryker.Core;
+﻿using System;
+using Stryker.Core;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.CLI
 {
@@ -6,9 +8,21 @@ namespace Stryker.CLI
     {
         static int Main(string[] args)
         {
-            var stryker = new StrykerRunner();
-            var app = new StrykerCLI(stryker);
-            return app.Run(args);
+            try
+            {
+                var stryker = new StrykerRunner();
+                var app = new StrykerCLI(stryker);
+                return app.Run(args);
+            }
+            catch(StrykerInputException strEx)
+            {
+                Console.WriteLine(strEx.Message);
+                return 1;
+            }
+            catch(Exception)
+            {
+                return 1;
+            }
         }
     }
 }
