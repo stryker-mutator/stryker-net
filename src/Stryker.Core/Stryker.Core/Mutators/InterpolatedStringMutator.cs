@@ -16,7 +16,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = CreateEmptyInterpolatedString(),
-                    DisplayName = @"Interpolated string mutation",
+                    DisplayName = @"String mutation",
                     Type = nameof(InterpolatedStringMutator)
                 };
             }
