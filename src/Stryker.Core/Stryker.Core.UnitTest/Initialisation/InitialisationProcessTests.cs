@@ -21,18 +21,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new TestRunResult { Success = true }); // testrun is successful
-            reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialisationDone()).Verifiable();
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
@@ -56,7 +51,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
-            var target = new InitialisationProcess(reporterMock.Object, 
+            var target = new InitialisationProcess(
                 inputFileResolverMock.Object, 
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
@@ -69,7 +64,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.Initialize(options);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
-            reporterMock.VerifyAll();
         }
 
         [Fact]
@@ -77,16 +71,12 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()));
-            reporterMock.Setup(x => x.OnInitialisationStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialTestRunStarted()).Verifiable();
-            reporterMock.Setup(x => x.OnInitialBuildStarted()).Verifiable();
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>())).Returns(
                 new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
@@ -110,7 +100,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>()).Verifiable();
 
-            var target = new InitialisationProcess(reporterMock.Object, 
+            var target = new InitialisationProcess(
                 inputFileResolverMock.Object, 
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
@@ -122,7 +112,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
-            reporterMock.Verify();
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
         }

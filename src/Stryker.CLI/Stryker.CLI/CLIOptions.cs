@@ -16,7 +16,7 @@
         {
             ArgumentName = "--reporter",
             ArgumentShortName = "-r <reporter>",
-            ArgumentDescription = "Sets the reporter | Options [Console (default), ReportOnly]",
+            ArgumentDescription = "Sets the reporter | Options [Console (default)]",
             DefaultValue = "Console",
             JsonKey = "reporter"
         };
@@ -25,8 +25,8 @@
         {
             ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = "Sets the logging level | Options [error, warning (default), info, debug, trace]",
-            DefaultValue = "warning",
+            ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
+            DefaultValue = "Info",
             JsonKey = "log-level"
         };
 

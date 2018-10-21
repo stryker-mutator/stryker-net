@@ -56,9 +56,9 @@ namespace Stryker.Core.Options
                 case "error":
                     return LogEventLevel.Error;
                 case "warning":
-                case "":
                     return LogEventLevel.Warning;
                 case "info":
+                case "":
                     return LogEventLevel.Information;
                 case "debug":
                     return LogEventLevel.Debug;

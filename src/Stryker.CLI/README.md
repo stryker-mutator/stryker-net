@@ -62,7 +62,8 @@ If you want to decide on your own mutation score thresholds, you can configure t
 
 - `mutation score > threshold-high` : Awesome! Your reporters will color this green and happy.
 - `threshold-high > mutation score > threshold-low`: Warning! Your reporters will display yellow/orange colors, watch out!
-- `mutation score < threshold-low`: Danger! Your reporters will display red colors, you're in the danger zone now.
+- `threshold-low < mutation score > threshold-break`: Danger! Your reporters will display red colors, you're in the danger zone now.
+- `threshold-break > mutation score`: Error! The application will exit with exit code 1.
 
 The defaults are respectivly: `80` `60` `0`
 

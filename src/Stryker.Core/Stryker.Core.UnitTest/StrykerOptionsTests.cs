@@ -10,8 +10,8 @@ namespace Stryker.Core.UnitTest
     {
         [Theory]
         [InlineData("error", LogEventLevel.Error)]
-        [InlineData("", LogEventLevel.Warning)]
-        [InlineData(null, LogEventLevel.Warning)]
+        [InlineData("", LogEventLevel.Information)]
+        [InlineData(null, LogEventLevel.Information)]
         [InlineData("warning", LogEventLevel.Warning)]
         [InlineData("info", LogEventLevel.Information)]
         [InlineData("debug", LogEventLevel.Debug)]
