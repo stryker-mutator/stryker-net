@@ -63,7 +63,9 @@ namespace Stryker.Core
                             new PrefixUnaryMutator(),
                             new PostfixUnaryMutator(),
                             new CheckedMutator(),
-                            new LinqMutator()
+                            new LinqMutator(),
+                            new StringMutator(),
+                            new InterpolatedStringMutator()
                         },
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
