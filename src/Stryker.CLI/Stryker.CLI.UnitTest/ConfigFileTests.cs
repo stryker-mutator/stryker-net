@@ -66,7 +66,8 @@ namespace Stryker.CLI.UnitTest
                                                                         c.MaxConcurrentTestrunners == 10 &&
                                                                         c.ThresholdOptions.ThresholdBreak == 20 &&
                                                                         c.ThresholdOptions.ThresholdLow == 30 &&
-                                                                        c.ThresholdOptions.ThresholdHigh == 40))).Verifiable();
+                                                                        c.ThresholdOptions.ThresholdHigh == 40 && 
+                                                                        c.FilesToExclude[0] == "c:\\ExampleProject\\Recursive.cs"))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 

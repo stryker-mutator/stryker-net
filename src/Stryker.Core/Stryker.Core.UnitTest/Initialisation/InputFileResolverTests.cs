@@ -10,6 +10,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    using Options;
+
     public class InputFileResolverTests
     {
         private static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -54,7 +56,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(@"c:\TestProject\", "");
+            var result = target.ResolveInput(@"c:\TestProject\", "", new List<string>());
 
             result.TestProjectPath.ShouldBe(@"c:\TestProject\");
         }
@@ -95,7 +97,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(@"c:\TestProject\", "");
+            var result = target.ResolveInput(@"c:\TestProject\", "", new List<string>());
 
             result.TestProjectPath.ShouldBe(@"c:\TestProject\");
             result.ProjectContents.Children.Count.ShouldBe(2);
@@ -141,10 +143,54 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(@"c:\TestProject\", "");
+            var result = target.ResolveInput(@"c:\TestProject\", "", new List<string>());
 
             result.TestProjectPath.ShouldBe(@"c:\TestProject\");
             result.ProjectContents.Children.Count.ShouldBe(1);
+        }
+
+        [SkippableFact]
+        public void InputFileResolver_InitializeShouldExcludeSpecifiedFiles()
+        {
+            // the bin, obj and node_modules folders should be skipped
+            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+               
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+                
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { @"c:\ExampleProject\ExampleProject.csproj", new MockFileData(projectFile)},
+                    { @"c:\ExampleProject\Recursive.cs", new MockFileData(sourceFile)},
+                    { @"c:\ExampleProject\Recursive2.cs", new MockFileData(sourceFile)},
+                    { @"c:\ExampleProject\Recursive3.cs", new MockFileData(sourceFile)},
+                    { @"c:\TestProject\TestProject.csproj", new MockFileData(projectFile)},
+                    { $@"c:\TestProject\Debug\somecsharpfile.cs", new MockFileData("Bytecode") },
+                    { $@"c:\TestProject\Release\subfolder\somecsharpfile.cs", new MockFileData("Bytecode") },
+                });
+
+            var target = new InputFileResolver(fileSystem);
+
+            var result = target.ResolveInput(@"c:\TestProject\", "", new List<string> { "c:/ExampleProject/Recursive.cs" });
+
+            result.TestProjectPath.ShouldBe(@"c:\TestProject\");
+            result.ProjectContents.Children.Count.ShouldBe(2);
         }
 
         [SkippableFact]

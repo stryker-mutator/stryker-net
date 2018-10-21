@@ -1,5 +1,7 @@
 ﻿namespace Stryker.CLI
 {
+    using System.Collections.Generic;
+
     public static class CLIOptions
     {
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
@@ -95,6 +97,15 @@
             ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
             DefaultValue = 80,
             JsonKey = "threshold-high"
-        };                    
+        };
+
+        public static readonly CLIOption<string> ExcludeFiles = new CLIOption<string>
+        {
+            ArgumentName = "--files-to-exclude",
+            ArgumentShortName = "-fte <files-to-exclude>",
+            ArgumentDescription = "Set files to exclude for mutation. Example: ['/StartUp.cs']",
+            DefaultValue = "[]",
+            JsonKey = "files-to-exclude"
+        };
     }
 }

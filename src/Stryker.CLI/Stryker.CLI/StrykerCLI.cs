@@ -68,6 +68,10 @@ namespace Stryker.CLI
                 CLIOptions.ThresholdBreak.ArgumentDescription,
                 CommandOptionType.SingleValue);
 
+            var filesToExclude = app.Option($"{CLIOptions.ExcludeFiles.ArgumentName} | {CLIOptions.ExcludeFiles.ArgumentShortName}", 
+                CLIOptions.ExcludeFiles.ArgumentDescription,
+                CommandOptionType.SingleValue);
+
             app.HelpOption("--help | -h | -?");
 
             app.OnExecute(() => {
@@ -83,8 +87,8 @@ namespace Stryker.CLI
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
                     thresholdLowParam,
-                    thresholdBreakParam
-                    );
+                    thresholdBreakParam,
+                    filesToExclude);
                 return RunStryker(options);
             });
 

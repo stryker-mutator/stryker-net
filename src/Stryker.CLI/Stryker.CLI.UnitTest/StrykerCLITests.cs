@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
+    using System.Linq;
+
     public class StrykerCLITests
     {
         [Theory]
@@ -129,6 +131,7 @@ namespace Stryker.CLI.UnitTest
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.MaxConcurrentTestrunners == 4)));
         }
+
         [Theory]
         [InlineData("--threshold-break")]
         [InlineData("-tb")]
@@ -175,6 +178,36 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.ThresholdOptions.ThresholdHigh == 90)));
+        }
+
+        [Fact]
+        public void StrykerCLI_WithNoFilesToExcludeSet_ShouldPassDefaultValueToStryker()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                !o.FilesToExclude.Any())));
+        }
+
+        [Theory]
+        [InlineData("--files-to-exclude")]
+        [InlineData("-fte")]
+        public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new[] { argName, "['/StartUp.cs']" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.FilesToExclude[0] == "/StartUp.cs")));
         }
     }
 }

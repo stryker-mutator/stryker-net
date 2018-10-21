@@ -10,6 +10,9 @@
       "threshold-high": 40,
       "threshold-low": 30,
       "threshold-break": 20
-    }
+    },
+    "files-to-exclude": [
+      "c:\\ExampleProject\\Recursive.cs"
+    ] 
   }
 }

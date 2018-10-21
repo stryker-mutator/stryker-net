@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 namespace Stryker.CLI
 {
+    using System.Collections.Generic;
+    using Newtonsoft.Json;
+
     public class OptionsBuilder
     {
         private IConfiguration config = null;
@@ -21,7 +24,8 @@ namespace Stryker.CLI
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
-            CommandOption thresholdBreak)
+            CommandOption thresholdBreak,
+            CommandOption filesToExclude)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath, CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -30,7 +34,8 @@ namespace Stryker.CLI
                         .SetBasePath(basePath)
                         .AddJsonFile(GetOption(configFilePath, CLIOptions.ConfigFilePath))
                         .Build().GetSection("stryker-config");
-            }  
+            }
+
             return new StrykerOptions(
                 basePath,
                 GetOption(reporter, CLIOptions.Reporter),
@@ -41,7 +46,8 @@ namespace Stryker.CLI
                 GetOption(maxConcurrentTestRunners, CLIOptions.MaxConcurrentTestRunners),
                 GetOption(thresholdHigh, CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow, CLIOptions.ThresholdLow),
-                GetOption(thresholdBreak, CLIOptions.ThresholdBreak));
+                GetOption(thresholdBreak, CLIOptions.ThresholdBreak),
+                GetOption(filesToExclude, CLIOptions.ExcludeFiles));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 
@@ -59,11 +65,17 @@ namespace Stryker.CLI
                 {   
                     return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
                 }
+                else if (config.GetSection("files-to-exclude").Exists() &&
+                         config.GetSection(defaultValue.JsonKey).Get<List<string>>() != null)
+                {
+                    var data = JsonConvert.SerializeObject(config.GetSection("files-to-exclude").Get<List<string>>());
+                    return (T)Convert.ChangeType(data, typeof(T));
+                }
                 //Else return config value            
-                else if(!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+                else if (!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
                 {
                     return config.GetValue<T>(defaultValue.JsonKey);
-                }                   
+                }
             }
             //Else return default
             return defaultValue.DefaultValue;

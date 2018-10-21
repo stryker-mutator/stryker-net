@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
         {
             _reporter.OnInitialisationStarted();
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter);
+            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude);
 
             // initial build
             _reporter.OnInitialBuildStarted();

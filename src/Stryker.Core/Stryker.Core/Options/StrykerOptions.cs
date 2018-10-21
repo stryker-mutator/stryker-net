@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Stryker.Core.Options
 {
+    using Newtonsoft.Json;
+
     public class StrykerOptions
     {
         public string BasePath { get; }
@@ -23,8 +25,10 @@ namespace Stryker.Core.Options
 
         public ThresholdOptions ThresholdOptions { get; set; }
 
+        public List<string> FilesToExclude { get; set; }
+
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
-        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak)
+        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak, string filesToExclude)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
@@ -33,6 +37,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            FilesToExclude = ValidateFilesToExclude(filesToExclude);
         }
 
         private string ValidateReporter(string reporter)
@@ -87,6 +92,21 @@ namespace Stryker.Core.Options
             }
 
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
+        }
+
+        private List<string> ValidateFilesToExclude(string filesToExclude)
+        {
+            var excludedFiles = new List<string>();
+            try
+            {
+                excludedFiles = (List<string>)JsonConvert.DeserializeObject(filesToExclude, typeof(List<string>));
+            }
+            catch
+            {
+                throw new ValidationException("Invalid JSON value provided for --files-to-exclude.");
+            }
+
+            return excludedFiles;
         }
     }
 }
