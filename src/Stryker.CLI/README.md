@@ -88,7 +88,7 @@ Example:
             "threshold-break":60
         },
 	"files-to-exclude": [
-		"c:\\ExampleProject\\ExampleClass.cs"
+	"c:\\ExampleProject\\ExampleClass.cs"
 	]
     }
 }
