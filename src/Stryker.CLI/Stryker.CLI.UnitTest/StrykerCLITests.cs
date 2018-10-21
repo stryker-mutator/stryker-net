@@ -189,7 +189,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70, "[]");
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
@@ -206,7 +206,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0, "[]");
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
             
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();

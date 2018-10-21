@@ -47,7 +47,7 @@ namespace Stryker.CLI
                 GetOption(thresholdHigh, CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow, CLIOptions.ThresholdLow),
                 GetOption(thresholdBreak, CLIOptions.ThresholdBreak),
-                GetOption(filesToExclude, CLIOptions.ExcludeFiles));
+                GetOption(filesToExclude, CLIOptions.FilesToExclude));
         }
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
         { 

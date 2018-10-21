@@ -99,7 +99,7 @@
             JsonKey = "threshold-high"
         };
 
-        public static readonly CLIOption<string> ExcludeFiles = new CLIOption<string>
+        public static readonly CLIOption<string> FilesToExclude = new CLIOption<string>
         {
             ArgumentName = "--files-to-exclude",
             ArgumentShortName = "-fte <files-to-exclude>",
