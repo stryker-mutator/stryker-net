@@ -58,27 +58,14 @@ namespace Stryker.Core.Initialisation
                     {
                         throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
                     }
-                    return ConvertPathSeparators(searchResult.Single());
+                    return Utilities.ConvertPathSeparators(searchResult.Single());
                 }
             }
             else if (!projectReferences.Any())
             {
                 throw new NotSupportedException("No project references found in test project file, unable to find project to mutate.");
             }
-            return ConvertPathSeparators(projectReferences.Single());
-        }
-
-        private static string ConvertPathSeparators(string filePath)
-        {
-            const char windowsDirectorySeparator = '\\';
-            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
-            {
-                return filePath;
-            }
-            else
-            {
-                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
-            }
+            return Utilities.ConvertPathSeparators(projectReferences.Single());
         }
 
         private string FindTargetFrameworkReference(XDocument document)
