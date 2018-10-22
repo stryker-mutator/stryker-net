@@ -158,7 +158,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(@"c:\ExampleProject"));
+            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]

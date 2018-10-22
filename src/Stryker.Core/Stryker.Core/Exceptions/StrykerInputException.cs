@@ -9,18 +9,10 @@ namespace Stryker.Core.Exceptions
     /// </summary>
     public class StrykerInputException : Exception
     {
-        public StrykerInputException()
-        {
-        }
-
         public StrykerInputException(string message)
             : base(message)
         {
         }
-
-        public StrykerInputException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+        
     }
 }

@@ -43,7 +43,9 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);
             if (!testResult.Success)
             {
-                throw new StrykerInputException("The initial testrun was not successful. Please review your tests.");
+                var message = $"{Environment.NewLine}Testrun details: {Environment.NewLine} {testResult.ResultMessage}" +
+                    $"{Environment.NewLine}Initial testrun was not successful. See details above.";
+                throw new StrykerInputException(message);
             }
             _logger.LogInformation("Initial testrun successful in {0} ms", duration);
 
