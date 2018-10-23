@@ -1,3 +1,4 @@
+name: $(Build.DefinitionName)-$(PackageVersion)$(rev:.r)
 resources:
 - repo: self
   clean: true
