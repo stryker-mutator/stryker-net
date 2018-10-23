@@ -44,3 +44,18 @@ phases:
     inputs:
       command: test
       projects: '**/*Test.csproj'
+
+- phase: Phase_3
+  displayName: Mac
+  condition: succeeded()
+  
+  queue:
+    name: Hosted macOS
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: '**/*Test.csproj'
+
