@@ -18,8 +18,6 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
-    using Options;
-
     public interface IMutationTestProcess
     {
         void Mutate();

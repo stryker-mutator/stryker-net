@@ -3,11 +3,10 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Stryker.Core.Options
 {
-    using Newtonsoft.Json;
-
     public class StrykerOptions
     {
         public string BasePath { get; }

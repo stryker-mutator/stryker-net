@@ -9,8 +9,6 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    using Options;
-
     public interface IInputFileResolver
     {
         ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter, List<string> filesToExclude);
