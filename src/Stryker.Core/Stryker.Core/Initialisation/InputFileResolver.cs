@@ -40,7 +40,7 @@ namespace Stryker.Core.Initialisation
         {
             string projectFile = ScanProjectFile(currentDirectory);
             var currentProjectInfo = ReadProjectFile(projectFile, projectName);
-            var projectReferencePath = Utilities.ConvertPathSeparators(currentProjectInfo.ProjectReference);
+            var projectReferencePath = FilePathUtils.ConvertPathSeparators(currentProjectInfo.ProjectReference);
             var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
             var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath(Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath))));
             var inputFiles = FindInputFiles(projectUnderTestPath);
