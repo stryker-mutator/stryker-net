@@ -9,11 +9,10 @@ using System;
 using System.IO;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Stryker.CLI.UnitTest
 {
-    using System.Linq;
-
     public class StrykerCLITests
     {
         [Theory]

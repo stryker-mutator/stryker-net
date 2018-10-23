@@ -10,8 +10,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    using Options;
-
     public class InputFileResolverTests
     {
         private static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

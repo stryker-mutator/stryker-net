@@ -4,10 +4,11 @@ using Microsoft.Extensions.CommandLineUtils;
 using Stryker.Core.Options;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+
 namespace Stryker.CLI
 {
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
 
     public class OptionsBuilder
     {

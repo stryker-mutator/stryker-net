@@ -1,7 +1,5 @@
 ﻿namespace Stryker.CLI
 {
-    using System.Collections.Generic;
-
     public static class CLIOptions
     {
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>

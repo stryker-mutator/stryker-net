@@ -9,11 +9,10 @@ using Stryker.Core.TestRunners;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    using System.Collections.Generic;
-
     public class InitialisationProcessTests
     {
         [Fact]
