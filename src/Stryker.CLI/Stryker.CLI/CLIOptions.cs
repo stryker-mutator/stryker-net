@@ -101,7 +101,7 @@
         {
             ArgumentName = "--files-to-exclude",
             ArgumentShortName = "-fte <files-to-exclude>",
-            ArgumentDescription = "Set files to exclude for mutation. Example: ['/StartUp.cs']",
+            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
             DefaultValue = "[]",
             JsonKey = "files-to-exclude"
         };

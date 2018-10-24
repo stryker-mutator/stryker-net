@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 
 namespace Stryker.CLI
 {
-
     public class OptionsBuilder
     {
         private IConfiguration config = null;
@@ -50,27 +49,35 @@ namespace Stryker.CLI
                 GetOption(thresholdBreak, CLIOptions.ThresholdBreak),
                 GetOption(filesToExclude, CLIOptions.FilesToExclude));
         }
+
         private T GetOption<T>(CommandOption value, CLIOption<T> defaultValue) where T : IConvertible
-        { 
+        {
             if (value.HasValue())
             {
+                if (defaultValue.JsonKey == "files-to-exclude")
+                {
+                    var convertedString = value.Value().Replace("\\", "\\\\").Replace("'", "\"");
+                    return (T)Convert.ChangeType(convertedString, typeof(T));
+                }
+
                 //Convert commandOptionValue to desired type
-                return (T)Convert.ChangeType(value.Value(), typeof(T));
+                return (T) Convert.ChangeType(value.Value(), typeof(T));
             }
-            if(config != null)
+
+            if (config != null)
             {
                 // Check if there is a threshold options object and use it when it's available
                 string thresholdOptionsSectionKey = "threshold-options";
-                if(config.GetSection(thresholdOptionsSectionKey).Exists() && 
+                if (config.GetSection(thresholdOptionsSectionKey).Exists() &&
                     !string.IsNullOrEmpty(config.GetSection(thresholdOptionsSectionKey).GetValue(defaultValue.JsonKey, string.Empty).ToString()))
-                {   
+                {
                     return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
                 }
                 else if (config.GetSection("files-to-exclude").Exists() &&
                          config.GetSection(defaultValue.JsonKey).Get<List<string>>() != null)
                 {
                     var data = JsonConvert.SerializeObject(config.GetSection("files-to-exclude").Get<List<string>>());
-                    return (T)Convert.ChangeType(data, typeof(T));
+                    return (T) Convert.ChangeType(data, typeof(T));
                 }
                 //Else return config value            
                 else if (!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
@@ -78,6 +85,7 @@ namespace Stryker.CLI
                     return config.GetValue<T>(defaultValue.JsonKey);
                 }
             }
+
             //Else return default
             return defaultValue.DefaultValue;
         }

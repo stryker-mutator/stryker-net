@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 
 namespace Stryker.Core.Options
 {
+    using System;
+
     public class StrykerOptions
     {
         public string BasePath { get; }
@@ -98,11 +100,11 @@ namespace Stryker.Core.Options
             var excludedFiles = new List<string>();
             try
             {
-                excludedFiles = (List<string>)JsonConvert.DeserializeObject(filesToExclude, typeof(List<string>));
+                excludedFiles = JsonConvert.DeserializeObject<List<string>>(filesToExclude);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new ValidationException("Invalid JSON value provided for --files-to-exclude.");
+                throw new ValidationException("Invalid JSON value provided for --files-to-exclude. The correct format, for example, should be: ['C:\\ExampleProject\\Example.cs', 'C:\\ExampleProject\\Example2.cs'].");
             }
 
             return excludedFiles;

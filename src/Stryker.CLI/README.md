@@ -67,6 +67,13 @@ If you want to decide on your own mutation score thresholds, you can configure t
 
 The defaults are respectivly: `80` `60` `0`
 
+#### Excluding files
+If any error occur in a specific source file you are able to exclude them from mutation. Execute the following command:
+
+`dotnet stryker --files-to-exclude ['C:\\ExampleProject\\ExampleClass.cs', 'C:\\ExampleProject\\ExampleClass2.cs']
+
+The only format which is currently accepted is a JSON formatted string array. If an invalid JSON string is provided a ValidationException is thrown directing to you to provide a correct JSON formatted string. 
+When you want to exclude multiple files (for example more then 5) it is better to use the stryker configuration file because it is more easier to handle multiple files.
 
 #### Use a config file
 There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
@@ -88,7 +95,8 @@ Example:
             "threshold-break":60
         },
         "files-to-exclude": [
-            "c:\\ExampleProject\\ExampleClass.cs"
+            "c:\\ExampleProject\\ExampleClass.cs",
+			"c:\\ExampleProject\\ExampleClass2.cs"
         ]
     }
 }
