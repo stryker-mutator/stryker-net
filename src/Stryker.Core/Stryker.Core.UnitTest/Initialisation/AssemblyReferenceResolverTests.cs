@@ -46,9 +46,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Times.Once);
             foundReferences.ShouldBeSubsetOf(new List<string>()
             {
-                Path.Combine("C:", "Repos", "ExampleProject", "ExampleProject", "bin", "Debug", "netcoreapp2.0", "ExampleProject.Contracts.dll"),
-                Path.Combine("C:", "Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.netcore.app", "2.0.0", "ref", "netcoreapp2.0", "Microsoft.CSharp.dll"),
-                Path.Combine("C:", "Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.aspnetcore.mvc.formatters.json", "2.0.2", "lib", "netstandard2.0", "Microsoft.AspNetCore.Mvc.Formatters.Json.dll")
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Repos", "ExampleProject", "ExampleProject", "bin", "Debug", "netcoreapp2.0", "ExampleProject.Contracts.dll"),
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.netcore.app", "2.0.0", "ref", "netcoreapp2.0", "Microsoft.CSharp.dll"),
+                Path.Combine($@"C:{Path.DirectorySeparatorChar}Program Files", "dotnet", "sdk", "NuGetFallbackFolder", "microsoft.aspnetcore.mvc.formatters.json", "2.0.2", "lib", "netstandard2.0", "Microsoft.AspNetCore.Mvc.Formatters.Json.dll")
             });
         }
 
