@@ -5,11 +5,6 @@ namespace Stryker.Core.Reporters
 {
     public interface IReporter
     {
-        void OnInitialisationStarted();
-        void OnInitialBuildStarted();
-        void OnInitialTestRunStarted();
-        void OnInitialisationDone();
-
         // Will get called when the project has been mutated
         void OnMutantsCreated(IReadOnlyInputComponent reportComponent);
         // Will get called when a mutation has been tested

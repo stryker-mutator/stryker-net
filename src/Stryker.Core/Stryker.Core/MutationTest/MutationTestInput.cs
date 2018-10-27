@@ -30,7 +30,7 @@ namespace Stryker.Core.MutationTest
 
         public string GetInjectionPath()
         {
-            return $"{ProjectInfo.TestProjectPath}{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}{ProjectInfo.TargetFramework}{Path.DirectorySeparatorChar}{ProjectInfo.ProjectUnderTestAssemblyName}.dll";
+            return Path.Combine(ProjectInfo.TestProjectPath, "bin", "Debug", ProjectInfo.TargetFramework, ProjectInfo.ProjectUnderTestAssemblyName + ".dll");
         }
     }
 }

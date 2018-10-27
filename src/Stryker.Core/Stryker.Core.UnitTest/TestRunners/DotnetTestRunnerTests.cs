@@ -3,12 +3,14 @@ using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Parsers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
     public class DotnetTestRunnerTests
     {
+        private Mock<ITotalNumberOfTestsParser> totalNumberOfTestsParserMock = new Mock<ITotalNumberOfTestsParser>();
         [Fact]
         public void RunAllExitCode0SuccessShouldBeTrue()
         {
@@ -16,7 +18,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun successful");
 
             string path = "/test";
-            var target = new DotnetTestRunner(path, processMock.Object);
+            var target = new DotnetTestRunner(path, processMock.Object, totalNumberOfTestsParserMock.Object);
 
             var result = target.RunAll(null, null);
 
@@ -31,7 +33,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed", 1);
 
             string path = "/test";
-            var target = new DotnetTestRunner(path, processMock.Object);
+            var target = new DotnetTestRunner(path, processMock.Object, totalNumberOfTestsParserMock.Object);
 
             var result = target.RunAll(null, null);
 
@@ -46,7 +48,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
             string path = "/test";
-            var target = new DotnetTestRunner(path, processMock.Object);
+            var target = new DotnetTestRunner(path, processMock.Object, totalNumberOfTestsParserMock.Object);
 
             var result = target.RunAll(null, null);
 
@@ -61,7 +63,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
             string path = "/test";
-            var target = new DotnetTestRunner(path, processMock.Object);
+            var target = new DotnetTestRunner(path, processMock.Object, totalNumberOfTestsParserMock.Object);
             
             var result = target.RunAll(null, 1);
 

@@ -2,9 +2,13 @@ using Moq;
 using Serilog.Events;
 using Stryker.Core;
 using Stryker.Core.Options;
+using Stryker.Core.Logging;
+using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Testing;
 using System;
 using System.IO;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -34,6 +38,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
+            Assert.Equal(1, target.ExitCode);
             mock.VerifyAll();
         }
 
@@ -175,6 +180,40 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.ThresholdOptions.ThresholdHigh == 90)));
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
+            
+            var target = new StrykerCLI(mock.Object);
+            int result = target.Run(new string[] { });
+
+            mock.Verify();
+            Assert.Equal(1, target.ExitCode);
+            Assert.Equal(1, result);
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
+            
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+            int result = target.Run(new string[] { });
+
+            mock.Verify();
+            Assert.Equal(0, target.ExitCode);
+            Assert.Equal(0, result);
         }
     }
 }

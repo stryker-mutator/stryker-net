@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>");
             var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
 
-            result.ProjectReference.ShouldBe($"..{Path.DirectorySeparatorChar}ExampleProject{Path.DirectorySeparatorChar}ExampleProject.csproj");
+            result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
             result.TargetFramework.ShouldBe(target);
         }
 
@@ -115,7 +115,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
 </Project>");
             var result = new ProjectFileReader().ReadProjectFile(xDocument, shouldMatch);
-            result.ProjectReference.ShouldBe($"..{Path.DirectorySeparatorChar}ExampleProject{Path.DirectorySeparatorChar}ExampleProject.csproj");
+            result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
         }
 
 
@@ -271,7 +271,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            
+
             var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
 
             result.TargetFramework.ShouldBe(target.Split(';')[0]);

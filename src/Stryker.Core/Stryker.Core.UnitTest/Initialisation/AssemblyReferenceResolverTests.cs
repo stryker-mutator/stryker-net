@@ -39,10 +39,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.ResolveReferences(Path.GetDirectoryName(project), Path.GetFileName(project), "ExampleProject").ToList();
 
             processExecutorMock.Verify(x => x.Start(
-                Path.GetDirectoryName(project), 
-                "dotnet", "msbuild ExampleProject.Test.csproj /nologo /t:PrintReferences", 
+                Path.GetDirectoryName(project),
+                "dotnet", "msbuild ExampleProject.Test.csproj /nologo /t:PrintReferences",
                 null,
-                It.IsAny<int>()), 
+                It.IsAny<int>()),
                 Times.Once);
             foundReferences.ShouldBeSubsetOf(new List<string>()
             {
@@ -89,7 +89,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             // The resolver should throw an exception when the target task was not found
             var exception = Assert.Throws<ApplicationException>(() => target.ResolveReferences(
-                Path.GetDirectoryName(project), 
+                Path.GetDirectoryName(project),
                 Path.GetFileName(project),
                 ""
                 ).ToList());
@@ -124,8 +124,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             // the project under test should be skipped, even when it is in the nuget packages list
             foundReferences.ShouldNotContain(
-                Path.Combine("C:", "Mrak", "IS-MarkW", "Product", 
-                "MGA.MaandstaatKeuringsFrontend", "MGA.MaandstaatKeuringsFrontend.Facade", "bin", 
+                Path.Combine("C:", "Mrak", "IS-MarkW", "Product",
+                "MGA.MaandstaatKeuringsFrontend", "MGA.MaandstaatKeuringsFrontend.Facade", "bin",
                 "Debug", "netcoreapp2.0", "MGA.MaandstaatKeuringsFrontend.Facade.dll"));
         }
 
@@ -133,15 +133,14 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void AssemblyReferenceResolver_PathWithDashShouldBeAllowed()
         {
             var target = new AssemblyReferenceResolver(null, null);
+            var path = Path.Combine("U:", "source", "IS-StefanK", "InfoSupport.BestuurdersCoach",
+                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0",
+                "InfoSupport.BestuurdersCoach.MessageBus.dll");
 
             // The string should be split at " -> " and not at "-"
-            var result = target.GetReferencePathsFromOutput(new Collection<string>() { @"InfoSupport.BestuurdersCoach.MessageBus -> U:\source\IS-StefanK\InfoSupport.BestuurdersCoach\InfoSupport.BestuurdersCoach.MessageBus\bin\Debug\netstandard2.0\InfoSupport.BestuurdersCoach.MessageBus.dll"
-            .Replace('\\', Path.DirectorySeparatorChar)});
+            var result = target.GetReferencePathsFromOutput(new Collection<string>() { $@"InfoSupport.BestuurdersCoach.MessageBus -> {path}" });
 
-            result.Single().ShouldBe(
-                Path.Combine($@"U:{Path.DirectorySeparatorChar}source", "IS-StefanK", "InfoSupport.BestuurdersCoach", 
-                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0", 
-                "InfoSupport.BestuurdersCoach.MessageBus.dll"));
+            result.Single().ShouldBe(path);
         }
 
 
@@ -152,8 +151,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             // The path should not end with .exe
             var result = target.GetAssemblyPathsFromOutput(
-                Path.Combine($@"U:{Path.DirectorySeparatorChar}source", "IS-StefanK", "InfoSupport.BestuurdersCoach", 
-                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0", 
+                Path.Combine("U:", "source", "IS-StefanK", "InfoSupport.BestuurdersCoach",
+                "InfoSupport.BestuurdersCoach.MessageBus", "bin", "Debug", "netstandard2.0",
                 "InfoSupport.BestuurdersCoach.MessageBus.exe"));
 
             result.ShouldBeEmpty();
