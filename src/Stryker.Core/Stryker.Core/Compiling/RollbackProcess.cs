@@ -64,15 +64,15 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (IfStatementSyntax, int) FindMutationIfAndId(SyntaxNode node)
+        private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode node)
         {
-            var annotation = node.GetAnnotations(new string[] { "MutationIf", "MutationTernary" });
-            if (annotation.Any() && node is IfStatementSyntax mutantIf)
+            var annotation = node.GetAnnotations(new string[] { "MutationIf", "MutationConditional" });
+            if (annotation.Any())
             {
                 string data = annotation.First().Data;
                 int mutantId = int.Parse(data);
                 _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-                return (mutantIf, mutantId);
+                return (node, mutantId);
             }
             else
             {
@@ -88,7 +88,7 @@ namespace Stryker.Core.Compiling
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
-            var brokenMutations = new Collection<IfStatementSyntax>();
+            var brokenMutations = new Collection<SyntaxNode>();
             foreach (var diagnostic in diagnosticInfo)
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
@@ -104,14 +104,20 @@ namespace Stryker.Core.Compiling
                     _rollbackedIds.Add(mutantId);
                 }
             }
-            // mark the if statements to track
+            // mark the broken mutation nodes to track
             var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
             foreach (var brokenMutation in brokenMutations)
             {
-                // find the if statement in the new tree
+                // find the mutated node in the new tree
                 var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
-                // remove the if statement and update the tree
-                trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveByIfStatement(nodeToRemove));
+                // remove the mutated node using its MutantPlacer remove mehtod and update the tree
+                if (nodeToRemove is IfStatementSyntax ifStatement)
+                {
+                    trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveByIfStatement(nodeToRemove));
+                } else if (nodeToRemove is ConditionalExpressionSyntax conditionalExpression)
+                {
+                    trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveByConditionalExpression(nodeToRemove));
+                }
             }
             return trackedTree.SyntaxTree;
         }

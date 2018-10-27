@@ -45,7 +45,7 @@ namespace Stryker.Core.Mutants
             {
                 typeof(LocalDeclarationStatementSyntax),
                 typeof(AssignmentExpressionSyntax),
-                typeof(LocalFunctionStatementSyntax)
+                typeof(ReturnStatementSyntax)
             };
         }
 
@@ -84,10 +84,14 @@ namespace Stryker.Core.Mutants
                 var statement = currentNode as StatementSyntax;
                 StatementSyntax ast = statement as StatementSyntax;
 
-                foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
+                // TODO: Mutate LocalFunctionStatement body
+                if (!(statement is LocalFunctionStatementSyntax))
                 {
-                    _mutants.Add(mutant);
-                    ast = MutantPlacer.PlaceWithIfStatement(ast, ApplyMutant(statement, mutant), mutant.Id);
+                    foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
+                    {
+                        _mutants.Add(mutant);
+                        ast = MutantPlacer.PlaceWithIfStatement(ast, ApplyMutant(statement, mutant), mutant.Id);
+                    }
                 }
                 return ast;
             }
@@ -155,15 +159,15 @@ namespace Stryker.Core.Mutants
         {
             switch (node.GetType().Name)
             {
-                case "LocalDeclarationStatementSyntax":
+                case nameof(LocalDeclarationStatementSyntax):
                     var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
                     return localDeclarationStatement.Declaration.Variables.First().Initializer.Value;
-                case "AssignmentExpressionSyntax":
+                case nameof(AssignmentExpressionSyntax):
                     var assignmentExpression = node as AssignmentExpressionSyntax;
                     return assignmentExpression.Right;
-                case "LocalFunctionStatementSyntax":
-                    var localFunctionStatement = node as LocalFunctionStatementSyntax;
-                    return localFunctionStatement.ExpressionBody.Expression;
+                case nameof(ReturnStatementSyntax):
+                    var returnStatement = node as ReturnStatementSyntax;
+                    return returnStatement.Expression;
                 default:
                     return null;
             }
