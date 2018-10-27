@@ -68,19 +68,19 @@ namespace Stryker.Core.Mutants
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
             if (_ternaryKinds.Contains(currentNode.GetType())) {
-                // The mutations should be placed using the ternary placer
+                // The mutations should be placed using a ConditionalExpression
                 var expression = GetExpressionSyntax(currentNode);
-                ExpressionSyntax ast = expression as ExpressionSyntax;
-                foreach (var mutant in expression.ChildNodes().SelectMany(FindMutants))
+                SyntaxNode ast = currentNode;
+                foreach (var mutant in FindMutants(expression))
                 {
                     _mutants.Add(mutant);
-                    ast = MutantPlacer.PlaceWithConditionalExpression(ast, ApplyMutant(expression, mutant), mutant.Id);
+                    ast = ast.ReplaceNode(expression, MutantPlacer.PlaceWithConditionalExpression(expression, ApplyMutant(expression, mutant), mutant.Id));
                 }
                 return ast;
             }
             else if (currentNode is StatementSyntax && currentNode.Kind() != SyntaxKind.Block)
             {
-                // The mutations should be placed using the if statement placer
+                // The mutations should be placed using a IfStatement
                 var statement = currentNode as StatementSyntax;
                 StatementSyntax ast = statement as StatementSyntax;
 
@@ -99,7 +99,9 @@ namespace Stryker.Core.Mutants
                 var editor = new SyntaxEditor(currentNode, new AdhocWorkspace());
                 for (int i = 0; i < children.Count; i++)
                 {
-                    if (!children[i].IsEquivalentTo(mutatedChildren[i]))
+                    var original = children[i];
+                    var mutated = mutatedChildren[i];
+                    if (!original.IsEquivalentTo(mutated))
                     {
                         editor.ReplaceNode(children[i], mutatedChildren[i]);
                     }

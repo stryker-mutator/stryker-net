@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Stryker.Core\Stryker.Core\Stryker.Core.csproj" />
     <ProjectReference Include="..\Stryker.CLI\Stryker.CLI.csproj" />
   </ItemGroup>
 

@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Stryker.Core;
-using Stryker.Core.Options;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using System;
 using System.IO;
-using System.Threading;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI
 {

@@ -279,7 +279,7 @@ namespace ExampleProject
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
-                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "1"))
+                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
             var compiler = CSharpCompilation.Create("TestCompilation",

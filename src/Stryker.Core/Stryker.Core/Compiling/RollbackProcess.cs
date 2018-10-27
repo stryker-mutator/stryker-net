@@ -78,7 +78,7 @@ namespace Stryker.Core.Compiling
             {
                 if(node.Parent == null)
                 {
-                    return (null, 0); 
+                    return (null, 0);
                 }
                 return FindMutationIfAndId(node.Parent);
             }
