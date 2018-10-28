@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public static IEnumerable<object[]> getParameters()
         {
-            yield return new object[] {new StrykerOptions("", "Console", "", 1000, "debug", false, 1, 80, 60, 0), typeof(BroadcastReporter)};
+            yield return new object[] {new StrykerOptions("", "Console", "", 1000, null, "debug", false, 1, 80, 60, 0), typeof(BroadcastReporter)};
         }
 
         [Theory]

@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, false, 1, 80, 60, 0);
+            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 null,
@@ -192,7 +192,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, false, 1, 80, 60, 0);
+            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -242,7 +242,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, false, 1, 80, 60, 0);
+            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
 
             var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object);
 

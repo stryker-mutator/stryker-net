@@ -46,6 +46,15 @@
             JsonKey = "timeout-ms"
         };
 
+        public static readonly CLIOption<string[]> ExcludedMutations = new CLIOption<string[]>
+        {
+            ArgumentName = "--excluded-mutations",
+            ArgumentShortName = "-em <mutator-name>",
+            ArgumentDescription = "The given mutators will be excluded for this mutation testrun.",
+            DefaultValue = null,
+            JsonKey = "excluded-mutations"
+        };
+
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
         {
             ArgumentName = "--project-file",
@@ -95,6 +104,6 @@
             ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
             DefaultValue = 80,
             JsonKey = "threshold-high"
-        };                    
+        };
     }
 }

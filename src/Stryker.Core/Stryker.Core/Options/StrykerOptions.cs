@@ -19,17 +19,29 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
+        public IEnumerable<string> ExcludedMutations { get; }
+
         public int MaxConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; set; }
 
-        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
-        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak)
+        public StrykerOptions(string basePath, 
+            string reporter, 
+            string projectUnderTestNameFilter, 
+            int additionalTimeoutMS, 
+            string[] excludedMutations, 
+            string logLevel, 
+            bool logToFile, 
+            int maxConcurrentTestRunners, 
+            int thresholdHigh, 
+            int thresholdLow, 
+            int thresholdBreak)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
+            ExcludedMutations = excludedMutations;
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
