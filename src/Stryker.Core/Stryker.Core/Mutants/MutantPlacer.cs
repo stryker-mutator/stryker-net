@@ -32,7 +32,7 @@ namespace Stryker.Core.Mutants
                 condition: GetBinaryExpression(mutantId),
                 whenTrue: mutated,
                 whenFalse: original)
-                // Mark this node as a MutationTernary node. Store the MutantId in the annotation to retrace the mutant later
+                // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation("MutationConditional", mutantId.ToString()));
         }
 
