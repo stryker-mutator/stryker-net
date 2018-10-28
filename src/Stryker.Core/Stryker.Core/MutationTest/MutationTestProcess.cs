@@ -96,6 +96,7 @@ namespace Stryker.Core.MutationTest
                     {
                         _fileSystem.Directory.CreateDirectory(_input.GetInjectionPath());
                     }
+
                     // inject the mutated Assembly into the test project
                     using (var fs = _fileSystem.File.Create(_input.GetInjectionPath()))
                     {

@@ -36,45 +36,16 @@ namespace Stryker.CLI
                 ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
             };
 
-            var configFilePathParam = app.Option($"{CLIOptions.ConfigFilePath.ArgumentName} | {CLIOptions.ConfigFilePath.ArgumentShortName}",
-                CLIOptions.ConfigFilePath.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var reporterParam = app.Option($"{CLIOptions.Reporter.ArgumentName} | {CLIOptions.Reporter.ArgumentShortName}",
-                CLIOptions.Reporter.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var logConsoleParam = app.Option($"{CLIOptions.LogLevel.ArgumentName} | {CLIOptions.LogLevel.ArgumentShortName}",
-                CLIOptions.LogLevel.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var timeoutParam = app.Option($"{CLIOptions.AdditionalTimeoutMS.ArgumentName} | {CLIOptions.AdditionalTimeoutMS.ArgumentShortName}",
-                CLIOptions.AdditionalTimeoutMS.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var fileLogParam = app.Option($"{CLIOptions.UseLogLevelFile.ArgumentName} | {CLIOptions.UseLogLevelFile.ArgumentShortName}",
-                CLIOptions.UseLogLevelFile.ArgumentDescription, 
-                CommandOptionType.SingleValue);
-
-            var projectNameParam = app.Option($"{CLIOptions.ProjectFileName.ArgumentName} | {CLIOptions.ProjectFileName.ArgumentShortName}",
-                CLIOptions.ProjectFileName.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var maxConcurrentTestRunnersParam = app.Option($"{CLIOptions.MaxConcurrentTestRunners.ArgumentName} | {CLIOptions.MaxConcurrentTestRunners.ArgumentShortName}",
-                CLIOptions.MaxConcurrentTestRunners.ArgumentDescription,
-                CommandOptionType.SingleValue);
-            
-            var thresholdHighParam = app.Option($"{CLIOptions.ThresholdHigh.ArgumentName} | {CLIOptions.ThresholdHigh.ArgumentShortName}",
-                CLIOptions.ThresholdHigh.ArgumentDescription,
-                CommandOptionType.SingleValue);
-
-            var thresholdLowParam = app.Option($"{CLIOptions.ThresholdLow.ArgumentName} | {CLIOptions.ThresholdLow.ArgumentShortName}",
-                CLIOptions.ThresholdLow.ArgumentDescription,
-                CommandOptionType.SingleValue);
-                
-            var thresholdBreakParam = app.Option($"{CLIOptions.ThresholdBreak.ArgumentName} | {CLIOptions.ThresholdBreak.ArgumentShortName}",
-                CLIOptions.ThresholdBreak.ArgumentDescription,
-                CommandOptionType.SingleValue);
+            var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
+            var reporterParam = CreateOption(app, CLIOptions.Reporter);
+            var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
+            var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
+            var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
+            var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
+            var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
+            var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
+            var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
+            var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
 
             app.HelpOption("--help | -h | -?");
 
@@ -160,6 +131,15 @@ namespace Stryker.CLI
             Console.WriteLine(@"
 Beta version
 "); 
+        }
+
+        /// <summary>
+        /// Simplify app option creation to prevent code duplication
+        /// </summary>
+        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option) where T : IConvertible {
+            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
+                option.ArgumentDescription,
+                CommandOptionType.SingleValue);
         }
     }
 }

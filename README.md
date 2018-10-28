@@ -41,6 +41,8 @@ Right now, Stryker.NET supports the following mutators:
 - Unary Operators
 - Update Operators
 - Checked Mutator
+- LINQ Mutator
+- String Mutator
 
 For the full list of all available mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
 
