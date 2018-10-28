@@ -11,6 +11,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
     - [Update Operators](#update-operators)
 	- [Checked Mutator](#checked-mutator)
     - [LINQ Mutator](#linq-mutator)
+    - [String Mutator](#string-mutator)
 
 <!-- /TOC -->
 
@@ -99,3 +100,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Max()`               | `Min()`               |
 | `Sum()`               | `Count()`             |
 | `Count()`             | `Sum()`               |
+
+## String Mutator
+| Original | Mutated |
+| ------------- | ------------- | 
+| `"foo"` | `""` |
+|  `""` | `"Stryker was here!"` |
+| `$"foo {bar}"` | `$""` |
