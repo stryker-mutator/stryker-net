@@ -1,8 +1,7 @@
 {
+    "private": true,
+    "version": "0.3.0",
     "scripts": {
-        "changelog": "npx conventional-changelog -p angular -i ./src/Stryker.CLI/CHANGELOG.md -s --commit-path ./src/Stryker.CLI -t StrykerMutator.DotNetCoreCli@ && npx conventional-changelog -p angular -i ./src/Stryker.Core/CHANGELOG.md -s --commit-path ./src/Stryker.Core -t StrykerMutator.Core@"
-    },
-    "dependencies": {
-        "conventional-changelog-cli": "^2.0.5"
+        "prepare-release": "node prepare-release.js"
     }
 }
