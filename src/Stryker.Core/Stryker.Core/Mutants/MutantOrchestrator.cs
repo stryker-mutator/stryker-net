@@ -33,7 +33,6 @@ namespace Stryker.Core.Mutants
         private int _mutantCount { get; set; } = 0;
         private IEnumerable<IMutator> _mutators { get; set; }
         private ILogger _logger { get; set; }
-        private IEnumerable<Type> _ternaryKinds { get; set; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators)
@@ -41,12 +40,6 @@ namespace Stryker.Core.Mutants
             _mutators = mutators;
             _mutants = new Collection<Mutant>();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
-            _ternaryKinds = new Collection<Type>()
-            {
-                typeof(LocalDeclarationStatementSyntax),
-                typeof(AssignmentExpressionSyntax),
-                typeof(ReturnStatementSyntax)
-            };
         }
 
         /// <summary>
@@ -67,14 +60,15 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            if (_ternaryKinds.Contains(currentNode.GetType())) {
+            if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null) {
                 // The mutations should be placed using a ConditionalExpression
                 var expression = GetExpressionSyntax(currentNode);
                 SyntaxNode ast = currentNode;
                 foreach (var mutant in FindMutants(expression))
                 {
                     _mutants.Add(mutant);
-                    ast = ast.ReplaceNode(expression, MutantPlacer.PlaceWithConditionalExpression(expression, ApplyMutant(expression, mutant), mutant.Id));
+                    var mutatedNode = ApplyMutant(expression, mutant);
+                    ast = ast.ReplaceNode(expression, MutantPlacer.PlaceWithConditionalExpression(expression, mutatedNode, mutant.Id));
                 }
                 return ast;
             }
@@ -84,14 +78,11 @@ namespace Stryker.Core.Mutants
                 var statement = currentNode as StatementSyntax;
                 StatementSyntax ast = statement as StatementSyntax;
 
-                // TODO: Mutate LocalFunctionStatement body
-                if (!(statement is LocalFunctionStatementSyntax))
+                foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
                 {
-                    foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
-                    {
-                        _mutants.Add(mutant);
-                        ast = MutantPlacer.PlaceWithIfStatement(ast, ApplyMutant(statement, mutant), mutant.Id);
-                    }
+                    _mutants.Add(mutant);
+                    var mutatedNode = ApplyMutant(statement, mutant);
+                    ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
                 }
                 return ast;
             }
@@ -150,9 +141,8 @@ namespace Stryker.Core.Mutants
 
         private T ApplyMutant<T>(T node, Mutant mutant) where T: SyntaxNode
         {
-            var editor = new SyntaxEditor(node, new AdhocWorkspace());
-            editor.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
-            return editor.GetChangedRoot() as T;
+            var mutatedNode = node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
+            return mutatedNode;
         }
 
         private ExpressionSyntax GetExpressionSyntax(SyntaxNode node)
@@ -168,6 +158,9 @@ namespace Stryker.Core.Mutants
                 case nameof(ReturnStatementSyntax):
                     var returnStatement = node as ReturnStatementSyntax;
                     return returnStatement.Expression;
+                case nameof(LocalFunctionStatementSyntax):
+                    var localFunction = node as LocalFunctionStatementSyntax;
+                    return localFunction.ExpressionBody?.Expression;
                 default:
                     return null;
             }

@@ -10,6 +10,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         {
             int test = 10;
             int testPlusTest = test + test;
+
+            bool Add(int x, int y) => x + y;
         }
     }
 }

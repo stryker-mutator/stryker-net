@@ -1,16 +1,15 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Mutants;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutantPlacerTests
     {
-        [Fact]
-        public void MutantPlacer_ShouldPlaceWithIfStatement()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(4)]
+        public void MutantPlacer_ShouldPlaceWithIfStatement(int id)
         {
             // 1 + 8;
             var originalNode = SyntaxFactory.ExpressionStatement(SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
@@ -22,9 +21,9 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-            var result = MutantPlacer.PlaceWithIfStatement(originalNode, mutatedNode, 0);
+            var result = MutantPlacer.PlaceWithIfStatement(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically(@"if (System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""0"")
+            result.ToFullString().ShouldBeSemantically(@"if (System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + @""")
             {
                 1 - 8;
             } else {
@@ -36,8 +35,10 @@ namespace Stryker.Core.UnitTest.Mutants
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
 
-        [Fact]
-        public void MutantPlacer_ShouldPlaceWithConditionalExpression()
+        [Theory]
+        [InlineData(10)]
+        [InlineData(16)]
+        public void MutantPlacer_ShouldPlaceWithConditionalExpression(int id)
         {
             // 1 + 8;
             var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
@@ -49,9 +50,9 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = MutantPlacer.PlaceWithConditionalExpression(originalNode, mutatedNode, 0);
+            var result = MutantPlacer.PlaceWithConditionalExpression(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically(@"System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""0"" ? 1 - 8 : 1 + 8;");
+            result.ToFullString().ShouldBeSemantically(@"System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + ") ? 1 - 8 : 1 + 8;");
 
             var removedResult = MutantPlacer.RemoveByConditionalExpression(result);
 
