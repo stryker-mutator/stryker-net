@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
-using Moq;
-using Stryker.Core.Mutants;
+﻿using Moq;
 using Stryker.Core.Reporters.Progress;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
@@ -22,14 +21,13 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         {
             _progressBarReporter.ReportInitialState(0);
 
-            _progressBarReporter.ReportRunTest(TimeSpan.FromSeconds(10));
+            _progressBarReporter.ReportRunTest();
 
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                                                           It.Is<object[]>(
                                                               y => (int)y.ElementAt(1) == 0 &&
                                                                    (int)y.ElementAt(2) == 0 &&
-                                                                   (int)y.ElementAt(3) == 100 &&
-                                                                   ((string)y.ElementAt(4)).Contains("0 s"))));
+                                                                   (int)y.ElementAt(3) == 100)));
         }
 
         [Fact]
@@ -41,8 +39,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                                                           It.Is<object[]>(
                                                               y => (int)y.ElementAt(1) == 0 &&
                                                                    (int)y.ElementAt(2) == 2 &&
-                                                                   (int)y.ElementAt(3) == 0 &&
-                                                                   ((string)y.ElementAt(4)).Contains("0 s"))));
+                                                                   (int)y.ElementAt(3) == 0)));
         }
 
         [Fact]
@@ -50,15 +47,14 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         {
             _progressBarReporter.ReportInitialState(2);
 
-            _progressBarReporter.ReportRunTest(TimeSpan.FromSeconds(10));
+            _progressBarReporter.ReportRunTest();
 
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                                                           It.Is<object[]>(
                                                               y => ((string)y.ElementAt(0)).EndsWith("-----") &&
                                                                    (int)y.ElementAt(1) == 1 &&
                                                                    (int)y.ElementAt(2) == 2 &&
-                                                                   (int)y.ElementAt(3) == 50 &&
-                                                                   (string)y.ElementAt(4) == "10 s")));
+                                                                   (int)y.ElementAt(3) == 50)));
         }
     }
 }

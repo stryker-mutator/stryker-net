@@ -1,18 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Core;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Progress;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -28,7 +25,6 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        private readonly IProgressReporter _progressReporter;
         private MutationTestInput _input { get; set; }
         private IReporter _reporter { get; set; }
         private IMutantOrchestrator _orchestrator { get; set; }
@@ -41,32 +37,18 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IEnumerable<IMutator> mutators,
-            IMutationTestExecutor mutationTestExecutor, IMutantOrchestrator orchestrator = null,
+            IMutationTestExecutor mutationTestExecutor,
+            IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
-            IFileSystem fileSystem = null,
-            IProgressReporter progressReporter = null)
+            IFileSystem fileSystem = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
             _mutationTestExecutor = mutationTestExecutor;
-            _progressReporter = progressReporter ?? CreateProgressReporter();
             _orchestrator = orchestrator ?? new MutantOrchestrator(mutators);
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-        }
-
-        private static ProgressReporter CreateProgressReporter()
-        {
-            var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
-            var progressBarReporter = new ProgressBarReporter(consoleOneLineLoggerFactory.Create());
-            var mutantsResultReporter = new MutantsResultReporter(
-                consoleOneLineLoggerFactory.Create(),
-                consoleOneLineLoggerFactory.Create(),
-                consoleOneLineLoggerFactory.Create(),
-                consoleOneLineLoggerFactory.Create());
-
-            return new ProgressReporter(mutantsResultReporter, progressBarReporter);
         }
 
         public void Mutate()
@@ -134,23 +116,18 @@ namespace Stryker.Core.MutationTest
             }
 
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
-
-            _progressReporter.ReportInitialState(mutantsNotRun.Count());
+            _reporter.OnStartMutantTestRun(mutantsNotRun);
 
             Parallel.ForEach(mutantsNotRun,
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
                 mutant =>
                 {
-                    var timer = new Stopwatch();
-                    timer.Start();
                     _mutationTestExecutor.Test(mutant);
-                    timer.Stop();
 
                     _reporter.OnMutantTested(mutant);
-                    _progressReporter.ReportRunTest(timer.Elapsed, mutant);
                 });
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
-            
+
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
     }

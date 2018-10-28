@@ -12,8 +12,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Stryker.Core.Reporters.Progress;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -239,18 +237,19 @@ namespace Stryker.Core.UnitTest.MutationTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
             var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, false, 1, 80, 60, 0);
 
-            var progressReporter = new Mock<IProgressReporter>();
-            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null, progressReporter.Object);
+            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null);
 
             target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }

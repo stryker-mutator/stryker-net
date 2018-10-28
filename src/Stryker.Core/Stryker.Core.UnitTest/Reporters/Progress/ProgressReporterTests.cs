@@ -1,8 +1,6 @@
 ﻿using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
-using System;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
@@ -36,11 +34,10 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         public void ProgressReporter_ShouldCallBothReporters_OnReportRunTest()
         {
             var mutant = new Mutant();
-            var testDuration = TimeSpan.FromSeconds(10);
-            _progressReporter.ReportRunTest(testDuration, mutant);
+            _progressReporter.OnMutantTested(mutant);
 
             _mutantsResultReporter.Verify(x => x.ReportMutantTestResult(mutant), Times.Once);
-            _progressBarReporter.Verify(x => x.ReportRunTest(testDuration), Times.Once);
+            _progressBarReporter.Verify(x => x.ReportRunTest(), Times.Once);
         }
     }
 }

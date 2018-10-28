@@ -1,18 +1,12 @@
-﻿using Stryker.Core.Mutants;
-using System;
+﻿using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Mutants;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Reporters.Progress
 {
-    public interface IProgressReporter
+    public class ProgressReporter : IReporter
     {
-        void ReportRunTest(TimeSpan testDuration, IReadOnlyMutant mutantTestResult);
-        void ReportInitialState(int totalNumberOfTests);
-    }
-
-    public class ProgressReporter : IProgressReporter
-    {
-        private readonly object _mutex = new object();
-        
         private readonly IMutantsResultReporter _mutantsResultReporter;
         private readonly IProgressBarReporter _progressBarReporter;
         public ProgressReporter(IMutantsResultReporter mutantsResultReporter, IProgressBarReporter progressBarReporter)
@@ -27,13 +21,24 @@ namespace Stryker.Core.Reporters.Progress
             _mutantsResultReporter.ReportInitialState();
         }
 
-        public void ReportRunTest(TimeSpan testDuration, IReadOnlyMutant mutantTestResult)
+        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
-            lock (_mutex)
-            {
-                _progressBarReporter.ReportRunTest(testDuration);
-                _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
-            }
+        }
+
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
+            _progressBarReporter.ReportInitialState(mutantsToBeTested.Count());
+            _mutantsResultReporter.ReportInitialState();
+        }
+
+        public void OnMutantTested(IReadOnlyMutant result)
+        {
+            _progressBarReporter.ReportRunTest();
+            _mutantsResultReporter.ReportMutantTestResult(result);
+        }
+
+        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        {
         }
     }
 }
