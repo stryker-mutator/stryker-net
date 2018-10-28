@@ -11,7 +11,8 @@
 ### Features
 
 * **testing:** Add happyflow integration test ([#163](https://github.com/stryker-mutator/stryker-net/issues/163)) ([2b2f9ba](https://github.com/stryker-mutator/stryker-net/commit/2b2f9ba))
-
+* **reporting:** Set default log level to Info and cleanup reporters ([#167](https://github.com/stryker-mutator/stryker-net/issues/167)) ([b378262](https://github.com/stryker-mutator/stryker-net/commit/b378262))
+* **installation:** Package stryker runner as dotnet tool ([#193](https://github.com/stryker-mutator/stryker-net/issues/193)) ([a3fd4a4](https://github.com/stryker-mutator/stryker-net/commit/a3fd4a4))
 
 
 <a name="0.3.0"></a>
