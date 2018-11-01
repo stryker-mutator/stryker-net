@@ -14,9 +14,7 @@ namespace Stryker.Core.IntegrationTest
             string pathToExampleProject = Path.GetFullPath("../../../ExampleProject/ExampleProject.XUnit/");
             Environment.CurrentDirectory = pathToExampleProject;
 
-            var runner = new StrykerCLI(new StrykerRunner());
-
-            int exitCode = runner.Run(new string[] { "--log-console", "trace" });
+            int exitCode = Program.Main(new string[] { "--log-console", "info" });
 
             exitCode.ShouldBe(0);
         }

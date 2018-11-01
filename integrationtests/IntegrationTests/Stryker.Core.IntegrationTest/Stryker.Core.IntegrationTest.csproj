@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj" />
+    <ProjectReference Include="..\..\..\src\Stryker.CLI.Global\Stryker.CLI.Global.csproj" />
   </ItemGroup>
 
 </Project>
