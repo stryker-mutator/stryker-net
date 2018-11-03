@@ -136,7 +136,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                     { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "somecsharpfile.cs"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") },
-
                 });
 
             var target = new InputFileResolver(fileSystem);
@@ -174,20 +173,20 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { @"c:\ExampleProject\ExampleProject.csproj", new MockFileData(projectFile)},
-                    { @"c:\ExampleProject\Recursive.cs", new MockFileData(sourceFile)},
-                    { @"c:\ExampleProject\Recursive2.cs", new MockFileData(sourceFile)},
-                    { @"c:\ExampleProject\Recursive3.cs", new MockFileData(sourceFile)},
-                    { @"c:\TestProject\TestProject.csproj", new MockFileData(projectFile)},
-                    { $@"c:\TestProject\Debug\somecsharpfile.cs", new MockFileData("Bytecode") },
-                    { $@"c:\TestProject\Release\subfolder\somecsharpfile.cs", new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive2.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive3.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile) },
+                    { Path.Combine(_filesystemRoot, "TestProject", "Debug", "somecsharpfile.cs"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "Release", "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") }
                 });
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(@"c:\TestProject\", "", new List<string> { "c:/ExampleProject/Recursive.cs" });
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string> { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") });
 
-            result.TestProjectPath.ShouldBe(@"c:\TestProject\");
+            result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.Children.Count.ShouldBe(2);
         }
 
