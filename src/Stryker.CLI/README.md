@@ -70,7 +70,7 @@ The defaults are respectivly: `80` `60` `0`
 #### Excluding files
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
-`dotnet stryker --files-to-exclude ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs','C:\ExampleDirectory\ExampleClass.cs']
+`dotnet stryker --files-to-exclude ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs','C:\ExampleDirectory\ExampleClass.cs']`
 
 It is advisable to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. It is still possible to use absolute paths to files.
 
