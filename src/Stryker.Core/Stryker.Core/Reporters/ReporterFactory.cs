@@ -12,7 +12,6 @@ namespace Stryker.Core.Reporters
             return new BroadcastReporter(new Collection<IReporter>()
             {
                 new ConsoleReportReporter(options),
-                new ConsoleDotProgressReporter(),
                 progressReporter
             });
         }
