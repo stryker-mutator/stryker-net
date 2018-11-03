@@ -1,11 +1,9 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation

@@ -12,7 +12,7 @@
       "threshold-break": 20
     },
     "files-to-exclude": [
-      "c:\\ExampleProject\\Recursive.cs"
+      "./Recursive.cs"
     ] 
   }
 }

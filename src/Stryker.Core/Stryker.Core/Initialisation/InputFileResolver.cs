@@ -74,26 +74,17 @@ namespace Stryker.Core.Initialisation
                 folderComposite.Add(FindInputFiles(folder, filesToExclude));
             }
 
-            foreach (var file in _fileSystem.Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly))
+            foreach (var file in _fileSystem.Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly).Except(filesToExclude))
             {
-                if (IncludeAsFileLeaf(file, filesToExclude))
-                {
-                    folderComposite.Add(
-                        new FileLeaf
-                        {
-                            SourceCode = _fileSystem.File.ReadAllText(file),
-                            Name = Path.GetFileName(file),
-                            FullPath = file
-                        });
-                }
+                folderComposite.Add(
+                    new FileLeaf {
+                        SourceCode = _fileSystem.File.ReadAllText(file),
+                        Name = Path.GetFileName(file),
+                        FullPath = file
+                    });
             }
 
             return folderComposite;
-        }
-
-        private bool IncludeAsFileLeaf(string filePath, List<string> filesToExclude)
-        {
-            return filesToExclude.All(file => Path.GetFullPath(file) != Path.GetFullPath(filePath));
         }
 
         public string ScanProjectFile(string currentDirectory)

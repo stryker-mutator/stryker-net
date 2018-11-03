@@ -4,11 +4,11 @@ using Stryker.Core.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using System;
+using System.IO;
 
 namespace Stryker.Core.Options
 {
-    using System;
-
     public class StrykerOptions
     {
         public string BasePath { get; }
@@ -38,7 +38,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
-            FilesToExclude = ValidateFilesToExclude(filesToExclude);
+            FilesToExclude = ValidateFilesToExclude(basePath, filesToExclude);
         }
 
         private string ValidateReporter(string reporter)
@@ -95,12 +95,24 @@ namespace Stryker.Core.Options
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private List<string> ValidateFilesToExclude(string filesToExclude)
+        private List<string> ValidateFilesToExclude(string basePath, string filesToExclude)
         {
             var excludedFiles = new List<string>();
             try
             {
-                excludedFiles = JsonConvert.DeserializeObject<List<string>>(filesToExclude);
+                var jsonExcludedFiles = JsonConvert.DeserializeObject<List<string>>(filesToExclude);
+
+                foreach (var excludedFile in jsonExcludedFiles)
+                {
+                    var fullPath = Path.GetFullPath(Path.Combine(basePath, excludedFile));
+
+                    if (!File.Exists(fullPath))
+                    {
+                        // TODO: Write something to the console that the provided excluded file does not exist.
+                    }
+
+                    excludedFiles.Add(fullPath);
+                }
             }
             catch (Exception ex)
             {
