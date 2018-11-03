@@ -77,7 +77,7 @@ It is advisable to use relative paths. When someone else is running Stryker for 
 The following rules are used when using relative paths. For these rules the following example directory is used: C:\ExampleDirectory\OtherDirectory\
 
 1. When using the relative path option ./ (for Windows .\) it uses the current directory where it is scanning for files (The final directory is: C:\ExampleDirectory\OtherDirectory\ExampleClass.cs).
-2. When using the relative path option ../ (for Windowns ..\) it moves up one directory that is being scanned (The final directory is: C:\ExampleDirectory\ExampleClass.cs).
+2. When using the relative path option ../ (for Windows ..\) it moves up one directory that is being scanned (The final directory is: C:\ExampleDirectory\ExampleClass.cs).
 
 The only format which is currently accepted is a JSON formatted string array. If an invalid JSON string is provided a ValidationException is thrown directing to you to provide a correct JSON formatted string. 
 When you want to exclude multiple files (for example more then 5) it is better to use the stryker configuration file because it is more easier to handle multiple files.
