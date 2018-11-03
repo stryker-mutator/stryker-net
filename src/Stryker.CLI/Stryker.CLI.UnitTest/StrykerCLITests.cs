@@ -246,14 +246,15 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new[] { argName, "['./StartUp.cs','./Recursive.cs']" });
+            target.Run(new[] { argName, "['./StartUp.cs','./ExampleDirectory/Recursive.cs','C:\\ExampleDirectory\\Test.cs']" });
 
             var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
-            var secondFileToExclude = Path.Combine(_currentDirectory, "Recursive.cs");
+            var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.FilesToExclude[0] == firstFileToExclude &&
-                o.FilesToExclude[1] == secondFileToExclude)));
+                o.FilesToExclude[1] == secondFileToExclude &&
+                o.FilesToExclude[2] == "C:\\ExampleDirectory\\Test.cs")));
         }
     }
 }

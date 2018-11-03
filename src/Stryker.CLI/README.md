@@ -68,9 +68,16 @@ If you want to decide on your own mutation score thresholds, you can configure t
 The defaults are respectivly: `80` `60` `0`
 
 #### Excluding files
-If any error occur in a specific source file you are able to exclude them from mutation. Execute the following command:
+If you decide to exclude files for unit testing, you can configure this with the following command:
 
-`dotnet stryker --files-to-exclude ['C:\\ExampleProject\\ExampleClass.cs', 'C:\\ExampleProject\\ExampleClass2.cs']
+`dotnet stryker --files-to-exclude ['./ExampleClass.cs', './ExampleDirectory/ExampleClass2.cs', 'C:\ExampleDirectory\ExampleClass.cs']
+
+It is advisable to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. It is still possible to use absolute paths to files.
+
+The following rules are used when using relative paths. For these rules the following example directory is used: C:\ExampleDirectory\OtherDirectory\
+
+1. When using the relative path option ./ (for Windows .\) it uses the current directory where it is scanning for files (The final directory is: C:\ExampleDirectory\OtherDirectory\ExampleClass.cs).
+2. When using the relative path option ../ (for Windowns ..\) it moves up one directory that is being scanned (The final directory is: C:\ExampleDirectory\ExampleClass.cs).
 
 The only format which is currently accepted is a JSON formatted string array. If an invalid JSON string is provided a ValidationException is thrown directing to you to provide a correct JSON formatted string. 
 When you want to exclude multiple files (for example more then 5) it is better to use the stryker configuration file because it is more easier to handle multiple files.
@@ -95,8 +102,9 @@ Example:
             "threshold-break":60
         },
         "files-to-exclude": [
-            "c:\\ExampleProject\\ExampleClass.cs",
-			"c:\\ExampleProject\\ExampleClass2.cs"
+            "./ExampleClass.cs",
+			"./ExampleDirectory/ExampleClass2.cs",
+			"C:\\ExampleDirectory\\ExampleClass.cs"
         ]
     }
 }
