@@ -2,6 +2,7 @@
 using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
 {
@@ -18,6 +19,9 @@ namespace Stryker.Core.Reporters
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
+        }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
