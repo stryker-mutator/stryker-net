@@ -3,6 +3,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
 using Stryker.Core.Options;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,10 @@ namespace Stryker.Core.Reporters
 
             // print empty line for readability
             Console.WriteLine("");
+        }
+
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
         }
 
         public void OnMutantTested(IReadOnlyMutant result) { }
