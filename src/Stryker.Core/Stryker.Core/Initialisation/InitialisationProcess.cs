@@ -4,6 +4,8 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using System.Linq;
+using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {

@@ -40,8 +40,9 @@ namespace Stryker.Core.Initialisation
         {
             string projectFile = ScanProjectFile(currentDirectory);
             var currentProjectInfo = ReadProjectFile(projectFile, projectName);
-            var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath($"{currentDirectory}{Path.DirectorySeparatorChar}{currentProjectInfo.ProjectReference}"));
-            var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath($"{projectUnderTestPath}{Path.DirectorySeparatorChar}{Path.GetFileName(currentProjectInfo.ProjectReference)}"));
+            var projectReferencePath = FilePathUtils.ConvertPathSeparators(currentProjectInfo.ProjectReference);
+            var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
+            var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath(Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath))));
             var inputFiles = FindInputFiles(projectUnderTestPath, filesToExclude);
 
             return new ProjectInfo()
@@ -51,8 +52,8 @@ namespace Stryker.Core.Initialisation
                 TargetFramework = currentProjectInfo.TargetFramework,
                 ProjectContents = inputFiles,
                 ProjectUnderTestPath = projectUnderTestPath,
-                ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(currentProjectInfo.ProjectReference),
-                ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(currentProjectInfo.ProjectReference)
+                ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(projectReferencePath),
+                ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(projectReferencePath),
             };
         }
 

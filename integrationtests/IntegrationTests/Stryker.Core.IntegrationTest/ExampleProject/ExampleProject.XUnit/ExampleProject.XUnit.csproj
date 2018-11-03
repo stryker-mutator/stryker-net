@@ -20,9 +20,4 @@
   <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
     <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
   </Target>
-  
-  <ItemGroup>
-	<PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
-    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
-</ItemGroup>
 </Project>

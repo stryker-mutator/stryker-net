@@ -1,9 +1,10 @@
+name: $(Build.DefinitionName)-$(PackageVersion)$(rev:.r)
 resources:
 - repo: self
   clean: true
   
 variables:
-  PackageVersion: '0.3.0'
+  PackageVersion: '0.5.0'
   
 phases:
 - phase: Phase_1
@@ -43,3 +44,18 @@ phases:
     inputs:
       command: test
       projects: '**/*Test.csproj'
+
+- phase: Phase_3
+  displayName: Mac
+  condition: succeeded()
+  
+  queue:
+    name: Hosted macOS
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet test'
+    inputs:
+      command: test
+      projects: '**/*Test.csproj'
+

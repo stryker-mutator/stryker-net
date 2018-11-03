@@ -91,9 +91,9 @@ namespace Stryker.CLI
         }
 
         private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results) {
-            _logger.LogError(@"Final mutation score: {results.mutationScore} under breaking threshold value {options.ThresholdOptions.ThresholdBreak},
-                                ,setting exit code to 1 (failure).
-                                Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future");
+            _logger.LogError($@"Final mutation score: {results.mutationScore * 100} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
+Setting exit code to 1 (failure).
+Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
             this.ExitCode = 1;
         }
 
