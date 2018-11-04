@@ -110,7 +110,7 @@ namespace Stryker.Core.Compiling
             {
                 // find the mutated node in the new tree
                 var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
-                // remove the mutated node using its MutantPlacer remove mehtod and update the tree
+                // remove the mutated node using its MutantPlacer remove method and update the tree
                 if (nodeToRemove is IfStatementSyntax ifStatement)
                 {
                     trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveByIfStatement(nodeToRemove));

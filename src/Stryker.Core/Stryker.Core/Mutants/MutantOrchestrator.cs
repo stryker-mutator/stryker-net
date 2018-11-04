@@ -74,7 +74,7 @@ namespace Stryker.Core.Mutants
             }
             else if (currentNode is StatementSyntax && currentNode.Kind() != SyntaxKind.Block)
             {
-                // The mutations should be placed using a IfStatement
+                // The mutations should be placed using an IfStatement
                 var statement = currentNode as StatementSyntax;
                 StatementSyntax ast = statement as StatementSyntax;
 
