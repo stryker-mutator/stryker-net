@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.UnitTest;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
