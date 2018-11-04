@@ -32,9 +32,6 @@ namespace Stryker.Core.Reporters
                 case MutantStatus.Survived:
                     _chalk.Red("S");
                     break;
-                case MutantStatus.RuntimeError:
-                    _chalk.Default("E");
-                    break;
                 case MutantStatus.Timeout:
                     _chalk.Default("T");
                     break;
