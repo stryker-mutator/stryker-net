@@ -59,7 +59,9 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
+            var ex = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
+            Assert.Equal("Project reference issue.", ex.Message);
+            ex.Details.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
@@ -85,7 +87,8 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
 </Project>");
             var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
-            exception.Message.ShouldContain("--project-file");
+            Assert.Equal("Project reference issue.", exception.Message);
+            exception.Details.ShouldContain("--project-file");
         }
 
         [Theory]
@@ -147,7 +150,8 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
 </Project>");
             var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne));
-            exception.Message.ShouldContain("more than one", Case.Insensitive);
+            Assert.Equal("Project reference issue.", exception.Message);
+            exception.Details.ShouldContain("more than one", Case.Insensitive);
         }
 
         [Theory]
@@ -176,7 +180,8 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
 </Project>");
             var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone));
-            exception.Message.ShouldContain("no project", Case.Insensitive);
+            Assert.Equal("Project reference issue.", exception.Message);
+            exception.Details.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]

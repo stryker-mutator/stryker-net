@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace Stryker.Core.Exceptions
 {
@@ -9,10 +10,32 @@ namespace Stryker.Core.Exceptions
     /// </summary>
     public class StrykerInputException : Exception
     {
+        public string Details { get; }
+        
         public StrykerInputException(string message)
             : base(message)
         {
         }
-        
+
+        public StrykerInputException(string message, string details) : base(message)
+        {
+            Details = details;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine();
+            builder.AppendLine();
+            builder.AppendLine(Message);
+            builder.AppendLine();
+            if (!string.IsNullOrEmpty(Details))
+            {
+                builder.AppendLine(Details);
+                //builder.AppendLine();
+            }
+            return builder.ToString();
+        }
+
     }
 }

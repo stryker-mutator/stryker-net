@@ -30,7 +30,7 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException($"{result.Output + Environment.NewLine}Initial build of targeted project failed. Please make targeted project buildable.");
+                throw new StrykerInputException("Initial build of targeted project failed. Please make targeted project buildable.", result.Output);
             }
             _logger.LogInformation("Initial build successful");
         }

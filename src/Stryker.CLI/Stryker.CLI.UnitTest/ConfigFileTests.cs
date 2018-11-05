@@ -34,7 +34,6 @@ namespace Stryker.CLI.UnitTest
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3M);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults).Verifiable();
-            File.Move("stryker-config.json", "temp.json");
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });

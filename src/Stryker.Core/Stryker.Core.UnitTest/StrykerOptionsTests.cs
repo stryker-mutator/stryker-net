@@ -31,7 +31,19 @@ namespace Stryker.Core.UnitTest
 
             Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
 
-            Assert.Throws<StrykerInputException>(createOptions);
+            var ex = Assert.Throws<StrykerInputException>(createOptions);
+            Assert.Equal("The value for one of your settings is not correct. Try correcting or removing them.", ex.Message);
+        }
+
+        [Fact]
+        public void Constructor_WithIncorrectSettings_ShoudThrowWithDetails()
+        {
+            var logLevel = "incorrect";
+
+            Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
+
+            var ex = Assert.Throws<StrykerInputException>(createOptions);
+            Assert.NotNull(ex.Details);
         }
     }
 }

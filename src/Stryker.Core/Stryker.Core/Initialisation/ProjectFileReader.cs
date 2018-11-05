@@ -10,6 +10,7 @@ namespace Stryker.Core.Initialisation
 {
     public class ProjectFileReader
     {
+        private const string ErrorMessage = "Project reference issue.";
         private ILogger _logger { get; set; }
 
         public ProjectFileReader()
@@ -49,6 +50,7 @@ namespace Stryker.Core.Initialisation
                 if (string.IsNullOrEmpty(projectUnderTestNameFilter))
                 {
                     throw new StrykerInputException(
+                        ErrorMessage,
                         $"Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify whitch project to mutate. {referenceChoise}");
                 }
                 else
@@ -57,11 +59,13 @@ namespace Stryker.Core.Initialisation
                     if (!searchResult.Any())
                     {
                         throw new StrykerInputException(
+                            ErrorMessage,
                             $"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly? {referenceChoise}.");
                     }
                     else if (searchResult.Count() > 1)
                     {
                         throw new StrykerInputException(
+                            ErrorMessage,
                             $"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed. {referenceChoise}.)");
                     }
                     return FilePathUtils.ConvertPathSeparators(searchResult.Single());
@@ -69,7 +73,9 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectReferences.Any())
             {
-                throw new StrykerInputException("No project references found in test project file, unable to find project to mutate.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "No project references found in test project file, unable to find project to mutate.");
             }
             return FilePathUtils.ConvertPathSeparators(projectReferences.Single());
         }
