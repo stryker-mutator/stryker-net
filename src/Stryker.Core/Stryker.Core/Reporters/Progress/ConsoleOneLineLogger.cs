@@ -33,8 +33,8 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReplaceLog(string text, params object[] args)
         {      
-            var currentCursorTop = null;
-            var currentCursorLeft = null;
+            int currentCursorTop = 0;
+            int currentCursorLeft = 0;
             if(_hasConsole)
             {
                 currentCursorTop = Console.CursorTop;
