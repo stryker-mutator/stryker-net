@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void StartLog(string text, params object[] args)
         {
-            if(_hasConsole)
+            if (_hasConsole)
             {
                 _cursorTop = Console.CursorTop;
             }
@@ -32,10 +32,10 @@ namespace Stryker.Core.Reporters.Progress
         }
 
         public void ReplaceLog(string text, params object[] args)
-        {      
+        {
             int currentCursorTop = 0;
             int currentCursorLeft = 0;
-            if(_hasConsole)
+            if (_hasConsole)
             {
                 currentCursorTop = Console.CursorTop;
                 currentCursorLeft = Console.CursorLeft;
@@ -45,10 +45,10 @@ namespace Stryker.Core.Reporters.Progress
 
                 Console.SetCursorPosition(0, _cursorTop);
             }
-            
+
             _logger.LogInformation(text, args);
 
-            if(_hasConsole)
+            if (_hasConsole)
             {
                 Console.SetCursorPosition(currentCursorLeft, currentCursorTop);
             }
@@ -58,15 +58,15 @@ namespace Stryker.Core.Reporters.Progress
         {
             _logger.LogInformation(new string(' ', Console.WindowWidth));
         }
-        
+
         private bool EnvironmentHasConsole()
         {
             try
             {
-                Console.CursorTop;
+                var t = Console.CursorTop;
                 return true;
             }
-            catch(System.IO.IOException)
+            catch (System.IO.IOException)
             {
                 return false;
             }
