@@ -73,7 +73,6 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
 
         [Theory]
         [InlineData(MutantStatus.Killed, 1)]
-        [InlineData(MutantStatus.RuntimeError, 1)]
         [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
         [InlineData(MutantStatus.NotRun, 0)]

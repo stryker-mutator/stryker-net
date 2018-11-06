@@ -15,12 +15,6 @@ namespace Stryker.Core.Reporters.Progress
             _progressBarReporter = progressBarReporter;
         }
 
-        public void ReportInitialState(int totalNumberOfTests)
-        {
-            _progressBarReporter.ReportInitialState(totalNumberOfTests);
-            _mutantsResultReporter.ReportInitialState();
-        }
-
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
         }

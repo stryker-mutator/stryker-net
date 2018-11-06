@@ -12,8 +12,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public IEnumerable<IReadOnlyMutant> TotalMutants => ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError);
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(m => 
         m.ResultStatus == MutantStatus.Killed ||
-        m.ResultStatus == MutantStatus.Timeout ||
-        m.ResultStatus == MutantStatus.RuntimeError);
+        m.ResultStatus == MutantStatus.Timeout);
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
