@@ -28,63 +28,34 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                                                      _mutantRuntimeErrorLogger.Object);
         }
 
-        [Fact]
-        public void ReportMutantTestResult_ShouldLogEachTimeKilledMutantIsReported()
+        [Theory]
+        [InlineData(MutantStatus.Killed)]
+        [InlineData(MutantStatus.Survived)]
+        [InlineData(MutantStatus.Timeout)]
+        public void ReportMutantTestResult_ShouldLogEachTimeKilledMutantIsReported(MutantStatus status)
         {
             var mutantTestResult = new Mutant()
             {
-                ResultStatus = MutantStatus.Killed
+                ResultStatus = status
             };
 
             for (int i = 0; i < 5; i++)
             {
                 _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
-                _mutantKilledLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
-            }
-        }
 
-        [Fact]
-        public void ReportMutantTestResult_ShouldLogEachTimeSurvivedMutantIsReported()
-        {
-            var mutantTestResult = new Mutant()
-            {
-                ResultStatus = MutantStatus.Survived
-            };
-
-            for (int i = 0; i < 5; i++)
-            {
-                _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
-                _mutantSurvivedLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
-            }
-        }
-
-        [Fact]
-        public void ReportMutantTestResult_ShouldLogEachTimeTimeoutMutantIsReported()
-        {
-            var mutantTestResult = new Mutant()
-            {
-                ResultStatus = MutantStatus.Timeout
-            };
-
-            for (int i = 0; i < 5; i++)
-            {
-                _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
-                _mutantTimeoutLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
-            }
-        }
-
-        [Fact]
-        public void ReportMutantTestResult_ShouldLogEachTimeRuntimeErrorMutantIsReported()
-        {
-            var mutantTestResult = new Mutant()
-            {
-                ResultStatus = MutantStatus.RuntimeError
-            };
-
-            for (int i = 0; i < 5; i++)
-            {
-                _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
-                _mutantRuntimeErrorLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
+                // Verify the right oneline logger is called for each status
+                switch(status)
+                {
+                    case MutantStatus.Killed:
+                        _mutantKilledLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
+                        break;
+                    case MutantStatus.Survived:
+                        _mutantSurvivedLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
+                        break;
+                    case MutantStatus.Timeout:
+                        _mutantTimeoutLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));
+                        break;
+                }
             }
         }
     }

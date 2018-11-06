@@ -59,8 +59,7 @@ namespace Stryker.Core.Reporters
                 foreach (var mutant in current.TotalMutants)
                 {
                     if (mutant.ResultStatus == MutantStatus.Killed ||
-                    mutant.ResultStatus == MutantStatus.Timeout ||
-                    mutant.ResultStatus == MutantStatus.RuntimeError) {
+                    mutant.ResultStatus == MutantStatus.Timeout) {
                         _chalk.Green($"[{mutant.ResultStatus}] ");
                     } else
                     {
