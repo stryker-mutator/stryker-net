@@ -6,11 +6,14 @@ using System.Linq;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
+        private ILogger _logger;
+
         public string BasePath { get; }
         public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
@@ -31,6 +34,8 @@ namespace Stryker.Core.Options
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
         int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak, string filesToExclude)
         {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerOptions>();
+
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -107,16 +112,14 @@ namespace Stryker.Core.Options
                     var fullPath = Path.GetFullPath(Path.Combine(basePath, excludedFile));
 
                     if (!File.Exists(fullPath))
-                    {
-                        // TODO: Write something to the console that the provided excluded file does not exist.
-                    }
+                        _logger.LogWarning($"The specified file to exclude {fullPath} could not be found. Did you mean to exclude another file?");
 
                     excludedFiles.Add(fullPath);
                 }
             }
             catch (Exception ex)
             {
-                throw new ValidationException("Invalid JSON value provided for --files-to-exclude. The correct format, for example, should be: ['C:\\ExampleProject\\Example.cs', 'C:\\ExampleProject\\Example2.cs'].");
+                throw new ValidationException("Invalid JSON value provided for --files-to-exclude. The correct format, for example, should be: ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs','C:\\ExampleDirectory\\ExampleClass.cs'].");
             }
 
             return excludedFiles;

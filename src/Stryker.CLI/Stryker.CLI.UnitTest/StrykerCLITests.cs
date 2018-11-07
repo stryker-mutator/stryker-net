@@ -12,11 +12,14 @@ namespace Stryker.CLI.UnitTest
 {
     public class StrykerCLITests
     {
-        private string _currentDirectory { get; set; }
+        private string _fileSystemRoot { get; }
+
+        private string _currentDirectory { get; }
 
         public StrykerCLITests()
         {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            _currentDirectory = Directory.GetCurrentDirectory();
+            _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
         }
 
         [Theory]
@@ -246,7 +249,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new[] { argName, "['./StartUp.cs','./ExampleDirectory/Recursive.cs','C:\\ExampleDirectory\\Test.cs']" });
+            target.Run(new[] { argName, "['.\\StartUp.cs','./ExampleDirectory/Recursive.cs','C:\\ExampleDirectory\\Test.cs']" });
 
             var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
             var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
