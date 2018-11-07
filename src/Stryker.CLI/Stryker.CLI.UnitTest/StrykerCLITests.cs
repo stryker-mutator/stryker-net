@@ -10,6 +10,8 @@ using System.Reflection;
 
 namespace Stryker.CLI.UnitTest
 {
+    using System.Diagnostics;
+
     public class StrykerCLITests
     {
         private string _fileSystemRoot { get; }
@@ -18,7 +20,7 @@ namespace Stryker.CLI.UnitTest
 
         public StrykerCLITests()
         {
-            _currentDirectory = Directory.GetCurrentDirectory();
+            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
         }
 
@@ -253,6 +255,10 @@ namespace Stryker.CLI.UnitTest
 
             var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
             var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
+
+            Trace.Write("Current directory: " + Directory.GetCurrentDirectory());
+            Trace.Write("First file: " + firstFileToExclude);
+            Trace.Write("Second file: " + secondFileToExclude);
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.FilesToExclude[0] == firstFileToExclude &&
