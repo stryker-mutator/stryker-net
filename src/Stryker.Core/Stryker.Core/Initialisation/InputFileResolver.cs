@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
 using System.Collections.Generic;
@@ -38,12 +39,28 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public ProjectInfo ResolveInput(string currentDirectory, string projectName)
         {
-            string projectFile = ScanProjectFile(currentDirectory);
+            var projectFile = ScanProjectFile(currentDirectory);
             var currentProjectInfo = ReadProjectFile(projectFile, projectName);
             var projectReferencePath = FilePathUtils.ConvertPathSeparators(currentProjectInfo.ProjectReference);
+            
             var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
-            var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath(Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath))));
-            var inputFiles = FindInputFiles(projectUnderTestPath);
+            var projectReference = Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath));
+            var projectFilePath = Path.GetFullPath(projectReference);
+            var projectUnderTestInfo = FindProjectUnderTestAssemblyName(projectFilePath);
+            var paths = FindAllPaths(projectReference);
+            FolderComposite inputFiles = null;
+            for (var i = 0; i < paths.Count; i++)
+            {
+                _logger.LogDebug($"Scanning {paths[i]}");
+                if (inputFiles == null)
+                {
+                    inputFiles = FindInputFiles(paths[i]);
+                }
+                else
+                {
+                    inputFiles.Add(FindInputFiles(paths[i]));
+                }
+            }
 
             return new ProjectInfo()
             {
@@ -55,6 +72,30 @@ namespace Stryker.Core.Initialisation
                 ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(projectReferencePath),
                 ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(projectReferencePath),
             };
+        }
+
+        private IList<string> FindAllPaths(string projectReference)
+        {
+
+            var paths = new List<string>();
+            var directoryName = Path.GetDirectoryName(projectReference);
+            paths.Add(directoryName);
+            var projectFile = _fileSystem.File.OpenText(projectReference);
+            var xDocument = XDocument.Load(projectFile);
+            // extract shared project
+            var projectReferenceElements = xDocument.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+            var test = projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project")).
+                Select(y =>
+                {
+                    var projFile = Path.Combine(directoryName, y.Value);
+                    if (!this._fileSystem.File.Exists(projFile))
+                    {
+                        throw new FileNotFoundException($"Can't find shared project '{projFile}'.", projFile);
+                    }
+                    return Path.GetDirectoryName(projFile);
+                })).ToList();
+            paths.AddRange(test);
+            return paths;
         }
 
         /// <summary>
