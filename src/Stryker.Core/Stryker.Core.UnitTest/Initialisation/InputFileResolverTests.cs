@@ -127,11 +127,8 @@ namespace Stryker.Core.UnitTest.Initialisation
     <ItemGroup>
     </ItemGroup>
                
-     <Import Project=""..\SharedProject\Example.projitems"" Label=""Shared"" />
+     <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
 
-    <ItemGroup>
-        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
-    </ItemGroup>
 </Project>";
 
             string testProjectFile = @"
@@ -149,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                
     <ItemGroup>
-        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
     </ItemGroup>
                 
 </Project>";
@@ -170,6 +167,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "");
 
+
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.Children.Count.ShouldBe(3);
         }
@@ -189,10 +187,10 @@ namespace Stryker.Core.UnitTest.Initialisation
     <ItemGroup>
     </ItemGroup>
                
-     <Import Project=""..\SharedProject\Example.projitems"" Label=""Shared"" />
+     <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
-        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
 
@@ -211,7 +209,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                
     <ItemGroup>
-        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
     </ItemGroup>
                 
 </Project>";
