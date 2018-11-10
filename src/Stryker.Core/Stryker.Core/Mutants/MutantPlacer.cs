@@ -21,8 +21,14 @@ namespace Stryker.Core.Mutants
         public static SyntaxNode RemoveByIfStatement(SyntaxNode node)
         {
             if (node is IfStatementSyntax ifStatement)
+            {
+                // return original statement
                 return ifStatement.Else.Statement;
-            else return null;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static ConditionalExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
@@ -39,10 +45,22 @@ namespace Stryker.Core.Mutants
         public static SyntaxNode RemoveByConditionalExpression(SyntaxNode node)
         {
             if (node is ConditionalExpressionSyntax conditional)
+            {
+                // return original expression
                 return conditional.WhenFalse;
-            else return null;
+            }
+            else
+            {
+                return null;
+            }
         }
 
+        /// <summary>
+        /// Builds a syntax for the expression to check if a mutation is active
+        /// Example for mutantId 1: System.Environment.GetEnvironmentVariable("ActiveMutation") == "1"
+        /// </summary>
+        /// <param name="mutantId"></param>
+        /// <returns></returns>
         private static ExpressionSyntax GetBinaryExpression(int mutantId)
         {
             return SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression,
