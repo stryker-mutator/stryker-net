@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
 using System.Collections.Generic;
@@ -47,21 +46,20 @@ namespace Stryker.Core.Initialisation
             var projectReference = Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath));
             var projectFilePath = Path.GetFullPath(projectReference);
             var projectUnderTestInfo = FindProjectUnderTestAssemblyName(projectFilePath);
-            var paths = FindAllPaths(projectReference);
-            FolderComposite inputFiles = null;
-            for (var i = 0; i < paths.Count; i++)
+            var inputFiles = new FolderComposite();
+            
+            foreach (var dir in ExtractProjectFolders(projectFilePath))
             {
-                _logger.LogDebug($"Scanning {paths[i]}");
-                if (inputFiles == null)
-                {
-                    inputFiles = FindInputFiles(paths[i]);
-                }
-                else
-                {
-                    inputFiles.Add(FindInputFiles(paths[i]));
-                }
-            }
+                var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectFilePath), dir);
 
+                _logger.LogDebug($"Scanning {folder}");
+                if (!_fileSystem.Directory.Exists(folder))
+                {
+                     throw new DirectoryNotFoundException($"Can't find {folder}");
+                }
+                inputFiles.Add(FindInputFiles(folder));
+            }
+            
             return new ProjectInfo()
             {
                 TestProjectPath = currentDirectory,
@@ -72,30 +70,6 @@ namespace Stryker.Core.Initialisation
                 ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(projectReferencePath),
                 ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(projectReferencePath),
             };
-        }
-
-        private IList<string> FindAllPaths(string projectReference)
-        {
-
-            var paths = new List<string>();
-            var directoryName = Path.GetDirectoryName(projectReference);
-            paths.Add(directoryName);
-            var projectFile = _fileSystem.File.OpenText(projectReference);
-            var xDocument = XDocument.Load(projectFile);
-            // extract shared project
-            var projectReferenceElements = xDocument.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
-            var test = projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project")).
-                Select(y =>
-                {
-                    var projFile = Path.Combine(directoryName, y.Value);
-                    if (!this._fileSystem.File.Exists(projFile))
-                    {
-                        throw new FileNotFoundException($"Can't find shared project '{projFile}'.", projFile);
-                    }
-                    return Path.GetDirectoryName(projFile);
-                })).ToList();
-            paths.AddRange(test);
-            return paths;
         }
 
         /// <summary>
@@ -113,12 +87,13 @@ namespace Stryker.Core.Initialisation
             {
                 folderComposite.Add(FindInputFiles(folder));
             }
-            foreach (var file in _fileSystem.Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly))
+            foreach (var file in _fileSystem.Directory.GetFiles(_fileSystem.Path.GetFullPath(path), "*.cs", SearchOption.TopDirectoryOnly))
             {
+               
                 folderComposite.Add(new FileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(file),
-                    Name = Path.GetFileName(file),
+                    Name = _fileSystem.Path.GetFileName(file),
                     FullPath = file
                 });
             }
@@ -140,10 +115,31 @@ namespace Stryker.Core.Initialisation
             return projectFiles.First();
         }
 
+        private IEnumerable<string> ExtractProjectFolders(string projectFilePath)
+        {
+            var projectFile = _fileSystem.File.OpenText(projectFilePath);
+            var xDocument = XDocument.Load(projectFile);
+            var folders = new List<string>();
+            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+            folders.Add(projectDirectory);
+            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+            {
+                
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProject)))
+                {
+                    throw new FileNotFoundException($"Missing shared project {sharedProject}");
+                }
+
+                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProject);
+                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
+            }
+            return folders;
+        }
+
         public ProjectFile ReadProjectFile(string projectFilePath, string projectName)
         {
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            XDocument xDocument = XDocument.Load(projectFile);
+            var xDocument = XDocument.Load(projectFile);
             var projectInfo = new ProjectFileReader().ReadProjectFile(xDocument, projectName);
 
             _logger.LogDebug("Values found in project file {@0}", projectInfo);
@@ -154,7 +150,7 @@ namespace Stryker.Core.Initialisation
         public string FindProjectUnderTestAssemblyName(string projectFilePath)
         {
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            XDocument xDocument = XDocument.Load(projectFile);
+            var xDocument = XDocument.Load(projectFile);
             return new ProjectFileReader().FindAssemblyName(xDocument);
         }
     }

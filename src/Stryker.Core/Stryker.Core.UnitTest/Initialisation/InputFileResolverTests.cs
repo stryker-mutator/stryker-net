@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -98,7 +99,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "");
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
-            result.ProjectContents.Children.Count.ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -169,7 +170,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
-            result.ProjectContents.Children.Count.ShouldBe(3);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
 
         [Fact]
