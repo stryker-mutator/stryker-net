@@ -20,7 +20,8 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             _target = new MutantOrchestrator(new Collection<IMutator>
             {
-                new AddMutator()
+                new AddMutator(),
+                new AssignmentStatementMutator()
             });
             _currentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
@@ -29,6 +30,7 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData("Mutator_IfStatementsShouldBe_Nested_IN.cs", "Mutator_IfStatementsShouldBe_Nested_OUT.cs")]
         [InlineData("Mutator_SyntaxShouldBe_IfStatement_IN.cs", "Mutator_SyntaxShouldBe_IfStatement_OUT.cs")]
         [InlineData("Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs", "Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs")]
+        [InlineData("Mutator_AssignStatements_IN.cs", "Mutator_AssignStatements_OUT.cs")]
         public void Mutator_TestResourcesInputShouldBecomeOutput(string inputFile, string outputFile)
         {
             string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);

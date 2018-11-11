@@ -63,14 +63,15 @@ namespace Stryker.Core.Mutants
             if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null) {
                 // The mutations should be placed using a ConditionalExpression
                 var expression = GetExpressionSyntax(currentNode);
+                ExpressionSyntax expressionAst = expression as ExpressionSyntax;
                 SyntaxNode ast = currentNode;
                 foreach (var mutant in FindMutants(expression))
                 {
                     _mutants.Add(mutant);
                     var mutatedNode = ApplyMutant(expression, mutant);
-                    ast = ast.ReplaceNode(expression, MutantPlacer.PlaceWithConditionalExpression(expression, mutatedNode, mutant.Id));
+                    expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
                 }
-                return ast;
+                return ast.ReplaceNode(expression, expressionAst);
             }
             else if (currentNode is StatementSyntax && currentNode.Kind() != SyntaxKind.Block)
             {

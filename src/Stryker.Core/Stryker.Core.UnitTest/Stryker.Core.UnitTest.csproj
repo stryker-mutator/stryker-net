@@ -5,6 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_NoMutationsShouldBeMade.cs" />
@@ -18,6 +20,9 @@
     <Content Include="Initialisation\TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Mutants\TestResources\Mutator_AssignStatements_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -28,6 +33,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_AssignStatements_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs">
