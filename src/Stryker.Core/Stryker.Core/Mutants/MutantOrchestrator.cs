@@ -152,7 +152,7 @@ namespace Stryker.Core.Mutants
             {
                 case nameof(LocalDeclarationStatementSyntax):
                     var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
-                    return localDeclarationStatement.Declaration.Variables.First().Initializer.Value;
+                    return localDeclarationStatement.Declaration.Variables.First().Initializer?.Value;
                 case nameof(AssignmentExpressionSyntax):
                     var assignmentExpression = node as AssignmentExpressionSyntax;
                     return assignmentExpression.Right;
