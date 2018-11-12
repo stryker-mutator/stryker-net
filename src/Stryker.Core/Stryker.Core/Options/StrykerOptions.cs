@@ -128,7 +128,9 @@ namespace Stryker.Core.Options
 
         private static string GetPlatformSupportedFilePath(string excludedFile)
         {
-            return excludedFile.Replace(excludedFile.Contains("\\") ? "\\" : "/", Path.DirectorySeparatorChar.ToString());
+            return excludedFile.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString());
+
+            //return excludedFile.Replace(excludedFile.Contains("\\") ? "\\" : "/", Path.DirectorySeparatorChar.ToString());
         }
     }
 }
