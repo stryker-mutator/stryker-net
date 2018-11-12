@@ -11,17 +11,20 @@ using System.Reflection;
 namespace Stryker.CLI.UnitTest
 {
     using System.Diagnostics;
+    using Xunit.Abstractions;
 
     public class StrykerCLITests
     {
+        private ITestOutputHelper _output;
         private string _fileSystemRoot { get; }
 
         private string _currentDirectory { get; }
 
-        public StrykerCLITests()
+        public StrykerCLITests(ITestOutputHelper output)
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
+            _output = output;
         }
 
         [Theory]
@@ -251,19 +254,14 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new[] { argName, "['.\\StartUp.cs','./ExampleDirectory/Recursive.cs','C:\\ExampleDirectory\\Test.cs']" });
+            target.Run(new[] { argName, "['.\\StartUp.cs','./ExampleDirectory/Recursive.cs']" });
 
             var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
             var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
 
-            Trace.Write("Current directory: " + Directory.GetCurrentDirectory());
-            Trace.Write("First file: " + firstFileToExclude);
-            Trace.Write("Second file: " + secondFileToExclude);
-
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.FilesToExclude[0] == firstFileToExclude &&
-                o.FilesToExclude[1] == secondFileToExclude &&
-                o.FilesToExclude[2] == "C:\\ExampleDirectory\\Test.cs")));
+                o.FilesToExclude[1] == secondFileToExclude)));
         }
     }
 }

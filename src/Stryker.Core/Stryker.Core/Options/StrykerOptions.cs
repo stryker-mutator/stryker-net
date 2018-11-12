@@ -109,7 +109,8 @@ namespace Stryker.Core.Options
 
                 foreach (var excludedFile in jsonExcludedFiles)
                 {
-                    var fullPath = Path.GetFullPath(Path.Combine(basePath, excludedFile));
+                    var platformFilePath = GetPlatformSupportedFilePath(excludedFile);
+                    var fullPath = Path.GetFullPath(Path.Combine(basePath, platformFilePath));
 
                     if (!File.Exists(fullPath))
                         _logger.LogWarning($"The specified file to exclude {fullPath} could not be found. Did you mean to exclude another file?");
@@ -117,12 +118,17 @@ namespace Stryker.Core.Options
                     excludedFiles.Add(fullPath);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 throw new ValidationException("Invalid JSON value provided for --files-to-exclude. The correct format, for example, should be: ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs','C:\\ExampleDirectory\\ExampleClass.cs'].");
             }
 
             return excludedFiles;
+        }
+
+        private static string GetPlatformSupportedFilePath(string excludedFile)
+        {
+            return excludedFile.Replace(excludedFile.Contains("\\") ? "\\" : "/", Path.DirectorySeparatorChar.ToString());
         }
     }
 }
