@@ -4,12 +4,20 @@ using Stryker.Core;
 using Stryker.Core.Options;
 using System.IO;
 using Xunit;
+using System.Reflection;
 
 namespace Stryker.CLI.UnitTest
 {
     [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class ConfigFileTests
     {
+        private string _currentDirectory { get; set; }
+
+        public ConfigFileTests()
+        {
+            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        }
+
         [Fact]
         public void StrykerCLI_WithNoArgumentsAndEmptyConfig_ShouldStartStrykerWithDefaultOptions()
         {
@@ -57,6 +65,8 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
+            var fileToExclude = Path.Combine(_currentDirectory, "Recursive.cs");
+
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 9999 &&
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&
@@ -66,7 +76,8 @@ namespace Stryker.CLI.UnitTest
                                                                         c.MaxConcurrentTestrunners == 10 &&
                                                                         c.ThresholdOptions.ThresholdBreak == 20 &&
                                                                         c.ThresholdOptions.ThresholdLow == 30 &&
-                                                                        c.ThresholdOptions.ThresholdHigh == 40))).Verifiable();
+                                                                        c.ThresholdOptions.ThresholdHigh == 40 && 
+                                                                        c.FilesToExclude[0] == fileToExclude))).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 

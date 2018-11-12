@@ -1,11 +1,9 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -54,7 +52,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "");
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
         }
@@ -95,7 +93,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "");
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.Children.Count.ShouldBe(2);
@@ -136,15 +134,58 @@ namespace Stryker.Core.UnitTest.Initialisation
                     { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "somecsharpfile.cs"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") },
-
                 });
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "");
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.Children.Count.ShouldBe(1);
+        }
+
+        [Fact]
+        public void InputFileResolver_InitializeShouldExcludeSpecifiedFiles()
+        {
+            // the bin, obj and node_modules folders should be skipped
+            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+               
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+                
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive2.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive3.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile) },
+                    { Path.Combine(_filesystemRoot, "TestProject", "Debug", "somecsharpfile.cs"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "Release", "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") }
+                });
+
+            var target = new InputFileResolver(fileSystem);
+
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string> { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") });
+
+            result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
+            result.ProjectContents.Children.Count.ShouldBe(2);
         }
 
         [Fact]

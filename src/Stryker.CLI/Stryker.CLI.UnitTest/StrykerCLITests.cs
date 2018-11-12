@@ -2,18 +2,31 @@ using Moq;
 using Serilog.Events;
 using Stryker.Core;
 using Stryker.Core.Options;
-using Stryker.Core.Logging;
-using Stryker.Core.Initialisation.ProjectComponent;
-using Stryker.Core.Testing;
 using System;
 using System.IO;
 using Xunit;
-using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Reflection;
 
 namespace Stryker.CLI.UnitTest
 {
+    using System.Diagnostics;
+    using Xunit.Abstractions;
+
     public class StrykerCLITests
     {
+        private ITestOutputHelper _output;
+        private string _fileSystemRoot { get; }
+
+        private string _currentDirectory { get; }
+
+        public StrykerCLITests(ITestOutputHelper output)
+        {
+            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
+            _output = output;
+        }
+
         [Theory]
         [InlineData("--help")]
         [InlineData("-h")]
@@ -134,6 +147,7 @@ namespace Stryker.CLI.UnitTest
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.MaxConcurrentTestrunners == 4)));
         }
+
         [Theory]
         [InlineData("--threshold-break")]
         [InlineData("-tb")]
@@ -186,7 +200,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 70, "[]");
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
@@ -203,7 +217,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0);
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, "trace", false, 1, 90, 80, 0, "[]");
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
             
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
@@ -214,6 +228,42 @@ namespace Stryker.CLI.UnitTest
             mock.Verify();
             Assert.Equal(0, target.ExitCode);
             Assert.Equal(0, result);
+        }
+
+        [Fact]
+        public void StrykerCLI_WithNoFilesToExcludeSet_ShouldPassDefaultValueToStryker()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                !o.FilesToExclude.Any())));
+        }
+
+        [Theory]
+        [InlineData("--files-to-exclude")]
+        [InlineData("-fte")]
+        public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new[] { argName, "['.\\StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
+
+            var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
+            var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
+            var thirdFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive2.cs");
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.FilesToExclude[0] == firstFileToExclude &&
+                o.FilesToExclude[1] == secondFileToExclude &&
+                o.FilesToExclude[2] == thirdFileToExclude)));
         }
     }
 }

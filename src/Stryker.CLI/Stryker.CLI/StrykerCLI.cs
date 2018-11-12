@@ -46,6 +46,7 @@ namespace Stryker.CLI
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
+            var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
 
             app.HelpOption("--help | -h | -?");
 
@@ -62,8 +63,8 @@ namespace Stryker.CLI
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
                     thresholdLowParam,
-                    thresholdBreakParam
-                    );
+                    thresholdBreakParam,
+                    filesToExclude);
                 RunStryker(options);
                 return this.ExitCode;
             });

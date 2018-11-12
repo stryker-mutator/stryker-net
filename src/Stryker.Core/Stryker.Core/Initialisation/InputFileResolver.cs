@@ -11,7 +11,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter);
+        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter, List<string> filesToExclude);
     }
 
     /// <summary>
@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private IEnumerable<string> _foldersToIgnore = new string[] { "obj", "bin", "node_modules" };
+        private string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private ILogger _logger { get; set; }
 
@@ -36,14 +36,14 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(string currentDirectory, string projectName)
+        public ProjectInfo ResolveInput(string currentDirectory, string projectName, List<string> filesToExclude)
         {
             string projectFile = ScanProjectFile(currentDirectory);
             var currentProjectInfo = ReadProjectFile(projectFile, projectName);
             var projectReferencePath = FilePathUtils.ConvertPathSeparators(currentProjectInfo.ProjectReference);
             var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
             var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath(Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath))));
-            var inputFiles = FindInputFiles(projectUnderTestPath);
+            var inputFiles = FindInputFiles(projectUnderTestPath, filesToExclude);
 
             return new ProjectInfo()
             {
@@ -62,25 +62,28 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path)
+        private FolderComposite FindInputFiles(string path, List<string> filesToExclude)
         {
-            var folderComposite = new FolderComposite()
+            var folderComposite = new FolderComposite
             {
                 Name = Path.GetFullPath(path)
             };
-            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(path).Where(x => !_foldersToIgnore.Contains(Path.GetFileName(x))))
+
+            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(path).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder));
+                folderComposite.Add(FindInputFiles(folder, filesToExclude));
             }
-            foreach (var file in _fileSystem.Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly))
+
+            foreach (var file in _fileSystem.Directory.GetFiles(path, "*.cs", SearchOption.TopDirectoryOnly).Except(filesToExclude))
             {
-                folderComposite.Add(new FileLeaf()
-                {
-                    SourceCode = _fileSystem.File.ReadAllText(file),
-                    Name = Path.GetFileName(file),
-                    FullPath = file
-                });
+                folderComposite.Add(
+                    new FileLeaf {
+                        SourceCode = _fileSystem.File.ReadAllText(file),
+                        Name = Path.GetFileName(file),
+                        FullPath = file
+                    });
             }
+
             return folderComposite;
         }
 

@@ -3,11 +3,17 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using System;
+using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
+        private ILogger _logger;
+
         public string BasePath { get; }
         public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
@@ -23,9 +29,13 @@ namespace Stryker.Core.Options
 
         public ThresholdOptions ThresholdOptions { get; set; }
 
+        public List<string> FilesToExclude { get; set; }
+
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
-        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak)
+        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak, string filesToExclude)
         {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerOptions>();
+
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -33,6 +43,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            FilesToExclude = ValidateFilesToExclude(basePath, filesToExclude);
         }
 
         private string ValidateReporter(string reporter)
@@ -87,6 +98,39 @@ namespace Stryker.Core.Options
             }
 
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
+        }
+
+        private List<string> ValidateFilesToExclude(string basePath, string filesToExclude)
+        {
+            var excludedFiles = new List<string>();
+            try
+            {
+                var jsonExcludedFiles = JsonConvert.DeserializeObject<List<string>>(filesToExclude);
+
+                foreach (var excludedFile in jsonExcludedFiles)
+                {
+                    var platformFilePath = GetPlatformSupportedFilePath(excludedFile);
+                    var fullPath = Path.GetFullPath(Path.Combine(basePath, platformFilePath));
+
+                    if (!File.Exists(fullPath))
+                        _logger.LogWarning($"The specified file to exclude {fullPath} could not be found. Did you mean to exclude another file?");
+
+                    excludedFiles.Add(fullPath);
+                }
+            }
+            catch
+            {
+                throw new ValidationException("Invalid JSON value provided for --files-to-exclude. The correct format, for example, should be: ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs','C:\\ExampleDirectory\\ExampleClass.cs'].");
+            }
+
+            return excludedFiles;
+        }
+
+        private static string GetPlatformSupportedFilePath(string excludedFile)
+        {
+            return excludedFile.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString());
+
+            //return excludedFile.Replace(excludedFile.Contains("\\") ? "\\" : "/", Path.DirectorySeparatorChar.ToString());
         }
     }
 }

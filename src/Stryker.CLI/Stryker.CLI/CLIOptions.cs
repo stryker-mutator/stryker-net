@@ -95,6 +95,15 @@
             ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
             DefaultValue = 80,
             JsonKey = "threshold-high"
-        };                    
+        };
+
+        public static readonly CLIOption<string> FilesToExclude = new CLIOption<string>
+        {
+            ArgumentName = "--files-to-exclude",
+            ArgumentShortName = "-fte <files-to-exclude>",
+            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
+            DefaultValue = "[]",
+            JsonKey = "files-to-exclude"
+        };
     }
 }
