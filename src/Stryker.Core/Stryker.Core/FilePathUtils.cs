@@ -14,4 +14,11 @@ public static class FilePathUtils
 			return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
 		}
 	}
+
+    public static string ConvertToPlatformSupportedFilePath(string filePath)
+    {
+        return filePath
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+    }
 }

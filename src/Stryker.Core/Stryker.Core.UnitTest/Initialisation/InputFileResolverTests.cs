@@ -12,17 +12,18 @@ namespace Stryker.Core.UnitTest.Initialisation
     {
         private string _currentDirectory { get; set; }
         private string _filesystemRoot { get; set; }
+        private readonly string _sourceFile;
 
         public InputFileResolverTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
+            _sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
         }
 
         [Fact]
         public void InputFileResolver_InitializeShouldCrawlFiles()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
             string projectFile = @"<Project Sdk=""Microsoft.NET.Sdk"">
  <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -44,7 +45,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
                 { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile)},
                 { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
                 { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") }
@@ -60,7 +61,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InputFileResolver_InitializeShouldCrawlFilesRecursively()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
@@ -84,8 +84,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
@@ -105,8 +105,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("node_modules")]
         public void InputFileResolver_InitializeShouldIgnoreBinFolder(string folderName)
         {
-            // the bin, obj and node_modules folders should be skipped
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
@@ -130,7 +128,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "somecsharpfile.cs"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") },
@@ -147,8 +145,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InputFileResolver_InitializeShouldExcludeSpecifiedFiles()
         {
-            // the bin, obj and node_modules folders should be skipped
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
@@ -172,9 +168,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive2.cs"), new MockFileData(sourceFile) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive3.cs"), new MockFileData(sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive2.cs"), new MockFileData(_sourceFile) },
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive3.cs"), new MockFileData(_sourceFile) },
                     { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(projectFile) },
                     { Path.Combine(_filesystemRoot, "TestProject", "Debug", "somecsharpfile.cs"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", "Release", "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") }
@@ -198,7 +194,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var exception = Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
@@ -232,7 +228,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var exception = Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
     }
 }

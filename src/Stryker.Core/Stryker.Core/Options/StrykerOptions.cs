@@ -109,13 +109,14 @@ namespace Stryker.Core.Options
 
                 foreach (var excludedFile in jsonExcludedFiles)
                 {
-                    var platformFilePath = GetPlatformSupportedFilePath(excludedFile);
+                    var platformFilePath = FilePathUtils.ConvertToPlatformSupportedFilePath(excludedFile);
                     var fullPath = Path.GetFullPath(Path.Combine(basePath, platformFilePath));
 
                     if (!File.Exists(fullPath))
-                        _logger.LogWarning($"The specified file to exclude {fullPath} could not be found. Did you mean to exclude another file?");
+                        _logger.LogWarning("The specified file to exclude {0} could not be found. Did you mean to exclude another file?", fullPath);
 
                     excludedFiles.Add(fullPath);
+                    _logger.LogInformation($"File {0} will be excluded from mutation.", fullPath);
                 }
             }
             catch
@@ -124,13 +125,6 @@ namespace Stryker.Core.Options
             }
 
             return excludedFiles;
-        }
-
-        private static string GetPlatformSupportedFilePath(string excludedFile)
-        {
-            return excludedFile.Replace("\\", Path.DirectorySeparatorChar.ToString()).Replace("/", Path.DirectorySeparatorChar.ToString());
-
-            //return excludedFile.Replace(excludedFile.Contains("\\") ? "\\" : "/", Path.DirectorySeparatorChar.ToString());
         }
     }
 }

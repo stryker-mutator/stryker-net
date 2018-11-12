@@ -10,7 +10,9 @@ using System.Reflection;
 
 namespace Stryker.CLI.UnitTest
 {
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using Shouldly;
     using Xunit.Abstractions;
 
     public class StrykerCLITests
@@ -259,7 +261,7 @@ namespace Stryker.CLI.UnitTest
             var firstFileToExclude = Path.Combine(_currentDirectory, "StartUp.cs");
             var secondFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive.cs");
             var thirdFileToExclude = Path.Combine(_currentDirectory, "ExampleDirectory", "Recursive2.cs");
-
+            
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.FilesToExclude[0] == firstFileToExclude &&
                 o.FilesToExclude[1] == secondFileToExclude &&

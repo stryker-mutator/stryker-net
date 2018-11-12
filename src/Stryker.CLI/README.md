@@ -72,10 +72,11 @@ If you decide to exclude files for unit testing, you can configure this with the
 
 `dotnet stryker --files-to-exclude ['./ExampleClass.cs','./ExampleDirectory/ExampleClass2.cs']`
 
-It is advisable to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. It is still possible to use absolute paths to files.
+We recommend to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. It is also possible to use absolute paths to files.
 
 The only format which is accepted is a JSON formatted string array.
-When you want to exclude multiple files (for example more then 5) it is better to use the stryker configuration file because it is more easier to handle multiple files.
+
+When you want to exclude multiple files (for example more then 5) it is advised to use the stryker configuration file because it is more easier to handle multiple files.
 
 #### Use a config file
 There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
