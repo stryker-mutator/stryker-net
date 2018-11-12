@@ -91,18 +91,13 @@ namespace Stryker.Core.Mutants
             {
                 // No statement found yet, search deeper in the tree for statements to mutate
                 var children = currentNode.ChildNodes().ToList();
-                var mutatedChildren = currentNode.ChildNodes().Select(Mutate).ToList();
-                var editor = new SyntaxEditor(currentNode, new AdhocWorkspace());
-                for (int i = 0; i < children.Count; i++)
+                var childCopy = currentNode.TrackNodes(children);
+                foreach (var child in children)
                 {
-                    var original = children[i];
-                    var mutated = mutatedChildren[i];
-                    if (!original.IsEquivalentTo(mutated))
-                    {
-                        editor.ReplaceNode(children[i], mutatedChildren[i]);
-                    }
+                    var mutatedNode = Mutate(child);
+                    childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedNode);
                 }
-                return editor.GetChangedRoot();
+                return childCopy;
             }
         }
 
