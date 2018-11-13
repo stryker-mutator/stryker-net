@@ -9,7 +9,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int i = 0;
-            if (System.Environment.GetEnvironmentVariable("ActiveMutation") == "0")
+            if (Stryker.Environment.ID==0)
             {
                 i = i - 1;
             } else {

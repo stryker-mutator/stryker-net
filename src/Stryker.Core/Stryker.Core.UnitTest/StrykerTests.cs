@@ -12,29 +12,23 @@ namespace Stryker.Core.UnitTest
 {
     public class StrykerTests
     {
-        private string cached = null;
-        private int? cachedId;
+        private static string cached = null;
+        private static int cachedId;
 
-        private string GetMutant()
+        static StrykerTests()
         {
-            if (cached != null)
-            {
-                return cached;
-            }
-
             cached = System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
+            cachedId = int.Parse(cached);
+        }
+        private static string GetMutant()
+        {
+ 
             return cached;
         }
 
-        private int GetMutantID()
+        private static int GetMutantID()
         {
-            if (cachedId != null)
-            {
-                return cachedId.Value;
-            }
-
-            cachedId = int.Parse(System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS"));
-            return cachedId.Value;
+            return cachedId;
         }
 
         [Fact]
