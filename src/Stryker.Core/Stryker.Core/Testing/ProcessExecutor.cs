@@ -18,7 +18,7 @@ namespace Stryker.Core.Testing
         /// <param name="path">The path the process will use as base path</param>
         /// <param name="application">example: dotnet</param>
         /// <param name="arguments">example: --no-build</param>
-        /// <param name="activeMutationId">this value will be used to set an environment variable for the process</param>
+        /// <param name="environmentVariables">Environment variables (and their values)</param>
         /// <returns>ProcessResult</returns>
         ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
     }
@@ -88,6 +88,7 @@ namespace Stryker.Core.Testing
             private readonly Process process;
             private readonly StringBuilder output = new StringBuilder();
             private readonly StringBuilder error = new StringBuilder();
+            private static readonly TimeSpan killTimeOut = TimeSpan.FromSeconds(60);
 
             public int ExitCode => process.ExitCode;
             public string Output => output.ToString();
@@ -104,18 +105,18 @@ namespace Stryker.Core.Testing
             public bool WaitForExit(int timeout = -1)
             {
                 var totalWait = 0;
-                var slice = timeout == -1 ? timeout : timeout / 20;
+                var slice = timeout == -1 ? timeout : Math.Max(timeout / 20, 1);
                 do
                 {
                     if (process.WaitForExit(slice))
                     {
                         return true;
                     }
-
+  
                     totalWait += slice;
                 } while (timeout==-1 || totalWait < timeout);
-
-                process.KillTree(TimeSpan.FromSeconds(60));
+ 
+                process.KillTree(killTimeOut);
                 return false;
             }
 

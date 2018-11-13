@@ -17,12 +17,13 @@ namespace Stryker.Core.Reporters.Progress
         private const char ProgressBarDoneToken = '\u2588';
         private const char ProgressBarLeftToken = '-';
         private const int ProgressBarInitialState = -1;
-        private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % |";
+        private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | rem time: {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
 
         private int _totalNumberOfTests;
         private int _numberOfTestsRun;
+        private DateTime _startTime;
 
         public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger)
         {
@@ -31,13 +32,15 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportInitialState(int totalNumberOfTests)
         {
+            _startTime = DateTime.UtcNow;;
             if (totalNumberOfTests == 0)
             {
                 _testsProgressLogger.StartLog(LoggingFormat,
                                               GenerateProgressBar(MaxProgressBar),
                                               0,
                                               0,
-                                              100);
+                                              100,
+                                              RemainingTime());
                 return;
             }
 
@@ -50,7 +53,8 @@ namespace Stryker.Core.Reporters.Progress
                                           progressBar,
                                           _numberOfTestsRun,
                                           _totalNumberOfTests,
-                                          totalNumberOfTestsPercentage);
+                                          totalNumberOfTestsPercentage,
+                                            RemainingTime());
         }
 
         public void ReportRunTest()
@@ -61,7 +65,8 @@ namespace Stryker.Core.Reporters.Progress
                                               GenerateProgressBar(MaxProgressBar),
                                               0,
                                               0,
-                                              100);
+                                              100,
+                                              RemainingTime());
                 return;
             }
 
@@ -74,7 +79,36 @@ namespace Stryker.Core.Reporters.Progress
 
             _testsProgressLogger.ReplaceLog(LoggingFormat,
                                             stringBuilder, _numberOfTestsRun, _totalNumberOfTests,
-                                            totalNumberOfTestsPercentage);
+                                            totalNumberOfTestsPercentage, RemainingTime());
+        }
+
+        private string RemainingTime()
+        {
+            if (_totalNumberOfTests == 0 || _numberOfTestsRun == 0)
+            {
+                return "NA";
+            }
+
+            var elapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
+            var remaining = (_totalNumberOfTests - _numberOfTestsRun) * elapsed / _numberOfTestsRun;
+            
+            return SecondsToText(remaining);
+        }
+
+        private static string SecondsToText(double remaining)
+        {
+            var span = TimeSpan.FromSeconds(remaining);
+            if (span.TotalDays >= 1)
+            {
+                return span.ToString("d.hh");
+            }
+
+            if (span.TotalHours >= 1)
+            {
+                return span.ToString(@"hh\:mm");
+            }
+
+            return span.ToString(@"hh\:mm\:ss");
         }
 
         private string GenerateProgressBar(int progressBarCount)
