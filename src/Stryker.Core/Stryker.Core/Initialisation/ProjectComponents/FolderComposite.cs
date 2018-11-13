@@ -32,12 +32,17 @@ namespace Stryker.Core.Initialisation.ProjectComponent
 
         public override void Display(int depth)
         {
-            DisplayFolder(depth, this);
+            // do not display root node
+            if (!string.IsNullOrEmpty(Name))
+            {
+                DisplayFolder(depth, this);
+                depth += 2;
+            }
             foreach (var child in Children)
             {
                 child.DisplayFile = DisplayFile;
                 child.DisplayFolder = DisplayFolder;
-                child.Display(depth + 2);
+                child.Display(depth);
             }
         }
     }
