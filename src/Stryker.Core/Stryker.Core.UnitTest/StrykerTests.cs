@@ -4,12 +4,82 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
     public class StrykerTests
     {
+        private string cached = null;
+        private int? cachedId;
+
+        private string GetMutant()
+        {
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            cached = System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
+            return cached;
+        }
+
+        private int GetMutantID()
+        {
+            if (cachedId != null)
+            {
+                return cachedId.Value;
+            }
+
+            cachedId = int.Parse(System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS"));
+            return cachedId.Value;
+        }
+
+        [Fact]
+        public void SpecOnPerf()
+        {
+            var count = 0;
+            var start = new Stopwatch();
+            start.Start();
+            var l = 100000;
+            for (var i = 0; i < l; i++)
+            {
+                if (GetMutantID() == 4)
+                {
+                    count++;
+                }
+            }
+
+            start.Stop();
+            start.ElapsedMilliseconds.ShouldBeLessThan(50);
+            start.Reset();
+            start.Start();
+            for (var i = 0; i < l; i++)
+            {
+                if (GetMutant() == "4")
+                {
+                    count++;
+                }
+            }
+
+            start.Stop();
+            start.ElapsedMilliseconds.ShouldBeLessThan(60);            
+            start.Reset();
+            start.Start();
+            for (var i = 0; i < l; i++)
+            {
+                if (System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS") == "4")
+                {
+                    count++;
+                }
+            }
+
+            start.Stop();
+            start.ElapsedMilliseconds.ShouldBeLessThan(500);
+        }
+
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {

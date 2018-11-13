@@ -13,22 +13,31 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core.UnitTest", "..
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug NFluent|Any CPU = Debug NFluent|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B35D5F5-F983-4034-8A15-952E8C415010}.Debug NFluent|Any CPU.ActiveCfg = Debug NFluent|Any CPU
+		{7B35D5F5-F983-4034-8A15-952E8C415010}.Debug NFluent|Any CPU.Build.0 = Debug NFluent|Any CPU
 		{7B35D5F5-F983-4034-8A15-952E8C415010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7B35D5F5-F983-4034-8A15-952E8C415010}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B35D5F5-F983-4034-8A15-952E8C415010}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B35D5F5-F983-4034-8A15-952E8C415010}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1776E249-31B3-4357-94C8-13B86BEFD662}.Debug NFluent|Any CPU.ActiveCfg = Debug NFluent|Any CPU
+		{1776E249-31B3-4357-94C8-13B86BEFD662}.Debug NFluent|Any CPU.Build.0 = Debug NFluent|Any CPU
 		{1776E249-31B3-4357-94C8-13B86BEFD662}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1776E249-31B3-4357-94C8-13B86BEFD662}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1776E249-31B3-4357-94C8-13B86BEFD662}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1776E249-31B3-4357-94C8-13B86BEFD662}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC692334-8360-4A94-8692-5768ADC5DD04}.Debug NFluent|Any CPU.ActiveCfg = Debug NFluent|Any CPU
+		{FC692334-8360-4A94-8692-5768ADC5DD04}.Debug NFluent|Any CPU.Build.0 = Debug NFluent|Any CPU
 		{FC692334-8360-4A94-8692-5768ADC5DD04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FC692334-8360-4A94-8692-5768ADC5DD04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC692334-8360-4A94-8692-5768ADC5DD04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC692334-8360-4A94-8692-5768ADC5DD04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Debug NFluent|Any CPU.ActiveCfg = Debug NFluent|Any CPU
+		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Debug NFluent|Any CPU.Build.0 = Debug NFluent|Any CPU
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBF2BA4B-39BE-48BF-B220-9891608B014F}.Release|Any CPU.ActiveCfg = Release|Any CPU
