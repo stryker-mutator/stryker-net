@@ -25,7 +25,7 @@ phases:
     inputs:
       command: pack
       nobuild: true
-      packagesToPack: **/Stryker.Core.csproj;**/Stryker.Core.csproj
+      packagesToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
       buildProperties: 'VersionSuffix=pre-release.$(rev:.r)'
       packDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
@@ -41,6 +41,7 @@ phases:
     inputs:
       command: pack
       nobuild: true
+      packagesToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
       packDirectory: '$(Build.ArtifactStagingDirectory)/release'
 
   - task: PublishBuildArtifacts@1
