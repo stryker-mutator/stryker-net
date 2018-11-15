@@ -25,21 +25,7 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        private const string helper = @"
-namespace Stryker
-{
-    public static class Environment
-    {
-        private static readonly int activeMutant;
 
-        static Environment()
-        {
-            activeMutant = int.Parse(System.Environment.GetEnvironmentVariable(""ActiveMutation"") ?? string.Empty);
-        }
-        public static int ID => activeMutant;
-    }
-}
-";
         private MutationTestInput _input { get; set; }
         private IReporter _reporter { get; set; }
         private IMutantOrchestrator _orchestrator { get; set; }
@@ -70,8 +56,8 @@ namespace Stryker
         {
             var mutatedSyntaxTrees = new Collection<SyntaxTree>();
             // add helper
-            var helperTree = CSharpSyntaxTree.ParseText(helper);
-            mutatedSyntaxTrees.Add(helperTree);
+            var selector = CSharpSyntaxTree.ParseText(MutantOrchestrator.MutantSelecterLogic);
+            mutatedSyntaxTrees.Add(selector);
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file

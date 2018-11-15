@@ -12,68 +12,7 @@ namespace Stryker.Core.UnitTest
 {
     public class StrykerTests
     {
-        private static string cached = null;
-        private static int cachedId;
-
-        static StrykerTests()
-        {
-            cached = System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
-            cachedId = int.Parse(cached);
-        }
-        private static string GetMutant()
-        {
  
-            return cached;
-        }
-
-        private static int GetMutantID()
-        {
-            return cachedId;
-        }
-
-        [Fact]
-        public void SpecOnPerf()
-        {
-            var count = 0;
-            var start = new Stopwatch();
-            start.Start();
-            var l = 100000;
-            for (var i = 0; i < l; i++)
-            {
-                if (GetMutantID() == 4)
-                {
-                    count++;
-                }
-            }
-
-            start.Stop();
-            start.ElapsedMilliseconds.ShouldBeLessThan(50);
-            start.Reset();
-            start.Start();
-            for (var i = 0; i < l; i++)
-            {
-                if (GetMutant() == "4")
-                {
-                    count++;
-                }
-            }
-
-            start.Stop();
-            start.ElapsedMilliseconds.ShouldBeLessThan(60);            
-            start.Reset();
-            start.Start();
-            for (var i = 0; i < l; i++)
-            {
-                if (System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS") == "4")
-                {
-                    count++;
-                }
-            }
-
-            start.Stop();
-            start.ElapsedMilliseconds.ShouldBeLessThan(500);
-        }
-
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {
