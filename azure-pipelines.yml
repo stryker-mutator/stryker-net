@@ -1,4 +1,11 @@
 name: $(Build.DefinitionName)-$(PackageVersion)$(rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+
 resources:
 - repo: self
   clean: true
