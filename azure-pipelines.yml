@@ -12,6 +12,7 @@ resources:
   
 variables:
   PackageVersion: '0.5.0'
+  PreReleasePackageVersion: 'pre-release.$(rev:.r)'
 
 phases:
 - phase: Phase_1
@@ -33,14 +34,14 @@ phases:
     inputs:
       command: pack
       packagesToPack: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
-      buildProperties: VersionSuffix=pre-release.$(rev:.r)
+      buildProperties: 'VersionSuffix=$(PreReleasePackageVersion)'
       packDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
     inputs:
       command: push
-      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*-pre-release.$(rev:.r).nupkg
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleasePackageVersion).nupkg'
       publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
   - task: DotNetCoreCLI@2
