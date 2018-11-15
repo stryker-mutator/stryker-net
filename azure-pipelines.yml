@@ -69,7 +69,7 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: '**/*Test.csproj'
+      projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj;src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
 
 - phase: Phase_3
   displayName: Mac
@@ -83,5 +83,4 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: '**/*Test.csproj'
-
+      projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj;src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
