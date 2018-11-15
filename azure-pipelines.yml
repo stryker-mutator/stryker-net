@@ -33,7 +33,7 @@ phases:
     inputs:
       command: pack
       packagesToPack: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
-      buildProperties: 'VersionSuffix=pre-release.$(rev:.r)'
+      buildProperties: VersionSuffix=pre-release.$(rev:.r)
       packDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
   - task: DotNetCoreCLI@2
