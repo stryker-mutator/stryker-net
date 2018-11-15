@@ -5,7 +5,7 @@ resources:
   
 variables:
   PackageVersion: '0.5.0'
-  
+
 phases:
 - phase: Phase_1
   displayName: Windows
@@ -25,16 +25,15 @@ phases:
     inputs:
       command: pack
       nobuild: true
-      versioningScheme: byEnvVar
-      versionEnvVar: PackageVersion
-      buildProperties: 'VersionSuffix=pre-release.$(Build.BuildId)'
+      packagesToPack: **/Stryker.Core.csproj;**/Stryker.Core.csproj
+      buildProperties: 'VersionSuffix=pre-release.$(rev:.r)'
       packDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
     inputs:
       command: push
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*-pre-release.$(Build.BuildId).nupkg'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*-pre-release.$(rev:.r).nupkg'
       publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
   - task: DotNetCoreCLI@2
@@ -42,8 +41,6 @@ phases:
     inputs:
       command: pack
       nobuild: true
-      versioningScheme: byEnvVar
-      versionEnvVar: PackageVersion
       packDirectory: '$(Build.ArtifactStagingDirectory)/release'
 
   - task: PublishBuildArtifacts@1
