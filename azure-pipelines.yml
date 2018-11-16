@@ -46,12 +46,12 @@ phases:
       packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
       publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
-- task: DotNetCoreCLI@2
+  - task: DotNetCoreCLI@2
     displayName: 'Install pre-release package in integration test project'
     inputs:
       command: custom
       custom: add
-      arguments: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/Stryker.Core.IntegrationTest.csproj package StrykerMutator.DotNetCoreCli -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+      arguments: integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'

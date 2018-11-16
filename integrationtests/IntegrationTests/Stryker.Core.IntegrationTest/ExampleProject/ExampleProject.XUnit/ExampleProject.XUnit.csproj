@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -16,8 +16,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ExampleProject\ExampleProject.csproj" />
   </ItemGroup>
-  
-  <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
-    <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
-  </Target>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+  </ItemGroup>
 </Project>
