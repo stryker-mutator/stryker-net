@@ -60,29 +60,26 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null) {
+            if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
+            {
                 // The mutations should be placed using a ConditionalExpression
-                var expression = GetExpressionSyntax(currentNode);
-                ExpressionSyntax expressionAst = expression as ExpressionSyntax;
-                SyntaxNode ast = currentNode;
-                foreach (var mutant in FindMutants(expression))
+                ExpressionSyntax expressionAst = expressionSyntax;
+                foreach (var mutant in FindMutants(expressionSyntax))
                 {
                     _mutants.Add(mutant);
-                    var mutatedNode = ApplyMutant(expression, mutant);
+                    ExpressionSyntax mutatedNode = ApplyMutant(expressionSyntax, mutant);
                     expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
                 }
-                return ast.ReplaceNode(expression, expressionAst);
+                return currentNode.ReplaceNode(expressionSyntax, expressionAst);
             }
-            else if (currentNode is StatementSyntax && currentNode.Kind() != SyntaxKind.Block)
+            else if (currentNode is StatementSyntax ast && currentNode.Kind() != SyntaxKind.Block)
             {
+                StatementSyntax statement = currentNode as StatementSyntax;
                 // The mutations should be placed using an IfStatement
-                var statement = currentNode as StatementSyntax;
-                StatementSyntax ast = statement as StatementSyntax;
-
                 foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
                 {
                     _mutants.Add(mutant);
-                    var mutatedNode = ApplyMutant(statement, mutant);
+                    StatementSyntax mutatedNode = ApplyMutant(statement, mutant);
                     ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
                 }
                 return ast;
