@@ -55,6 +55,12 @@ phases:
       arguments: integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
   - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: test
+      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\Stryker.Core.IntegrationTest.csproj'
+
+  - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
     inputs:
       command: pack
