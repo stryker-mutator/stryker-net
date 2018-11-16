@@ -11,15 +11,14 @@ resources:
   clean: true
   
 variables:
-  - name: PackageVersion
-    value: '0.5.0'
-  - name: PreReleaseSuffix
-    value: pre-release.$(Build.Id)
+  PackageVersion: '0.5.0'
 
 phases:
 - phase: Phase_1
   displayName: Windows
   condition: succeeded()
+  variables:
+    PreReleaseSuffix: pre-release.$(Build.Id)
   
   queue:
     name: Hosted VS2017
@@ -36,14 +35,14 @@ phases:
     inputs:
       command: pack
       packagesToPack: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
-      buildProperties: VersionSuffix=pre-release.$(Build.Id)
+      buildProperties: VersionSuffix=$(PreReleaseSuffix)
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
     inputs:
       command: push
-      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*pre-release.$(Build.Id).nupkg
+      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseSuffix).nupkg
       publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
   - task: DotNetCoreCLI@2
