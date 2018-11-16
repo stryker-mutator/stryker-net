@@ -35,7 +35,7 @@ phases:
     inputs:
       command: custom
       custom: pack
-      arguments: '--no-build --version-suffix=pre-release --output $(Build.ArtifactStagingDirectory)/pre-release'
+      arguments: '--no-build --version-suffix $(PreReleaseSuffix) --output $(Build.ArtifactStagingDirectory)/pre-release'
       projects: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
 
   - task: DotNetCoreCLI@2
