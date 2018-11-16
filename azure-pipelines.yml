@@ -51,6 +51,7 @@ phases:
     inputs:
       command: custom
       custom: add
+      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
       arguments: integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
   - task: DotNetCoreCLI@2
