@@ -27,7 +27,7 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: 'src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
@@ -36,7 +36,7 @@ phases:
       nobuild: true
       versioningScheme: byEnvVar
       versionEnvVar: PreReleaseVersion
-      packagesToPack: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
+      packagesToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
@@ -72,7 +72,7 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj;src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
 
 - phase: Phase_3
   displayName: Mac
@@ -86,4 +86,4 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj;src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
