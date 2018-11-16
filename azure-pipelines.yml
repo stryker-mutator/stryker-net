@@ -34,6 +34,7 @@ phases:
     displayName: 'Pack pre-release packages'
     inputs:
       command: pack
+      nobuild: true
       packagesToPack: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
       buildProperties: VersionSuffix=$(PreReleaseSuffix)
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
