@@ -63,8 +63,10 @@ phases:
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
     inputs:
-      command: test
-      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\Stryker.Core.IntegrationTest.csproj'
+      command: custom
+      custom: stryker
+      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
+
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
