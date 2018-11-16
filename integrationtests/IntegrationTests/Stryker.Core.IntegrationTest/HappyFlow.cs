@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.IntegrationTest
@@ -25,11 +24,9 @@ namespace Stryker.Core.IntegrationTest
 
             using (var process = Process.Start(processStartInfo))
             {
-                Task.Run(() =>
-                {
-                    errorOutput = process.StandardError.ReadToEnd();
-                    process.WaitForExit();
-                });
+
+                errorOutput = process.StandardError.ReadToEnd();
+                process.WaitForExit();
 
                 exitCode = process.ExitCode;
             }
