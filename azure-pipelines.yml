@@ -28,8 +28,7 @@ phases:
     displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj;src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
-      workingDirectory: '$(Build.SourcesDirectory)'
+      projects: 'src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
@@ -37,8 +36,7 @@ phases:
       command: custom
       custom: pack
       arguments: '--no-build --version-suffix=pre-release --output $(Build.ArtifactStagingDirectory)/pre-release'
-      projects: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
-      workingDirectory: '$(Build.SourcesDirectory)'
+      projects: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
