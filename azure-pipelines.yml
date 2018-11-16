@@ -11,8 +11,10 @@ resources:
   clean: true
   
 variables:
-  PackageVersion: '0.5.0'
-  PreReleaseSuffix: pre-release.$(Build.Id)
+  - name: PackageVersion
+    value: '0.5.0'
+  - name: PreReleaseSuffix
+    value: pre-release.$(Build.Id)
 
 phases:
 - phase: Phase_1
