@@ -95,6 +95,13 @@ phases:
     inputs:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet restore'
+    inputs:
+      command: restore
+      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj'
+      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
@@ -116,6 +123,13 @@ phases:
     inputs:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet restore'
+    inputs:
+      command: restore
+      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj'
+      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
