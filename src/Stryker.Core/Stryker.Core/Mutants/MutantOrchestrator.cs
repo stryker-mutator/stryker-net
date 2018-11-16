@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -34,7 +33,6 @@ namespace Stryker.Core.Mutants
         private ILogger _logger { get; set; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        /// <param name="mutantFactory">An instance of the mutantFactory, use the same for every file to keep the mutation count increment</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators)
         {
             _mutators = mutators;
@@ -60,21 +58,27 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            if (currentNode is StatementSyntax && currentNode.Kind() != SyntaxKind.Block)
+            if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
             {
-                // This is a statement, meaning that we can insert mutants here
-                var statement = currentNode as StatementSyntax;
-                StatementSyntax ast = statement as StatementSyntax;
-
-                // this is a temporary fix for mutating LocalDeclarationStatements because mutating withing these statements breaks the application
-                // TODO: backlog item Ternary assignment statements mutations
-                if (!(statement is LocalDeclarationStatementSyntax))
+                // The mutations should be placed using a ConditionalExpression
+                ExpressionSyntax expressionAst = expressionSyntax;
+                foreach (var mutant in FindMutants(expressionSyntax))
                 {
-                    foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
-                    {
-                        _mutants.Add(mutant);
-                        ast = MutantIf(ast, ApplyMutant(statement, mutant), mutant.Id);
-                    }
+                    _mutants.Add(mutant);
+                    ExpressionSyntax mutatedNode = ApplyMutant(expressionSyntax, mutant);
+                    expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
+                }
+                return currentNode.ReplaceNode(expressionSyntax, expressionAst);
+            }
+            else if (currentNode is StatementSyntax ast && currentNode.Kind() != SyntaxKind.Block)
+            {
+                StatementSyntax statement = currentNode as StatementSyntax;
+                // The mutations should be placed using an IfStatement
+                foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
+                {
+                    _mutants.Add(mutant);
+                    StatementSyntax mutatedNode = ApplyMutant(statement, mutant);
+                    ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
                 }
                 return ast;
             }
@@ -82,16 +86,13 @@ namespace Stryker.Core.Mutants
             {
                 // No statement found yet, search deeper in the tree for statements to mutate
                 var children = currentNode.ChildNodes().ToList();
-                var mutatedChildren = currentNode.ChildNodes().Select(Mutate).ToList();
-                var editor = new SyntaxEditor(currentNode, new AdhocWorkspace());
-                for (int i = 0; i < children.Count; i++)
+                var childCopy = currentNode.TrackNodes(children);
+                foreach (var child in children)
                 {
-                    if (!children[i].IsEquivalentTo(mutatedChildren[i]))
-                    {
-                        editor.ReplaceNode(children[i], mutatedChildren[i]);
-                    }
+                    var mutatedNode = Mutate(child);
+                    childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedNode);
                 }
-                return editor.GetChangedRoot();
+                return childCopy;
             }
         }
 
@@ -129,47 +130,31 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        private StatementSyntax ApplyMutant(StatementSyntax statement, Mutant mutant)
+        private T ApplyMutant<T>(T node, Mutant mutant) where T: SyntaxNode
         {
-            var editor = new SyntaxEditor(statement, new AdhocWorkspace());
-            editor.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
-            return editor.GetChangedRoot() as StatementSyntax;
+            var mutatedNode = node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
+            return mutatedNode;
         }
 
-        /// <summary>
-        /// Places an IfStatementSyntax node around the mutated node and places the original node in the ElseClause block.
-        /// </summary>
-        private IfStatementSyntax MutantIf(StatementSyntax original, StatementSyntax mutated, int mutantId)
+        private ExpressionSyntax GetExpressionSyntax(SyntaxNode node)
         {
-            // place the mutated statement inside the if statement
-            IfStatementSyntax mutantIf = SyntaxFactory.IfStatement(
-                condition: SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression,
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName("System"),
-                            SyntaxFactory.IdentifierName("Environment")
-                        ),
-                        SyntaxFactory.IdentifierName("GetEnvironmentVariable")),
-                    SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
-                        new List<ArgumentSyntax>() {
-                        SyntaxFactory.Argument(SyntaxFactory.ExpressionStatement(
-                            SyntaxFactory.LiteralExpression(
-                                SyntaxKind.StringLiteralExpression,
-                                SyntaxFactory.Literal("ActiveMutation"))).Expression)
-                        }
-                    ))
-                ),
-                SyntaxFactory.LiteralExpression(
-                    SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(mutantId.ToString()))),
-                statement: SyntaxFactory.Block(mutated),
-                @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
-                // Mark this node as a MutantIf node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", mutantId.ToString()));
-
-            return mutantIf;
+            switch (node.GetType().Name)
+            {
+                case nameof(LocalDeclarationStatementSyntax):
+                    var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
+                    return localDeclarationStatement.Declaration.Variables.First().Initializer?.Value;
+                case nameof(AssignmentExpressionSyntax):
+                    var assignmentExpression = node as AssignmentExpressionSyntax;
+                    return assignmentExpression.Right;
+                case nameof(ReturnStatementSyntax):
+                    var returnStatement = node as ReturnStatementSyntax;
+                    return returnStatement.Expression;
+                case nameof(LocalFunctionStatementSyntax):
+                    var localFunction = node as LocalFunctionStatementSyntax;
+                    return localFunction.ExpressionBody?.Expression;
+                default:
+                    return null;
+            }
         }
     }
 }
