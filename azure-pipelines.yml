@@ -95,6 +95,13 @@ phases:
     inputs:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
+  
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: custom
+      custom: stryker
+      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
 
 - phase: Phase_3
   displayName: Mac
@@ -109,3 +116,10 @@ phases:
     inputs:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: custom
+      custom: stryker
+      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
