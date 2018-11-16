@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.Testing
 {
@@ -29,11 +27,11 @@ namespace Stryker.Core.Testing
     public class ProcessExecutor : IProcessExecutor
     {
         // when redirected, the output from the process will be kept in memory and not displayed to the console directly
-        private bool _redirectOutput { get; set; }
+        private bool RedirectOutput { get; }
 
         public ProcessExecutor(bool redirectOutput = true)
         {
-            _redirectOutput = redirectOutput;
+            RedirectOutput = redirectOutput;
         }
 
         public ProcessResult Start(
@@ -47,8 +45,8 @@ namespace Stryker.Core.Testing
             {
                 UseShellExecute = false,
                 WorkingDirectory = path,
-                RedirectStandardOutput = _redirectOutput,
-                RedirectStandardError = _redirectOutput
+                RedirectStandardOutput = RedirectOutput,
+                RedirectStandardError = RedirectOutput
             };
 
             foreach (var environmentVariable in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
@@ -71,8 +69,7 @@ namespace Stryker.Core.Testing
         {
             using (var process = new ProcessWrapper(info))
             {
-
-                int timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
+                var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
                 if (!process.WaitForExit(timeoutValue))
                 {
                     throw new OperationCanceledException("The process was terminated due to long runtime");
@@ -86,7 +83,7 @@ namespace Stryker.Core.Testing
             }
         }
 
-        sealed class ProcessWrapper: IDisposable
+        private sealed class ProcessWrapper: IDisposable
         {
             private readonly Process process;
             private readonly StringBuilder output = new StringBuilder();
@@ -97,7 +94,7 @@ namespace Stryker.Core.Testing
 
             public ProcessWrapper(ProcessStartInfo info)
             {
-                this.process = Process.Start(info);
+                process = Process.Start(info);
                 process.OutputDataReceived += Process_OutputDataReceived;
                 process.ErrorDataReceived += Process_ErrorDataReceived;
                 process.BeginOutputReadLine();
@@ -107,14 +104,15 @@ namespace Stryker.Core.Testing
             public bool WaitForExit(int timeout = -1)
             {
                 var totalWait = 0;
+                var slice = timeout == -1 ? timeout : timeout / 20;
                 do
                 {
-                    if (process.WaitForExit(100))
+                    if (process.WaitForExit(slice))
                     {
                         return true;
                     }
 
-                    totalWait += 100;
+                    totalWait += slice;
                 } while (timeout==-1 || totalWait < timeout);
 
                 process.KillTree(TimeSpan.FromSeconds(60));
@@ -141,7 +139,7 @@ namespace Stryker.Core.Testing
             {
                 process.OutputDataReceived -= Process_OutputDataReceived;
                 process.ErrorDataReceived -= Process_ErrorDataReceived;
-                this.process.Dispose();
+                process.Dispose();
             }
         }
     }
