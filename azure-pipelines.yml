@@ -12,14 +12,13 @@ resources:
   
 variables:
   PackageVersion: '0.5.0'
+  PreReleaseVersion: $(PackageVersion)-pre-release.$(Build.BuildId)
 
 phases:
 - phase: Phase_1
   displayName: Windows
   condition: succeeded()
-  variables:
-    PreReleaseSuffix: pre-release.$(Build.BuildId)
-  
+
   queue:
     name: Hosted VS2017
   
@@ -29,15 +28,16 @@ phases:
     inputs:
       command: test
       projects: 'src/Stryker.CLI/Stryker.CLI.UnitTest/Stryker.CLI.UnitTest.csproj'
-      versioningScheme: off
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
     inputs:
-      command: custom
-      custom: pack
-      arguments: '--no-build --version-suffix $(PreReleaseSuffix) --output $(Build.ArtifactStagingDirectory)/pre-release'
+      command: pack
+      nobuild: true
+      versioningScheme: byEnvVar
+      versionEnvVar: PreReleaseVersion
       projects: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
+      packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
