@@ -36,7 +36,7 @@ phases:
       nobuild: true
       versioningScheme: byEnvVar
       versionEnvVar: PreReleaseVersion
-      projects: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
+      packagesToPack: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
