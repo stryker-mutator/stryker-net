@@ -1,7 +1,6 @@
-using Shouldly;
-using Stryker.CLI;
-using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.IntegrationTest
@@ -11,14 +10,31 @@ namespace Stryker.Core.IntegrationTest
         [Fact]
         public void HappyFlowReturns0ExitCode()
         {
+            int exitCode = -1;
+            string errorOutput = "";
+
             string pathToExampleProject = Path.GetFullPath("../../../ExampleProject/ExampleProject.XUnit/");
-            Environment.CurrentDirectory = pathToExampleProject;
 
-            var runner = new StrykerCLI(new StrykerRunner());
+            var processStartInfo = new ProcessStartInfo("dotnet", "stryker")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = pathToExampleProject,
+                RedirectStandardOutput = false,
+                RedirectStandardError = true
+            };
 
-            int exitCode = runner.Run(new string[] { "--log-console", "trace" });
+            using (var process = Process.Start(processStartInfo))
+            {
+                Task.Run(() =>
+                {
+                    errorOutput = process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+                });
 
-            exitCode.ShouldBe(0);
+                exitCode = process.ExitCode;
+            }
+
+            Assert.True(exitCode == 0, "The stryker run failed on the integration test, error: " + errorOutput);
         }
     }
 }
