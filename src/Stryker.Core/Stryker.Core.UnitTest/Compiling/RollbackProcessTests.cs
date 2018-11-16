@@ -43,7 +43,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
-                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "1"))
+                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
             var compiler = CSharpCompilation.Create("TestCompilation",
@@ -90,27 +90,15 @@ namespace ExampleProject
                 }
                 return null;
             } else {
-                if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"") {
-                    while (first.Length > 2)
-                    {
-                        return first + second;
-                    }
-                    while (first.Length < 2)
-                    {
-                        return second - first;
-                    }
-                    return null;
-                } else {
-                    while (first.Length > 2)
-                    {
-                        return first + second;
-                    } 
-                    while (first.Length < 2)
-                    {
-                        return second + first;
-                    }
-                    return null;
+                while (first.Length > 2)
+                {
+                    return first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    return System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"" ? second - first : second + first;
                 }
+                return null;
             }
         }
     }
@@ -120,12 +108,12 @@ namespace ExampleProject
             var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "6"))
+                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "6"))
             );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().Last();
+            var mutantIf2 = root.DescendantNodes().OfType<ConditionalExpressionSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
+                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationConditional", "7"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;
@@ -213,12 +201,12 @@ namespace ExampleProject
             var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
                 mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "8"))
+                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "8"))
             );
             var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
             root = root.ReplaceNode(
                 mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "7"))
+                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "7"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;
@@ -279,7 +267,7 @@ namespace ExampleProject
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
-                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutantIf", "1"))
+                    ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
             var compiler = CSharpCompilation.Create("TestCompilation",
