@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,38 +69,79 @@ namespace Stryker.Core.Testing
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
         {
-            using (var process = Process.Start(info))
+            using (var process = new ProcessWrapper(info))
             {
-                string output = "";
-                var processDoneHandle = new ManualResetEvent(false);
 
-                Task.Run(() =>
-                {
-                    if (_redirectOutput)
-                    {
-                        output = process.StandardOutput.ReadToEnd();
-                    }
-                    process.WaitForExit();
-                    // When the process exited, trigger the processDoneEvent
-                    processDoneHandle.Set();
-                });
-
-
-                // This handle will wait till the process has exited, or the timeoutMS has passed
                 int timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
-                var processDone = processDoneHandle.WaitOne(timeoutValue);
-
-                if (!processDone)
+                if (!process.WaitForExit(timeoutValue))
                 {
-                    // The process is still running. Kill the process and all it's child processes.
-                    process.KillTree(TimeSpan.FromSeconds(60));
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
+
                 return new ProcessResult()
                 {
                     ExitCode = process.ExitCode,
-                    Output = output
+                    Output = process.Output
                 };
+            }
+        }
+
+        sealed class ProcessWrapper: IDisposable
+        {
+            private readonly Process process;
+            private readonly StringBuilder output = new StringBuilder();
+            private readonly StringBuilder error = new StringBuilder();
+
+            public int ExitCode => process.ExitCode;
+            public string Output => output.ToString();
+
+            public ProcessWrapper(ProcessStartInfo info)
+            {
+                this.process = Process.Start(info);
+                process.OutputDataReceived += Process_OutputDataReceived;
+                process.ErrorDataReceived += Process_ErrorDataReceived;
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
+
+            public bool WaitForExit(int timeout = -1)
+            {
+                var totalWait = 0;
+                do
+                {
+                    if (process.WaitForExit(100))
+                    {
+                        return true;
+                    }
+
+                    totalWait += 100;
+                } while (timeout==-1 || totalWait < timeout);
+
+                process.KillTree(TimeSpan.FromSeconds(60));
+                return false;
+            }
+
+            private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+            {
+                if (e.Data != null)
+                {
+                    output.AppendLine(e.Data);
+                }
+            }
+
+            private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+            {
+                if (e.Data != null)
+                {
+                    output.AppendLine(e.Data);
+                }
+            }
+
+            public void Dispose()
+            {
+                process.OutputDataReceived -= Process_OutputDataReceived;
+                process.ErrorDataReceived -= Process_ErrorDataReceived;
+                this.process.Dispose();
             }
         }
     }
