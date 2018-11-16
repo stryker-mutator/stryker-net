@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj" />
   </ItemGroup>
 
