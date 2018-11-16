@@ -36,14 +36,14 @@ phases:
     inputs:
       command: pack
       packagesToPack: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
-      buildProperties: VersionSuffix=$(PreReleaseSuffix)
+      buildProperties: VersionSuffix=pre-release.$(Build.Id)
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
     displayName: 'Push pre-release packages'
     inputs:
       command: push
-      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseSuffix).nupkg
+      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*pre-release.$(Build.Id).nupkg
       publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
   - task: DotNetCoreCLI@2
