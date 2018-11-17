@@ -1,4 +1,4 @@
-name: $(Build.DefinitionName)-$(PackageVersion)$(rev:.r)
+name: $(PackageVersion).$(rev:.r)
 
 trigger:
   batch: true
@@ -12,7 +12,7 @@ resources:
   
 variables:
   PackageVersion: '0.5.0'
-  PreReleaseVersion: $(PackageVersion)-pre-release.$(Build.BuildId)
+  PreReleaseVersion: $(PackageVersion)-beta
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
