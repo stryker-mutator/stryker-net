@@ -20,8 +20,7 @@ variables:
   PreReleaseFeedUri: https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
 jobs:
-- job: Windows
-  condition: succeeded()
+- job: Publish Pre-Release
 
   pool:
     name: Hosted VS2017
@@ -50,6 +49,20 @@ jobs:
       packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
       publishVstsFeed: $(PreReleaseFeed)
 
+- job: Windows tests
+  dependsOn: Publish Pre-Release
+  condition: succeeded()
+
+  pool:
+    name: Hosted VS2017
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
+
   - task: DotNetCoreCLI@2
     displayName: 'Install pre-release package in integration test project'
     inputs:
@@ -74,22 +87,8 @@ jobs:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack release package'
-    inputs:
-      command: pack
-      nobuild: true
-      packagesToPack: $(ProjectsToPack)
-      packDirectory: $(Build.ArtifactStagingDirectory)/release
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/release
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-
-- job: Linux
-  dependsOn: Windows
+- job: Linux tests
+  dependsOn: Publish Pre-Release
   condition: succeeded()
   
   pool:
@@ -126,8 +125,8 @@ jobs:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-- job: Mac
-  dependsOn: Windows
+- job: Mac tests
+  dependsOn: Publish Pre-Release
   condition: succeeded()
   
   pool:
@@ -163,3 +162,28 @@ jobs:
       command: custom
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
+
+- job: Publish Release
+  dependsOn: 
+  - Windows tests
+  - Linux tests
+  - Mac tests
+  condition: succeeded()
+
+  pool:
+    name: Hosted VS2017
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack release package'
+    inputs:
+      command: pack
+      nobuild: true
+      packagesToPack: $(ProjectsToPack)
+      packDirectory: $(Build.ArtifactStagingDirectory)/release
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/release
+    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
