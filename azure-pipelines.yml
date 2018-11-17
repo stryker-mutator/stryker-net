@@ -17,6 +17,7 @@ variables:
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
   PreReleaseFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
+  PreReleaseFeedUri: https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
 jobs:
 - job: Windows
@@ -54,7 +55,7 @@ jobs:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
@@ -106,7 +107,7 @@ jobs:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
@@ -144,7 +145,7 @@ jobs:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
