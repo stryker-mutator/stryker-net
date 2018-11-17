@@ -90,6 +90,7 @@ phases:
 
 - phase: Phase_2
   displayName: Linux
+  dependsOn: Windows
   condition: succeeded()
   
   queue:
@@ -128,6 +129,7 @@ phases:
 
 - phase: Phase_3
   displayName: Mac
+  dependsOn: Windows
   condition: succeeded()
   
   queue:
