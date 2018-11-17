@@ -13,6 +13,10 @@ resources:
 variables:
   PackageVersion: '0.5.0'
   PreReleaseVersion: $(PackageVersion)-pre-release.$(Build.BuildId)
+  ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
+  IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
+  IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
+  PreReleaseFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
 phases:
 - phase: Phase_1
@@ -36,7 +40,7 @@ phases:
       nobuild: true
       versioningScheme: byEnvVar
       versionEnvVar: PreReleaseVersion
-      packagesToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
+      packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
@@ -44,36 +48,35 @@ phases:
     inputs:
       command: push
       packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
-      publishVstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
+      publishVstsFeed: $(PreReleaseFeed)
 
   - task: DotNetCoreCLI@2
     displayName: 'Install pre-release package in integration test project'
     inputs:
       command: custom
       custom: add
-      arguments: integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet restore'
     inputs:
       command: restore
-      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj'
-      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
+      projects: $(IntegrationTestProject)
+      vstsFeed: $(PreReleaseFeed)
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
     inputs:
       command: custom
       custom: stryker
-      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
-
+      workingDirectory: $(IntegrationTestPath)
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
     inputs:
       command: pack
       nobuild: true
-      packagesToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
+      packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/release
 
   - task: PublishBuildArtifacts@1
@@ -100,15 +103,15 @@ phases:
     displayName: 'dotnet restore'
     inputs:
       command: restore
-      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj'
-      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
+      projects: $(IntegrationTestProject)
+      vstsFeed: $(PreReleaseFeed)
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
     inputs:
       command: custom
       custom: stryker
-      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)
 
 - phase: Phase_3
   displayName: Mac
@@ -128,12 +131,12 @@ phases:
     displayName: 'dotnet restore'
     inputs:
       command: restore
-      projects: 'integrationtests\IntegrationTests\Stryker.Core.IntegrationTest\ExampleProject\ExampleProject.XUnit\ExampleProject.XUnit.csproj'
-      vstsFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
-
+      projects: $(IntegrationTestProject)
+      vstsFeed: $(PreReleaseFeed)
+  
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
     inputs:
       command: custom
       custom: stryker
-      workingDirectory: integrationtests/IntegrationTests/Stryker.Core.IntegrationTest/ExampleProject/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)
