@@ -1,4 +1,4 @@
-name: $(PackageVersion).$(rev:.r)
+name: $(PackageVersion)$(rev:.r)
 
 trigger:
   batch: true
