@@ -57,6 +57,9 @@ phases:
       custom: add
       arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
+
   - task: DotNetCoreCLI@2
     displayName: 'dotnet restore'
     inputs:
@@ -100,6 +103,16 @@ phases:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
+
+  - task: DotNetCoreCLI@2
     displayName: 'dotnet restore'
     inputs:
       command: restore
@@ -126,6 +139,16 @@ phases:
     inputs:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet restore'
