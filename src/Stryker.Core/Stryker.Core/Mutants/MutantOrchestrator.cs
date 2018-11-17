@@ -20,7 +20,6 @@ namespace Stryker.Core.Mutants
         IEnumerable<Mutant> GetLatestMutantBatch();
     }
 
-
     /// <summary>
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
@@ -31,27 +30,6 @@ namespace Stryker.Core.Mutants
         private int _mutantCount { get; set; } = 0;
         private IEnumerable<IMutator> _mutators { get; set; }
         private ILogger _logger { get; set; }
-
-        public static string MutantSelecterLogic
-        {
-            get { return helper; }
-        }
-
-        private const string helper = @"
-namespace Stryker
-{
-    public static class Environment
-    {
-        private static readonly int activeMutant;
-
-        static Environment()
-        {
-            activeMutant = int.Parse(System.Environment.GetEnvironmentVariable(""ActiveMutation"") ?? string.Empty);
-        }
-        public static int ID => activeMutant;
-    }
-}
-";
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators)
@@ -116,7 +94,6 @@ namespace Stryker
                 return childCopy;
             }
         }
-
 
         private IEnumerable<Mutant> FindMutants(SyntaxNode current)
         {

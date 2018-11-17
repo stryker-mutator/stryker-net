@@ -9,7 +9,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int i = 0;
-            if (Stryker.Environment.ID==6)
+            if (Stryker.Environment.ActiveMutation==6)
                     {
                 if (i + 8 == 8)
                 {
@@ -30,7 +30,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             }
             else
             {
-                if (Stryker.Environment.ID==5)
+                if (Stryker.Environment.ActiveMutation==5)
                         {
                     if (i + 8 == 8)
                     {
@@ -51,7 +51,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                 }
                 else
                 {
-                    if (Stryker.Environment.ID==4)
+                    if (Stryker.Environment.ActiveMutation==4)
                             {
                         if (i + 8 == 8)
                         {
@@ -72,7 +72,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                     }
                     else
                     {
-                        if (Stryker.Environment.ID==3)
+                        if (Stryker.Environment.ActiveMutation==3)
                                 {
                             if (i + 8 == 8)
                             {
@@ -93,7 +93,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                         }
                         else
                         {
-                            if (Stryker.Environment.ID==2)
+                            if (Stryker.Environment.ActiveMutation==2)
                                     {
                                 if (i + 8 == 8)
                                 {
@@ -114,7 +114,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                             }
                             else
                             {
-                                if (Stryker.Environment.ID==1)
+                                if (Stryker.Environment.ActiveMutation==1)
                                         {
                                     if (i + 8 == 8)
                                     {
@@ -135,7 +135,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                                 }
                                 else
                                 {
-                                    if (Stryker.Environment.ID==0)
+                                    if (Stryker.Environment.ActiveMutation==0)
                                             {
                                         if (i - 8 == 8)
                                         {
@@ -179,7 +179,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                     }
                 }
             }
-            if (Stryker.Environment.ID==7)
+            if (Stryker.Environment.ActiveMutation==7)
                     {
                 i = i - i;
             }
