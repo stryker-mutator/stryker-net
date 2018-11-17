@@ -12,7 +12,7 @@ resources:
   
 variables:
   PackageVersion: '0.5.0'
-  PreReleaseVersion: $(PackageVersion)-beta
+  PreReleaseVersion: $(Build.BuildNumber)-beta
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
