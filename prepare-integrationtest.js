@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 var newVersionNumber = process.argv.slice(2);
 
 const replaceVersionNumber = (path, oldString, newString) => {
