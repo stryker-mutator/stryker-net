@@ -18,9 +18,8 @@ variables:
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
   PreReleaseFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
 
-phases:
-- phase: Phase_1
-  displayName: Windows
+jobs:
+- job: Windows
   condition: succeeded()
 
   queue:
@@ -88,8 +87,7 @@ phases:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/release
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
 
-- phase: Phase_2
-  displayName: Linux
+- job: Linux
   dependsOn: Windows
   condition: succeeded()
   
@@ -127,8 +125,7 @@ phases:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-- phase: Phase_3
-  displayName: Mac
+- job: Mac
   dependsOn: Windows
   condition: succeeded()
   
