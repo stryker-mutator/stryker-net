@@ -163,7 +163,7 @@ jobs:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-- job: Publish Release
+- job: PublishRelease
   dependsOn: 
   - WindowsTests
   - LinuxTests
