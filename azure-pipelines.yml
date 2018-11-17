@@ -20,7 +20,7 @@ variables:
   PreReleaseFeedUri: https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
 
 jobs:
-- job: Publish Pre-Release
+- job: PublishPreRelease
 
   pool:
     name: Hosted VS2017
@@ -49,8 +49,8 @@ jobs:
       packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
       publishVstsFeed: $(PreReleaseFeed)
 
-- job: Windows tests
-  dependsOn: Publish Pre-Release
+- job: WindowsTests
+  dependsOn: PublishPreRelease
   condition: succeeded()
 
   pool:
@@ -87,8 +87,8 @@ jobs:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-- job: Linux tests
-  dependsOn: Publish Pre-Release
+- job: LinuxTests
+  dependsOn: PublishPreRelease
   condition: succeeded()
   
   pool:
@@ -125,8 +125,8 @@ jobs:
       custom: stryker
       workingDirectory: $(IntegrationTestPath)
 
-- job: Mac tests
-  dependsOn: Publish Pre-Release
+- job: MacOsTests
+  dependsOn: PublishPreRelease
   condition: succeeded()
   
   pool:
@@ -165,9 +165,9 @@ jobs:
 
 - job: Publish Release
   dependsOn: 
-  - Windows tests
-  - Linux tests
-  - Mac tests
+  - WindowsTests
+  - LinuxTests
+  - MacOsTests
   condition: succeeded()
 
   pool:
