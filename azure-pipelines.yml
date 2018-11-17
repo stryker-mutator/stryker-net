@@ -183,7 +183,7 @@ jobs:
     displayName: 'Pack release package'
     inputs:
       command: pack
-      nobuild: true
+      nobuild: false
       packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/release
 
