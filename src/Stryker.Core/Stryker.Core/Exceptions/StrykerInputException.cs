@@ -32,7 +32,6 @@ namespace Stryker.Core.Exceptions
             if (!string.IsNullOrEmpty(Details))
             {
                 builder.AppendLine(Details);
-                //builder.AppendLine();
             }
             return builder.ToString();
         }
