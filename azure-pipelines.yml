@@ -21,6 +21,7 @@ variables:
 
 jobs:
 - job: PublishPreRelease
+  displayName: Prepare Pre-Release package
 
   pool:
     name: Hosted VS2017
@@ -50,6 +51,7 @@ jobs:
       publishVstsFeed: $(PreReleaseFeed)
 
 - job: WindowsTests
+  displayName: Run tests on Windows
   dependsOn: PublishPreRelease
   condition: succeeded()
 
@@ -88,6 +90,7 @@ jobs:
       workingDirectory: $(IntegrationTestPath)
 
 - job: LinuxTests
+  displayName: Run tests on Linux
   dependsOn: PublishPreRelease
   condition: succeeded()
   
@@ -126,6 +129,7 @@ jobs:
       workingDirectory: $(IntegrationTestPath)
 
 - job: MacOsTests
+  displayName: Run tests on Mac OS
   dependsOn: PublishPreRelease
   condition: succeeded()
   
@@ -164,6 +168,7 @@ jobs:
       workingDirectory: $(IntegrationTestPath)
 
 - job: PublishRelease
+  displayName: Publish Release Artifacts
   dependsOn: 
   - WindowsTests
   - LinuxTests
