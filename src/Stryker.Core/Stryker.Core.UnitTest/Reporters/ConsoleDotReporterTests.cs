@@ -12,7 +12,6 @@ namespace Stryker.Core.UnitTest.Reporters
 
         [Theory]
         [InlineData(MutantStatus.Killed, ".", "default")]
-        [InlineData(MutantStatus.RuntimeError, "E", "default")]
         [InlineData(MutantStatus.Survived, "S", "red")]
         [InlineData(MutantStatus.Timeout, "T", "default")]
         public void ConsoleDotReporter_ShouldPrintRightCharOnMutation(MutantStatus givenStatus, string expectedOutput, string color)
