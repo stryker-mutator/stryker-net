@@ -25,7 +25,6 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-
         private MutationTestInput _input { get; set; }
         private IReporter _reporter { get; set; }
         private IMutantOrchestrator _orchestrator { get; set; }

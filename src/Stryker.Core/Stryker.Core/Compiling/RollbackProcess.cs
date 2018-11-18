@@ -96,7 +96,6 @@ namespace Stryker.Core.Compiling
                 if (mutationIf == null)
                 {
                     _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
-                    continue;
                 }
 
                 if (!brokenMutations.Contains(mutationIf))

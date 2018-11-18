@@ -4,15 +4,12 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
     public class StrykerTests
     {
- 
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {
