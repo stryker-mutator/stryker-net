@@ -30,11 +30,11 @@
 
         public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
         {
-            ArgumentName = "--log-level-file",
-            ArgumentShortName = "-f <useLogLevelFile>",
-            ArgumentDescription = "Use logLevelFile | Options [false (Default), true]",
+            ArgumentName = "--log-file",
+            ArgumentShortName = "-f",
+            ArgumentDescription = "Makes the logger write to a file | Options [false (default), true]",
             DefaultValue = false,
-            JsonKey = "log-level-file"
+            JsonKey = "log-file"
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
