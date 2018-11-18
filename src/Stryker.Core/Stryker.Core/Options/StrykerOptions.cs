@@ -3,6 +3,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,6 +61,11 @@ namespace Stryker.Core.Options
 
         private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
         {
+            if (excludedMutations == null)
+            {
+                yield break;
+            }
+
             var types = (IEnumerable<MutatorType>)Enum.GetValues(typeof(MutatorType));
             foreach (string excludedMutation in excludedMutations)
             {

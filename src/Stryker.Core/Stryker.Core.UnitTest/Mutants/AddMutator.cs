@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Mutants
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, node.Left, node.Right),
                     DisplayName = "Add to Subtract mutation",
-                    Type = "AddMutator"
+                    Type = MutatorType.Binary
                 };
             }
         }

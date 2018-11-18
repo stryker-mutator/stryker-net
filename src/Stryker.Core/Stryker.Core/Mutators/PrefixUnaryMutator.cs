@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = node.Operand,
                     DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
-                    Type = unaryKind.ToString().StartsWith("Logic") ? MutatorType.Logical : MutatorType.Unary
+                    Type = unaryKind.ToString().StartsWith("Logic") ? MutatorType.Boolean : MutatorType.Unary
                 };
             }
         }

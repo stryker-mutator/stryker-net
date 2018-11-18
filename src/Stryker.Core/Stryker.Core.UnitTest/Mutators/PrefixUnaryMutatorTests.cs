@@ -12,9 +12,24 @@ namespace Stryker.Core.UnitTest.Mutators
         [Theory]
         [InlineData(SyntaxKind.UnaryMinusExpression, SyntaxKind.UnaryPlusExpression)]
         [InlineData(SyntaxKind.UnaryPlusExpression, SyntaxKind.UnaryMinusExpression)]
+        public void ShouldMutateUnaryTypes(SyntaxKind original, SyntaxKind expected)
+        {
+            var target = new PrefixUnaryMutator();
+            var originalNode = SyntaxFactory.PrefixUnaryExpression(original,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)));
+
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldHaveSingleItem();
+            var mutation = result.First();
+            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.Type.ShouldBe(MutatorType.Unary);
+        }
+
+        [Theory]
         [InlineData(SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression)]
         [InlineData(SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression)]
-        public void ShouldMutate(SyntaxKind original, SyntaxKind expected)
+        public void ShouldMutateUpdateTypes(SyntaxKind original, SyntaxKind expected)
         {
             var target = new PrefixUnaryMutator();
             var originalNode = SyntaxFactory.PrefixUnaryExpression(original,
@@ -27,7 +42,7 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
             mutation.Type.ShouldBe(MutatorType.Update);
         }
-        
+
         [Theory]
         [InlineData(SyntaxKind.BitwiseNotExpression)]
         [InlineData(SyntaxKind.LogicalNotExpression)]
@@ -40,7 +55,15 @@ namespace Stryker.Core.UnitTest.Mutators
             var result = target.ApplyMutations(originalNode).ToList();
 
             result.ShouldHaveSingleItem();
-            result.First().ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression).ShouldBeTrue();
+            var mutation = result.First();
+            mutation.ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression).ShouldBeTrue();
+            if (original == SyntaxKind.BitwiseNotExpression)
+            {
+                mutation.Type.ShouldBe(MutatorType.Unary);
+            } else
+            {
+                mutation.Type.ShouldBe(MutatorType.Boolean);
+            }
         }
         
         [Theory]
