@@ -8,6 +8,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
     {
         public string SourceCode { get; set; }
         public string FullPath { get; set; }
+        public bool IsExcluded { get; set; }
 
         private IEnumerable<Mutant> _mutants { get; set; }
         public override IEnumerable<Mutant> Mutants {

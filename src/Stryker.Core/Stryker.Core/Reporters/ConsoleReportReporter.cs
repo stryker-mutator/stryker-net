@@ -29,8 +29,12 @@ namespace Stryker.Core.Reporters
             // print empty line for readability
             Console.WriteLine("");
 
-            _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. Each mutant will now be tested, this could take a while. {Environment.NewLine}");
+            _chalk.DarkGray($"{inputComponent.ExcludedFiles.Count} have been excluded. For these files there are no mutants created. {Environment.NewLine}");
+            foreach (var excludedFile in inputComponent.ExcludedFiles)
+                _chalk.DarkGray($"Excluded file: {excludedFile.FullPath} {Environment.NewLine}");
 
+            _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. Each mutant will now be tested, this could take a while. {Environment.NewLine}");
+            
             // print empty line for readability
             Console.WriteLine("");
         }

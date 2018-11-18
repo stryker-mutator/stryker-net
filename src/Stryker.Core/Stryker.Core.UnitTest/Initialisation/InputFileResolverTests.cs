@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    using System.Linq;
+
     public class InputFileResolverTests
     {
         private string _currentDirectory { get; set; }
@@ -18,7 +20,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
-            _sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
         }
 
         [Fact]
@@ -143,7 +145,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InputFileResolver_InitializeShouldExcludeSpecifiedFiles()
+        public void InputFileResolver_InitializeShouldMarkFilesAsExcluded()
         {
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -181,7 +183,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string> { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") });
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
-            result.ProjectContents.Children.Count.ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count(c => c.IsExcluded).ShouldBe(1);
         }
 
         [Fact]

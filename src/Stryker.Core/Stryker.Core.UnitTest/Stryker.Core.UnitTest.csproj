@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
+    <Compile Remove="TestResources\ExampleSourceFile.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
@@ -17,7 +17,7 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Initialisation\TestResources\ExampleSourceFile.cs">
+    <Content Include="TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_AssignStatements_OUT.cs">

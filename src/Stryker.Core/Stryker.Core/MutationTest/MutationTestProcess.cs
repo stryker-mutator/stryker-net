@@ -58,12 +58,25 @@ namespace Stryker.Core.MutationTest
             {
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, path: file.FullPath);
-                // Mutate the syntax tree
-                var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
-                // Add the mutated syntax tree for compilation
-                mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-                // Store the generated mutants in the file
-                file.Mutants = _orchestrator.GetLatestMutantBatch();
+                
+                if (!file.IsExcluded)
+                {
+                    // Mutate the syntax tree
+                    var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
+                    // Add the mutated syntax tree for compilation
+                    mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
+                    // Store the generated mutants in the file
+                    file.Mutants = _orchestrator.GetLatestMutantBatch();
+                }
+                else
+                {
+                    // Add the original syntax tree for future compilation
+                    mutatedSyntaxTrees.Add(syntaxTree);
+                    // There aren't any mutants generated so a new list of mutants is sufficient
+                    file.Mutants = new List<Mutant>();
+
+                    _logger.LogDebug("Excluded file {0}, no mutants created", file.FullPath);
+                }
             }
 
             _logger.LogInformation("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
