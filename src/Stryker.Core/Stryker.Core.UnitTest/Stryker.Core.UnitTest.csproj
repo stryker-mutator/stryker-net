@@ -1,13 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_NoMutationsShouldBeMade.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
@@ -16,10 +20,22 @@
     <Content Include="Initialisation\TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Mutants\TestResources\Mutator_AssignStatements_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_AssignStatements_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs">

@@ -2,6 +2,7 @@
 using Serilog.Events;
 using Stryker.Core;
 using Stryker.Core.Options;
+using System;
 using System.IO;
 using Xunit;
 using System.Reflection;
@@ -51,13 +52,15 @@ namespace Stryker.CLI.UnitTest
                                                                         c.ThresholdOptions.ThresholdBreak == 0 &&
                                                                         c.ThresholdOptions.ThresholdLow == 60 &&
                                                                         c.ThresholdOptions.ThresholdHigh == 80))).Verifiable();
-            File.Move("stryker-config.json", "temp.json");
+            string currentDirectory = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
 
             mock.VerifyAll();
-            File.Move("temp.json", "stryker-config.json");
+
+            Directory.SetCurrentDirectory(currentDirectory);
         }
 
         [Theory]

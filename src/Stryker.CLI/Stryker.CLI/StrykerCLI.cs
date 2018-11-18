@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Stryker.Core;
-using Stryker.Core.Options;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using System;
 using System.IO;
-using System.Threading;
-using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace Stryker.CLI
 {
@@ -129,8 +129,11 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
                    __/ |                                   
                   |___/                                    
 ");
-            Console.WriteLine(@"
-Beta version
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyVersion = assembly.GetName().Version;
+
+            Console.WriteLine($@"
+Version {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (beta)
 "); 
         }
 
