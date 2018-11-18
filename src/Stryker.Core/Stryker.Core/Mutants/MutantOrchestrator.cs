@@ -35,9 +35,21 @@ namespace Stryker.Core.Mutants
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         /// <param name="mutantFactory">An instance of the mutantFactory, use the same for every file to keep the mutation count increment</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null)
         {
-            _mutators = mutators;
+            _mutators = mutators ?? new List<IMutator>()
+                {
+                    // the default list of mutators
+                    new BinaryExpressionMutator(),
+                    new BooleanMutator(),
+                    new AssignmentStatementMutator(),
+                    new PrefixUnaryMutator(),
+                    new PostfixUnaryMutator(),
+                    new CheckedMutator(),
+                    new LinqMutator(),
+                    new StringMutator(),
+                    new InterpolatedStringMutator()
+                };
             _mutants = new Collection<Mutant>();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
         }

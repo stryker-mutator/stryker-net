@@ -1,6 +1,8 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +21,7 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
-        public IEnumerable<string> ExcludedMutations { get; }
+        public IEnumerable<MutatorType> ExcludedMutations { get; }
 
         public int MaxConcurrentTestrunners { get; }
 
@@ -41,7 +43,7 @@ namespace Stryker.Core.Options
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = excludedMutations;
+            ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
@@ -54,6 +56,21 @@ namespace Stryker.Core.Options
                 throw new ValidationException("The reporter options are [Console, ReportOnly]");
             }
             return reporter;
+        }
+
+        private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        {
+            var types = (IEnumerable<MutatorType>)Enum.GetValues(typeof(MutatorType));
+            foreach (string excludedMutation in excludedMutations)
+            {
+                if (types.Single(x => x.ToString() == excludedMutation) is var foundMutator)
+                {
+                    yield return foundMutator;
+                } else
+                {
+                    throw new ValidationException($"The excluded mutations options are [{String.Join(", ", types)}]");
+                }
+            }
         }
 
         private LogEventLevel ValidateLogLevel(string levelText)

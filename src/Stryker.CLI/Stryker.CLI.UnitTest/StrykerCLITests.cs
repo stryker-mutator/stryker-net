@@ -10,6 +10,7 @@ using System.IO;
 using Xunit;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Stryker.Core.Mutators;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -69,9 +70,9 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "['StringMutator']" });
+            target.Run(new string[] { argName, "['string']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutations.Contains("StringMutator"))));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutations.Contains(MutatorType.String))));
         }
 
         [Theory]

@@ -51,7 +51,6 @@
             ArgumentName = "--excluded-mutations",
             ArgumentShortName = "-em <mutator-name>",
             ArgumentDescription = "The given mutators will be excluded for this mutation testrun.",
-            DefaultValue = null,
             JsonKey = "excluded-mutations"
         };
 

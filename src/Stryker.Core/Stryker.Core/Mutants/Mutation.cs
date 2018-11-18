@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants
 {
@@ -10,6 +11,6 @@ namespace Stryker.Core.Mutants
         public SyntaxNode OriginalNode { get; set; }
         public SyntaxNode ReplacementNode { get; set; }
         public string DisplayName { get; set; }
-        public string Type { get; set; }
+        public MutatorType Type { get; set; }
     }
 }

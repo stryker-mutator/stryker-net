@@ -7,6 +7,7 @@
         Survived,
         Timeout,
         RuntimeError,
-        BuildError
+        BuildError,
+        Skipped
     }
 }

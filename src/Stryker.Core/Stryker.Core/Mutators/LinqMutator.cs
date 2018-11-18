@@ -81,7 +81,7 @@ namespace Stryker.Core.Mutators
                     DisplayName = displayName,
                     OriginalNode = node,
                     ReplacementNode = replacement,
-                    Type = nameof(LinqMutator)
+                    Type = MutatorType.Linq
                 };
             }
         }
