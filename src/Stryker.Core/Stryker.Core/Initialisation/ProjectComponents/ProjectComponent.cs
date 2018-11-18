@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public string Name { get; set; }
         public abstract IEnumerable<Mutant> Mutants { get; set; }
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants.Cast<IReadOnlyMutant>();
-        public IEnumerable<IReadOnlyMutant> TotalMutants => ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError);
+        public IEnumerable<IReadOnlyMutant> TotalMutants => ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError && m.ResultStatus != MutantStatus.Skipped);
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(m => 
         m.ResultStatus == MutantStatus.Killed ||
         m.ResultStatus == MutantStatus.Timeout ||

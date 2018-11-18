@@ -45,7 +45,7 @@ namespace Stryker.Core.MutationTest
         {
             _input = mutationTestInput;
             _reporter = reporter;
-            _exludedMutations = _exludedMutations;
+            _exludedMutations = excludedMutations;
             _mutationTestExecutor = mutationTestExecutor;
             _orchestrator = orchestrator ?? new MutantOrchestrator();
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
@@ -98,12 +98,17 @@ namespace Stryker.Core.MutationTest
                             mutant.ResultStatus = MutantStatus.BuildError;
                         }
                     }
-                    _logger.LogDebug("{0} mutants got status {1}", compileResult.RollbackResult?.RollbackedIds.Count(), MutantStatus.BuildError);
+                    _logger.LogDebug("{0} mutants got status {1}", compileResult.RollbackResult?.RollbackedIds.Count() ?? 0, MutantStatus.BuildError.ToString());
 
-                    foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
-                            .Where(x => _exludedMutations.Contains(x.Mutation.Type)))
+                    if (_exludedMutations.Count() != 0)
                     {
-                        mutant.ResultStatus = MutantStatus.Skipped;
+                        var mutantsToSkip = _input.ProjectInfo.ProjectContents.Mutants
+                            .Where(x => _exludedMutations.Contains(x.Mutation.Type)).ToList();
+                        foreach (var mutant in mutantsToSkip)
+                        {
+                            mutant.ResultStatus = MutantStatus.Skipped;
+                        }
+                        _logger.LogInformation("{0} mutants got status {1}", mutantsToSkip.Count(), MutantStatus.Skipped.ToString());
                     }
                 }
             }

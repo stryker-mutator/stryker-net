@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldHaveSingleItem();
             var mutation = result.First();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
-            mutation.Type.ShouldBe("PrefixUnaryMutator");
+            mutation.Type.ShouldBe(MutatorType.Update);
         }
         
         [Theory]

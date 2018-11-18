@@ -63,7 +63,7 @@ namespace Stryker.Core.Options
             var types = (IEnumerable<MutatorType>)Enum.GetValues(typeof(MutatorType));
             foreach (string excludedMutation in excludedMutations)
             {
-                if (types.Single(x => x.ToString() == excludedMutation) is var foundMutator)
+                if (types.Single(x => x.ToString().ToLower() == excludedMutation.ToLower()) is var foundMutator)
                 {
                     yield return foundMutator;
                 } else
