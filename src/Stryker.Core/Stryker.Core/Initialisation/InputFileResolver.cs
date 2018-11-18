@@ -44,6 +44,7 @@ namespace Stryker.Core.Initialisation
             var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
             var projectUnderTestInfo = FindProjectUnderTestAssemblyName(Path.GetFullPath(Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath))));
             var inputFiles = FindInputFiles(projectUnderTestPath, filesToExclude);
+            MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestPath);
 
             return new ProjectInfo()
             {
@@ -86,6 +87,25 @@ namespace Stryker.Core.Initialisation
             }
 
             return folderComposite;
+        }
+
+        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> filesToExclude, string projectUnderTestPath)
+        {
+            var files = root.GetAllFiles().ToList();
+
+            foreach (var file in filesToExclude)
+            {
+                var fullPath = Path.GetFullPath(projectUnderTestPath + file);
+                if (!File.Exists(fullPath))
+                {
+                    _logger.LogWarning("The specified file to exclude {0} could not be found. Did you mean to exclude another file?", fullPath);
+                }
+                else
+                {
+                    _logger.LogInformation("File {0} will be excluded from mutation.", fullPath);
+                    files.Single(x => x.FullPath == fullPath).IsExcluded = true;
+                }
+            }
         }
 
         public string ScanProjectFile(string currentDirectory)

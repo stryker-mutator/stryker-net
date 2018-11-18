@@ -7,13 +7,12 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        private ILogger _logger;
-
         public string BasePath { get; }
         public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
@@ -34,8 +33,6 @@ namespace Stryker.Core.Options
         public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
         int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak, string filesToExclude)
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerOptions>();
-
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -43,7 +40,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
-            FilesToExclude = ValidateFilesToExclude(basePath, filesToExclude);
+            FilesToExclude = ValidateFilesToExclude(filesToExclude);
         }
 
         private string ValidateReporter(string reporter)
@@ -100,7 +97,7 @@ namespace Stryker.Core.Options
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private List<string> ValidateFilesToExclude(string basePath, string filesToExclude)
+        private List<string> ValidateFilesToExclude(string filesToExclude)
         {
             var excludedFiles = new List<string>();
             try
@@ -110,13 +107,7 @@ namespace Stryker.Core.Options
                 foreach (var excludedFile in jsonExcludedFiles)
                 {
                     var platformFilePath = FilePathUtils.ConvertToPlatformSupportedFilePath(excludedFile);
-                    var fullPath = Path.GetFullPath(Path.Combine(basePath, platformFilePath));
-
-                    if (!File.Exists(fullPath))
-                        _logger.LogWarning("The specified file to exclude {0} could not be found. Did you mean to exclude another file?", fullPath);
-
-                    excludedFiles.Add(fullPath);
-                    _logger.LogInformation($"File {0} will be excluded from mutation.", fullPath);
+                    excludedFiles.Add(platformFilePath);
                 }
             }
             catch
