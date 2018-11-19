@@ -173,7 +173,7 @@ jobs:
   - WindowsTests
   - LinuxTests
   - MacOsTests
-  condition: succeeded()
+  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
 
   pool:
     name: Hosted VS2017
@@ -191,4 +191,3 @@ jobs:
     displayName: 'Publish Artifact: drop'
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)/release
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
