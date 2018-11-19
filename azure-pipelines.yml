@@ -173,7 +173,7 @@ jobs:
   - WindowsTests
   - LinuxTests
   - MacOsTests
-  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+  condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
 
   pool:
     name: Hosted VS2017
