@@ -68,7 +68,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
-            var fileToExclude = Path.Combine(_currentDirectory, "Recursive.cs");
+            var fileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./Recursive.cs");
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 9999 &&
