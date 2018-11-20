@@ -1,25 +1,25 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
-        private const string helper = @"
-namespace Stryker
-{
-    public static class Environment
-    {
-        private static readonly int activeMutant;
-        static Environment()
+        private static readonly string helper;
+
+        static MutantPlacer()
         {
-            activeMutant = int.Parse(System.Environment.GetEnvironmentVariable(""ActiveMutation"") ?? string.Empty);
+            using (var stream =
+                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutantHelper.cs"))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    helper = reader.ReadToEnd();
+                }
+            }
         }
-        public static int ActiveMutant => activeMutant;
-    }
-}";
 
         public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
 
@@ -73,7 +73,7 @@ namespace Stryker
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
-        /// Example for mutantId 1: System.Environment.GetEnvironmentVariable("ActiveMutation") == "1"
+        /// Example for mutantId 1: Stryker.Helper.ActiveMutation == 1
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
@@ -85,10 +85,9 @@ namespace Stryker
                         SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.IdentifierName("Stryker"),
-                            SyntaxFactory.IdentifierName("Environment")
+                            SyntaxFactory.IdentifierName("Helper")
                         ),
-                        SyntaxFactory.IdentifierName("ActiveMutation")   
-                    
+                        SyntaxFactory.IdentifierName("ActiveMutation")
                 ),
                 SyntaxFactory.LiteralExpression(
                     SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
