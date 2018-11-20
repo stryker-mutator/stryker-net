@@ -1,3 +1,20 @@
+# [0.6.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.5.0...0.6.0) (2018-11-19)
+
+
+### Bug Fixes
+
+* String interpolation on mutation threshold hit output was incorrect causing values to not be interpolated ([#226](https://github.com/stryker-mutator/stryker-net/issues/226)) ([b343d17](https://github.com/stryker-mutator/stryker-net/commit/b343d17))
+* system.memory dependency issue by bumping dotnet core version to 2.1 ([#245](https://github.com/stryker-mutator/stryker-net/issues/245)) ([3b35d90](https://github.com/stryker-mutator/stryker-net/commit/3b35d90)), closes [#234](https://github.com/stryker-mutator/stryker-net/issues/234)
+
+
+### Features
+
+* **Conditional mutant placer:** Add ability to place mutations in ConditionalExpressions ([#207](https://github.com/stryker-mutator/stryker-net/issues/207)) ([e3e0433](https://github.com/stryker-mutator/stryker-net/commit/e3e0433))
+* **integrationtest:** Run stryker from nuget in integration test ([#239](https://github.com/stryker-mutator/stryker-net/issues/239)) ([4b21514](https://github.com/stryker-mutator/stryker-net/commit/4b21514))
+* **logging:** Print version number below logo ([#246](https://github.com/stryker-mutator/stryker-net/issues/246)) ([7dc13a6](https://github.com/stryker-mutator/stryker-net/commit/7dc13a6))
+
+
+
 # [0.5.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.4.0...0.5.0) (2018-11-03)
 
 
