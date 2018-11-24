@@ -17,8 +17,8 @@ variables:
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
-  PreReleaseFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
-  PreReleaseFeedUri: https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+  PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/auth/910eee91-08d2-458f-9b7d-d59f534594d1/api/v3/index.json
 
 jobs:
 - job: PublishPreRelease
@@ -45,11 +45,12 @@ jobs:
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
-    displayName: 'Push pre-release packages'
+    displayName: 'Publish pre-release packages'
     inputs:
-      command: push
-      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
-      publishVstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: 'nuget push'
+      arguments: 'StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k 910eee91-08d2-458f-9b7d-d59f534594d1'
+      workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
 - job: WindowsTests
   displayName: Run tests on Windows
@@ -77,11 +78,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
@@ -116,11 +118,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
@@ -155,11 +158,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
