@@ -52,6 +52,15 @@ jobs:
       custom: 'nuget'
       arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k 910eee91-08d2-458f-9b7d-d59f534594d1'
       workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
+      
+- job: WaitOnMyGetProcessing
+  displayName: Wait on pre-release packages to be processed on MyGet
+  server: true
+  
+  steps:
+  - task: Delay@1
+    inputs:
+     delayForMinutes: '5' 
 
 - job: WindowsTests
   displayName: Run tests on Windows
