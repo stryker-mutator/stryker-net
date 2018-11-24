@@ -19,7 +19,7 @@ variables:
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
   PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
-  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/auth/910eee91-08d2-458f-9b7d-d59f534594d1/api/v3/index.json
+  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 jobs:
 - job: PublishPreRelease
