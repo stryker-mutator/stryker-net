@@ -55,7 +55,9 @@ jobs:
       
 - job: WaitOnMyGetProcessing
   displayName: Wait on pre-release packages to be processed on MyGet
-  server: true
+  
+  pool: 
+    name: server
   
   steps:
   - task: Delay@1
