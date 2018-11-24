@@ -48,8 +48,8 @@ jobs:
     displayName: 'Publish pre-release packages'
     inputs:
       command: custom
-      custom: 'nuget push'
-      arguments: 'StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k 910eee91-08d2-458f-9b7d-d59f534594d1'
+      custom: 'nuget'
+      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k 910eee91-08d2-458f-9b7d-d59f534594d1'
       workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
 
 - job: WindowsTests
