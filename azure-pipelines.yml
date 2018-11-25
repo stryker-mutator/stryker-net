@@ -55,6 +55,7 @@ jobs:
       
 - job: WaitOnMyGetProcessing
   displayName: Wait on pre-release packages to be processed on MyGet
+  dependsOn: PublishPreRelease
   
   pool: 
     name: server
@@ -62,11 +63,11 @@ jobs:
   steps:
   - task: Delay@1
     inputs:
-     delayForMinutes: '5' 
+     delayForMinutes: '2' 
 
 - job: WindowsTests
   displayName: Run tests on Windows
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
 
   pool:
@@ -106,7 +107,7 @@ jobs:
 
 - job: LinuxTests
   displayName: Run tests on Linux
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
   pool:
@@ -146,7 +147,7 @@ jobs:
 
 - job: MacOsTests
   displayName: Run tests on Mac OS
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
   pool:
