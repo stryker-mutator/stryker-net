@@ -9,25 +9,13 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    /// <summary>
-    ///     Mutator Implementation for LINQ Mutations
-    /// </summary>
-    public class LinqMutator : Mutator<IdentifierNameSyntax>, IMutator
+    /// <summary> Mutator Implementation for LINQ Mutations </summary>
+    public class LinqMutator : Mutator<MemberAccessExpressionSyntax>, IMutator
     {
-        #region Private Properties
-
-        /// <summary>
-        ///     Dictionary which maps original linq expressions to the target mutation
-        /// </summary>
+        /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private Dictionary<LinqExpression, LinqExpression> _kindsToMutate { get; }
 
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        ///     Constructor for the <see cref="LinqMutator"/>
-        /// </summary>
+        /// <summary> Constructor for the <see cref="LinqMutator"/> </summary>
         public LinqMutator()
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
@@ -53,46 +41,33 @@ namespace Stryker.Core.Mutators
             };
         }
 
-        #endregion
-
-        #region Mutation Overrides
-
-        /// <summary>
-        ///     Apply mutations to an <see cref="IdentifierNameSyntax"/>
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public override IEnumerable<Mutation> ApplyMutations(IdentifierNameSyntax node)
+        /// <summary> Apply mutations to an <see cref="MemberAccessExpressionSyntax"/> </summary>
+        public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
         {
-            if (Enum.TryParse(node.Identifier.ValueText, out LinqExpression expression) &&
+            if (Enum.TryParse(node.Name.Identifier.ValueText, out LinqExpression expression) &&
                 _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
             {
                 SyntaxNode replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
-                string displayName = $"Linq method mutation ({node.Identifier.ValueText}() to {replacement}())";
+                string displayName = $"Linq method mutation ({node.Name.Identifier.ValueText}() to {replacement}())";
 
                 if (replacementExpression.Equals(LinqExpression.None))
                 {
                     replacement = SyntaxFactory.IdentifierName(string.Empty);
-                    displayName = $"Linq method mutation (removed {node.Identifier.ValueText})";
+                    displayName = $"Linq method mutation (removed {node.Name.Identifier.ValueText})";
                 }
 
                 yield return new Mutation
                 {
                     DisplayName = displayName,
                     OriginalNode = node,
-                    ReplacementNode = replacement,
+                    ReplacementNode = node.ReplaceNode(node.Name, replacement),
                     Type = nameof(LinqMutator)
                 };
             }
         }
-
-        #endregion
-
     }
 
-    /// <summary>
-    ///     Enumeration for the different kinds of linq expressions
-    /// </summary>
+    /// <summary> Enumeration for the different kinds of linq expressions </summary>
     public enum LinqExpression
     {
         None,

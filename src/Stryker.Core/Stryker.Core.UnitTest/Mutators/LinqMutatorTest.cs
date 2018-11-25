@@ -19,10 +19,10 @@ namespace Stryker.Core.UnitTest.Mutators
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        private IEnumerable<IdentifierNameSyntax> GenerateExpressions(LinqExpression expression)
+        private IEnumerable<MemberAccessExpressionSyntax> GenerateExpressions(string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(
-                $@"using System;
+            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,20 +36,16 @@ namespace TestApplication
         {{
             IEnumerable<string> Test = new[] {{""1"", ""2"", ""3"", ""4"", ""5""}};
 
-            Console.WriteLine(Test.{expression.ToString()}());
+            Console.WriteLine(Test.{expression}());
         }}
     }}
 }}");
-            CompilationUnitSyntax root = (CompilationUnitSyntax)tree.GetRoot();
+            var memberAccessExpressions = tree.GetRoot()
+                .DescendantNodes()
+                .OfType<MemberAccessExpressionSyntax>()
+                .Where(x => x.Name.Identifier.ValueText.Equals(expression));
 
-            IEnumerable<IdentifierNameSyntax> expressions =
-                root.DescendantNodes()
-                    .Where(d => d.Kind().Equals(SyntaxKind.IdentifierName) &&
-                                ((IdentifierNameSyntax)d).Identifier.ValueText.Equals(
-                                    expression.ToString()))
-                    .Cast<IdentifierNameSyntax>();
-
-            return expressions;
+            return memberAccessExpressions;
         }
 
         /// <summary>
@@ -80,7 +76,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            var expressions = GenerateExpressions(original);
+            var expressions = GenerateExpressions(original.ToString());
 
             foreach (var expression in expressions)
             {
@@ -90,21 +86,18 @@ namespace TestApplication
 
                 var first = result.First();
 
-                first.ReplacementNode.IsKind(SyntaxKind.IdentifierName)
-                    .ShouldBeTrue();
+                first.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
+
+                var replacement = first.ReplacementNode as MemberAccessExpressionSyntax;
+                var identifier = replacement.Name.Identifier;
+
                 if (expected.Equals(LinqExpression.None))
                 {
-                    string.IsNullOrEmpty(
-                            ((IdentifierNameSyntax)first.ReplacementNode)
-                            .Identifier.ValueText)
-                        .ShouldBeTrue();
+                    string.IsNullOrEmpty(identifier.ValueText).ShouldBeTrue();
                 }
                 else
                 {
-                    ((IdentifierNameSyntax)first.ReplacementNode)
-                        .Identifier.ValueText.Equals(
-                            expected.ToString())
-                        .ShouldBeTrue();
+                    identifier.ValueText.ShouldBe(expected.ToString());
                 }
             }
         }
@@ -123,8 +116,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            IdentifierNameSyntax es = (IdentifierNameSyntax)SyntaxFactory.ParseName(methodName);
-            var result = target.ApplyMutations(es);
+            var result = target.ApplyMutations(GenerateExpressions(methodName).First());
 
             result.ShouldBeEmpty();
         }
