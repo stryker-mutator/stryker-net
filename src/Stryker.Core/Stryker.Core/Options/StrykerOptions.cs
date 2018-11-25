@@ -66,15 +66,22 @@ namespace Stryker.Core.Options
                 yield break;
             }
 
-            var types = (IEnumerable<MutatorType>)Enum.GetValues(typeof(MutatorType));
+            // Get all mutatorTypes and their descriptions
+            Dictionary<MutatorType, string> typeDescriptions = Enum.GetValues(typeof(MutatorType))
+                .Cast<MutatorType>()
+                .ToDictionary(x => x, x => x.GetDescription());
+
             foreach (string excludedMutation in excludedMutations)
             {
-                if (types.Single(x => x.ToString().ToLower() == excludedMutation.ToLower()) is var foundMutator)
+                // Find any mutatorType that matches the name passed by the user
+                if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
+                    .Contains(excludedMutation.ToLower())).Key 
+                    is var foundMutator)
                 {
                     yield return foundMutator;
                 } else
                 {
-                    throw new ValidationException($"The excluded mutations options are [{String.Join(", ", types)}]");
+                    throw new ValidationException($"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }

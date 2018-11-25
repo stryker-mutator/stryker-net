@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutators
         Boolean,
         [Description("Logical operators")]
         Logical,
-        [Description("Assignment expressions")]
+        [Description("Assignment statements")]
         Assignment,
         [Description("Unary operators")]
         Unary,
