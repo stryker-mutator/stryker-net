@@ -44,9 +44,26 @@ namespace Stryker.Core.Mutators
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
                         DisplayName = "Binary expression mutation",
-                        Type = MutatorType.Binary
+                        Type = GetMutatorType(mutationKind)
                     };
                 }
+            }
+        }
+
+        private MutatorType GetMutatorType(SyntaxKind kind)
+        {
+            string kindString = kind.ToString();
+            if (kindString.StartsWith("Logical"))
+            {
+                return MutatorType.Logical;
+            } else if (kindString.Contains("Equals") 
+                || kindString.Contains("Greater") 
+                || kindString.Contains("Less"))
+            {
+                return MutatorType.Equality;
+            } else
+            {
+                return MutatorType.Arithmetic;
             }
         }
     }

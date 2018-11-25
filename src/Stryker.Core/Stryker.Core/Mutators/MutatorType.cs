@@ -7,23 +7,25 @@ namespace Stryker.Core.Mutators
 {
     public enum MutatorType
     {
-        [Description("Binary operator")]
-        Binary,
-        [Description("Boolean literal")]
+        [Description("Arithmetic operators")]
+        Arithmetic,
+        [Description("Equality operators")]
+        Equality,
+        [Description("Boolean literals")]
         Boolean,
-        [Description("Logical operator")]
+        [Description("Logical operators")]
         Logical,
-        [Description("Assignment expression")]
+        [Description("Assignment expressions")]
         Assignment,
-        [Description("Binary operator")]
+        [Description("Unary operators")]
         Unary,
-        [Description("Update operator")]
+        [Description("Update operators")]
         Update,
-        [Description("Checked expression")]
+        [Description("Checked statements")]
         Checked,
-        [Description("Linq method")]
+        [Description("Linq methods")]
         Linq,
-        [Description("String literal")]
+        [Description("String literals")]
         String
     }
 

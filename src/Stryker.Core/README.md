@@ -1,21 +1,22 @@
 # Mutators
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
+
 <!-- TOC -->
 
-- [Mutators](#mutators)
-    - [Binary Operators](#binary-operators)
-    - [Boolean Substitutions](#boolean-substitutions)
-    - [Assignment Mutator](#assignment-mutator)
-    - [Unary Operators](#unary-operators)
-    - [Update Operators](#update-operators)
-	- [Checked Mutator](#checked-mutator)
-    - [LINQ Mutator](#linq-mutator)
-    - [String Mutator](#string-mutator)
+- [Arithmetic Operators](#arithmetic-operators)
+- [Equality Operators](#equality-operators)
+- [Boolean Literals](#boolean-literals)
+- [Assignment statements](#assignment-statements)
+- [Unary Operators](#unary-operators)
+- [Update Operators](#update-operators)
+- [Checked Statements](#checked-statements)
+- [Linq Methods](#linq-methods)
+- [String Literals](#string-literals)
 
 <!-- /TOC -->
 
-## Binary Operators
+## Arithmetic Operators
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `+` | `-` |
@@ -23,6 +24,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `*` | `/` |
 | `/` | `*` |
 | `%` | `*` |
+
+## Equality Operators
+| Original | Mutated | 
+| ------------- | ------------- |
 | `>` | `<` |
 | `>` | `>=` |
 | `>=` | `<` |
@@ -33,17 +38,21 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `<=` | `<` |
 | `==` | `!=` |
 | `!=` | `==` |
-| `&&` | `\|\|`
-| `\|\|` | `&&`
 
-## Boolean Substitutions
+## Logical Operators
+| Original | Mutated | 
+| ------------- | ------------- | 
+| `&&` | `\|\|` | 
+| `\|\|` | `&&` |
+
+## Boolean Literals
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `true`	| `false` |
 | `false`	| `true` |
 | `!`		| ` ` |
 
-## Assignment Mutator
+## Assignment Statements
 | Original | Mutated | 
 | ------------- | ------------- | 
 |`+= `	| `-= ` |
@@ -68,18 +77,15 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ---------- | 
 | `variable++`	| `variable--` |
 | `variable--`	| `variable++` |
-| `-variable`	| `+variable`|
-| `+variable` 	| `-variable`|
-| `~variable` 	| `variable` |
 | `++variable`	| `--variable` |
 | `--variable`	| `++variable` |
 
-## Checked Mutator
+## Checked Statements
 | Original | Mutated |
 | ------------- | ------------- | 
 | `checked(2 + 4)` | `2 + 4` |
 
-## LINQ Mutator
+## Linq Methods
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
 | `Distinct()`          | ` `                   |
@@ -101,9 +107,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Sum()`               | `Count()`             |
 | `Count()`             | `Sum()`               |
 
-## String Mutator
+## String Literals
 | Original | Mutated |
 | ------------- | ------------- | 
 | `"foo"` | `""` |
 |  `""` | `"Stryker was here!"` |
 | `$"foo {bar}"` | `$""` |
+| `@"foo"` | `@""` |
