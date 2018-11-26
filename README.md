@@ -33,6 +33,8 @@ For the full documentation on how to use Stryker.NET, see the [Stryker.CLI readm
 #### Compatibility
 Only compatible with .NET Core version 1.1+
 
+Dotnet core runtime 2.1 needs to be available on your system to run dotnet stryker
+
 ## Supported Mutators
 Right now, Stryker.NET supports the following mutators:
 - Binary Operators

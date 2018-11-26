@@ -34,7 +34,7 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     packages.forEach(package => {
         console.log(`Updating version number in ${package.csproj}`);
-        replaceVersionNumber(package.csproj, `<Version>${oldVersionNumber}</Version>`, `<Version>${newVersionNumber}</Version>`);
+        replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionNumber}</VersionPrefix>`, `<VersionPrefix>${newVersionNumber}</VersionPrefix>`);
         console.log(`Updating changelog for ${package.name}`);
         exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
         commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);

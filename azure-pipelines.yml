@@ -1,61 +1,211 @@
-name: $(Build.DefinitionName)-$(PackageVersion)$(rev:.r)
+name: $(PackageVersion).$(VersionBuildNumber)
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - refs/heads/master
+    - refs/tags/*
+
 resources:
 - repo: self
   clean: true
   
 variables:
-  PackageVersion: '0.5.0'
-  
-phases:
-- phase: Phase_1
-  displayName: Windows
-  condition: succeeded()
-  
-  queue:
+  PackageVersion: '0.6.0'
+  VersionBuildNumber: $[counter('$(PackageVersion)', 1)]
+  PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
+  ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
+  IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
+  IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
+  PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+
+jobs:
+- job: PublishPreRelease
+  displayName: Prepare Pre-Release package
+
+  pool:
     name: Hosted VS2017
   
   steps:
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: '**/*Test.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
+
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet pack'
+    displayName: 'Pack pre-release packages'
     inputs:
       command: pack
       nobuild: true
       versioningScheme: byEnvVar
-      versionEnvVar: PackageVersion
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+      versionEnvVar: PreReleaseVersion
+      packagesToPack: $(ProjectsToPack)
+      packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
-- phase: Phase_2
-  displayName: Linux
+  - task: DotNetCoreCLI@2
+    displayName: 'Publish pre-release packages'
+    inputs:
+      command: custom
+      custom: 'nuget'
+      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
+      workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
+      
+- job: WaitOnMyGetProcessing
+  displayName: Wait on pre-release packages to be processed on MyGet
+  dependsOn: PublishPreRelease
+  
+  pool: 
+    name: server
+  
+  steps:
+  - task: Delay@1
+    inputs:
+     delayForMinutes: '1' 
+
+- job: WindowsTests
+  displayName: Run tests on Windows
+  dependsOn: WaitOnMyGetProcessing
+  condition: succeeded()
+
+  pool:
+    name: Hosted VS2017
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore pre-release packages in integrationtest project'
+    inputs:
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
+  
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: custom
+      custom: stryker
+      workingDirectory: $(IntegrationTestPath)
+
+- job: LinuxTests
+  displayName: Run tests on Linux
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
-  queue:
+  pool:
     name: Hosted Ubuntu 1604
   
   steps:
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: '**/*Test.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
 
-- phase: Phase_3
-  displayName: Mac
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore pre-release packages in integrationtest project'
+    inputs:
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
+  
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: custom
+      custom: stryker
+      workingDirectory: $(IntegrationTestPath)
+
+- job: MacOsTests
+  displayName: Run tests on Mac OS
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
-  queue:
+  pool:
     name: Hosted macOS
   
   steps:
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Run unit tests'
     inputs:
       command: test
-      projects: '**/*Test.csproj'
+      projects: 'src/**/*.UnitTest.csproj'
 
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+
+  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
+    displayName: 'Update stryker integration test with pre-release'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore pre-release packages in integrationtest project'
+    inputs:
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
+  
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test'
+    inputs:
+      command: custom
+      custom: stryker
+      workingDirectory: $(IntegrationTestPath)
+
+- job: PublishRelease
+  displayName: Publish Release Artifacts
+  dependsOn: 
+  - WindowsTests
+  - LinuxTests
+  - MacOsTests
+  condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
+
+  pool:
+    name: Hosted VS2017
+  
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack release package'
+    inputs:
+      command: pack
+      nobuild: false
+      packagesToPack: $(ProjectsToPack)
+      packDirectory: $(Build.ArtifactStagingDirectory)/release
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)/release

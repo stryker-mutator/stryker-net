@@ -3,8 +3,10 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.IO;
+using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -30,8 +32,14 @@ namespace Stryker.Core.Initialisation
             return new ProjectFile()
             {
                 ProjectReference = reference,
-                TargetFramework = targetFramework
+                TargetFramework = targetFramework,
             };
+        }
+
+        public IEnumerable<string> FindSharedProjects(XDocument document)
+        {
+            var projectReferenceElements = document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+            return projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project"))).Select(y => FilePathUtils.ConvertPathSeparators(y.Value));
         }
 
         private string FindProjectReference(XDocument document, string projectUnderTestNameFilter)
