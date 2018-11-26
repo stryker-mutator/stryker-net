@@ -7,6 +7,6 @@
         {
             activeMutant = int.Parse(System.Environment.GetEnvironmentVariable("ActiveMutation") ?? string.Empty);
         }
-        public static int ActiveMutant => activeMutant;
+        public static int ActiveMutation => activeMutant;
     }
 }
