@@ -5,6 +5,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Stryker.CLI
 {
@@ -74,17 +75,10 @@ namespace Stryker.CLI
             // start with the stryker header
             PrintStykerASCIIName();
 
-            try
-            {  
-               StrykerRunResult results = _stryker.RunMutationTest(options);
-               if(!results.isScoreAboveThresholdBreak()) 
-               {
-                   this.HandleBreakingThresholdScore(options, results);
-               }
-            }
-            catch (Exception)
+            StrykerRunResult results = _stryker.RunMutationTest(options);
+            if(!results.isScoreAboveThresholdBreak()) 
             {
-                this.ExitCode = 1;
+                this.HandleBreakingThresholdScore(options, results);
             }
         }
 
@@ -127,8 +121,11 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
                    __/ |                                   
                   |___/                                    
 ");
-            Console.WriteLine(@"
-Beta version
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyVersion = assembly.GetName().Version;
+
+            Console.WriteLine($@"
+Version {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (beta)
 "); 
         }
 

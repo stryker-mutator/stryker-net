@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using System;
 using System.IO;
@@ -34,6 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
+
             var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
 
             result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
@@ -58,7 +60,14 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            Assert.Throws<NotSupportedException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
+
+            var ex = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, null);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
@@ -83,8 +92,14 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<NotSupportedException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
-            exception.Message.ShouldContain("--project-file");
+
+            var exception = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, null);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
+            exception.Details.ShouldContain("--project-file");
         }
 
         [Theory]
@@ -114,6 +129,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
+
             var result = new ProjectFileReader().ReadProjectFile(xDocument, shouldMatch);
             result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
         }
@@ -145,8 +161,14 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<ArgumentException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne));
-            exception.Message.ShouldContain("more than one", Case.Insensitive);
+
+            var exception = Assert.Throws<StrykerInputException>(() =>
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
+            exception.Details.ShouldContain("more than one", Case.Insensitive);
         }
 
         [Theory]
@@ -174,8 +196,14 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<ArgumentException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone));
-            exception.Message.ShouldContain("no project", Case.Insensitive);
+
+            var exception = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
+            exception.Details.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
@@ -209,6 +237,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>
 ");
             var result = new ProjectFileReader().FindAssemblyName(xDocument);
+
             result.ShouldBe(@"dotnet-stryker");
         }
 
@@ -242,6 +271,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>
 ");
             var result = new ProjectFileReader().ReadProjectFile(xDocument, "");
+
             result.AssemblyName.ShouldBeNull();
         }
 

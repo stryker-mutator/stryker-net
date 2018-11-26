@@ -280,7 +280,5 @@ StrykerLogs/
 #Visual studio code config
 .vscode/
 
-# End of https://www.gitignore.io/api/aspnetcore
 *.ncrunchsolution
-
 *.orig

@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
 
-            var exception = Assert.Throws<InitialTestRunFailedException>(() => _target.InitialTest(testRunnerMock.Object));
+            var exception = Assert.Throws<StrykerInputException>(() => _target.InitialTest(testRunnerMock.Object));
         }
 
         [Fact]
