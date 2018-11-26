@@ -1,5 +1,6 @@
 ﻿using System;
 using Serilog.Events;
+using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Xunit;
@@ -20,8 +21,8 @@ namespace Stryker.Core.UnitTest
         {
             var options = new StrykerOptions("c:/test", "Console", "", 0, argValue, false, 1, 80, 60, 0);
 
-            Assert.NotNull(options.LogOptions);
-            Assert.Equal(expectedLogLevel, options.LogOptions.LogLevel);
+            options.LogOptions.ShouldNotBeNull();
+            options.LogOptions.LogLevel.ShouldBe(expectedLogLevel);
         }
 
         [Fact]
@@ -29,10 +30,12 @@ namespace Stryker.Core.UnitTest
         {
             var logLevel = "incorrect";
 
-            Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
+            });
 
-            var ex = Assert.Throws<StrykerInputException>(createOptions);
-            Assert.Equal("The value for one of your settings is not correct. Try correcting or removing them.", ex.Message);
+            ex.Message.ShouldBe("The value for one of your settings is not correct. Try correcting or removing them.");
         }
 
         [Fact]
@@ -40,10 +43,12 @@ namespace Stryker.Core.UnitTest
         {
             var logLevel = "incorrect";
 
-            Func<StrykerOptions> createOptions = () => new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new StrykerOptions("c:/test", "Console", "", 0, logLevel, false, 1, 80, 60, 0);
+            });
 
-            var ex = Assert.Throws<StrykerInputException>(createOptions);
-            Assert.NotNull(ex.Details);
+            ex.Details.ShouldNotBeNullOrEmpty();
         }
     }
 }

@@ -35,6 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
+
             var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
 
             result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
@@ -59,8 +60,13 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>");
-            var ex = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
-            Assert.Equal("Project reference issue.", ex.Message);
+
+            var ex = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, null);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("no project", Case.Insensitive);
         }
 
@@ -86,8 +92,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, null));
-            Assert.Equal("Project reference issue.", exception.Message);
+
+            var exception = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, null);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
             exception.Details.ShouldContain("--project-file");
         }
 
@@ -118,6 +129,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
+
             var result = new ProjectFileReader().ReadProjectFile(xDocument, shouldMatch);
             result.ProjectReference.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
         }
@@ -149,8 +161,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne));
-            Assert.Equal("Project reference issue.", exception.Message);
+
+            var exception = Assert.Throws<StrykerInputException>(() =>
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchMoreThanOne);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
             exception.Details.ShouldContain("more than one", Case.Insensitive);
         }
 
@@ -179,8 +196,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\AnotherProject\AnotherProject.csproj"" />
     </ItemGroup>
 </Project>");
-            var exception = Assert.Throws<StrykerInputException>(() => new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone));
-            Assert.Equal("Project reference issue.", exception.Message);
+
+            var exception = Assert.Throws<StrykerInputException>(() => 
+            {
+                new ProjectFileReader().ReadProjectFile(xDocument, shouldMatchNone);
+            });
+
+            exception.Message.ShouldBe("Project reference issue.");
             exception.Details.ShouldContain("no project", Case.Insensitive);
         }
 
@@ -215,6 +237,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>
 ");
             var result = new ProjectFileReader().FindAssemblyName(xDocument);
+
             result.ShouldBe(@"dotnet-stryker");
         }
 
@@ -248,6 +271,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>
 ");
             var result = new ProjectFileReader().ReadProjectFile(xDocument, "");
+
             result.AssemblyName.ShouldBeNull();
         }
 

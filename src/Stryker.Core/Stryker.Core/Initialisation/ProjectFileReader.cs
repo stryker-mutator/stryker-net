@@ -44,45 +44,7 @@ namespace Stryker.Core.Initialisation
 
             if (projectReferences.Count() > 1)
             {
-                // put the references together in one string seperated by ", "
-                string referencesString = string.Join(Environment.NewLine + "  ", projectReferences);
-                var referenceChoise = BuildReferenceChoise(referencesString);
-                var stringBuilder = new StringBuilder();
-                if (string.IsNullOrEmpty(projectUnderTestNameFilter))
-                {
-                    stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
-                    stringBuilder.Append(referenceChoise);
-                    AppendExampleIfPossible(stringBuilder, projectReferences);
-                    throw new StrykerInputException(
-                        ErrorMessage,
-                        stringBuilder.ToString());
-                }
-                else
-                {
-                    var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
-                    if (!searchResult.Any())
-                    {
-                        stringBuilder.Append("No project reference matched your --project-file=");
-                        stringBuilder.AppendLine(projectUnderTestNameFilter);
-                        stringBuilder.Append(referenceChoise);
-                        AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
-                        throw new StrykerInputException(
-                            ErrorMessage,
-                            stringBuilder.ToString());
-                    }
-                    else if (searchResult.Count() > 1)
-                    {
-                        stringBuilder.Append("More than one project reference matched your --project-file=");
-                        stringBuilder.Append(projectUnderTestNameFilter);
-                        stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
-                        stringBuilder.Append(referenceChoise);
-                        AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
-                        throw new StrykerInputException(
-                            ErrorMessage,
-                            stringBuilder.ToString());
-                    }
-                    return FilePathUtils.ConvertPathSeparators(searchResult.Single());
-                }
+                return HandleMoreThanOneProjectReferenceFound(projectReferences, projectUnderTestNameFilter);
             }
             else if (!projectReferences.Any())
             {
@@ -93,25 +55,44 @@ namespace Stryker.Core.Initialisation
             return FilePathUtils.ConvertPathSeparators(projectReferences.Single());
         }
 
-        private static void AppendExampleIfPossible(StringBuilder builder, List<string> projectReferences, string filter = null)
+        private string HandleMoreThanOneProjectReferenceFound(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
-            var otherProjectReference = projectReferences.FirstOrDefault(
-                o => !string.Equals(o, filter, StringComparison.OrdinalIgnoreCase));
-            if (otherProjectReference is null)
-            {
-                //not possible to find somethig different.
-                return;
-            }
-            builder.AppendLine($"Example: --project-file={otherProjectReference}");
-        }
+            var referenceChoise = BuildReferenceChoise(projectReferences);
 
-        private string BuildReferenceChoise(string referencesString)
-        {
-                StringBuilder builder = new StringBuilder();
-                builder.AppendLine($"Choose one of the following references:");
-                builder.Append("  ");
-                builder.AppendLine(referencesString);
-                return builder.ToString();
+            var stringBuilder = new StringBuilder();
+
+            if (string.IsNullOrEmpty(projectUnderTestNameFilter))
+            {
+                stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
+                stringBuilder.Append(referenceChoise);
+                AppendExampleIfPossible(stringBuilder, projectReferences);
+
+                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+            }
+            else
+            {
+                var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
+                if (!searchResult.Any())
+                {
+                    stringBuilder.Append("No project reference matched your --project-file=");
+                    stringBuilder.AppendLine(projectUnderTestNameFilter);
+                    stringBuilder.Append(referenceChoise);
+                    AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+                else if (searchResult.Count() > 1)
+                {
+                    stringBuilder.Append("More than one project reference matched your --project-file=");
+                    stringBuilder.Append(projectUnderTestNameFilter);
+                    stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
+                    stringBuilder.Append(referenceChoise);
+                    AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+                return FilePathUtils.ConvertPathSeparators(searchResult.Single());
+            }
         }
 
         private string FindTargetFrameworkReference(XDocument document)
@@ -130,5 +111,37 @@ namespace Stryker.Core.Initialisation
         {
             return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "AssemblyName", StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.Value;
         }
+
+        #region string helper methods
+
+        private void AppendExampleIfPossible(StringBuilder builder, IEnumerable<string> projectReferences, string filter = null)
+        {
+            var otherProjectReference = projectReferences.FirstOrDefault(
+                o => !string.Equals(o, filter, StringComparison.OrdinalIgnoreCase));
+            if (otherProjectReference is null)
+            {
+                //not possible to find somethig different.
+                return;
+            }
+
+            builder.AppendLine("");
+            builder.AppendLine($"Example: --project-file={otherProjectReference}");
+        }
+
+        private string BuildReferenceChoise(IEnumerable<string> projectReferences)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine($"Choose one of the following references:");
+            builder.AppendLine("");
+
+            foreach (string projectReference in projectReferences)
+            {
+                builder.Append("  ");
+                builder.AppendLine(projectReference);
+            }
+            return builder.ToString();
+        }
+
+        #endregion
     }
 }
