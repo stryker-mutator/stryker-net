@@ -1,4 +1,5 @@
 ﻿using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using System;
 using System.Collections.Generic;
@@ -372,11 +373,11 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var exception = Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
-        public void InputFileResolver_ShouldThrowExceptionOnTwoProjectFiles()
+        public void InputFileResolver_ShouldThrowStrykerInputExceptionOnTwoProjectFiles()
         {
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -405,8 +406,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var target = new InputFileResolver(fileSystem);
-
-            var exception = Assert.Throws<FileNotFoundException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
     }
 }
