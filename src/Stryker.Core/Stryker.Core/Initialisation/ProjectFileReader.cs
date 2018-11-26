@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -27,8 +29,14 @@ namespace Stryker.Core.Initialisation
             return new ProjectFile()
             {
                 ProjectReference = reference,
-                TargetFramework = targetFramework
+                TargetFramework = targetFramework,
             };
+        }
+
+        public IEnumerable<string> FindSharedProjects(XDocument document)
+        {
+            var projectReferenceElements = document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+            return projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project"))).Select(y => FilePathUtils.ConvertPathSeparators(y.Value));
         }
 
         private string FindProjectReference(XDocument document, string projectUnderTestNameFilter)
@@ -42,7 +50,7 @@ namespace Stryker.Core.Initialisation
             if (projectReferences.Count() > 1)
             {
                 // put the references together in one string seperated by ", "
-                string referencesString = string.Join(", ", projectReferences);
+                var referencesString = string.Join(", ", projectReferences);
                 if (string.IsNullOrEmpty(projectUnderTestNameFilter))
                 {
                     throw new NotSupportedException("Only one referenced project is supported, please add the --project-file=[projectname] argument to specify the project to mutate", innerException: new Exception($"Found the following references: {referencesString}"));
