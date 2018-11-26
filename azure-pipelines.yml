@@ -1,4 +1,4 @@
-name: $(PackageVersion)-$(VersionBuildNumber)
+name: $(PackageVersion).$(VersionBuildNumber)
 
 trigger:
   batch: true
@@ -50,7 +50,7 @@ jobs:
     inputs:
       command: custom
       custom: 'nuget'
-      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k 910eee91-08d2-458f-9b7d-d59f534594d1'
+      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
       workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
       
 - job: WaitOnMyGetProcessing
@@ -63,7 +63,7 @@ jobs:
   steps:
   - task: Delay@1
     inputs:
-     delayForMinutes: '2' 
+     delayForMinutes: '1' 
 
 - job: WindowsTests
   displayName: Run tests on Windows
