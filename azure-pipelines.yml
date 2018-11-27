@@ -63,7 +63,7 @@ jobs:
   steps:
   - task: Delay@1
     inputs:
-     delayForMinutes: '1' 
+     delayForMinutes: '2' 
 
 - job: WindowsTests
   displayName: Run tests on Windows
