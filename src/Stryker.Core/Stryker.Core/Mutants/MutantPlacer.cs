@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutants
         static MutantPlacer()
         {
             using (var stream =
-                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutantHelper.cs"))
+                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -85,7 +85,7 @@ namespace Stryker.Core.Mutants
                         SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             SyntaxFactory.IdentifierName("Stryker"),
-                            SyntaxFactory.IdentifierName("Helper")
+                            SyntaxFactory.IdentifierName("ActiveMutationHelper")
                         ),
                         SyntaxFactory.IdentifierName("ActiveMutation")
                 ),
