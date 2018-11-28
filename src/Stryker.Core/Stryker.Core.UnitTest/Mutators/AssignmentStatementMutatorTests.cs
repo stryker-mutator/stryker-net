@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldHaveSingleItem();
             result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
-            result.ShouldContain(x => x.Type.Equals("AssignmentStatementMutator"));
+            result.ShouldContain(x => x.Type == MutatorType.Assignment);
         }
 
         [Fact]

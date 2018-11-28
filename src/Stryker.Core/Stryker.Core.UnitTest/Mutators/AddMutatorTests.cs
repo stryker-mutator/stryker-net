@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Mutators;
+using Stryker.Core.UnitTest.Mutants;
 using System.Linq;
 using Xunit;
 

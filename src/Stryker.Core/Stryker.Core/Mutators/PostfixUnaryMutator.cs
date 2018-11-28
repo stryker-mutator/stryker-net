@@ -24,7 +24,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PostfixUnaryExpression(oppositeKind, node.Operand),
                     DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = nameof(PostfixUnaryMutator)
+                    Type = MutatorType.Update
                 };
             }
         }

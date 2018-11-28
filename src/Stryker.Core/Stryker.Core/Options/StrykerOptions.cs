@@ -1,6 +1,9 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutators;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +23,7 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
-        public IEnumerable<string> ExcludedMutations { get; }
+        public IEnumerable<MutatorType> ExcludedMutations { get; }
 
         public int MaxConcurrentTestrunners { get; }
 
@@ -42,7 +45,7 @@ namespace Stryker.Core.Options
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = excludedMutations;
+            ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
@@ -57,6 +60,33 @@ namespace Stryker.Core.Options
                     $"Incorrect reporter ({reporter}). The reporter options are [Console, ReportOnly]");
             }
             return reporter;
+        }
+
+        private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        {
+            if (excludedMutations == null)
+            {
+                yield break;
+            }
+
+            // Get all mutatorTypes and their descriptions
+            Dictionary<MutatorType, string> typeDescriptions = Enum.GetValues(typeof(MutatorType))
+                .Cast<MutatorType>()
+                .ToDictionary(x => x, x => x.GetDescription());
+
+            foreach (string excludedMutation in excludedMutations)
+            {
+                // Find any mutatorType that matches the name passed by the user
+                if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
+                    .Contains(excludedMutation.ToLower())).Key 
+                    is var foundMutator)
+                {
+                    yield return foundMutator;
+                } else
+                {
+                    throw new ValidationException($"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                }
+            }
         }
 
         private LogEventLevel ValidateLogLevel(string levelText)

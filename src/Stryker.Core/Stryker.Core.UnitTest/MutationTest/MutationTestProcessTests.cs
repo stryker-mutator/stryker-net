@@ -5,12 +5,14 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -20,17 +22,7 @@ namespace Stryker.Core.UnitTest.MutationTest
     {
         private string _currentDirectory { get; set; }
         private string _filesystemRoot { get; set; }
-
-        public MutationTestProcessTests()
-        {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            _filesystemRoot = Path.GetPathRoot(_currentDirectory);
-        }
-
-        [Fact]
-        public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
-        {
-            string file1 = @"using System;
+        private string _exampleFileContents = @"using System;
 
                 namespace ExampleProject
                 {
@@ -53,6 +45,16 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }
                 }
                 ";
+
+        public MutationTestProcessTests()
+        {
+            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            _filesystemRoot = Path.GetPathRoot(_currentDirectory);
+        }
+
+        [Fact]
+        public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
+        {
             var input = new MutationTestInput()
             {
                 ProjectInfo = new Core.Initialisation.ProjectInfo()
@@ -69,7 +71,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         new FileLeaf()
                         {
                             Name = "Recursive.cs",
-                            SourceCode = file1
+                            SourceCode = _exampleFileContents
                         }
                     }
                     },
@@ -79,7 +81,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(file1)},
+                { Path.Combine(_filesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(_exampleFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
                 { Path.Combine(_filesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
             });
@@ -94,7 +96,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup mocks
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(file1).GetRoot());
+            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(_exampleFileContents).GetRoot());
             orchestratorMock.SetupAllProperties();
             compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>()))
                 .Returns(new CompilingProcessResult()
@@ -102,10 +104,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                null,
+                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -122,29 +123,6 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
-            string file1 = @"using System;
-
-                namespace ExampleProject
-                {
-                    public class Recursive
-                    {
-                        public int Fibinacci(int len)
-                        {
-                            return Fibonacci(0, 1, 1, len);
-                        }
-
-                        private int Fibonacci(int a, int b, int counter, int len)
-                        {
-                            if (counter <= len)
-                            {
-                                Console.Write(""{0} "", a);
-                                return Fibonacci(b, a + b, counter + 1, len);
-                            }
-                            return 0;
-                        }
-                    }
-                }
-                ";
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
@@ -157,7 +135,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Children = new Collection<ProjectComponent>() {
                         new FileLeaf() {
                             Name = "SomeFile.cs",
-                            SourceCode = file1
+                            SourceCode = _exampleFileContents
                         }
                     }
                     },
@@ -181,7 +159,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             fileSystem.AddDirectory(Path.Combine(_filesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(file1).GetRoot());
+            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(_exampleFileContents).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
@@ -191,11 +169,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
-
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                null,
+                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -244,7 +220,13 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0);
 
-            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null);
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                Enumerable.Empty<MutatorType>(),
+                executorMock.Object,
+                null,
+                null,
+                null);
 
             target.Test(options);
 

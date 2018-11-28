@@ -10,6 +10,8 @@ using System.IO;
 using Xunit;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Stryker.Core.Mutators;
+using Shouldly;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -70,9 +72,39 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "['StringMutator']" });
+            target.Run(new string[] { argName, "['string', 'logical']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutations.Contains("StringMutator"))));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
+                o.ExcludedMutations.Contains(MutatorType.String) &&
+                o.ExcludedMutations.Contains(MutatorType.Logical)
+            )));
+        }
+
+        [Theory]
+        [InlineData(MutatorType.Assignment, "assignment", "assignment statements")]
+        [InlineData(MutatorType.Arithmetic, "arithmetic", "arithmetic operators")]
+        [InlineData(MutatorType.Boolean, "boolean", "boolean literals")]
+        [InlineData(MutatorType.Equality, "equality", "equality operators")]
+        [InlineData(MutatorType.Linq, "linq", "linq methods")]
+        [InlineData(MutatorType.Logical, "logical", "logical operators")]
+        [InlineData(MutatorType.String, "string", "string literals")]
+        [InlineData(MutatorType.Unary, "unary", "unary operators")]
+        [InlineData(MutatorType.Update, "update", "update operators")]
+        public void StrykerCLI_ExcludedMutationsNamesShouldMapToMutatorTypes(MutatorType expectedType, params string[] argValues)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+
+            var target = new StrykerCLI(mock.Object);
+
+            argValues.Count().ShouldBeGreaterThan(0);
+
+            foreach (string argValue in argValues)
+            {
+                target.Run(new string[] { "-em", $"['{argValue}']" });
+
+                mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutations.Single() == expectedType)));
+            }
         }
 
         [Theory]
@@ -112,7 +144,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--log-level-file")]
+        [InlineData("--log-file")]
         public void StrykerCLI_WithLogLevelFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
