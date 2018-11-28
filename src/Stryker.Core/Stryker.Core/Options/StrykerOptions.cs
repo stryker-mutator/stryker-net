@@ -84,7 +84,7 @@ namespace Stryker.Core.Options
                     yield return foundMutator;
                 } else
                 {
-                    throw new ValidationException($"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }

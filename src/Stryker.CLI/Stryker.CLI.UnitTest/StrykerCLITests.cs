@@ -93,7 +93,10 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_ExcludedMutationsNamesShouldMapToMutatorTypes(MutatorType expectedType, params string[] argValues)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 

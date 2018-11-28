@@ -100,7 +100,11 @@ namespace Stryker.Core.MutationTest
                             mutant.ResultStatus = MutantStatus.BuildError;
                         }
                     }
-                    _logger.LogDebug("{0} mutants got status {1}", compileResult.RollbackResult?.RollbackedIds.Count() ?? 0, MutantStatus.BuildError.ToString());
+                    int numberOfBuildErrors = compileResult.RollbackResult?.RollbackedIds.Count() ?? 0;
+                    if (numberOfBuildErrors > 0)
+                    {
+                        _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.BuildError.ToString());
+                    }
 
                     if (_exludedMutations.Count() != 0)
                     {
