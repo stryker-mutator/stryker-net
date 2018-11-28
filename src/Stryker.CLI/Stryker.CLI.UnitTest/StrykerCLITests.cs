@@ -30,17 +30,13 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnException_ShouldExit()
+        public void StrykerCLI_OnException_ShouldThrow()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Throws(new Exception("Initial testrun failed")).Verifiable();
             
             var target = new StrykerCLI(mock.Object);
-
-            target.Run(new string[] { });
-
-            Assert.Equal(1, target.ExitCode);
-            mock.VerifyAll();
+            Assert.Throws<Exception>(() => target.Run(new string[] { }));
         }
 
         [Theory]
@@ -48,8 +44,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-r")]
         public void StrykerCLI_WithReporterArgument_ShouldPassReporterArgumentsToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null,"trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -65,7 +63,10 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithExcludedMutationsArgument_ShouldPassExcludedMutationsArgumentsToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -79,8 +80,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-p")]
         public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -94,8 +97,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -110,8 +115,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("--log-level-file")]
         public void StrykerCLI_WithLogLevelFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -125,8 +132,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-t")]
         public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -141,8 +150,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-m")]
         public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassMaxConcurrentTestrunnerToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
             
@@ -156,13 +167,14 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-tb")]
         public void StrykerCLI_WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName) 
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "20" });
-
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.ThresholdOptions.ThresholdBreak == 20)));
         }
@@ -172,8 +184,10 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-tl")]
         public void StrykerCLI_WithCustomThresholdLowParameter_ShouldPassThresholdLowToStryker(string argName)
         {
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResults = new StrykerRunResult(options, 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -189,7 +203,9 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithCustomThresholdHighParameter_ShouldPassThresholdHighToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()));
+            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70);
+            var runResult = new StrykerRunResult(options, 0.3M);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResult);
 
             var target = new StrykerCLI(mock.Object);
 

@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 using System;
@@ -10,7 +11,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class InitialBuildProcessTests
     {
         [Fact]
-        public void InitialBuildProcess_ShouldThrowExceptionOnFail()
+        public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            var exception = Assert.Throws<Exception>(() => target.InitialBuild("/", "ExampleProject.csproj"));
+            var exception = Assert.Throws<StrykerInputException>(() => target.InitialBuild("/", "ExampleProject.csproj"));
         }
 
         [Fact]

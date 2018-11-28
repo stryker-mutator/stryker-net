@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Stryker.Core;
-using Stryker.Core.Options;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using System;
 using System.IO;
-using System.Threading;
-using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace Stryker.CLI
 {
@@ -77,24 +77,17 @@ namespace Stryker.CLI
             // start with the stryker header
             PrintStykerASCIIName();
 
-            try
-            {  
-               StrykerRunResult results = _stryker.RunMutationTest(options);
-               if(!results.isScoreAboveThresholdBreak()) 
-               {
-                   this.HandleBreakingThresholdScore(options, results);
-               }
-            }
-            catch (Exception)
+            StrykerRunResult results = _stryker.RunMutationTest(options);
+            if(!results.isScoreAboveThresholdBreak()) 
             {
-                this.ExitCode = 1;
+                this.HandleBreakingThresholdScore(options, results);
             }
         }
 
         private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results) {
-            _logger.LogError(@"Final mutation score: {results.mutationScore} under breaking threshold value {options.ThresholdOptions.ThresholdBreak},
-                                ,setting exit code to 1 (failure).
-                                Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future");
+            _logger.LogError($@"Final mutation score: {results.mutationScore * 100} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
+Setting exit code to 1 (failure).
+Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
             this.ExitCode = 1;
         }
 
@@ -130,8 +123,11 @@ namespace Stryker.CLI
                    __/ |                                   
                   |___/                                    
 ");
-            Console.WriteLine(@"
-Beta version
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyVersion = assembly.GetName().Version;
+
+            Console.WriteLine($@"
+Version {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (beta)
 "); 
         }
 

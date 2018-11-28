@@ -1,6 +1,49 @@
-# Change Log
+# [0.7.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.6.0...0.7.0) (2018-11-28)
 
-All notable changes to this project will be documented in this file.
+
+### Features
+
+* **Better error handling:** More understandable error messages ([#169](https://github.com/stryker-mutator/stryker-net/issues/169)) ([9214fbd](https://github.com/stryker-mutator/stryker-net/commit/9214fbd))
+
+
+
+# [0.6.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.5.0...0.6.0) (2018-11-19)
+
+
+### Bug Fixes
+
+* String interpolation on mutation threshold hit output was incorrect causing values to not be interpolated ([#226](https://github.com/stryker-mutator/stryker-net/issues/226)) ([b343d17](https://github.com/stryker-mutator/stryker-net/commit/b343d17))
+* system.memory dependency issue by bumping dotnet core version to 2.1 ([#245](https://github.com/stryker-mutator/stryker-net/issues/245)) ([3b35d90](https://github.com/stryker-mutator/stryker-net/commit/3b35d90)), closes [#234](https://github.com/stryker-mutator/stryker-net/issues/234)
+
+
+### Features
+
+* **Conditional mutant placer:** Add ability to place mutations in ConditionalExpressions ([#207](https://github.com/stryker-mutator/stryker-net/issues/207)) ([e3e0433](https://github.com/stryker-mutator/stryker-net/commit/e3e0433))
+* **integrationtest:** Run stryker from nuget in integration test ([#239](https://github.com/stryker-mutator/stryker-net/issues/239)) ([4b21514](https://github.com/stryker-mutator/stryker-net/commit/4b21514))
+* **logging:** Print version number below logo ([#246](https://github.com/stryker-mutator/stryker-net/issues/246)) ([7dc13a6](https://github.com/stryker-mutator/stryker-net/commit/7dc13a6))
+
+
+
+# [0.5.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.4.0...0.5.0) (2018-11-03)
+
+
+
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.3.0...0.4.0) (2018-10-28)
+
+
+### Bug Fixes
+
+* **cli:** Return exit code 1 when score is below threshold break value ([#154](https://github.com/stryker-mutator/stryker-net/issues/154)) ([f4a8419](https://github.com/stryker-mutator/stryker-net/commit/f4a8419))
+* **config:** Simplify CLI option creation ([#184](https://github.com/stryker-mutator/stryker-net/issues/184)) ([67d3b80](https://github.com/stryker-mutator/stryker-net/commit/67d3b80))
+
+
+### Features
+
+* **testing:** Add happyflow integration test ([#163](https://github.com/stryker-mutator/stryker-net/issues/163)) ([2b2f9ba](https://github.com/stryker-mutator/stryker-net/commit/2b2f9ba))
+* **reporting:** Set default log level to Info and cleanup reporters ([#167](https://github.com/stryker-mutator/stryker-net/issues/167)) ([b378262](https://github.com/stryker-mutator/stryker-net/commit/b378262))
+* **installation:** Package stryker runner as dotnet tool ([#193](https://github.com/stryker-mutator/stryker-net/issues/193)) ([a3fd4a4](https://github.com/stryker-mutator/stryker-net/commit/a3fd4a4))
+
 
 <a name="0.3.0"></a>
 ## [0.3.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.2.0...StrykerMutator.DotNetCoreCli@0.3.0) (2018-10-06)

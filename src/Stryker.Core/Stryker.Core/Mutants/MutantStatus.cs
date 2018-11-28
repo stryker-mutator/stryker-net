@@ -6,7 +6,6 @@
         Killed,
         Survived,
         Timeout,
-        RuntimeError,
         BuildError
     }
 }

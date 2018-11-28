@@ -3,6 +3,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
 using Stryker.Core.Options;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -34,6 +35,10 @@ namespace Stryker.Core.Reporters
             Console.WriteLine("");
         }
 
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
+        }
+
         public void OnMutantTested(IReadOnlyMutant result) { }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
@@ -54,8 +59,7 @@ namespace Stryker.Core.Reporters
                 foreach (var mutant in current.TotalMutants)
                 {
                     if (mutant.ResultStatus == MutantStatus.Killed ||
-                    mutant.ResultStatus == MutantStatus.Timeout ||
-                    mutant.ResultStatus == MutantStatus.RuntimeError) {
+                    mutant.ResultStatus == MutantStatus.Timeout) {
                         _chalk.Green($"[{mutant.ResultStatus}] ");
                     } else
                     {

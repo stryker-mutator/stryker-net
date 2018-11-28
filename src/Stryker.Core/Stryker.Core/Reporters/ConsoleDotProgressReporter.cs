@@ -2,6 +2,7 @@
 using Stryker.Core.Mutants;
 using Stryker.Core.Testing;
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
 {
@@ -18,6 +19,9 @@ namespace Stryker.Core.Reporters
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
+        }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
@@ -27,9 +31,6 @@ namespace Stryker.Core.Reporters
                     break;
                 case MutantStatus.Survived:
                     _chalk.Red("S");
-                    break;
-                case MutantStatus.RuntimeError:
-                    _chalk.Default("E");
                     break;
                 case MutantStatus.Timeout:
                     _chalk.Default("T");

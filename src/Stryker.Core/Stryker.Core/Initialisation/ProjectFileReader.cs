@@ -1,14 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
     public class ProjectFileReader
     {
+        private const string ErrorMessage = "Project reference issue.";
         private ILogger _logger { get; set; }
 
         public ProjectFileReader()
@@ -27,8 +32,14 @@ namespace Stryker.Core.Initialisation
             return new ProjectFile()
             {
                 ProjectReference = reference,
-                TargetFramework = targetFramework
+                TargetFramework = targetFramework,
             };
+        }
+
+        public IEnumerable<string> FindSharedProjects(XDocument document)
+        {
+            var projectReferenceElements = document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+            return projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project"))).Select(y => FilePathUtils.ConvertPathSeparators(y.Value));
         }
 
         private string FindProjectReference(XDocument document, string projectUnderTestNameFilter)
@@ -41,31 +52,55 @@ namespace Stryker.Core.Initialisation
 
             if (projectReferences.Count() > 1)
             {
-                // put the references together in one string seperated by ", "
-                string referencesString = string.Join(", ", projectReferences);
-                if (string.IsNullOrEmpty(projectUnderTestNameFilter))
-                {
-                    throw new NotSupportedException("Only one referenced project is supported, please add the --project-file=[projectname] argument to specify the project to mutate", innerException: new Exception($"Found the following references: {referencesString}"));
-                }
-                else
-                {
-                    var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
-                    if (!searchResult.Any())
-                    {
-                        throw new ArgumentException($"No project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, was the name spelled correctly?", innerException: new Exception($"Found the following references: {referencesString}"));
-                    }
-                    else if (searchResult.Count() > 1)
-                    {
-                        throw new ArgumentException($"More than one project reference matched your --project-file={projectUnderTestNameFilter} argument to specify the project to mutate, please specify the name more detailed", innerException: new Exception($"Found the following references: {referencesString}"));
-                    }
-                    return FilePathUtils.ConvertPathSeparators(searchResult.Single());
-                }
+                return HandleMoreThanOneProjectReferenceFound(projectReferences, projectUnderTestNameFilter);
             }
             else if (!projectReferences.Any())
             {
-                throw new NotSupportedException("No project references found in test project file, unable to find project to mutate.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "No project references found in test project file, unable to find project to mutate.");
             }
             return FilePathUtils.ConvertPathSeparators(projectReferences.Single());
+        }
+
+        private string HandleMoreThanOneProjectReferenceFound(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
+        {
+            var referenceChoise = BuildReferenceChoise(projectReferences);
+
+            var stringBuilder = new StringBuilder();
+
+            if (string.IsNullOrEmpty(projectUnderTestNameFilter))
+            {
+                stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
+                stringBuilder.Append(referenceChoise);
+                AppendExampleIfPossible(stringBuilder, projectReferences);
+
+                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+            }
+            else
+            {
+                var searchResult = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower())).ToList();
+                if (!searchResult.Any())
+                {
+                    stringBuilder.Append("No project reference matched your --project-file=");
+                    stringBuilder.AppendLine(projectUnderTestNameFilter);
+                    stringBuilder.Append(referenceChoise);
+                    AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+                else if (searchResult.Count() > 1)
+                {
+                    stringBuilder.Append("More than one project reference matched your --project-file=");
+                    stringBuilder.Append(projectUnderTestNameFilter);
+                    stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
+                    stringBuilder.Append(referenceChoise);
+                    AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+                return FilePathUtils.ConvertPathSeparators(searchResult.Single());
+            }
         }
 
         private string FindTargetFrameworkReference(XDocument document)
@@ -84,5 +119,37 @@ namespace Stryker.Core.Initialisation
         {
             return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "AssemblyName", StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.Value;
         }
+
+        #region string helper methods
+
+        private void AppendExampleIfPossible(StringBuilder builder, IEnumerable<string> projectReferences, string filter = null)
+        {
+            var otherProjectReference = projectReferences.FirstOrDefault(
+                o => !string.Equals(o, filter, StringComparison.OrdinalIgnoreCase));
+            if (otherProjectReference is null)
+            {
+                //not possible to find somethig different.
+                return;
+            }
+
+            builder.AppendLine("");
+            builder.AppendLine($"Example: --project-file={otherProjectReference}");
+        }
+
+        private string BuildReferenceChoise(IEnumerable<string> projectReferences)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine($"Choose one of the following references:");
+            builder.AppendLine("");
+
+            foreach (string projectReference in projectReferences)
+            {
+                builder.Append("  ");
+                builder.AppendLine(projectReference);
+            }
+            return builder.ToString();
+        }
+
+        #endregion
     }
 }

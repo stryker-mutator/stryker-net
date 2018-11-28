@@ -94,7 +94,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.0"
                 });
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<string>(), It.IsAny<string>()));
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Throws(new InitialTestRunFailedException("")); // failing test
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Throws(new StrykerInputException("")); // failing test
             assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>()).Verifiable();
 
@@ -107,7 +107,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerOptions("c:/test", "Console", "", 2000, null, null, false, 1, 80, 60, 0);
 
 
-            var exception = Assert.Throws<InitialTestRunFailedException>(() => target.Initialize(options));
+            var exception = Assert.Throws<StrykerInputException>(() => target.Initialize(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             assemblyReferenceResolverMock.Verify();

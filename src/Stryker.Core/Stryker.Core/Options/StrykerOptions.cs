@@ -8,6 +8,7 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
+        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
         public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
@@ -51,7 +52,9 @@ namespace Stryker.Core.Options
         {
             if (reporter != "Console" && reporter != "ReportOnly")
             {
-                throw new ValidationException("The reporter options are [Console, ReportOnly]");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    $"Incorrect reporter ({reporter}). The reporter options are [Console, ReportOnly]");
             }
             return reporter;
         }
@@ -72,7 +75,9 @@ namespace Stryker.Core.Options
                 case "trace":
                     return LogEventLevel.Verbose;
                 default:
-                    throw new ValidationException("The log level options are [Error, Warning, Info, Debug, Trace]");
+                    throw new StrykerInputException(
+                        ErrorMessage,
+                        $"Incorrect log level {(levelText)}. The log level options are [Error, Warning, Info, Debug, Trace]");
             }
         }
 
@@ -80,7 +85,9 @@ namespace Stryker.Core.Options
         {
             if(maxConcurrentTestRunners < 1)
             {
-                throw new ValidationException("Amount of maximum concurrent testrunners must be greater than zero.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "Amount of maximum concurrent testrunners must be greater than zero.");
             }
             return maxConcurrentTestRunners;
         }
@@ -89,13 +96,17 @@ namespace Stryker.Core.Options
         {
             List<int> thresholdList = new List<int> {thresholdHigh, thresholdLow, thresholdBreak};
             if(thresholdList.Any(x => x > 100 || x < 0)) {
-                throw new ValidationException("The thresholds must be between 0 and 100");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "The thresholds must be between 0 and 100");
             }
 
             // ThresholdLow and ThresholdHigh can be the same value
             if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh) 
             {
-                throw new ValidationException("The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
             }
 
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
