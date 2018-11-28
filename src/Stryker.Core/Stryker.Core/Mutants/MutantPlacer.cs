@@ -1,12 +1,28 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
+        private static readonly string helper;
+
+        static MutantPlacer()
+        {
+            using (var stream =
+                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    helper = reader.ReadToEnd();
+                }
+            }
+        }
+
+        public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
+
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
             // place the mutated statement inside the if statement
@@ -57,33 +73,24 @@ namespace Stryker.Core.Mutants
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
-        /// Example for mutantId 1: System.Environment.GetEnvironmentVariable("ActiveMutation") == "1"
+        /// Example for mutantId 1: Stryker.Helper.ActiveMutation == 1
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
         private static ExpressionSyntax GetBinaryExpression(int mutantId)
         {
             return SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression,
-                SyntaxFactory.InvocationExpression(
                     SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
                         SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName("System"),
-                            SyntaxFactory.IdentifierName("Environment")
+                            SyntaxFactory.IdentifierName("Stryker"),
+                            SyntaxFactory.IdentifierName("ActiveMutationHelper")
                         ),
-                        SyntaxFactory.IdentifierName("GetEnvironmentVariable")),
-                    SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(
-                        new List<ArgumentSyntax>() {
-                        SyntaxFactory.Argument(SyntaxFactory.ExpressionStatement(
-                            SyntaxFactory.LiteralExpression(
-                                SyntaxKind.StringLiteralExpression,
-                                SyntaxFactory.Literal("ActiveMutation"))).Expression)
-                        }
-                    ))
+                        SyntaxFactory.IdentifierName("ActiveMutation")
                 ),
                 SyntaxFactory.LiteralExpression(
-                    SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(mutantId.ToString())));
+                    SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
         }
     }
 }

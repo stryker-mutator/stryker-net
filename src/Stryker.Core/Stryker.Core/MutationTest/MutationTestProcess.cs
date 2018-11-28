@@ -54,6 +54,8 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             var mutatedSyntaxTrees = new Collection<SyntaxTree>();
+            // add helper
+            mutatedSyntaxTrees.Add(MutantPlacer.ActiveMutantSelectorHelper);
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
