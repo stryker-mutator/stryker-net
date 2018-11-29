@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace Stryker.Core.Reporters.Progress
 
         private int _totalNumberOfTests;
         private int _numberOfTestsRun;
-        private DateTime _startTime;
+        private Stopwatch _startTime;
 
         public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger)
         {
@@ -32,7 +33,8 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportInitialState(int totalNumberOfTests)
         {
-            _startTime = DateTime.UtcNow;
+            _startTime = new Stopwatch();
+            _startTime.Start();
             if (totalNumberOfTests == 0)
             {
                 _testsProgressLogger.StartLog(LoggingFormat,
@@ -89,15 +91,15 @@ namespace Stryker.Core.Reporters.Progress
                 return "NA";
             }
 
-            var elapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
+            var elapsed = _startTime.ElapsedMilliseconds;
             var remaining = (_totalNumberOfTests - _numberOfTestsRun) * elapsed / _numberOfTestsRun;
             
-            return SecondsToText(remaining);
+            return MillisecondsToText(remaining);
         }
 
-        private static string SecondsToText(double remaining)
+        private static string MillisecondsToText(double remaining)
         {
-            var span = TimeSpan.FromSeconds(remaining);
+            var span = TimeSpan.FromMilliseconds(remaining);
             if (span.TotalDays >= 1)
             {
                 return span.ToString(@"~d\d\ h\h");
