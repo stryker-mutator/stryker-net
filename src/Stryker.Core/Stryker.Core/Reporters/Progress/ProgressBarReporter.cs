@@ -17,7 +17,7 @@ namespace Stryker.Core.Reporters.Progress
         private const char ProgressBarDoneToken = '\u2588';
         private const char ProgressBarLeftToken = '-';
         private const int ProgressBarInitialState = -1;
-        private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | rem time: {4} |";
+        private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
 
@@ -32,7 +32,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportInitialState(int totalNumberOfTests)
         {
-            _startTime = DateTime.UtcNow;;
+            _startTime = DateTime.UtcNow;
             if (totalNumberOfTests == 0)
             {
                 _testsProgressLogger.StartLog(LoggingFormat,
@@ -100,15 +100,15 @@ namespace Stryker.Core.Reporters.Progress
             var span = TimeSpan.FromSeconds(remaining);
             if (span.TotalDays >= 1)
             {
-                return span.ToString("d.hh");
+                return span.ToString(@"~d\d\ h\h");
             }
 
             if (span.TotalHours >= 1)
             {
-                return span.ToString(@"hh\:mm");
+                return span.ToString(@"~h\h\ mm\m");
             }
 
-            return span.ToString(@"hh\:mm\:ss");
+            return span.ToString(@"\~m\m\ ss\s");
         }
 
         private string GenerateProgressBar(int progressBarCount)
