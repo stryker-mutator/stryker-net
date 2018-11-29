@@ -40,6 +40,7 @@ namespace Stryker.CLI
             var reporterParam = CreateOption(app, CLIOptions.Reporter);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
+            var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
@@ -56,6 +57,7 @@ namespace Stryker.CLI
                     reporterParam,
                     projectNameParam,
                     timeoutParam,
+                    exludedMutationsParam,
                     logConsoleParam,
                     fileLogParam,
                     configFilePathParam,
@@ -132,7 +134,7 @@ Version {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} 
         /// <summary>
         /// Simplify app option creation to prevent code duplication
         /// </summary>
-        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option) where T : IConvertible {
+        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option) {
             return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
                 option.ArgumentDescription,
                 CommandOptionType.SingleValue);

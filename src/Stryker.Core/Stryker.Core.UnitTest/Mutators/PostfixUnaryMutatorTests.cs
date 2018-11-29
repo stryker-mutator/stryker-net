@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldHaveSingleItem();
             var mutation = result.First();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
-            mutation.Type.ShouldBe("PostfixUnaryMutator");
+            mutation.Type.ShouldBe(MutatorType.Update);
         }
     }
 }

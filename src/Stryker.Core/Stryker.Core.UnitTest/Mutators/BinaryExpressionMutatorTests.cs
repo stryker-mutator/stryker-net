@@ -10,20 +10,20 @@ namespace Stryker.Core.UnitTest.Mutators
     public class BinaryExpressionMutatorTests
     {
         [Theory]
-        [InlineData(SyntaxKind.AddExpression, SyntaxKind.SubtractExpression)]
-        [InlineData(SyntaxKind.SubtractExpression, SyntaxKind.AddExpression)]
-        [InlineData(SyntaxKind.MultiplyExpression, SyntaxKind.DivideExpression)]
-        [InlineData(SyntaxKind.DivideExpression, SyntaxKind.MultiplyExpression)]
-        [InlineData(SyntaxKind.ModuloExpression, SyntaxKind.MultiplyExpression)]
-        [InlineData(SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression)]
-        [InlineData(SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression)]
-        [InlineData(SyntaxKind.GreaterThanOrEqualExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression)]
-        [InlineData(SyntaxKind.LessThanOrEqualExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression)]
-        [InlineData(SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression)]
-        [InlineData(SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
-        [InlineData(SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
-        [InlineData(SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
-        public void MathMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind optionalExpectedOutput = SyntaxKind.None)
+        [InlineData(MutatorType.Arithmetic, SyntaxKind.AddExpression, SyntaxKind.SubtractExpression)]
+        [InlineData(MutatorType.Arithmetic, SyntaxKind.SubtractExpression, SyntaxKind.AddExpression)]
+        [InlineData(MutatorType.Arithmetic, SyntaxKind.MultiplyExpression, SyntaxKind.DivideExpression)]
+        [InlineData(MutatorType.Arithmetic, SyntaxKind.DivideExpression, SyntaxKind.MultiplyExpression)]
+        [InlineData(MutatorType.Arithmetic, SyntaxKind.ModuloExpression, SyntaxKind.MultiplyExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.GreaterThanOrEqualExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.LessThanOrEqualExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression)]
+        [InlineData(MutatorType.Equality, SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
+        [InlineData(MutatorType.Logical, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
+        [InlineData(MutatorType.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
+        public void MathMutator_ShouldMutate(MutatorType expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
         {
             var target = new BinaryExpressionMutator();
             var originalNode = SyntaxFactory.BinaryExpression(input,
@@ -32,17 +32,21 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            if(optionalExpectedOutput == SyntaxKind.None)
+            if(expectedOutput.Count() == 1)
             {
                 // there should be only one mutation
                 result.ShouldHaveSingleItem();
-                result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
             } else
             {
                 // there should be two mutations
                 result.Count.ShouldBe(2, "Two mutations should have been made");
-                result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
-                result.ShouldContain(x => x.ReplacementNode.IsKind(optionalExpectedOutput));
+            }
+            int index = 0;
+            foreach (var mutation in result)
+            {
+                mutation.ReplacementNode.IsKind(expectedOutput[index]).ShouldBeTrue();
+                mutation.Type.ShouldBe(expectedKind);
+                index++;
             }
         }
     }

@@ -55,19 +55,7 @@ namespace Stryker.Core
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
-                    mutators: new List<IMutator> ()
-                        {
-                            // the default list of mutators
-                            new BinaryExpressionMutator(),
-                            new BooleanMutator(),
-                            new AssignmentStatementMutator(),
-                            new PrefixUnaryMutator(),
-                            new PostfixUnaryMutator(),
-                            new CheckedMutator(),
-                            new LinqMutator(),
-                            new StringMutator(),
-                            new InterpolatedStringMutator()
-                        },
+                    excludedMutations: options.ExcludedMutations,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 

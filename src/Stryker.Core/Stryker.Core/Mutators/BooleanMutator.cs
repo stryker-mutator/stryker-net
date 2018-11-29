@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.LiteralExpression(_kindsToMutate[node.Kind()]),
                     DisplayName = "Boolean mutation",
-                    Type = "BooleanMutator"
+                    Type = MutatorType.Boolean
                 };
             }
         }
