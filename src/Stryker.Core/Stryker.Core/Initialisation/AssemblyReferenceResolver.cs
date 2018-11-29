@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using System;
@@ -53,7 +54,7 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != 0)
             {
                 _logger.LogError(@"The task PrintReferences was not found in your project file. Please add the task to {0}", projectFileName);
-                throw new ApplicationException($"The task PrintReferences was not found in your project file. Please add the task to {projectFileName}");
+                throw new StrykerInputException($"The task PrintReferences was not found in your project file. Please add the task to {projectFileName}");
             }
 
             var rows = result.Output.Split(new string[] { Environment.NewLine.ToString() }, StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();

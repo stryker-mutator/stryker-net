@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Stryker.CLI
 {
-    public class CLIOption<T> where T : IConvertible
+    public class CLIOption<T>
     {
         public string ArgumentName { get; set; }
         public string ArgumentShortName { get; set; }

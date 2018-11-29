@@ -1,3 +1,12 @@
+# [0.7.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.6.0...0.7.0) (2018-11-28)
+
+
+### Features
+
+* **Better error handling:** More understandable error messages ([#169](https://github.com/stryker-mutator/stryker-net/issues/169)) ([9214fbd](https://github.com/stryker-mutator/stryker-net/commit/9214fbd))
+
+
+
 # [0.6.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.5.0...0.6.0) (2018-11-19)
 
 

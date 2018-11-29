@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand),
                     DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = nameof(PrefixUnaryMutator)
+                    Type = unaryKind.ToString().StartsWith("Unary") ? MutatorType.Unary : MutatorType.Update
                 };
             }
             else if (UnaryToInitial.Contains(unaryKind))
@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = node.Operand,
                     DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
-                    Type = nameof(PrefixUnaryMutator)
+                    Type = unaryKind.ToString().StartsWith("Logic") ? MutatorType.Boolean : MutatorType.Unary
                 };
             }
         }

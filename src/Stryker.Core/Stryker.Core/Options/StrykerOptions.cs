@@ -1,6 +1,9 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutators;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +11,7 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
+        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
         public string Reporter { get; }
         public LogOptions LogOptions { get; set; }
@@ -19,17 +23,29 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
+        public IEnumerable<MutatorType> ExcludedMutations { get; }
+
         public int MaxConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; set; }
 
-        public StrykerOptions(string basePath, string reporter, string projectUnderTestNameFilter, int additionalTimeoutMS, string logLevel, bool logToFile, 
-        int maxConcurrentTestRunners, int thresholdHigh, int thresholdLow, int thresholdBreak)
+        public StrykerOptions(string basePath, 
+            string reporter, 
+            string projectUnderTestNameFilter, 
+            int additionalTimeoutMS, 
+            string[] excludedMutations, 
+            string logLevel, 
+            bool logToFile, 
+            int maxConcurrentTestRunners, 
+            int thresholdHigh, 
+            int thresholdLow, 
+            int thresholdBreak)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
+            ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
@@ -39,9 +55,38 @@ namespace Stryker.Core.Options
         {
             if (reporter != "Console" && reporter != "ReportOnly")
             {
-                throw new ValidationException("The reporter options are [Console, ReportOnly]");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    $"Incorrect reporter ({reporter}). The reporter options are [Console, ReportOnly]");
             }
             return reporter;
+        }
+
+        private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        {
+            if (excludedMutations == null)
+            {
+                yield break;
+            }
+
+            // Get all mutatorTypes and their descriptions
+            Dictionary<MutatorType, string> typeDescriptions = Enum.GetValues(typeof(MutatorType))
+                .Cast<MutatorType>()
+                .ToDictionary(x => x, x => x.GetDescription());
+
+            foreach (string excludedMutation in excludedMutations)
+            {
+                // Find any mutatorType that matches the name passed by the user
+                if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
+                    .Contains(excludedMutation.ToLower())).Key 
+                    is var foundMutator)
+                {
+                    yield return foundMutator;
+                } else
+                {
+                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                }
+            }
         }
 
         private LogEventLevel ValidateLogLevel(string levelText)
@@ -60,7 +105,9 @@ namespace Stryker.Core.Options
                 case "trace":
                     return LogEventLevel.Verbose;
                 default:
-                    throw new ValidationException("The log level options are [Error, Warning, Info, Debug, Trace]");
+                    throw new StrykerInputException(
+                        ErrorMessage,
+                        $"Incorrect log level {(levelText)}. The log level options are [Error, Warning, Info, Debug, Trace]");
             }
         }
 
@@ -68,7 +115,9 @@ namespace Stryker.Core.Options
         {
             if(maxConcurrentTestRunners < 1)
             {
-                throw new ValidationException("Amount of maximum concurrent testrunners must be greater than zero.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "Amount of maximum concurrent testrunners must be greater than zero.");
             }
             return maxConcurrentTestRunners;
         }
@@ -77,13 +126,17 @@ namespace Stryker.Core.Options
         {
             List<int> thresholdList = new List<int> {thresholdHigh, thresholdLow, thresholdBreak};
             if(thresholdList.Any(x => x > 100 || x < 0)) {
-                throw new ValidationException("The thresholds must be between 0 and 100");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "The thresholds must be between 0 and 100");
             }
 
             // ThresholdLow and ThresholdHigh can be the same value
             if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh) 
             {
-                throw new ValidationException("The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
             }
 
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);

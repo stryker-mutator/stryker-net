@@ -30,7 +30,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignementKind, node.Left, node.Right),
                     DisplayName = $"{assignmentKind} to {targetAssignementKind} mutation",
-                    Type = nameof(AssignmentStatementMutator)
+                    Type = MutatorType.Assignment
                 };
             }
         }
