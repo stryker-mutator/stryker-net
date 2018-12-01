@@ -82,7 +82,7 @@ namespace Stryker.Core.Compiling
 
         private int? ExtractMutationIfAndId(SyntaxNode node)
         {
-            var annotation = node.GetAnnotations(new[] { "MutationIf", "MutationConditional" });
+            var annotation = node.GetAnnotations(MutantPlacer.MutationMakers);
             using (var scan= annotation.GetEnumerator())
             {
                 if (scan.MoveNext())
