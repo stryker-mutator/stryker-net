@@ -66,21 +66,66 @@ namespace Stryker.Core.Compiling
 
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode node)
         {
-            var annotation = node.GetAnnotations(new string[] { "MutationIf", "MutationConditional" });
-            if (annotation.Any())
+            var id = ExtractMutationIfAndId(node);
+            if (id == null)
             {
-                string data = annotation.First().Data;
-                int mutantId = int.Parse(data);
-                _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-                return (node, mutantId);
-            }
-            else
-            {
-                if(node.Parent == null)
+                if (node.Parent == null)
                 {
                     return (null, 0);
                 }
+
                 return FindMutationIfAndId(node.Parent);
+            }
+
+            return (node, id.Value);
+        }
+
+        private int? ExtractMutationIfAndId(SyntaxNode node)
+        {
+            var annotation = node.GetAnnotations(new[] { "MutationIf", "MutationConditional" });
+            using (var scan= annotation.GetEnumerator())
+            {
+                if (scan.MoveNext())
+                {
+                    var data = scan.Current.Data;
+                    var mutantId = int.Parse(data);
+                    _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
+                    return mutantId;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        private static SyntaxNode FindEnclosingMember(SyntaxNode node)
+        {
+            if (node.Kind() == SyntaxKind.MethodDeclaration)
+            {
+                return node;
+            }
+
+            if (node.Parent == null)
+            {
+                return null;
+            }
+
+            return FindEnclosingMember(node.Parent);
+        }
+
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
+        {
+
+            var id = ExtractMutationIfAndId(node);
+            if (id != null)
+            {
+                scan[node] = id.Value;
+            }
+
+            foreach (var childNode in node.ChildNodes())
+            {
+                ScanAllMutationsIfsAndIds(childNode, scan);
             }
         }
 
@@ -96,12 +141,28 @@ namespace Stryker.Core.Compiling
                 if (mutationIf == null)
                 {
                     _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
-                }
+                    _logger.LogWarning("Rolling back all mutations in method.", brokenMutation, diagnostic.GetMessage());
+                    // backup, remove all mutants in the node
 
-                if (!brokenMutations.Contains(mutationIf))
+                    var scan = new Dictionary<SyntaxNode, int>();
+                    var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
+                    ScanAllMutationsIfsAndIds(initNode, scan);
+                    foreach (var entry in scan)
+                    {
+                        if (!brokenMutations.Contains(entry.Key))
+                        {
+                            brokenMutations.Add(entry.Key);
+                            _rollbackedIds.Add(entry.Value);
+                        }
+                    }
+                }
+                else
                 {
-                    brokenMutations.Add(mutationIf);
-                    _rollbackedIds.Add(mutantId);
+                    if (!brokenMutations.Contains(mutationIf))
+                    {
+                        brokenMutations.Add(mutationIf);
+                        _rollbackedIds.Add(mutantId);
+                    }
                 }
             }
             // mark the broken mutation nodes to track
