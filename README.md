@@ -36,17 +36,18 @@ Only compatible with .NET Core version 1.1+
 Dotnet core runtime 2.1 needs to be available on your system to run dotnet stryker
 
 ## Supported Mutators
-Right now, Stryker.NET supports the following mutators:
-- Binary Operators
-- Boolean Substitutions
-- Assignment Mutator
+Right now, Stryker.NET supports the following mutations:
+- Arithmetic Operators
+- Equality Operators
+- Boolean Literals
+- Assignment statements
 - Unary Operators
 - Update Operators
-- Checked Mutator
-- LINQ Mutator
-- String Mutator
+- Checked Statements
+- Linq Methods
+- String Literals
 
-For the full list of all available mutators, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
+For the full list of all available mutations, see the [Stryker.Core readme](/src/Stryker.Core/README.md).
 
 ## Contributing
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
