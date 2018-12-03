@@ -334,6 +334,98 @@ namespace ExampleProject
         }
 
         [Fact]
+        public void RollbackProcess_ShouldFailWhenLocalRollbackFailsAndInDevMode()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+
+namespace ExampleProject
+{
+    public class StringMagic
+    {
+        public string AddTwoStrings(string first, string second, out string third)
+        {
+            var dummy = """";
+            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+                while (first.Length > 2)
+                {
+                    dummy = first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+                while (first.Length > 2)
+                {
+                    dummy =  first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }else{
+                third = ""good"";
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                } 
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }}}
+                return null;
+        }
+    }
+}");
+            var root = syntaxTree.GetRoot();
+
+            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+            root = root.ReplaceNode(
+                mutantIf1,
+                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "8"))
+            );
+            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+            root = root.ReplaceNode(
+                mutantIf2,
+                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "7"))
+            );
+            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+            root = root.ReplaceNode(
+                mutantIf3,
+                mutantIf3.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "6"))
+            );
+            var annotatedSyntaxTree = root.SyntaxTree;
+
+            var compiler = CSharpCompilation.Create("TestCompilation",
+                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+                });
+
+            var target = new RollbackProcess();
+
+            using (var ms = new MemoryStream())
+            {
+                var compileResult = compiler.Emit(ms);
+
+                Should.Throw<ApplicationException>(() => {target.Start(compiler, compileResult.Diagnostics, true);});
+
+            }
+        }
+
+        [Fact]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"

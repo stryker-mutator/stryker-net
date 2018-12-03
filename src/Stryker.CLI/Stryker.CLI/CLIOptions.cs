@@ -43,7 +43,7 @@
             ArgumentShortName = "-dm <enable>",
             ArgumentDescription = "Set to true to activate dev mode to ease debugging of Stryker.Net| Options [true, false (default)]",
             DefaultValue = false,
-            JsonKey = "safe-mode"
+            JsonKey = "dev-mode"
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>

@@ -62,7 +62,7 @@ namespace Stryker.Core.Compiling
             {
                 LogEmitResult(emitResult);
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compiler, emitResult.Diagnostics, false);
+                rollbackProcessResult = _rollbackProcess.Start(compiler, emitResult.Diagnostics, devMode);
 
                 // reset the memoryStream for the second compilation
                 ms.SetLength(0);

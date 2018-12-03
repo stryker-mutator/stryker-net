@@ -79,7 +79,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()))
-                .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics) => 
+                .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode) => 
                 new RollbackProcessResult() {
                     Compilation = compilation
                 });

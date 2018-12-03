@@ -163,7 +163,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--safe-mode")]
+        [InlineData("--dev-mode")]
         public void StrykerCLI_WithSafeModeArgument_ShouldPassSafeModeArgumentsToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, false, 1, 90, 80, 70);
