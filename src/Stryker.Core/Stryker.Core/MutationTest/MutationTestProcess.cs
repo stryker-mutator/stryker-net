@@ -19,7 +19,7 @@ namespace Stryker.Core.MutationTest
 {
     public interface IMutationTestProcess
     {
-        void Mutate();
+        void Mutate(StrykerOptions options);
         StrykerRunResult Test(StrykerOptions options);
     }
 
@@ -53,7 +53,7 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Mutate()
+        public void Mutate(StrykerOptions options)
         {
             var mutatedSyntaxTrees = new Collection<SyntaxTree>();
             // add helper
@@ -75,7 +75,7 @@ namespace Stryker.Core.MutationTest
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
-                var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms);
+                var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, options.DevMode);
                 if (compileResult.Success)
                 {
                     if (!_fileSystem.Directory.Exists(_input.GetInjectionPath()) && !_fileSystem.File.Exists(_input.GetInjectionPath()))

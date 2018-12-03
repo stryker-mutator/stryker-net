@@ -60,7 +60,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
                 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -132,7 +132,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -225,7 +225,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -323,7 +323,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -383,7 +383,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
                 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 

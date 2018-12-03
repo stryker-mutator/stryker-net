@@ -39,6 +39,7 @@ namespace Stryker.CLI
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporter);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
+            var safeModeParam = CreateOption(app, CLIOptions.DevMode);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
@@ -60,6 +61,7 @@ namespace Stryker.CLI
                     exludedMutationsParam,
                     logConsoleParam,
                     fileLogParam,
+                    safeModeParam,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,

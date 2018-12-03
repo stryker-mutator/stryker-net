@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ namespace Stryker.Core.Compiling
 {
     public interface IRollbackProcess
     {
-        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics);
+        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool devMode);
     }
     
     /// <summary>
@@ -29,7 +30,8 @@ namespace Stryker.Core.Compiling
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
         }
 
-        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics)
+        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+            bool devMode)
         {
             _rollbackedIds = new List<int>();
 
@@ -49,7 +51,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogDebug("Rollbacking mutations from {0}", syntaxTreeMap.Key.FilePath);
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
-                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value);
+                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode);
 
                 _logger.LogTrace("Rollbacked to {0}", updatedSyntaxTree.ToString());
 
@@ -129,7 +131,7 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo)
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
@@ -140,8 +142,14 @@ namespace Stryker.Core.Compiling
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
                 if (mutationIf == null)
                 {
-                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
-                    _logger.LogWarning("Rolling back all mutations in method.", brokenMutation, diagnostic.GetMessage());
+                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}.", brokenMutation, diagnostic.GetMessage());
+                    if (devMode)
+                    {
+                        _logger.LogCritical("Stryker.Net will stop (due to dev-mode option sets to true)");
+                        throw new ApplicationException("Internal error due to failed rollback of a mutantt.");
+                    }
+                    _logger.LogError("This should not happen, please report this as an issue on github with the previous error message.");
+                    _logger.LogWarning("Safe Mode! Rolling back all mutations in method.", brokenMutation, diagnostic.GetMessage());
                     // backup, remove all mutants in the node
 
                     var scan = new Dictionary<SyntaxNode, int>();
@@ -182,5 +190,6 @@ namespace Stryker.Core.Compiling
             }
             return trackedTree.SyntaxTree;
         }
+
     }
 }
