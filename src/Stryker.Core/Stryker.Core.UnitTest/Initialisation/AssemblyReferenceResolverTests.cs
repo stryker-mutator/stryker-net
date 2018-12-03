@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 using System;
@@ -88,8 +89,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new AssemblyReferenceResolver(processExecutorMock.Object, metadataReferenceProviderMock.Object);
 
             // The resolver should throw an exception when the target task was not found
-            var exception = Assert.Throws<ApplicationException>(() => target.ResolveReferences(
-                Path.GetDirectoryName(project),
+            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveReferences(
+                Path.GetDirectoryName(project), 
                 Path.GetFileName(project),
                 ""
                 ).ToList());

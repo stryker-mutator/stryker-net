@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
@@ -33,7 +34,7 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <exception cref="StrykerException">For managed exceptions</exception>
+        /// <exception cref="StrykerInputException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
         public StrykerRunResult RunMutationTest(StrykerOptions options)
         {
@@ -54,19 +55,7 @@ namespace Stryker.Core
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
-                    mutators: new List<IMutator> ()
-                        {
-                            // the default list of mutators
-                            new BinaryExpressionMutator(),
-                            new BooleanMutator(),
-                            new AssignmentStatementMutator(),
-                            new PrefixUnaryMutator(),
-                            new PostfixUnaryMutator(),
-                            new CheckedMutator(),
-                            new LinqMutator(),
-                            new StringMutator(),
-                            new InterpolatedStringMutator()
-                        },
+                    excludedMutations: options.ExcludedMutations,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 
@@ -76,7 +65,7 @@ namespace Stryker.Core
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is StrykerInputException))
             {
                 logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;

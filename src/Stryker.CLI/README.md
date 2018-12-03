@@ -41,8 +41,8 @@ Defaults to `30000`
 
 All available loglevels are:
 * error
-* warning (default)
-* info
+* warning
+* info (default)
 * debug
 * trace
 

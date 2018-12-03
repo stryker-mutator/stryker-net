@@ -9,7 +9,7 @@
     <AssemblyName>dotnet-stryker</AssemblyName>
     <RootNamespace>Stryker.CLI</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.6.0</VersionPrefix>
+    <VersionPrefix>0.7.0</VersionPrefix>
     <PackageId>StrykerMutator.DotNetCoreCli</PackageId>
     <Description>The Stryker.NET Command Line Interface Runner for .NET Core. Adds the dotnet stryker command to your test project.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
   <ItemGroup>

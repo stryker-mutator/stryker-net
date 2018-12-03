@@ -30,11 +30,11 @@
 
         public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
         {
-            ArgumentName = "--log-level-file",
-            ArgumentShortName = "-f <useLogLevelFile>",
-            ArgumentDescription = "Use logLevelFile | Options [false (Default), true]",
+            ArgumentName = "--log-file",
+            ArgumentShortName = "-f",
+            ArgumentDescription = "Makes the logger write to a file | Options [false (default), true]",
             DefaultValue = false,
-            JsonKey = "log-level-file"
+            JsonKey = "log-file"
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
@@ -44,6 +44,14 @@
             ArgumentDescription = "When passed, a logfile will be created for this mutation test run on trace level",
             DefaultValue = 30000,
             JsonKey = "timeout-ms"
+        };
+
+        public static readonly CLIOption<string[]> ExcludedMutations = new CLIOption<string[]>
+        {
+            ArgumentName = "--excluded-mutations",
+            ArgumentShortName = "-em <mutator-name>",
+            ArgumentDescription = "The given mutators will be excluded for this mutation testrun.",
+            JsonKey = "excluded-mutations"
         };
 
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
@@ -97,12 +105,12 @@
             JsonKey = "threshold-high"
         };
 
-        public static readonly CLIOption<string> FilesToExclude = new CLIOption<string>
+        public static readonly CLIOption<string[]> FilesToExclude = new CLIOption<string[]>
         {
             ArgumentName = "--files-to-exclude",
             ArgumentShortName = "-fte <files-to-exclude>",
             ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
-            DefaultValue = "[]",
+            DefaultValue = null,
             JsonKey = "files-to-exclude"
         };
     }

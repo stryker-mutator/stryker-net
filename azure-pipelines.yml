@@ -1,4 +1,4 @@
-name: $(PackageVersion)$(rev:.r)
+name: $(PackageVersion).$(VersionBuildNumber)
 
 trigger:
   batch: true
@@ -12,13 +12,14 @@ resources:
   clean: true
   
 variables:
-  PackageVersion: '0.6.0'
-  PreReleaseVersion: $(Build.BuildNumber)-beta
+  PackageVersion: '0.7.0'
+  VersionBuildNumber: $[counter('$(PackageVersion)', 1)]
+  PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests/IntegrationTests/ExampleProject.XUnit
   IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
-  PreReleaseFeed: '0f92dbf7-f2b5-4439-8a95-33631c57ffa5'
-  PreReleaseFeedUri: https://pkgs.dev.azure.com/stryker-mutator/_packaging/stryker-net-pre-release@Prerelease/nuget/v3/index.json
+  PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 jobs:
 - job: PublishPreRelease
@@ -45,15 +46,28 @@ jobs:
       packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
 
   - task: DotNetCoreCLI@2
-    displayName: 'Push pre-release packages'
+    displayName: 'Publish pre-release packages'
     inputs:
-      command: push
-      packagesToPush: $(Build.ArtifactStagingDirectory)/pre-release/StrykerMutator.*$(PreReleaseVersion).nupkg
-      publishVstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: 'nuget'
+      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
+      workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
+      
+- job: WaitOnMyGetProcessing
+  displayName: Wait on pre-release packages to be processed on MyGet
+  dependsOn: PublishPreRelease
+  
+  pool: 
+    name: server
+  
+  steps:
+  - task: Delay@1
+    inputs:
+     delayForMinutes: '2' 
 
 - job: WindowsTests
   displayName: Run tests on Windows
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
 
   pool:
@@ -77,11 +91,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
@@ -92,7 +107,7 @@ jobs:
 
 - job: LinuxTests
   displayName: Run tests on Linux
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
   pool:
@@ -116,11 +131,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'
@@ -131,7 +147,7 @@ jobs:
 
 - job: MacOsTests
   displayName: Run tests on Mac OS
-  dependsOn: PublishPreRelease
+  dependsOn: WaitOnMyGetProcessing
   condition: succeeded()
   
   pool:
@@ -155,11 +171,12 @@ jobs:
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet restore'
+    displayName: 'Restore pre-release packages in integrationtest project'
     inputs:
-      command: restore
-      projects: $(IntegrationTestProject)
-      vstsFeed: $(PreReleaseFeed)
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestProject)'
+      arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test'

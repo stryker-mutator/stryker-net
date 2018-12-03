@@ -5,12 +5,14 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -155,7 +157,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                null,
+                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -217,7 +219,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                null,
+                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -264,8 +266,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, false, 1, 80, 60, 0, "[]");
-            var target = new MutationTestProcess(input, reporterMock.Object, null, executorMock.Object, null, null, null);
+            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0, null);
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                Enumerable.Empty<MutatorType>(),
+                executorMock.Object,
+                null,
+                null,
+                null);
 
             target.Test(options);
 

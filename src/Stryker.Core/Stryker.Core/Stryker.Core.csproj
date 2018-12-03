@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.6.0</VersionPrefix>
+    <VersionPrefix>0.7.0</VersionPrefix>
     <PackageId>StrykerMutator.Core</PackageId>
     <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install a Stryker.Runner.* package to use this package.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -18,6 +18,14 @@
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Mutants\ActiveMutationHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
