@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace Stryker.Core.Testing
 {
@@ -19,7 +18,7 @@ namespace Stryker.Core.Testing
         /// <param name="path">The path the process will use as base path</param>
         /// <param name="application">example: dotnet</param>
         /// <param name="arguments">example: --no-build</param>
-        /// <param name="activeMutationId">this value will be used to set an environment variable for the process</param>
+        /// <param name="environmentVariables">Environment variables (and their values)</param>
         /// <returns>ProcessResult</returns>
         ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
     }
@@ -28,11 +27,11 @@ namespace Stryker.Core.Testing
     public class ProcessExecutor : IProcessExecutor
     {
         // when redirected, the output from the process will be kept in memory and not displayed to the console directly
-        private bool _redirectOutput { get; set; }
+        private bool RedirectOutput { get; }
 
         public ProcessExecutor(bool redirectOutput = true)
         {
-            _redirectOutput = redirectOutput;
+            RedirectOutput = redirectOutput;
         }
 
         public ProcessResult Start(
@@ -46,8 +45,8 @@ namespace Stryker.Core.Testing
             {
                 UseShellExecute = false,
                 WorkingDirectory = path,
-                RedirectStandardOutput = _redirectOutput,
-                RedirectStandardError = _redirectOutput
+                RedirectStandardOutput = RedirectOutput,
+                RedirectStandardError = RedirectOutput
             };
 
             foreach (var environmentVariable in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
@@ -68,38 +67,80 @@ namespace Stryker.Core.Testing
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
         {
-            using (var process = Process.Start(info))
+            using (var process = new ProcessWrapper(info))
             {
-                string output = "";
-                var processDoneHandle = new ManualResetEvent(false);
-
-                Task.Run(() =>
+                var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
+                if (!process.WaitForExit(timeoutValue))
                 {
-                    if (_redirectOutput)
-                    {
-                        output = process.StandardOutput.ReadToEnd();
-                    }
-                    process.WaitForExit();
-                    // When the process exited, trigger the processDoneEvent
-                    processDoneHandle.Set();
-                });
-
-
-                // This handle will wait till the process has exited, or the timeoutMS has passed
-                int timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
-                var processDone = processDoneHandle.WaitOne(timeoutValue);
-
-                if (!processDone)
-                {
-                    // The process is still running. Kill the process and all it's child processes.
-                    process.KillTree(TimeSpan.FromSeconds(60));
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
+
                 return new ProcessResult()
                 {
                     ExitCode = process.ExitCode,
-                    Output = output
+                    Output = process.Output
                 };
+            }
+        }
+
+        private sealed class ProcessWrapper: IDisposable
+        {
+            private readonly Process process;
+            private readonly StringBuilder output = new StringBuilder();
+            private readonly StringBuilder error = new StringBuilder();
+            private static readonly TimeSpan killTimeOut = TimeSpan.FromSeconds(60);
+
+            public int ExitCode => process.ExitCode;
+            public string Output => output.ToString();
+
+            public ProcessWrapper(ProcessStartInfo info)
+            {
+                process = Process.Start(info);
+                process.OutputDataReceived += Process_OutputDataReceived;
+                process.ErrorDataReceived += Process_ErrorDataReceived;
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
+
+            public bool WaitForExit(int timeout = -1)
+            {
+                var totalWait = 0;
+                var slice = timeout == -1 ? timeout : Math.Max(timeout / 20, 1);
+                do
+                {
+                    if (process.WaitForExit(slice))
+                    {
+                        return true;
+                    }
+  
+                    totalWait += slice;
+                } while (timeout==-1 || totalWait < timeout);
+ 
+                process.KillTree(killTimeOut);
+                return false;
+            }
+
+            private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+            {
+                if (e.Data != null)
+                {
+                    output.AppendLine(e.Data);
+                }
+            }
+
+            private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+            {
+                if (e.Data != null)
+                {
+                    output.AppendLine(e.Data);
+                }
+            }
+
+            public void Dispose()
+            {
+                process.OutputDataReceived -= Process_OutputDataReceived;
+                process.ErrorDataReceived -= Process_ErrorDataReceived;
+                process.Dispose();
             }
         }
     }
