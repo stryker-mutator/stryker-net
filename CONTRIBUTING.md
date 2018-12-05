@@ -9,10 +9,15 @@ If you found a bug, please run ```dotnet stryker --log-console debug``` and add 
 New features are welcome! Either as requests or proposals.
 
 1.	Please create an issue first, so we know what to expect from you.
-2.	Create a fork on your github account.
-3.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
-4.	Please create or edit unit tests or integration tests.
-5.	Run the tests and verify they pass
+1.	Create a fork on your github account.
+1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
+1.	Please create or edit unit tests or integration tests.
+1.	Run the tests and verify they pass
+1.  When creating commits, please conform to [the angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo).
+   Namely in the form `<type>(<scope>): <subject>\n\n[body]`
+   * Type: feat, fix, docs, style, refactor, test, chore.
+   * Scope: the file or group of files (not a strict right or wrong)
+   * Subject and body: present tense (~changed~*change*, ~added~*add*) and include motivation and contrasts with previous behavior
 
 #### Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [Visual Studio 2017](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
