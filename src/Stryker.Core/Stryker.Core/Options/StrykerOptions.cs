@@ -30,18 +30,18 @@ namespace Stryker.Core.Options
 
         public ThresholdOptions ThresholdOptions { get; }
 
-        public StrykerOptions(string basePath, 
-            string reporter, 
-            string projectUnderTestNameFilter, 
-            int additionalTimeoutMS, 
-            string[] excludedMutations, 
-            string logLevel, 
-            bool logToFile, 
-            bool devMode,
-            int maxConcurrentTestRunners, 
-            int thresholdHigh, 
-            int thresholdLow, 
-            int thresholdBreak)
+        public StrykerOptions(string basePath = "",
+            string reporter = "Console",
+            string projectUnderTestNameFilter = "",
+            int additionalTimeoutMS = 30000,
+            string[] excludedMutations = null,
+            string logLevel = "trace",
+            bool logToFile = false,
+            bool devMode = false,
+            int maxConcurrentTestRunners = Int32.MaxValue,
+            int thresholdHigh = 90,
+            int thresholdLow = 80,
+            int thresholdBreak = 70)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);

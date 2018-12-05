@@ -1,7 +1,11 @@
-﻿namespace Stryker.CLI
+﻿using Stryker.Core.Options;
+
+namespace Stryker.CLI
 {
     public static class CLIOptions
     {
+        private static StrykerOptions _defaultOptions = new StrykerOptions();
+        
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
             ArgumentName = "--config-file-path",
@@ -15,7 +19,7 @@
             ArgumentName = "--reporter",
             ArgumentShortName = "-r <reporter>",
             ArgumentDescription = "Sets the reporter | Options [Console (default)]",
-            DefaultValue = "Console",
+            DefaultValue = _defaultOptions.Reporter,
             JsonKey = "reporter"
         };
 
@@ -24,7 +28,7 @@
             ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
             ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
-            DefaultValue = "Info",
+            DefaultValue = _defaultOptions.LogOptions.LogLevel.ToString(),
             JsonKey = "log-level"
         };
 
@@ -33,7 +37,7 @@
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
             ArgumentDescription = "Makes the logger write to a file | Options [false (default), true]",
-            DefaultValue = false,
+            DefaultValue = _defaultOptions.LogOptions.LogToFile,
             JsonKey = "log-file"
         };
 
@@ -42,7 +46,7 @@
             ArgumentName = "--dev-mode",
             ArgumentShortName = "-dm <enable>",
             ArgumentDescription = "Set to true to activate dev mode to ease debugging of Stryker.Net| Options [true, false (default)]",
-            DefaultValue = false,
+            DefaultValue = _defaultOptions.DevMode,
             JsonKey = "dev-mode"
         };
 
@@ -51,7 +55,7 @@
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
             ArgumentDescription = "When passed, a logfile will be created for this mutation test run on trace level",
-            DefaultValue = 30000,
+            DefaultValue = _defaultOptions.AdditionalTimeoutMS,
             JsonKey = "timeout-ms"
         };
 
@@ -83,7 +87,7 @@
                                                                  -Your test runner starts a browser (another CPU-intensive process)
                                                                  -You're running on a shared server and/or
                                                                  -Your hard disk cannot handle the I/O of all test runners",
-            DefaultValue = int.MaxValue,
+            DefaultValue = _defaultOptions.MaxConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
         };
 
@@ -92,25 +96,25 @@
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
             ArgumentDescription = "Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | 60 (default)",
-            DefaultValue = 0,
+            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdBreak,
             JsonKey = "threshold-break"
-        };      
+        };
 
         public static readonly CLIOption<int> ThresholdLow = new CLIOption<int>
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
             ArgumentDescription = "Set the lower bound of the mutation score threshold. It will not fail the test. | 70 (default)",
-            DefaultValue = 60,
+            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdLow,
             JsonKey = "threshold-low"
-        };    
+        };
         
         public static readonly CLIOption<int> ThresholdHigh = new CLIOption<int>
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
             ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
-            DefaultValue = 80,
+            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdHigh,
             JsonKey = "threshold-high"
         };
     }
