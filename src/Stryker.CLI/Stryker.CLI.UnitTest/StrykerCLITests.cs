@@ -270,7 +270,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions();
+            StrykerOptions options = new StrykerOptions(thresholdBreak:40);
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();

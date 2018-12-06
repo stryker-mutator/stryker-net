@@ -35,13 +35,13 @@ namespace Stryker.Core.Options
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 30000,
             string[] excludedMutations = null,
-            string logLevel = "trace",
+            string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
             int maxConcurrentTestRunners = Int32.MaxValue,
-            int thresholdHigh = 90,
-            int thresholdLow = 80,
-            int thresholdBreak = 70)
+            int thresholdHigh = 80,
+            int thresholdLow = 60,
+            int thresholdBreak = 0)
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);

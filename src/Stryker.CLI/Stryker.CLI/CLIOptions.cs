@@ -18,7 +18,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporter",
             ArgumentShortName = "-r <reporter>",
-            ArgumentDescription = "Sets the reporter | Options [Console (default)]",
+            ArgumentDescription = $"Sets the reporter | Options [{_defaultOptions.Reporter} (default)]",
             DefaultValue = _defaultOptions.Reporter,
             JsonKey = "reporter"
         };
@@ -28,7 +28,7 @@ namespace Stryker.CLI
             ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
             ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
-            DefaultValue = _defaultOptions.LogOptions.LogLevel.ToString(),
+            DefaultValue = "",
             JsonKey = "log-level"
         };
 
@@ -54,7 +54,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
-            ArgumentDescription = "When passed, a logfile will be created for this mutation test run on trace level",
+            ArgumentDescription = $"When passed, a logfile will be created for this mutation test run on trace level| Options {_defaultOptions.AdditionalTimeoutMS}",
             DefaultValue = _defaultOptions.AdditionalTimeoutMS,
             JsonKey = "timeout-ms"
         };
@@ -95,7 +95,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
-            ArgumentDescription = "Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | 60 (default)",
+            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {_defaultOptions.ThresholdOptions.ThresholdBreak} (default)",
             DefaultValue = _defaultOptions.ThresholdOptions.ThresholdBreak,
             JsonKey = "threshold-break"
         };
@@ -104,7 +104,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
-            ArgumentDescription = "Set the lower bound of the mutation score threshold. It will not fail the test. | 70 (default)",
+            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {_defaultOptions.ThresholdOptions.ThresholdLow} (default)",
             DefaultValue = _defaultOptions.ThresholdOptions.ThresholdLow,
             JsonKey = "threshold-low"
         };
@@ -113,7 +113,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = "Set the prefered mutation score threshold. | 80 (default)",
+            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.ThresholdOptions.ThresholdHigh} (default)",
             DefaultValue = _defaultOptions.ThresholdOptions.ThresholdHigh,
             JsonKey = "threshold-high"
         };
