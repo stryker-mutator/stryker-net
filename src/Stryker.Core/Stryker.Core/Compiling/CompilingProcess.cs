@@ -18,8 +18,10 @@ namespace Stryker.Core.Compiling
         /// <summary>
         /// Compiles the given input onto the memorystream
         /// </summary>
+        /// <param name="syntaxTrees"></param>
         /// <param name="ms">The memorystream to function as output</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms);
+        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode);
     }
     
     /// <summary>
@@ -44,7 +46,8 @@ namespace Stryker.Core.Compiling
         /// </summary>
         /// <param name="syntaxTrees">The syntaxtrees to compile</param>
         /// <param name="ms">The memory stream to store the compilation result onto</param>
-        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms)
+        /// <param name="devMode"></param>
+        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
         {
             var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAssemblyName,
                 syntaxTrees: syntaxTrees,
@@ -59,7 +62,7 @@ namespace Stryker.Core.Compiling
             {
                 LogEmitResult(emitResult);
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compiler, emitResult.Diagnostics);
+                rollbackProcessResult = _rollbackProcess.Start(compiler, emitResult.Diagnostics, devMode);
 
                 // reset the memoryStream for the second compilation
                 ms.SetLength(0);

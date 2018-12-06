@@ -60,7 +60,7 @@ namespace Stryker.Core
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 
                 // mutate
-                _mutationTestProcess.Mutate();
+                _mutationTestProcess.Mutate(options);
 
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);

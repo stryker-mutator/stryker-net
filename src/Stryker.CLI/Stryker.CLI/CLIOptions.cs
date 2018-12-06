@@ -37,6 +37,15 @@
             JsonKey = "log-file"
         };
 
+        public static readonly CLIOption<bool> DevMode = new CLIOption<bool>
+        {
+            ArgumentName = "--dev-mode",
+            ArgumentShortName = "-dm <enable>",
+            ArgumentDescription = "Set to true to activate dev mode to ease debugging of Stryker.Net| Options [true, false (default)]",
+            DefaultValue = false,
+            JsonKey = "dev-mode"
+        };
+
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
         {
             ArgumentName = "--timeout-ms",

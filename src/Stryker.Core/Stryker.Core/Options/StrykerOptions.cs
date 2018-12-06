@@ -14,7 +14,8 @@ namespace Stryker.Core.Options
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
         public string Reporter { get; }
-        public LogOptions LogOptions { get; set; }
+        public LogOptions LogOptions { get; }
+        public bool DevMode { get; }
 
         /// <summary>
         /// The user can pass a filter to match the project under test from multiple project references
@@ -27,7 +28,7 @@ namespace Stryker.Core.Options
 
         public int MaxConcurrentTestrunners { get; }
 
-        public ThresholdOptions ThresholdOptions { get; set; }
+        public ThresholdOptions ThresholdOptions { get; }
 
         public StrykerOptions(string basePath, 
             string reporter, 
@@ -36,6 +37,7 @@ namespace Stryker.Core.Options
             string[] excludedMutations, 
             string logLevel, 
             bool logToFile, 
+            bool devMode,
             int maxConcurrentTestRunners, 
             int thresholdHigh, 
             int thresholdLow, 
@@ -47,6 +49,7 @@ namespace Stryker.Core.Options
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
+            DevMode = devMode;
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
         }

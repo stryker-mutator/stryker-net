@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ namespace Stryker.Core.Compiling
 {
     public interface IRollbackProcess
     {
-        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics);
+        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool devMode);
     }
     
     /// <summary>
@@ -29,7 +30,8 @@ namespace Stryker.Core.Compiling
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
         }
 
-        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics)
+        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+            bool devMode)
         {
             _rollbackedIds = new List<int>();
 
@@ -49,7 +51,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogDebug("Rollbacking mutations from {0}", syntaxTreeMap.Key.FilePath);
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
-                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value);
+                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode);
 
                 _logger.LogTrace("Rollbacked to {0}", updatedSyntaxTree.ToString());
 
@@ -66,25 +68,70 @@ namespace Stryker.Core.Compiling
 
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode node)
         {
-            var annotation = node.GetAnnotations(new string[] { "MutationIf", "MutationConditional" });
-            if (annotation.Any())
+            var id = ExtractMutationIfAndId(node);
+            if (id == null)
             {
-                string data = annotation.First().Data;
-                int mutantId = int.Parse(data);
-                _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-                return (node, mutantId);
-            }
-            else
-            {
-                if(node.Parent == null)
+                if (node.Parent == null)
                 {
                     return (null, 0);
                 }
+
                 return FindMutationIfAndId(node.Parent);
+            }
+
+            return (node, id.Value);
+        }
+
+        private int? ExtractMutationIfAndId(SyntaxNode node)
+        {
+            var annotation = node.GetAnnotations(MutantPlacer.MutationMakers);
+            using (var scan= annotation.GetEnumerator())
+            {
+                if (scan.MoveNext())
+                {
+                    var data = scan.Current.Data;
+                    var mutantId = int.Parse(data);
+                    _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
+                    return mutantId;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo)
+        private static SyntaxNode FindEnclosingMember(SyntaxNode node)
+        {
+            if (node.Kind() == SyntaxKind.MethodDeclaration)
+            {
+                return node;
+            }
+
+            if (node.Parent == null)
+            {
+                return null;
+            }
+
+            return FindEnclosingMember(node.Parent);
+        }
+
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
+        {
+
+            var id = ExtractMutationIfAndId(node);
+            if (id != null)
+            {
+                scan[node] = id.Value;
+            }
+
+            foreach (var childNode in node.ChildNodes())
+            {
+                ScanAllMutationsIfsAndIds(childNode, scan);
+            }
+        }
+
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
@@ -95,13 +142,35 @@ namespace Stryker.Core.Compiling
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
                 if (mutationIf == null)
                 {
-                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}", brokenMutation, diagnostic.GetMessage());
-                }
+                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}.", brokenMutation, diagnostic.GetMessage());
+                    if (devMode)
+                    {
+                        _logger.LogCritical("Stryker.Net will stop (due to dev-mode option sets to true)");
+                        throw new ApplicationException("Internal error due to failed rollback of a mutantt.");
+                    }
+                    _logger.LogError("This should not happen, please report this as an issue on github with the previous error message.");
+                    _logger.LogWarning("Safe Mode! Rolling back all mutations in method.", brokenMutation, diagnostic.GetMessage());
+                    // backup, remove all mutants in the node
 
-                if (!brokenMutations.Contains(mutationIf))
+                    var scan = new Dictionary<SyntaxNode, int>();
+                    var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
+                    ScanAllMutationsIfsAndIds(initNode, scan);
+                    foreach (var entry in scan)
+                    {
+                        if (!brokenMutations.Contains(entry.Key))
+                        {
+                            brokenMutations.Add(entry.Key);
+                            _rollbackedIds.Add(entry.Value);
+                        }
+                    }
+                }
+                else
                 {
-                    brokenMutations.Add(mutationIf);
-                    _rollbackedIds.Add(mutantId);
+                    if (!brokenMutations.Contains(mutationIf))
+                    {
+                        brokenMutations.Add(mutationIf);
+                        _rollbackedIds.Add(mutantId);
+                    }
                 }
             }
             // mark the broken mutation nodes to track
@@ -121,5 +190,6 @@ namespace Stryker.Core.Compiling
             }
             return trackedTree.SyntaxTree;
         }
+
     }
 }
