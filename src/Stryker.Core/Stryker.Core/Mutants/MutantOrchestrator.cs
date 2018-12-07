@@ -71,11 +71,12 @@ namespace Stryker.Core.Mutants
         {
             if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
             {
-                if (currentNode is ExpressionStatementSyntax expressionStatement)
+                if (currentNode is ExpressionStatementSyntax)
                 {
                     // The expression of a ExpressionStatement cannot be mutated directly
-                    return expressionStatement.ReplaceNode(expressionStatement.Expression, Mutate(expressionSyntax));
-                } else
+                    return currentNode.ReplaceNode(expressionSyntax, Mutate(expressionSyntax));
+                }
+                else
                 {
                     // The mutations should be placed using a ConditionalExpression
                     ExpressionSyntax expressionAst = expressionSyntax;
