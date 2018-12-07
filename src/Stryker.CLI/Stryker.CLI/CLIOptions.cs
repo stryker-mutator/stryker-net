@@ -28,7 +28,7 @@ namespace Stryker.CLI
             ArgumentName = "--log-console",
             ArgumentShortName = "-l <logLevel>",
             ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
-            DefaultValue = "",
+            DefaultValue = "info",
             JsonKey = "log-level"
         };
 

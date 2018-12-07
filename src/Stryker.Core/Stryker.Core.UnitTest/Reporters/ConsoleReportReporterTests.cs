@@ -128,7 +128,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldPrintRedOn60PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintRedUnderThresholdBreak()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -147,7 +147,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(thresholdLow:60, thresholdBreak:0), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -169,7 +169,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldPrintYellowOn80PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -189,7 +189,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(thresholdLow:75), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -211,7 +211,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldGreenOn80PercentAndHigher()
+        public void ConsoleReportReporter_ShouldPrintGreenAboveThresholdHigh()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
