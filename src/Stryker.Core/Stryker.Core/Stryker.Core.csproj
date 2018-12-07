@@ -17,6 +17,7 @@
     <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Mutants\ActiveMutationHelper.cs" />
@@ -31,6 +32,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Serilog" Version="2.7.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
