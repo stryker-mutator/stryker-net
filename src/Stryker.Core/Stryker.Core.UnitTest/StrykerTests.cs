@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest
                     TargetFramework = "netcoreapp2.0"
                 },
             });
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, null, false, false, 1, 80, 60, 0);
+            var options = new StrykerOptions();
 
             mutationTestProcessMock.Setup(x => x.Mutate(options));
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
@@ -45,7 +45,6 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object);
 
- 
             target.RunMutationTest(options);
 
             initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);
