@@ -71,15 +71,23 @@ namespace Stryker.Core.Mutants
         {
             if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
             {
-                // The mutations should be placed using a ConditionalExpression
-                ExpressionSyntax expressionAst = expressionSyntax;
-                foreach (var mutant in FindMutants(expressionSyntax))
+                if (currentNode is ExpressionStatementSyntax)
                 {
-                    _mutants.Add(mutant);
-                    ExpressionSyntax mutatedNode = ApplyMutant(expressionSyntax, mutant);
-                    expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
+                    // The expression of a ExpressionStatement cannot be mutated directly
+                    return currentNode.ReplaceNode(expressionSyntax, Mutate(expressionSyntax));
                 }
-                return currentNode.ReplaceNode(expressionSyntax, expressionAst);
+                else
+                {
+                    // The mutations should be placed using a ConditionalExpression
+                    ExpressionSyntax expressionAst = expressionSyntax;
+                    foreach (var mutant in FindMutants(expressionSyntax))
+                    {
+                        _mutants.Add(mutant);
+                        ExpressionSyntax mutatedNode = ApplyMutant(expressionSyntax, mutant);
+                        expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
+                    }
+                    return currentNode.ReplaceNode(expressionSyntax, expressionAst);
+                }
             }
             else if (currentNode is StatementSyntax ast && currentNode.Kind() != SyntaxKind.Block)
             {
@@ -101,7 +109,11 @@ namespace Stryker.Core.Mutants
                 foreach (var child in children)
                 {
                     var mutatedNode = Mutate(child);
-                    childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedNode);
+                    var originalNode = childCopy.GetCurrentNode(child);
+                    if (!mutatedNode.IsEquivalentTo(originalNode))
+                    {
+                        childCopy = childCopy.ReplaceNode(originalNode, mutatedNode);
+                    }
                 }
                 return childCopy;
             }
@@ -162,6 +174,9 @@ namespace Stryker.Core.Mutants
                 case nameof(LocalFunctionStatementSyntax):
                     var localFunction = node as LocalFunctionStatementSyntax;
                     return localFunction.ExpressionBody?.Expression;
+                case nameof(ExpressionStatementSyntax):
+                    var expressionStatement = node as ExpressionStatementSyntax;
+                    return expressionStatement.Expression;
                 default:
                     return null;
             }

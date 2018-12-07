@@ -8,14 +8,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         void TestMethod()
         {
-            int i = 0;
-            if (Stryker.ActiveMutationHelper.ActiveMutation==0)
-            {
-                i = i - 1;
-            } else {
-                i = i + 1;
-            }
-            if (Stryker.ActiveMutationHelper.ActiveMutation==2)
+            if (Stryker.ActiveMutationHelper.ActiveMutation==1)
             {
                 string SomeLocalFunction()
                 {
@@ -25,7 +18,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             }
             else
             {
-                if (Stryker.ActiveMutationHelper.ActiveMutation==1)
+                if (Stryker.ActiveMutationHelper.ActiveMutation==0)
                 {
                     string SomeLocalFunction()
                     {
