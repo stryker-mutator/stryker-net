@@ -179,14 +179,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                     }
                 }
             }
-            if (Stryker.ActiveMutationHelper.ActiveMutation==7)
-                    {
-                i = i - i;
-            }
-            else
-            {
-                i = i + i;
-            }
         }
     }
 }

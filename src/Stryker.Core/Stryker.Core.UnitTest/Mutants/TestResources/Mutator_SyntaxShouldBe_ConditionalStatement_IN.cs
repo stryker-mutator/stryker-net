@@ -9,6 +9,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int test = 10;
+            test = test + i;
             int testPlusTest = test + test;
             int b = a += 1 + 2;
             var (one, two) = (1 + 1, "");

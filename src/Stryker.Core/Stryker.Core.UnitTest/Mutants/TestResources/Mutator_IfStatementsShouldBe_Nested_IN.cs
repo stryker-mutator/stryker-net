@@ -25,7 +25,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                     i = i + 1;
                 };
             }
-            i = i + i;
         }
     }
 }
