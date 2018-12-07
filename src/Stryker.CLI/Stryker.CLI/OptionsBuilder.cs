@@ -1,12 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using Microsoft.Extensions.CommandLineUtils;
-using Stryker.Core.Options;
-using System.IO;
-using System.Linq;
-using System.Collections;
+﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System.Runtime.Serialization;
+using Stryker.Core.Options;
+using System;
+using System.Collections;
+using System.IO;
 
 namespace Stryker.CLI
 {
@@ -36,10 +34,10 @@ namespace Stryker.CLI
                         .SetBasePath(basePath)
                         .AddJsonFile(fileLocation)
                         .Build().GetSection("stryker-config");
-            }  
+            }
             return new StrykerOptions(
                 basePath,
-                GetOption(reporter.Value(), CLIOptions.Reporter),
+                new[] { GetOption(reporter.Value(), CLIOptions.Reporter) },
                 GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
@@ -62,13 +60,13 @@ namespace Stryker.CLI
             {
                 // Check if there is a threshold options object and use it when it's available
                 string thresholdOptionsSectionKey = "threshold-options";
-                if (config.GetSection(thresholdOptionsSectionKey).Exists() && 
+                if (config.GetSection(thresholdOptionsSectionKey).Exists() &&
                     !string.IsNullOrEmpty(config.GetSection(thresholdOptionsSectionKey).GetValue(defaultValue.JsonKey, string.Empty).ToString()))
-                {   
+                {
                     return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
                 }
                 //Else return config value            
-                else if(!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+                else if (!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
                 {
                     return config.GetValue<T>(defaultValue.JsonKey);
                 }

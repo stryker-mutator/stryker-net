@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using Stryker.Core.Options;
+﻿using Stryker.Core.Options;
 using Stryker.Core.Reporters.Progress;
+using System.Collections.ObjectModel;
 
 namespace Stryker.Core.Reporters
 {
@@ -9,11 +9,20 @@ namespace Stryker.Core.Reporters
         public static IReporter Create(StrykerOptions options)
         {
             var progressReporter = CreateProgressReporter();
-            return new BroadcastReporter(new Collection<IReporter>()
+            Collection<IReporter> reporters = new Collection<IReporter>
             {
                 new ConsoleReportReporter(options),
-                progressReporter
-            });
+                progressReporter,
+            };
+            foreach (var reporter in options.Reporters)
+            {
+                if (reporter == "Json")
+                {
+                    reporters.Add(new JsonReporter(options));
+                }
+            }
+
+            return new BroadcastReporter(reporters);
         }
 
         private static ProgressReporter CreateProgressReporter()

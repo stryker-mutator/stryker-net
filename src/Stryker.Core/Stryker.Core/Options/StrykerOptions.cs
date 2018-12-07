@@ -3,7 +3,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,7 +12,7 @@ namespace Stryker.Core.Options
     {
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
-        public string Reporter { get; }
+        public string[] Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
 
@@ -30,21 +29,21 @@ namespace Stryker.Core.Options
 
         public ThresholdOptions ThresholdOptions { get; }
 
-        public StrykerOptions(string basePath, 
-            string reporter, 
-            string projectUnderTestNameFilter, 
-            int additionalTimeoutMS, 
-            string[] excludedMutations, 
-            string logLevel, 
-            bool logToFile, 
+        public StrykerOptions(string basePath,
+            string[] reporters,
+            string projectUnderTestNameFilter,
+            int additionalTimeoutMS,
+            string[] excludedMutations,
+            string logLevel,
+            bool logToFile,
             bool devMode,
-            int maxConcurrentTestRunners, 
-            int thresholdHigh, 
-            int thresholdLow, 
+            int maxConcurrentTestRunners,
+            int thresholdHigh,
+            int thresholdLow,
             int thresholdBreak)
         {
             BasePath = basePath;
-            Reporter = ValidateReporter(reporter);
+            Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
@@ -54,15 +53,16 @@ namespace Stryker.Core.Options
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private string ValidateReporter(string reporter)
+        private string[] ValidateReporters(string[] reporters)
         {
-            if (reporter != "Console" && reporter != "ReportOnly")
+            string[] validReporters = new[] { "Console", "ReportOnly", "Json" };
+            if (reporters.Any(r => !validReporters.Any(vr => vr.ToLowerInvariant() == r.ToLowerInvariant())))
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"Incorrect reporter ({reporter}). The reporter options are [Console, ReportOnly]");
+                    $"Some of these reporters are incorrect: ({string.Join(",", reporters)}). The reporter options are [{string.Join(",", validReporters)}]");
             }
-            return reporter;
+            return reporters;
         }
 
         private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
@@ -81,11 +81,12 @@ namespace Stryker.Core.Options
             {
                 // Find any mutatorType that matches the name passed by the user
                 if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
-                    .Contains(excludedMutation.ToLower())).Key 
+                    .Contains(excludedMutation.ToLower())).Key
                     is var foundMutator)
                 {
                     yield return foundMutator;
-                } else
+                }
+                else
                 {
                     throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
@@ -116,7 +117,7 @@ namespace Stryker.Core.Options
 
         private int ValidateMaxConcurrentTestrunners(int maxConcurrentTestRunners)
         {
-            if(maxConcurrentTestRunners < 1)
+            if (maxConcurrentTestRunners < 1)
             {
                 throw new StrykerInputException(
                     ErrorMessage,
@@ -125,17 +126,18 @@ namespace Stryker.Core.Options
             return maxConcurrentTestRunners;
         }
 
-        private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak) 
+        private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
-            List<int> thresholdList = new List<int> {thresholdHigh, thresholdLow, thresholdBreak};
-            if(thresholdList.Any(x => x > 100 || x < 0)) {
+            List<int> thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
+            if (thresholdList.Any(x => x > 100 || x < 0))
+            {
                 throw new StrykerInputException(
                     ErrorMessage,
                     "The thresholds must be between 0 and 100");
             }
 
             // ThresholdLow and ThresholdHigh can be the same value
-            if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh) 
+            if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh)
             {
                 throw new StrykerInputException(
                     ErrorMessage,
