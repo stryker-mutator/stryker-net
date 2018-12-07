@@ -71,10 +71,10 @@ namespace Stryker.Core.Mutants
         {
             if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
             {
-                if (currentNode is ExpressionStatementSyntax)
+                if (currentNode is ExpressionStatementSyntax expressionStatement)
                 {
                     // The expression of a ExpressionStatement cannot be mutated directly
-                    return Mutate(expressionSyntax);
+                    return expressionStatement.ReplaceNode(expressionStatement.Expression, Mutate(expressionSyntax));
                 } else
                 {
                     // The mutations should be placed using a ConditionalExpression
@@ -108,9 +108,10 @@ namespace Stryker.Core.Mutants
                 foreach (var child in children)
                 {
                     var mutatedNode = Mutate(child);
-                    if (mutatedNode.Equals(child))
+                    var originalNode = childCopy.GetCurrentNode(child);
+                    if (!mutatedNode.IsEquivalentTo(originalNode))
                     {
-                        childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedNode);
+                        childCopy = childCopy.ReplaceNode(originalNode, mutatedNode);
                     }
                 }
                 return childCopy;
