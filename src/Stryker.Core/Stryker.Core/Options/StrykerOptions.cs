@@ -12,7 +12,7 @@ namespace Stryker.Core.Options
     {
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
-        public string[] Reporters { get; }
+        public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
 
@@ -30,14 +30,14 @@ namespace Stryker.Core.Options
         public ThresholdOptions ThresholdOptions { get; }
 
         public StrykerOptions(string basePath = "",
-            string reporter = "Console",
+            string[] reporters = null,
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 30000,
             string[] excludedMutations = null,
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
-            int maxConcurrentTestRunners = Int32.MaxValue,
+            int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0)
@@ -53,16 +53,35 @@ namespace Stryker.Core.Options
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private string[] ValidateReporters(string[] reporters)
+        private IEnumerable<Reporter> ValidateReporters(string[] reporters)
         {
-            string[] validReporters = new[] { "Console", "ReportOnly", "Json" };
-            if (reporters.Any(r => !validReporters.Any(vr => vr.ToLowerInvariant() == r.ToLowerInvariant())))
+            if (reporters == null)
+            {
+                foreach (var reporter in new[] { Reporter.ConsoleProgressBar, Reporter.ConsoleReport })
+                {
+                    yield return reporter;
+                }
+                yield break;
+            }
+
+            IList<string> invalidatedReporters = new List<string>();
+            foreach (var reporter in reporters)
+            {
+                if (Enum.TryParse(reporter, true, out Reporter result))
+                {
+                    yield return result;
+                }
+                else
+                {
+                    invalidatedReporters.Add(reporter);
+                }
+            }
+            if (invalidatedReporters.Any())
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"Some of these reporters are incorrect: ({string.Join(",", reporters)}). The reporter options are [{string.Join(",", validReporters)}]");
+                    $"These reporter values are incorrect: {string.Join(",", invalidatedReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
             }
-            return reporters;
         }
 
         private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)

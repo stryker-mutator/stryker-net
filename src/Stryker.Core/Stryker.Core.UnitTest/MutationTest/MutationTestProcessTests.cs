@@ -112,7 +112,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem);
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, null, false, false, 1, 80, 60, 0);
+            var options = new StrykerOptions();
             // start mutation process
             target.Mutate(options);
 
@@ -178,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem);
 
-            var options = new StrykerOptions("c:/test", "Console", "", 2000, null, null, false, false, 1, 80, 60, 0);
+            var options = new StrykerOptions();
             target.Mutate(options);
 
             // Verify the created assembly is written to disk on the right location

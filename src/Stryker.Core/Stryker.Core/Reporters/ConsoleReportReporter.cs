@@ -39,7 +39,9 @@ namespace Stryker.Core.Reporters
         {
         }
 
-        public void OnMutantTested(IReadOnlyMutant result) { }
+        public void OnMutantTested(IReadOnlyMutant result)
+        {
+        }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
         {
@@ -47,14 +49,14 @@ namespace Stryker.Core.Reporters
             inputComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
-                _chalk.Default($"{new String('-', depth)} {Path.DirectorySeparatorChar}{Path.GetFileName(current.Name)} ");
+                _chalk.Default($"{new string('-', depth)} {Path.DirectorySeparatorChar}{Path.GetFileName(current.Name)} ");
                 DisplayComponent(current);
             };
 
             inputComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
-                _chalk.Default($"{new String('-', depth)} {current.Name} ");
+                _chalk.Default($"{new string('-', depth)} {current.Name} ");
                 DisplayComponent(current);
                 foreach (var mutant in current.TotalMutants)
                 {
