@@ -91,9 +91,9 @@ namespace Stryker.CLI
 
                                                 Reasons you might want to lower this setting:
                                                                  
-                                                    -Your test runner starts a browser (another CPU-intensive process)
-                                                    -You're running on a shared server and/or
-                                                    -Your hard disk cannot handle the I/O of all test runners
+                                                    - Your test runner starts a browser (another CPU-intensive process)
+                                                    - You're running on a shared server
+                                                    - You are running stryker in the background while doing other work
                                 ",
             DefaultValue = _defaultOptions.MaxConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
