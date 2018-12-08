@@ -14,7 +14,6 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class JsonReporterTests
     {
-
         [Fact]
         public void JsonReportComponent_ShouldGenerateFileTreeForJsonSerialization()
         {
@@ -61,64 +60,51 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var result = JsonReportComponent.FromProjectComponent(folder, new ThresholdOptions(80, 60, 0));
 
-            result.Name.ShouldBe("RootFolder");
-            result.Health.ShouldBe("warning");
-            result.MutationScore.ShouldBe(50);
-            result.CompileErrors.ShouldBe(0);
-            result.SurvivedMutants.ShouldBe(1);
-            result.SkippedMutants.ShouldBe(0);
-            result.TimeoutMutants.ShouldBe(0);
-            result.KilledMutants.ShouldBe(1);
-            result.TotalMutants.ShouldBe(2);
-            result.ThresholdHigh.ShouldBe(80);
-            result.ThresholdLow.ShouldBe(60);
-            result.ThresholdBreak.ShouldBe(0);
-            result.Source.ShouldBe(null);
+            ValidateJsonReportComponent(result, folder, "warning");
+            ValidateJsonReportComponent(result.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
+            ValidateJsonReportComponent(result.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
+        }
 
-            result.Mutants.ShouldBeEmpty();
-            result.ChildResults.Count.ShouldBe(2);
+        private void ValidateJsonReportComponent(JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
+        {
+            jsonComponent.Name.ShouldBe(inputComponent.Name);
+            jsonComponent.Health.ShouldBe(health);
+            jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore());
+            jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count());
+            jsonComponent.SurvivedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count());
+            jsonComponent.SkippedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count());
+            jsonComponent.TimeoutMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count());
+            jsonComponent.KilledMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count());
+            jsonComponent.TotalMutants.ShouldBe(inputComponent.ReadOnlyMutants.Count());
+            jsonComponent.ThresholdHigh.ShouldBe(80);
+            jsonComponent.ThresholdLow.ShouldBe(60);
+            jsonComponent.ThresholdBreak.ShouldBe(0);
 
-            result.ChildResults[0].Name.ShouldBe("SomeFile.cs");
-            result.ChildResults[0].Health.ShouldBe("ok");
-            result.ChildResults[0].MutationScore.ShouldBe(100);
-            result.ChildResults[0].CompileErrors.ShouldBe(0);
-            result.ChildResults[0].SurvivedMutants.ShouldBe(0);
-            result.ChildResults[0].SkippedMutants.ShouldBe(0);
-            result.ChildResults[0].TimeoutMutants.ShouldBe(0);
-            result.ChildResults[0].KilledMutants.ShouldBe(1);
-            result.ChildResults[0].TotalMutants.ShouldBe(1);
-            result.ChildResults[0].ThresholdHigh.ShouldBe(80);
-            result.ChildResults[0].ThresholdLow.ShouldBe(60);
-            result.ChildResults[0].ThresholdBreak.ShouldBe(0);
-            result.ChildResults[0].Source.ShouldBe("void M(){ int i = 0 + 8; }");
+            if(inputComponent is FolderComposite folderComponent)
+            {
+                jsonComponent.Source.ShouldBe(null);
+                jsonComponent.Mutants.ShouldBeEmpty();
+                jsonComponent.ChildResults.Count.ShouldBe(folderComponent.Children.Count());
+            }
+            if(inputComponent is FileLeaf fileComponent)
+            {
+                jsonComponent.Source.ShouldBe(fileComponent.SourceCode);
+                jsonComponent.Mutants.Count.ShouldBe(mutants);
 
-            result.ChildResults[0].Mutants.ShouldHaveSingleItem();
-            result.ChildResults[0].Mutants[0].Id.ShouldBe(55);
-            result.ChildResults[0].Mutants[0].MutatorName.ShouldBe("This name should display");
-            result.ChildResults[0].Mutants[0].Replacement.ShouldBe(mutation.ReplacementNode.ToString());
-            result.ChildResults[0].Mutants[0].Span.ShouldBe(new[] { 18, 23 });
-            result.ChildResults[0].Mutants[0].Status.ShouldBe("Killed");
-
-            result.ChildResults[1].Name.ShouldBe("SomeOtherFile.cs");
-            result.ChildResults[1].Health.ShouldBe("danger");
-            result.ChildResults[1].MutationScore.ShouldBe(0);
-            result.ChildResults[1].CompileErrors.ShouldBe(0);
-            result.ChildResults[1].SurvivedMutants.ShouldBe(1);
-            result.ChildResults[1].SkippedMutants.ShouldBe(0);
-            result.ChildResults[1].TimeoutMutants.ShouldBe(0);
-            result.ChildResults[1].KilledMutants.ShouldBe(0);
-            result.ChildResults[1].TotalMutants.ShouldBe(1);
-            result.ChildResults[1].ThresholdHigh.ShouldBe(80);
-            result.ChildResults[1].ThresholdLow.ShouldBe(60);
-            result.ChildResults[1].ThresholdBreak.ShouldBe(0);
-            result.ChildResults[1].Source.ShouldBe("void M(){ int i = 0 + 8; }");
-
-            result.ChildResults[1].Mutants.ShouldHaveSingleItem();
-            result.ChildResults[1].Mutants[0].Id.ShouldBe(56);
-            result.ChildResults[1].Mutants[0].MutatorName.ShouldBe("This name should display");
-            result.ChildResults[1].Mutants[0].Replacement.ShouldBe(mutation.ReplacementNode.ToString());
-            result.ChildResults[1].Mutants[0].Span.ShouldBe(new[] { 18, 23 });
-            result.ChildResults[1].Mutants[0].Status.ShouldBe("Survived");
+                for (int i = 0; i < mutants; i++)
+                {
+                    jsonComponent.Mutants[i].Id.ShouldBe(fileComponent.Mutants.ToArray()[i].Id);
+                    jsonComponent.Mutants[i].MutatorName.ShouldBe(fileComponent.Mutants.ToArray()[i].Mutation.DisplayName);
+                    jsonComponent.Mutants[i].Replacement.ShouldBe(fileComponent.Mutants.ToArray()[i].Mutation.ReplacementNode.ToString());
+                    jsonComponent.Mutants[i].Span.ShouldBe(
+                        new[] 
+                        {
+                            fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.SpanStart,
+                            fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.Span.End
+                        });
+                    jsonComponent.Mutants[i].Status.ShouldBe(fileComponent.Mutants.ToArray()[i].ResultStatus.ToString());
+                }
+            }
         }
     }
 }
