@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExampleProject
+﻿namespace ExampleProject
 {
     public class StringMagic
     {
@@ -19,15 +17,6 @@ namespace ExampleProject
         {
             test = "toto";
             return true;
-        }
-
-        public string UnsupportedSyntax(string a, string b)
-        {
-            if (Demo(out var test))
-            {
-                return a + b;
-            }
-            return test;
         }
     }
 }
