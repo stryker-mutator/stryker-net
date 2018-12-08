@@ -14,5 +14,20 @@ namespace ExampleProject
                 return second + first;
             }
         }
+
+        private bool Demo(out string test)
+        {
+            test = "toto";
+            return true;
+        }
+
+        public string UnsupportedSyntax(string a, string b)
+        {
+            if (Demo(out var test))
+            {
+                return a + b;
+            }
+            return test;
+        }
     }
 }

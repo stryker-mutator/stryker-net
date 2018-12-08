@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -43,7 +44,7 @@ namespace Stryker.Core.Mutants
             if (node is IfStatementSyntax ifStatement)
             {
                 // return original statement
-                return ifStatement.Else.Statement;
+                return ifStatement.Else.Statement.ChildNodes().First();
             }
             else
             {

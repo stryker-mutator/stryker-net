@@ -120,7 +120,13 @@ namespace Stryker.Core.MutationTest
                         _logger.LogInformation("{0} mutants got status {1}", mutantsToSkip.Count(), MutantStatus.Skipped.ToString());
                     }
                 }
+                else
+                {
+                    _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
+                    throw new ApplicationException("Failed to restore build able state.");
+                }
             }
+
 
             _logger.LogInformation("{0} mutants ready for test", _input.ProjectInfo.ProjectContents.TotalMutants.Count());
 
