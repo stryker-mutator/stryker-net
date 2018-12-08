@@ -46,7 +46,7 @@ namespace Stryker.Core.Mutants
                 return null;
             }
             // return original statement
-            var sub = ifStatement.Else.Statement.ChildNodes().ToList();
+            var childNodes = ifStatement.Else.Statement.ChildNodes().ToList();
             return sub.Count == 1 ? sub[0] : ifStatement.Else.Statement;
 
         }
