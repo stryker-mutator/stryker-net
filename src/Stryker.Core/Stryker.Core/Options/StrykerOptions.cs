@@ -64,7 +64,7 @@ namespace Stryker.Core.Options
                 yield break;
             }
 
-            IList<string> invalidatedReporters = new List<string>();
+            IList<string> invalidReporters = new List<string>();
             foreach (var reporter in reporters)
             {
                 if (Enum.TryParse(reporter, true, out Reporter result))
@@ -73,15 +73,17 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    invalidatedReporters.Add(reporter);
+                    invalidReporters.Add(reporter);
                 }
             }
-            if (invalidatedReporters.Any())
+            if (invalidReporters.Any())
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(",", invalidatedReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
+                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
             }
+            // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
+            yield break;
         }
 
         private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
