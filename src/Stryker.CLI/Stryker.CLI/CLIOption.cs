@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using Microsoft.Extensions.CommandLineUtils;
 
 namespace Stryker.CLI
 {
@@ -10,5 +9,6 @@ namespace Stryker.CLI
         public string ArgumentDescription { get; set; }
         public T DefaultValue { get; set; }
         public string JsonKey { get; set; }
+        public CommandOptionType ValueType { get; set; } = CommandOptionType.SingleValue;
     }
 }
