@@ -22,7 +22,15 @@ namespace Stryker.Core.Reporters
             var jsonReport = JsonReportComponent.FromProjectComponent(reportComponent, _options.ThresholdOptions);
             jsonReport.Name = _options.ProjectUnderTestNameFilter;
 
-            string output = JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
+            using (var file = File.CreateText(_options.BasePath + "/StrykerLogs/mutation-report.json"))
+            {
+                file.WriteLine(SerializeJsonReport(jsonReport));
+            }
+        }
+
+        private static string SerializeJsonReport(JsonReportComponent jsonReport)
+        {
+            return JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {
@@ -30,25 +38,9 @@ namespace Stryker.Core.Reporters
                 },
                 Formatting = Formatting.Indented
             });
-            using (var file = File.CreateText(_options.BasePath + "/stryker-runresult.json"))
-            {
-                file.WriteLine(output);
-            }
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
-        {
-        }
-
-        public void OnMutantTested(IReadOnlyMutant result)
-        {
-        }
-
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
-        {
-        }
-
-        private sealed class JsonReportComponent
+        public sealed class JsonReportComponent
         {
             public string Name { get; set; }
 
@@ -75,12 +67,12 @@ namespace Stryker.Core.Reporters
                 var report = new JsonReportComponent
                 {
                     Name = component.Name,
-                    TotalMutants = component.TotalMutants.Count(),
-                    KilledMutants = component.DetectedMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count(),
-                    SurvivedMutants = component.DetectedMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count(),
-                    SkippedMutants = component.DetectedMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count(),
-                    TimeoutMutants = component.DetectedMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count(),
-                    CompileErrors = component.DetectedMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count(),
+                    TotalMutants = component.ReadOnlyMutants.Count(),
+                    KilledMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count(),
+                    SurvivedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count(),
+                    SkippedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count(),
+                    TimeoutMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count(),
+                    CompileErrors = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count(),
                     MutationScore = component.GetMutationScore() * 100,
                     ThresholdHigh = thresholdOptions.ThresholdHigh,
                     ThresholdLow = thresholdOptions.ThresholdLow,
@@ -156,6 +148,17 @@ namespace Stryker.Core.Reporters
                 public int[] Span { get; set; }
                 public string Status { get; set; }
             }
+        }
+        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        {
+        }
+
+        public void OnMutantTested(IReadOnlyMutant result)
+        {
+        }
+
+        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        {
         }
     }
 }
