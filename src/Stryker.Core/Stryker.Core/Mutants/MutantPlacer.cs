@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public static string[] MutationMakers => new[] {Mutationconditional, Mutationif};
+        public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
 
         public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
 
