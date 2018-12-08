@@ -57,6 +57,20 @@ namespace Stryker.Core.UnitTest.Reporters
                 },
                 SourceCode = "void M(){ int i = 0 + 8; }"
             });
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeOtherFile.cs",
+                Mutants = new Collection<Mutant>()
+                {
+                    new Mutant()
+                    {
+                        Id = 56,
+                        ResultStatus = MutantStatus.Skipped,
+                        Mutation = mutation
+                    }
+                },
+                SourceCode = "void M(){ int i = 0 + 8; }"
+            });
 
             var result = JsonReportComponent.FromProjectComponent(folder, new ThresholdOptions(80, 60, 0));
 
@@ -69,13 +83,14 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             jsonComponent.Name.ShouldBe(inputComponent.Name);
             jsonComponent.Health.ShouldBe(health);
+            jsonComponent.PossibleMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
             jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore());
             jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count());
             jsonComponent.SurvivedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count());
             jsonComponent.SkippedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count());
             jsonComponent.TimeoutMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count());
             jsonComponent.KilledMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count());
-            jsonComponent.TotalMutants.ShouldBe(inputComponent.ReadOnlyMutants.Count());
+            jsonComponent.TotalMutants.ShouldBe(inputComponent.TotalMutants.Count());
             jsonComponent.ThresholdHigh.ShouldBe(80);
             jsonComponent.ThresholdLow.ShouldBe(60);
             jsonComponent.ThresholdBreak.ShouldBe(0);

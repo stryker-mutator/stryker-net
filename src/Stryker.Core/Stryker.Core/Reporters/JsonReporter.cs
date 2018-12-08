@@ -43,21 +43,31 @@ namespace Stryker.Core.Reporters
         public sealed class JsonReportComponent
         {
             public string Name { get; set; }
+            public string Language { get; set; } = "cs";
+            public string Health { get; set; }
+            public string Source { get; set; }
 
+            // All possible mutations we found including those skipped by the user but not including compile errors
+            public int PossibleMutants { get; set; }
+            // All mutants that were caught by a test
+            public int DetectedMutants { get; set; }
+            // All mutants that were tested
             public int TotalMutants { get; set; }
+            // All mutants that were directly caught by a test
             public int KilledMutants { get; set; }
+            // All mutants that were not caught by a test
             public int SurvivedMutants { get; set; }
+            // All mutants that were skipped by the user
             public int SkippedMutants { get; set; }
+            //All mutants that resulted in a timeout in the test and are counted as caught mutants
             public int TimeoutMutants { get; set; }
+            // All mutants we tried to place, but were unable to due to compile errors
             public int CompileErrors { get; set; }
+
             public int ThresholdHigh { get; set; }
             public int ThresholdLow { get; set; }
             public int ThresholdBreak { get; set; }
             public decimal? MutationScore { get; set; }
-            public string Health { get; set; }
-
-            public string Language { get; set; } = "cs";
-            public string Source { get; set; }
             public IList<JsonMutant> Mutants { get; } = new List<JsonMutant>();
 
             public IList<JsonReportComponent> ChildResults { get; } = new List<JsonReportComponent>();
@@ -67,7 +77,8 @@ namespace Stryker.Core.Reporters
                 var report = new JsonReportComponent
                 {
                     Name = component.Name,
-                    TotalMutants = component.ReadOnlyMutants.Count(),
+                    DetectedMutants = component.DetectedMutants.Count(),
+                    TotalMutants = component.TotalMutants.Count(),
                     KilledMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count(),
                     SurvivedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count(),
                     SkippedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count(),
@@ -78,6 +89,7 @@ namespace Stryker.Core.Reporters
                     ThresholdLow = thresholdOptions.ThresholdLow,
                     ThresholdBreak = thresholdOptions.ThresholdBreak,
                 };
+                report.PossibleMutants = report.TotalMutants + report.SkippedMutants;
 
                 if (report.MutationScore >= report.ThresholdHigh)
                 {
