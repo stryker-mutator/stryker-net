@@ -73,7 +73,7 @@ namespace Stryker.Core.Reporters
                     SkippedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count(),
                     TimeoutMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count(),
                     CompileErrors = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count(),
-                    MutationScore = component.GetMutationScore() * 100,
+                    MutationScore = component.GetMutationScore(),
                     ThresholdHigh = thresholdOptions.ThresholdHigh,
                     ThresholdLow = thresholdOptions.ThresholdLow,
                     ThresholdBreak = thresholdOptions.ThresholdBreak,

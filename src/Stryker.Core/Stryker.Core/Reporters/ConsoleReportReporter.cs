@@ -83,9 +83,9 @@ namespace Stryker.Core.Reporters
         {
             var score = inputComponent.GetMutationScore();
             // Convert the threshold integer values to decimal values
-            decimal thresholdHigh = (decimal)_options.ThresholdOptions.ThresholdHigh / 100;
-            decimal thresholdLow = (decimal)_options.ThresholdOptions.ThresholdLow / 100;
-            decimal thresholdBreak = (decimal)_options.ThresholdOptions.ThresholdBreak / 100;
+            decimal thresholdHigh = _options.ThresholdOptions.ThresholdHigh;
+            decimal thresholdLow = _options.ThresholdOptions.ThresholdLow;
+            decimal thresholdBreak = _options.ThresholdOptions.ThresholdBreak;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (!score.HasValue)
@@ -95,7 +95,7 @@ namespace Stryker.Core.Reporters
             else
             {
                 // print the score as a percentage
-                string scoreText = $"({ score.Value.ToString("P", CultureInfo.InvariantCulture)})";
+                string scoreText = $"({ (score.Value / 100).ToString("p", CultureInfo.InvariantCulture)})";
                 if (score > thresholdHigh)
                 {
                     _chalk.Green(scoreText);
