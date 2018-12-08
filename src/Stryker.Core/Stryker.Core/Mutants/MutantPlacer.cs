@@ -41,15 +41,14 @@ namespace Stryker.Core.Mutants
 
         public static SyntaxNode RemoveByIfStatement(SyntaxNode node)
         {
-            if (node is IfStatementSyntax ifStatement)
-            {
-                // return original statement
-                return ifStatement.Else.Statement.ChildNodes().First();
-            }
-            else
+            if (!(node is IfStatementSyntax ifStatement))
             {
                 return null;
             }
+            // return original statement
+            var sub = ifStatement.Else.Statement.ChildNodes().ToList();
+            return sub.Count == 1 ? sub[0] : ifStatement.Else.Statement;
+
         }
 
         public static ConditionalExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
