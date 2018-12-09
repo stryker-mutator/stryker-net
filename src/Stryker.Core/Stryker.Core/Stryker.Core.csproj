@@ -31,6 +31,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.TestPlatform" Version="16.0.0-preview-20181205-02" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.0.0-preview-20181205-02" />
+    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.0.0-preview-20181205-02" />
     <PackageReference Include="Serilog" Version="2.7.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />

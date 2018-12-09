@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
 
@@ -14,17 +16,20 @@ namespace Stryker.Core.TestRunners
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(string type, string path)
+        public ITestRunner Create(StrykerOptions options, ProjectInfo projectInfo)
         {
-            _logger.LogDebug("Factory is creating testrunner for asked type {0}", type);
+            _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
             ITestRunner testRunner = null;
-            switch (type)
+            switch (options.TestRunner)
             {
-                case("dotnet test"):
-                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                case "dotnet test":
+                    testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    break;
+                case "vstest":
+                    testRunner = new VstestTestRunner(options, projectInfo);
                     break;
                 default:
-                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
             _logger.LogInformation("Using testrunner {0}", testRunner.GetType().Name);

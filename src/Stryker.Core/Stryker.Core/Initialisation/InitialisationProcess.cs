@@ -57,7 +57,7 @@ namespace Stryker.Core.Initialisation
             {
                 ProjectInfo = projectInfo,
                 AssemblyReferences = references,
-                TestRunner = _testRunner ?? new TestRunnerFactory().Create("", projectInfo.TestProjectPath)
+                TestRunner = _testRunner ?? new TestRunnerFactory().Create(options, projectInfo)
             };
 
             // initial test

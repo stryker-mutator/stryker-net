@@ -29,6 +29,7 @@ namespace Stryker.Core.Options
         public int MaxConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; }
+        public string TestRunner { get; }
 
         public StrykerOptions(string basePath = "",
             string reporter = "Console",
@@ -41,7 +42,8 @@ namespace Stryker.Core.Options
             int maxConcurrentTestRunners = Int32.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
-            int thresholdBreak = 0)
+            int thresholdBreak = 0,
+            string testRunner = "vstest")
         {
             BasePath = basePath;
             Reporter = ValidateReporter(reporter);
@@ -52,6 +54,7 @@ namespace Stryker.Core.Options
             DevMode = devMode;
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            TestRunner = testRunner;
         }
 
         private string ValidateReporter(string reporter)
