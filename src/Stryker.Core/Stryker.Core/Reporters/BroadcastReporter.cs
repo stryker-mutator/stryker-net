@@ -11,16 +11,16 @@ namespace Stryker.Core.Reporters
     public class BroadcastReporter : IReporter
     {
         private readonly object _mutex = new object();
-        private IEnumerable<IReporter> _reporters { get; set; }
+        public IEnumerable<IReporter> Reporters { get; }
 
         public BroadcastReporter(IEnumerable<IReporter> reporters)
         {
-            _reporters = reporters;
+            Reporters = reporters;
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent)
         {
-            foreach (var reporter in _reporters)
+            foreach (var reporter in Reporters)
             {
                 reporter.OnMutantsCreated(inputComponent);
             }
@@ -28,7 +28,7 @@ namespace Stryker.Core.Reporters
 
         public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
         {
-            foreach (var reporter in _reporters)
+            foreach (var reporter in Reporters)
             {
                 reporter.OnStartMutantTestRun(mutantsToBeTested);
             }
@@ -38,7 +38,7 @@ namespace Stryker.Core.Reporters
         {
             lock (_mutex)
             {
-                foreach (var reporter in _reporters)
+                foreach (var reporter in Reporters)
                 {
                     reporter.OnMutantTested(result);
                 }
@@ -47,7 +47,7 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
         {
-            foreach (var reporter in _reporters)
+            foreach (var reporter in Reporters)
             {
                 reporter.OnAllMutantsTested(inputComponent);
             }

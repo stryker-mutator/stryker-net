@@ -25,8 +25,4 @@
     <None Include="filled-stryker-config.json" CopyToOutputDirectory="Always" />
     <None Include="stryker-config.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
-
-  <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
-    <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
-  </Target>
 </Project>

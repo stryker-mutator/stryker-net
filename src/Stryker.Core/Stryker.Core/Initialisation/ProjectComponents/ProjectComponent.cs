@@ -26,14 +26,14 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
-        /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
+        /// <returns>decimal between 0 and 100 or null when no score could be calculated</returns>
         public decimal? GetMutationScore()
         {
             var totalCount = TotalMutants.Count();
             var killedCount = DetectedMutants.Count();
             if(totalCount > 0)
             {
-                return killedCount / (decimal)totalCount;
+                return killedCount / (decimal)totalCount * 100;
             } else
             {
                 return null;
