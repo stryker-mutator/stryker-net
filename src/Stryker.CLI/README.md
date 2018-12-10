@@ -87,9 +87,9 @@ Example:
     "stryker-config":
     {
         "reporters":[
-	    "ConsoleReport".
+	    "ConsoleReport",
 	    "ConsoleProgressBar"
-    	]
+    	],
         "log-level":"info",
         "timeout-ms":2000,
         "log-file":true,
