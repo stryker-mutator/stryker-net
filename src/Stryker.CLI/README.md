@@ -64,6 +64,8 @@ All available reporter options are:
  * ConsoleProgressDots - This reporter will display the progress of the mutation testrun as a dot progress bar in the format .$$$...$
  * ConsoleReport - At the end of the mutation testrun, this reporter will display a styled report in a console window
  * Json - At the end of the mutation testrun, this reporter will output the testresult as a json object which can be used as input to a html report
+ 
+Defaults to `['ConsoleReport', 'ConsoleProgressBar']`
 
 #### Custom thresholds
 If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
