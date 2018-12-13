@@ -142,7 +142,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                     },
                     ProjectUnderTestAssemblyName = "ExampleProject",
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
-                    TargetFramework = "netcoreapp2.0"
+                    TargetFramework = "netcoreapp2.0",
+                    AppendTargetFrameworkToOutputPath = true
                 },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };

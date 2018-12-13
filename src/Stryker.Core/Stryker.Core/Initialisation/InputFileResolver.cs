@@ -70,6 +70,7 @@ namespace Stryker.Core.Initialisation
                 ProjectUnderTestPath = projectUnderTestPath,
                 ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(projectReferencePath),
                 ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(projectReferencePath),
+                AppendTargetFrameworkToOutputPath = currentProjectInfo.AppendTargetFrameworkToOutputPath
             };
         }
 
