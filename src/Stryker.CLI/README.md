@@ -1,4 +1,4 @@
-# Stryker.NET Command Line Interface
+﻿# Stryker.NET Command Line Interface
 The Stryker CLI is currently the only implemented way to use Stryker.NET. 
 
 ## Getting started
@@ -61,10 +61,45 @@ All available loglevels are:
 All available reporter options are:
  * All - This will enable all available reporters
  * ConsoleProgressBar - This reporter will display the progress of the mutation testrun as a progress bar
- * ConsoleProgressDots - This reporter will display the progress of the mutation testrun as a dot progress bar in the format .$$$...$
+ Example output:
+```
+Tests progress | █████████  | 14 / 15 | 94 % | ~0m 07s |
+Killed : 1
+Survived: 12
+Timeout : 1
+```
+ * ConsoleProgressDots - This reporter will display the progress of the mutation testrun as a dot progress bar in the format .STS...S
+ Example output:
+```
+SSSSSSS.SSSSSST
+```
  * ConsoleReport - At the end of the mutation testrun, this reporter will display a styled report in a console window
+ Example output:
+```
+- \ExampleProject [2/15 (13.33 %)]
+--- DummyCalc.cs [0/7 (0.00 %)]
+[Survived] Binary expression mutation on line 9: 'second > 0' ==> 'second < 0'
+[Survived] Binary expression mutation on line 9: 'second > 0' ==> 'second >= 0'
+[Survived] Binary expression mutation on line 10: 'first + second + 1' ==> 'first + second - 1'
+[Survived] Binary expression mutation on line 10: 'first + second' ==> 'first - second'
+[Survived] PostDecrementExpression to PostIncrementExpression mutation on line 11: 'second--' ==> 'second++'
+[Survived] Binary expression mutation on line 13: '1 < 0' ==> '1 > 0'
+[Survived] Binary expression mutation on line 13: '1 < 0' ==> '1 <= 0'
+--- DummyMath.cs [1/2 (50.00 %)]
+[Survived] Remove checked expression on line 7: 'checked(first + second)' ==> 'first + second'
+[Killed] Binary expression mutation on line 7: 'first + second' ==> 'first - second'
+--- Endlessloop.cs [1/2 (50.00 %)]
+[Timeout] Binary expression mutation on line 11: '1 < 0' ==> '1 > 0'
+[Survived] Binary expression mutation on line 11: '1 < 0' ==> '1 <= 0'
+--- StringMagic.cs [0/4 (0.00 %)]
+[Survived] Binary expression mutation on line 7: 'first.Length > 2' ==> 'first.Length < 2'
+[Survived] Binary expression mutation on line 7: 'first.Length > 2' ==> 'first.Length >= 2'
+[Survived] String mutation on line 18: '"toto"' ==> '""'
+[Survived] Boolean mutation on line 19: 'true' ==> 'false'
+```
  * Json - At the end of the mutation testrun, this reporter will output the testresult as a json object which can be used as input to a html report
- 
+ Example: See https://github.com/stryker-mutator/mutation-testing-elements/issues/1#issue-339099563
+
 Defaults to `['ConsoleReport', 'ConsoleProgressBar']`
 
 #### Custom thresholds
