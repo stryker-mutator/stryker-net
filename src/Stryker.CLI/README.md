@@ -100,7 +100,8 @@ SSSSSSS.SSSSSST
 [Survived] Boolean mutation on line 19: 'true' ==> 'false'
 ```
  * Json - At the end of the mutation testrun, this reporter will output the testresult as a json object which can be used as input to a html report
- Example: See https://github.com/stryker-mutator/mutation-testing-elements/issues/1#issue-339099563
+
+Example: See https://github.com/stryker-mutator/mutation-testing-elements/issues/1#issue-339099563
 
 Defaults to `['ConsoleReport', 'ConsoleProgressBar']`
 
