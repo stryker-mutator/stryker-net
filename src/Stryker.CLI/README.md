@@ -61,7 +61,8 @@ All available loglevels are:
 All available reporter options are:
  * All - This will enable all available reporters
  * ConsoleProgressBar - This reporter will display the progress of the mutation testrun as a progress bar
- Example output:
+
+Example output:
 ```
 Tests progress | █████████  | 14 / 15 | 94 % | ~0m 07s |
 Killed : 1
