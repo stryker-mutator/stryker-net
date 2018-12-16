@@ -345,10 +345,13 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions();
-            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
+            StrykerOptions actualOptions = null;
+            StrykerRunResult runResults = new StrykerRunResult(new StrykerOptions(), 0.1M);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(() => strykerRunResult);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
@@ -357,11 +360,12 @@ namespace Stryker.CLI.UnitTest
             var firstFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./StartUp.cs");
             var secondFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./ExampleDirectory/Recursive.cs");
             var thirdFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath(@".\ExampleDirectory/Recursive2.cs");
-            
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.FilesToExclude.ToArray()[0] == firstFileToExclude &&
-                o.FilesToExclude.ToArray()[1] == secondFileToExclude &&
-                o.FilesToExclude.ToArray()[2] == thirdFileToExclude)));
+
+            var filesToExclude = actualOptions.FilesToExclude.ToArray();
+            filesToExclude.Length.ShouldBe(3);
+            filesToExclude.ShouldContain(firstFileToExclude);
+            filesToExclude.ShouldContain(secondFileToExclude);
+            filesToExclude.ShouldContain(thirdFileToExclude);
         }
     }
 }

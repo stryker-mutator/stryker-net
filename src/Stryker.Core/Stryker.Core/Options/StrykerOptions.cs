@@ -176,17 +176,14 @@ namespace Stryker.Core.Options
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private List<string> ValidateFilesToExclude(string[] filesToExclude)
+        private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)
         {
-            var excludedFiles = new List<string>();
-
             foreach (var excludedFile in filesToExclude ?? Enumerable.Empty<string>())
             {
+                // The logger is not yet available here. The paths will be validated in the InputFileResolver
                 var platformFilePath = FilePathUtils.ConvertToPlatformSupportedFilePath(excludedFile);
-                excludedFiles.Add(platformFilePath);
+                yield return platformFilePath;
             }
-
-            return excludedFiles;
         }
     }
 }

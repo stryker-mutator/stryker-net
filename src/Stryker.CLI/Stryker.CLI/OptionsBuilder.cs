@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections;
@@ -53,9 +54,9 @@ namespace Stryker.CLI
                 GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
         }
 
-        private T GetOption<V, T>(V cliValue, CLIOption<T> defaultValue)
+        private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            if (defaultValue.ValueType == CommandOptionType.NoValue && cliValue is string cliNoValueValue && cliNoValueValue == "on")
+            if (option.ValueType == CommandOptionType.NoValue && cliValue is string cliNoValueValue && cliNoValueValue == "on")
             {
                 // When the value of a NoValue type is passed it somehow returns the string "on". This means the argument was passed and the value should be true.
                 return (T)(object)true;
@@ -63,42 +64,51 @@ namespace Stryker.CLI
             if (cliValue != null)
             {
                 // Convert the cliValue string to the disired type
-                return ConvertTo<V, T>(cliValue);
+                return ConvertTo(cliValue, option);
             }
             else if (config != null)
             {
                 // Try to get the value from the config file
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    return config.GetSection(defaultValue.JsonKey).Get<T>();
+                    return config.GetSection(option.JsonKey).Get<T>();
                 }
                 else
                 {
-                    string configValue = config.GetValue(defaultValue.JsonKey, string.Empty).ToString();
+                    string configValue = config.GetValue(option.JsonKey, string.Empty).ToString();
                     if (!string.IsNullOrEmpty(configValue))
                     {
-                        return ConvertTo<string, T>(configValue);
+                        return ConvertTo(configValue, option);
                     }
                 }
             }
 
             // Unable to get value from user, return default value
-            return defaultValue.DefaultValue;
+            return option.DefaultValue;
         }
 
-        private T ConvertTo<V, T>(V value)
+        private T ConvertTo<V, T>(V value, CLIOption<T> option)
         {
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
+            try
             {
-                // Convert json array to IEnummerable of desired type
-                var list = JsonConvert.DeserializeObject<T>(value as string);
-                return list;
-            }
-            else
+                if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
+                {
+                    // Convert json array to IEnummerable of desired type
+                    var list = JsonConvert.DeserializeObject<T>(value as string);
+                    return list;
+                }
+                else
+                {
+                    // Convert value to desired type
+                    return (T)Convert.ChangeType(value, typeof(T));
+                }
+            } catch (Exception ex)
             {
-                // Convert value to desired type
-                return (T)Convert.ChangeType(value, typeof(T));
+                throw new StrykerInputException("A value passed to an option was not valid.", $@"The option {option.ArgumentName} with value {value} is not valid.
+Hint:
+{ex.Message}");
             }
+
         }
     }
 }
