@@ -42,7 +42,7 @@ namespace Stryker.CLI
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
-            var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
+            var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);

@@ -5,10 +5,6 @@ using Stryker.Core.Options;
 using System;
 using System.Collections;
 using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
 
 namespace Stryker.CLI
 {
@@ -48,8 +44,8 @@ namespace Stryker.CLI
                 GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 GetOption(logLevel.Value(), CLIOptions.LogLevel),
-                GetOption(logToFile.HasValue(), CLIOptions.UseLogLevelFile),
-                GetOption(devMode.HasValue(), CLIOptions.DevMode),
+                GetOption(logToFile.Value(), CLIOptions.LogToFile),
+                GetOption(devMode.Value(), CLIOptions.DevMode),
                 GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
@@ -57,35 +53,36 @@ namespace Stryker.CLI
                 GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
         }
 
-        private T GetOption<V, T>(V value, CLIOption<T> defaultValue)
+        private T GetOption<V, T>(V cliValue, CLIOption<T> defaultValue)
         {
-            if (value != null)
+            if (defaultValue.ValueType == CommandOptionType.NoValue && cliValue is string cliNoValueValue && cliNoValueValue == "on")
             {
-                return ConvertTo<V, T>(value);
+                // When the value of a NoValue type is passed it somehow returns the string "on". This means the argument was passed and the value should be true.
+                return (T)(object)true;
             }
-            if (config != null)
+            if (cliValue != null)
             {
-                // Check if there is a threshold options object and use it when it's available
-                string thresholdOptionsSectionKey = "threshold-options";
-                if (config.GetSection(thresholdOptionsSectionKey).Exists() &&
-                    !string.IsNullOrEmpty(config.GetSection(thresholdOptionsSectionKey).GetValue(defaultValue.JsonKey, string.Empty).ToString()))
+                // Convert the cliValue string to the disired type
+                return ConvertTo<V, T>(cliValue);
+            }
+            else if (config != null)
+            {
+                // Try to get the value from the config file
+                if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
+                    return config.GetSection(defaultValue.JsonKey).Get<T>();
                 }
-                else if (config.GetSection("files-to-exclude").Exists() &&
-                         config.GetSection(defaultValue.JsonKey).Get<List<string>>() != null)
+                else
                 {
-                    var data = JsonConvert.SerializeObject(config.GetSection("files-to-exclude").Get<List<string>>());
-                    return (T) Convert.ChangeType(data, typeof(T));
-                }
-                //Else return config value            
-                else if (!string.IsNullOrEmpty(config.GetValue(defaultValue.JsonKey, string.Empty).ToString()))
-                {
-                    return config.GetValue<T>(defaultValue.JsonKey);
+                    string configValue = config.GetValue(defaultValue.JsonKey, string.Empty).ToString();
+                    if (!string.IsNullOrEmpty(configValue))
+                    {
+                        return ConvertTo<string, T>(configValue);
+                    }
                 }
             }
 
-            //Else return default
+            // Unable to get value from user, return default value
             return defaultValue.DefaultValue;
         }
 
@@ -93,13 +90,13 @@ namespace Stryker.CLI
         {
             if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
             {
-                //Convert commandOptionValue to list of desired type
+                // Convert json array to IEnummerable of desired type
                 var list = JsonConvert.DeserializeObject<T>(value as string);
                 return list;
             }
             else
             {
-                //Convert commandOptionValue to desired type
+                // Convert value to desired type
                 return (T)Convert.ChangeType(value, typeof(T));
             }
         }

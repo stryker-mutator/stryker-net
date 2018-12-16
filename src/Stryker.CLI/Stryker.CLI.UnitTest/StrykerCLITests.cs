@@ -6,11 +6,9 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System;
 using System.IO;
-using Xunit;
 using System.Linq;
-using Stryker.Core.Mutators;
-using Shouldly;
 using System.Reflection;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Stryker.CLI.UnitTest
@@ -145,18 +143,22 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
-            StrykerOptions options = new StrykerOptions();
-            var runResults = new StrykerRunResult(options, 0.3M);
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new[] { argName, "debug" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.LogOptions.LogLevel == LogEventLevel.Debug &&
-                o.LogOptions.LogToFile == false)));
+            mock.VerifyAll();
+            actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Debug);
+            actualOptions.LogOptions.LogToFile.Value.ShouldBeFalse();
         }
 
         [Theory]
@@ -172,23 +174,29 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile)));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile.Value)));
         }
 
         [Theory]
         [InlineData("--dev-mode")]
         public void StrykerCLI_WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
         {
-            StrykerOptions options = new StrykerOptions();
-            var runResults = new StrykerRunResult(options, 0.3M);
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
+
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DevMode)));
+            mock.VerifyAll();
+
+            actualOptions.DevMode.ShouldBeTrue();
         }
 
         [Theory]

@@ -1,16 +1,16 @@
 {
   "stryker-config": {
-    "reporter": "ReportOnly",
+    "reporters": [
+      "ConsoleReport"
+    ],
     "log-level": "trace",
     "timeout-ms": 9999,
     "log-file": true,
     "project-file": "ExampleProject.csproj",
     "max-concurrent-test-runners": 10,
-    "threshold-options": {
-      "threshold-high": 40,
-      "threshold-low": 30,
-      "threshold-break": 20
-    },
+    "threshold-high": 40,
+    "threshold-low": 30,
+    "threshold-break": 20,
     "files-to-exclude": [
       "./Recursive.cs"
     ] 

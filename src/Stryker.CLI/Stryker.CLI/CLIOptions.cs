@@ -34,12 +34,12 @@ namespace Stryker.CLI
             JsonKey = "log-level"
         };
 
-        public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
+        public static readonly CLIOption<bool> LogToFile = new CLIOption<bool>
         {
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
             ArgumentDescription = "Makes the logger write to a file",
-            DefaultValue = _defaultOptions.LogOptions.LogToFile,
+            DefaultValue = _defaultOptions.LogOptions.LogToFile ?? false,
             ValueType = Microsoft.Extensions.CommandLineUtils.CommandOptionType.NoValue,
             JsonKey = "log-file"
         };

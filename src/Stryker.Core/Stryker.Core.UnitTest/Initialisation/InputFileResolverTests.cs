@@ -106,7 +106,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InputFileResolver_InitializeShouldResolveImportedProject()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             string sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
@@ -167,7 +167,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", null);
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
@@ -176,7 +176,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InputFileResolver_InitializeShouldResolveMultipleImportedProjects()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             string sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
@@ -251,7 +251,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem);
 
-            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", null);
+            var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
             result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
@@ -260,7 +260,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InputFileResolver_InitializeShouldThrowOnMissingSharedProject()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/Initialisation/TestResources/ExampleSourceFile.cs");
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -313,7 +313,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem);
 
             Assert.Throws<FileNotFoundException>(() =>
-                target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", null));
+                target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>()));
 
         }
 

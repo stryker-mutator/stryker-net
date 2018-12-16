@@ -55,7 +55,6 @@ namespace Stryker.Core
 
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
-                    excludedMutations: options.ExcludedMutations,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
 

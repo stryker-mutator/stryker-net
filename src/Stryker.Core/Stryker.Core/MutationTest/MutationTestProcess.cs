@@ -28,7 +28,6 @@ namespace Stryker.Core.MutationTest
         private MutationTestInput _input { get; set; }
         private IReporter _reporter { get; set; }
         private IMutantOrchestrator _orchestrator { get; set; }
-        private IEnumerable<MutatorType> _exludedMutations { get; set; }
         private IFileSystem _fileSystem { get; }
         private ICompilingProcess _compilingProcess { get; set; }
         private IMutationTestExecutor _mutationTestExecutor { get; set; }
@@ -37,7 +36,6 @@ namespace Stryker.Core.MutationTest
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
-            IEnumerable<MutatorType> excludedMutations,
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
@@ -45,7 +43,6 @@ namespace Stryker.Core.MutationTest
         {
             _input = mutationTestInput;
             _reporter = reporter;
-            _exludedMutations = excludedMutations;
             _mutationTestExecutor = mutationTestExecutor;
             _orchestrator = orchestrator ?? new MutantOrchestrator();
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
@@ -120,10 +117,10 @@ namespace Stryker.Core.MutationTest
                     _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.BuildError.ToString());
                 }
 
-                if (_exludedMutations.Count() != 0)
+                if (options.ExcludedMutations.Count() != 0)
                 {
                     var mutantsToSkip = _input.ProjectInfo.ProjectContents.Mutants
-                        .Where(x => _exludedMutations.Contains(x.Mutation.Type)).ToList();
+                        .Where(x => options.ExcludedMutations.Contains(x.Mutation.Type)).ToList();
                     foreach (var mutant in mutantsToSkip)
                     {
                         mutant.ResultStatus = MutantStatus.Skipped;

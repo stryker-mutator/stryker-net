@@ -80,14 +80,13 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                null,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
                 fileSystem);
 
             // start mutation process
-            target.Mutate(new StrykerOptions());
+            target.Mutate(new StrykerOptions(devMode: true, excludedMutations: new string[] { }));
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
@@ -157,7 +156,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -221,7 +219,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                Enumerable.Empty<MutatorType>(),
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
@@ -273,7 +270,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                Enumerable.Empty<MutatorType>(),
                 executorMock.Object,
                 null,
                 null,
