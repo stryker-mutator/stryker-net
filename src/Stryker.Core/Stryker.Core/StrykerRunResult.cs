@@ -13,11 +13,10 @@ namespace Stryker.Core
             MutationScore = mutationScore;
         }
 
-        public bool isScoreAboveThresholdBreak()
+        public bool IsScoreAboveThresholdBreak()
         {
-            decimal thresholdBreak = (decimal) _options.ThresholdOptions.ThresholdBreak / 100;
             // Check if the mutation score is not below the threshold break
-            return MutationScore > thresholdBreak;
+            return MutationScore >= _options.ThresholdOptions.ThresholdBreak;
         }
     }
 }

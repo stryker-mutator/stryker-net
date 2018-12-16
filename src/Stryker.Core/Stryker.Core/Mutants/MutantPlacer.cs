@@ -2,11 +2,14 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
+        private const string Mutationconditional = "MutationConditional";
+        private const string Mutationif = "MutationIf";
         private static readonly string helper;
 
         static MutantPlacer()
@@ -21,6 +24,8 @@ namespace Stryker.Core.Mutants
             }
         }
 
+        public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
+
         public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
@@ -31,20 +36,19 @@ namespace Stryker.Core.Mutants
                 statement: SyntaxFactory.Block(mutated),
                 @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", mutantId.ToString()));
+                .WithAdditionalAnnotations(new SyntaxAnnotation(Mutationif, mutantId.ToString()));
         }
 
         public static SyntaxNode RemoveByIfStatement(SyntaxNode node)
         {
-            if (node is IfStatementSyntax ifStatement)
-            {
-                // return original statement
-                return ifStatement.Else.Statement;
-            }
-            else
+            if (!(node is IfStatementSyntax ifStatement))
             {
                 return null;
             }
+            // return original statement
+            var childNodes = ifStatement.Else.Statement.ChildNodes().ToList();
+            return childNodes.Count == 1 ? childNodes[0] : ifStatement.Else.Statement;
+
         }
 
         public static ConditionalExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
@@ -55,7 +59,7 @@ namespace Stryker.Core.Mutants
                 whenTrue: mutated,
                 whenFalse: original)
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation("MutationConditional", mutantId.ToString()));
+                .WithAdditionalAnnotations(new SyntaxAnnotation(Mutationconditional, mutantId.ToString()));
         }
 
         public static SyntaxNode RemoveByConditionalExpression(SyntaxNode node)

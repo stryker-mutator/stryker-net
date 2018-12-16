@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using Microsoft.Extensions.CommandLineUtils;
+﻿using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Stryker.Core.Options;
+using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using System.Collections;
 
 namespace Stryker.CLI
 {
@@ -23,6 +24,7 @@ namespace Stryker.CLI
             CommandOption excludedMutations,
             CommandOption logLevel,
             CommandOption logToFile,
+            CommandOption devMode,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
@@ -41,12 +43,13 @@ namespace Stryker.CLI
 
             return new StrykerOptions(
                 basePath,
-                GetOption(reporter.Value(), CLIOptions.Reporter),
+                GetOption(reporter.Value(), CLIOptions.Reporters),
                 GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 GetOption(logLevel.Value(), CLIOptions.LogLevel),
-                GetOption(logToFile.Value(), CLIOptions.UseLogLevelFile),
+                GetOption(logToFile.HasValue(), CLIOptions.UseLogLevelFile),
+                GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
@@ -54,17 +57,17 @@ namespace Stryker.CLI
                 GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
         }
 
-        private T GetOption<T>(string value, CLIOption<T> defaultValue)
+        private T GetOption<V, T>(V value, CLIOption<T> defaultValue)
         {
             if (value != null)
             {
-                return ConvertTo<T>(value);
+                return ConvertTo<V, T>(value);
             }
             if (config != null)
             {
                 // Check if there is a threshold options object and use it when it's available
                 string thresholdOptionsSectionKey = "threshold-options";
-                if (config.GetSection(thresholdOptionsSectionKey).Exists() && 
+                if (config.GetSection(thresholdOptionsSectionKey).Exists() &&
                     !string.IsNullOrEmpty(config.GetSection(thresholdOptionsSectionKey).GetValue(defaultValue.JsonKey, string.Empty).ToString()))
                 {
                     return config.GetSection(thresholdOptionsSectionKey).GetValue<T>(defaultValue.JsonKey);
@@ -86,12 +89,12 @@ namespace Stryker.CLI
             return defaultValue.DefaultValue;
         }
 
-        private T ConvertTo<T>(string value)
+        private T ConvertTo<V, T>(V value)
         {
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(String))
+            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
             {
                 //Convert commandOptionValue to list of desired type
-                var list = JsonConvert.DeserializeObject<T>(value);
+                var list = JsonConvert.DeserializeObject<T>(value as string);
                 return list;
             }
             else

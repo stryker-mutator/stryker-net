@@ -13,7 +13,7 @@ namespace Stryker.CLI
     {
         private IStrykerRunner _stryker { get; set; }
         private ILogger _logger { get; set; }
-        public int ExitCode {get; set; }
+        public int ExitCode { get; set; }
 
         public StrykerCLI(IStrykerRunner stryker)
         {
@@ -37,8 +37,9 @@ namespace Stryker.CLI
             };
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
-            var reporterParam = CreateOption(app, CLIOptions.Reporter);
+            var reporterParam = CreateOption(app, CLIOptions.Reporters);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
+            var devMode = CreateOption(app, CLIOptions.DevMode);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
@@ -51,7 +52,8 @@ namespace Stryker.CLI
 
             app.HelpOption("--help | -h | -?");
 
-            app.OnExecute(() => {
+            app.OnExecute(() =>
+            {
                 // app started
                 var options = new OptionsBuilder().Build(
                     Directory.GetCurrentDirectory(),
@@ -61,6 +63,7 @@ namespace Stryker.CLI
                     exludedMutationsParam,
                     logConsoleParam,
                     fileLogParam,
+                    devMode,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
@@ -68,20 +71,20 @@ namespace Stryker.CLI
                     thresholdBreakParam,
                     filesToExclude);
                 RunStryker(options);
-                return this.ExitCode;
+                return ExitCode;
             });
             return app.Execute(args);
         }
-        
+
         private void RunStryker(StrykerOptions options)
         {
             // start with the stryker header
             PrintStykerASCIIName();
 
             StrykerRunResult results = _stryker.RunMutationTest(options);
-            if(!results.isScoreAboveThresholdBreak()) 
+            if (!results.IsScoreAboveThresholdBreak())
             {
-                this.HandleBreakingThresholdScore(options, results);
+                HandleBreakingThresholdScore(options, results);
             }
         }
 
@@ -89,7 +92,7 @@ namespace Stryker.CLI
             _logger.LogError($@"Final mutation score: {results.MutationScore * 100} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
 Setting exit code to 1 (failure).
 Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
-            this.ExitCode = 1;
+            ExitCode = 1;
         }
 
         private void PrintStrykerASCIILogo()
@@ -129,16 +132,17 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
 
             Console.WriteLine($@"
 Version {assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build} (beta)
-"); 
+");
         }
 
         /// <summary>
         /// Simplify app option creation to prevent code duplication
         /// </summary>
-        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option) {
+        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option)
+        {
             return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
                 option.ArgumentDescription,
-                CommandOptionType.SingleValue);
+                option.ValueType);
         }
     }
 }

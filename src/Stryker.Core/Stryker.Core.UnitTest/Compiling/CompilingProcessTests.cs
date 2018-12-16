@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
@@ -46,7 +47,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms);
+                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
 
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -78,8 +79,8 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
-            rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>()))
-                .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics) => 
+            rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()))
+                .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode) => 
                 new RollbackProcessResult() {
                     Compilation = compilation
                 });
@@ -88,9 +89,9 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms);
+                Should.Throw<ApplicationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>()), Times.Once);
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Fact]
@@ -124,7 +125,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms);
+                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
 
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }

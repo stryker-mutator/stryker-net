@@ -33,5 +33,10 @@ namespace Stryker.Core.Initialisation
         /// The Folder/File structure found in the project under test.
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
+
+        /// <summary>
+        /// Indicates if Target Framework is append to output path.
+        /// </summary>
+        public bool AppendTargetFrameworkToOutputPath { get; set; }
     }
 }

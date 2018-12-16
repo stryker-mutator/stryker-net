@@ -149,7 +149,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(_sourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>()))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
@@ -163,8 +163,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem);
 
+            var options = new StrykerOptions();
             // start mutation process
-            target.Mutate();
+            target.Mutate(options);
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Exactly(2));
@@ -189,7 +190,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                     },
                     ProjectUnderTestAssemblyName = "ExampleProject",
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
-                    TargetFramework = "netcoreapp2.0"
+                    TargetFramework = "netcoreapp2.0",
+                    AppendTargetFrameworkToOutputPath = true
                 },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };
@@ -211,7 +213,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>()))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
@@ -225,7 +227,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem);
 
-            target.Mutate();
+            var options = new StrykerOptions();
+            target.Mutate(options);
 
             // Verify the created assembly is written to disk on the right location
             Assert.True(fileSystem.FileExists(Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll")),
@@ -266,7 +269,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions(Path.Combine(_filesystemRoot, "test"), "Console", "", 2000, null, null, false, 1, 80, 60, 0, null);
+            var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,

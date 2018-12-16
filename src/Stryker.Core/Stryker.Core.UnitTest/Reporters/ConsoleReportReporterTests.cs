@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Reporters
             chalkMock.Setup(x => x.DarkGray(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
 
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "debug", false, 1, 80, 60, 0, null), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf() { Name = "SomeFile.cs", Mutants = new Collection<Mutant>() { } });
@@ -61,7 +61,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "debug", false, 1, 80, 60, 0, null), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -103,7 +103,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
             
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "debug", false, 1, 80, 60, 0, null), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -128,7 +128,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldPrintRedOn60PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintRedUnderThresholdBreak()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -147,7 +147,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "info", false, 1, 80, 60, 0, null), chalkMock.Object);
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -169,7 +169,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldPrintYellowOn80PercentAndLower()
+        public void ConsoleReportReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -189,8 +189,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "debug", false, 1, 80, 60, 0, null), chalkMock.Object);
-
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()
@@ -212,7 +211,7 @@ All mutants have been tested, and your mutation score has been calculated
         }
 
         [Fact]
-        public void ConsoleReportReporter_ShouldGreenOn80PercentAndHigher()
+        public void ConsoleReportReporter_ShouldPrintGreenAboveThresholdHigh()
         {
             string output = "";
             var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
@@ -230,8 +229,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = MutatorType.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions("", "ReportOnly", "", 1000, null, "debug", false, 1, 80, 60, 0, null), chalkMock.Object);
-
+            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
             folder.Add(new FileLeaf()

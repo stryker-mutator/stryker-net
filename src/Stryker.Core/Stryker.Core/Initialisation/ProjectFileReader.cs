@@ -3,10 +3,8 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Linq;
-using System.Xml;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -28,11 +26,13 @@ namespace Stryker.Core.Initialisation
             var reference = FindProjectReference(projectFileContents, projectUnderTestNameFilter);
             var targetFramework = FindTargetFrameworkReference(projectFileContents);
             var assemblyName = FindAssemblyName(projectFileContents);
+            var appendTargetFrameworkToOutputPath = FindAppendTargetFrameworkToOutputPath(projectFileContents);
 
             return new ProjectFile()
             {
                 ProjectReference = reference,
                 TargetFramework = targetFramework,
+                AppendTargetFrameworkToOutputPath = appendTargetFrameworkToOutputPath
             };
         }
 
@@ -113,6 +113,16 @@ namespace Stryker.Core.Initialisation
             {
                 return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFramework", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
             }
+        }
+
+        private bool FindAppendTargetFrameworkToOutputPath(XDocument document)
+        {
+            if (document.Elements().Descendants("AppendTargetFrameworkToOutputPath").Any())
+            {
+                return Convert.ToBoolean(document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "AppendTargetFrameworkToOutputPath", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value);
+            }
+
+            return true;
         }
 
         public string FindAssemblyName(XDocument document)

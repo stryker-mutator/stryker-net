@@ -24,7 +24,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoArgumentsAndEmptyConfig_ShouldStartStrykerWithDefaultOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70, null);
+            StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
@@ -38,7 +38,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoArgumentsAndNoConfigFile_ShouldStartStrykerWithConfigOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70, null);
+            StrykerOptions options = new StrykerOptions();
             string currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3M);
@@ -60,7 +60,7 @@ namespace Stryker.CLI.UnitTest
             var fileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./Recursive.cs");
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 70, null);
+            StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
             mock.Setup(x => x.RunMutationTest(It.Is<StrykerOptions>(c => c.AdditionalTimeoutMS == 9999 &&
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&

@@ -71,27 +71,25 @@ namespace Stryker.Core.Mutants
         {
             if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
             {
+                if (currentNode is ExpressionStatementSyntax)
+                {
+                    if (GetExpressionSyntax(expressionSyntax) is var subExpressionSyntax && subExpressionSyntax != null)
+                    {
+                        // The expression of a ExpressionStatement cannot be mutated directly
+                        return currentNode.ReplaceNode(expressionSyntax, Mutate(expressionSyntax));
+                    } else
+                    {
+                        // If the EpxressionStatement does not contain a expression that can be mutated with conditional expression...
+                        // it should be mutated with if statements
+                        return MutateWithIfStatements(currentNode as ExpressionStatementSyntax);
+                    }
+                }
                 // The mutations should be placed using a ConditionalExpression
-                ExpressionSyntax expressionAst = expressionSyntax;
-                foreach (var mutant in FindMutants(expressionSyntax))
-                {
-                    _mutants.Add(mutant);
-                    ExpressionSyntax mutatedNode = ApplyMutant(expressionSyntax, mutant);
-                    expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
-                }
-                return currentNode.ReplaceNode(expressionSyntax, expressionAst);
+                return currentNode.ReplaceNode(expressionSyntax, MutateWithConditionalExpressions(expressionSyntax));
             }
-            else if (currentNode is StatementSyntax ast && currentNode.Kind() != SyntaxKind.Block)
+            else if (currentNode is StatementSyntax statement && currentNode.Kind() != SyntaxKind.Block)
             {
-                StatementSyntax statement = currentNode as StatementSyntax;
-                // The mutations should be placed using an IfStatement
-                foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
-                {
-                    _mutants.Add(mutant);
-                    StatementSyntax mutatedNode = ApplyMutant(statement, mutant);
-                    ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
-                }
-                return ast;
+                return MutateWithIfStatements(statement);
             }
             else
             {
@@ -101,7 +99,11 @@ namespace Stryker.Core.Mutants
                 foreach (var child in children)
                 {
                     var mutatedNode = Mutate(child);
-                    childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedNode);
+                    var originalNode = childCopy.GetCurrentNode(child);
+                    if (!mutatedNode.IsEquivalentTo(originalNode))
+                    {
+                        childCopy = childCopy.ReplaceNode(originalNode, mutatedNode);
+                    }
                 }
                 return childCopy;
             }
@@ -121,6 +123,33 @@ namespace Stryker.Core.Mutants
                 yield return mutant;
             }
         }
+
+        private SyntaxNode MutateWithIfStatements(StatementSyntax currentNode)
+        {
+            var ast = currentNode;
+            StatementSyntax statement = currentNode as StatementSyntax;
+            // The mutations should be placed using an IfStatement
+            foreach (var mutant in currentNode.ChildNodes().SelectMany(FindMutants))
+            {
+                _mutants.Add(mutant);
+                StatementSyntax mutatedNode = ApplyMutant(statement, mutant);
+                ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
+            }
+            return ast;
+        }
+
+        private SyntaxNode MutateWithConditionalExpressions(ExpressionSyntax currentNode)
+        {
+            ExpressionSyntax expressionAst = currentNode;
+            foreach (var mutant in FindMutants(currentNode))
+            {
+                _mutants.Add(mutant);
+                ExpressionSyntax mutatedNode = ApplyMutant(currentNode, mutant);
+                expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
+            }
+            return expressionAst;
+        }
+
 
         /// <summary>
         /// Mutates one single SyntaxNode using a mutator
@@ -162,6 +191,9 @@ namespace Stryker.Core.Mutants
                 case nameof(LocalFunctionStatementSyntax):
                     var localFunction = node as LocalFunctionStatementSyntax;
                     return localFunction.ExpressionBody?.Expression;
+                case nameof(ExpressionStatementSyntax):
+                    var expressionStatement = node as ExpressionStatementSyntax;
+                    return expressionStatement.Expression;
                 default:
                     return null;
             }

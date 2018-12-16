@@ -1,26 +1,30 @@
 ﻿using Shouldly;
-using Stryker.Core.Reporters;
 using Stryker.Core.Options;
-using System;
-using System.Collections.Generic;
-
+using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Progress;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
     public class ReporterFactoryTests
     {
-        public static IEnumerable<object[]> getParameters()
+        [Fact]
+        public void ReporterFactory_CreatesRequestedReporters()
         {
-            yield return new object[] {new StrykerOptions("", "Console", "", 1000, null, "debug", false, 1, 80, 60, 0, null), typeof(BroadcastReporter)};
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "Json" }));
+            result.ShouldBeOfType(typeof(BroadcastReporter));
+            result.Reporters.ShouldHaveSingleItem().ShouldBeOfType(typeof(JsonReporter));
         }
 
-        [Theory]
-        [MemberData(nameof(getParameters))]
-        public void ReporterFactory_NameShouldCreateJustReporterType(StrykerOptions options, Type type)
+        [Fact]
+        public void ReporterFactory_CreatesAllReporters()
         {
-            var result = ReporterFactory.Create(options);
-            result.ShouldBeOfType(type);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }));
+            result.ShouldBeOfType(typeof(BroadcastReporter));
+            result.Reporters.ShouldContain(r => r is JsonReporter);
+            result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
+            result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
+            result.Reporters.ShouldContain(r => r is ProgressReporter);
         }
     }
 }

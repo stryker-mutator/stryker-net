@@ -5,5 +5,6 @@
         public string ProjectReference { get; set; }
         public string TargetFramework { get; set; }
         public string AssemblyName { get; set; }
+        public bool AppendTargetFrameworkToOutputPath { get; set; }
     }
 }

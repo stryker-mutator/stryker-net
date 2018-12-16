@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using Stryker.Core.Options;
+﻿using Stryker.Core.Options;
 using Stryker.Core.Reporters.Progress;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Reporters
 {
@@ -8,12 +9,25 @@ namespace Stryker.Core.Reporters
     {
         public static IReporter Create(StrykerOptions options)
         {
-            var progressReporter = CreateProgressReporter();
-            return new BroadcastReporter(new Collection<IReporter>()
+            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters, CreateReporters(options)));
+        }
+
+        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        {
+            return new Dictionary<Reporter, IReporter>
             {
-                new ConsoleReportReporter(options),
-                progressReporter
-            });
+                { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
+                { Reporter.ConsoleProgressBar, CreateProgressReporter() },
+                { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
+                { Reporter.Json, new JsonReporter(options) }
+            };
+        }
+
+        private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
+        {
+            return enabledReporters.Contains(Reporter.All) ? possibleReporters.Values :
+                possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
+                    .Select(reporter => reporter.Value);
         }
 
         private static ProgressReporter CreateProgressReporter()

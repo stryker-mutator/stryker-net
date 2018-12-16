@@ -306,5 +306,64 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             result.TargetFramework.ShouldBe(target.Split(';')[0]);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ProjectFileReader_ShouldParseWhenAppendTargetFrameworkToOutputPathAvailable(bool append)
+        {
+            var xDocument = XDocument.Parse($@"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <AppendTargetFrameworkToOutputPath>{append}</AppendTargetFrameworkToOutputPath>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+
+</Project>");
+
+            var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
+
+            result.AppendTargetFrameworkToOutputPath.ShouldBe(append);
+        }
+
+        [Fact]
+        public void ProjectFileReader_ShouldReturnTrueIfAppendTargetFrameworkToOutputPathNotAvailable()
+        {
+            var xDocument = XDocument.Parse($@"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+
+</Project>");
+
+            var result = new ProjectFileReader().ReadProjectFile(xDocument, null);
+
+            result.AppendTargetFrameworkToOutputPath.ShouldBe(true);
+        }
     }
 }

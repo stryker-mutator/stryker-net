@@ -8,9 +8,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         void TestMethod()
         {
-            int i = 0;
-            i = i + 1;
-
             string SomeLocalFunction()
             {
                 var test3 = 2 + 5;
