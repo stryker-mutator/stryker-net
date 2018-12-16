@@ -7,6 +7,7 @@ using System.IO;
 using Xunit;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -66,7 +67,7 @@ namespace Stryker.CLI.UnitTest
                                                                         c.LogOptions.LogLevel == LogEventLevel.Verbose &&
                                                                         c.LogOptions.LogToFile == true &&
                                                                         c.ProjectUnderTestNameFilter == "ExampleProject.csproj" &&
-                                                                        c.Reporter == "ReportOnly" &&
+                                                                        c.Reporters == new List<Reporter> { Reporter.ConsoleReport } &&
                                                                         c.MaxConcurrentTestrunners == 10 &&
                                                                         c.ThresholdOptions.ThresholdBreak == 20 &&
                                                                         c.ThresholdOptions.ThresholdLow == 30 &&

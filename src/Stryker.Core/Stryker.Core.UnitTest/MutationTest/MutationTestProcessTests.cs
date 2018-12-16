@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(_sourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>()))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), true))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
@@ -87,7 +87,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 fileSystem);
 
             // start mutation process
-            target.Mutate();
+            target.Mutate(new StrykerOptions());
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);

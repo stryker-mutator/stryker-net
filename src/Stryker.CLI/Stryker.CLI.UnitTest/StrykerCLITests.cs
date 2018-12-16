@@ -318,7 +318,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoFilesToExcludeSet_ShouldPassDefaultValueToStryker()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 0, null);
+            StrykerOptions options = new StrykerOptions();
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(() => strykerRunResult);
@@ -337,7 +337,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, 1, 90, 80, 0, null);
+            StrykerOptions options = new StrykerOptions();
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(() => strykerRunResult);
