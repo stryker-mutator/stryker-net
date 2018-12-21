@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 SourceCode = "void M(){ int i = 0 + 8; }"
             });
 
-            var result = JsonReportComponent.FromProjectComponent(folder, new ThresholdOptions(80, 60, 0));
+            var result = JsonReportComponent.FromProjectComponent(folder, new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60));
 
             ValidateJsonReportComponent(result, folder, "warning");
             ValidateJsonReportComponent(result.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
@@ -81,7 +81,6 @@ namespace Stryker.Core.UnitTest.Reporters
 
         private void ValidateJsonReportComponent(JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
         {
-            jsonComponent.Name.ShouldBe(inputComponent.Name);
             jsonComponent.Health.ShouldBe(health);
             jsonComponent.PossibleMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
             jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore());
@@ -91,18 +90,21 @@ namespace Stryker.Core.UnitTest.Reporters
             jsonComponent.TimeoutMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count());
             jsonComponent.KilledMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count());
             jsonComponent.TotalMutants.ShouldBe(inputComponent.TotalMutants.Count());
-            jsonComponent.ThresholdHigh.ShouldBe(80);
-            jsonComponent.ThresholdLow.ShouldBe(60);
-            jsonComponent.ThresholdBreak.ShouldBe(0);
+            //jsonComponent.ThresholdHigh.ShouldBe(80);
+            //jsonComponent.ThresholdLow.ShouldBe(60);
+            //jsonComponent.ThresholdBreak.ShouldBe(0);
 
-            if(inputComponent is FolderComposite folderComponent)
+            if (inputComponent is FolderComposite folderComponent)
             {
+                var componentNameToTest = folderComponent.Name is null ? null : folderComponent.RelativePath;
+                jsonComponent.Name.ShouldBe(componentNameToTest);
                 jsonComponent.Source.ShouldBe(null);
-                jsonComponent.Mutants.ShouldBeEmpty();
+                jsonComponent.Mutants.ShouldBe(null);
                 jsonComponent.ChildResults.Count.ShouldBe(folderComponent.Children.Count());
             }
-            if(inputComponent is FileLeaf fileComponent)
+            if (inputComponent is FileLeaf fileComponent)
             {
+                jsonComponent.Name.ShouldBe(fileComponent.Name);
                 jsonComponent.Source.ShouldBe(fileComponent.SourceCode);
                 jsonComponent.Mutants.Count.ShouldBe(mutants);
 
@@ -111,12 +113,13 @@ namespace Stryker.Core.UnitTest.Reporters
                     jsonComponent.Mutants[i].Id.ShouldBe(fileComponent.Mutants.ToArray()[i].Id);
                     jsonComponent.Mutants[i].MutatorName.ShouldBe(fileComponent.Mutants.ToArray()[i].Mutation.DisplayName);
                     jsonComponent.Mutants[i].Replacement.ShouldBe(fileComponent.Mutants.ToArray()[i].Mutation.ReplacementNode.ToString());
-                    jsonComponent.Mutants[i].Span.ShouldBe(
-                        new[] 
-                        {
-                            fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.SpanStart,
-                            fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.Span.End
-                        });
+
+                    var location = fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.SyntaxTree.GetLineSpan(fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.FullSpan);
+
+                    jsonComponent.Mutants[i].Location.Start.Line.ShouldBe(location.StartLinePosition.Line + 1);
+                    jsonComponent.Mutants[i].Location.Start.Column.ShouldBe(location.StartLinePosition.Character);
+                    jsonComponent.Mutants[i].Location.End.Line.ShouldBe(location.EndLinePosition.Line + 1);
+                    jsonComponent.Mutants[i].Location.End.Column.ShouldBe(location.EndLinePosition.Character);
                     jsonComponent.Mutants[i].Status.ShouldBe(fileComponent.Mutants.ToArray()[i].ResultStatus.ToString());
                 }
             }

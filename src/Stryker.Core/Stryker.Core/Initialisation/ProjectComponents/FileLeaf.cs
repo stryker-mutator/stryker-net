@@ -7,10 +7,10 @@ namespace Stryker.Core.Initialisation.ProjectComponent
     public class FileLeaf : ProjectComponent
     {
         public string SourceCode { get; set; }
-        public string FullPath { get; set; }
 
         private IEnumerable<Mutant> _mutants { get; set; }
-        public override IEnumerable<Mutant> Mutants {
+        public override IEnumerable<Mutant> Mutants
+        {
             get => _mutants;
             set => _mutants = value;
         }
