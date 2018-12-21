@@ -107,21 +107,26 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> filesToExclude, string projectUnderTestPath)
+        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
         {
-            var files = root.GetAllFiles().ToList();
+            var allFiles = root.GetAllFiles().ToList();
 
-            foreach (var file in filesToExclude)
+            foreach (var path in pathsToExclude)
             {
-                var fullPath = Path.GetFullPath(projectUnderTestPath + file);
-                if (!File.Exists(fullPath))
+                var fullPath = path.StartsWith(projectUnderTestPath) ? path : Path.GetFullPath(projectUnderTestPath + path);
+                if (!Path.HasExtension(path))
                 {
-                    _logger.LogWarning("The specified file to exclude {0} could not be found. Did you mean to exclude another file?", fullPath);
+                    _logger.LogInformation("Scanning dir {0} for files to exclude.", fullPath);
                 }
-                else
+                var filesToExclude = allFiles.Where(x => x.FullPath.StartsWith(fullPath)).ToList();
+                if (filesToExclude.Count() == 0)
                 {
-                    _logger.LogInformation("File {0} will be excluded from mutation.", fullPath);
-                    files.Single(x => x.FullPath == fullPath).IsExcluded = true;
+                    _logger.LogWarning("No file to exclude was found for path {0}. Did you mean to exclude another file?", fullPath);
+                }
+                foreach (var file in filesToExclude)
+                {
+                    _logger.LogInformation("File {0} will be excluded from mutation.", file);
+                    file.IsExcluded = true;
                 }
             }
         }
