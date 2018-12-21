@@ -75,6 +75,10 @@ namespace Stryker.Core.UnitTest.Reporters
             var result = JsonReportComponent.FromProjectComponent(folder, new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60));
 
             ValidateJsonReportComponent(result, folder, "warning");
+            //result.ThresholdHigh.ShouldBe(80);
+            //result.ThresholdLow.ShouldBe(60);
+            //result.ThresholdBreak.ShouldBe(0);
+
             ValidateJsonReportComponent(result.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
             ValidateJsonReportComponent(result.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
         }
@@ -90,9 +94,6 @@ namespace Stryker.Core.UnitTest.Reporters
             jsonComponent.TimeoutMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count());
             jsonComponent.KilledMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count());
             jsonComponent.TotalMutants.ShouldBe(inputComponent.TotalMutants.Count());
-            //jsonComponent.ThresholdHigh.ShouldBe(80);
-            //jsonComponent.ThresholdLow.ShouldBe(60);
-            //jsonComponent.ThresholdBreak.ShouldBe(0);
 
             if (inputComponent is FolderComposite folderComponent)
             {
