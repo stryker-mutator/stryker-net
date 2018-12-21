@@ -3,11 +3,9 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Stryker.Core

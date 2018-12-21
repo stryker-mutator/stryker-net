@@ -77,7 +77,6 @@ namespace Stryker.CLI.UnitTest
 
             actualOptions.AdditionalTimeoutMS.ShouldBe(9999);
             actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Verbose);
-            actualOptions.LogOptions.LogToFile.Value.ShouldBeTrue();
             actualOptions.ProjectUnderTestNameFilter.ShouldBe("ExampleProject.csproj");
             actualOptions.Reporters.ShouldHaveSingleItem();
             actualOptions.Reporters.ShouldContain(Reporter.ConsoleReport);

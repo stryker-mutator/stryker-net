@@ -109,7 +109,7 @@ namespace Stryker.Core.Options
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
+                if (typeDescriptions.FirstOrDefault(x => x.Value.ToString().ToLower()
                     .Contains(excludedMutation.ToLower())).Key
                     is var foundMutator)
                 {

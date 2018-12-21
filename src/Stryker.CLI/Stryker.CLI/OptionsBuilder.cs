@@ -45,8 +45,8 @@ namespace Stryker.CLI
                 GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 GetOption(logLevel.Value(), CLIOptions.LogLevel),
-                GetOption(logToFile.Value(), CLIOptions.LogToFile),
-                GetOption(devMode.Value(), CLIOptions.DevMode),
+                GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
+                GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
@@ -56,11 +56,6 @@ namespace Stryker.CLI
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            if (option.ValueType == CommandOptionType.NoValue && cliValue is string cliNoValueValue && cliNoValueValue == "on")
-            {
-                // When the value of a NoValue type is passed it somehow returns the string "on". This means the argument was passed and the value should be true.
-                return (T)(object)true;
-            }
             if (cliValue != null)
             {
                 // Convert the cliValue string to the disired type
