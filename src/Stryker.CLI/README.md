@@ -59,7 +59,6 @@ All available loglevels are:
 `dotnet stryker --reporters ['ConsoleReport', 'ConsoleProgressBar']`
 
 All available reporter options are:
- * All - This will enable all available reporters
  * ConsoleProgressBar - This reporter will display the progress of the mutation testrun as a progress bar
 
 Example output:
@@ -100,6 +99,7 @@ SSSSSSS.SSSSSST
 [Survived] Boolean mutation on line 19: 'true' ==> 'false'
 ```
  * Json - At the end of the mutation testrun, this reporter will output the testresult as a json object which can be used as input to a html report
+ * All - This will enable all available reporters
 
 Example: See https://github.com/stryker-mutator/mutation-testing-elements/issues/1#issue-339099563
 
