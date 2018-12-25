@@ -68,7 +68,10 @@ Killed : 1
 Survived: 12
 Timeout : 1
 ```
- * ConsoleProgressDots - This reporter will display the progress of the mutation testrun as a dot progress bar in the format .STS...S
+ * ConsoleProgressDots - This reporter will display the progress of the mutation testrun as a dot progress bar in the format:  
+ . - Killed  
+ S - Survived  
+ T - Timeout  
 
 Example output:
 ```
