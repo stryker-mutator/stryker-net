@@ -6,6 +6,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 
 namespace Stryker.Core.Reporters
@@ -13,9 +14,11 @@ namespace Stryker.Core.Reporters
     public class JsonReporter : IReporter
     {
         private readonly StrykerOptions _options;
-        public JsonReporter(StrykerOptions options)
+        private readonly IFileSystem _fileSystem;
+        public JsonReporter(StrykerOptions options, IFileSystem fileSystem)
         {
             _options = options;
+            _fileSystem = fileSystem;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
@@ -25,15 +28,12 @@ namespace Stryker.Core.Reporters
             jsonReport.ThresholdLow = _options.ThresholdOptions.ThresholdLow;
             jsonReport.ThresholdBreak = _options.ThresholdOptions.ThresholdBreak;
 
-            using (var file = File.CreateText(_options.BasePath + "/StrykerLogs/mutation-report.json"))
-            {
-                file.WriteLine(SerializeJsonReport(jsonReport));
-            }
+            WriteReportToJsonFile(jsonReport, Path.Combine(_options.BasePath, "/StrykerLogs/mutation-report.json"));
         }
 
-        private static string SerializeJsonReport(JsonReportComponent jsonReport)
+        private void WriteReportToJsonFile(JsonReportComponent jsonReport, string filePath)
         {
-            return JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {
@@ -42,6 +42,12 @@ namespace Stryker.Core.Reporters
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             });
+
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            using (var file = _fileSystem.File.CreateText(filePath))
+            {
+                file.WriteLine(json);
+            }
         }
 
         public sealed class JsonReportComponent

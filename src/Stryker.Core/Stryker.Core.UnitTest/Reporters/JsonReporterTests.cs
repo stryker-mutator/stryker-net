@@ -1,11 +1,15 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;
 using static Stryker.Core.Reporters.JsonReporter;
@@ -73,14 +77,82 @@ namespace Stryker.Core.UnitTest.Reporters
             });
 
             var result = JsonReportComponent.FromProjectComponent(folder, new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60));
+        }
 
-            ValidateJsonReportComponent(result, folder, "warning");
-            //result.ThresholdHigh.ShouldBe(80);
-            //result.ThresholdLow.ShouldBe(60);
-            //result.ThresholdBreak.ShouldBe(0);
+        [Fact]
+        public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
+        {
+            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
 
-            ValidateJsonReportComponent(result.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
-            ValidateJsonReportComponent(result.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
+            var mutation = new Mutation()
+            {
+                OriginalNode = originalNode,
+                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+                DisplayName = "This name should display",
+                Type = MutatorType.Arithmetic
+            };
+
+            var folder = new FolderComposite() { Name = "RootFolder" };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>()
+                {
+                    new Mutant()
+                    {
+                        Id = 55,
+                        ResultStatus = MutantStatus.Killed,
+                        Mutation = mutation
+                    }
+                },
+                SourceCode = "void M(){ int i = 0 + 8; }"
+            });
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeOtherFile.cs",
+                Mutants = new Collection<Mutant>()
+                {
+                    new Mutant()
+                    {
+                        Id = 56,
+                        ResultStatus = MutantStatus.Survived,
+                        Mutation = mutation
+                    }
+                },
+                SourceCode = "void M(){ int i = 0 + 8; }"
+            });
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeOtherFile.cs",
+                Mutants = new Collection<Mutant>()
+                {
+                    new Mutant()
+                    {
+                        Id = 56,
+                        ResultStatus = MutantStatus.Skipped,
+                        Mutation = mutation
+                    }
+                },
+                SourceCode = "void M(){ int i = 0 + 8; }"
+            });
+
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var reporter = new JsonReporter(options, mockFileSystem);
+
+            reporter.OnAllMutantsTested(folder);
+            var reportPath = Path.Combine(options.BasePath, "/StrykerLogs/mutation-report.json");
+            mockFileSystem.FileExists(reportPath).ShouldBeTrue();
+
+            var reportObject = JsonConvert.DeserializeObject<JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
+            reportObject.ThresholdHigh.ShouldBe(80);
+            reportObject.ThresholdLow.ShouldBe(60);
+            reportObject.ThresholdBreak.ShouldBe(0);
+
+            ValidateJsonReportComponent(reportObject, folder, "warning");
+            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
+            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
         }
 
         private void ValidateJsonReportComponent(JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
