@@ -22,7 +22,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private string[] _foldersToExclude = { "obj", "bin", "node_modules" };
+        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private ILogger _logger { get; set; }
 
@@ -60,7 +60,7 @@ namespace Stryker.Core.Initialisation
                 }
                 inputFiles.Add(FindInputFiles(folder, filesToExclude));
             }
-            
+
             MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestPath);
 
             return new ProjectInfo()
@@ -91,7 +91,7 @@ namespace Stryker.Core.Initialisation
                 FullPath = Path.GetFullPath(path),
                 RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
             };
-            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToIgnore.Contains(Path.GetFileName(x))))
+            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
                 folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
             }
