@@ -125,7 +125,7 @@ namespace Stryker.Core.Initialisation
                 }
                 foreach (var file in filesToExclude)
                 {
-                    _logger.LogInformation("File {0} will be excluded from mutation.", file);
+                    _logger.LogInformation("File {0} will be excluded from mutation.", file.FullPath);
                     file.IsExcluded = true;
                 }
             }
