@@ -1,5 +1,7 @@
 ﻿using Buildalyzer;
 using Stryker.Core.Initialisation.ProjectComponent;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker.Core.Initialisation
 {
@@ -13,6 +15,12 @@ namespace Stryker.Core.Initialisation
         /// The Folder/File structure found in the project under test.
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
-        
+        public string GetInjectionPath()
+        {
+            var outputPath = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
+            var assemblyName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyName");
+            string injectionPath = Path.Combine(outputPath, assemblyName + ".dll");
+            return injectionPath;
+        }
     }
 }

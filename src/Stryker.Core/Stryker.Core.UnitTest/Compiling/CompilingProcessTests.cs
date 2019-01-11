@@ -33,14 +33,11 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new Core.Initialisation.ProjectInfo()
-                {
-                    ProjectUnderTestAssemblyName = "The assembly name"
-                },
+                ProjectInfo = new ProjectInfo(),
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
-        };
+            };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
             var target = new CompilingProcess(input, rollbackProcessMock.Object);
