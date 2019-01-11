@@ -6,13 +6,13 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;
-using static Stryker.Core.Reporters.JsonReporter;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 SourceCode = "void M(){ int i = 0 + 8; }"
             });
 
-            var result = JsonReportComponent.FromProjectComponent(folder, new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60));
+            var result = JsonReporter.JsonReportComponent.FromProjectComponent(folder, new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60));
         }
 
         [Fact]
@@ -142,10 +142,10 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(folder);
-            var reportPath = Path.Combine(options.BasePath, "/StrykerLogs/mutation-report.json");
+            var reportPath = Path.Combine(options.BasePath, "StrykerOutput", "reports", $"mutation-report-{DateTime.Today.ToShortDateString()}.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue();
 
-            var reportObject = JsonConvert.DeserializeObject<JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
+            var reportObject = JsonConvert.DeserializeObject<JsonReporter.JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
             reportObject.ThresholdHigh.ShouldBe(80);
             reportObject.ThresholdLow.ShouldBe(60);
             reportObject.ThresholdBreak.ShouldBe(0);
@@ -155,7 +155,7 @@ namespace Stryker.Core.UnitTest.Reporters
             ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
         }
 
-        private void ValidateJsonReportComponent(JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
+        private void ValidateJsonReportComponent(JsonReporter.JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
         {
             jsonComponent.Health.ShouldBe(health);
             jsonComponent.PossibleMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());

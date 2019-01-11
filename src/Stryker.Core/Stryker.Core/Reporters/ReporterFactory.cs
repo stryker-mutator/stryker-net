@@ -1,7 +1,7 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Linq;
 
 namespace Stryker.Core.Reporters
@@ -20,7 +20,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
                 { Reporter.ConsoleProgressBar, CreateProgressReporter() },
                 { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
-                { Reporter.Json, new JsonReporter(options, new FileSystem()) }
+                { Reporter.Json, new JsonReporter(options) }
             };
         }
 

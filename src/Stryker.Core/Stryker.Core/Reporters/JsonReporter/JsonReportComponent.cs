@@ -1,55 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 
-namespace Stryker.Core.Reporters
+namespace Stryker.Core.Reporters.Json
 {
-    public class JsonReporter : IReporter
+    public partial class JsonReporter
     {
-        private readonly StrykerOptions _options;
-        private readonly IFileSystem _fileSystem;
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem)
-        {
-            _options = options;
-            _fileSystem = fileSystem;
-        }
-
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
-        {
-            var jsonReport = JsonReportComponent.FromProjectComponent(reportComponent, _options);
-            jsonReport.ThresholdHigh = _options.ThresholdOptions.ThresholdHigh;
-            jsonReport.ThresholdLow = _options.ThresholdOptions.ThresholdLow;
-            jsonReport.ThresholdBreak = _options.ThresholdOptions.ThresholdBreak;
-
-            WriteReportToJsonFile(jsonReport, Path.Combine(_options.BasePath, "/StrykerLogs/mutation-report.json"));
-        }
-
-        private void WriteReportToJsonFile(JsonReportComponent jsonReport, string filePath)
-        {
-            var json = JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy()
-                },
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
-            });
-
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            using (var file = _fileSystem.File.CreateText(filePath))
-            {
-                file.WriteLine(json);
-            }
-        }
-
         public sealed class JsonReportComponent
         {
             public string Name { get; set; }
@@ -296,7 +256,7 @@ namespace Stryker.Core.Reporters
                 {
                     report.Name = fileComponent.Name;
                     report.Source = fileComponent.SourceCode;
-                    report.Language = fileComponent.Mutants.First().Mutation.OriginalNode.Language;
+                    report.Language = "cs";
                     report.Mutants = new List<JsonMutant>();
 
                     foreach (var mutant in fileComponent.Mutants)
@@ -370,17 +330,6 @@ namespace Stryker.Core.Reporters
                     }
                 }
             }
-        }
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
-        {
-        }
-
-        public void OnMutantTested(IReadOnlyMutant result)
-        {
-        }
-
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
-        {
         }
     }
 }
