@@ -42,12 +42,13 @@ namespace Stryker.CLI
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
-            var fileLogParam = CreateOption(app, CLIOptions.UseLogLevelFile);
+            var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
+            var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
 
             app.HelpOption("--help | -h | -?");
 
@@ -67,8 +68,8 @@ namespace Stryker.CLI
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
                     thresholdLowParam,
-                    thresholdBreakParam
-                    );
+                    thresholdBreakParam,
+                    filesToExclude);
                 RunStryker(options);
                 return ExitCode;
             });
@@ -87,9 +88,8 @@ namespace Stryker.CLI
             }
         }
 
-        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results)
-        {
-            _logger.LogError($@"Final mutation score: {results.MutationScore} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
+        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results) {
+            _logger.LogError($@"Final mutation score: {results.MutationScore * 100} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
 Setting exit code to 1 (failure).
 Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
             ExitCode = 1;

@@ -9,6 +9,7 @@ using Stryker.Core.TestRunners;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -25,7 +26,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new TestRunResult { Success = true }); // testrun is successful
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()))
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
                 .Returns(new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
@@ -60,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.Initialize(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
         }
 
         [Fact]
@@ -73,7 +74,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()));
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(
                 new Core.Initialisation.ProjectInfo
                 {
                     TestProjectPath = "c:/test",
@@ -107,7 +108,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var exception = Assert.Throws<StrykerInputException>(() => target.Initialize(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
         }

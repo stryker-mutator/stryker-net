@@ -13,6 +13,8 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(m => 
         m.ResultStatus == MutantStatus.Killed ||
         m.ResultStatus == MutantStatus.Timeout);
+        public IReadOnlyCollection<FileLeaf> ExcludedFiles => GetAllFiles().Where(f => f.IsExcluded).ToList();
+        public bool IsExcluded { get; set; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }

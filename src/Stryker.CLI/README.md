@@ -120,31 +120,51 @@ If you want to decide on your own mutation score thresholds, you can configure t
 
 The defaults are respectivly: `80` `60` `0`
 
+#### Excluding files
+If you decide to exclude files for unit testing, you can configure this with the following command:
+
+`dotnet stryker --files-to-exclude ['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']`
+
+We recommend to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. However it is also possible to use absolute paths.
+
+When you want to exclude multiple files (for example more then 5) it is advised to use the stryker configuration file because it is easier to handle multiple files.
 
 #### Use a config file
 There is also the option to use a config file. To use a config file all you have to do is add a file called "stryker-config.json" in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
 
 Example:
-```json
+``` json
 {
     "stryker-config":
     {
-        "reporters":[
-	    "ConsoleReport",
-	    "ConsoleProgressBar"
-    	],
-        "log-level":"info",
-        "timeout-ms":2000,
+        "reporters": [
+            "ConsoleProgressBar",
+            "ConsoleReport"
+        ],
+        "log-level": "info",
         "log-file":true,
-        "project-file":"ExampleProject.csproj",
-	"max-concurrent-test-runners": 4,
-        "threshold-options": {
-            "threshold-high":80,
-            "threshold-low":70,
-            "threshold-break":60
-        }
+        "timeout-ms": 10000,
+        "project-file": "ExampleProject.csproj",
+        "max-concurrent-test-runners": 4,
+        "threshold-high": 80,
+        "threshold-low": 70,
+        "threshold-break": 60,
+        "files-to-exclude": [
+            "./ExampleClass.cs",
+            "./ExampleDirectory/",
+            "./ExampleDirectory/ExampleClass2.cs",
+            "C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
+        ],
+        "excluded-mutations": [
+            "string",
+            "Logical operators"
+        ]
     }
 }
 ```
+
+##### Note: The no-value options cannot be passed to the config file (like --dev-mode)
+
+##### 
 
 If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command `--config-file-path <relativePathToFile>` or `-cp <relativePathToFile>`.

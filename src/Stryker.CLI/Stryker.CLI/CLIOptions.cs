@@ -34,7 +34,7 @@ namespace Stryker.CLI
             JsonKey = "log-level"
         };
 
-        public static readonly CLIOption<bool> UseLogLevelFile = new CLIOption<bool>
+        public static readonly CLIOption<bool> LogToFile = new CLIOption<bool>
         {
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
@@ -124,6 +124,15 @@ namespace Stryker.CLI
             ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.ThresholdOptions.ThresholdHigh} (default)",
             DefaultValue = _defaultOptions.ThresholdOptions.ThresholdHigh,
             JsonKey = "threshold-high"
+        };
+
+        public static readonly CLIOption<string[]> FilesToExclude = new CLIOption<string[]>
+        {
+            ArgumentName = "--files-to-exclude",
+            ArgumentShortName = "-fte <files-to-exclude>",
+            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
+            DefaultValue = null,
+            JsonKey = "files-to-exclude"
         };
     }
 }
