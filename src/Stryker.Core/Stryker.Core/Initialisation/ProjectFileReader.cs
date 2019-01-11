@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
             return FilePathUtils.ConvertPathSeparators(projectUnderTest);
         }
 
-        private string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
+        public string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
             var referenceChoise = BuildReferenceChoise(projectReferences);
 

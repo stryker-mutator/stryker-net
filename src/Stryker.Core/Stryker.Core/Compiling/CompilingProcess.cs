@@ -49,7 +49,7 @@ namespace Stryker.Core.Compiling
         /// <param name="devMode"></param>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
         {
-            var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAssemblyName,
+            var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyTitle"),
                 syntaxTrees: syntaxTrees,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true),
                 references: _input.AssemblyReferences);

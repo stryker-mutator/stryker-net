@@ -3,9 +3,8 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using System.IO;
 using System.Linq;
-using Stryker.Core.Parsers;
-using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -41,23 +40,23 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude.ToList());
+            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, 
+                options.ProjectUnderTestNameFilter, 
+                options.FilesToExclude.ToList());
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
-
+            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
+            
             // resolve assembly references
-            var references = _assemblyReferenceResolver.ResolveReferences(
-                    projectInfo.TestProjectPath,
-                    projectInfo.TestProjectFileName,
-                    projectInfo.ProjectUnderTestAssemblyName)
-                    .ToList();
+            var assemblyReferences = _assemblyReferenceResolver
+                .ResolveReferences(projectInfo.ProjectUnderTestAnalyzerResult)
+                .ToList();
 
             var input = new MutationTestInput()
             {
                 ProjectInfo = projectInfo,
-                AssemblyReferences = references,
-                TestRunner = _testRunner ?? new TestRunnerFactory().Create("", projectInfo.TestProjectPath)
+                AssemblyReferences = assemblyReferences,
+                TestRunner = _testRunner ?? new TestRunnerFactory().Create("", options.BasePath)
             };
 
             // initial test

@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Buildalyzer;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -12,7 +14,9 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter, List<string> filesToExclude);
+        ProjectInfo ResolveInput(string currentDirectory, 
+            string projectUnderTestNameFilter, 
+            List<string> filesToExclude);
     }
 
     /// <summary>
@@ -37,43 +41,41 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(string currentDirectory, string projectName, List<string> filesToExclude)
+        public ProjectInfo ResolveInput(string currentDirectory, 
+            string projectUnderTestNameFilter, 
+            List<string> filesToExclude)
         {
+            var result = new ProjectInfo();
+            AnalyzerManager manager = new AnalyzerManager();
             var projectFile = ScanProjectFile(currentDirectory);
-            var currentProjectInfo = ReadProjectFile(projectFile, projectName);
-            var projectReferencePath = FilePathUtils.ConvertPathSeparators(currentProjectInfo.ProjectReference);
+
+            // Analyze the test project
+            result.TestProjectAnalyzerResult = manager.GetProject(projectFile).Build().First();
+
+            // Determine project under test
+            var reader = new ProjectFileReader();
+            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, projectUnderTestNameFilter);
             
-            var projectUnderTestPath = Path.GetDirectoryName(Path.GetFullPath(Path.Combine(currentDirectory, projectReferencePath)));
-            var projectReference = Path.Combine(projectUnderTestPath, Path.GetFileName(projectReferencePath));
-            var projectFilePath = Path.GetFullPath(projectReference);
-            var projectUnderTestInfo = FindProjectUnderTestAssemblyName(projectFilePath);
+            // Analyze project under test
+            result.ProjectUnderTestAnalyzerResult = manager.GetProject(projectUnderTest).Build().First();
+
             var inputFiles = new FolderComposite();
-            
-            foreach (var dir in ExtractProjectFolders(projectFilePath))
+            result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
+            var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult.ProjectFilePath, result.FullFramework))
             {
-                var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectFilePath), dir);
+                var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
                 _logger.LogDebug($"Scanning {folder}");
                 if (!_fileSystem.Directory.Exists(folder))
                 {
-                     throw new DirectoryNotFoundException($"Can't find {folder}");
+                    throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
                 inputFiles.Add(FindInputFiles(folder, filesToExclude));
             }
-            
-            MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestPath);
+            result.ProjectContents = inputFiles;
 
-            return new ProjectInfo()
-            {
-                TestProjectPath = currentDirectory,
-                TestProjectFileName = Path.GetFileName(projectFile),
-                TargetFramework = currentProjectInfo.TargetFramework,
-                ProjectContents = inputFiles,
-                ProjectUnderTestPath = projectUnderTestPath,
-                ProjectUnderTestAssemblyName = projectUnderTestInfo ?? Path.GetFileNameWithoutExtension(projectReferencePath),
-                ProjectUnderTestProjectName = Path.GetFileNameWithoutExtension(projectReferencePath),
-                AppendTargetFrameworkToOutputPath = currentProjectInfo.AppendTargetFrameworkToOutputPath
-            };
+            return result;
         }
 
         /// <summary>
@@ -146,43 +148,29 @@ namespace Stryker.Core.Initialisation
             return projectFiles.First();
         }
 
-        private IEnumerable<string> ExtractProjectFolders(string projectFilePath)
+        private IEnumerable<string> ExtractProjectFolders(string projectFilePath, bool fullFramework)
         {
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
             var xDocument = XDocument.Load(projectFile);
             var folders = new List<string>();
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
-            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+            if (!fullFramework)
             {
-                
-                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProject)))
+                foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
-                    throw new FileNotFoundException($"Missing shared project {sharedProject}");
+
+                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProject)))
+                    {
+                        throw new FileNotFoundException($"Missing shared project {sharedProject}");
+                    }
+
+                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProject);
+                    folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
                 }
-
-                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProject);
-                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
             }
+
             return folders;
-        }
-
-        public ProjectFile ReadProjectFile(string projectFilePath, string projectName)
-        {
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            var xDocument = XDocument.Load(projectFile);
-            var projectInfo = new ProjectFileReader().ReadProjectFile(xDocument, projectName);
-
-            _logger.LogDebug("Values found in project file {@0}", projectInfo);
-
-            return projectInfo;
-        }
-
-        public string FindProjectUnderTestAssemblyName(string projectFilePath)
-        {
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            var xDocument = XDocument.Load(projectFile);
-            return new ProjectFileReader().FindAssemblyName(xDocument);
         }
     }
 }
