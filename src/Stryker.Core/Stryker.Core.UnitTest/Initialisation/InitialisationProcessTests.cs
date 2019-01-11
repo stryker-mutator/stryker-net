@@ -4,12 +4,11 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
-using System.Collections.Generic;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -27,7 +26,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new TestRunResult { Success = true }); // testrun is successful
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
-                .Returns(new Core.Initialisation.ProjectInfo
+                .Returns(new ProjectInfo
                 {
                     TestProjectPath = "c:/test",
                     ProjectContents = new FolderComposite
@@ -51,10 +50,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
             var target = new InitialisationProcess(
-                inputFileResolverMock.Object, 
+                inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object, 
+                testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
 
             var options = new StrykerOptions();
@@ -99,10 +98,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>()).Verifiable();
 
             var target = new InitialisationProcess(
-                inputFileResolverMock.Object, 
+                inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object, 
+                testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 

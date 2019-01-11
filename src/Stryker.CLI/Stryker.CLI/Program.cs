@@ -1,6 +1,6 @@
-﻿using System;
-using Stryker.Core;
+﻿using Stryker.Core;
 using Stryker.Core.Exceptions;
+using System;
 
 namespace Stryker.CLI
 {
@@ -14,13 +14,13 @@ namespace Stryker.CLI
                 var app = new StrykerCLI(stryker);
                 return app.Run(args);
             }
-            catch(StrykerInputException strEx)
+            catch (StrykerInputException strEx)
             {
                 Chalk.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
                 Console.WriteLine(strEx.ToString());
                 return 1;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return 1;
             }

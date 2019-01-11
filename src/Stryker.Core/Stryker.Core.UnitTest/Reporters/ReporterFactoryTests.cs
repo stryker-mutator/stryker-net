@@ -1,6 +1,7 @@
 ﻿using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
 
