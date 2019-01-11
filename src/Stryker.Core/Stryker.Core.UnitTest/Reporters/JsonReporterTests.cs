@@ -142,7 +142,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(folder);
-            var reportPath = Path.Combine(options.BasePath, "StrykerOutput", "reports", $"mutation-report-{DateTime.Today.ToShortDateString()}.json");
+            var reportPath = Path.Combine(options.BasePath, "StrykerOutput", "reports", $"mutation-report-{DateTime.Today.ToString("yyyy-mm-dd")}.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue();
 
             var reportObject = JsonConvert.DeserializeObject<JsonReporter.JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
