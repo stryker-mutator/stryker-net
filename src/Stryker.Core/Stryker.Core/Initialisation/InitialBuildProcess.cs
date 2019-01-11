@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Build.Locator;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
@@ -29,7 +30,8 @@ namespace Stryker.Core.Initialisation
             if (fullFramework)
             {
                 // Build with MSBuild.exe
-                result = _processExecutor.Start(path, "dotnet", $"build {projectName}");
+                var visualStudioInstance = MSBuildLocator.RegisterDefaults();
+                result = _processExecutor.Start(path, visualStudioInstance.MSBuildPath, "");
             }
             else
             {
