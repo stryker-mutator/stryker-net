@@ -12,7 +12,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter);
+        ProjectInfo ResolveInput(string currentDirectory, string projectUnderTestNameFilter, List<string> filesToExclude);
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private IEnumerable<string> _foldersToIgnore = new string[] { "obj", "bin", "node_modules" };
+        private string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private ILogger _logger { get; set; }
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(string currentDirectory, string projectName)
+        public ProjectInfo ResolveInput(string currentDirectory, string projectName, List<string> filesToExclude)
         {
             var projectFile = ScanProjectFile(currentDirectory);
             var currentProjectInfo = ReadProjectFile(projectFile, projectName);
@@ -58,8 +58,10 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder));
+                inputFiles.Add(FindInputFiles(folder, filesToExclude));
             }
+            
+            MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestPath);
 
             return new ProjectInfo()
             {
@@ -79,11 +81,11 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
-            var folderComposite = new FolderComposite()
+            var folderComposite = new FolderComposite
             {
                 Name = lastPathComponent,
                 FullPath = Path.GetFullPath(path),
@@ -91,7 +93,7 @@ namespace Stryker.Core.Initialisation
             };
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToIgnore.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
@@ -101,10 +103,36 @@ namespace Stryker.Core.Initialisation
                     SourceCode = _fileSystem.File.ReadAllText(file),
                     Name = fileName,
                     FullPath = file,
-                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName)
+                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
+                    IsExcluded = filesToExclude.Contains(file)
                 });
             }
+
             return folderComposite;
+        }
+
+        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
+        {
+            var allFiles = root.GetAllFiles().ToList();
+
+            foreach (var path in pathsToExclude)
+            {
+                var fullPath = path.StartsWith(projectUnderTestPath) ? path : Path.GetFullPath(projectUnderTestPath + path);
+                if (!Path.HasExtension(path))
+                {
+                    _logger.LogInformation("Scanning dir {0} for files to exclude.", fullPath);
+                }
+                var filesToExclude = allFiles.Where(x => x.FullPath.StartsWith(fullPath)).ToList();
+                if (filesToExclude.Count() == 0)
+                {
+                    _logger.LogWarning("No file to exclude was found for path {0}. Did you mean to exclude another file?", fullPath);
+                }
+                foreach (var file in filesToExclude)
+                {
+                    _logger.LogInformation("File {0} will be excluded from mutation.", file.FullPath);
+                    file.IsExcluded = true;
+                }
+            }
         }
 
         public string ScanProjectFile(string currentDirectory)

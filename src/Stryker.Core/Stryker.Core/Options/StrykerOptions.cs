@@ -5,6 +5,11 @@ using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using System;
+using System.IO;
+using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace Stryker.Core.Options
 {
@@ -29,6 +34,7 @@ namespace Stryker.Core.Options
 
         public ThresholdOptions ThresholdOptions { get; }
 
+        public IEnumerable<string> FilesToExclude { get; }
         public StrykerOptions(string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
@@ -40,7 +46,8 @@ namespace Stryker.Core.Options
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
-            int thresholdBreak = 0)
+            int thresholdBreak = 0,
+            string[] filesToExclude = null)
         {
             BasePath = basePath;
             Reporters = ValidateReporters(reporters);
@@ -51,6 +58,7 @@ namespace Stryker.Core.Options
             DevMode = devMode;
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            FilesToExclude = ValidateFilesToExclude(filesToExclude);
         }
 
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)
@@ -101,7 +109,7 @@ namespace Stryker.Core.Options
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.Single(x => x.Value.ToString().ToLower()
+                if (typeDescriptions.FirstOrDefault(x => x.Value.ToString().ToLower()
                     .Contains(excludedMutation.ToLower())).Key
                     is var foundMutator)
                 {
@@ -166,6 +174,16 @@ namespace Stryker.Core.Options
             }
 
             return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
+        }
+
+        private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)
+        {
+            foreach (var excludedFile in filesToExclude ?? Enumerable.Empty<string>())
+            {
+                // The logger is not yet available here. The paths will be validated in the InputFileResolver
+                var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
+                yield return platformFilePath;
+            }
         }
     }
 }

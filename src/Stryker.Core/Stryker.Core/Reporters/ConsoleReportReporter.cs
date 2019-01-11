@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters
             Console.WriteLine("");
 
             _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. Each mutant will now be tested, this could take a while. {Environment.NewLine}");
-
+            
             // print empty line for readability
             Console.WriteLine("");
         }
@@ -88,7 +88,11 @@ namespace Stryker.Core.Reporters
             decimal thresholdBreak = _options.ThresholdOptions.ThresholdBreak;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
-            if (!score.HasValue)
+            if (inputComponent.IsExcluded)
+            {
+                _chalk.DarkGray($"(Excluded)");
+            }
+            else if (!score.HasValue)
             {
                 _chalk.DarkGray($"(- %)");
             }
