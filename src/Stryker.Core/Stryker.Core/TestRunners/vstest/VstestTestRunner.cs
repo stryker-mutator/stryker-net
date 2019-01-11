@@ -9,11 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
-using System.Xml.XPath;
 
-namespace Stryker.Core.TestRunners
+namespace Stryker.Core.TestRunners.vstest
 {
     public class VstestTestRunner : ITestRunner
     {
@@ -29,13 +29,30 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
+            string targetFramework = _projectInfo.TargetFramework;
 
-            _defaultRunSettings = $@"<RunSettings>
-                                        <RunConfiguration>
-                                            <TargetFrameworkVersion>{_projectInfo.TargetFramework}</TargetFrameworkVersion>
-                                            <TestSessionTimeout>{timeoutMS}</TestSessionTimeout>
-                                        </RunConfiguration>
-                                    </RunSettings>";
+            string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
+            switch (targetFramework)
+            {
+                case string s when s.Contains("netcoreapp"):
+                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    break;
+                case string s when s.Contains("netstandard"):
+                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    break;
+                default:
+                    targetFrameworkVersion = $".NETFramework, Version = v{targetFrameworkVersion}";
+                    break;
+            }
+
+            _defaultRunSettings =
+                $@"<RunSettings>
+                        <RunConfiguration>
+                            <MaxCpuCount>1</MaxCpuCount>
+                            <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
+                            <TestSessionTimeout>{timeoutMS}</TestSessionTimeout>
+                        </RunConfiguration>
+                    </ RunSettings>";
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
@@ -43,19 +60,16 @@ namespace Stryker.Core.TestRunners
 
             IVsTestConsoleWrapper consoleWrapper = null;
 
-            //consoleWrapper = new VsTestConsoleWrapper(vstestToolPath, new ConsoleParameters { TraceLevel = System.Diagnostics.TraceLevel.Verbose, LogFilePath = @"C:\Users\mobrockers\Desktop\log.txt" });
-            consoleWrapper = new VsTestConsoleWrapper(vstestToolPath);
+            consoleWrapper = new VsTestConsoleWrapper(vstestToolPath, new ConsoleParameters { TraceLevel = System.Diagnostics.TraceLevel.Info, LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
+            //consoleWrapper = new VsTestConsoleWrapper(vstestToolPath);
+
             consoleWrapper.StartSession();
             consoleWrapper.InitializeExtensions(new List<string> { testBinariesPath, Path.Combine(vstestToolPath.TrimEnd(FilePathUtils.ConvertPathSeparators("\\").ToCharArray().First()), "Extensions") });
 
-            
             var testCases = DiscoverTests(new List<string>() { testAssemblyPath }, consoleWrapper);
 
-            //var testresults = RunSelectedTests(consoleWrapper, testCases);
+            var testresults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
 
-            var testresults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath });
-            
-            //testresults = RunAllTestsWithTestCaseFilter(consoleWrapper, new List<string>() { testAssembly });
             var testResult = new TestRunResult
             {
                 Success = !testresults.Any(tr => tr.Outcome == TestOutcome.Failed),
@@ -86,13 +100,21 @@ namespace Stryker.Core.TestRunners
             return handler.TestResults;
         }
 
-        IEnumerable<TestResult> RunAllTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources)
+        IEnumerable<TestResult> RunAllTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources, int? activeMutationId)
         {
-            var waitHandle = new AutoResetEvent(false);
-            var handler = new RunEventHandler(waitHandle);
-            consoleWrapper.RunTests(sources, _defaultRunSettings, handler);
+            var runCompleteSignal = new AutoResetEvent(false);
+            var processExitedSignal = new AutoResetEvent(false);
+            var handler = new RunEventHandler(runCompleteSignal);
+            var testHostLauncher = new StrykerVstestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
 
-            waitHandle.WaitOne();
+            consoleWrapper.RunTestsWithCustomTestHost(sources, _defaultRunSettings, handler, testHostLauncher);
+
+            // Test host exited signal comes after the run complete
+            processExitedSignal.WaitOne();
+
+            // At this point, run must have complete. Check signal for true
+            runCompleteSignal.WaitOne();
+
             return handler.TestResults;
         }
 
@@ -108,7 +130,6 @@ namespace Stryker.Core.TestRunners
 
         public string GetVsTestToolpath()
         {
-            //string bla = @"C:\Users\mobrockers\.nuget\packages\microsoft.testplatform\16.0.0-preview-20181205-02\tools\net451\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
             string versionString = "16.0.0-preview-20181205-02";
             string toolFolderInPackage = Path.Combine("microsoft.testplatform.portable", versionString, "tools");
             string targetFrameworkString = _projectInfo.TargetFramework;
@@ -117,12 +138,11 @@ namespace Stryker.Core.TestRunners
             foreach (string nugetPackageFolder in nugetPackageFolders)
             {
                 string pathToTry = Path.Combine(nugetPackageFolder, toolFolderInPackage, Path.Combine("net451", "vstest.console.exe"));
-                        //((targetFrameworkString.Contains("netcoreapp") || targetFrameworkString.Contains("netstandard")) ?
-                        //Path.Combine("netcoreapp2.0", "vstest.console.dll") : Path.Combine("net451", "vstest.console.exe")));
+                //(targetFrameworkString.Contains("netcoreapp") || targetFrameworkString.Contains("netstandard")) ?
+                //Path.Combine("netcoreapp2.0", "vstest.console.dll") : Path.Combine("net451", "vstest.console.exe"));
 
                 if (FilePathUtils.ConvertPathSeparators(pathToTry) is var pathFound && File.Exists(pathFound))
                 {
-                    //return bla;
                     return pathFound;
                 }
             }
