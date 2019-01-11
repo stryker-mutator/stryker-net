@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -216,15 +217,17 @@ namespace Stryker.Core.Reporters.Json
 
             public static JsonReportComponent FromProjectComponent(IReadOnlyInputComponent component, StrykerOptions options)
             {
+                int Where(MutantStatus MutantStatus) => component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus).Count();
+
                 var report = new JsonReportComponent
                 {
                     DetectedMutants = component.DetectedMutants.Count(),
                     TotalMutants = component.TotalMutants.Count(),
-                    KilledMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Killed).Count(),
-                    SurvivedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count(),
-                    SkippedMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count(),
-                    TimeoutMutants = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count(),
-                    CompileErrors = component.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count(),
+                    KilledMutants = Where(MutantStatus.Killed),
+                    SurvivedMutants = Where(MutantStatus.Survived),
+                    SkippedMutants = Where(MutantStatus.Skipped),
+                    TimeoutMutants = Where(MutantStatus.Timeout),
+                    CompileErrors = Where(MutantStatus.BuildError),
                     MutationScore = component.GetMutationScore(),
                 };
                 report.PossibleMutants = report.TotalMutants + report.SkippedMutants;
@@ -267,7 +270,7 @@ namespace Stryker.Core.Reporters.Json
                             MutatorName = mutant.Mutation.DisplayName,
                             Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                             Location = new JsonMutant.JsonMutantLocation(mutant.Mutation.OriginalNode.SyntaxTree.GetLineSpan(mutant.Mutation.OriginalNode.FullSpan)),
-                            Status = StrykerStatusToMutationStatus(mutant.ResultStatus)
+                            Status = mutant.ResultStatus.ToString()
                         };
 
                         report.Mutants.Add(jsonMutant);
@@ -279,22 +282,6 @@ namespace Stryker.Core.Reporters.Json
                 }
 
                 return report;
-            }
-
-            private static string StrykerStatusToMutationStatus(MutantStatus status)
-            {
-                switch (status)
-                {
-                    case MutantStatus.Survived:
-                    case MutantStatus.Killed:
-                    case MutantStatus.Timeout:
-                    case MutantStatus.Skipped:
-                        return status.ToString();
-                    case MutantStatus.BuildError:
-                        return "CompileError";
-                    default:
-                        return MutantStatus.NotRun.ToString();
-                }
             }
 
             public sealed class JsonMutant

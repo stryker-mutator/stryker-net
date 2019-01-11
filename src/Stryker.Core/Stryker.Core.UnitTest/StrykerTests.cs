@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
 
-            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, new MockFileSystem());
+            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object);
 
             target.RunMutationTest(options);
 
