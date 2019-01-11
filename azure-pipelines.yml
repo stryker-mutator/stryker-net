@@ -12,7 +12,7 @@ resources:
   clean: true
   
 variables:
-  PackageVersion: '0.8.0'
+  PackageVersion: '0.7.0'
   VersionBuildNumber: $[counter('$(PackageVersion)', 1)]
   PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
