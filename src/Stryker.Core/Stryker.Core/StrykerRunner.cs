@@ -7,6 +7,8 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Abstractions;
 
 namespace Stryker.Core
 {
@@ -14,7 +16,7 @@ namespace Stryker.Core
     {
         StrykerRunResult RunMutationTest(StrykerOptions options);
     }
-    
+
     public class StrykerRunner : IStrykerRunner
     {
         private IReporter _reporter { get; set; }
@@ -22,11 +24,13 @@ namespace Stryker.Core
         private string _basePath { get; set; }
         private MutationTestInput _input { get; set; }
         private IMutationTestProcess _mutationTestProcess { get; set; }
+        private IFileSystem _fileSystem { get; set; }
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null)
+        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
+            _fileSystem = fileSystem ?? new FileSystem();
         }
 
         /// <summary>
@@ -39,6 +43,15 @@ namespace Stryker.Core
             // start stopwatch
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            // Create output dir with gitignore
+            string strykerOutputDirectory = Path.Combine(options.BasePath, "StrykerOutput");
+            _fileSystem.Directory.CreateDirectory(strykerOutputDirectory);
+            _fileSystem.File.Create(Path.Combine(strykerOutputDirectory, ".gitignore")).Close();
+            using (var file = _fileSystem.File.CreateText(Path.Combine(strykerOutputDirectory, ".gitignore")))
+            {
+                file.WriteLine("*");
+            }
 
             // setup logging
             ApplicationLogging.ConfigureLogger(options.LogOptions);
@@ -67,7 +80,8 @@ namespace Stryker.Core
                 logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
-            finally {
+            finally
+            {
                 // log duration
                 stopwatch.Stop();
                 logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);

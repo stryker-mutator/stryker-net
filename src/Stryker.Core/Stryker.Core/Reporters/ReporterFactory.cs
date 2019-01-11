@@ -1,4 +1,5 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 using System.Collections.Generic;
 using System.Linq;

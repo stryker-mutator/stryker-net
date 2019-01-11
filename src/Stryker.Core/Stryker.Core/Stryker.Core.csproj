@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.7.0</VersionPrefix>
+    <VersionPrefix>0.8.0</VersionPrefix>
     <PackageId>StrykerMutator.Core</PackageId>
     <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install a Stryker.Runner.* package to use this package.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>

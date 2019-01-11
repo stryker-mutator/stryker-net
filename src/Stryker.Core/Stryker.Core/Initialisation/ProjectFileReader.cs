@@ -50,20 +50,18 @@ namespace Stryker.Core.Initialisation
             // get all the values from the projectReferenceElements
             var projectReferences = projectReferenceElements.SelectMany(x => x.Attributes()).Where(x => string.Equals(x.Name.LocalName, "Include", StringComparison.OrdinalIgnoreCase)).Select(x => x?.Value).ToList();
 
-            if (projectReferences.Count() > 1)
-            {
-                return HandleMoreThanOneProjectReferenceFound(projectReferences, projectUnderTestNameFilter);
-            }
-            else if (!projectReferences.Any())
+            if (!projectReferences.Any())
             {
                 throw new StrykerInputException(
                     ErrorMessage,
                     "No project references found in test project file, unable to find project to mutate.");
             }
-            return FilePathUtils.ConvertPathSeparators(projectReferences.Single());
+
+            var projectUnderTest = DetermineProjectUnderTest(projectReferences, projectUnderTestNameFilter);
+            return FilePathUtils.ConvertPathSeparators(projectUnderTest);
         }
 
-        private string HandleMoreThanOneProjectReferenceFound(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
+        private string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
             var referenceChoise = BuildReferenceChoise(projectReferences);
 
@@ -71,11 +69,16 @@ namespace Stryker.Core.Initialisation
 
             if (string.IsNullOrEmpty(projectUnderTestNameFilter))
             {
-                stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
-                stringBuilder.Append(referenceChoise);
-                AppendExampleIfPossible(stringBuilder, projectReferences);
+                if (projectReferences.Count() > 1)
+                {
+                    stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
+                    stringBuilder.Append(referenceChoise);
+                    AppendExampleIfPossible(stringBuilder, projectReferences);
 
-                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+
+                return projectReferences.Single();
             }
             else
             {
