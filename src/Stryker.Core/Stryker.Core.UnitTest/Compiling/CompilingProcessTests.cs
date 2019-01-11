@@ -70,7 +70,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new AnalyzerResult("")
+                    TestProjectAnalyzerResult = null
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
