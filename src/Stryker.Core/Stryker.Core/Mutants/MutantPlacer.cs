@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -23,7 +24,7 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public static string[] MutationMakers => new[] {Mutationconditional, Mutationif};
+        public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
 
         public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
 
@@ -40,15 +41,14 @@ namespace Stryker.Core.Mutants
 
         public static SyntaxNode RemoveByIfStatement(SyntaxNode node)
         {
-            if (node is IfStatementSyntax ifStatement)
-            {
-                // return original statement
-                return ifStatement.Else.Statement;
-            }
-            else
+            if (!(node is IfStatementSyntax ifStatement))
             {
                 return null;
             }
+            // return original statement
+            var childNodes = ifStatement.Else.Statement.ChildNodes().ToList();
+            return childNodes.Count == 1 ? childNodes[0] : ifStatement.Else.Statement;
+
         }
 
         public static ConditionalExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)

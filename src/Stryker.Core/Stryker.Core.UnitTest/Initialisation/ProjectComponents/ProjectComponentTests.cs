@@ -25,7 +25,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(1M);
+            result.ShouldBe(100M);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(0.5M);
+            result.ShouldBe(50M);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
             subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
                 
             var result = target.GetMutationScore();
-            result.ShouldBe(0.5M);
+            result.ShouldBe(50M);
         }
 
         [Fact]
@@ -68,12 +68,12 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
             subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(0.6666666666666666666666666667M);
+            result.ShouldBe(66.66666666666666666666666667M);
         }
 
         [Theory]
-        [InlineData(MutantStatus.Killed, 1)]
-        [InlineData(MutantStatus.Timeout, 1)]
+        [InlineData(MutantStatus.Killed, 100)]
+        [InlineData(MutantStatus.Timeout, 100)]
         [InlineData(MutantStatus.Survived, 0)]
         [InlineData(MutantStatus.NotRun, 0)]
         public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, decimal expectedScore)

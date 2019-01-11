@@ -1,22 +1,33 @@
 using Moq;
 using Serilog.Events;
+using Shouldly;
 using Stryker.Core;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Stryker.Core.Logging;
-using Stryker.Core.Initialisation.ProjectComponent;
-using Stryker.Core.Testing;
 using System;
 using System.IO;
-using Xunit;
-using Microsoft.Extensions.Logging;
 using System.Linq;
-using Stryker.Core.Mutators;
-using Shouldly;
+using System.Reflection;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Stryker.CLI.UnitTest
 {
+
     public class StrykerCLITests
     {
+        private ITestOutputHelper _output;
+        private string _fileSystemRoot { get; }
+
+        private string _currentDirectory { get; }
+
+        public StrykerCLITests(ITestOutputHelper output)
+        {
+            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
+            _output = output;
+        }
+
         [Theory]
         [InlineData("--help")]
         [InlineData("-h")]
@@ -36,13 +47,13 @@ namespace Stryker.CLI.UnitTest
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Throws(new Exception("Initial testrun failed")).Verifiable();
-            
+
             var target = new StrykerCLI(mock.Object);
             Assert.Throws<Exception>(() => target.Run(new string[] { }));
         }
 
         [Theory]
-        [InlineData("--reporter")]
+        [InlineData("--reporters")]
         [InlineData("-r")]
         public void StrykerCLI_WithReporterArgument_ShouldPassReporterArgumentsToStryker(string argName)
         {
@@ -53,9 +64,9 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "Console" });
+            target.Run(new string[] { argName, $"['{Reporter.ConsoleReport}', '{Reporter.ConsoleProgressDots}']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporter == "Console")));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Reporter.ConsoleReport) && o.Reporters.Contains(Reporter.ConsoleProgressDots))));
         }
 
 
@@ -74,7 +85,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "['string', 'logical']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.ExcludedMutations.Contains(MutatorType.String) &&
                 o.ExcludedMutations.Contains(MutatorType.Logical)
             )));
@@ -132,18 +143,22 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
-            StrykerOptions options = new StrykerOptions();
-            var runResults = new StrykerRunResult(options, 0.3M);
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new[] { argName, "debug" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => 
-                o.LogOptions.LogLevel == LogEventLevel.Debug && 
-                o.LogOptions.LogToFile == false)));
+            mock.VerifyAll();
+            actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Debug);
+            actualOptions.LogOptions.LogToFile.ShouldBeFalse();
         }
 
         [Theory]
@@ -157,7 +172,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "true" });
+            target.Run(new string[] { argName });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile)));
         }
@@ -166,16 +181,22 @@ namespace Stryker.CLI.UnitTest
         [InlineData("--dev-mode")]
         public void StrykerCLI_WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
         {
-            StrykerOptions options = new StrykerOptions("", "Console", "", 1000, null, "trace", false, false, 1, 90, 80, 70);
-            var runResults = new StrykerRunResult(options, 0.3M);
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
+
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "true" });
+            target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DevMode)));
+            mock.VerifyAll();
+
+            actualOptions.DevMode.ShouldBeTrue();
         }
 
         [Theory]
@@ -207,16 +228,17 @@ namespace Stryker.CLI.UnitTest
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
-            
+
             target.Run(new string[] { argName, "4" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
                 o.MaxConcurrentTestrunners == 4)));
         }
+
         [Theory]
         [InlineData("--threshold-break")]
         [InlineData("-tb")]
-        public void StrykerCLI_WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName) 
+        public void StrykerCLI_WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
@@ -270,11 +292,11 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions(thresholdBreak:40);
+            StrykerOptions options = new StrykerOptions(thresholdBreak: 40);
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.3M);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
-            
+
             var target = new StrykerCLI(mock.Object);
             int result = target.Run(new string[] { });
 
@@ -287,9 +309,9 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions(thresholdBreak:0);
+            StrykerOptions options = new StrykerOptions(thresholdBreak: 0);
             StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
-            
+
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
@@ -298,6 +320,52 @@ namespace Stryker.CLI.UnitTest
             mock.Verify();
             Assert.Equal(0, target.ExitCode);
             Assert.Equal(0, result);
+        }
+
+        [Fact]
+        public void StrykerCLI_WithNoFilesToExcludeSet_ShouldPassDefaultValueToStryker()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, 0.1M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(() => strykerRunResult);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                !o.FilesToExclude.Any())));
+        }
+
+        [Theory]
+        [InlineData("--files-to-exclude")]
+        [InlineData("-fte")]
+        public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions actualOptions = null;
+            StrykerRunResult runResults = new StrykerRunResult(new StrykerOptions(), 0.1M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
+
+            var firstFileToExclude = FilePathUtils.ConvertPathSeparators("./StartUp.cs");
+            var secondFileToExclude = FilePathUtils.ConvertPathSeparators("./ExampleDirectory/Recursive.cs");
+            var thirdFileToExclude = FilePathUtils.ConvertPathSeparators(@".\ExampleDirectory/Recursive2.cs");
+
+            var filesToExclude = actualOptions.FilesToExclude.ToArray();
+            filesToExclude.Length.ShouldBe(3);
+            filesToExclude.ShouldContain(firstFileToExclude);
+            filesToExclude.ShouldContain(secondFileToExclude);
+            filesToExclude.ShouldContain(thirdFileToExclude);
         }
     }
 }

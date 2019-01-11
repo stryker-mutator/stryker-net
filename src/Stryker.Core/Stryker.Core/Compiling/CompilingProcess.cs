@@ -51,7 +51,7 @@ namespace Stryker.Core.Compiling
         {
             var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAssemblyName,
                 syntaxTrees: syntaxTrees,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true),
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult = null;
 
@@ -72,6 +72,11 @@ namespace Stryker.Core.Compiling
             }
 
             LogEmitResult(emitResult);
+            if (!emitResult.Success)
+            {
+                _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
+                throw new ApplicationException("Failed to restore build able state.");
+            }
             return new CompilingProcessResult()
             {
                 Success = emitResult.Success,

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ExampleProject
+﻿namespace ExampleProject
 {
     public class StringMagic
     {
@@ -13,6 +11,12 @@ namespace ExampleProject
             {
                 return second + first;
             }
+        }
+
+        private bool Demo(out string test)
+        {
+            test = "toto";
+            return true;
         }
     }
 }

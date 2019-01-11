@@ -103,7 +103,7 @@ jobs:
     inputs:
       command: custom
       custom: stryker
-      arguments: '--dev-mode true'
+      arguments: '--dev-mode'
       workingDirectory: $(IntegrationTestPath)
 
 - job: LinuxTests
@@ -144,7 +144,7 @@ jobs:
     inputs:
       command: custom
       custom: stryker
-      arguments: '--dev-mode true'
+      arguments: '--dev-mode'
       workingDirectory: $(IntegrationTestPath)
 
 - job: MacOsTests
@@ -185,7 +185,7 @@ jobs:
     inputs:
       command: custom
       custom: stryker
-      arguments: '--dev-mode true'
+      arguments: '--dev-mode'
       workingDirectory: $(IntegrationTestPath)
 
 - job: PublishRelease

@@ -13,6 +13,8 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(m => 
         m.ResultStatus == MutantStatus.Killed ||
         m.ResultStatus == MutantStatus.Timeout);
+        public IReadOnlyCollection<FileLeaf> ExcludedFiles => GetAllFiles().Where(f => f.IsExcluded).ToList();
+        public bool IsExcluded { get; set; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
@@ -26,14 +28,14 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
-        /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
+        /// <returns>decimal between 0 and 100 or null when no score could be calculated</returns>
         public decimal? GetMutationScore()
         {
             var totalCount = TotalMutants.Count();
             var killedCount = DetectedMutants.Count();
             if(totalCount > 0)
             {
-                return killedCount / (decimal)totalCount;
+                return killedCount / (decimal)totalCount * 100;
             } else
             {
                 return null;

@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Initialisation\TestResources\ExampleSourceFile.cs" />
+    <Compile Remove="TestResources\ExampleSourceFile.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
@@ -17,7 +17,7 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Initialisation\TestResources\ExampleSourceFile.cs">
+    <Content Include="TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_AssignStatements_OUT.cs">
@@ -56,7 +56,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="2.1.0.256" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="3.0.10" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
@@ -67,7 +67,4 @@
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-  <Target Name="PrintReferences" DependsOnTargets="ResolveProjectReferences;ResolveAssemblyReferences">
-    <Message Text="@(_ResolveAssemblyReferenceResolvedFiles)" Importance="high" />
-  </Target>
 </Project>
