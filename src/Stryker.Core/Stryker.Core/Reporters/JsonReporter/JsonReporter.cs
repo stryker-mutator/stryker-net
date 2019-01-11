@@ -55,7 +55,7 @@ namespace Stryker.Core.Reporters.Json
 
         private string GenerateUniqueReportFilePath(string requestedFilePath)
         {
-            string date = DateTime.Today.ToString("yyyy-mm-dd");
+            string date = DateTime.Today.ToString("yyyy-MM-dd");
 
             string directory = Path.GetDirectoryName(requestedFilePath);
             string fileName = Path.GetFileNameWithoutExtension(requestedFilePath);

@@ -143,7 +143,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             reporter.OnAllMutantsTested(folder);
             var reportPath = Path.Combine(options.BasePath, "StrykerOutput", "reports", $"mutation-report-{DateTime.Today.ToString("yyyy-MM-dd")}.json");
-            mockFileSystem.FileExists(reportPath).ShouldBeTrue();
+            mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
 
             var reportObject = JsonConvert.DeserializeObject<JsonReporter.JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
             reportObject.ThresholdHigh.ShouldBe(80);
