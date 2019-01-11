@@ -59,7 +59,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
-            var fileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./Recursive.cs");
+            var fileToExclude = FilePathUtils.ConvertPathSeparators("./Recursive.cs");
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
 

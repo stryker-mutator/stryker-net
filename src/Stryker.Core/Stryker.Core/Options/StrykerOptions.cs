@@ -181,7 +181,7 @@ namespace Stryker.Core.Options
             foreach (var excludedFile in filesToExclude ?? Enumerable.Empty<string>())
             {
                 // The logger is not yet available here. The paths will be validated in the InputFileResolver
-                var platformFilePath = FilePathUtils.ConvertToPlatformSupportedFilePath(excludedFile);
+                var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
                 yield return platformFilePath;
             }
         }

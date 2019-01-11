@@ -158,7 +158,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
             actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Debug);
-            actualOptions.LogOptions.LogToFile.Value.ShouldBeFalse();
+            actualOptions.LogOptions.LogToFile.ShouldBeFalse();
         }
 
         [Theory]
@@ -174,7 +174,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile.Value)));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile)));
         }
 
         [Theory]
@@ -357,9 +357,9 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
 
-            var firstFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./StartUp.cs");
-            var secondFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath("./ExampleDirectory/Recursive.cs");
-            var thirdFileToExclude = FilePathUtils.ConvertToPlatformSupportedFilePath(@".\ExampleDirectory/Recursive2.cs");
+            var firstFileToExclude = FilePathUtils.ConvertPathSeparators("./StartUp.cs");
+            var secondFileToExclude = FilePathUtils.ConvertPathSeparators("./ExampleDirectory/Recursive.cs");
+            var thirdFileToExclude = FilePathUtils.ConvertPathSeparators(@".\ExampleDirectory/Recursive2.cs");
 
             var filesToExclude = actualOptions.FilesToExclude.ToArray();
             filesToExclude.Length.ShouldBe(3);

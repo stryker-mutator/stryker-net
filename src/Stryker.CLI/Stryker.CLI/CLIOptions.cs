@@ -39,7 +39,7 @@ namespace Stryker.CLI
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
             ArgumentDescription = "Makes the logger write to a file",
-            DefaultValue = _defaultOptions.LogOptions.LogToFile ?? false,
+            DefaultValue = _defaultOptions.LogOptions.LogToFile,
             ValueType = Microsoft.Extensions.CommandLineUtils.CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
