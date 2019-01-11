@@ -22,7 +22,6 @@ namespace Stryker.Core.UnitTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectPath = basePath,
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
@@ -31,10 +30,7 @@ namespace Stryker.Core.UnitTest
                                 Name = "SomeFile.cs"
                             }
                         }
-                    },
-                    ProjectUnderTestAssemblyName = "ExampleProject.dll",
-                    ProjectUnderTestPath = @"c:\ExampleProject\",
-                    TargetFramework = "netcoreapp2.0"
+                    }
                 },
             });
             var options = new StrykerOptions();

@@ -3,6 +3,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using Xunit;
 
@@ -45,25 +46,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ProjectFileReader_ShouldThrowOnNoProjectReference()
         {
-            XDocument xDocument = XDocument.Parse(@"
-<Project Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
-        <PackageReference Include=""xunit"" Version=""2.3.1"" />
-        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
-        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
-    </ItemGroup>
-                
-</Project>");
-
             var ex = Assert.Throws<StrykerInputException>(() => 
             {
-                new ProjectFileReader().ReadProjectFile(xDocument, null);
+                new ProjectFileReader().DetermineProjectUnderTest(Enumerable.Empty<string>(), null);
             });
 
             ex.Message.ShouldBe("Project reference issue.");

@@ -73,6 +73,7 @@ namespace Stryker.Core.Initialisation
                 }
                 inputFiles.Add(FindInputFiles(folder, filesToExclude));
             }
+            MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestDir);
             result.ProjectContents = inputFiles;
 
             return result;
@@ -101,8 +102,7 @@ namespace Stryker.Core.Initialisation
                 {
                     SourceCode = _fileSystem.File.ReadAllText(file),
                     Name = _fileSystem.Path.GetFileName(file),
-                    FullPath = file,
-                    IsExcluded = filesToExclude.Contains(file)
+                    FullPath = file
                 });
             }
 

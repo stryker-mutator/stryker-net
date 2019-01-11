@@ -5,11 +5,6 @@ using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using System;
-using System.IO;
-using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace Stryker.Core.Options
 {

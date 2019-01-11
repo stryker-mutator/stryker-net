@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using Xunit;
+using Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -67,9 +68,9 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAssemblyName = "The assembly name"
+                    TestProjectAnalyzerResult = new AnalyzerResult("")
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
@@ -108,10 +109,6 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new Core.Initialisation.ProjectInfo()
-                {
-                    ProjectUnderTestAssemblyName = "The assembly name"
-                },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
