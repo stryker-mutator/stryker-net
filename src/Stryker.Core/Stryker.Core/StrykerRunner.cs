@@ -47,10 +47,10 @@ namespace Stryker.Core
             // Create output dir with gitignore
             string strykerOutputDirectory = Path.Combine(options.BasePath, "StrykerOutput");
             _fileSystem.Directory.CreateDirectory(strykerOutputDirectory);
-            _fileSystem.File.Create(Path.Combine(strykerOutputDirectory, ".gitignore"));
+            _fileSystem.File.Create(Path.Combine(strykerOutputDirectory, ".gitignore")).Close();
             using (var file = _fileSystem.File.CreateText(Path.Combine(strykerOutputDirectory, ".gitignore")))
             {
-                file.Write("*");
+                file.WriteLine("*");
             }
 
             // setup logging
