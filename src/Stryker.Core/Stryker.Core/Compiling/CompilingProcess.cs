@@ -51,7 +51,7 @@ namespace Stryker.Core.Compiling
         {
             var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAssemblyName,
                 syntaxTrees: syntaxTrees,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true),
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult = null;
 
