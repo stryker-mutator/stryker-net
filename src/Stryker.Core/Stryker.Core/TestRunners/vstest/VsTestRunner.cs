@@ -15,13 +15,13 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.TestRunners.vstest
 {
-    public class VstestTestRunner : ITestRunner
+    public class VsTestRunner : ITestRunner
     {
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private string _defaultRunSettings;
 
-        public VstestTestRunner(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
             _options = options;
             _projectInfo = projectInfo;
@@ -45,14 +45,13 @@ namespace Stryker.Core.TestRunners.vstest
                     break;
             }
 
-            _defaultRunSettings =
-                $@"<RunSettings>
-                        <RunConfiguration>
-                            <MaxCpuCount>1</MaxCpuCount>
-                            <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-                            <TestSessionTimeout>{timeoutMS}</TestSessionTimeout>
-                        </RunConfiguration>
-                    </ RunSettings>";
+            _defaultRunSettings = $@"<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>1</MaxCpuCount>
+    <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
+    <TestSessionTimeout>{timeoutMS}</TestSessionTimeout>
+  </RunConfiguration>
+</RunSettings>";
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
@@ -105,7 +104,7 @@ namespace Stryker.Core.TestRunners.vstest
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
             var handler = new RunEventHandler(runCompleteSignal);
-            var testHostLauncher = new StrykerVstestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
+            var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
 
             consoleWrapper.RunTestsWithCustomTestHost(sources, _defaultRunSettings, handler, testHostLauncher);
 
@@ -242,10 +241,7 @@ namespace Stryker.Core.TestRunners.vstest
 
             public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
             {
-                if (testRunChangedArgs != null && testRunChangedArgs.NewTestResults != null)
-                {
-                    TestResults.AddRange(testRunChangedArgs.NewTestResults);
-                }
+                throw new NotImplementedException();
             }
 
             public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)

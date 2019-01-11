@@ -6,12 +6,12 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.vstest
 {
-    public class StrykerVstestHostLauncher : ITestHostLauncher
+    public class StrykerVsTestHostLauncher : ITestHostLauncher
     {
         private readonly Action _callback;
         private readonly int? _activeMutation;
 
-        public StrykerVstestHostLauncher(Action callback, int? activeMutation)
+        public StrykerVsTestHostLauncher(Action callback, int? activeMutation)
         {
             _callback = callback;
             _activeMutation = activeMutation;
@@ -36,7 +36,6 @@ namespace Stryker.Core.TestRunners.vstest
             {
                 process.Exited += (sender, args) =>
                 {
-                    Console.WriteLine("Test host has exited. Signal run end.");
                     _callback();
                 };
 
