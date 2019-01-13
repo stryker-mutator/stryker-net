@@ -26,7 +26,7 @@ namespace Stryker.Core.Mutants
 
         public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
 
-        public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper);
+        public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper, options: new CSharpParseOptions(LanguageVersion.Latest));
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
