@@ -4,7 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
-using Stryker.Core.TestRunners.vstest;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners
 {

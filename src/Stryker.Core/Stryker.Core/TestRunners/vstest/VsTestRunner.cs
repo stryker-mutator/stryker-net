@@ -13,13 +13,14 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 
-namespace Stryker.Core.TestRunners.vstest
+namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private string _defaultRunSettings;
+        private bool _isNetCore = false;
 
         public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
@@ -30,7 +31,10 @@ namespace Stryker.Core.TestRunners.vstest
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             string targetFramework = _projectInfo.TargetFramework;
-
+            if (targetFramework.Contains("netcoreapp") || targetFramework.Contains("netstandard"))
+            {
+                _isNetCore = true;
+            }
             string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
             switch (targetFramework)
             {
@@ -55,26 +59,34 @@ namespace Stryker.Core.TestRunners.vstest
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
-            var vstestToolPath = GetVsTestToolpath();
+            var vsTestToolPath = GetVsTestToolpath();
+            var vsTestExtensionsPath = GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
 
-            consoleWrapper = new VsTestConsoleWrapper(vstestToolPath, new ConsoleParameters { TraceLevel = System.Diagnostics.TraceLevel.Info, LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
-            //consoleWrapper = new VsTestConsoleWrapper(vstestToolPath);
+            consoleWrapper = new VsTestConsoleWrapper(vsTestToolPath, new ConsoleParameters { TraceLevel = System.Diagnostics.TraceLevel.Info, LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
 
             consoleWrapper.StartSession();
-            consoleWrapper.InitializeExtensions(new List<string> { testBinariesPath, Path.Combine(vstestToolPath.TrimEnd(FilePathUtils.ConvertPathSeparators("\\").ToCharArray().First()), "Extensions") });
+            consoleWrapper.InitializeExtensions(new List<string> { testBinariesPath, vsTestExtensionsPath });
 
             var testCases = DiscoverTests(new List<string>() { testAssemblyPath }, consoleWrapper);
 
-            var testresults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
+            var testResults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
+
+            string resultMessage = null;
+            if (testResults.Select(tr => string.Join(Environment.NewLine, tr.Messages.Select(m => m.Text))) is var testResultsMessages && testResultsMessages.Any())
+            {
+                resultMessage = string.Join(Environment.NewLine, testResultsMessages);
+            }
 
             var testResult = new TestRunResult
             {
-                Success = !testresults.Any(tr => tr.Outcome == TestOutcome.Failed),
-                ResultMessage = "",
+                Success = !testResults.Any(tr => tr.Outcome == TestOutcome.Failed),
+                ResultMessage = resultMessage ?? "",
                 TotalNumberOfTests = testCases.Count()
             };
+
+            consoleWrapper.EndSession();
             return testResult;
         }
 
@@ -136,9 +148,10 @@ namespace Stryker.Core.TestRunners.vstest
             var nugetPackageFolders = CollectNugetPackageFolders();
             foreach (string nugetPackageFolder in nugetPackageFolders)
             {
-                string pathToTry = Path.Combine(nugetPackageFolder, toolFolderInPackage, Path.Combine("net451", "vstest.console.exe"));
-                //(targetFrameworkString.Contains("netcoreapp") || targetFrameworkString.Contains("netstandard")) ?
-                //Path.Combine("netcoreapp2.0", "vstest.console.dll") : Path.Combine("net451", "vstest.console.exe"));
+                string pathToTry = Path.Combine(nugetPackageFolder, toolFolderInPackage,
+                _isNetCore ?
+                Path.Combine("netcoreapp2.0", "vstest.console.dll") :
+                Path.Combine("net451", "vstest.console.exe"));
 
                 if (FilePathUtils.ConvertPathSeparators(pathToTry) is var pathFound && File.Exists(pathFound))
                 {
@@ -173,6 +186,11 @@ namespace Stryker.Core.TestRunners.vstest
             {
                 yield return nugetPackageFolder;
             }
+        }
+
+        private string GetDefaultVsTestExtensionsPath(string vstestToolPath)
+        {
+            return Path.Combine(vstestToolPath.TrimEnd(FilePathUtils.ConvertPathSeparators("\\").ToCharArray().First()), "Extensions");
         }
 
         public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
@@ -241,7 +259,10 @@ namespace Stryker.Core.TestRunners.vstest
 
             public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
             {
-                throw new NotImplementedException();
+                if (testRunChangedArgs != null && testRunChangedArgs.NewTestResults != null)
+                {
+                    TestResults.AddRange(testRunChangedArgs.NewTestResults);
+                }
             }
 
             public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)

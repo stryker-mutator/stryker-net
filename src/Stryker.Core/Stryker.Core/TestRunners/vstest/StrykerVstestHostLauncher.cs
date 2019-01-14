@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Stryker.Core.TestRunners.vstest
+namespace Stryker.Core.TestRunners.VsTest
 {
     public class StrykerVsTestHostLauncher : ITestHostLauncher
     {
