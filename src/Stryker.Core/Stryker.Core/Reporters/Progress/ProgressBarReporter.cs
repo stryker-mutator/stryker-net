@@ -102,12 +102,12 @@ namespace Stryker.Core.Reporters.Progress
             var span = TimeSpan.FromMilliseconds(remaining);
             if (span.TotalDays >= 1)
             {
-                return span.ToString(@"~d\d\ h\h");
+                return span.ToString(@"\~d\d\ h\h");
             }
 
             if (span.TotalHours >= 1)
             {
-                return span.ToString(@"~h\h\ mm\m");
+                return span.ToString(@"\~h\h\ mm\m");
             }
 
             return span.ToString(@"\~m\m\ ss\s");
