@@ -126,7 +126,14 @@ jobs:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestPath)/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+      arguments: $(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release package in integration test project'
+    inputs:
+      command: custom
+      custom: add
+      arguments: $(IntegrationTestPath)/NetCore2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
@@ -136,7 +143,15 @@ jobs:
     inputs:
       command: custom
       custom: restore
-      projects: '$(IntegrationTestPath)/ExampleProject.XUnit.csproj'
+      projects: '$(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
+      arguments: '-s $(PreReleaseFeedUri)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore pre-release packages in integrationtest project'
+    inputs:
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestPath)/NetCore2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
       arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
@@ -181,7 +196,7 @@ jobs:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestProject) package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+      arguments: $(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
