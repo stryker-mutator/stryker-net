@@ -104,7 +104,7 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/IntegrationTests
+      workingDirectory: $(IntegrationTestPath)/IntegrationTests/ExampleProject.XUnit
 
 - job: LinuxTests
   displayName: Run tests on Linux
@@ -160,7 +160,7 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/NetCore2_0
+      workingDirectory: $(IntegrationTestPath)/NetCore2_0/ExampleProject.XUnit
     
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test 2.1'
@@ -168,7 +168,7 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/NetCore2_1
+      workingDirectory: $(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit
 
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
@@ -215,7 +215,7 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/IntegrationTests
+      workingDirectory: $(IntegrationTestPath)/IntegrationTests/ExampleProject.XUnit
 
 - job: PublishRelease
   displayName: Publish Release Artifacts
