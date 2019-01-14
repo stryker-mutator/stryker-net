@@ -17,7 +17,6 @@ variables:
   PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests
-  IntegrationTestProject: $(IntegrationTestPath)/ExampleProject.XUnit.csproj
   PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
@@ -104,7 +103,13 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/IntegrationTests/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Assert integration test results'
+    inputs:
+      command: test
+      workingDirectory: $(IntegrationTestPath)/IntegrationTests
 
 - job: LinuxTests
   displayName: Run tests on Linux
@@ -215,7 +220,13 @@ jobs:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/IntegrationTests/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Assert integration test results'
+    inputs:
+      command: test
+      workingDirectory: $(IntegrationTestPath)/IntegrationTests
 
 - job: PublishRelease
   displayName: Publish Release Artifacts
