@@ -1,16 +1,15 @@
 ﻿using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    using Stryker.Core.Exceptions;
-    using Stryker.Core.Initialisation;
-    using System.Linq;
-
     public class InputFileResolverTests
     {
         private string _currentDirectory { get; set; }
