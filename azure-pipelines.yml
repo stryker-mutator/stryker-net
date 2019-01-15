@@ -101,7 +101,7 @@ jobs:
     inputs:
       command: custom
       custom: restore
-      projects: '$(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
+      projects: '$(IntegrationTestPath)/**/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
       arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
@@ -163,15 +163,7 @@ jobs:
     inputs:
       command: custom
       custom: restore
-      projects: '$(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
-      arguments: '-s $(PreReleaseFeedUri)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore pre-release packages in integrationtest project'
-    inputs:
-      command: custom
-      custom: restore
-      projects: '$(IntegrationTestPath)/NetCore2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
+      projects: '$(IntegrationTestPath)/**/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
       arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
@@ -233,7 +225,7 @@ jobs:
     inputs:
       command: custom
       custom: restore
-      projects: '$(IntegrationTestPath)/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
+      projects: '$(IntegrationTestPath)/**/ExampleProject.XUnit.csproj'
       arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
