@@ -8,14 +8,29 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
 {
+    public class FixedClock : IStopWatchProvider
+    {
+        public void Start()
+        {
+        }
+
+        public long GetElapsedMillisecond()
+        {
+            return 10L;
+        }
+    }
+    
     public class ProgressBarReporterTests
     {
         private readonly Mock<IConsoleOneLineLogger> _testsProgressLogger;
         private readonly ProgressBarReporter _progressBarReporter;
+        private readonly IStopWatchProvider _stopWtach;
+       
         public ProgressBarReporterTests()
         {
             _testsProgressLogger = new Mock<IConsoleOneLineLogger>();
-            _progressBarReporter = new ProgressBarReporter(_testsProgressLogger.Object);
+            _stopWtach = new FixedClock();
+            _progressBarReporter = new ProgressBarReporter(_testsProgressLogger.Object, _stopWtach);
         }
 
         [Fact]
@@ -24,7 +39,6 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             _progressBarReporter.ReportInitialState(0);
 
             _progressBarReporter.ReportRunTest();
-
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                                                           It.Is<object[]>(
                                                               y => (int)y.ElementAt(1) == 0 &&
@@ -65,9 +79,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTimeInMinutes()
         {
             _progressBarReporter.ReportInitialState(10000);
-            Thread.Sleep(10);
             _progressBarReporter.ReportRunTest();
-            var format = new Regex("^\\~\\d+m \\d?\\ds");
 
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                 It.Is<object[]>(
@@ -75,16 +87,13 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                          (int)y.ElementAt(1) == 1 &&
                          (int)y.ElementAt(2) == 10000 &&
                          (int)y.ElementAt(3) == 0 && 
-                         format.IsMatch((string)y.ElementAt(4))
-                         )));
+                         ((string)y.ElementAt(4)).Equals("~1m 39s"))));
         }
         [Fact]
         public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTimeInHours()
         {
             _progressBarReporter.ReportInitialState(1000000);
-            Thread.Sleep(11);
             _progressBarReporter.ReportRunTest();
-            var format = new Regex("^\\~\\d+h \\d\\dm");
 
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                 It.Is<object[]>(
@@ -92,17 +101,14 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                          (int)y.ElementAt(1) == 1 &&
                          (int)y.ElementAt(2) == 1000000 &&
                          (int)y.ElementAt(3) == 0 && 
-                         format.IsMatch((string)y.ElementAt(4))
-                )));
+                         ((string)y.ElementAt(4)).Equals("~2h 46m"))));
         }
 
         [Fact]
         public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTimeInDays()
         {
             _progressBarReporter.ReportInitialState(100000000);
-            Thread.Sleep(10);
             _progressBarReporter.ReportRunTest();
-            var format = new Regex("^\\~\\d+d \\d?\\dh");
 
             _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                 It.Is<object[]>(
@@ -110,8 +116,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                          (int)y.ElementAt(1) == 1 &&
                          (int)y.ElementAt(2) == 100000000 &&
                          (int)y.ElementAt(3) == 0 && 
-                         format.IsMatch((string)y.ElementAt(4))
-                )));
+                         ((string)y.ElementAt(4)).Equals("~11d 13h"))));
         }
     }
 }

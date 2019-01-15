@@ -21,20 +21,21 @@ namespace Stryker.Core.Reporters.Progress
         private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
+        private readonly IStopWatchProvider _stopWatch; 
 
         private int _totalNumberOfTests;
         private int _numberOfTestsRun;
-        private Stopwatch _startTime;
 
-        public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger)
+        public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger, IStopWatchProvider stopWatch)
         {
             _testsProgressLogger = testsProgressLogger;
+            _stopWatch = stopWatch;
         }
 
         public void ReportInitialState(int totalNumberOfTests)
         {
-            _startTime = new Stopwatch();
-            _startTime.Start();
+  
+            _stopWatch.Start();
             if (totalNumberOfTests == 0)
             {
                 _testsProgressLogger.StartLog(LoggingFormat,
@@ -91,7 +92,7 @@ namespace Stryker.Core.Reporters.Progress
                 return "NA";
             }
 
-            var elapsed = _startTime.ElapsedMilliseconds;
+            var elapsed = _stopWatch.GetElapsedMillisecond();
             var remaining = (_totalNumberOfTests - _numberOfTestsRun) * elapsed / _numberOfTestsRun;
             
             return MillisecondsToText(remaining);
