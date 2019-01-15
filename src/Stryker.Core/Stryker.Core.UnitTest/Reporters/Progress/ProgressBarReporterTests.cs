@@ -24,13 +24,11 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
     {
         private readonly Mock<IConsoleOneLineLogger> _testsProgressLogger;
         private readonly ProgressBarReporter _progressBarReporter;
-        private readonly IStopWatchProvider _stopWtach;
-       
+
         public ProgressBarReporterTests()
         {
             _testsProgressLogger = new Mock<IConsoleOneLineLogger>();
-            _stopWtach = new FixedClock();
-            _progressBarReporter = new ProgressBarReporter(_testsProgressLogger.Object, _stopWtach);
+            _progressBarReporter = new ProgressBarReporter(_testsProgressLogger.Object, new FixedClock());
         }
 
         [Fact]
