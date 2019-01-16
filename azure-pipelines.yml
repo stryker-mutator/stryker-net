@@ -123,8 +123,8 @@ jobs:
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
     inputs:
-      command: test
-      workingDirectory: $(IntegrationTestPath)/IntegrationTests
+      command: test IntegrationTests.csproj
+      workingDirectory: $(IntegrationTestPath)/IntegrationTests/IntegrationTests
 
 - job: LinuxTests
   displayName: Run tests on Linux
