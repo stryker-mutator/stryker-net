@@ -83,18 +83,7 @@ namespace Stryker.Core.Mutants
         /// <returns></returns>
         private static ExpressionSyntax GetBinaryExpression(int mutantId)
         {
-            return SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression,
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName("Stryker"),
-                            SyntaxFactory.IdentifierName("ActiveMutationHelper")
-                        ),
-                        SyntaxFactory.IdentifierName("ActiveMutation")
-                ),
-                SyntaxFactory.LiteralExpression(
-                    SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
+            return SyntaxFactory.ParseExpression($"Stryker.ActiveMutationHelper.Check({mutantId})");
         }
     }
 }
