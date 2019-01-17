@@ -3,14 +3,18 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
-        private const string Mutationconditional = "MutationConditional";
-        private const string Mutationif = "MutationIf";
+        private const string MutationConditional = "MutationConditional";
+        private const string MutationIf = "MutationIf";
+
+        private const string patternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
         private static readonly string helper;
+        private static readonly string selectorExpression;
 
         static MutantPlacer()
         {
@@ -22,9 +26,18 @@ namespace Stryker.Core.Mutants
                     helper = reader.ReadToEnd();
                 }
             }
+
+            var extractor = new Regex(patternForCheck);
+            var result = extractor.Match(helper);
+            if (!result.Success)
+            {
+                throw new InvalidDataException("Internal error: failed to find expression for mutant selection.");
+            }
+
+            selectorExpression = result.Groups[1].Value;
         }
 
-        public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
+        public static string[] MutationMarkers => new[] {MutationConditional, MutationIf};
 
         public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper, options: new CSharpParseOptions(LanguageVersion.Latest));
 
@@ -36,7 +49,7 @@ namespace Stryker.Core.Mutants
                 statement: SyntaxFactory.Block(mutated),
                 @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation(Mutationif, mutantId.ToString()));
+                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIf, mutantId.ToString()));
         }
 
         public static SyntaxNode RemoveByIfStatement(SyntaxNode node)
@@ -48,7 +61,6 @@ namespace Stryker.Core.Mutants
             // return original statement
             var childNodes = ifStatement.Else.Statement.ChildNodes().ToList();
             return childNodes.Count == 1 ? childNodes[0] : ifStatement.Else.Statement;
-
         }
 
         public static ConditionalExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
@@ -59,7 +71,7 @@ namespace Stryker.Core.Mutants
                 whenTrue: mutated,
                 whenFalse: original)
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation(Mutationconditional, mutantId.ToString()));
+                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
         }
 
         public static SyntaxNode RemoveByConditionalExpression(SyntaxNode node)
@@ -83,7 +95,7 @@ namespace Stryker.Core.Mutants
         /// <returns></returns>
         private static ExpressionSyntax GetBinaryExpression(int mutantId)
         {
-            return SyntaxFactory.ParseExpression($"Stryker.ActiveMutationHelper.Check({mutantId})");
+            return SyntaxFactory.ParseExpression(selectorExpression.Replace("ID", mutantId.ToString()));
         }
     }
 }

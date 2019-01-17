@@ -1,26 +1,56 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker
 {
-    public static class ActiveMutationHelper
+    public static sealed class MutantControl
     {
-        
-        static ActiveMutationHelper()
+        private static readonly HashSet<int> _coveredMutants;
+        private static readonly bool captureCoverage;
+        private static readonly string logFileName;
+
+        static MutantControl()
         {
-            ActiveMutation = int.Parse(System.Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
+            logFileName = Environment.GetEnvironmentVariable("CoverFileName");
+            captureCoverage = !string.IsNullOrEmpty(logFileName);
+            if (captureCoverage)
+            {
+                AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+                _coveredMutants = new HashSet<int>();
+            }
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            //DumpState();
+            DumpState();
         }
 
-        public static bool Check(int id)
+        private static void DumpState()
         {
+            using (var file = File.OpenWrite(logFileName))
+            {
+                using (var writer = new StreamWriter(file))
+                {
+                    foreach (var coveredMutant in _coveredMutants)
+                    {
+                        writer.Write($"{coveredMutant},");
+                    }
+
+                }
+            }
+        }
+        // check with: Stryker.MutantControl.IsActive(ID)
+        public static bool IsActive(int id)
+        {
+            if (captureCoverage)
+            {
+                _coveredMutants.Add(id);
+            }
             return ActiveMutation == id;
         }
 
-        public static int ActiveMutation { get; private set;}
+        private static int ActiveMutation { get; private set;}
     }
 }
