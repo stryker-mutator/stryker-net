@@ -151,7 +151,7 @@ namespace Stryker.Core.MutationTest
                 new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
                 mutant =>
                 {
-                    _mutationTestExecutor.Test(mutant);
+                    _mutationTestExecutor.Test(mutant, _input.TimeoutMS);
 
                     _reporter.OnMutantTested(mutant);
                 });

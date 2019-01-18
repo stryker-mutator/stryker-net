@@ -4,14 +4,14 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using System.Linq;
-using Stryker.Core.Parsers;
-using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerOptions options);
+        
+        int InitialTest(StrykerOptions option);
     }
     
     public class InitialisationProcess : IInitialisationProcess
@@ -43,6 +43,10 @@ namespace Stryker.Core.Initialisation
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude.ToList());
 
+            if (_testRunner == null)
+            {
+                _testRunner = new TestRunnerFactory().Create("", projectInfo.TestProjectPath);
+            }
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
 
@@ -57,14 +61,17 @@ namespace Stryker.Core.Initialisation
             {
                 ProjectInfo = projectInfo,
                 AssemblyReferences = references,
-                TestRunner = _testRunner ?? new TestRunnerFactory().Create("", projectInfo.TestProjectPath)
+                TestRunner = _testRunner
             };
 
-            // initial test
-            var initialTestDuration = _initialTestProcess.InitialTest(input.TestRunner);
-            input.TimeoutMS = new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
-
             return input;
+        }
+
+        public int InitialTest(StrykerOptions options)
+        {
+            // initial test
+            var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
+            return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
     }
 }

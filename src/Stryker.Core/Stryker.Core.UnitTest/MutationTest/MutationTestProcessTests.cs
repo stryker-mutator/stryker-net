@@ -262,7 +262,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
+            executorMock.Setup(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()));
 
             var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
 
@@ -272,7 +272,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             target.Test(options);
 
-            executorMock.Verify(x => x.Test(mutant), Times.Once);
+            executorMock.Verify(x => x.Test(mutant, It.IsAny<int>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);

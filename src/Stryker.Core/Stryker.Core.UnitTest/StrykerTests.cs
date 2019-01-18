@@ -38,6 +38,8 @@ namespace Stryker.Core.UnitTest
                     TargetFramework = "netcoreapp2.0"
                 },
             });
+
+            initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(0);
             var options = new StrykerOptions();
 
             mutationTestProcessMock.Setup(x => x.Mutate(options));

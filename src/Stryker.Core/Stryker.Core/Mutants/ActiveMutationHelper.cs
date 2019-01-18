@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Stryker
 {
-    public static sealed class MutantControl
+    public static class MutantControl
     {
         private static readonly HashSet<int> _coveredMutants;
         private static readonly bool captureCoverage;
@@ -13,7 +13,7 @@ namespace Stryker
         static MutantControl()
         {
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
-            logFileName = Environment.GetEnvironmentVariable("CoverFileName");
+            logFileName = Environment.GetEnvironmentVariable("CoverageFileName");
             captureCoverage = !string.IsNullOrEmpty(logFileName);
             if (captureCoverage)
             {
@@ -51,6 +51,6 @@ namespace Stryker
             return ActiveMutation == id;
         }
 
-        private static int ActiveMutation { get; private set;}
+        private static int ActiveMutation { get; set;}
     }
 }

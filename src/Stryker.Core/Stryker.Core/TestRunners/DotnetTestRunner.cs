@@ -19,14 +19,16 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
+            Dictionary<string, string> envVars = activeMutationId == null ? null : 
+                new Dictionary<string, string>
+            {
+                {"ActiveMutation", activeMutationId.ToString() }
+            };
             var result = _processExecutor.Start(
                 _path,
                 "dotnet",
                 "test --no-build --no-restore",
-                new Dictionary<string, string>
-                {
-                    {"ActiveMutation", activeMutationId.ToString() }
-                },
+                envVars,
                 timeoutMS ?? 0);
 
             return new TestRunResult
@@ -35,6 +37,19 @@ namespace Stryker.Core.TestRunners
                 ResultMessage = result.Output,
                 TotalNumberOfTests = _totalNumberOfTestsParser.ParseTotalNumberOfTests(result.Output)
             };
+        }
+
+        public void CaptureCoverage(string coverageFilePath)
+        {
+            var result = _processExecutor.Start(
+                _path,
+                "dotnet",
+                "test --no-build --no-restore",
+                new Dictionary<string, string>
+                {
+                    {"CoverageFileName", coverageFilePath }
+                },
+                0);            
         }
     }
 }

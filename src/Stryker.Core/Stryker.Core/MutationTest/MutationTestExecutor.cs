@@ -11,27 +11,25 @@ namespace Stryker.Core.MutationTest
     /// </summary>
     public interface IMutationTestExecutor
     {
-        void Test(Mutant mutant);
+        void Test(Mutant mutan, int timeotimeoutMsut);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
     {
         private ITestRunner _testRunner { get; set; }
         private ILogger _logger { get; set; }
-        private int _timeoutMS { get; set; }
 
-        public MutationTestExecutor(ITestRunner testRunner, int timeoutMS)
+        public MutationTestExecutor(ITestRunner testRunner)
         {
             _testRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _timeoutMS = timeoutMS;
         }
 
-        public void Test(Mutant mutant)
+        public void Test(Mutant mutant, int timeoutMs)
         {
             try
             {
-                var result = _testRunner.RunAll(_timeoutMS, mutant.Id);
+                var result = _testRunner.RunAll(timeoutMs, mutant.Id);
                 _logger.LogTrace("Testrun with output {0}", result.ResultMessage);
 
                 if (result.Success)
