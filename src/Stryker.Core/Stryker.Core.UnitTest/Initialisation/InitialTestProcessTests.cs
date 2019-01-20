@@ -20,6 +20,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<string>()))
+                .Returns(new TestRunResult {Success = false});
 
             var exception = Assert.Throws<StrykerInputException>(() => _target.InitialTest(testRunnerMock.Object));
         }
@@ -29,6 +31,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<string>()))
+                .Returns(new TestRunResult {Success = true});
 
             var result = _target.InitialTest(testRunnerMock.Object);
         }

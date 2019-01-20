@@ -4,6 +4,6 @@ namespace Stryker.Core.TestRunners
     {
         TestRunResult RunAll(int? timeoutMS, int? activeMutationId);
 
-        void CaptureCoverage(string coverageFilePath);
+        TestRunResult CaptureCoverage(string coverageFilePath);
     }
 }

@@ -22,6 +22,7 @@ namespace Stryker.Core.Initialisation
         private ITestRunner _testRunner { get; set; }
         private ILogger _logger { get; set; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
+        private ProjectInfo projectInfo;
 
         public InitialisationProcess( 
             IInputFileResolver inputFileResolver = null, 
@@ -41,7 +42,7 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude.ToList());
+            projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude.ToList());
 
             if (_testRunner == null)
             {
@@ -71,6 +72,7 @@ namespace Stryker.Core.Initialisation
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
+            
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
     }

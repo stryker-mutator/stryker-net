@@ -74,7 +74,6 @@ namespace Stryker.Core
 
                 // initial test
                 _input.TimeoutMS =_initialisationProcess.InitialTest(options);
- //               _input.TestRunner.CaptureCoverage(Path.Combine(options.BasePath, "coverage.log"));
               
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);

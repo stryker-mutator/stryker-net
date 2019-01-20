@@ -14,6 +14,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Stryker.Core.Initialisation;
 
 namespace Stryker.Core.MutationTest
 {

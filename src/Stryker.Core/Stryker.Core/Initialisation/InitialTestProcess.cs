@@ -2,9 +2,8 @@
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
-using System;
 using System.Diagnostics;
-using Stryker.Core.Testing;
+using System.IO;
 
 namespace Stryker.Core.Initialisation
 {
@@ -35,7 +34,8 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.RunAll(0, null);
+            var coverageFilePath = "CoveredMutants.log";
+            var testResult = testRunner.CaptureCoverage(coverageFilePath);
             _logger.LogInformation("Total number of tests found in initial test run: {0}", testResult.TotalNumberOfTests);
 
             var duration = (int)stopwatch.ElapsedMilliseconds;

@@ -24,6 +24,11 @@ namespace Stryker.Core.TestRunners
             {
                 {"ActiveMutation", activeMutationId.ToString() }
             };
+            return LaunchTestProcess(timeoutMS, envVars);
+        }
+
+        private TestRunResult LaunchTestProcess(int? timeoutMS, Dictionary<string, string> envVars)
+        {
             var result = _processExecutor.Start(
                 _path,
                 "dotnet",
@@ -39,17 +44,13 @@ namespace Stryker.Core.TestRunners
             };
         }
 
-        public void CaptureCoverage(string coverageFilePath)
+        public TestRunResult CaptureCoverage(string coverageFilePath)
         {
-            var result = _processExecutor.Start(
-                _path,
-                "dotnet",
-                "test --no-build --no-restore",
-                new Dictionary<string, string>
-                {
-                    {"CoverageFileName", coverageFilePath }
-                },
-                0);            
+            var envVars = new Dictionary<string, string>
+            {
+                {"CoverageFileName", coverageFilePath }
+            };
+            return LaunchTestProcess(null, envVars);
         }
     }
 }

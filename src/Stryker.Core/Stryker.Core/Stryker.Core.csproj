@@ -19,6 +19,11 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="NewFolder1\**" />
+    <EmbeddedResource Remove="NewFolder1\**" />
+    <None Remove="NewFolder1\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="Mutants\ActiveMutationHelper.cs" />
   </ItemGroup>
   <ItemGroup>
