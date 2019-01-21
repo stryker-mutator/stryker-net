@@ -10,7 +10,6 @@ namespace Stryker.Core.UnitTest.Coverage
     {
         private string received;
 
-        private object lck = new object();
         private object lckMessage = new object();
 
         [Fact]
@@ -21,7 +20,7 @@ namespace Stryker.Core.UnitTest.Coverage
 
                 channel.Listen();
                 using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly))
+                    PipeOptions.Asynchronous))
                 {
                     client.Connect(1);
                     Assert.True(client.IsConnected);
@@ -47,7 +46,7 @@ namespace Stryker.Core.UnitTest.Coverage
                 };
 
                 using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly))
+                    PipeOptions.Asynchronous))
                 {
                     client.Connect(1);
                     Assert.True(client.IsConnected);
@@ -69,11 +68,9 @@ namespace Stryker.Core.UnitTest.Coverage
         {
             using (var channel = new CoverageServer("myChannel3"))
             {
-                var notified = false;
-                channel.RaiseNewClientEvent += (o, args) => notified = true;
                 channel.Listen();
                 using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly))
+                    PipeOptions.Asynchronous))
                 {
                     client.Connect(1);
                     Assert.True(client.IsConnected);
@@ -95,9 +92,9 @@ namespace Stryker.Core.UnitTest.Coverage
                 channel.RaiseNewClientEvent+=(o, args) => notified = true;
                 channel.Listen();
                 using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly))
+                    PipeOptions.Asynchronous))
                     using(var otherClient= new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly))
+                    PipeOptions.Asynchronous))
                 {
                     client.Connect(1);
                     Assert.True(client.IsConnected);
