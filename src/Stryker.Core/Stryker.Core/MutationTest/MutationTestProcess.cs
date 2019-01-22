@@ -53,9 +53,9 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate(StrykerOptions options)
         {
-            var mutatedSyntaxTrees = new Collection<SyntaxTree>();
+            var mutatedSyntaxTrees = new List<SyntaxTree>();
             // add helper
-            mutatedSyntaxTrees.Add(MutantPlacer.ActiveMutantSelectorHelper);
+            mutatedSyntaxTrees.AddRange(MutantPlacer.ActiveMutantSelectorHelper);
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipes;
 using System.Text;
 
@@ -14,156 +12,68 @@ namespace Stryker.Core.Coverage
         {
             this.client = client;
         }
-    }
-
-    public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
+    } 
 
     public delegate void MessageReceived(object sender, string args);
 
-    public sealed class CoverageServer : IDisposable
-    {
-        private readonly object lck = new object();
-        private volatile bool mustShutdown;
-        private readonly IList<CoverageChannel> channels = new List<CoverageChannel>();
-        private NamedPipeServerStream listener;
-
-        public string PipeName { get; private set; }
-
-        public event ConnectionEvent RaiseNewClientEvent;
-        public event MessageReceived RaiseReceivedMessage;
-
-        public CoverageServer(string name)
-        {
-            PipeName = $"Stryker.{name}.Pipe";
-        }
-
-        public void Listen()
-        {
-            lock (lck)
-            {
-                if (mustShutdown)
-                {
-                    return;
-                }
-
-                listener = new NamedPipeServerStream(PipeName,
-                    PipeDirection.InOut,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte);
-                listener.BeginWaitForConnection(OnConnect, null);
-            }
-        }
-
-        private void OnConnect(IAsyncResult ar)
-        {
-            CoverageChannel session = null;
-            lock (lck)
-            {
-                try
-                {
-                    listener.EndWaitForConnection(ar);
-                }
-                catch (IOException)
-                {
-                }
-                catch (ObjectDisposedException)
-                {
-                    // disposed
-                    return;
-                }
-
-                if (listener.IsConnected)
-                {
-                    session = new CoverageChannel(listener);
-                    channels.Add(session);
-                    listener = null;
-                    session.RaiseReceivedMessage += Session_RaiseReceivedMessage;
-                    session.Start();
-                }
-                Listen();
-            }
-
-            RaiseNewClientEvent?.Invoke(this, new ConnectionEventArgs(session));
-        }
-
-        private void Session_RaiseReceivedMessage(object sender, string args)
-        {
-            //forward
-            RaiseReceivedMessage?.Invoke(sender, args);
-        }
-
-        public void Dispose()
-        {
-            lock (lck)
-            {
-                mustShutdown = true;
-                using (var client = new NamedPipeClientStream(PipeName))
-                {
-                    try
-                    {
-                        client.Connect(0);
-                    }
-                    catch (TimeoutException)
-                    {
-                    }
-                }
-
-                foreach (var channel in channels)
-                {
-                    channel.Dispose();
-                }
-            }
-        }
-    }
-
     public class CoverageChannel : IDisposable
     {
-        private readonly NamedPipeServerStream namedPipeServerStream;
-        private readonly byte[] buffer = new byte[1024];
-        private readonly StringBuilder receivedText = new StringBuilder();
+        private readonly PipeStream pipeStream;
+        private byte[] buffer;
         private int cursor;
+        private bool processingHeader;
 
         public event MessageReceived RaiseReceivedMessage;
 
-        internal CoverageChannel(NamedPipeServerStream stream)
+        public CoverageChannel(PipeStream stream)
         {
-            namedPipeServerStream = stream;
+            pipeStream = stream;
         }
 
         internal void Start()
         {
-            BeginRead();
+            Begin();
         }
 
-        private void BeginRead()
+        private void Begin(bool init = true)
         {
-            namedPipeServerStream.BeginRead(buffer, cursor, buffer.Length - cursor, OnReceived, null);
+            if (init)
+            {
+                if (buffer != null && !processingHeader)
+                {
+                    RaiseReceivedMessage?.Invoke(this, Encoding.Unicode.GetString(buffer));
+                }
+                processingHeader = !processingHeader;
+                buffer = new byte[processingHeader ? 4 : BitConverter.ToInt32(buffer)];
+                cursor = 0;
+            }
+            pipeStream.BeginRead(buffer, cursor, buffer.Length-cursor, WhenReceived, null);
         }
 
-        private void OnReceived(IAsyncResult ar)
+        private void WhenReceived(IAsyncResult ar)
         {
             try
             {
-                var read = namedPipeServerStream.EndRead(ar);
-                if (read != 0)
-                {
-                    receivedText.Append(Encoding.Unicode.GetString(buffer.AsSpan(cursor, read)));
-                    RaiseReceivedMessage?.Invoke(this, receivedText.ToString());
-                    receivedText.Clear();
-                    cursor = 0;
-                    BeginRead();
-                }
+                var read = pipeStream.EndRead(ar);
+                if (read == 0) return;
+                cursor += read;
+                Begin(cursor == buffer.Length);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
             }
+        }
 
+        public void SendText(string message)
+        {
+            var messageBytes = Encoding.Unicode.GetBytes(message);
+            pipeStream.Write(BitConverter.GetBytes(messageBytes.Length));
+            pipeStream.Write(messageBytes);
         }
 
         public void Dispose()
         {
-            namedPipeServerStream.Disconnect();
-            namedPipeServerStream.Dispose();
+            pipeStream.Dispose();
         }
     }
 }

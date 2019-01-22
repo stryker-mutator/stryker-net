@@ -24,10 +24,10 @@
     <None Remove="NewFolder1\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Mutants\ActiveMutationHelper.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Coverage\CoverageChannel.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

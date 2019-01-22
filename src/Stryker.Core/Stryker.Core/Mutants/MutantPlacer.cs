@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
@@ -12,14 +14,33 @@ namespace Stryker.Core.Mutants
         private const string MutationConditional = "MutationConditional";
         private const string MutationIf = "MutationIf";
 
-        private const string patternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
-        private static readonly string helper;
-        private static readonly string selectorExpression;
+        private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
+
+
+        private static readonly string SelectorExpression;
+        private static readonly IList<SyntaxTree> Helpers = new List<SyntaxTree>();
 
         static MutantPlacer()
         {
+            var helper = GetSourceFromResource("Stryker.Core.Mutants.ActiveMutationHelper.cs");
+            var extractor = new Regex(PatternForCheck);
+            var result = extractor.Match(helper);
+            if (!result.Success)
+            {
+                throw new InvalidDataException("Internal error: failed to find expression for mutant selection.");
+            }
+            SelectorExpression = result.Groups[1].Value;
+
+            Helpers.Add(CSharpSyntaxTree.ParseText(helper, new CSharpParseOptions(LanguageVersion.Latest)));
+            helper = GetSourceFromResource("Stryker.Core.Coverage.CoverageChannel.cs");
+            Helpers.Add(CSharpSyntaxTree.ParseText(helper, new CSharpParseOptions(LanguageVersion.Latest)));
+        }
+
+        private static string GetSourceFromResource(string sourceResourceName)
+        {
+            string helper;
             using (var stream =
-                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
+                typeof(MutantPlacer).Assembly.GetManifestResourceStream(sourceResourceName))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -27,19 +48,12 @@ namespace Stryker.Core.Mutants
                 }
             }
 
-            var extractor = new Regex(patternForCheck);
-            var result = extractor.Match(helper);
-            if (!result.Success)
-            {
-                throw new InvalidDataException("Internal error: failed to find expression for mutant selection.");
-            }
-
-            selectorExpression = result.Groups[1].Value;
+            return helper;
         }
 
-        public static string[] MutationMarkers => new[] {MutationConditional, MutationIf};
+        public static IEnumerable<string> MutationMarkers => new[] {MutationConditional, MutationIf};
 
-        public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper, options: new CSharpParseOptions(LanguageVersion.Latest));
+        public static IEnumerable<SyntaxTree> ActiveMutantSelectorHelper => Helpers;
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
@@ -95,7 +109,7 @@ namespace Stryker.Core.Mutants
         /// <returns></returns>
         private static ExpressionSyntax GetBinaryExpression(int mutantId)
         {
-            return SyntaxFactory.ParseExpression(selectorExpression.Replace("ID", mutantId.ToString()));
+            return SyntaxFactory.ParseExpression(SelectorExpression.Replace("ID", mutantId.ToString()));
         }
     }
 }

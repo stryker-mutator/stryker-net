@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System;
+using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using Stryker.Core.Coverage;
@@ -54,7 +55,7 @@ namespace Stryker.Core.UnitTest.Coverage
                     {
                         if (!notified)
                         {
-                            Monitor.Wait(channel, 10);
+                            Monitor.Wait(channel, 50);
                         }
                         Assert.True(notified);
                     }
@@ -76,8 +77,9 @@ namespace Stryker.Core.UnitTest.Coverage
                     Assert.True(client.IsConnected);
                     channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
 
+                    CoverageChannel clientChannel = new CoverageChannel(client);
                     var message = "hello";
-                    client.Write(Encoding.Unicode.GetBytes(message));
+                    clientChannel.SendText(message);
                     ExpectThisMessage(message);
                 }
             }
@@ -96,20 +98,27 @@ namespace Stryker.Core.UnitTest.Coverage
                     using(var otherClient= new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
                     PipeOptions.Asynchronous))
                 {
-                    client.Connect(1);
+                    client.Connect(5);
                     Assert.True(client.IsConnected);
                     channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
-                    otherClient.Connect(1);
+                    otherClient.Connect(5);
                     var message = "hello";
-                    client.Write(Encoding.Unicode.GetBytes(message));
+                    SendText(client, message);
 
                     ExpectThisMessage(message);
 
-                    otherClient.Write(Encoding.Unicode.GetBytes("world"));
+                    SendText(client, "world");
                     ExpectThisMessage("world");
                 }
                 Assert.True(notified);
             }
+        }
+
+        private static void SendText(NamedPipeClientStream client, string message)
+        {
+            var buffer = Encoding.Unicode.GetBytes(message);
+            client.Write(BitConverter.GetBytes(buffer.Length));
+            client.Write(buffer);
         }
 
         private void ExpectThisMessage(string message)
