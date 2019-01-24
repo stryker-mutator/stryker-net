@@ -2,13 +2,13 @@
 using System.IO.Pipes;
 using System.Text;
 
-namespace Stryker.Core.Coverage
+namespace Stryker.Core.InjectedHelpers.Coverage
 {
     public class ConnectionEventArgs : EventArgs
     {
-        public CoverageChannel client;
+        public CommunicationChannel client;
 
-        public ConnectionEventArgs(CoverageChannel client)
+        public ConnectionEventArgs(CommunicationChannel client)
         {
             this.client = client;
         }
@@ -16,7 +16,7 @@ namespace Stryker.Core.Coverage
 
     public delegate void MessageReceived(object sender, string args);
 
-    public class CoverageChannel : IDisposable
+    public class CommunicationChannel : IDisposable
     {
         private readonly PipeStream pipeStream;
         private byte[] buffer;
@@ -25,9 +25,25 @@ namespace Stryker.Core.Coverage
 
         public event MessageReceived RaiseReceivedMessage;
 
-        public CoverageChannel(PipeStream stream)
+        public CommunicationChannel(PipeStream stream)
         {
             pipeStream = stream;
+        }
+
+        public static CommunicationChannel Client(string pipename, int timeout = -1)
+        {
+            var pipe = new NamedPipeClientStream(".", pipename, PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.WriteThrough);
+            try
+            {
+                pipe.Connect(timeout);
+            }
+            catch (TimeoutException)
+            {
+                pipe.Dispose();
+                throw;
+            }
+            return new CommunicationChannel(pipe);
         }
 
         internal void Start()

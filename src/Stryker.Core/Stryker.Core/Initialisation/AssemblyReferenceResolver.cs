@@ -57,7 +57,7 @@ namespace Stryker.Core.Initialisation
                 throw new StrykerInputException($"The task PrintReferences was not found in your project file. Please add the task to {projectFileName}");
             }
 
-            var rows = result.Output.Split(new string[] { Environment.NewLine.ToString() }, StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            var rows = result.Output.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
             // All rows except the last contain the project dependencies
             foreach (var reference in GetReferencePathsFromOutput(rows.Reverse().Skip(1))

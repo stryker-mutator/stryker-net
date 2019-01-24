@@ -19,15 +19,10 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="NewFolder1\**" />
-    <EmbeddedResource Remove="NewFolder1\**" />
-    <None Remove="NewFolder1\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
+    <EmbeddedResource Include="InjectedHelpers\ActiveMutationHelper.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Coverage\CoverageChannel.cs">
+    <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

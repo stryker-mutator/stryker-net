@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
+using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker.Core.Coverage
 {
@@ -12,7 +13,7 @@ namespace Stryker.Core.Coverage
     {
         private readonly object lck = new object();
         private volatile bool mustShutdown;
-        private readonly IList<CoverageChannel> channels = new List<CoverageChannel>();
+        private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
 
         public string PipeName { get; private set; }
@@ -44,7 +45,7 @@ namespace Stryker.Core.Coverage
 
         private void OnConnect(IAsyncResult ar)
         {
-            CoverageChannel session = null;
+            CommunicationChannel session = null;
             lock (lck)
             {
                 try
@@ -58,7 +59,7 @@ namespace Stryker.Core.Coverage
 
                 if (listener.IsConnected)
                 {
-                    session = new CoverageChannel(listener);
+                    session = new CommunicationChannel(listener);
                     channels.Add(session);
                     listener = null;
                     session.RaiseReceivedMessage += Session_RaiseReceivedMessage;

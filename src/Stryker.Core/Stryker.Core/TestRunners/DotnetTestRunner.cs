@@ -44,11 +44,11 @@ namespace Stryker.Core.TestRunners
             };
         }
 
-        public TestRunResult CaptureCoverage(string coverageFilePath)
+        public TestRunResult CaptureCoverage(string pipeName)
         {
             var envVars = new Dictionary<string, string>
             {
-                {"CoverageFileName", coverageFilePath }
+                {MutantControl.EnvironmentPipeName, pipeName }
             };
             return LaunchTestProcess(null, envVars);
         }

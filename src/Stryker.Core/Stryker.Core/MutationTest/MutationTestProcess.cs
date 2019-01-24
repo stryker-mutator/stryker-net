@@ -55,7 +55,8 @@ namespace Stryker.Core.MutationTest
         {
             var mutatedSyntaxTrees = new List<SyntaxTree>();
             // add helper
-            mutatedSyntaxTrees.AddRange(MutantPlacer.ActiveMutantSelectorHelper);
+            _logger.LogDebug("Injecting helpers into assembly.");
+            mutatedSyntaxTrees.AddRange(CodeInjection.MutantHelpers);
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {

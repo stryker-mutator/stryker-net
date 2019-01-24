@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO.Pipes;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using Stryker.Core.Coverage;
+using Stryker.Core.InjectedHelpers.Coverage;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Coverage
@@ -18,13 +20,9 @@ namespace Stryker.Core.UnitTest.Coverage
         {
             using (var channel = new CoverageServer("myChannel1"))
             {
-
                 channel.Listen();
-                using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous))
+                using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-                    client.Connect(1);
-                    Assert.True(client.IsConnected);
                 }
             }
 
@@ -46,11 +44,8 @@ namespace Stryker.Core.UnitTest.Coverage
                     }
                 };
 
-                using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous))
+                using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-                    client.Connect(1);
-                    Assert.True(client.IsConnected);
                     lock (channel)
                     {
                         if (!notified)
@@ -60,7 +55,6 @@ namespace Stryker.Core.UnitTest.Coverage
                         Assert.True(notified);
                     }
                 }
-
             }
         }
 
@@ -77,7 +71,7 @@ namespace Stryker.Core.UnitTest.Coverage
                     Assert.True(client.IsConnected);
                     channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
 
-                    CoverageChannel clientChannel = new CoverageChannel(client);
+                    var clientChannel = new CommunicationChannel(client);
                     var message = "hello";
                     clientChannel.SendText(message);
                     ExpectThisMessage(message);
