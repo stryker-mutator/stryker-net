@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Stryker.Core.Initialisation;
 
@@ -22,6 +23,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate(StrykerOptions options);
         StrykerRunResult Test(StrykerOptions options);
+        void Optimize(IEnumerable<int> coveredMutants);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -160,6 +162,40 @@ namespace Stryker.Core.MutationTest
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
+        }
+
+        public void Optimize(IEnumerable<int> coveredMutants)
+        {
+            _logger.LogDebug("Optimize test runs according to coverage info.");
+            var report = new StringBuilder();
+            var covered = new HashSet<int>(coveredMutants);
+            var nonTested = _input.ProjectInfo.ProjectContents.Mutants.Where(x =>
+                x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id));
+            var first = true;
+            var count = 0;
+            foreach (var mutant in nonTested)
+            {
+                mutant.ResultStatus = MutantStatus.Survived;
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    report.Append(',');
+                }
+                report.Append(mutant.Id);
+                count++;
+            }
+
+            if (count == 0)
+            {
+                _logger.LogInformation("Congratulations, all mutants are tested!");
+            }
+            else
+            {
+                _logger.LogInformation($"{count} mutants are not tested and can't be killed ({report})!");
+            }
         }
     }
 }

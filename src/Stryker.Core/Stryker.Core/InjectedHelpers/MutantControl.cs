@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Pipes;
 using System.Text;
 
 namespace Stryker
@@ -43,9 +42,18 @@ namespace Stryker
         public static void DumpState()
         {
             var report = new StringBuilder();
+            var firstTime = true;
             foreach (var coveredMutant in _coveredMutants)
             {
-                report.Append($"{coveredMutant},");
+                if (firstTime)
+                {
+                    firstTime = false;
+                }
+                else
+                {
+                    report.Append(',');
+                }
+                report.Append($"{coveredMutant}");
             }
 
             using (var channel = CommunicationChannel.Client(pipeName, 10))
@@ -53,6 +61,7 @@ namespace Stryker
                 channel.SendText(report.ToString());
             }
         }
+
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {

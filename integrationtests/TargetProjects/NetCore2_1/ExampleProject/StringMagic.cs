@@ -2,7 +2,7 @@
 {
     public class StringMagic
     {
-        public string AddTwoStrings(string first, string second)
+        public static string AddTwoStrings(string first, string second)
         {
             if(first.Length > 2)
             {
@@ -13,7 +13,7 @@
             }
         }
 
-        private bool Demo(out string test)
+        public static bool Demo(out string test)
         {
             test = "toto";
             return true;

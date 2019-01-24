@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void OfferConnection()
         {
-            using (var channel = new CoverageServer("myChannel1"))
+            using (var channel = new CommunicationServer("myChannel1"))
             {
                 channel.Listen();
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void OfferConnectionEvent()
         {
-            using (var channel = new CoverageServer("myChannel2"))
+            using (var channel = new CommunicationServer("myChannel2"))
             {
                 var notified = false;
                 channel.Listen();
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void NotifyReceivedMessage()
         {
-            using (var channel = new CoverageServer("myChannel3"))
+            using (var channel = new CommunicationServer("myChannel3"))
             {
                 channel.Listen();
                 using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
@@ -82,7 +82,7 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void NotifyReceivedMessageFromMoreThanOneClient()
         {
-            using (var channel = new CoverageServer("myChannel4"))
+            using (var channel = new CommunicationServer("myChannel4"))
             {
                 var notified = false;
                 channel.RaiseNewClientEvent+=(o, args) => notified = true;

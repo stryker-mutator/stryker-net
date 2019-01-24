@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using Stryker.Core.Coverage;
 
 namespace Stryker.Core.Initialisation
@@ -10,17 +13,22 @@ namespace Stryker.Core.Initialisation
     public interface IInitialTestProcess
     {
         int InitialTest(ITestRunner testRunner);
+        IEnumerable<int> CoveredMutants { get; }
     }
     
     public class InitialTestProcess : IInitialTestProcess
     {
         private ILogger _logger { get; set; }
+        private IEnumerable<int> coveredMutants = null;
         private string coverageReport;
 
         public InitialTestProcess()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
+
+
+        public IEnumerable<int> CoveredMutants => coveredMutants;
 
         /// <summary>
         /// Executes the initial testrun using the given testrunner
@@ -31,9 +39,19 @@ namespace Stryker.Core.Initialisation
         {
             _logger.LogInformation("Initial testrun started");
 
-            using (var coverageServer = new CoverageServer("Coverage"))
+            using (var coverageServer = new CommunicationServer("Coverage"))
             {
-                coverageServer.RaiseReceivedMessage += CoverageServer_RaiseReceivedMessage;
+                var lck = new object();
+                IEnumerable<int> coveredTests = null;
+                coverageServer.RaiseReceivedMessage+=(sender, args) =>
+                {
+                    var tmp = args.Split(',').Select(int.Parse);
+                    lock (lck)
+                    {
+                        coveredTests = tmp;
+                        Monitor.Pulse(lck);                        
+                    }
+                };
                 coverageServer.Listen();
                 // setup a stopwatch to record the initial test duration
                 var stopwatch = new Stopwatch();
@@ -51,13 +69,25 @@ namespace Stryker.Core.Initialisation
                 }
                 _logger.LogInformation("Initial testrun successful in {0} ms", duration);
 
+                lock (lck)
+                {
+                    if (coveredTests == null)
+                    {
+                        // wait a bit to see if we receive the report
+                        Monitor.Wait(lck, 100);
+                    }
+                }
+
+                if (coveredTests == null)
+                {
+                    _logger.LogWarning("Did not receive mutant coverage data from initial run.");
+                }
+                else
+                {
+                    coveredMutants = coveredTests;
+                }
                 return duration;
             }
-        }
-
-        private void CoverageServer_RaiseReceivedMessage(object sender, string args)
-        {
-            coverageReport = args;
         }
     }
 }

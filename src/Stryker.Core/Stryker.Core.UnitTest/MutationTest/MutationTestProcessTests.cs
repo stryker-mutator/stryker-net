@@ -233,7 +233,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutationTestProcess_ShouldCallExecutorForEveryMutant()
         {
-            var mutant = new Mutant() { Id = 1 };
+            var mutant = new Mutant { Id = 1 };
+            var otherMutant = new Mutant {Id = 2};
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
@@ -246,7 +247,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Children = new Collection<ProjectComponent>() {
                         new FileLeaf() {
                             Name = "SomeFile.cs",
-                            Mutants = new Collection<Mutant>() { mutant }
+                            Mutants = new Collection<Mutant>() { mutant, otherMutant }
                         }
                     }
                     },
@@ -273,8 +274,61 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant, It.IsAny<int>()), Times.Once);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
+            executorMock.Verify(x => x.Test(otherMutant, It.IsAny<int>()), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2)), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
+            reporterMock.Verify(x => x.OnMutantTested(otherMutant), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
+        }
+
+        [Fact]
+        public void MutationTestProcess_ShouldNotCallExecutorForNotCoveredMutants()
+        {
+            var mutant = new Mutant { Id = 1 };
+            var otherMutant = new Mutant {Id = 2};
+            string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                {
+                    TestProjectPath = basePath,
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                        new FileLeaf() {
+                            Name = "SomeFile.cs",
+                            Mutants = new Collection<Mutant>() { mutant, otherMutant }
+                        }
+                    }
+                    },
+                    ProjectUnderTestAssemblyName = "ExampleProject",
+                    ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                    TargetFramework = "netcoreapp2.0",
+                },
+                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
+
+            var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+            executorMock.Setup(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()));
+
+            var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
+           
+            target.Optimize(new [] {2});
+
+            target.Test(options);
+
+            executorMock.Verify(x => x.Test(otherMutant, It.IsAny<int>()), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
+            reporterMock.Verify(x => x.OnMutantTested(otherMutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
     }

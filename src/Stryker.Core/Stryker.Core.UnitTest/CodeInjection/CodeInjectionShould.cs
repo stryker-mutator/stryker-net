@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Compiling;
 using Stryker.Core.Coverage;
 using Xunit;
 
@@ -19,11 +14,16 @@ namespace Stryker.Core.UnitTest.CodeInjection
         [Fact]
         void CompileInAnEmptyProject()
         {
+            // make sure the required assemblies are loaded
+            using (var server = new CommunicationServer("test"))
+            {
+            }
+
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var system = new List<MetadataReference>();
             foreach (var assembly in assemblies)
             {
-                if (!assembly.IsDynamic)
+                if (!assembly.IsDynamic && assembly.FullName.Contains("System"))
                 {
                     system.Add(MetadataReference.CreateFromFile(assembly.Location));
                 }
@@ -45,21 +45,35 @@ namespace Stryker.Core.UnitTest.CodeInjection
         {
             var activeMutation = Environment.GetEnvironmentVariable("ActiveMutation");
             var pipeName = Environment.GetEnvironmentVariable(MutantControl.EnvironmentPipeName);
+            var lck = new object();
 
-            using (var server = new CoverageServer("test"))
+            using (var server = new CommunicationServer("test"))
             {
                 var message = string.Empty;
                 server.Listen();
-                server.RaiseReceivedMessage += (sender, args) => message = args;
+                server.RaiseReceivedMessage += (sender, args) =>
+                {
+                    lock (lck)
+                    {
+                        message = args;
+                        Monitor.Pulse(lck);
+                    }
+                };
                 Environment.SetEnvironmentVariable("ActiveMutation", "12");
                 Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
 
                 MutantControl.InitCoverage();
                 Assert.True(MutantControl.IsActive(12));
                 Assert.False(MutantControl.IsActive(11));
-
                 MutantControl.DumpState();
-                Assert.Equal("12,11,", message);
+                lock (lck)
+                {
+                    if (message == null)
+                    {
+                        Monitor.Wait(lck, 20);
+                    }
+                }
+                Assert.Equal("12,11", message);
                 
             }
 

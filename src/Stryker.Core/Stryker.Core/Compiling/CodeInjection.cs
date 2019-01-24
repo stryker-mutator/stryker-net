@@ -9,7 +9,7 @@ namespace Stryker.Core.Compiling
     public static class CodeInjection
     {
         // files to be injected into the mutated assembly
-        private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.ActiveMutationHelper.cs", 
+        private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs", 
             "Stryker.Core.InjectedHelpers.Coverage.CommunicationChannel.cs"};
         private static readonly IList<SyntaxTree> Helpers = new List<SyntaxTree>();
 
@@ -18,7 +18,7 @@ namespace Stryker.Core.Compiling
 
         static CodeInjection()
         {
-            var helper = GetSourceFromResource("Stryker.Core.InjectedHelpers.ActiveMutationHelper.cs");
+            var helper = GetSourceFromResource("Stryker.Core.InjectedHelpers.MutantControl.cs");
             var extractor = new Regex(PatternForCheck);
             var result = extractor.Match(helper);
             if (!result.Success)

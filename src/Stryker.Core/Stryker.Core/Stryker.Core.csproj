@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="InjectedHelpers\ActiveMutationHelper.cs">
+    <EmbeddedResource Include="InjectedHelpers\MutantControl.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs">

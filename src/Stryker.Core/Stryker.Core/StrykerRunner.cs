@@ -74,6 +74,8 @@ namespace Stryker.Core
 
                 // initial test
                 _input.TimeoutMS =_initialisationProcess.InitialTest(options);
+
+                _mutationTestProcess.Optimize(_initialisationProcess.CoveredMutants);
               
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);

@@ -9,7 +9,7 @@ namespace Stryker.Core.Coverage
 
     public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
-    public sealed class CoverageServer : IDisposable
+    public sealed class CommunicationServer : IDisposable
     {
         private readonly object lck = new object();
         private volatile bool mustShutdown;
@@ -21,7 +21,7 @@ namespace Stryker.Core.Coverage
         public event ConnectionEvent RaiseNewClientEvent;
         public event MessageReceived RaiseReceivedMessage;
 
-        public CoverageServer(string name)
+        public CommunicationServer(string name)
         {
             PipeName = $"Stryker.{name}.Pipe";
         }

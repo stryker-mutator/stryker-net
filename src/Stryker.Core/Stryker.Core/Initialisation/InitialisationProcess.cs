@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -12,6 +13,9 @@ namespace Stryker.Core.Initialisation
         MutationTestInput Initialize(StrykerOptions options);
         
         int InitialTest(StrykerOptions option);
+
+        IEnumerable<int> CoveredMutants { get; }
+
     }
     
     public class InitialisationProcess : IInitialisationProcess
@@ -38,6 +42,8 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
+
+        public IEnumerable<int> CoveredMutants => _initialTestProcess.CoveredMutants;
 
         public MutationTestInput Initialize(StrykerOptions options)
         {
@@ -75,5 +81,5 @@ namespace Stryker.Core.Initialisation
             
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
-    }
+        }
 }
