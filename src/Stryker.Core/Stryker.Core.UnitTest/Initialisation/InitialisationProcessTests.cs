@@ -4,12 +4,11 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
-using System.Collections.Generic;
 using Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -52,10 +51,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
             var target = new InitialisationProcess(
-                inputFileResolverMock.Object, 
+                inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object, 
+                testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
 
             var options = new StrykerOptions();
@@ -101,10 +100,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Verifiable();
 
             var target = new InitialisationProcess(
-                inputFileResolverMock.Object, 
+                inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object, 
+                testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 

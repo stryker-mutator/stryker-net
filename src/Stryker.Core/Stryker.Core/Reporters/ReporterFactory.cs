@@ -1,4 +1,5 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,8 +34,8 @@ namespace Stryker.Core.Reporters
         private static ProgressReporter CreateProgressReporter()
         {
             var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
-            var progressBarReporter = new ProgressBarReporter(consoleOneLineLoggerFactory.Create());
-
+            var progressBarReporter =
+                new ProgressBarReporter(consoleOneLineLoggerFactory.Create(), new StopWatchProvider());
             var mutantKilledLogger = consoleOneLineLoggerFactory.Create();
             var mutantSurvivedLogger = consoleOneLineLoggerFactory.Create();
             var mutantTimeoutLogger = consoleOneLineLoggerFactory.Create();

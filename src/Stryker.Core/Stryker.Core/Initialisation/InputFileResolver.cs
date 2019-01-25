@@ -26,7 +26,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private string[] _foldersToExclude = { "obj", "bin", "node_modules" };
+        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private IProjectFileReader _projectFileReader { get; }
         private ILogger _logger { get; set; }
@@ -85,24 +85,28 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, List<string> filesToExclude)
+        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
         {
+            var lastPathComponent = Path.GetFileName(path);
+
             var folderComposite = new FolderComposite
             {
-                Name = Path.GetFullPath(path)
+                Name = lastPathComponent,
+                FullPath = Path.GetFullPath(path),
+                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
             };
-
-            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(path).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
+            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, filesToExclude));
+                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
             }
-            foreach (var file in _fileSystem.Directory.GetFiles(_fileSystem.Path.GetFullPath(path), "*.cs", SearchOption.TopDirectoryOnly))
+            foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
-               
+                var fileName = Path.GetFileName(file);
                 folderComposite.Add(new FileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(file),
                     Name = _fileSystem.Path.GetFileName(file),
+                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = file
                 });
             }
@@ -141,7 +145,8 @@ namespace Stryker.Core.Initialisation
             if (projectFiles.Count() > 1)
             {
                 throw new StrykerInputException("Expected exactly one .csproj file, found more than one. Please fix your project contents");
-            } else if (!projectFiles.Any())
+            }
+            else if (!projectFiles.Any())
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }

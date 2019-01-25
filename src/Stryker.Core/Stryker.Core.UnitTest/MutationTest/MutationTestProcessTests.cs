@@ -6,14 +6,12 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -285,7 +283,9 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
 
-            var target = new MutationTestProcess(input, reporterMock.Object, executorMock.Object);
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
 
             target.Test(options);
 

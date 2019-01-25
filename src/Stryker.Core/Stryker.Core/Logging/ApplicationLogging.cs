@@ -15,10 +15,10 @@ namespace Stryker.Core.Logging
                 .WriteTo.Console()
                 .CreateLogger());
 
-            if(options.LogToFile)
+            if (options.LogToFile)
             {
                 // log on the lowest level to the log file
-                LoggerFactory.AddFile("StrykerLogs/log-{Date}.txt", LogLevel.Trace);
+                LoggerFactory.AddFile("StrykerOutput/logs/log-{Date}.txt", LogLevel.Trace);
             }
         }
 
