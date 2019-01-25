@@ -59,7 +59,9 @@ namespace Stryker.Core.MutationTest
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, path: file.FullPath);
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, 
+                    path: file.FullPath, 
+                    options: new CSharpParseOptions(LanguageVersion.Latest));
 
                 if (!file.IsExcluded)
                 {
