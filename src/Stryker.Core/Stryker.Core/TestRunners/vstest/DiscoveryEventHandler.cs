@@ -6,46 +6,44 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public partial class VsTestRunner
+    public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
     {
-        public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
+        private AutoResetEvent waitHandle;
+        private readonly List<string> _messages;
+        public List<TestCase> DiscoveredTestCases { get; private set; }
+
+        public DiscoveryEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
-            private AutoResetEvent waitHandle;
+            this.waitHandle = waitHandle;
+            DiscoveredTestCases = new List<TestCase>();
+            _messages = messages;
+        }
 
-            public List<TestCase> DiscoveredTestCases { get; private set; }
-
-            public DiscoveryEventHandler(AutoResetEvent waitHandle)
+        public void HandleDiscoveredTests(IEnumerable<TestCase> discoveredTestCases)
+        {
+            if (discoveredTestCases != null)
             {
-                this.waitHandle = waitHandle;
-                DiscoveredTestCases = new List<TestCase>();
+                DiscoveredTestCases.AddRange(discoveredTestCases);
             }
+        }
 
-            public void HandleDiscoveredTests(IEnumerable<TestCase> discoveredTestCases)
+        public void HandleDiscoveryComplete(long totalTests, IEnumerable<TestCase> lastChunk, bool isAborted)
+        {
+            if (lastChunk != null)
             {
-                if (discoveredTestCases != null)
-                {
-                    DiscoveredTestCases.AddRange(discoveredTestCases);
-                }
+                DiscoveredTestCases.AddRange(lastChunk);
             }
+            waitHandle.Set();
+        }
 
-            public void HandleDiscoveryComplete(long totalTests, IEnumerable<TestCase> lastChunk, bool isAborted)
-            {
-                if (lastChunk != null)
-                {
-                    DiscoveredTestCases.AddRange(lastChunk);
-                }
-                waitHandle.Set();
-            }
+        public void HandleRawMessage(string rawMessage)
+        {
+            _messages.Add("Test Dicovery Raw Message: " + rawMessage);
+        }
 
-            public void HandleRawMessage(string rawMessage)
-            {
-                messages.Add("Discovery Raw:" + rawMessage);
-            }
-
-            public void HandleLogMessage(TestMessageLevel level, string message)
-            {
-                messages.Add("Discovery Clean:" + message);
-            }
+        public void HandleLogMessage(TestMessageLevel level, string message)
+        {
+            _messages.Add("Test Dicovery Message: " + message);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private DotnetFramework _runnerFramework;
         private int _timeoutMS = 0;
         private readonly VsTestHelper _vsTestHelper;
-        private static List<string> messages = new List<string>();
+        private List<string> _messages = new List<string>();
 
         public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
@@ -43,6 +43,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
             //var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+            // Temporarily run full framework runner until core runner is fixed
             var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.NetFull];
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
@@ -79,7 +80,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper)
         {
             var waitHandle = new AutoResetEvent(false);
-            var handler = new DiscoveryEventHandler(waitHandle);
+            var handler = new DiscoveryEventHandler(waitHandle, _messages);
             consoleWrapper.DiscoverTests(sources, _defaultRunSettings, handler);
 
             waitHandle.WaitOne();
@@ -90,7 +91,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases)
         {
             var waitHandle = new AutoResetEvent(false);
-            var handler = new RunEventHandler(waitHandle);
+            var handler = new RunEventHandler(waitHandle, _messages);
             consoleWrapper.RunTests(testCases, _defaultRunSettings, handler);
 
             waitHandle.WaitOne();
@@ -101,7 +102,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
-            var handler = new RunEventHandler(runCompleteSignal);
+            var handler = new RunEventHandler(runCompleteSignal, _messages);
             var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
 
             consoleWrapper.RunTestsWithCustomTestHost(sources, _defaultRunSettings, handler, testHostLauncher);
