@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -104,7 +104,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -183,7 +183,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
                     {
                         Properties = new Dictionary<string, string>()
                         {

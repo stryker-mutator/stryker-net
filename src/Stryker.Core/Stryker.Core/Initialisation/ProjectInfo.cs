@@ -20,8 +20,8 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath()
         {
-            var outputPath = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
-            var assemblyName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyName");
+            var outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
+            var assemblyName = TestProjectAnalyzerResult.Properties.GetValueOrDefault("AssemblyName");
             string injectionPath = Path.Combine(outputPath, assemblyName + ".dll");
             return injectionPath;
         }
