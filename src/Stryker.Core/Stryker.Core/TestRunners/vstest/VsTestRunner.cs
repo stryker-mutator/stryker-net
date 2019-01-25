@@ -5,7 +5,6 @@ using Serilog.Events;
 using Stryker.Core.ExecutableFinders;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
-using Stryker.Core.Options.Values;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,7 +43,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
             //var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
             // Temporarily run full framework runner until core runner is fixed
-            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.NetFull];
+            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.Full];
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
@@ -139,7 +138,7 @@ namespace Stryker.Core.TestRunners.VsTest
             string targetFramework = _projectInfo.TargetFramework;
             if (targetFramework.Contains("netcoreapp") || targetFramework.Contains("netstandard"))
             {
-                _runnerFramework = DotnetFramework.NetCore;
+                _runnerFramework = DotnetFramework.Core;
             }
 
             string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");

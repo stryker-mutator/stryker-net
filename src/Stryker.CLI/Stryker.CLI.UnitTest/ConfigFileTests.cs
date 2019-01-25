@@ -3,6 +3,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
 using System.IO;
 using System.Reflection;
 using Xunit;
@@ -76,7 +77,7 @@ namespace Stryker.CLI.UnitTest
             actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Verbose);
             actualOptions.ProjectUnderTestNameFilter.ShouldBe("ExampleProject.csproj");
             actualOptions.Reporters.ShouldHaveSingleItem();
-            actualOptions.Reporters.ShouldContain(Core.Options.Values.Reporters.ConsoleReport);
+            actualOptions.Reporters.ShouldContain(Reporter.ConsoleReport);
             actualOptions.MaxConcurrentTestrunners.ShouldBe(10);
             actualOptions.ThresholdOptions.ThresholdBreak.ShouldBe(20);
             actualOptions.ThresholdOptions.ThresholdLow.ShouldBe(30);

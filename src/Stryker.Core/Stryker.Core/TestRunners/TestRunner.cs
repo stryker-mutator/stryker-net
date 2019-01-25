@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Options.Values
+﻿namespace Stryker.Core.TestRunners
 {
     public enum TestRunner
     {

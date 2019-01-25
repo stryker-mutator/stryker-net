@@ -4,6 +4,7 @@ using Shouldly;
 using Stryker.Core;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
 using System;
 using System.IO;
 using System.Linq;
@@ -64,9 +65,9 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, $"['{Core.Options.Values.Reporters.ConsoleReport}', '{Core.Options.Values.Reporters.ConsoleProgressDots}']" });
+            target.Run(new string[] { argName, $"['{ Reporter.ConsoleReport }', '{ Reporter.ConsoleProgressDots }']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Core.Options.Values.Reporters.ConsoleReport) && o.Reporters.Contains(Core.Options.Values.Reporters.ConsoleProgressDots))));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Reporter.ConsoleReport) && o.Reporters.Contains(Reporter.ConsoleProgressDots))));
         }
 
 

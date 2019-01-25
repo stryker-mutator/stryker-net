@@ -1,5 +1,5 @@
 ﻿using Stryker.Core.Options;
-using Stryker.Core.Options.Values;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,12 +46,12 @@ namespace Stryker.Core.ExecutableFinders
 
                 if (!dllFound && _fileSystem.File.Exists(dllPath))
                 {
-                    vsTestPaths.Add(DotnetFramework.NetCore, dllPath);
+                    vsTestPaths.Add(DotnetFramework.Core, dllPath);
                     dllFound = true;
                 }
                 if (!exeFound && _fileSystem.File.Exists(exePath))
                 {
-                    vsTestPaths.Add(DotnetFramework.NetFull, exePath);
+                    vsTestPaths.Add(DotnetFramework.Full, exePath);
                     exeFound = true;
                 }
             }
