@@ -145,7 +145,7 @@ namespace Stryker.CLI
             ArgumentShortName = "-tr",
             ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
-            JsonKey = "files-to-exclude"
+            JsonKey = "test-runner"
         };
 
         private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
