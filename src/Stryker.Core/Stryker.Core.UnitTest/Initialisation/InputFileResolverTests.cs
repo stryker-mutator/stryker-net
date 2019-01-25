@@ -18,12 +18,17 @@ namespace Stryker.Core.UnitTest.Initialisation
         private string _currentDirectory { get; set; }
         private string _filesystemRoot { get; set; }
         private readonly string _sourceFile;
+        private readonly string testProject;
+        private readonly string projectUnderTest;
 
         public InputFileResolverTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            testProject = FilePathUtils.ConvertPathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
+            projectUnderTest = FilePathUtils.ConvertPathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
+
         }
 
         [Fact]
@@ -92,10 +97,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-
-            string testProject = Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj");
-            string projectUnderTest = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
-
+            
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { projectUnderTest, new MockFileData(projectFile)},
@@ -177,8 +179,6 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            string testProject = Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj");
-            string projectUnderTest = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -275,9 +275,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            string testProject = Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj");
-            string projectUnderTest = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
-
+            
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject1", "Example.projitems"), new MockFileData(sharedItems)},
@@ -355,8 +353,6 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            string testProject = Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj");
-            string projectUnderTest = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -438,7 +434,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(Path.Combine(_filesystemRoot, "TestProject"), "", new List<string>());
 
-            //result.TestProjectPath.ShouldBe(Path.Combine(_filesystemRoot, "TestProject"));
             result.ProjectContents.Children.Count.ShouldBe(1);
         }
 
@@ -464,8 +459,6 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            string testProject = Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj");
-            string projectUnderTest = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -543,6 +536,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
+
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile)},
