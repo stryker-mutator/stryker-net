@@ -27,8 +27,7 @@ namespace Stryker.Core.Reporters
         private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
             return enabledReporters.Contains(Reporter.All) ? possibleReporters.Values :
-                possibleReporters.Where((KeyValuePair<Reporter, IReporter> reporter) => enabledReporters.Contains(reporter.Key))
-                    .Select((KeyValuePair<Reporter, IReporter> reporter) => reporter.Value);
+                possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key)).Select(reporter => reporter.Value);
         }
 
         private static ProgressReporter CreateProgressReporter()
