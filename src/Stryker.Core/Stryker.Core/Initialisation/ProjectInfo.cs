@@ -10,7 +10,6 @@ namespace Stryker.Core.Initialisation
     {
         public ProjectAnalyzerResult TestProjectAnalyzerResult { get; set; }
         public ProjectAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
-
         public bool FullFramework { get; set; }
 
         /// <summary>
@@ -22,7 +21,7 @@ namespace Stryker.Core.Initialisation
         {
             var outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
             var assemblyName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyName");
-            string injectionPath = Path.Combine(outputPath, assemblyName + ".dll");
+            string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, assemblyName + ".dll"));
             return injectionPath;
         }
     }
