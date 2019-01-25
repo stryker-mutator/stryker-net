@@ -204,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "OutputPath", Path.Combine(basePath, "bin\\Debug\\netcoreapp2.0") },
+                            { "OutputPath", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
                             { "AssemblyName", "TestName" }
                         }
                     },
@@ -212,7 +212,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "OutputPath", Path.Combine(basePath, "bin\\Debug\\netcoreapp2.0") },
+                            { "OutputPath", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
                             { "AssemblyName", "ExampleProject" }
                         }
                     },
@@ -239,7 +239,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 { Path.Combine(_filesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
             });
-            fileSystem.AddDirectory(Path.Combine(_filesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0"));
+            fileSystem.AddDirectory(Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(_sourceFile).GetRoot());
