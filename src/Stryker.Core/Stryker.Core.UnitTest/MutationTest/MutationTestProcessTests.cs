@@ -43,6 +43,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "TestName" }
                         }
                     },
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
                     ProjectContents = new FolderComposite() {
                         Name = Path.Combine(_filesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
@@ -105,6 +113,14 @@ namespace Stryker.Core.UnitTest.MutationTest
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
                     TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -188,6 +204,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", Path.Combine(basePath, "bin\\Debug\\netcoreapp2.0") },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
                             { "AssemblyName", "ExampleProject" }
                         }
                     },
