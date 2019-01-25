@@ -28,15 +28,17 @@ namespace Stryker.Core.Initialisation
     {
         private string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
+        private IProjectFileReader _projectFileReader { get; }
         private ILogger _logger { get; set; }
 
-        public InputFileResolver(IFileSystem fileSystem)
+        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
             _fileSystem = fileSystem;
+            _projectFileReader = projectFileReader;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
-        public InputFileResolver() : this(new FileSystem()) { }
+        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader()) { }
 
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
@@ -46,18 +48,17 @@ namespace Stryker.Core.Initialisation
             List<string> filesToExclude)
         {
             var result = new ProjectInfo();
-            AnalyzerManager manager = new AnalyzerManager();
             var projectFile = ScanProjectFile(currentDirectory);
 
             // Analyze the test project
-            result.TestProjectAnalyzerResult = manager.GetProject(projectFile).Build().First();
+            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile);
 
             // Determine project under test
             var reader = new ProjectFileReader();
             var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, projectUnderTestNameFilter);
             
             // Analyze project under test
-            result.ProjectUnderTestAnalyzerResult = manager.GetProject(projectUnderTest).Build().First();
+            result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest);
 
             var inputFiles = new FolderComposite();
             result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);

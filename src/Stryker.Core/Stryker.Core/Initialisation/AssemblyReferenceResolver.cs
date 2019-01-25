@@ -13,7 +13,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IAssemblyReferenceResolver
     {
-        IEnumerable<PortableExecutableReference> ResolveReferences(AnalyzerResult project);
+        IEnumerable<PortableExecutableReference> ResolveReferences(ProjectAnalyzerResult project);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="projectFile">The test project file location</param>
         /// <returns>References</returns>
-        public IEnumerable<PortableExecutableReference> ResolveReferences(AnalyzerResult project)
+        public IEnumerable<PortableExecutableReference> ResolveReferences(ProjectAnalyzerResult project)
         {
             foreach (var path in project.References)
             {

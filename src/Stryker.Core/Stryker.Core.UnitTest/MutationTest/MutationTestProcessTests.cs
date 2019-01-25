@@ -37,6 +37,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
                     ProjectContents = new FolderComposite() {
                         Name = Path.Combine(_filesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
@@ -98,6 +106,14 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
                     ProjectContents = new FolderComposite() {
                         Name = Path.Combine(_filesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
@@ -169,6 +185,14 @@ namespace Stryker.Core.UnitTest.MutationTest
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput() {
                 ProjectInfo = new ProjectInfo() {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", Path.Combine(basePath, "bin\\Debug\\netcoreapp2.0") },
+                            { "AssemblyName", "ExampleProject" }
+                        }
+                    },
                     ProjectContents = new FolderComposite() {
                         Name = "ProjectRoot",
                         Children = new Collection<ProjectComponent>() {
@@ -227,6 +251,28 @@ namespace Stryker.Core.UnitTest.MutationTest
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "AssemblyName", "TestName" }
+                        }
+                    },
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                            new FileLeaf() {
+                                Name = "SomeFile.cs",
+                                SourceCode = _sourceFile,
+                                Mutants = new List<Mutant>() { mutant }
+                            }
+                        }
+                    }
+                },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);

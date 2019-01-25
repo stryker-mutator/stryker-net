@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Buildalyzer;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using System;
@@ -9,7 +10,14 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    public class ProjectFileReader
+    public interface IProjectFileReader
+    {
+        ProjectAnalyzerResult AnalyzeProject(string path);
+        string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter);
+        IEnumerable<string> FindSharedProjects(XDocument document);
+    }
+
+    public class ProjectFileReader : IProjectFileReader
     {
         private const string ErrorMessage = "Project reference issue.";
         private ILogger _logger { get; set; }
@@ -17,6 +25,15 @@ namespace Stryker.Core.Initialisation
         public ProjectFileReader()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
+        }
+
+        public ProjectAnalyzerResult AnalyzeProject(string projectFilePath)
+        {
+            _logger.LogDebug("Analyzing project file {0}", projectFilePath);
+            AnalyzerManager manager = new AnalyzerManager();
+            var analyzerResult = manager.GetProject(projectFilePath).Build().First();
+
+            return new ProjectAnalyzerResult(analyzerResult);
         }
 
         public IEnumerable<string> FindSharedProjects(XDocument document)
@@ -38,6 +55,13 @@ namespace Stryker.Core.Initialisation
                     stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
                     stringBuilder.Append(referenceChoise);
                     AppendExampleIfPossible(stringBuilder, projectReferences);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+
+                if (!projectReferences.Any())
+                {
+                    stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
                 }

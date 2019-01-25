@@ -30,6 +30,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
                 .Returns(new ProjectInfo
                 {
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                    },
                     ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
@@ -44,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Returns(999);
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
-            assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<AnalyzerResult>()))
+            assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<ProjectAnalyzerResult>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
             var target = new InitialisationProcess(
@@ -74,6 +78,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(
                 new ProjectInfo
                 {
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                    },
                     ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
@@ -88,7 +96,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Throws(new StrykerInputException("")); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<AnalyzerResult>()))
+            assemblyReferenceResolverMock.Setup(x => x.ResolveReferences(It.IsAny<ProjectAnalyzerResult>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 

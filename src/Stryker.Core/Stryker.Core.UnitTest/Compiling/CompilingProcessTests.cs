@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using Xunit;
 using Buildalyzer;
+using System.Linq;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -34,7 +35,16 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(),
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        }
+                    }
+                },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
@@ -70,7 +80,13 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = null
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        }
+                    },
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
@@ -109,6 +125,16 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        }
+                    },
+                },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
