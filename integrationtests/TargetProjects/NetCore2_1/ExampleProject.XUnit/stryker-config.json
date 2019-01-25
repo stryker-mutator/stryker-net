@@ -1,0 +1,14 @@
+{
+    "stryker-config":
+    {
+        "reporters": [
+            "Json"
+        ],
+        "log-level": "info",
+        "project-file": "ExampleProject.csproj",
+        "max-concurrent-test-runners": 4,
+        "excluded-mutations": [
+            "string"
+        ]
+    }
+}
