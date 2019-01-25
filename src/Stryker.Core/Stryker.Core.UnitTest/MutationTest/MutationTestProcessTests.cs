@@ -211,7 +211,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "OutputPath", "/bin/Debug/netcoreapp2.1" },
+                            { "OutputPath", Path.Combine(basePath, "bin\\Debug\\netcoreapp2.0") },
                             { "AssemblyName", "ExampleProject" }
                         }
                     },
