@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
+using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
@@ -262,8 +263,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate(options);
 
             // Verify the created assembly is written to disk on the right location
-            Assert.True(fileSystem.FileExists(Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll")),
-                "The mutated Assembly was not written to disk, or not to the right location.");
+            string expectedPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll");
+            fileSystem.FileExists(expectedPath)
+                .ShouldBeTrue($"The mutated Assembly was not written to disk, or not to the right location ({expectedPath}).");
         }
 
         [Fact]
