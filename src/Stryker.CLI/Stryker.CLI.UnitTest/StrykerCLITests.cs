@@ -87,22 +87,22 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "['string', 'logical']" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ExcludedMutations.Contains(MutatorType.String) &&
-                o.ExcludedMutations.Contains(MutatorType.Logical)
+                o.ExcludedMutations.Contains(Mutator.String) &&
+                o.ExcludedMutations.Contains(Mutator.Logical)
             )));
         }
 
         [Theory]
-        [InlineData(MutatorType.Assignment, "assignment", "assignment statements")]
-        [InlineData(MutatorType.Arithmetic, "arithmetic", "arithmetic operators")]
-        [InlineData(MutatorType.Boolean, "boolean", "boolean literals")]
-        [InlineData(MutatorType.Equality, "equality", "equality operators")]
-        [InlineData(MutatorType.Linq, "linq", "linq methods")]
-        [InlineData(MutatorType.Logical, "logical", "logical operators")]
-        [InlineData(MutatorType.String, "string", "string literals")]
-        [InlineData(MutatorType.Unary, "unary", "unary operators")]
-        [InlineData(MutatorType.Update, "update", "update operators")]
-        public void StrykerCLI_ExcludedMutationsNamesShouldMapToMutatorTypes(MutatorType expectedType, params string[] argValues)
+        [InlineData(Mutator.Assignment, "assignment", "assignment statements")]
+        [InlineData(Mutator.Arithmetic, "arithmetic", "arithmetic operators")]
+        [InlineData(Mutator.Boolean, "boolean", "boolean literals")]
+        [InlineData(Mutator.Equality, "equality", "equality operators")]
+        [InlineData(Mutator.Linq, "linq", "linq methods")]
+        [InlineData(Mutator.Logical, "logical", "logical operators")]
+        [InlineData(Mutator.String, "string", "string literals")]
+        [InlineData(Mutator.Unary, "unary", "unary operators")]
+        [InlineData(Mutator.Update, "update", "update operators")]
+        public void StrykerCLI_ExcludedMutationsNamesShouldMapToMutatorTypes(Mutator expectedType, params string[] argValues)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions();

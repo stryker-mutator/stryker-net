@@ -6,7 +6,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutators
 {
-    public class PostfixUnaryMutator : Mutator<PostfixUnaryExpressionSyntax>, IMutator
+    public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
     {
         private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
@@ -24,7 +24,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PostfixUnaryExpression(oppositeKind, node.Operand),
                     DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = MutatorType.Update
+                    Type = Mutator.Update
                 };
             }
         }

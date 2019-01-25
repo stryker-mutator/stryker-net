@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Mutators
     {
         // This class is needed for the tests in this file
         // Using Moq the ExampleMutator will be mocked to test the functionality in the abstract Mutator class
-        internal class ExampleMutator : Mutator<BinaryExpressionSyntax>, IMutator
+        internal class ExampleMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
         {
             public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
             {

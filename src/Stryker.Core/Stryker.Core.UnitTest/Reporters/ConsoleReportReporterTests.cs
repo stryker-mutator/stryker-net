@@ -58,7 +58,7 @@ All mutants have been tested, and your mutation score has been calculated
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
@@ -100,7 +100,7 @@ All mutants have been tested, and your mutation score has been calculated
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
             
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
@@ -144,7 +144,7 @@ All mutants have been tested, and your mutation score has been calculated
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
@@ -186,7 +186,7 @@ All mutants have been tested, and your mutation score has been calculated
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
@@ -226,7 +226,7 @@ All mutants have been tested, and your mutation score has been calculated
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);

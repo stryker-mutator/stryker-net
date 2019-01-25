@@ -25,7 +25,7 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
-        public IEnumerable<MutatorType> ExcludedMutations { get; }
+        public IEnumerable<Mutator> ExcludedMutations { get; }
 
         public int MaxConcurrentTestrunners { get; }
 
@@ -94,7 +94,7 @@ namespace Stryker.Core.Options
             yield break;
         }
 
-        private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExludedMutations(IEnumerable<string> excludedMutations)
         {
             if (excludedMutations == null)
             {
@@ -102,8 +102,8 @@ namespace Stryker.Core.Options
             }
 
             // Get all mutatorTypes and their descriptions
-            Dictionary<MutatorType, string> typeDescriptions = Enum.GetValues(typeof(MutatorType))
-                .Cast<MutatorType>()
+            Dictionary<Mutator, string> typeDescriptions = Enum.GetValues(typeof(Mutator))
+                .Cast<Mutator>()
                 .ToDictionary(x => x, x => x.GetDescription());
 
             foreach (string excludedMutation in excludedMutations)
