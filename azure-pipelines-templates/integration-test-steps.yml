@@ -6,14 +6,14 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release package in integration test project'
+    displayName: 'Install pre-release package in netcoreapp2.1'
     inputs:
       command: custom
       custom: add
       arguments: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release package in integration test project'
+    displayName: 'Install pre-release package in netstandard2.0'
     inputs:
       command: custom
       custom: add
@@ -39,7 +39,7 @@ steps:
       workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     
   - task: DotNetCoreCLI@2
-    displayName: 'Run integration test netcore2.1'
+    displayName: 'Run integration test netcoreapp2.1'
     inputs:
       command: custom
       custom: stryker
