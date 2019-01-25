@@ -2,6 +2,7 @@
 {
     public enum DotnetFramework
     {
-        Full, Core
+        Full,
+        Core
     }
 }

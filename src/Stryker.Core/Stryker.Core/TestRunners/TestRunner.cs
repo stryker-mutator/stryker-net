@@ -2,6 +2,7 @@
 {
     public enum TestRunner
     {
-        VsTest, DotnetTest
+        VsTest,
+        DotnetTest
     }
 }
