@@ -12,7 +12,7 @@ namespace IntegrationTests
         [Fact]
         public void NetCore2_0()
         {
-            var directory = new DirectoryInfo("../../../../../NetCore2_0/ExampleProject.XUnit/StrykerOutput/reports");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetStandard2_0/ExampleProject.XUnit/StrykerOutput/reports");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
             var latestReport = directory.GetFiles("*.json")
@@ -33,7 +33,7 @@ namespace IntegrationTests
         [Fact]
         public void NetCore2_1()
         {
-            var directory = new DirectoryInfo("../../../../../NetCore2_1/ExampleProject.XUnit/StrykerOutput/reports");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore2_1/ExampleProject.XUnit/StrykerOutput/reports");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
             var latestReport = directory.GetFiles("*.json")
