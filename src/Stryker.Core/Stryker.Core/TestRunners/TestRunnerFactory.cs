@@ -23,17 +23,17 @@ namespace Stryker.Core.TestRunners
             ITestRunner testRunner = null;
             switch (options.TestRunner)
             {
-                case "dotnet test":
+                case Options.Values.TestRunner.DotnetTest:
                     testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
-                case "vstest":
+                case Options.Values.TestRunner.VsTest:
                     testRunner = new VsTestRunner(options, projectInfo);
                     break;
                 default:
                     testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", testRunner.GetType().Name);
+            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
             return testRunner;
         }
     }

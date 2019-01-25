@@ -1,4 +1,7 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Options.Values;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.CLI
@@ -19,7 +22,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | Options [{Core.Options.Values.Reporters.All}, ['{string.Join("', '", _defaultOptions.Reporters)}'] (default), {Core.Options.Values.Reporters.ConsoleProgressDots}, {Core.Options.Values.Reporters.Json}]
+            ArgumentDescription = $@"Sets the reporter | {FormatOptionsString(_defaultOptions.Reporters.First(), (IEnumerable<Reporters>)Enum.GetValues(_defaultOptions.Reporters.First().GetType()))}]
                                                 This argument takes a json array as a value. Example: ['{Core.Options.Values.Reporters.ConsoleProgressDots}', '{Core.Options.Values.Reporters.Json}']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
@@ -134,5 +137,19 @@ namespace Stryker.CLI
             DefaultValue = null,
             JsonKey = "files-to-exclude"
         };
+
+        public static readonly CLIOption<string> TestRunner = new CLIOption<string>
+        {
+            ArgumentName = "--test-runner",
+            ArgumentShortName = "-tr",
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | {FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType()))}",
+            DefaultValue = _defaultOptions.TestRunner.ToString(),
+            JsonKey = "files-to-exclude"
+        };
+
+        private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
+        {
+            return $"Options[{@default.ToString()} (default), {string.Join(",", options.Where(o => o.ToString() != @default.ToString()))}]";
+        }
     }
 }

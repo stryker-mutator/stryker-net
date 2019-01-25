@@ -1,7 +1,7 @@
 ﻿namespace Stryker.Core.Options.Values
 {
-    public enum TestRunners
+    public enum TestRunner
     {
-        VsTest, Dotnet
+        VsTest, DotnetTest
     }
 }

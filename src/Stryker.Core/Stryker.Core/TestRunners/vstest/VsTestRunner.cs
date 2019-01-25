@@ -1,14 +1,14 @@
 ﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Serilog.Events;
 using Stryker.Core.ExecutableFinders;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Values;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -16,13 +16,13 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunner : ITestRunner
+    public partial class VsTestRunner : ITestRunner
     {
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private string _defaultRunSettings;
         private DotnetFramework _runnerFramework;
-        private int? _timeoutMS = null;
+        private int _timeoutMS = 0;
         private readonly VsTestHelper _vsTestHelper;
         private static List<string> messages = new List<string>();
 
@@ -37,17 +37,18 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            _timeoutMS = timeoutMS;
+            _timeoutMS = timeoutMS ?? 0;
             GenerateRunSettings();
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
-            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+            //var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.NetFull];
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
 
-            consoleWrapper = new VsTestConsoleWrapper(vsTestToolPath, new ConsoleParameters { TraceLevel = System.Diagnostics.TraceLevel.Info, LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
+            consoleWrapper = new VsTestConsoleWrapper(vsTestToolPath, new ConsoleParameters { TraceLevel = DetermineTraceLevel(), LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
 
             consoleWrapper.StartSession();
             consoleWrapper.InitializeExtensions(new List<string> { testBinariesPath, vsTestExtensionsPath });
@@ -56,16 +57,18 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testResults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
 
-            string resultMessage = null;
-            if (testResults.Select(tr => string.Join(Environment.NewLine, tr.Messages.Select(m => m.Text))) is var testResultsMessages && testResultsMessages.Any())
+            // For now we need to throw an OperationCanceledException when a testrun has timed out. We know the testrun has timed out because there is no result for the test.
+            if (testResults.Count() < testCases.Count())
             {
-                resultMessage = string.Join(Environment.NewLine, testResultsMessages);
+                throw new OperationCanceledException();
             }
 
             var testResult = new TestRunResult
             {
                 Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
-                ResultMessage = resultMessage ?? "",
+                ResultMessage = string.Join(
+                    Environment.NewLine,
+                    testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
                 TotalNumberOfTests = testCases.Count()
             };
 
@@ -73,7 +76,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper)
+        private IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle);
@@ -84,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return handler.DiscoveredTestCases;
         }
 
-        IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases)
+        private IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new RunEventHandler(waitHandle);
@@ -112,14 +115,22 @@ namespace Stryker.Core.TestRunners.VsTest
             return handler.TestResults;
         }
 
-        IEnumerable<TestResult> RunAllTestsWithTestCaseFilter(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources)
+        private TraceLevel DetermineTraceLevel()
         {
-            var waitHandle = new AutoResetEvent(false);
-            var handler = new RunEventHandler(waitHandle);
-            consoleWrapper.RunTests(sources, _defaultRunSettings, new TestPlatformOptions() { TestCaseFilter = "FullyQualifiedName=UnitTestProject.UnitTest.PassingTest" }, handler);
-
-            waitHandle.WaitOne();
-            return handler.TestResults;
+            switch (_options.LogOptions.LogLevel)
+            {
+                case LogEventLevel.Debug:
+                case LogEventLevel.Verbose:
+                    return TraceLevel.Verbose;
+                case LogEventLevel.Error:
+                    return TraceLevel.Error;
+                case LogEventLevel.Warning:
+                    return TraceLevel.Warning;
+                case LogEventLevel.Information:
+                    return TraceLevel.Info;
+                default:
+                    return TraceLevel.Off;
+            }
         }
 
         private void GenerateRunSettings()
@@ -129,6 +140,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 _runnerFramework = DotnetFramework.NetCore;
             }
+
             string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
             switch (targetFramework)
             {
@@ -146,99 +158,9 @@ namespace Stryker.Core.TestRunners.VsTest
   <RunConfiguration>
     <MaxCpuCount>1</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-    {(_timeoutMS is null ? "" : $"<TestSessionTimeout>{_timeoutMS}</TestSessionTimeout>")}
+    <TestSessionTimeout>{_timeoutMS}</TestSessionTimeout>
   </RunConfiguration>
 </RunSettings>";
-        }
-
-        public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
-        {
-            private AutoResetEvent waitHandle;
-
-            public List<TestCase> DiscoveredTestCases { get; private set; }
-
-            public DiscoveryEventHandler(AutoResetEvent waitHandle)
-            {
-                this.waitHandle = waitHandle;
-                DiscoveredTestCases = new List<TestCase>();
-            }
-
-            public void HandleDiscoveredTests(IEnumerable<TestCase> discoveredTestCases)
-            {
-                if (discoveredTestCases != null)
-                {
-                    DiscoveredTestCases.AddRange(discoveredTestCases);
-                }
-            }
-
-            public void HandleDiscoveryComplete(long totalTests, IEnumerable<TestCase> lastChunk, bool isAborted)
-            {
-                if (lastChunk != null)
-                {
-                    DiscoveredTestCases.AddRange(lastChunk);
-                }
-                waitHandle.Set();
-            }
-
-            public void HandleRawMessage(string rawMessage)
-            {
-                messages.Add("Discovery Raw:" + rawMessage);
-            }
-
-            public void HandleLogMessage(TestMessageLevel level, string message)
-            {
-                messages.Add("Discovery Clean:" + message);
-            }
-        }
-
-        public class RunEventHandler : ITestRunEventsHandler
-        {
-            private AutoResetEvent waitHandle;
-
-            public List<TestResult> TestResults { get; private set; }
-
-            public RunEventHandler(AutoResetEvent waitHandle)
-            {
-                this.waitHandle = waitHandle;
-                TestResults = new List<TestResult>();
-            }
-
-            public void HandleTestRunComplete(
-                TestRunCompleteEventArgs testRunCompleteArgs,
-                TestRunChangedEventArgs lastChunkArgs,
-                ICollection<AttachmentSet> runContextAttachments,
-                ICollection<string> executorUris)
-            {
-                if (lastChunkArgs != null && lastChunkArgs.NewTestResults != null)
-                {
-                    TestResults.AddRange(lastChunkArgs.NewTestResults);
-                }
-
-                waitHandle.Set();
-            }
-
-            public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
-            {
-                if (testRunChangedArgs != null && testRunChangedArgs.NewTestResults != null)
-                {
-                    TestResults.AddRange(testRunChangedArgs.NewTestResults);
-                }
-            }
-
-            public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void HandleRawMessage(string rawMessage)
-            {
-                messages.Add("Run Raw:" + rawMessage);
-            }
-
-            public void HandleLogMessage(TestMessageLevel level, string message)
-            {
-                messages.Add("Run Clean:" + message);
-            }
         }
     }
 }

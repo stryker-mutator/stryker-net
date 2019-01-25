@@ -2,6 +2,7 @@
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Stryker.Core.Options
         public int MaxConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; }
-        public string TestRunner { get; }
+        public TestRunner TestRunner { get; }
 
         public IEnumerable<string> FilesToExclude { get; }
         public StrykerOptions(string basePath = "",
@@ -44,7 +45,7 @@ namespace Stryker.Core.Options
             int thresholdLow = 60,
             int thresholdBreak = 0,
             string[] filesToExclude = null,
-            string testRunner = "vstest")
+            string testRunner = "dotnettest")
         {
             BasePath = basePath;
             Reporters = ValidateReporters(reporters);
@@ -56,7 +57,7 @@ namespace Stryker.Core.Options
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
-            TestRunner = testRunner;
+            TestRunner = ValidateTestRunner(testRunner);
         }
 
         private IEnumerable<Values.Reporters> ValidateReporters(string[] reporters)
@@ -107,15 +108,15 @@ namespace Stryker.Core.Options
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.FirstOrDefault(x => x.Value.ToString().ToLower()
-                    .Contains(excludedMutation.ToLower())).Key
-                    is var foundMutator)
+                if (typeDescriptions.FirstOrDefault(
+                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()))
+                    .Key is var foundMutator)
                 {
                     yield return foundMutator;
                 }
                 else
                 {
-                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException(ErrorMessage, $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
@@ -138,7 +139,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect log level {(levelText)}. The log level options are [Error, Warning, Info, Debug, Trace]");
+                        $"Incorrect log level {levelText}. The log level options are [Error, Warning, Info, Debug, Trace]");
             }
         }
 
@@ -181,6 +182,18 @@ namespace Stryker.Core.Options
                 // The logger is not yet available here. The paths will be validated in the InputFileResolver
                 var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
                 yield return platformFilePath;
+            }
+        }
+
+        private TestRunner ValidateTestRunner(string testRunner)
+        {
+            if (Enum.TryParse(testRunner, true, out TestRunner result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
             }
         }
     }
