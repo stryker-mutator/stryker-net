@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 
 namespace Stryker.Core.Mutators
@@ -29,33 +28,26 @@ namespace Stryker.Core.Mutators
         String
     }
 
-    public static class EnumExtension {
-
-        public static string GetDescription<T>(this T e) where T : IConvertible
+    public static class MutatorTypeExtension
+    {
+        public static string GetDescription(this MutatorType e)
         {
-            if (e is Enum)
+            Type type = e.GetType();
+            Array values = Enum.GetValues(type);
+
+            foreach (int val in values)
             {
-                Type type = e.GetType();
-                Array values = Enum.GetValues(type);
+                var memInfo = type.GetMember(type.GetEnumName(val));
 
-                foreach (int val in values)
+                if (memInfo[0]
+                    .GetCustomAttributes(typeof(DescriptionAttribute), false)
+                    .FirstOrDefault() is DescriptionAttribute descriptionAttribute)
                 {
-                    if (val == e.ToInt32(CultureInfo.InvariantCulture))
-                    {
-                        var memInfo = type.GetMember(type.GetEnumName(val));
-                        var descriptionAttribute = memInfo[0]
-                            .GetCustomAttributes(typeof(DescriptionAttribute), false)
-                            .FirstOrDefault() as DescriptionAttribute;
-
-                        if (descriptionAttribute != null)
-                        {
-                            return descriptionAttribute.Description;
-                        }
-                    }
+                    return descriptionAttribute.Description;
                 }
             }
 
-            return null;
+            return "";
         }
     }
 }
