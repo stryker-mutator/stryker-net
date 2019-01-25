@@ -41,7 +41,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
-            //var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+
             // Temporarily run full framework runner until core runner is fixed
             var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.Full];
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
@@ -57,7 +57,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testResults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
 
-            // For now we need to throw an OperationCanceledException when a testrun has timed out. We know the testrun has timed out because there is no result for the test.
+            // For now we need to throw an OperationCanceledException when a testrun has timed out. 
+            // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
             if (testResults.Count() < testCases.Count())
             {
                 throw new OperationCanceledException();
