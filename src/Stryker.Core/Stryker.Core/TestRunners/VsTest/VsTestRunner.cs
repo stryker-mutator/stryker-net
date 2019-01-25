@@ -137,22 +137,18 @@ namespace Stryker.Core.TestRunners.VsTest
         private void GenerateRunSettings()
         {
             string targetFramework = _projectInfo.TargetFramework;
-            if (targetFramework.Contains("netcoreapp") || targetFramework.Contains("netstandard"))
-            {
-                _runnerFramework = DotnetFramework.Core;
-            }
 
             string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
             switch (targetFramework)
             {
                 case string s when s.Contains("netcoreapp"):
                     targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    _runnerFramework = DotnetFramework.Core;
                     break;
                 case string s when s.Contains("netstandard"):
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
-                    break;
+                    throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    throw new Exception("Unsupported targetframework detected" + targetFramework);
+                    throw new Exception("Unsupported targetframework detected: " + targetFramework);
             }
 
             _defaultRunSettings = $@"<RunSettings>
