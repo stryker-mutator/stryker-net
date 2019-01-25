@@ -5,11 +5,6 @@ using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using System;
-using System.IO;
-using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace Stryker.Core.Options
 {
@@ -17,7 +12,7 @@ namespace Stryker.Core.Options
     {
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
-        public IEnumerable<Reporter> Reporters { get; }
+        public IEnumerable<Values.Reporters> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
 
@@ -64,11 +59,11 @@ namespace Stryker.Core.Options
             TestRunner = testRunner;
         }
 
-        private IEnumerable<Reporter> ValidateReporters(string[] reporters)
+        private IEnumerable<Values.Reporters> ValidateReporters(string[] reporters)
         {
             if (reporters == null)
             {
-                foreach (var reporter in new[] { Reporter.ConsoleProgressBar, Reporter.ConsoleReport })
+                foreach (var reporter in new[] { Values.Reporters.ConsoleProgressBar, Values.Reporters.ConsoleReport })
                 {
                     yield return reporter;
                 }
@@ -78,7 +73,7 @@ namespace Stryker.Core.Options
             IList<string> invalidReporters = new List<string>();
             foreach (var reporter in reporters)
             {
-                if (Enum.TryParse(reporter, true, out Reporter result))
+                if (Enum.TryParse(reporter, true, out Values.Reporters result))
                 {
                     yield return result;
                 }
@@ -91,7 +86,7 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
+                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Values.Reporters[])Enum.GetValues(typeof(Values.Reporters)))}]");
             }
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
             yield break;
@@ -120,7 +115,7 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }

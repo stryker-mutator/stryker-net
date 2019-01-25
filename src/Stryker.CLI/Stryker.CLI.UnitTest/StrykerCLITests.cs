@@ -16,7 +16,7 @@ namespace Stryker.CLI.UnitTest
 
     public class StrykerCLITests
     {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
         private string _fileSystemRoot { get; }
 
         private string _currentDirectory { get; }
@@ -64,9 +64,9 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, $"['{Reporter.ConsoleReport}', '{Reporter.ConsoleProgressDots}']" });
+            target.Run(new string[] { argName, $"['{Core.Options.Values.Reporters.ConsoleReport}', '{Core.Options.Values.Reporters.ConsoleProgressDots}']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Reporter.ConsoleReport) && o.Reporters.Contains(Reporter.ConsoleProgressDots))));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Core.Options.Values.Reporters.ConsoleReport) && o.Reporters.Contains(Core.Options.Values.Reporters.ConsoleProgressDots))));
         }
 
 

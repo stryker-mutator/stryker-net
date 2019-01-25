@@ -13,22 +13,22 @@ namespace Stryker.Core.Reporters
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters, CreateReporters(options)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        private static IDictionary<Options.Values.Reporters, IReporter> CreateReporters(StrykerOptions options)
         {
-            return new Dictionary<Reporter, IReporter>
+            return new Dictionary<Options.Values.Reporters, IReporter>
             {
-                { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
-                { Reporter.ConsoleProgressBar, CreateProgressReporter() },
-                { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
-                { Reporter.Json, new JsonReporter(options) }
+                { Options.Values.Reporters.ConsoleProgressDots, new ConsoleDotProgressReporter() },
+                { Options.Values.Reporters.ConsoleProgressBar, CreateProgressReporter() },
+                { Options.Values.Reporters.ConsoleReport, new ConsoleReportReporter(options) },
+                { Options.Values.Reporters.Json, new JsonReporter(options) }
             };
         }
 
-        private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
+        private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Options.Values.Reporters> enabledReporters, IDictionary<Options.Values.Reporters, IReporter> possibleReporters)
         {
-            return enabledReporters.Contains(Reporter.All) ? possibleReporters.Values :
-                possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
-                    .Select(reporter => reporter.Value);
+            return enabledReporters.Contains(Options.Values.Reporters.All) ? possibleReporters.Values :
+                possibleReporters.Where((KeyValuePair<Options.Values.Reporters, IReporter> reporter) => enabledReporters.Contains(reporter.Key))
+                    .Select((KeyValuePair<Options.Values.Reporters, IReporter> reporter) => reporter.Value);
         }
 
         private static ProgressReporter CreateProgressReporter()

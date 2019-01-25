@@ -3,15 +3,16 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Stryker.Core.ExecutableFinders;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Values;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml.Linq;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -20,47 +21,29 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private string _defaultRunSettings;
-        private bool _isNetCore = false;
+        private DotnetFramework _runnerFramework;
+        private int? _timeoutMS = null;
+        private readonly VsTestHelper _vsTestHelper;
+        private static List<string> messages = new List<string>();
 
         public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
             _options = options;
             _projectInfo = projectInfo;
+            _vsTestHelper = new VsTestHelper(options);
+
+            GenerateRunSettings();
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            string targetFramework = _projectInfo.TargetFramework;
-            if (targetFramework.Contains("netcoreapp") || targetFramework.Contains("netstandard"))
-            {
-                _isNetCore = true;
-            }
-            string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
-            switch (targetFramework)
-            {
-                case string s when s.Contains("netcoreapp"):
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
-                    break;
-                case string s when s.Contains("netstandard"):
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
-                    break;
-                default:
-                    targetFrameworkVersion = $".NETFramework, Version = v{targetFrameworkVersion}";
-                    break;
-            }
-
-            _defaultRunSettings = $@"<RunSettings>
-  <RunConfiguration>
-    <MaxCpuCount>1</MaxCpuCount>
-    <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-    <TestSessionTimeout>{timeoutMS}</TestSessionTimeout>
-  </RunConfiguration>
-</RunSettings>";
+            _timeoutMS = timeoutMS;
+            GenerateRunSettings();
 
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
-            var vsTestToolPath = GetVsTestToolpath();
-            var vsTestExtensionsPath = GetDefaultVsTestExtensionsPath(vsTestToolPath);
+            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+            var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
 
@@ -81,7 +64,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testResult = new TestRunResult
             {
-                Success = !testResults.Any(tr => tr.Outcome == TestOutcome.Failed),
+                Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
                 ResultMessage = resultMessage ?? "",
                 TotalNumberOfTests = testCases.Count()
             };
@@ -139,58 +122,33 @@ namespace Stryker.Core.TestRunners.VsTest
             return handler.TestResults;
         }
 
-        public string GetVsTestToolpath()
+        private void GenerateRunSettings()
         {
-            string versionString = "16.0.0-preview-20181205-02";
-            string toolFolderInPackage = Path.Combine("microsoft.testplatform.portable", versionString, "tools");
-            string targetFrameworkString = _projectInfo.TargetFramework;
-
-            var nugetPackageFolders = CollectNugetPackageFolders();
-            foreach (string nugetPackageFolder in nugetPackageFolders)
+            string targetFramework = _projectInfo.TargetFramework;
+            if (targetFramework.Contains("netcoreapp") || targetFramework.Contains("netstandard"))
             {
-                string pathToTry = Path.Combine(nugetPackageFolder, toolFolderInPackage,
-                _isNetCore ?
-                Path.Combine("netcoreapp2.0", "vstest.console.dll") :
-                Path.Combine("net451", "vstest.console.exe"));
-
-                if (FilePathUtils.ConvertPathSeparators(pathToTry) is var pathFound && File.Exists(pathFound))
-                {
-                    return pathFound;
-                }
+                _runnerFramework = DotnetFramework.NetCore;
             }
-            throw new ApplicationException("VsTest executable could not be found in any of the following directories, please submit a bug report: " + string.Join(", ", nugetPackageFolders));
-        }
-
-        private IEnumerable<string> CollectNugetPackageFolders()
-        {
-            yield return Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(nugetPackagesLocation is null))
+            string targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
+            switch (targetFramework)
             {
-                yield return Environment.GetEnvironmentVariable(@"NUGET_PACKAGES");
+                case string s when s.Contains("netcoreapp"):
+                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    break;
+                case string s when s.Contains("netstandard"):
+                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    break;
+                default:
+                    throw new Exception("Unsupported targetframework detected" + targetFramework);
             }
-            foreach (string nugetPackageFolder in ParseNugetPackageFolders())
-            {
-                yield return nugetPackageFolder;
-            }
-        }
 
-        private IEnumerable<string> ParseNugetPackageFolders()
-        {
-            string nugetPropsLocation = Path.Combine(_options.BasePath, "obj", $"{_options.ProjectUnderTestNameFilter}.nuget.g.props");
-
-            XElement document = XElement.Load(nugetPropsLocation);
-            string nugetPackageFolderElementValue = document.Descendants("NuGetPackageFolders").Select(e => e.Value).First();
-            string[] nugetPackageFolders = nugetPackageFolderElementValue.Split(";");
-
-            foreach (string nugetPackageFolder in nugetPackageFolders)
-            {
-                yield return nugetPackageFolder;
-            }
-        }
-
-        private string GetDefaultVsTestExtensionsPath(string vstestToolPath)
-        {
-            return Path.Combine(vstestToolPath.TrimEnd(FilePathUtils.ConvertPathSeparators("\\").ToCharArray().First()), "Extensions");
+            _defaultRunSettings = $@"<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>1</MaxCpuCount>
+    <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
+    {(_timeoutMS is null ? "" : $"<TestSessionTimeout>{_timeoutMS}</TestSessionTimeout>")}
+  </RunConfiguration>
+</RunSettings>";
         }
 
         public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
@@ -222,12 +180,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 waitHandle.Set();
             }
 
-            public void HandleLogMessage(TestMessageLevel level, string message)
-            {
-            }
-
             public void HandleRawMessage(string rawMessage)
             {
+                messages.Add("Discovery Raw:" + rawMessage);
+            }
+
+            public void HandleLogMessage(TestMessageLevel level, string message)
+            {
+                messages.Add("Discovery Clean:" + message);
             }
         }
 
@@ -272,10 +232,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
             public void HandleRawMessage(string rawMessage)
             {
+                messages.Add("Run Raw:" + rawMessage);
             }
 
             public void HandleLogMessage(TestMessageLevel level, string message)
             {
+                messages.Add("Run Clean:" + message);
             }
         }
     }

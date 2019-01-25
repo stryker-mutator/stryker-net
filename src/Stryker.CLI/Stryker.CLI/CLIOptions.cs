@@ -19,8 +19,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | Options [{Reporter.All}, ['{string.Join("', '", _defaultOptions.Reporters)}'] (default), {Reporter.ConsoleProgressDots}, {Reporter.Json}]
-                                                This argument takes a json array as a value. Example: ['{Reporter.ConsoleProgressDots}', '{Reporter.Json}']",
+            ArgumentDescription = $@"Sets the reporter | Options [{Core.Options.Values.Reporters.All}, ['{string.Join("', '", _defaultOptions.Reporters)}'] (default), {Core.Options.Values.Reporters.ConsoleProgressDots}, {Core.Options.Values.Reporters.Json}]
+                                                This argument takes a json array as a value. Example: ['{Core.Options.Values.Reporters.ConsoleProgressDots}', '{Core.Options.Values.Reporters.Json}']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };

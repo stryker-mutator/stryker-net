@@ -1,6 +1,6 @@
-﻿namespace Stryker.Core.Options
+﻿namespace Stryker.Core.Options.Values
 {
-    public enum Reporter
+    public enum Reporters
     {
         All,
         ConsoleProgressBar,
