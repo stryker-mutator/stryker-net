@@ -43,7 +43,8 @@ namespace Stryker.Core.TestRunners.VsTest
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
 
             // Temporarily run full framework runner until core runner is fixed
-            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[DotnetFramework.Full];
+            _runnerFramework = DotnetFramework.Full;
+            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
@@ -148,7 +149,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 case string s when s.Contains("netstandard"):
                     throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    throw new Exception("Unsupported targetframework detected: " + targetFramework);
+                    targetFrameworkVersion = $".NETFramework = v{targetFrameworkVersion}";
+                    _runnerFramework = DotnetFramework.Full;
+                    break;
             }
 
             _defaultRunSettings = $@"<RunSettings>
