@@ -31,7 +31,6 @@ namespace Stryker.Core.MutationTest
         private IFileSystem _fileSystem { get; }
         private ICompilingProcess _compilingProcess { get; set; }
         private IMutationTestExecutor _mutationTestExecutor { get; set; }
-        private ICompilingProcess _rollbackProcess { get; set; }
         private ILogger _logger { get; set; }
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
@@ -52,9 +51,11 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate(StrykerOptions options)
         {
-            var mutatedSyntaxTrees = new Collection<SyntaxTree>();
-            // add helper
-            mutatedSyntaxTrees.Add(MutantPlacer.ActiveMutantSelectorHelper);
+            var mutatedSyntaxTrees = new Collection<SyntaxTree>
+            {
+                // add helper
+                MutantPlacer.ActiveMutantSelectorHelper
+            };
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {

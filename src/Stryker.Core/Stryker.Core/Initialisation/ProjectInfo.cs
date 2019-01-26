@@ -19,9 +19,19 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath()
         {
-            var outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
-            var assemblyName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyName");
-            string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, assemblyName + ".dll"));
+            var outputPath = "";
+            if (FullFramework)
+            {
+                outputPath = Path.Combine(ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
+                    ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
+            }
+            else
+            {
+                outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
+            }
+            
+            var targetFileName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("TargetFileName");
+            string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
             return injectionPath;
         }
     }
