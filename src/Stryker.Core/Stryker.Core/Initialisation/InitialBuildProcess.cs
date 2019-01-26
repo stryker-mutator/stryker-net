@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
+using Stryker.Core.ToolHelpers;
 using System;
 
 namespace Stryker.Core.Initialisation
@@ -30,8 +31,8 @@ namespace Stryker.Core.Initialisation
             if (fullFramework)
             {
                 // Build with MSBuild.exe
-                var visualStudioInstance = MSBuildLocator.RegisterDefaults();
-                result = _processExecutor.Start(path, visualStudioInstance.MSBuildPath, "");
+                var msBuildPath = new MsBuildHelper().GetMsBuildPath();
+                result = _processExecutor.Start(path, msBuildPath, "");
             }
             else
             {
