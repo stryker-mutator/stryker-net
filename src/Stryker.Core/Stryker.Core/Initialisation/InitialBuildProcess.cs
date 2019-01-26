@@ -1,10 +1,8 @@
-﻿using Microsoft.Build.Locator;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
 
 namespace Stryker.Core.Initialisation
 {

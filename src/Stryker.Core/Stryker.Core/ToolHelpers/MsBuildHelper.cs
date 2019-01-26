@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
-using System.Text;
 
 namespace Stryker.Core.ToolHelpers
 {
@@ -33,7 +32,7 @@ namespace Stryker.Core.ToolHelpers
                     return possiblePath;
                 }
             }
-            throw new Exception("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+            throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
         }
     }
 }
