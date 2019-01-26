@@ -6,11 +6,11 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 {
     public class ConnectionEventArgs : EventArgs
     {
-        public CommunicationChannel client;
+        public CommunicationChannel Client;
 
         public ConnectionEventArgs(CommunicationChannel client)
         {
-            this.client = client;
+            this.Client = client;
         }
     } 
 
@@ -25,6 +25,8 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         public event MessageReceived RaiseReceivedMessage;
 
+        public bool IsConnected => pipeStream.IsConnected;
+
         public CommunicationChannel(PipeStream stream)
         {
             pipeStream = stream;
@@ -33,7 +35,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         public static CommunicationChannel Client(string pipename, int timeout = -1)
         {
             var pipe = new NamedPipeClientStream(".", pipename, PipeDirection.InOut,
-                PipeOptions.Asynchronous | PipeOptions.WriteThrough);
+                PipeOptions.Asynchronous);
             try
             {
                 pipe.Connect(timeout);
@@ -46,7 +48,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             return new CommunicationChannel(pipe);
         }
 
-        internal void Start()
+        public void Start()
         {
             Begin();
         }

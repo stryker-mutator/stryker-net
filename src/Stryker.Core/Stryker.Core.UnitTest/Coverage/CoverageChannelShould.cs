@@ -64,17 +64,66 @@ namespace Stryker.Core.UnitTest.Coverage
             using (var channel = new CommunicationServer("myChannel3"))
             {
                 channel.Listen();
-                using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous))
+                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
+                using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-                    client.Connect(1);
-                    Assert.True(client.IsConnected);
-                    channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
 
-                    var clientChannel = new CommunicationChannel(client);
                     var message = "hello";
-                    clientChannel.SendText(message);
+                    client.SendText(message);
                     ExpectThisMessage(message);
+                }
+            }
+        }
+
+        [Fact]
+        public void SupportDuplex()
+        {
+            using (var channel = new CommunicationServer("myChannel3"))
+            {
+                CommunicationChannel session = null;
+                string response = string.Empty;
+                channel.RaiseNewClientEvent += (o, e) =>
+                {
+                    lock (channel)
+                    {
+                        session = e.Client;
+                        Monitor.Pulse(channel);
+                    }
+                };
+                channel.Listen();
+                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
+                using (var client = CommunicationChannel.Client(channel.PipeName, 1))
+                {
+                    client.RaiseReceivedMessage += (o, msg) =>
+                    {
+                        lock (client)
+                        {
+                            response = msg;
+                            Monitor.Pulse(client);
+                        }
+                    };
+                    client.Start();
+                    Assert.True(client.IsConnected);
+                    var message = "hello";
+                    client.SendText(message);
+                    ExpectThisMessage(message);
+                    lock (channel)
+                    {
+                        if (session == null)
+                        {
+                            Monitor.Wait(10);
+                        }
+                    }
+                    Assert.NotNull(session);
+                    session.SendText("world");
+                    lock (client)
+                    {
+                        if (string.IsNullOrEmpty(response))
+                        {
+                            Monitor.Wait(client, 10);
+                        }
+                    }
+                    Assert.Equal("world", response);
                 }
             }
         }

@@ -11,6 +11,7 @@ namespace Stryker
         private static HashSet<int> _coveredMutants;
         private static bool captureCoverage;
         private static string pipeName;
+        private static CommunicationChannel channel;
 
         public const string EnvironmentPipeName = "Coverage";
 
@@ -28,8 +29,21 @@ namespace Stryker
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
             pipeName = Environment.GetEnvironmentVariable(EnvironmentPipeName);
             captureCoverage = !string.IsNullOrEmpty(pipeName);
-            if (captureCoverage)
+            if (captureCoverage && channel==null)
             {
+                _coveredMutants = new HashSet<int>();
+                channel = CommunicationChannel.Client(pipeName, 10);
+                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
+                channel.Start();
+            }
+
+        }
+
+        private static void Channel_RaiseReceivedMessage(object sender, string args)
+        {
+            if (args == "DUMP")
+            {
+                DumpState();
                 _coveredMutants = new HashSet<int>();
             }
         }
@@ -56,10 +70,7 @@ namespace Stryker
                 report.Append($"{coveredMutant}");
             }
 
-            using (var channel = CommunicationChannel.Client(pipeName, 10))
-            {
-                channel.SendText(report.ToString());
-            }
+            channel.SendText(report.ToString());
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)

@@ -38,7 +38,7 @@ namespace Stryker.Core.Coverage
                 listener = new NamedPipeServerStream(PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte);
+                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 listener.BeginWaitForConnection(OnConnect, null);
             }
         }
