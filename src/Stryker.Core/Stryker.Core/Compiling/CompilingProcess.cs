@@ -60,33 +60,20 @@ namespace Stryker.Core.Compiling
 
             if (!emitResult.Success)
             {
-                LogEmitResult(emitResult);
-                // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compiler, emitResult.Diagnostics, devMode);
-
-                // reset the memoryStream for the second compilation
-                ms.SetLength(0);
-
                 // second try compiling
-                emitResult = rollbackProcessResult.Compilation.Emit(ms);
+                (rollbackProcessResult, emitResult) = RetryCompilation(ms, compiler, emitResult, devMode);
             }
 
             if (!emitResult.Success)
             {
-                LogEmitResult(emitResult);
-                // remove any left over broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(rollbackProcessResult.Compilation, emitResult.Diagnostics, devMode);
-
-                // reset the memoryStream for the second compilation
-                ms.SetLength(0);
-
                 // third try compiling
-                emitResult = rollbackProcessResult.Compilation.Emit(ms);
+                (rollbackProcessResult, emitResult) = RetryCompilation(ms, rollbackProcessResult.Compilation, emitResult, devMode);
             }
 
             LogEmitResult(emitResult);
             if (!emitResult.Success)
             {
+                // compiling failed
                 _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
                 throw new ApplicationException("Failed to restore build able state.");
             }
@@ -95,6 +82,23 @@ namespace Stryker.Core.Compiling
                 Success = emitResult.Success,
                 RollbackResult = rollbackProcessResult
             };
+        }
+
+        private (RollbackProcessResult, EmitResult) RetryCompilation(MemoryStream ms, 
+            CSharpCompilation compilation, 
+            EmitResult previousEmitResult, 
+            bool devMode)
+        {
+            LogEmitResult(previousEmitResult);
+            // remove broken mutations
+            var rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, devMode);
+
+            // reset the memoryStream for the second compilation
+            ms.SetLength(0);
+
+            // second try compiling
+            var emitResult = rollbackProcessResult.Compilation.Emit(ms);
+            return (rollbackProcessResult, emitResult);
         }
 
         private void LogEmitResult(EmitResult result)
