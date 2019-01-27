@@ -71,6 +71,19 @@ namespace Stryker.Core.Compiling
                 emitResult = rollbackProcessResult.Compilation.Emit(ms);
             }
 
+            if (!emitResult.Success)
+            {
+                LogEmitResult(emitResult);
+                // remove any left over broken mutations
+                rollbackProcessResult = _rollbackProcess.Start(rollbackProcessResult.Compilation, emitResult.Diagnostics, devMode);
+
+                // reset the memoryStream for the second compilation
+                ms.SetLength(0);
+
+                // third try compiling
+                emitResult = rollbackProcessResult.Compilation.Emit(ms);
+            }
+
             LogEmitResult(emitResult);
             if (!emitResult.Success)
             {
