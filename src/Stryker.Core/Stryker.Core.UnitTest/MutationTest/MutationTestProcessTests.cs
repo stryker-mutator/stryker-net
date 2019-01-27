@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", "/bin/Debug/netcoreapp2.1" },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", "/bin/Debug/netcoreapp2.1" },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectContents = new FolderComposite() {
@@ -118,7 +118,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", "/bin/Debug/netcoreapp2.1" },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", "/bin/Debug/netcoreapp2.1" },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectContents = new FolderComposite() {
@@ -205,7 +205,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
@@ -213,7 +213,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "AssemblyName", "ExampleProject" }
+                            { "TargetFileName", "ExampleProject.dll" }
                         }
                     },
                     ProjectContents = new FolderComposite() {
@@ -282,7 +282,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "OutputPath", "/bin/Debug/netcoreapp2.1" },
-                            { "AssemblyName", "TestName" }
+                            { "TargetFileName", "TestName.dll" }
                         }
                     },
                     ProjectContents = new FolderComposite()
