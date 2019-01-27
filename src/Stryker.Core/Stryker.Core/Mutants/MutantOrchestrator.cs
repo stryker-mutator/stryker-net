@@ -89,6 +89,10 @@ namespace Stryker.Core.Mutants
             }
             else if (currentNode is StatementSyntax statement && currentNode.Kind() != SyntaxKind.Block)
             {
+                if (currentNode is LocalFunctionStatementSyntax localFunction)
+                {
+                    return localFunction.ReplaceNode(localFunction.Body, Mutate(localFunction.Body));
+                }
                 return MutateWithIfStatements(statement);
             }
             else
