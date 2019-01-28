@@ -70,7 +70,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                ProjectInfo = new ProjectInfo()
                 {
                     ProjectUnderTestAssemblyName = "The assembly name"
                 },
@@ -91,7 +91,8 @@ namespace ExampleProject
             {
                 Should.Throw<ApplicationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()), Times.Once);
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()), 
+                Times.Exactly(2));
         }
 
         [Fact]
