@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
-    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="0.8.2-beta.280" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="0.8.2-beta.280" />
   </ItemGroup>
 </Project>
