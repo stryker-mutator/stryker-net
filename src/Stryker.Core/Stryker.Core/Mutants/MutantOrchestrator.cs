@@ -93,6 +93,15 @@ namespace Stryker.Core.Mutants
                 {
                     return localFunction.ReplaceNode(localFunction.Body, Mutate(localFunction.Body));
                 }
+                if (currentNode is IfStatementSyntax ifStatement)
+                {
+                    ifStatement = ifStatement.ReplaceNode(ifStatement.Condition, MutateWithConditionalExpressions(ifStatement.Condition));
+                    if (ifStatement.Else != null)
+                    {
+                        ifStatement = ifStatement.ReplaceNode(ifStatement.Else, Mutate(ifStatement.Else));
+                    }
+                    return ifStatement.ReplaceNode(ifStatement.Statement, Mutate(ifStatement.Statement));
+                }
                 return MutateWithIfStatements(statement);
             }
             else

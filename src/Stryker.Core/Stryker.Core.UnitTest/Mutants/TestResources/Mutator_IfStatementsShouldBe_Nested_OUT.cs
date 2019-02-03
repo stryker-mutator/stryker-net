@@ -9,176 +9,31 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int i = 0;
-            if (Stryker.ActiveMutationHelper.ActiveMutation==6)
-                    {
-                if (i + 8 == 8)
+            if (Stryker.ActiveMutationHelper.ActiveMutation == 0 ? i - 8 == 8 : i + 8 == 8)
+            {
+                i = Stryker.ActiveMutationHelper.ActiveMutation == 4 ? i - 1 : i + 1;
+                if (Stryker.ActiveMutationHelper.ActiveMutation == 5 ? i - 8 == 9 : i + 8 == 9)
                 {
-                    i = i + 1;
-                    if (i + 8 == 9)
-                    {
-                        i = i + 1;
-                    };
-                }
-                else
-                {
-                    i = i + 3;
-                    if (i == i + i - 8)
-                    {
-                        i = i - 1;
-                    };
-                }
+                    i = Stryker.ActiveMutationHelper.ActiveMutation == 6 ? i - 1 : i + 1;
+                };
             }
             else
             {
-                if (Stryker.ActiveMutationHelper.ActiveMutation==5)
-                        {
-                    if (i + 8 == 8)
-                    {
-                        i = i + 1;
-                        if (i + 8 == 9)
-                        {
-                            i = i + 1;
-                        };
-                    }
-                    else
-                    {
-                        i = i + 3;
-                        if (i == i - i - 8)
-                        {
-                            i = i + 1;
-                        };
-                    }
-                }
-                else
+                i = Stryker.ActiveMutationHelper.ActiveMutation == 1 ? i - 3 : i + 3;
+                if (Stryker.ActiveMutationHelper.ActiveMutation == 2 ? i == i - i - 8 : i == i + i - 8)
                 {
-                    if (Stryker.ActiveMutationHelper.ActiveMutation==4)
-                            {
-                        if (i + 8 == 8)
-                        {
-                            i = i + 1;
-                            if (i + 8 == 9)
-                            {
-                                i = i + 1;
-                            };
-                        }
-                        else
-                        {
-                            i = i - 3;
-                            if (i == i + i - 8)
-                            {
-                                i = i + 1;
-                            };
-                        }
-                    }
-                    else
-                    {
-                        if (Stryker.ActiveMutationHelper.ActiveMutation==3)
-                                {
-                            if (i + 8 == 8)
-                            {
-                                i = i + 1;
-                                if (i + 8 == 9)
-                                {
-                                    i = i - 1;
-                                };
-                            }
-                            else
-                            {
-                                i = i + 3;
-                                if (i == i + i - 8)
-                                {
-                                    i = i + 1;
-                                };
-                            }
-                        }
-                        else
-                        {
-                            if (Stryker.ActiveMutationHelper.ActiveMutation==2)
-                                    {
-                                if (i + 8 == 8)
-                                {
-                                    i = i + 1;
-                                    if (i - 8 == 9)
-                                    {
-                                        i = i + 1;
-                                    };
-                                }
-                                else
-                                {
-                                    i = i + 3;
-                                    if (i == i + i - 8)
-                                    {
-                                        i = i + 1;
-                                    };
-                                }
-                            }
-                            else
-                            {
-                                if (Stryker.ActiveMutationHelper.ActiveMutation==1)
-                                        {
-                                    if (i + 8 == 8)
-                                    {
-                                        i = i - 1;
-                                        if (i + 8 == 9)
-                                        {
-                                            i = i + 1;
-                                        };
-                                    }
-                                    else
-                                    {
-                                        i = i + 3;
-                                        if (i == i + i - 8)
-                                        {
-                                            i = i + 1;
-                                        };
-                                    }
-                                }
-                                else
-                                {
-                                    if (Stryker.ActiveMutationHelper.ActiveMutation==0)
-                                            {
-                                        if (i - 8 == 8)
-                                        {
-                                            i = i + 1;
-                                            if (i + 8 == 9)
-                                            {
-                                                i = i + 1;
-                                            };
-                                        }
-                                        else
-                                        {
-                                            i = i + 3;
-                                            if (i == i + i - 8)
-                                            {
-                                                i = i + 1;
-                                            };
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (i + 8 == 8)
-                                        {
-                                            i = i + 1;
-                                            if (i + 8 == 9)
-                                            {
-                                                i = i + 1;
-                                            };
-                                        }
-                                        else
-                                        {
-                                            i = i + 3;
-                                            if (i == i + i - 8)
-                                            {
-                                                i = i + 1;
-                                            };
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                    i = Stryker.ActiveMutationHelper.ActiveMutation == 3 ? i - 1 : i + 1;
+                };
             }
+            if (Out(out var test))
+            {
+                return Stryker.ActiveMutationHelper.ActiveMutation == 7 ? i - 1 : i + 1;
+            }
+        }
+
+        private bool Out(out string test)
+        {
+            return true;
         }
     }
 }
