@@ -9,25 +9,25 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int i = 0;
-            if (Stryker.ActiveMutationHelper.ActiveMutation == 0 ? i - 8 == 8 : i + 8 == 8)
+            if (Stryker.MutantControl.IsActive(0)?i -8 == 8:i + 8 == 8)
             {
-                i = Stryker.ActiveMutationHelper.ActiveMutation == 4 ? i - 1 : i + 1;
-                if (Stryker.ActiveMutationHelper.ActiveMutation == 5 ? i - 8 == 9 : i + 8 == 9)
+                i = Stryker.MutantControl.IsActive(4)?i -1:i + 1;
+                if (Stryker.MutantControl.IsActive(5)?i -8 == 9:i + 8 == 9)
                 {
-                    i = Stryker.ActiveMutationHelper.ActiveMutation == 6 ? i - 1 : i + 1;
+                    i = Stryker.MutantControl.IsActive(6)?i -1:i + 1;
                 };
             }
             else
             {
-                i = Stryker.ActiveMutationHelper.ActiveMutation == 1 ? i - 3 : i + 3;
-                if (Stryker.ActiveMutationHelper.ActiveMutation == 2 ? i == i - i - 8 : i == i + i - 8)
+                i = Stryker.MutantControl.IsActive(1)?i -3:i + 3;
+                if (Stryker.MutantControl.IsActive(2)?i == i -i - 8:i == i + i - 8)
                 {
-                    i = Stryker.ActiveMutationHelper.ActiveMutation == 3 ? i - 1 : i + 1;
+                    i = Stryker.MutantControl.IsActive(3)?i -1:i + 1;
                 };
             }
             if (!Out(out var test))
             {
-                return Stryker.ActiveMutationHelper.ActiveMutation == 7 ? i - 1 : i + 1;
+                return Stryker.MutantControl.IsActive(7)?i -1:i + 1;
             }
             if (i is int x)
             {
