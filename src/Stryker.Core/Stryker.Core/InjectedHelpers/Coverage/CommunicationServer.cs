@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.InjectedHelpers.Coverage;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Coverage
 {
@@ -15,6 +18,7 @@ namespace Stryker.Core.Coverage
         private volatile bool mustShutdown;
         private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
+        private ILogger<CommunicationServer> _logger;
 
         public string PipeName { get; private set; }
 
@@ -23,7 +27,8 @@ namespace Stryker.Core.Coverage
 
         public CommunicationServer(string name)
         {
-            PipeName = $"Stryker.{name}.Pipe";
+            PipeName = $"Stryker.{name}.Pipe.{Stopwatch.GetTimestamp()}";
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CommunicationServer>();
         }
 
         public void Listen()
@@ -39,7 +44,15 @@ namespace Stryker.Core.Coverage
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-                listener.BeginWaitForConnection(OnConnect, null);
+                try
+                {
+                    listener.BeginWaitForConnection(OnConnect, null);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError("Exception on connect {0}", e);
+                    throw;
+                }
             }
         }
 
@@ -54,8 +67,16 @@ namespace Stryker.Core.Coverage
                 }
                 catch (IOException)
                 {
+                    return;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError("Exception on connect {0}", e);
+                    throw;
                 }
 
+                if (mustShutdown)
+                    return;
 
                 if (listener.IsConnected)
                 {

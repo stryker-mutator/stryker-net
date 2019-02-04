@@ -3,6 +3,7 @@ using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json.Serialization;
 using Stryker.Core.Coverage;
 using Stryker.Core.InjectedHelpers.Coverage;
 using Xunit;
@@ -11,14 +12,10 @@ namespace Stryker.Core.UnitTest.Coverage
 {
     public class CoverageChannelShould
     {
-        private string received;
-
-        private object lckMessage = new object();
-
         [Fact]
         public void OfferConnection()
         {
-            using (var channel = new CommunicationServer("myChannel1"))
+            using (var channel = new CommunicationServer("CanConnect"))
             {
                 channel.Listen();
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
@@ -31,26 +28,27 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void OfferConnectionEvent()
         {
-            using (var channel = new CommunicationServer("myChannel2"))
+            var lck = new object();
+            using (var channel = new CommunicationServer("ConnectionEvent"))
             {
                 var notified = false;
-                channel.Listen();
                 channel.RaiseNewClientEvent += (o, args) =>
                 {
-                    lock (channel)
+                    lock (lck)
                     {
                         notified = true;
-                        Monitor.Pulse(channel);
+                        Monitor.Pulse(lck);
                     }
                 };
+                channel.Listen();
 
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-                    lock (channel)
+                    lock (lck)
                     {
                         if (!notified)
                         {
-                            Monitor.Wait(channel, 50);
+                            Monitor.Wait(lck, 100);
                         }
                         Assert.True(notified);
                     }
@@ -61,16 +59,25 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void NotifyReceivedMessage()
         {
-            using (var channel = new CommunicationServer("myChannel3"))
+            using (var channel = new CommunicationServer("NotifyMessage"))
             {
+                var receivedMsg = string.Empty;
+                var lck = new object();
                 channel.Listen();
-                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
+                channel.RaiseReceivedMessage += (o, e) =>
+                {
+                    lock (lck)
+                    {
+                        receivedMsg = e;
+                        Monitor.Pulse(lck);
+                    }
+                };
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
 
                     var message = "hello";
                     client.SendText(message);
-                    ExpectThisMessage(message);
+                    WaitForMessage(lck, ()=> receivedMsg, message);
                 }
             }
         }
@@ -78,20 +85,28 @@ namespace Stryker.Core.UnitTest.Coverage
         [Fact]
         public void SupportDuplex()
         {
-            using (var channel = new CommunicationServer("myChannel3"))
+            object serverLck = new object();
+            using (var channel = new CommunicationServer("Duplex"))
             {
                 CommunicationChannel session = null;
                 string response = string.Empty;
                 channel.RaiseNewClientEvent += (o, e) =>
                 {
-                    lock (channel)
+                    lock (serverLck)
                     {
                         session = e.Client;
-                        Monitor.Pulse(channel);
+                        Monitor.Pulse(serverLck);
                     }
                 };
                 channel.Listen();
-                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
+                channel.RaiseReceivedMessage += (o, msg) =>
+                {
+                    lock (serverLck)
+                    {
+                        response = msg;
+                        Monitor.Pulse(serverLck);
+                    }
+                };
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
                     client.RaiseReceivedMessage += (o, msg) =>
@@ -104,26 +119,21 @@ namespace Stryker.Core.UnitTest.Coverage
                     };
                     client.Start();
                     Assert.True(client.IsConnected);
-                    var message = "hello";
-                    client.SendText(message);
-                    ExpectThisMessage(message);
-                    lock (channel)
+                    lock (serverLck)
                     {
                         if (session == null)
                         {
-                            Monitor.Wait(10);
+                            Monitor.Wait(serverLck, 100);
                         }
                     }
                     Assert.NotNull(session);
-                    session.SendText("world");
-                    lock (client)
-                    {
-                        if (string.IsNullOrEmpty(response))
-                        {
-                            Monitor.Wait(client, 10);
-                        }
-                    }
-                    Assert.Equal("world", response);
+                    var message = "hello";
+                    client.SendText(message);
+                    WaitForMessage(serverLck, ()=>response, message);
+                    response = string.Empty;
+                    message = "world";
+                    session.SendText(message);
+                    WaitForMessage(client, ()=>response, message);
                 }
             }
         }
@@ -133,58 +143,73 @@ namespace Stryker.Core.UnitTest.Coverage
         {
             using (var channel = new CommunicationServer("myChannel4"))
             {
+                var lck = new object();
                 var notified = false;
-                channel.RaiseNewClientEvent+=(o, args) => notified = true;
+                channel.RaiseNewClientEvent+=(o, args) =>
+                {
+                    lock (lck)
+                    {
+                        notified = true;
+                        Monitor.Pulse(lck);
+                    }
+                };
                 channel.Listen();
-                using (var client = new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous))
-                    using(var otherClient= new NamedPipeClientStream(".", channel.PipeName, PipeDirection.InOut,
-                    PipeOptions.Asynchronous))
+                using (var client = CommunicationChannel.Client(channel.PipeName))
+                    using(var otherClient= CommunicationChannel.Client(channel.PipeName))
                 {
-                    client.Connect(5);
+                    var receivedMsg = string.Empty;
                     Assert.True(client.IsConnected);
-                    channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
-                    otherClient.Connect(5);
+                    lock (lck)
+                    {
+                        if (!notified)
+                        {
+                            Monitor.Wait(lck, 100);
+                            Assert.True(notified);
+                        }
+
+                        notified = false;
+                    }
+
+                    channel.RaiseReceivedMessage += (o, e) =>
+                    {
+                        lock (lck)
+                        {
+                            receivedMsg = e;
+                            Monitor.Pulse(lck);
+                        }
+                    };
                     var message = "hello";
-                    SendText(client, message);
+                    client.SendText(message);
 
-                    ExpectThisMessage(message);
+                    WaitForMessage(lck, ()=>receivedMsg, message);
+                    message = "world";
+                    otherClient.SendText(message);
+                    lock (lck)
+                    {
+                        if (receivedMsg != message)
+                        {
+                            Monitor.Wait(lck ,100);
+                        }
 
-                    SendText(client, "world");
-                    ExpectThisMessage("world");
+                        Assert.Equal(message, receivedMsg);
+                    }
                 }
-                Assert.True(notified);
             }
         }
 
-        private static void SendText(NamedPipeClientStream client, string message)
+        private static void WaitForMessage(object lck, Func<string> receiver, string message)
         {
-            var buffer = Encoding.Unicode.GetBytes(message);
-            client.Write(BitConverter.GetBytes(buffer.Length));
-            client.Write(buffer);
-        }
-
-        private void ExpectThisMessage(string message)
-        {
-            lock (lckMessage)
+            lock (lck)
             {
-                if (received != message)
+                if (receiver() != message)
                 {
-                    Monitor.Wait(lckMessage, 5);
+                    Monitor.Wait(lck, 100);
                 }
-            }
 
-            Assert.Equal(message, received);
-        }
-
-        private void Channel_RaiseReceivedMessage(object sender, string args)
-        {
-            lock (lckMessage)
-            {
-                received = args;
-                Monitor.Pulse(lckMessage);
+                Assert.Equal(message, receiver());
             }
         }
+
     }
 
 }

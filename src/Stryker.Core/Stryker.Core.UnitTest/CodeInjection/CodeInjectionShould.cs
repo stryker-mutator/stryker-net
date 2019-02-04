@@ -13,6 +13,8 @@ namespace Stryker.Core.UnitTest.CodeInjection
 {
     public class CodeInjectionShould
     {
+        // this lock must be taken to ensure tests are seralized, as MutantControl must be a static class (for injection in tested assembly)
+        private static object serializer = new object();
         [Fact]
         void CompileInAnEmptyProject()
         {
@@ -45,116 +47,137 @@ namespace Stryker.Core.UnitTest.CodeInjection
         [Fact]
         void IdentifyCoveredMutant()
         {
-            var activeMutation = Environment.GetEnvironmentVariable("ActiveMutation");
-            var pipeName = Environment.GetEnvironmentVariable(MutantControl.EnvironmentPipeName);
-            var lck = new object();
-
-            using (var server = new CommunicationServer("test"))
+            lock (serializer)
             {
-                var message = string.Empty;
-                server.Listen();
-                server.RaiseReceivedMessage += (sender, args) =>
+                var activeMutation = Environment.GetEnvironmentVariable("ActiveMutation");
+                var pipeName = Environment.GetEnvironmentVariable(MutantControl.EnvironmentPipeName);
+
+                if (!string.IsNullOrEmpty(activeMutation) || !string.IsNullOrEmpty(pipeName))
                 {
+                    // not reentrant
+                    return;
+                }
+
+                var lck = new object();
+
+                using (var server = new CommunicationServer("test"))
+                {
+                    var message = string.Empty;
+                    server.Listen();
+                    server.RaiseReceivedMessage += (sender, args) =>
+                    {
+                        lock (lck)
+                        {
+                            message = args;
+                            Monitor.Pulse(lck);
+                        }
+                    };
+                    Environment.SetEnvironmentVariable("ActiveMutation", "12");
+                    Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
+
+                    MutantControl.InitCoverage();
+                    Assert.True(MutantControl.IsActive(12));
+                    Assert.False(MutantControl.IsActive(11));
+                    MutantControl.DumpState();
                     lock (lck)
                     {
-                        message = args;
-                        Monitor.Pulse(lck);
+                        if (string.IsNullOrEmpty(message))
+                        {
+                            Monitor.Wait(lck, 100);
+                        }
                     }
-                };
-                Environment.SetEnvironmentVariable("ActiveMutation", "12");
-                Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
 
-                MutantControl.InitCoverage();
-                Assert.True(MutantControl.IsActive(12));
-                Assert.False(MutantControl.IsActive(11));
-                MutantControl.DumpState();
-                lock (lck)
-                {
-                    if (string.IsNullOrEmpty(message))
-                    {
-                        Monitor.Wait(lck, 20);
-                    }
+                    Assert.Equal("12,11", message);
+
                 }
-                Assert.Equal("12,11", message);
-                
-            }
 
-            Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
-            Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, pipeName);
-            MutantControl.InitCoverage();
+                Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
+                Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, pipeName);
+                MutantControl.InitCoverage();
+            }
         }
 
         [Fact]
         void IdentifyMutantsPerTest()
         {
-            var activeMutation = Environment.GetEnvironmentVariable("ActiveMutation");
-            var pipeName = Environment.GetEnvironmentVariable(MutantControl.EnvironmentPipeName);
-            var lck = new object();
-
-            using (var server = new CommunicationServer($"test{Process.GetCurrentProcess().Id}"))
+            lock (serializer)
             {
-                var message = string.Empty;
-                CommunicationChannel testProcess = null;
-                server.RaiseReceivedMessage += (sender, args) =>
+                var activeMutation = Environment.GetEnvironmentVariable("ActiveMutation");
+                var pipeName = Environment.GetEnvironmentVariable(MutantControl.EnvironmentPipeName);
+                if (!string.IsNullOrEmpty(activeMutation) || !string.IsNullOrEmpty(pipeName))
                 {
+                    // not reentrant
+                    return;
+                }
+
+                var lck = new object();
+
+                using (var server = new CommunicationServer("test"))
+                {
+                    string message = null;
+                    CommunicationChannel testProcess = null;
+                    server.RaiseReceivedMessage += (sender, args) =>
+                    {
+                        lock (lck)
+                        {
+                            message = args;
+                            Monitor.Pulse(lck);
+                        }
+                    };
+                    server.RaiseNewClientEvent += (o, args) =>
+                    {
+                        lock (lck)
+                        {
+                            testProcess = args.Client;
+                            Monitor.Pulse(lck);
+                        }
+                    };
+                    server.Listen();
+                    Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
+                    testProcess = null;
+                    MutantControl.InitCoverage();
                     lock (lck)
                     {
-                        message = args;
-                        Monitor.Pulse(lck);
+                        if (testProcess == null)
+                        {
+                            Monitor.Wait(lck, 40);
+                        }
                     }
-                };
-                server.RaiseNewClientEvent += (o, args) => {
+
+                    Assert.NotNull(testProcess);
+
+                    Assert.False(MutantControl.IsActive(12));
+                    testProcess.SendText("DUMP");
                     lock (lck)
                     {
-                        testProcess = args.Client;
-                        Monitor.Pulse(lck);
+                        if (string.IsNullOrEmpty(message))
+                        {
+                            Monitor.Wait(lck, 100);
+                        }
                     }
 
-                };
-                server.Listen();
-                Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
+                    Assert.NotNull(message);
+                    Assert.Equal("12", message);
+                    message = string.Empty;
+                    Assert.False(MutantControl.IsActive(11));
+                    MutantControl.DumpState();
+                    lock (lck)
+                    {
+                        if (string.IsNullOrEmpty(message))
+                        {
+                            Monitor.Wait(lck, 20);
+                        }
+                    }
 
+                    Assert.NotNull(message);
+                    Assert.Equal("11", message);
+
+                }
+
+                Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
+                Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, pipeName);
                 MutantControl.InitCoverage();
-                lock (lck)
-                {
-                    if (testProcess == null)
-                    {
-                        Monitor.Wait(lck, 20);
-                    }
-                }
-                Assert.NotNull(testProcess);
-
-                Assert.False(MutantControl.IsActive(12));
-                testProcess.SendText("DUMP");
-                lock (lck)
-                {
-                    if (string.IsNullOrEmpty(message))
-                    {
-                        Monitor.Wait(lck, 20);
-                    }
-                }
-                Assert.NotNull(message);
-                Assert.Equal("12", message);
-                message = string.Empty;
-                Assert.False(MutantControl.IsActive(11));
-                MutantControl.DumpState();
-                lock (lck)
-                {
-                    if (string.IsNullOrEmpty(message))
-                    {
-                        Monitor.Wait(lck, 20);
-                    }
-                }
-                Assert.NotNull(message);
-                Assert.Equal("11", message);
-                
             }
-
-            Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
-            Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, pipeName);
-            MutantControl.InitCoverage();
-
         }
-
     }
 }

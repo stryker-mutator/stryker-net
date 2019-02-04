@@ -29,35 +29,41 @@ namespace Stryker
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
             pipeName = Environment.GetEnvironmentVariable(EnvironmentPipeName);
             captureCoverage = !string.IsNullOrEmpty(pipeName);
-            if (captureCoverage && channel==null)
+            if (channel != null)
+            {
+                channel?.Dispose();
+                channel = null;
+            }
+            if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
                 channel = CommunicationChannel.Client(pipeName, 10);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
-
         }
 
         private static void Channel_RaiseReceivedMessage(object sender, string args)
         {
             if (args == "DUMP")
             {
-                DumpState();
+                var temp = _coveredMutants;
                 _coveredMutants = new HashSet<int>();
+                DumpState(temp);
             }
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            DumpState();
+            DumpState(_coveredMutants);
         }
 
-        public static void DumpState()
+        public static void DumpState(HashSet<int> state = null)
         {
             var report = new StringBuilder();
             var firstTime = true;
-            foreach (var coveredMutant in _coveredMutants)
+
+            foreach (var coveredMutant in state??_coveredMutants)
             {
                 if (firstTime)
                 {

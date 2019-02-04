@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.IO.Pipes;
 using System.Text;
 
@@ -65,7 +66,17 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 buffer = new byte[processingHeader ? 4 : BitConverter.ToInt32(buffer)];
                 cursor = 0;
             }
-            pipeStream.BeginRead(buffer, cursor, buffer.Length-cursor, WhenReceived, null);
+
+            try
+            {
+                pipeStream.BeginRead(buffer, cursor, buffer.Length-cursor, WhenReceived, null);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (IOException)
+            {
+            }
         }
 
         private void WhenReceived(IAsyncResult ar)
@@ -73,11 +84,18 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             try
             {
                 var read = pipeStream.EndRead(ar);
-                if (read == 0) return;
+                if (read == 0)
+                {
+                    return;
+                }
+
                 cursor += read;
                 Begin(cursor == buffer.Length);
             }
             catch (ObjectDisposedException)
+            {
+            }
+            catch (IOException)
             {
             }
         }
@@ -85,8 +103,17 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         public void SendText(string message)
         {
             var messageBytes = Encoding.Unicode.GetBytes(message);
-            pipeStream.Write(BitConverter.GetBytes(messageBytes.Length));
-            pipeStream.Write(messageBytes);
+            try
+            {
+                pipeStream.Write(BitConverter.GetBytes(messageBytes.Length));
+                pipeStream.Write(messageBytes);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (IOException)
+            {
+            }
         }
 
         public void Dispose()

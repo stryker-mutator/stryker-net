@@ -36,10 +36,10 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
         }
     }
 }");
-            var ifStatement = syntaxTree.GetRoot()
+            var ifStatement = syntaxTree
+                .GetRoot()
                 .DescendantNodes()
-                .Where(x => x is IfStatementSyntax)
-                .First();
+                .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
