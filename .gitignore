@@ -1,4 +1,3 @@
-
 # Created by https://www.gitignore.io/api/aspnetcore
 
 ### ASPNETCore ###
@@ -122,6 +121,7 @@ _TeamCity*
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
+**/*.ncrunchproject
 
 # MightyMoose
 *.mm.*
@@ -281,4 +281,4 @@ StrykerLogs/
 .vscode/
 
 *.ncrunchsolution
-*.orig
+**/*.orig
