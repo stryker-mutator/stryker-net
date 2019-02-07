@@ -1,3 +1,7 @@
+## [0.8.3](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.8.2...0.8.3) (2019-02-07)
+
+
+
 ## [0.8.2](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.8.1...0.8.2) (2019-01-28)
 
 
