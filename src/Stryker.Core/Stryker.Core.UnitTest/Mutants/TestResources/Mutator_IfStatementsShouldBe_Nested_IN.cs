@@ -26,7 +26,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                 };
             }
 
-            if (Out(out var test))
+            if (!Out(out var test))
             {
                 return i + 1;
             }

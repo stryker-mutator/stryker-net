@@ -95,7 +95,10 @@ namespace Stryker.Core.Mutants
                 }
                 if (currentNode is IfStatementSyntax ifStatement)
                 {
-                    ifStatement = ifStatement.ReplaceNode(ifStatement.Condition, MutateWithConditionalExpressions(ifStatement.Condition));
+                    if (!ifStatement.Condition.DescendantNodes().OfType<DeclarationExpressionSyntax>().Any())
+                    {
+                        ifStatement = ifStatement.ReplaceNode(ifStatement.Condition, MutateWithConditionalExpressions(ifStatement.Condition));
+                    }
                     if (ifStatement.Else != null)
                     {
                         ifStatement = ifStatement.ReplaceNode(ifStatement.Else, Mutate(ifStatement.Else));

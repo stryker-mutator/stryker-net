@@ -25,7 +25,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                     i = Stryker.ActiveMutationHelper.ActiveMutation == 3 ? i - 1 : i + 1;
                 };
             }
-            if (Out(out var test))
+            if (!Out(out var test))
             {
                 return Stryker.ActiveMutationHelper.ActiveMutation == 7 ? i - 1 : i + 1;
             }
