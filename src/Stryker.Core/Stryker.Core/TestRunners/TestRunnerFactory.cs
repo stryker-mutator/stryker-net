@@ -5,6 +5,7 @@ using Stryker.Core.Options;
 using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners.VsTest;
+using System.Runtime.InteropServices;
 
 namespace Stryker.Core.TestRunners
 {
@@ -21,6 +22,14 @@ namespace Stryker.Core.TestRunners
         {
             _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
             ITestRunner testRunner = null;
+
+            // TODO: Make vstest work for dotnet core on non-windows systems.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && options.TestRunner != TestRunner.DotnetTest)
+            {
+                _logger.LogWarning("Using testrunner {0} because OS is not windows. Stryker does not currently support vstest on non-windows OS.", TestRunner.DotnetTest.ToString());
+                return new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+            }
+
             switch (options.TestRunner)
             {
                 case TestRunner.DotnetTest:
