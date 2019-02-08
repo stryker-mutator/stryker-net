@@ -1,10 +1,10 @@
 ﻿using Stryker.Core.Options;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
 namespace Stryker.Core.ExecutableFinders
@@ -20,9 +20,31 @@ namespace Stryker.Core.ExecutableFinders
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public Dictionary<DotnetFramework, string> GetVsTestToolPaths()
+        public string GetCurrentPlatformVsTestToolPath()
         {
-            Dictionary<DotnetFramework, string> vsTestPaths = new Dictionary<DotnetFramework, string>();
+            var paths = GetVsTestToolPaths();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return paths[OSPlatform.Windows];
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return paths[OSPlatform.Linux];
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return paths[OSPlatform.OSX];
+            }
+            else
+            {
+                throw new PlatformNotSupportedException(
+                    $"The current OS is not any of the following supported: { OSPlatform.Windows.ToString() }, { OSPlatform.Linux.ToString() } or { OSPlatform.OSX.ToString() }");
+            }
+        }
+
+        public Dictionary<OSPlatform, string> GetVsTestToolPaths()
+        {
+            Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
             string versionString = "16.0.0-preview-20181205-02";
             string portablePackageName = "microsoft.testplatform.portable";
 
@@ -46,12 +68,13 @@ namespace Stryker.Core.ExecutableFinders
 
                 if (!dllFound && _fileSystem.File.Exists(dllPath))
                 {
-                    vsTestPaths.Add(DotnetFramework.Core, dllPath);
+                    vsTestPaths.Add(OSPlatform.Linux, dllPath);
+                    vsTestPaths.Add(OSPlatform.OSX, dllPath);
                     dllFound = true;
                 }
                 if (!exeFound && _fileSystem.File.Exists(exePath))
                 {
-                    vsTestPaths.Add(DotnetFramework.Full, exePath);
+                    vsTestPaths.Add(OSPlatform.Windows, exePath);
                     exeFound = true;
                 }
             }

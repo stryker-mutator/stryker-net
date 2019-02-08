@@ -20,7 +20,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private string _defaultRunSettings;
-        private DotnetFramework _runnerFramework;
         private int _timeoutMS = 0;
         private readonly VsTestHelper _vsTestHelper;
         private List<string> _messages = new List<string>();
@@ -42,9 +41,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
             var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
 
-            // Temporarily run full framework runner until core runner is fixed
-            _runnerFramework = DotnetFramework.Full;
-            var vsTestToolPath = _vsTestHelper.GetVsTestToolPaths()[_runnerFramework];
+            var vsTestToolPath = _vsTestHelper.GetCurrentPlatformVsTestToolPath();
             var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
 
             IVsTestConsoleWrapper consoleWrapper = null;
@@ -144,13 +141,11 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 case string s when s.Contains("netcoreapp"):
                     targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
-                    _runnerFramework = DotnetFramework.Core;
                     break;
                 case string s when s.Contains("netstandard"):
                     throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
                     targetFrameworkVersion = $".NETFramework = v{targetFrameworkVersion}";
-                    _runnerFramework = DotnetFramework.Full;
                     break;
             }
 
