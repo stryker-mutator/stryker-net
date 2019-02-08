@@ -3,6 +3,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
+using System;
 
 namespace Stryker.Core.Initialisation
 {
@@ -31,7 +32,17 @@ namespace Stryker.Core.Initialisation
                 // Build with MSBuild.exe
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
                 _logger.LogDebug("Located MSBuild.exe at: {0}", msBuildPath);
-                result = _processExecutor.Start(path, msBuildPath, "");
+
+                // MSBuild inside visualstudio 2017+ contains the restore task
+                if (msBuildPath.Contains("2017") || msBuildPath.Contains("2019"))
+                {
+                    result = _processExecutor.Start(path, msBuildPath, $"/restore");
+                } else
+                {
+                    // try to perform a nuget restore
+                    _processExecutor.Start(path, "nuget", "restore");
+                    result = _processExecutor.Start(path, msBuildPath, "");
+                }
             }
             else
             {
