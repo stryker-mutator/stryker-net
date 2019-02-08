@@ -59,8 +59,8 @@ namespace Stryker.Core.MutationTest
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, 
-                    path: file.FullPath, 
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
+                    path: file.FullPath,
                     options: new CSharpParseOptions(LanguageVersion.Latest));
 
                 if (!file.IsExcluded)
@@ -155,6 +155,8 @@ namespace Stryker.Core.MutationTest
 
                     _reporter.OnMutantTested(mutant);
                 });
+
+            _mutationTestExecutor.TestRunner.Dispose();
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());

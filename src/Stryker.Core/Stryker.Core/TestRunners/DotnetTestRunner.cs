@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Testing;
+﻿using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 using System.Collections.Generic;
-using Stryker.Core.Parsers;
 
 namespace Stryker.Core.TestRunners
 {
@@ -35,6 +35,10 @@ namespace Stryker.Core.TestRunners
                 ResultMessage = result.Output,
                 TotalNumberOfTests = _totalNumberOfTestsParser.ParseTotalNumberOfTests(result.Output)
             };
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

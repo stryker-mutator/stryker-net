@@ -15,14 +15,18 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public partial class VsTestRunner : ITestRunner
+    public class VsTestRunner : ITestRunner
     {
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
-        private string _defaultRunSettings;
-        private int _timeoutMS = 0;
+
+        private readonly IVsTestConsoleWrapper _vsTestConsole;
+
         private readonly VsTestHelper _vsTestHelper;
         private List<string> _messages = new List<string>();
+
+        private string _testAssemblies;
+        private IEnumerable<TestCase> _testCases;
 
         public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
@@ -30,34 +34,26 @@ namespace Stryker.Core.TestRunners.VsTest
             _projectInfo = projectInfo;
             _vsTestHelper = new VsTestHelper(options);
 
-            GenerateRunSettings();
+            _vsTestConsole = PrepareVsTestConsole();
+
+            InitializeVsTestConsole();
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            _timeoutMS = timeoutMS ?? 0;
-            GenerateRunSettings();
+            // Active Mutation ID is null on initial testrun
+            if (activeMutationId == null)
+            {
+                _testCases = DiscoverTests(new List<string>() { _testAssemblies }, _vsTestConsole, GenerateRunSettings(0));
+            }
 
-            var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
-            var testAssemblyPath = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
+            int timeout = timeoutMS ?? 0;
 
-            var vsTestToolPath = _vsTestHelper.GetCurrentPlatformVsTestToolPath();
-            var vsTestExtensionsPath = _vsTestHelper.GetDefaultVsTestExtensionsPath(vsTestToolPath);
-
-            IVsTestConsoleWrapper consoleWrapper = null;
-
-            consoleWrapper = new VsTestConsoleWrapper(vsTestToolPath, new ConsoleParameters { TraceLevel = DetermineTraceLevel(), LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt") });
-
-            consoleWrapper.StartSession();
-            consoleWrapper.InitializeExtensions(new List<string> { testBinariesPath, vsTestExtensionsPath });
-
-            var testCases = DiscoverTests(new List<string>() { testAssemblyPath }, consoleWrapper);
-
-            var testResults = RunAllTests(consoleWrapper, new List<string> { testAssemblyPath }, activeMutationId);
+            var testResults = RunAllTests(_vsTestConsole, new List<string> { _testAssemblies }, activeMutationId, GenerateRunSettings(timeout));
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
-            if (testResults.Count() < testCases.Count())
+            if (testResults.Count() < _testCases.Count())
             {
                 throw new OperationCanceledException();
             }
@@ -68,42 +64,41 @@ namespace Stryker.Core.TestRunners.VsTest
                 ResultMessage = string.Join(
                     Environment.NewLine,
                     testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                TotalNumberOfTests = testCases.Count()
+                TotalNumberOfTests = _testCases.Count()
             };
 
-            consoleWrapper.EndSession();
             return testResult;
         }
 
-        private IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper)
+        private IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper, string runSettings)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle, _messages);
-            consoleWrapper.DiscoverTests(sources, _defaultRunSettings, handler);
+            consoleWrapper.DiscoverTests(sources, runSettings, handler);
 
             waitHandle.WaitOne();
 
             return handler.DiscoveredTestCases;
         }
 
-        private IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases)
+        private IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases, string runSettings)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new RunEventHandler(waitHandle, _messages);
-            consoleWrapper.RunTests(testCases, _defaultRunSettings, handler);
+            consoleWrapper.RunTests(testCases, runSettings, handler);
 
             waitHandle.WaitOne();
             return handler.TestResults;
         }
 
-        IEnumerable<TestResult> RunAllTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources, int? activeMutationId)
+        private IEnumerable<TestResult> RunAllTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources, int? activeMutationId, string runSettings)
         {
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
             var handler = new RunEventHandler(runCompleteSignal, _messages);
             var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
 
-            consoleWrapper.RunTestsWithCustomTestHost(sources, _defaultRunSettings, handler, testHostLauncher);
+            consoleWrapper.RunTestsWithCustomTestHost(sources, runSettings, handler, testHostLauncher);
 
             // Test host exited signal comes after the run complete
             processExitedSignal.WaitOne();
@@ -132,7 +127,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        private void GenerateRunSettings()
+        private string GenerateRunSettings(int timeout)
         {
             string targetFramework = _projectInfo.TargetFramework;
 
@@ -149,13 +144,63 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _defaultRunSettings = $@"<RunSettings>
+            return $@"<RunSettings>
   <RunConfiguration>
     <MaxCpuCount>1</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-    <TestSessionTimeout>{_timeoutMS}</TestSessionTimeout>
+    <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
 </RunSettings>";
         }
+
+        private IVsTestConsoleWrapper PrepareVsTestConsole()
+        {
+            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
+            {
+                TraceLevel = DetermineTraceLevel(),
+                LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt")
+            });
+        }
+
+        private void InitializeVsTestConsole()
+        {
+            var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
+            _testAssemblies = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
+
+            _vsTestConsole.StartSession();
+            _vsTestConsole.InitializeExtensions(new List<string>
+            {
+                testBinariesPath,
+                _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
+            });
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _vsTestConsole.EndSession();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        ~VsTestRunner()
+        {
+            Dispose(true);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }
