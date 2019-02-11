@@ -152,7 +152,16 @@ namespace Stryker.Core.Options
                     ErrorMessage,
                     "Amount of maximum concurrent testrunners must be greater than zero.");
             }
-            return maxConcurrentTestRunners;
+
+            var logicalProcessorCount = Environment.ProcessorCount;
+            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
+
+            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            {
+                usableProcessorCount = maxConcurrentTestRunners;
+            }
+
+            return usableProcessorCount;
         }
 
         private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)

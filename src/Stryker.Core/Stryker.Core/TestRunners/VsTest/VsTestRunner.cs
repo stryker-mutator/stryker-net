@@ -17,6 +17,9 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
+        public bool Running { get; private set; }
+        private readonly object runLock = new object();
+
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
 
@@ -25,13 +28,14 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _vsTestHelper;
         private List<string> _messages = new List<string>();
 
-        private string _testAssemblies;
+        private IEnumerable<string> _sources;
         private IEnumerable<TestCase> _testCases;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, IEnumerable<TestCase> testCases)
         {
             _options = options;
             _projectInfo = projectInfo;
+            _testCases = testCases;
             _vsTestHelper = new VsTestHelper(options);
 
             _vsTestConsole = PrepareVsTestConsole();
@@ -41,64 +45,63 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            // Active Mutation ID is null on initial testrun
-            if (activeMutationId == null)
+            TestRunResult testResult = new TestRunResult() { Success = false };
+            lock (runLock)
             {
-                _testCases = DiscoverTests(new List<string>() { _testAssemblies }, _vsTestConsole, GenerateRunSettings(0));
+                Running = true;
+
+                var testResults = RunAllTests(activeMutationId, GenerateRunSettings(timeoutMS ?? 0));
+
+                // For now we need to throw an OperationCanceledException when a testrun has timed out. 
+                // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
+                if (testResults.Count() < _testCases.Count())
+                {
+                    throw new OperationCanceledException();
+                }
+
+                testResult = new TestRunResult
+                {
+                    Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
+                    ResultMessage = string.Join(
+                        Environment.NewLine,
+                        testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
+                    TotalNumberOfTests = _testCases.Count()
+                };
+
+                Running = false;
             }
-
-            int timeout = timeoutMS ?? 0;
-
-            var testResults = RunAllTests(_vsTestConsole, new List<string> { _testAssemblies }, activeMutationId, GenerateRunSettings(timeout));
-
-            // For now we need to throw an OperationCanceledException when a testrun has timed out. 
-            // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
-            if (testResults.Count() < _testCases.Count())
-            {
-                throw new OperationCanceledException();
-            }
-
-            var testResult = new TestRunResult
-            {
-                Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
-                ResultMessage = string.Join(
-                    Environment.NewLine,
-                    testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                TotalNumberOfTests = _testCases.Count()
-            };
-
             return testResult;
         }
 
-        private IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sources, IVsTestConsoleWrapper consoleWrapper, string runSettings)
+        public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle, _messages);
-            consoleWrapper.DiscoverTests(sources, runSettings, handler);
+            _vsTestConsole.DiscoverTests(_sources, runSettings ?? GenerateRunSettings(0), handler);
 
             waitHandle.WaitOne();
 
             return handler.DiscoveredTestCases;
         }
 
-        private IEnumerable<TestResult> RunSelectedTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<TestCase> testCases, string runSettings)
+        private IEnumerable<TestResult> RunSelectedTests(IEnumerable<TestCase> testCases, string runSettings)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new RunEventHandler(waitHandle, _messages);
-            consoleWrapper.RunTests(testCases, runSettings, handler);
+            _vsTestConsole.RunTests(testCases, runSettings, handler);
 
             waitHandle.WaitOne();
             return handler.TestResults;
         }
 
-        private IEnumerable<TestResult> RunAllTests(IVsTestConsoleWrapper consoleWrapper, IEnumerable<string> sources, int? activeMutationId, string runSettings)
+        private IEnumerable<TestResult> RunAllTests(int? activeMutationId, string runSettings)
         {
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
             var handler = new RunEventHandler(runCompleteSignal, _messages);
             var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
 
-            consoleWrapper.RunTestsWithCustomTestHost(sources, runSettings, handler, testHostLauncher);
+            _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
 
             // Test host exited signal comes after the run complete
             processExitedSignal.WaitOne();
@@ -165,7 +168,10 @@ namespace Stryker.Core.TestRunners.VsTest
         private void InitializeVsTestConsole()
         {
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
-            _testAssemblies = FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")));
+            _sources = new List<string>()
+            {
+                FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")))
+            };
 
             _vsTestConsole.StartSession();
             _vsTestConsole.InitializeExtensions(new List<string>
