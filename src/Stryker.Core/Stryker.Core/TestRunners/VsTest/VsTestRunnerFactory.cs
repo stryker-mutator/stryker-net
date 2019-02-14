@@ -19,7 +19,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 testCases = runner.DiscoverTests();
             }
 
-            for (var i = 0; i < options.MaxConcurrentTestrunners; i++)
+            for (var i = 0; i < options.ConcurrentTestrunners; i++)
             {
                 _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases));
             }

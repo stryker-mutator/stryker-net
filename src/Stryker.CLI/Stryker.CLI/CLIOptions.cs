@@ -99,7 +99,7 @@ namespace Stryker.CLI
                                                     - You're running on a shared server
                                                     - You are running stryker in the background while doing other work
                                 ",
-            DefaultValue = _defaultOptions.MaxConcurrentTestrunners,
+            DefaultValue = _defaultOptions.ConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
         };
 

@@ -27,7 +27,7 @@ namespace Stryker.Core.Options
 
         public IEnumerable<Mutator> ExcludedMutations { get; }
 
-        public int MaxConcurrentTestrunners { get; }
+        public int ConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; }
         public TestRunner TestRunner { get; }
@@ -55,7 +55,7 @@ namespace Stryker.Core.Options
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
             DevMode = devMode;
-            MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
+            ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
@@ -144,7 +144,7 @@ namespace Stryker.Core.Options
             }
         }
 
-        private int ValidateMaxConcurrentTestrunners(int maxConcurrentTestRunners)
+        private int ValidateConcurrentTestrunners(int maxConcurrentTestRunners)
         {
             if (maxConcurrentTestRunners < 1)
             {

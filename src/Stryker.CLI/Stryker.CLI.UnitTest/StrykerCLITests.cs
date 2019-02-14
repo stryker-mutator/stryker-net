@@ -221,7 +221,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--max-concurrent-test-runners")]
         [InlineData("-m")]
-        public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassMaxConcurrentTestrunnerToStryker(string argName)
+        public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
@@ -233,7 +233,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "4" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.MaxConcurrentTestrunners == 4)));
+                o.ConcurrentTestrunners <= 4)));
         }
 
         [Theory]
