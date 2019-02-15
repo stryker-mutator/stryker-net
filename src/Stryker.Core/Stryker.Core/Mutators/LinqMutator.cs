@@ -20,10 +20,6 @@ namespace Stryker.Core.Mutators
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
             {
-                { LinqExpression.Distinct, LinqExpression.None },
-                { LinqExpression.Reverse, LinqExpression.None },
-                { LinqExpression.OrderBy, LinqExpression.None },
-                { LinqExpression.OrderByDescending, LinqExpression.None },
                 { LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault },
                 { LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault },
                 { LinqExpression.First, LinqExpression.Last },
