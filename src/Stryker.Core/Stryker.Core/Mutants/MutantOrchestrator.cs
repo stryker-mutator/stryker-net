@@ -84,6 +84,10 @@ namespace Stryker.Core.Mutants
                         return MutateWithIfStatements(currentNode as ExpressionStatementSyntax);
                     }
                 }
+                if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
+                {
+                    return currentNode.ReplaceNode(lambda.Body, Mutate(lambda.Body));
+                }
                 // The mutations should be placed using a ConditionalExpression
                 return currentNode.ReplaceNode(expressionSyntax, MutateWithConditionalExpressions(expressionSyntax));
             }
@@ -207,6 +211,9 @@ namespace Stryker.Core.Mutants
                 case nameof(ExpressionStatementSyntax):
                     var expressionStatement = node as ExpressionStatementSyntax;
                     return expressionStatement.Expression;
+                case nameof(InvocationExpressionSyntax):
+                    var invocationExpression = node as InvocationExpressionSyntax;
+                    return invocationExpression.ArgumentList.Arguments.FirstOrDefault()?.Expression;
                 default:
                     return null;
             }
