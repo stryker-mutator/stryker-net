@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Mutators
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        private IEnumerable<MemberAccessExpressionSyntax> GenerateExpressions(string expression)
+        private MemberAccessExpressionSyntax GenerateExpressions(string expression)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
 using System;
@@ -34,18 +34,18 @@ namespace TestApplication
     {{
         static void Main(string[] args)
         {{
-            IEnumerable<string> Test = new[] {{""1"", ""2"", ""3"", ""4"", ""5""}};
+            IEnumerable<string> Test = new[] {{}};
 
-            Console.WriteLine(Test.{expression}());
+            Test.{expression}();
         }}
     }}
 }}");
-            var memberAccessExpressions = tree.GetRoot()
+            var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
                 .OfType<MemberAccessExpressionSyntax>()
-                .Where(x => x.Name.Identifier.ValueText.Equals(expression));
+                .Single();
 
-            return memberAccessExpressions;
+            return memberAccessExpression;
         }
 
         /// <summary>
@@ -68,38 +68,17 @@ namespace TestApplication
         [InlineData(LinqExpression.Max, LinqExpression.Min)]
         [InlineData(LinqExpression.Sum, LinqExpression.Count)]
         [InlineData(LinqExpression.Count, LinqExpression.Sum)]
-        [InlineData(LinqExpression.Distinct, LinqExpression.None)]
-        [InlineData(LinqExpression.OrderBy, LinqExpression.None)]
-        [InlineData(LinqExpression.OrderByDescending, LinqExpression.None)]
-        [InlineData(LinqExpression.Reverse, LinqExpression.None)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();
 
-            var expressions = GenerateExpressions(original.ToString());
+            var expression = GenerateExpressions(original.ToString());
 
-            foreach (var expression in expressions)
-            {
-                var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression).ToList();
 
-                result.ShouldHaveSingleItem();
-
-                var first = result.First();
-
-                first.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
-
-                var replacement = first.ReplacementNode as MemberAccessExpressionSyntax;
-                var identifier = replacement.Name.Identifier;
-
-                if (expected.Equals(LinqExpression.None))
-                {
-                    string.IsNullOrEmpty(identifier.ValueText).ShouldBeTrue();
-                }
-                else
-                {
-                    identifier.ValueText.ShouldBe(expected.ToString());
-                }
-            }
+            var mutation = result.ShouldHaveSingleItem();
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
+            replacement.Name.Identifier.ValueText.ShouldBe(expected.ToString());
         }
 
         /// <summary>
@@ -116,7 +95,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            var result = target.ApplyMutations(GenerateExpressions(methodName).First());
+            var result = target.ApplyMutations(GenerateExpressions(methodName));
 
             result.ShouldBeEmpty();
         }
