@@ -63,7 +63,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                     RaiseReceivedMessage?.Invoke(this, Encoding.Unicode.GetString(buffer));
                 }
                 processingHeader = !processingHeader;
-                buffer = new byte[processingHeader ? 4 : BitConverter.ToInt32(buffer)];
+                buffer = new byte[processingHeader ? 4 : BitConverter.ToInt32(buffer,0)];
                 cursor = 0;
             }
 
@@ -105,8 +105,8 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             var messageBytes = Encoding.Unicode.GetBytes(message);
             try
             {
-                pipeStream.Write(BitConverter.GetBytes(messageBytes.Length));
-                pipeStream.Write(messageBytes);
+                pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
+                pipeStream.Write(messageBytes, 0 , messageBytes.Length);
             }
             catch (ObjectDisposedException)
             {

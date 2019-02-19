@@ -4,6 +4,7 @@
     {
         NotRun,
         Killed,
+        Untouched,
         Survived,
         Timeout,
         CompileError,

@@ -175,7 +175,7 @@ namespace Stryker.Core.MutationTest
             var count = 0;
             foreach (var mutant in nonTested)
             {
-                mutant.ResultStatus = MutantStatus.Survived;
+                mutant.ResultStatus = MutantStatus.Untouched;
                 if (first)
                 {
                     first = false;
@@ -194,7 +194,7 @@ namespace Stryker.Core.MutationTest
             }
             else
             {
-                _logger.LogInformation($"{count} mutants are not tested and can't be killed ({report})!");
+                _logger.LogInformation("{0} mutants got status {1}", count, MutantStatus.Untouched.ToString());
             }
         }
     }

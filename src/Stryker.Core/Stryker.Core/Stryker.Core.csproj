@@ -19,6 +19,9 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Stryker.Core.v3.ncrunchproject" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
