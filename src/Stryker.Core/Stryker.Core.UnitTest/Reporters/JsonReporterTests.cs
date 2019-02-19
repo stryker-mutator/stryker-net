@@ -151,7 +151,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reportObject.ThresholdBreak.ShouldBe(0);
 
             ValidateJsonReportComponent(reportObject, folder, "warning");
-            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
+            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "good", 1);
             ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
         }
 
@@ -159,7 +159,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             jsonComponent.Health.ShouldBe(health);
             jsonComponent.PossibleMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
-            jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore());
+            jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore() ?? 0);
             jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count());
             jsonComponent.SurvivedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count());
             jsonComponent.SkippedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count());

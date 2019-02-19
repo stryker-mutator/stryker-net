@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,6 +16,7 @@ namespace Stryker.Core.Reporters.Json
             public string Language { get; set; }
             public string Health { get; set; }
             public string Source { get; set; }
+            public decimal MutationScore { get; set; }
             public Dictionary<string, decimal> Totals { get; } = new Dictionary<string, decimal>();
 
             // All possible mutations we found including those skipped by the user but not including compile errors
@@ -191,26 +191,6 @@ namespace Stryker.Core.Reporters.Json
                 }
             }
 
-            [JsonIgnore]
-            public decimal? MutationScore
-            {
-                get
-                {
-                    if (!Totals.ContainsKey("MutationScore"))
-                    {
-                        return null;
-                    }
-                    return Totals["MutationScore"];
-                }
-                set
-                {
-                    if (!(value is null))
-                    {
-                        Totals["MutationScore"] = (decimal)value;
-                    }
-                }
-            }
-
             public IList<JsonMutant> Mutants { get; set; }
 
             public IList<JsonReportComponent> ChildResults { get; set; }
@@ -228,13 +208,13 @@ namespace Stryker.Core.Reporters.Json
                     SkippedMutants = Where(MutantStatus.Skipped),
                     TimeoutMutants = Where(MutantStatus.Timeout),
                     CompileErrors = Where(MutantStatus.BuildError),
-                    MutationScore = component.GetMutationScore(),
+                    MutationScore = component.GetMutationScore() ?? 0,
                 };
                 report.PossibleMutants = report.TotalMutants + report.SkippedMutants;
 
                 if (report.MutationScore >= options.ThresholdOptions.ThresholdHigh)
                 {
-                    report.Health = "ok";
+                    report.Health = "good";
                 }
                 else if (report.MutationScore <= options.ThresholdOptions.ThresholdBreak)
                 {
