@@ -150,15 +150,15 @@ namespace Stryker.Core.UnitTest.Reporters
             reportObject.ThresholdLow.ShouldBe(60);
             reportObject.ThresholdBreak.ShouldBe(0);
 
-            ValidateJsonReportComponent(reportObject, folder, "warning");
-            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "good", 1);
-            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
+            ValidateJsonReportComponent(reportObject, folder, "Warning");
+            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "Good", 1);
+            ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "Danger", 1);
         }
 
         private void ValidateJsonReportComponent(JsonReporter.JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
         {
             jsonComponent.Health.ShouldBe(health);
-            jsonComponent.PossibleMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
+            jsonComponent.ValidMutations.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
             jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore() ?? 0);
             jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count());
             jsonComponent.SurvivedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count());
@@ -190,9 +190,9 @@ namespace Stryker.Core.UnitTest.Reporters
                     var location = fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.SyntaxTree.GetLineSpan(fileComponent.Mutants.ToArray()[i].Mutation.OriginalNode.FullSpan);
 
                     jsonComponent.Mutants[i].Location.Start.Line.ShouldBe(location.StartLinePosition.Line + 1);
-                    jsonComponent.Mutants[i].Location.Start.Column.ShouldBe(location.StartLinePosition.Character);
+                    jsonComponent.Mutants[i].Location.Start.Column.ShouldBe(location.StartLinePosition.Character + 1);
                     jsonComponent.Mutants[i].Location.End.Line.ShouldBe(location.EndLinePosition.Line + 1);
-                    jsonComponent.Mutants[i].Location.End.Column.ShouldBe(location.EndLinePosition.Character);
+                    jsonComponent.Mutants[i].Location.End.Column.ShouldBe(location.EndLinePosition.Character + 1);
                     jsonComponent.Mutants[i].Status.ShouldBe(fileComponent.Mutants.ToArray()[i].ResultStatus.ToString());
                 }
             }

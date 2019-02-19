@@ -21,29 +21,29 @@ namespace Stryker.Core.Reporters.Json
 
             // All possible mutations we found including those skipped by the user but not including compile errors
             [JsonIgnore]
-            public int PossibleMutants
+            public int ValidMutations
             {
                 get
                 {
-                    return (int)Totals["PossibleMutants"];
+                    return (int)Totals["Valid Mutations"];
                 }
                 set
                 {
-                    Totals["PossibleMutants"] = value;
+                    Totals["Valid Mutations"] = value;
                 }
             }
 
             // All mutants that were caught by a test
             [JsonIgnore]
-            public int DetectedMutants
+            public int DetectedMutations
             {
                 get
                 {
-                    return (int)Totals["DetectedMutants"];
+                    return (int)Totals["Killed + Timeout"];
                 }
                 set
                 {
-                    Totals["DetectedMutants"] = value;
+                    Totals["Killed + Timeout"] = value;
                 }
             }
 
@@ -53,11 +53,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["TotalMutants"];
+                    return (int)Totals["Tested"];
                 }
                 set
                 {
-                    Totals["TotalMutants"] = value;
+                    Totals["Tested"] = value;
                 }
             }
 
@@ -67,11 +67,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["KilledMutants"];
+                    return (int)Totals["Killed"];
                 }
                 set
                 {
-                    Totals["KilledMutants"] = value;
+                    Totals["Killed"] = value;
                 }
             }
 
@@ -81,11 +81,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["SurvivedMutants"];
+                    return (int)Totals["Survived"];
                 }
                 set
                 {
-                    Totals["SurvivedMutants"] = value;
+                    Totals["Survived"] = value;
                 }
             }
 
@@ -95,11 +95,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["SkippedMutants"];
+                    return (int)Totals["Skipped"];
                 }
                 set
                 {
-                    Totals["SkippedMutants"] = value;
+                    Totals["Skipped"] = value;
                 }
             }
 
@@ -109,11 +109,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["TimeoutMutants"];
+                    return (int)Totals["Timeout"];
                 }
                 set
                 {
-                    Totals["TimeoutMutants"] = value;
+                    Totals["Timeout"] = value;
                 }
             }
 
@@ -123,11 +123,11 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    return (int)Totals["CompileErrors"];
+                    return (int)Totals["Compile Error"];
                 }
                 set
                 {
-                    Totals["CompileErrors"] = value;
+                    Totals["Compile Error"] = value;
                 }
             }
 
@@ -136,17 +136,17 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    if (!Totals.ContainsKey("ThresholdHigh"))
+                    if (!Totals.ContainsKey("Good %"))
                     {
                         return null;
                     }
-                    return (int)Totals["ThresholdHigh"];
+                    return (int)Totals["Good %"];
                 }
                 set
                 {
                     if (!(value is null))
                     {
-                        Totals["ThresholdHigh"] = (int)value;
+                        Totals["Good %"] = (int)value;
                     }
                 }
             }
@@ -156,17 +156,17 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    if (!Totals.ContainsKey("ThresholdLow"))
+                    if (!Totals.ContainsKey("Warning %"))
                     {
                         return null;
                     }
-                    return (int)Totals["ThresholdLow"];
+                    return (int)Totals["Warning %"];
                 }
                 set
                 {
                     if (!(value is null))
                     {
-                        Totals["ThresholdLow"] = (int)value;
+                        Totals["Warning %"] = (int)value;
                     }
                 }
             }
@@ -176,17 +176,17 @@ namespace Stryker.Core.Reporters.Json
             {
                 get
                 {
-                    if (!Totals.ContainsKey("ThresholdBreak"))
+                    if (!Totals.ContainsKey("Error %"))
                     {
                         return null;
                     }
-                    return (int)Totals["ThresholdBreak"];
+                    return (int)Totals["Error %"];
                 }
                 set
                 {
                     if (!(value is null))
                     {
-                        Totals["ThresholdBreak"] = (int)value;
+                        Totals["Error %"] = (int)value;
                     }
                 }
             }
@@ -201,7 +201,7 @@ namespace Stryker.Core.Reporters.Json
 
                 var report = new JsonReportComponent
                 {
-                    DetectedMutants = component.DetectedMutants.Count(),
+                    DetectedMutations = component.DetectedMutants.Count(),
                     TotalMutants = component.TotalMutants.Count(),
                     KilledMutants = Where(MutantStatus.Killed),
                     SurvivedMutants = Where(MutantStatus.Survived),
@@ -210,19 +210,19 @@ namespace Stryker.Core.Reporters.Json
                     CompileErrors = Where(MutantStatus.BuildError),
                     MutationScore = component.GetMutationScore() ?? 0,
                 };
-                report.PossibleMutants = report.TotalMutants + report.SkippedMutants;
+                report.ValidMutations = report.TotalMutants + report.SkippedMutants;
 
                 if (report.MutationScore >= options.ThresholdOptions.ThresholdHigh)
                 {
-                    report.Health = "good";
+                    report.Health = "Good";
                 }
                 else if (report.MutationScore <= options.ThresholdOptions.ThresholdBreak)
                 {
-                    report.Health = "danger";
+                    report.Health = "Danger";
                 }
                 else
                 {
-                    report.Health = "warning";
+                    report.Health = "Warning";
                 }
 
                 if (component is FolderComposite folderComponent)
@@ -279,12 +279,12 @@ namespace Stryker.Core.Reporters.Json
                         Start = new JsonMutantLocationPoint
                         {
                             Line = location.StartLinePosition.Line + 1,
-                            Column = location.StartLinePosition.Character
+                            Column = location.StartLinePosition.Character + 1
                         };
                         End = new JsonMutantLocationPoint
                         {
                             Line = location.EndLinePosition.Line + 1,
-                            Column = location.EndLinePosition.Character
+                            Column = location.EndLinePosition.Character + 1
                         };
                     }
 
