@@ -207,7 +207,7 @@ namespace Stryker.Core.Reporters.Json
                     SurvivedMutants = Where(MutantStatus.Survived),
                     SkippedMutants = Where(MutantStatus.Skipped),
                     TimeoutMutants = Where(MutantStatus.Timeout),
-                    CompileErrors = Where(MutantStatus.BuildError),
+                    CompileErrors = Where(MutantStatus.CompileError),
                     MutationScore = component.GetMutationScore() ?? 0,
                 };
                 report.ValidMutations = report.TotalMutants + report.SkippedMutants;

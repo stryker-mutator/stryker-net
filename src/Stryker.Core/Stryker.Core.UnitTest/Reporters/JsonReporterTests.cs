@@ -158,9 +158,9 @@ namespace Stryker.Core.UnitTest.Reporters
         private void ValidateJsonReportComponent(JsonReporter.JsonReportComponent jsonComponent, IReadOnlyInputComponent inputComponent, string health, int mutants = 0)
         {
             jsonComponent.Health.ShouldBe(health);
-            jsonComponent.ValidMutations.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.BuildError).Count());
+            jsonComponent.ValidMutations.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.CompileError).Count());
             jsonComponent.MutationScore.ShouldBe(inputComponent.GetMutationScore() ?? 0);
-            jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.BuildError).Count());
+            jsonComponent.CompileErrors.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.CompileError).Count());
             jsonComponent.SurvivedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Survived).Count());
             jsonComponent.SkippedMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Skipped).Count());
             jsonComponent.TimeoutMutants.ShouldBe(inputComponent.ReadOnlyMutants.Where(m => m.ResultStatus == MutantStatus.Timeout).Count());
