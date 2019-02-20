@@ -69,26 +69,42 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            if (GetExpressionSyntax(currentNode) is var expressionSyntax && expressionSyntax != null)
+            var expressions = GetExpressionSyntax(currentNode).Where(x => x != null);
+            if (expressions.Any())
             {
-                if (currentNode is ExpressionStatementSyntax)
+                var currentNodeCopy = currentNode.TrackNodes(expressions);
+                foreach (var expressionSyntax in expressions)
                 {
-                    if (GetExpressionSyntax(expressionSyntax) is var subExpressionSyntax && subExpressionSyntax != null)
+                    var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
+                    if (currentNode is ExpressionStatementSyntax expressionStatement)
                     {
-                        // The expression of a ExpressionStatement cannot be mutated directly
-                        return currentNode.ReplaceNode(expressionSyntax, Mutate(expressionSyntax));
+                        if (GetExpressionSyntax(expressionStatement) is var subExpressionSyntax && subExpressionSyntax != null)
+                        {
+                            // The expression of a ExpressionStatement cannot be mutated directly
+                            return currentNodeCopy.ReplaceNode(currentExpressionSyntax, Mutate(currentExpressionSyntax));
+                        }
+                        else
+                        {
+                            // If the EpxressionStatement does not contain a expression that can be mutated with conditional expression...
+                            // it should be mutated with if statements
+                            return MutateWithIfStatements(currentNode as ExpressionStatementSyntax);
+                        }
+                    }
+                    else if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
+                    {
+                        return currentNode.ReplaceNode(lambda.Body, Mutate(lambda.Body));
                     } else
                     {
-                        // If the EpxressionStatement does not contain a expression that can be mutated with conditional expression...
-                        // it should be mutated with if statements
-                        return MutateWithIfStatements(currentNode as ExpressionStatementSyntax);
+                        // The mutations should be placed using a ConditionalExpression
+                        currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, MutateWithConditionalExpressions(currentExpressionSyntax));
                     }
                 }
-                // The mutations should be placed using a ConditionalExpression
-                return currentNode.ReplaceNode(expressionSyntax, MutateWithConditionalExpressions(expressionSyntax));
+                return currentNodeCopy;
             }
-            else if (currentNode is StatementSyntax statement && currentNode.Kind() != SyntaxKind.Block)
+
+            if (currentNode is StatementSyntax statement && currentNode.Kind() != SyntaxKind.Block)
             {
+                // Expression kinds that contain a body and can't have their scope changed should be mutated recursively
                 if (currentNode is LocalFunctionStatementSyntax localFunction)
                 {
                     return localFunction.ReplaceNode(localFunction.Body, Mutate(localFunction.Body));
@@ -191,27 +207,40 @@ namespace Stryker.Core.Mutants
             return mutatedNode;
         }
 
-        private ExpressionSyntax GetExpressionSyntax(SyntaxNode node)
+        private IEnumerable<ExpressionSyntax> GetExpressionSyntax(SyntaxNode node)
         {
             switch (node.GetType().Name)
             {
                 case nameof(LocalDeclarationStatementSyntax):
                     var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
-                    return localDeclarationStatement.Declaration.Variables.First().Initializer?.Value;
+                    foreach(var expression in localDeclarationStatement.Declaration.Variables.Select(x => x.Initializer?.Value))
+                    {
+                        yield return expression;
+                    }
+                    yield break;
                 case nameof(AssignmentExpressionSyntax):
                     var assignmentExpression = node as AssignmentExpressionSyntax;
-                    return assignmentExpression.Right;
+                    yield return assignmentExpression.Right;
+                    yield break;
                 case nameof(ReturnStatementSyntax):
                     var returnStatement = node as ReturnStatementSyntax;
-                    return returnStatement.Expression;
+                    yield return returnStatement.Expression;
+                    yield break;
                 case nameof(LocalFunctionStatementSyntax):
                     var localFunction = node as LocalFunctionStatementSyntax;
-                    return localFunction.ExpressionBody?.Expression;
+                    yield return localFunction.ExpressionBody?.Expression;
+                    yield break;
                 case nameof(ExpressionStatementSyntax):
                     var expressionStatement = node as ExpressionStatementSyntax;
-                    return expressionStatement.Expression;
-                default:
-                    return null;
+                    yield return expressionStatement.Expression;
+                    yield break;
+                case nameof(InvocationExpressionSyntax):
+                    var invocationExpression = node as InvocationExpressionSyntax;
+                    foreach(var expression in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
+                    {
+                        yield return expression;
+                    }
+                    yield break;
             }
         }
     }
