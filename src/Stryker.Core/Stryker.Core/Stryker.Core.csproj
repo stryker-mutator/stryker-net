@@ -22,6 +22,8 @@
     <Compile Remove="Mutants\ActiveMutationHelper.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Reporters\HtmlReporter\index.html" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\mutation-test-elements.js" />
     <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

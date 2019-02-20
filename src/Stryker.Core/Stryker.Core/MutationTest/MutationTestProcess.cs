@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
@@ -52,15 +51,17 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate(StrykerOptions options)
         {
-            var mutatedSyntaxTrees = new Collection<SyntaxTree>();
-            // add helper
-            mutatedSyntaxTrees.Add(MutantPlacer.ActiveMutantSelectorHelper);
+            var mutatedSyntaxTrees = new Collection<SyntaxTree>
+            {
+                // add helper
+                MutantPlacer.ActiveMutantSelectorHelper
+            };
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, 
-                    path: file.FullPath, 
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
+                    path: file.FullPath,
                     options: new CSharpParseOptions(LanguageVersion.Latest));
 
                 if (!file.IsExcluded)

@@ -1,14 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -30,7 +27,7 @@ namespace Stryker.Core.Reporters.Json
             jsonReport.ThresholdLow = _options.ThresholdOptions.ThresholdLow;
             jsonReport.ThresholdBreak = _options.ThresholdOptions.ThresholdBreak;
 
-            WriteReportToJsonFile(jsonReport, Path.Combine(_options.BasePath, "StrykerOutput", "reports", "mutation-report.json"));
+            WriteReportToJsonFile(jsonReport, Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
         }
 
         private void WriteReportToJsonFile(JsonReportComponent jsonReport, string filePath)
@@ -45,51 +42,10 @@ namespace Stryker.Core.Reporters.Json
                 NullValueHandling = NullValueHandling.Ignore
             });
 
-            filePath = GenerateUniqueReportFilePath(filePath);
-
             using (var file = _fileSystem.File.CreateText(filePath))
             {
                 file.WriteLine(json);
             }
-        }
-
-        private string GenerateUniqueReportFilePath(string requestedFilePath)
-        {
-            string date = DateTime.Today.ToString("yyyy-MM-dd");
-
-            string directory = Path.GetDirectoryName(requestedFilePath);
-            string fileName = Path.GetFileNameWithoutExtension(requestedFilePath);
-            string fileExtension = Path.GetExtension(requestedFilePath);
-            string fileNameWithDate = fileName + "-" + date;
-            string filePathWithDate = Path.Combine(directory, fileNameWithDate);
-
-            string generatedFilePath = filePathWithDate;
-
-            _fileSystem.Directory.CreateDirectory(directory);
-            if (_fileSystem.File.Exists(filePathWithDate + fileExtension))
-            {
-                if (_fileSystem.Directory.EnumerateFiles(directory)
-                    .Where(fn => fn.Contains(fileNameWithDate + "-")) is var matchingFiles
-                    && matchingFiles.Any())
-                {
-                    var sequenceNumber = matchingFiles.Select(f =>
-                    {
-                        string fn = Path.GetFileNameWithoutExtension(f);
-                        int index = fn.LastIndexOf("-") + 1;
-
-                        return int.Parse(fn.Substring(index));
-                    }).Max();
-
-                    string generatedFileName = fileNameWithDate + "-0" + (sequenceNumber + 1);
-                    generatedFilePath = Path.Combine(directory, generatedFileName);
-                }
-                else
-                {
-                    generatedFilePath = Path.Combine(directory, fileNameWithDate + "-01");
-                }
-            }
-
-            return generatedFilePath + fileExtension;
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)

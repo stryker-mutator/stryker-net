@@ -4,19 +4,16 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-using System;
 using System.IO;
-using Microsoft.Extensions.Logging;
-using System.Threading;
+using System.IO.Abstractions;
+using System.Linq;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
+        public string OutputPath { get; }
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -35,7 +32,13 @@ namespace Stryker.Core.Options
         public ThresholdOptions ThresholdOptions { get; }
 
         public IEnumerable<string> FilesToExclude { get; }
-        public StrykerOptions(string basePath = "",
+
+        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
+        private readonly IFileSystem _fileSystem;
+
+        public StrykerOptions(
+            IFileSystem fileSystem = null,
+            string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 30000,
@@ -49,16 +52,28 @@ namespace Stryker.Core.Options
             int thresholdBreak = 0,
             string[] filesToExclude = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
+
+            var outputPath = ValidateOutputPath(basePath);
             BasePath = basePath;
+            OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
-            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
+            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
+        }
+
+        private string ValidateOutputPath(string basePath)
+        {
+            var outputPath = Path.Combine(BasePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH:mm:ss"));
+            _fileSystem.Directory.CreateDirectory(OutputPath);
+
+            return outputPath;
         }
 
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)

@@ -39,19 +39,19 @@ namespace Stryker.CLI
             }
 
             return new StrykerOptions(
-                basePath,
-                GetOption(reporter.Value(), CLIOptions.Reporters),
-                GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
-                GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
-                GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
-                GetOption(logLevel.Value(), CLIOptions.LogLevel),
-                GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
-                GetOption(devMode.HasValue(), CLIOptions.DevMode),
-                GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
-                GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
-                GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
-                GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
-                GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
+                basePath: basePath,
+                reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
+                projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
+                additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
+                excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
+                logLevel: GetOption(logLevel.Value(), CLIOptions.LogLevel),
+                logToFile: GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
+                devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
+                maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
+                thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
+                thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
+                thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
+                filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
@@ -97,7 +97,8 @@ namespace Stryker.CLI
                     // Convert value to desired type
                     return (T)Convert.ChangeType(value, typeof(T));
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new StrykerInputException("A value passed to an option was not valid.", $@"The option {option.ArgumentName} with value {value} is not valid.
 Hint:
