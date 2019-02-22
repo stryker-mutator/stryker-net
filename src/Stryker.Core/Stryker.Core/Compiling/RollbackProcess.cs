@@ -140,7 +140,8 @@ namespace Stryker.Core.Compiling
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
                 if (mutationIf == null)
                 {
-                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}.", brokenMutation, diagnostic.GetMessage());
+                    var errorLocation = diagnostic.Location.GetMappedLineSpan();
+                    _logger.LogError($"Unable to rollback mutation for node {brokenMutation} with error: {diagnostic.GetMessage()} (at {errorLocation.Path}, line: {errorLocation.StartLinePosition.Line}, col: {errorLocation.StartLinePosition.Character}).");
                     if (devMode)
                     {
                         _logger.LogCritical("Stryker.Net will stop (due to dev-mode option sets to true)");
