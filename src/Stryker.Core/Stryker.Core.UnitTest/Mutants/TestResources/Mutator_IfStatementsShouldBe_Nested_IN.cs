@@ -30,6 +30,11 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             {
                 return i + 1;
             }
+
+            if (i is int x)
+            {
+                return x + 1;
+            }
         }
 
         private bool Out(out string test)
