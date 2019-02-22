@@ -95,7 +95,7 @@ namespace Stryker.Core.Mutants
                 }
                 if (currentNode is IfStatementSyntax ifStatement)
                 {
-                    if (!ifStatement.Condition.DescendantNodes().OfType<DeclarationExpressionSyntax>().Any())
+                    if (!ifStatement.Condition.DescendantNodes().Any(x => x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern)))
                     {
                         ifStatement = ifStatement.ReplaceNode(ifStatement.Condition, MutateWithConditionalExpressions(ifStatement.Condition));
                     }
