@@ -28,6 +28,12 @@ When Stryker finds two or more project references inside your test project, it n
 
 The name will be matched to the full path. You won't have to pass the full path, as long as the name is unique for the found references.
 
+### Specify testrunner
+Stryker supports dotnet test and vstest as testrunners. Dotnet test is currently the default because it has been more thoroughly tested, but vstest offers us more tight integration with the testrunner itself. Vstest will also be the only runner supported when mutating a dotnet full framework project as dotnet test is unable to run these tests.
+To use the experimental vstest testrunner pass the following option to stryker:
+
+`dotnet stryker --test-runner vstest`
+
 #### Specify extra timeout time
 Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker generates timeouts after some time. Using this parameter you can increase or decrease the time before a timeout will be thrown.
 
@@ -137,6 +143,7 @@ Example:
 {
     "stryker-config":
     {
+        "test-runner": "vstest",
         "reporters": [
             "ConsoleProgressBar",
             "ConsoleReport"
