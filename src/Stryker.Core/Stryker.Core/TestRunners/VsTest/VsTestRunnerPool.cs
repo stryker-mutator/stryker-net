@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunnerFactory : ITestRunner
+    public class VsTestRunnerPool : ITestRunner
     {
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
 
-        public VsTestRunnerFactory(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
             IEnumerable<TestCase> testCases;
 

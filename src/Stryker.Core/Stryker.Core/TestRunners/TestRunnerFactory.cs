@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners
                     testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
                 case TestRunner.VsTest:
-                    testRunner = new VsTestRunnerFactory(options, projectInfo);
+                    testRunner = new VsTestRunnerPool(options, projectInfo);
                     break;
                 default:
                     testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
