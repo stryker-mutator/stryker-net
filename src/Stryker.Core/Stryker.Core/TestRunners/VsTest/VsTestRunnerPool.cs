@@ -4,11 +4,13 @@ using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
+        private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
 
         public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
@@ -28,22 +30,30 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            TestRunResult result = null;
-            while (result is null)
-            {
-                if (_availableRunners.TryTake(out var runner))
-                {
-                    result = runner.RunAll(timeoutMS, activeMutationId);
-                }
-                else
-                {
-                    continue;
-                }
+            var runner = TakeRunner();
 
-                _availableRunners.Add(runner);
-            }
+            TestRunResult result = runner.RunAll(timeoutMS, activeMutationId);
+
+            ReturnRunner(runner);
 
             return result;
+        }
+
+        private VsTestRunner TakeRunner()
+        {
+            VsTestRunner runner;
+            while (!_availableRunners.TryTake(out runner))
+            {
+                _runnerAvailableHandler.WaitOne();
+            }
+
+            return runner;
+        }
+
+        private void ReturnRunner(VsTestRunner runner)
+        {
+            _availableRunners.Add(runner);
+            _runnerAvailableHandler.Set();
         }
 
         public void Dispose()
@@ -52,6 +62,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 runner.Dispose();
             }
+            _runnerAvailableHandler.Dispose();
         }
     }
 }
