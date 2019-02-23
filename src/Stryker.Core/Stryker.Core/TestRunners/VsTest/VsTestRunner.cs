@@ -149,7 +149,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             return $@"<RunSettings>
   <RunConfiguration>
-    <MaxCpuCount>1</MaxCpuCount>
+    <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
