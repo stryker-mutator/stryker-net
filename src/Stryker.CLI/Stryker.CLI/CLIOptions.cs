@@ -1,4 +1,8 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.CLI
@@ -19,8 +23,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | Options [{Reporter.All}, ['{string.Join("', '", _defaultOptions.Reporters)}'] (default), {Reporter.ConsoleProgressDots}, {Reporter.Json}]
-                                                This argument takes a json array as a value. Example: ['{Reporter.ConsoleProgressDots}', '{Reporter.Json}']",
+            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters.First(), (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType())) }]
+                                                This argument takes a json array as a value. Example: ['{ Reporter.ConsoleProgressDots }', '{ Reporter.Json }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
@@ -95,7 +99,7 @@ namespace Stryker.CLI
                                                     - You're running on a shared server
                                                     - You are running stryker in the background while doing other work
                                 ",
-            DefaultValue = _defaultOptions.MaxConcurrentTestrunners,
+            DefaultValue = _defaultOptions.ConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
         };
 
@@ -134,5 +138,19 @@ namespace Stryker.CLI
             DefaultValue = null,
             JsonKey = "files-to-exclude"
         };
+
+        public static readonly CLIOption<string> TestRunner = new CLIOption<string>
+        {
+            ArgumentName = "--test-runner",
+            ArgumentShortName = "-tr",
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
+            DefaultValue = _defaultOptions.TestRunner.ToString(),
+            JsonKey = "test-runner"
+        };
+
+        private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
+        {
+            return $"Options[{@default.ToString()} (default), {string.Join(",", options.Where(o => o.ToString() != @default.ToString()))}]";
+        }
     }
 }

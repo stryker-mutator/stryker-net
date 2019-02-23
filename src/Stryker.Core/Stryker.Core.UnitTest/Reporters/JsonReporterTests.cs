@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var folder = new FolderComposite() { Name = "RootFolder" };
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OriginalNode = originalNode,
                 ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
                 DisplayName = "This name should display",
-                Type = MutatorType.Arithmetic
+                Type = Mutator.Arithmetic
             };
 
             var folder = new FolderComposite() { Name = "RootFolder" };

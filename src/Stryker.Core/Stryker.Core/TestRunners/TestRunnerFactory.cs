@@ -1,7 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
+using Stryker.Core.TestRunners.VsTest;
+using System.Runtime.InteropServices;
 
 namespace Stryker.Core.TestRunners
 {
@@ -14,20 +18,31 @@ namespace Stryker.Core.TestRunners
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(string type, string path)
+        public ITestRunner Create(StrykerOptions options, ProjectInfo projectInfo)
         {
-            _logger.LogDebug("Factory is creating testrunner for asked type {0}", type);
+            _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
             ITestRunner testRunner = null;
-            switch (type)
+
+            // TODO: Make vstest work for dotnet core on non-windows systems.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && options.TestRunner != TestRunner.DotnetTest)
             {
-                case("dotnet test"):
-                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                _logger.LogWarning("Using testrunner {0} because OS is not windows. Stryker does not currently support vstest on non-windows OS.", TestRunner.DotnetTest.ToString());
+                return new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+            }
+
+            switch (options.TestRunner)
+            {
+                case TestRunner.DotnetTest:
+                    testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    break;
+                case TestRunner.VsTest:
+                    testRunner = new VsTestRunnerPool(options, projectInfo);
                     break;
                 default:
-                    testRunner = new DotnetTestRunner(path, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    testRunner = new DotnetTestRunner(projectInfo.TestProjectPath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", testRunner.GetType().Name);
+            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
             return testRunner;
         }
     }
