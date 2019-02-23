@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
-namespace Stryker.Core.ExecutableFinders
+namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
@@ -22,24 +22,20 @@ namespace Stryker.Core.ExecutableFinders
 
         public string GetCurrentPlatformVsTestToolPath()
         {
-            var paths = GetVsTestToolPaths();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            foreach (var path in GetVsTestToolPaths())
             {
-                return paths[OSPlatform.Windows];
+                if (RuntimeInformation.IsOSPlatform(path.Key))
+                {
+                    return path.Value;
+                }
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return paths[OSPlatform.Linux];
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return paths[OSPlatform.OSX];
-            }
-            else
-            {
-                throw new PlatformNotSupportedException(
-                    $"The current OS is not any of the following supported: { OSPlatform.Windows.ToString() }, { OSPlatform.Linux.ToString() } or { OSPlatform.OSX.ToString() }");
-            }
+
+            throw new PlatformNotSupportedException(
+                $"The current OS is not any of the following supported: " +
+                $"{ OSPlatform.Windows.ToString() }, " +
+                $"{ OSPlatform.Linux.ToString() } " +
+                $"or " +
+                $"{ OSPlatform.OSX.ToString() }");
         }
 
         public Dictionary<OSPlatform, string> GetVsTestToolPaths()

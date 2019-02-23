@@ -2,7 +2,7 @@
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
-using Stryker.Core.ExecutableFinders;
+using Stryker.Core.ToolHelpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System;
@@ -26,7 +26,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestConsoleWrapper _vsTestConsole;
 
         private readonly VsTestHelper _vsTestHelper;
-        private List<string> _messages = new List<string>();
+        private readonly List<string> _messages = new List<string>();
 
 
         private readonly int? _testCasesDiscovered;
