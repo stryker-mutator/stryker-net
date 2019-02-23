@@ -3,6 +3,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -21,7 +22,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             for (var i = 0; i < options.ConcurrentTestrunners; i++)
             {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases));
+                _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases.Count()));
             }
         }
 

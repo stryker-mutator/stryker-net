@@ -28,14 +28,15 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _vsTestHelper;
         private List<string> _messages = new List<string>();
 
-        private IEnumerable<string> _sources;
-        private IEnumerable<TestCase> _testCases;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, IEnumerable<TestCase> testCases)
+        private readonly int? _testCasesDiscovered;
+        private IEnumerable<string> _sources;
+
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, int? testCasesDiscovered)
         {
             _options = options;
             _projectInfo = projectInfo;
-            _testCases = testCases;
+            _testCasesDiscovered = testCasesDiscovered;
             _vsTestHelper = new VsTestHelper(options);
 
             _vsTestConsole = PrepareVsTestConsole();
@@ -45,6 +46,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
+            if (_testCasesDiscovered is null)
+            {
+                throw new Exception("_testCasesDiscovered cannot be null when running tests");
+            }
+
             TestRunResult testResult = new TestRunResult() { Success = false };
             lock (runLock)
             {
@@ -54,7 +60,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 // For now we need to throw an OperationCanceledException when a testrun has timed out. 
                 // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
-                if (testResults.Count() < _testCases.Count())
+                if (testResults.Count() < _testCasesDiscovered.Value)
                 {
                     throw new OperationCanceledException();
                 }
@@ -65,7 +71,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     ResultMessage = string.Join(
                         Environment.NewLine,
                         testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                    TotalNumberOfTests = _testCases.Count()
+                    TotalNumberOfTests = _testCasesDiscovered.Value
                 };
 
                 Running = false;
