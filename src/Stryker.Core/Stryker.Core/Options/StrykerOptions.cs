@@ -2,6 +2,8 @@
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,11 +27,12 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; }
 
-        public IEnumerable<MutatorType> ExcludedMutations { get; }
+        public IEnumerable<Mutator> ExcludedMutations { get; }
 
-        public int MaxConcurrentTestrunners { get; }
+        public int ConcurrentTestrunners { get; }
 
         public ThresholdOptions ThresholdOptions { get; }
+        public TestRunner TestRunner { get; }
 
         public IEnumerable<string> FilesToExclude { get; }
 
@@ -50,7 +53,8 @@ namespace Stryker.Core.Options
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
-            string[] filesToExclude = null)
+            string[] filesToExclude = null,
+            string testRunner = "dotnettest")
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -63,9 +67,10 @@ namespace Stryker.Core.Options
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
-            MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
+            ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
+            TestRunner = ValidateTestRunner(testRunner);
         }
 
         private string ValidateOutputPath(string basePath)
@@ -109,7 +114,7 @@ namespace Stryker.Core.Options
             yield break;
         }
 
-        private IEnumerable<MutatorType> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExludedMutations(IEnumerable<string> excludedMutations)
         {
             if (excludedMutations == null)
             {
@@ -117,22 +122,22 @@ namespace Stryker.Core.Options
             }
 
             // Get all mutatorTypes and their descriptions
-            Dictionary<MutatorType, string> typeDescriptions = Enum.GetValues(typeof(MutatorType))
-                .Cast<MutatorType>()
+            Dictionary<Mutator, string> typeDescriptions = Enum.GetValues(typeof(Mutator))
+                .Cast<Mutator>()
                 .ToDictionary(x => x, x => x.GetDescription());
 
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.FirstOrDefault(x => x.Value.ToString().ToLower()
-                    .Contains(excludedMutation.ToLower())).Key
-                    is var foundMutator)
+                if (typeDescriptions.FirstOrDefault(
+                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()))
+                    .Key is var foundMutator)
                 {
                     yield return foundMutator;
                 }
                 else
                 {
-                    throw new StrykerInputException($"Invalid excluded mutation '{excludedMutation}'", $"The excluded mutations options are [{String.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException(ErrorMessage, $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
@@ -155,11 +160,11 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect log level {(levelText)}. The log level options are [Error, Warning, Info, Debug, Trace]");
+                        $"Incorrect log level {levelText}. The log level options are [Error, Warning, Info, Debug, Trace]");
             }
         }
 
-        private int ValidateMaxConcurrentTestrunners(int maxConcurrentTestRunners)
+        private int ValidateConcurrentTestrunners(int maxConcurrentTestRunners)
         {
             if (maxConcurrentTestRunners < 1)
             {
@@ -167,7 +172,16 @@ namespace Stryker.Core.Options
                     ErrorMessage,
                     "Amount of maximum concurrent testrunners must be greater than zero.");
             }
-            return maxConcurrentTestRunners;
+
+            var logicalProcessorCount = Environment.ProcessorCount;
+            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
+
+            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            {
+                usableProcessorCount = maxConcurrentTestRunners;
+            }
+
+            return usableProcessorCount;
         }
 
         private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
@@ -198,6 +212,18 @@ namespace Stryker.Core.Options
                 // The logger is not yet available here. The paths will be validated in the InputFileResolver
                 var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
                 yield return platformFilePath;
+            }
+        }
+
+        private TestRunner ValidateTestRunner(string testRunner)
+        {
+            if (Enum.TryParse(testRunner, true, out TestRunner result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
             }
         }
     }

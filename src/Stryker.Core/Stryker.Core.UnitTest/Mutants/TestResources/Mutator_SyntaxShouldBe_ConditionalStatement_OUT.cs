@@ -14,6 +14,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             int b = Stryker.ActiveMutationHelper.ActiveMutation == 3 ? a += 1 - 2 : Stryker.ActiveMutationHelper.ActiveMutation == 2 ? a -= 1 + 2 : a += 1 + 2;
             var (one, two) = Stryker.ActiveMutationHelper.ActiveMutation == 4 ? (1 - 1, "") : (1 + 1, "");
             int Add(int x, int y) => Stryker.ActiveMutationHelper.ActiveMutation == 5 ? x - y : x + y;
+            Action act = () => Console.WriteLine(Stryker.ActiveMutationHelper.ActiveMutation == 6 ? 1 - 1 : 1 + 1, Stryker.ActiveMutationHelper.ActiveMutation == 7 ? 1 - 1 : 1 + 1);
         }
     }
 }

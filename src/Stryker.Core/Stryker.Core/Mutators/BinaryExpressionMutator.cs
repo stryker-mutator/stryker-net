@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class BinaryExpressionMutator : Mutator<BinaryExpressionSyntax>, IMutator
+    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
     {
         private Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate { get; set; }
 
@@ -50,20 +50,20 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private MutatorType GetMutatorType(SyntaxKind kind)
+        private Mutator GetMutatorType(SyntaxKind kind)
         {
             string kindString = kind.ToString();
             if (kindString.StartsWith("Logical"))
             {
-                return MutatorType.Logical;
+                return Mutator.Logical;
             } else if (kindString.Contains("Equals") 
                 || kindString.Contains("Greater") 
                 || kindString.Contains("Less"))
             {
-                return MutatorType.Equality;
+                return Mutator.Equality;
             } else
             {
-                return MutatorType.Arithmetic;
+                return Mutator.Arithmetic;
             }
         }
     }
