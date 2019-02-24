@@ -26,17 +26,17 @@ namespace Stryker.Core.Reporters.Html
             // First generate json using json reporter
             _jsonReporter.OnAllMutantsTested(reportComponent);
 
-            foreach (var path in new Dictionary<string, string>
+            foreach (var fileName in new Dictionary<string, string>
             {
-                { "index.html", "Reporters.HtmlReporter.index.html" },
-                { "mutation-test-elements.js", "Reporters.HtmlReporter.mutation-test-elements.js" }
+                { "index.html", "Stryker.Core.Reporters.HtmlReporter.index.html" },
+                { "mutation-test-elements.js", "Stryker.Core.Reporters.HtmlReporter.mutation-test-elements.js" }
             })
             {
-                using (var stream = typeof(HtmlReporter).Assembly.GetManifestResourceStream(path.Value))
+                using (var stream = typeof(HtmlReporter).Assembly.GetManifestResourceStream(fileName.Value))
                 {
                     using (var reader = new StreamReader(stream))
                     {
-                        var filePath = Path.Combine(_options.OutputPath, "reports", path.Key);
+                        var filePath = Path.Combine(_options.OutputPath, "reports", fileName.Key);
                         using (var file = _fileSystem.File.CreateText(filePath))
                         {
                             file.WriteLine(reader.ReadToEnd());
