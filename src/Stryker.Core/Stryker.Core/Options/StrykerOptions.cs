@@ -75,8 +75,13 @@ namespace Stryker.Core.Options
 
         private string ValidateOutputPath(string basePath)
         {
-            var outputPath = Path.Combine(BasePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH:mm:ss"));
-            _fileSystem.Directory.CreateDirectory(OutputPath);
+            if (string.IsNullOrWhiteSpace(basePath))
+            {
+                return "";
+            }
+
+            var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+            _fileSystem.Directory.CreateDirectory(FilePathUtils.ConvertPathSeparators(outputPath));
 
             return outputPath;
         }
