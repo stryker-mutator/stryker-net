@@ -53,13 +53,11 @@ namespace Stryker.Core.Reporters
             var mutantKilledLogger = consoleOneLineLoggerFactory.Create();
             var mutantSurvivedLogger = consoleOneLineLoggerFactory.Create();
             var mutantTimeoutLogger = consoleOneLineLoggerFactory.Create();
-            var mutantRuntimeErrorLogger = consoleOneLineLoggerFactory.Create();
 
             var mutantsResultReporter = new MutantsResultReporter(
                 mutantKilledLogger,
                 mutantSurvivedLogger,
-                mutantTimeoutLogger,
-                mutantRuntimeErrorLogger);
+                mutantTimeoutLogger);
 
             return new ProgressReporter(mutantsResultReporter, progressBarReporter);
         }
