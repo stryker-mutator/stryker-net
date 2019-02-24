@@ -53,7 +53,7 @@ namespace Stryker.CLI
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
-                GetOption(testRunner.Value(), CLIOptions.TestRunner));
+                testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
