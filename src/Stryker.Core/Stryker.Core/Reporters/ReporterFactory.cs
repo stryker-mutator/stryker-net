@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters
 
         private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
-            if (enabledReporters.Contains(Reporter.All) is var all || enabledReporters.Contains(Reporter.Html))
+            if (enabledReporters.Contains(Reporter.All) is var all && all || enabledReporters.Contains(Reporter.Html))
             {
                 // Json and Html reporters should never be enabled at the same time
                 possibleReporters.Remove(Reporter.Json);
