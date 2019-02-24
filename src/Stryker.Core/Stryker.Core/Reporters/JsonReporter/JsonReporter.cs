@@ -39,6 +39,7 @@ namespace Stryker.Core.Reporters.Json
                 NullValueHandling = NullValueHandling.Ignore
             });
 
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using (var file = _fileSystem.File.CreateText(filePath))
             {
                 file.WriteLine(json);
