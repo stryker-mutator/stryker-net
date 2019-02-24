@@ -17,12 +17,12 @@ namespace Stryker.Core.Reporters.Json
                 Start = new JsonMutantLocationPoint
                 {
                     Line = location.StartLinePosition.Line + 1,
-                    Column = location.StartLinePosition.Character
+                    Column = location.StartLinePosition.Character + 1
                 };
                 End = new JsonMutantLocationPoint
                 {
                     Line = location.EndLinePosition.Line + 1,
-                    Column = location.EndLinePosition.Character
+                    Column = location.EndLinePosition.Character + 1
                 };
             }
 
