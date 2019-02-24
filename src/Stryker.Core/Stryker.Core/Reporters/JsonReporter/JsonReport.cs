@@ -8,7 +8,7 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; set; }
+        public string SchemaVersion { get; } = "0.0.6";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
         public IDictionary<string, JsonReportComponent> Files { get; } = new Dictionary<string, JsonReportComponent>();
 
@@ -16,8 +16,12 @@ namespace Stryker.Core.Reporters.Json
         private readonly StrykerOptions _options;
         public JsonReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
-            Merge(Files, GenerateReportComponents(mutationReport));
             _options = options;
+
+            Thresholds.Add("high", _options.ThresholdOptions.ThresholdHigh);
+            Thresholds.Add("low", _options.ThresholdOptions.ThresholdLow);
+
+            Merge(Files, GenerateReportComponents(mutationReport));
         }
 
         private IDictionary<string, JsonReportComponent> GenerateReportComponents(IReadOnlyInputComponent component)
@@ -53,7 +57,7 @@ namespace Stryker.Core.Reporters.Json
                 Health = CheckHealth(fileComponent)
             };
 
-            return new Dictionary<string, JsonReportComponent> { { fileComponent.Name, reportComponent } };
+            return new Dictionary<string, JsonReportComponent> { { fileComponent.RelativePath, reportComponent } };
         }
 
         private string CheckHealth(FileLeaf file)
