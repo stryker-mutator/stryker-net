@@ -1,3 +1,4 @@
+using ExampleProject.Math;
 using Xunit;
 
 namespace ExampleProject.XUnit

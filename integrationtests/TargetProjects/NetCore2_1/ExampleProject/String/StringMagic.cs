@@ -1,13 +1,14 @@
-﻿namespace ExampleProject
+﻿namespace ExampleProject.String
 {
     public class StringMagic
     {
         public string AddTwoStrings(string first, string second)
         {
-            if(first.Length > 2)
+            if (first.Length > 2)
             {
                 return first + second;
-            } else
+            }
+            else
             {
                 return second + first;
             }

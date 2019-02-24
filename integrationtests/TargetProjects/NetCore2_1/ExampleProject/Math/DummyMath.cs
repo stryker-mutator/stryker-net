@@ -1,4 +1,4 @@
-﻿namespace ExampleProject
+﻿namespace ExampleProject.Math
 {
     public class DummyMath
     {
