@@ -20,17 +20,14 @@ namespace Stryker.Core.Reporters.Json
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyInputComponent mutationReport)
         {
-            var jsonReport = JsonReportComponent.FromProjectComponent(reportComponent, _options);
-            jsonReport.ThresholdHigh = _options.ThresholdOptions.ThresholdHigh;
-            jsonReport.ThresholdLow = _options.ThresholdOptions.ThresholdLow;
-            jsonReport.ThresholdBreak = _options.ThresholdOptions.ThresholdBreak;
+            var jsonReport = new JsonReport(_options, mutationReport);
 
             WriteReportToJsonFile(jsonReport, Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
         }
 
-        private void WriteReportToJsonFile(JsonReportComponent jsonReport, string filePath)
+        private void WriteReportToJsonFile(JsonReport jsonReport, string filePath)
         {
             var json = JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
             {

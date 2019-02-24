@@ -45,10 +45,9 @@ namespace Stryker.Core
             stopwatch.Start();
 
             // Create output dir with gitignore
-            string strykerOutputDirectory = Path.Combine(options.BasePath, "StrykerOutput");
-            _fileSystem.Directory.CreateDirectory(strykerOutputDirectory);
-            _fileSystem.File.Create(Path.Combine(strykerOutputDirectory, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(strykerOutputDirectory, ".gitignore")))
+            _fileSystem.Directory.CreateDirectory(options.OutputPath);
+            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
+            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
             {
                 file.WriteLine("*");
             }
