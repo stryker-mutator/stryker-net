@@ -134,5 +134,14 @@ namespace Stryker.CLI
             DefaultValue = null,
             JsonKey = "files-to-exclude"
         };
+
+        public static readonly CLIOption<string> SolutionPath = new CLIOption<string>
+        {
+            ArgumentName = "--solution-path",
+            ArgumentShortName = "-s <path>",
+            ArgumentDescription = "Path to the solution file. The file is used to build the project and resolve dependencies. Path can be relative from test project or full path.",
+            DefaultValue = null,
+            JsonKey = "solution-path"
+        };
     }
 }

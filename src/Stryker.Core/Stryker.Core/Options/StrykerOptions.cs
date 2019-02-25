@@ -12,6 +12,7 @@ namespace Stryker.Core.Options
     {
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         public string BasePath { get; }
+        public string SolutionPath { get; set; }
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -42,7 +43,8 @@ namespace Stryker.Core.Options
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
-            string[] filesToExclude = null)
+            string[] filesToExclude = null,
+            string solutionPath = null)
         {
             BasePath = basePath;
             Reporters = ValidateReporters(reporters);
@@ -54,6 +56,7 @@ namespace Stryker.Core.Options
             MaxConcurrentTestrunners = ValidateMaxConcurrentTestrunners(maxConcurrentTestRunners);
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
+            SolutionPath = solutionPath;
         }
 
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)

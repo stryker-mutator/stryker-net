@@ -29,6 +29,9 @@ namespace Stryker.Core.Initialisation
             ProcessResult result = null;
             if (fullFramework)
             {
+                // start with a nuget restore
+                var nugetResult = _processExecutor.Start(@"C:/Dev/ExampleProjects/FullFrameworkApp", "powershell.exe", "nuget restore");
+
                 // Build with MSBuild.exe
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
                 _logger.LogDebug("Located MSBuild.exe at: {0}", msBuildPath);

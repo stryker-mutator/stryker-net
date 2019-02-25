@@ -27,7 +27,8 @@ namespace Stryker.CLI
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
             CommandOption thresholdBreak,
-            CommandOption filesToExclude)
+            CommandOption filesToExclude,
+            CommandOption solutionPath)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -51,7 +52,8 @@ namespace Stryker.CLI
                 GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
-                GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
+                GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
+                GetOption(solutionPath.Value(), CLIOptions.SolutionPath));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
