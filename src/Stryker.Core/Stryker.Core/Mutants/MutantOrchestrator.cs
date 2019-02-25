@@ -69,7 +69,7 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            var expressions = GetExpressionSyntax(currentNode).Where(x => x != null);
+            var expressions = GetExpressionSyntax(currentNode).Where(x => x != null).ToList();
             if (expressions.Any())
             {
                 var currentNodeCopy = currentNode.TrackNodes(expressions);
@@ -234,12 +234,9 @@ namespace Stryker.Core.Mutants
                     var expressionStatement = node as ExpressionStatementSyntax;
                     yield return expressionStatement.Expression;
                     yield break;
-                case nameof(InvocationExpressionSyntax):
-                    var invocationExpression = node as InvocationExpressionSyntax;
-                    foreach(var expression in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
-                    {
-                        yield return expression;
-                    }
+                case nameof(ArgumentSyntax):
+                    var argument = node as ArgumentSyntax;
+                    yield return argument.Expression;
                     yield break;
             }
         }
