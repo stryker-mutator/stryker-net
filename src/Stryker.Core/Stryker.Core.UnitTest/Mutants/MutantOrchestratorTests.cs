@@ -42,6 +42,18 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
+        [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs")]
+        public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile)
+        {
+            string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
+            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile);
+            var target = new MutantOrchestrator();
+            var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+        }
+
+        [Theory]
         [InlineData("Mutator_TwoMutationsInOneStatmentShouldBeMade.cs", 2)]
         [InlineData("Mutator_NoMutationsShouldBeMade.cs", 0)]
         public void Mutator_NumberOfMutationsShouldBeCorrect(string inputFile, int numberOfMutations)
