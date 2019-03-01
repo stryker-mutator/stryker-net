@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()))
                 .Returns(new TestRunResult { Success = true }); // testrun is successful
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
                 .Returns(new ProjectInfo
                 {
                     TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.Initialize(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>()));
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
                 new ProjectInfo
                 {
                     TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
@@ -109,7 +109,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var exception = Assert.Throws<StrykerInputException>(() => target.Initialize(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
         }
