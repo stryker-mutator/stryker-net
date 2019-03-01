@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
                 options.FilesToExclude.ToList());
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
+            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
             
             // resolve assembly references
             var assemblyReferences = _assemblyReferenceResolver

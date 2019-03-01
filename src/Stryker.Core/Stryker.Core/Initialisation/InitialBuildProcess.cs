@@ -3,13 +3,13 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
+using System.IO;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string projectName);
+        void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName);
     }
     
     public class InitialBuildProcess : IInitialBuildProcess
@@ -23,32 +23,45 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string path, string projectName)
+        public void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName)
         {
-            _logger.LogInformation("Starting initial build using {0}", fullFramework ? "msbuild" : "dotnet build");
+            _logger.LogInformation("Starting initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
             ProcessResult result = null;
             if (fullFramework)
             {
-                // start with a nuget restore
-                var nugetResult = _processExecutor.Start(@"C:/Dev/ExampleProjects/FullFrameworkApp", "powershell.exe", "nuget restore");
+                if (string.IsNullOrWhiteSpace(solutionPath))
+                {
+                    throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution ...");
+                }
+                solutionPath = Path.GetFullPath(solutionPath);
+                string solutionDir = Path.GetDirectoryName(solutionPath);
 
-                // Build with MSBuild.exe
+                // Validate nuget.exe is installed and included in path
+                var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
+                if (!nugetWhereExeResult.Output.Contains("nuget.exe"))
+                {
+                    throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
+                }
+
+                // Restore packages using nuget.exe
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, "powershell.exe", $"nuget restore {solutionPath}");
+                if (nugetRestoreResult.ExitCode != 0)
+                {
+                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
+                }
+
+                // Build project with MSBuild.exe
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
                 _logger.LogDebug("Located MSBuild.exe at: {0}", msBuildPath);
 
-                // MSBuild inside visualstudio 2017+ contains the restore task
-                if (msBuildPath.Contains("2017") || msBuildPath.Contains("2019"))
-                {
-                    result = _processExecutor.Start(path, msBuildPath, $"/restore");
-                } else
-                {
-                    // try to perform a nuget restore
-                    _processExecutor.Start(path, "nuget", "restore");
-                    result = _processExecutor.Start(path, msBuildPath, "");
-                }
+                result = _processExecutor.Start(solutionDir, msBuildPath, solutionPath);
             }
             else
             {
+                if (!string.IsNullOrWhiteSpace(solutionPath))
+                {
+                    _logger.LogWarning("Stryker is running on a .net core project but a solution path was provided. The solution path option is only needed on .net framework projects and can be removed. Please update your stryker options.");
+                }
                 // Build with dotnet build
                 result = _processExecutor.Start(path, "dotnet", $"build {projectName}");
             }

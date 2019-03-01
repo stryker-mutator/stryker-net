@@ -11,26 +11,22 @@ namespace Stryker.Core.Options
     public class StrykerOptions
     {
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
+
         public string BasePath { get; }
         public string SolutionPath { get; set; }
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
-
         /// <summary>
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
-
         public int AdditionalTimeoutMS { get; }
-
         public IEnumerable<MutatorType> ExcludedMutations { get; }
-
         public int MaxConcurrentTestrunners { get; }
-
         public ThresholdOptions ThresholdOptions { get; }
-
         public IEnumerable<string> FilesToExclude { get; }
+
         public StrykerOptions(string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
