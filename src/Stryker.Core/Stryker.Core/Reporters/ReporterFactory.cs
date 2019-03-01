@@ -16,29 +16,21 @@ namespace Stryker.Core.Reporters
 
         private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
         {
-            var jsonReporter = new JsonReporter(options);
-            var htmlReporter = new HtmlReporter(options, jsonReporter);
             return new Dictionary<Reporter, IReporter>
             {
                 { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
                 { Reporter.ConsoleProgressBar, CreateProgressReporter() },
                 { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
-                { Reporter.Json, jsonReporter },
-                { Reporter.Html, htmlReporter }
+                { Reporter.Json, new JsonReporter(options) },
+                { Reporter.Html, new HtmlReporter(options) }
             };
         }
 
         private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
-            if (enabledReporters.Contains(Reporter.All) is var all && all || enabledReporters.Contains(Reporter.Html))
+            if (enabledReporters.Contains(Reporter.All))
             {
-                // Json and Html reporters should never be enabled at the same time
-                possibleReporters.Remove(Reporter.Json);
-
-                if (all)
-                {
-                    return possibleReporters.Values;
-                }
+                return possibleReporters.Values;
             }
 
             return possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))

@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Stryker.Core.Initialisation.ProjectComponent;
+﻿using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
@@ -20,29 +18,19 @@ namespace Stryker.Core.Reporters.Json
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent mutationReport)
+        public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
         {
-            var jsonReport = new JsonReport(_options, mutationReport);
+            var mutationReport = MutationReport.Build(_options, mutationTree);
 
-            WriteReportToJsonFile(jsonReport, Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
+            WriteReportToJsonFile(mutationReport.ToJson(), Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
         }
 
-        private void WriteReportToJsonFile(JsonReport jsonReport, string filePath)
+        private void WriteReportToJsonFile(string mutationReport, string filePath)
         {
-            var json = JsonConvert.SerializeObject(jsonReport, new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy()
-                },
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
-            });
-
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using (var file = _fileSystem.File.CreateText(filePath))
             {
-                file.WriteLine(json);
+                file.WriteLine(mutationReport);
             }
         }
 

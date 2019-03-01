@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class JsonReport
+    public class MutationReport
     {
         public string SchemaVersion { get; } = "0.0.6";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
@@ -14,7 +15,10 @@ namespace Stryker.Core.Reporters.Json
 
         [JsonIgnore]
         private readonly StrykerOptions _options;
-        public JsonReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        [JsonIgnore]
+        private static MutationReport _report = null;
+
+        private MutationReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
             _options = options;
 
@@ -22,6 +26,28 @@ namespace Stryker.Core.Reporters.Json
             Thresholds.Add("low", _options.ThresholdOptions.ThresholdLow);
 
             Merge(Files, GenerateReportComponents(mutationReport));
+        }
+
+        public static MutationReport Build(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        {
+            _report = _report ?? new MutationReport(options, mutationReport);
+
+            return _report;
+        }
+
+        public string ToJson()
+        {
+            var json = JsonConvert.SerializeObject(_report, new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore
+            });
+
+            return json;
         }
 
         private IDictionary<string, JsonReportComponent> GenerateReportComponents(IReadOnlyInputComponent component)

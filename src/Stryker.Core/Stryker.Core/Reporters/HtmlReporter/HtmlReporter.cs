@@ -11,20 +11,20 @@ namespace Stryker.Core.Reporters.Html
     public class HtmlReporter : IReporter
     {
         private readonly StrykerOptions _options;
-        private readonly JsonReporter _jsonReporter;
         private readonly IFileSystem _fileSystem;
 
-        public HtmlReporter(StrykerOptions options, JsonReporter jsonReporter, IFileSystem fileSystem = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null)
         {
             _options = options;
-            _jsonReporter = jsonReporter;
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
         {
+            var mutationReport = MutationReport.Build(_options, mutationTree);
+
             // First generate json using json reporter
-            _jsonReporter.OnAllMutantsTested(reportComponent);
+            WriteReportToJsonFile(mutationReport.ToJson(), Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
 
             foreach (var fileName in new Dictionary<string, string>
             {
@@ -43,6 +43,15 @@ namespace Stryker.Core.Reporters.Html
                         }
                     }
                 }
+            }
+        }
+
+        private void WriteReportToJsonFile(string mutationReport, string filePath)
+        {
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            using (var file = _fileSystem.File.CreateText(filePath))
+            {
+                file.WriteLine(mutationReport);
             }
         }
 
