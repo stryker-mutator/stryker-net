@@ -23,13 +23,18 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node)
         {
             var assignmentKind = node.Kind();
-            if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignementKind))
+            if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignmentKind))
             {
+                if (node.Kind() == SyntaxKind.AddAssignmentExpression &&(node.Left.IsString() || node.Right.IsString()))
+                {
+                    yield break;
+                }
+                
                 yield return new Mutation
                 {
                     OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignementKind, node.Left, node.Right),
-                    DisplayName = $"{assignmentKind} to {targetAssignementKind} mutation",
+                    ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right),
+                    DisplayName = $"{assignmentKind} to {targetAssignmentKind} mutation",
                     Type = Mutator.Assignment
                 };
             }

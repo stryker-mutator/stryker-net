@@ -33,6 +33,13 @@ namespace Stryker.Core.Mutators
         {
             if(_kindsToMutate.ContainsKey(node.Kind()))
             {
+                // skip string additions
+                
+                if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsString()||node.Right.IsString()))
+                {
+                    yield break;
+                }
+                
                 foreach(var mutationKind in _kindsToMutate[node.Kind()])
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
