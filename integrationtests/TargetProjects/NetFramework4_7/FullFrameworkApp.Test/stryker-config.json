@@ -1,0 +1,15 @@
+{
+    "stryker-config":
+    {
+        "solution-path": "C:/Dev/ExampleProjects/FullFrameworkApp/FullFrameworkApp.sln",
+        "reporters": [
+            "ConsoleProgressBar",
+            "ConsoleReport"
+        ],
+        "test-runner": "vstest",
+        "log-level": "trace",
+        "excluded-mutations": [
+            "Logical operators"
+        ]
+    }
+}
