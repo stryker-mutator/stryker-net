@@ -41,7 +41,7 @@ namespace Stryker.Core.ToolHelpers
         public Dictionary<OSPlatform, string> GetVsTestToolPaths()
         {
             Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
-            string versionString = "15.9.0";
+            string versionString = "16.0.0";
             string portablePackageName = "microsoft.testplatform.portable";
 
             var nugetPackageFolders = CollectNugetPackageFolders();
