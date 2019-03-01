@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="Microsoft.TestPlatform" Version="15.9.0" />
+    <PackageReference Include="Microsoft.TestPlatform" Version="16.0.0" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="15.9.0" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="15.9.0" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="15.9.0" />
