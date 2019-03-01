@@ -36,9 +36,13 @@ Stryker.NET can be used by executing the `dotnet stryker` command inside your te
 For the full documentation on how to use Stryker.NET, see the [Stryker.CLI readme](/src/Stryker.CLI/README.md).
 
 #### Compatibility
-Only compatible with .NET Core version 1.1+
+Runs on test projects targeting:
+ - netcoreapp 1.1+
+ - netframework 4.5+
 
-Dotnet core runtime 2.1 needs to be available on your system to run dotnet stryker
+Dotnet core runtime 2.1 needs to be available on your system to run dotnet stryker.
+
+Note: For dotnet framework projects, Stryker.NET requires [nuget.exe](https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools#windows) to be installed on your system. Please follow their installation instructions.
 
 ## Supported Mutators
 Right now, Stryker.NET supports the following mutations:

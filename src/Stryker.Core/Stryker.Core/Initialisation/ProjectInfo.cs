@@ -21,8 +21,8 @@ namespace Stryker.Core.Initialisation
             var outputPath = "";
             if (FullFramework)
             {
-                outputPath = Path.Combine(ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
-                    ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
+                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
+                    TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
             }
             else
             {
