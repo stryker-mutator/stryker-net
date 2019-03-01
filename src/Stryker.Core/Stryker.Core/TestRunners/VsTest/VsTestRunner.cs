@@ -173,7 +173,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPath = FilePathUtils.ConvertPathSeparators(_projectInfo.GetTestBinariesPath());
+            var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, _projectInfo.GetTestBinariesPath()));
             _sources = new List<string>()
             {
                 FilePathUtils.ConvertPathSeparators(testBinariesPath)

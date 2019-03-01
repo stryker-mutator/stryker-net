@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Moq;
+using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using System.Collections.Generic;

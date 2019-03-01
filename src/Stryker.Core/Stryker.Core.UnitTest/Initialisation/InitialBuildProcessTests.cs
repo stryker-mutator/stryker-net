@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.InitialBuild(false, "/", "ExampleProject.csproj"));
+            var exception = Assert.Throws<StrykerInputException>(() => target.InitialBuild(false, "/", "/", "ExampleProject.csproj"));
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild(false, "/", "ExampleProject.csproj");
+            target.InitialBuild(false, "/", "/", "ExampleProject.csproj");
         }
     }
 }
