@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
@@ -56,6 +57,8 @@ namespace Stryker.Core
             // setup logging
             ApplicationLogging.ConfigureLogger(options.LogOptions);
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+
+            logger.LogDebug("Stryker started with options: {0}", JsonConvert.SerializeObject(options));
 
             try
             {
