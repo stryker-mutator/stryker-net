@@ -1,6 +1,8 @@
-﻿using Stryker.Core.Options;
+﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -41,7 +43,7 @@ namespace Stryker.Core.ToolHelpers
         public Dictionary<OSPlatform, string> GetVsTestToolPaths()
         {
             Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
-            string versionString = "16.0.0";
+            string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
             string portablePackageName = "microsoft.testplatform.portable";
 
             var nugetPackageFolders = CollectNugetPackageFolders();
