@@ -45,10 +45,32 @@ namespace Stryker.Core.Compiling
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
             }
 
-            // remove the broken mutations from the syntaxtrees
+            // remove the broken mutations from the syntax trees
             foreach(var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
-                _logger.LogDebug("Rollbacking mutations from {0}", syntaxTreeMap.Key.FilePath);
+                if (devMode)
+                {
+                    _logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+                    var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
+                    foreach (var diagnostic in syntaxTreeMap.Value)
+                    {
+                        var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
+                        _logger.LogInformation($"Error :{ diagnostic.GetMessage()}, {fileLinePositionSpan.ToString()}");
+                        for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
+                            i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line+1, sourceLines.Length - 1);
+                            i++)
+                        {
+                            _logger.LogInformation($"{i+1}: {sourceLines[i]}");
+                        }
+                    }
+
+                    _logger.LogInformation(Environment.NewLine);
+                }
+                else
+                {
+                    _logger.LogTrace($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+                }
+;
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
                 var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode);
 
