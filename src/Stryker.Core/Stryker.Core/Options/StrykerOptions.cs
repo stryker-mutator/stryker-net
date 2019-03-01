@@ -217,7 +217,7 @@ namespace Stryker.Core.Options
         {
             if (string.IsNullOrWhiteSpace(basePath) || string.IsNullOrWhiteSpace(solutionPath))
             {
-                return "";
+                return null;
             }
 
             solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));

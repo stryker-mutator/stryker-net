@@ -2,10 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,7 +21,7 @@ namespace Stryker.Core.Compiling
         /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
         CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode);
     }
-    
+
     /// <summary>
     /// This process is in control of compiling the assembly and rollbacking mutations that cannot compile
     /// </summary>
@@ -56,7 +54,7 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult = null;
 
             // first try compiling
-            var emitResult = compiler.Emit(ms);
+            var emitResult = compiler.Emit(ms, manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources);
 
             if (!emitResult.Success)
             {
@@ -84,9 +82,9 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (RollbackProcessResult, EmitResult) RetryCompilation(MemoryStream ms, 
-            CSharpCompilation compilation, 
-            EmitResult previousEmitResult, 
+        private (RollbackProcessResult, EmitResult) RetryCompilation(MemoryStream ms,
+            CSharpCompilation compilation,
+            EmitResult previousEmitResult,
             bool devMode)
         {
             LogEmitResult(previousEmitResult);
@@ -103,7 +101,7 @@ namespace Stryker.Core.Compiling
 
         private void LogEmitResult(EmitResult result)
         {
-            if(!result.Success)
+            if (!result.Success)
             {
                 _logger.LogDebug("Compilation failed");
 
@@ -111,7 +109,8 @@ namespace Stryker.Core.Compiling
                 {
                     _logger.LogDebug("{0}, {1}", err.GetMessage(), err.Location.SourceTree.FilePath);
                 }
-            } else
+            }
+            else
             {
                 _logger.LogDebug("Compilation successful");
             }

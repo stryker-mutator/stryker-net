@@ -1,7 +1,9 @@
 ﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Initialisation.ProjectComponent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,7 +30,7 @@ namespace Stryker.Core.Initialisation
             {
                 outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
             }
-            
+
             var targetFileName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("TargetFileName");
             string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
             return injectionPath;
@@ -58,7 +60,8 @@ namespace Stryker.Core.Initialisation
         private AnalyzerResult _analyzerResult { get; set; }
 
         private IEnumerable<string> _projectReferences;
-        public IEnumerable<string> ProjectReferences {
+        public IEnumerable<string> ProjectReferences
+        {
             get => _projectReferences ?? _analyzerResult.ProjectReferences;
             set => _projectReferences = value;
         }
@@ -78,7 +81,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _packageReferences;
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>  PackageReferences
+        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PackageReferences
         {
             get => _packageReferences ?? _analyzerResult.PackageReferences;
             set => _packageReferences = value;
@@ -98,9 +101,30 @@ namespace Stryker.Core.Initialisation
             set => _references = value;
         }
 
+        private IEnumerable<ResourceDescription> _resources;
+        public IEnumerable<ResourceDescription> Resources
+        {
+            get
+            {
+                return _resources ?? CreateResourceDescriptions(_analyzerResult.Items["EmbeddedResource"]);
+            }
+            set => _resources = value;
+        }
+
         public ProjectAnalyzerResult(AnalyzerResult analyzerResult)
         {
             _analyzerResult = analyzerResult;
+        }
+
+        private IEnumerable<ResourceDescription> CreateResourceDescriptions(ProjectItem[] embeddedResources)
+        {
+            foreach (var resource in embeddedResources)
+            {
+                yield return new ResourceDescription(
+                    /*_analyzerResult.Items[] + */Regex.Replace(Regex.Replace(resource.ItemSpec, @"/", "."), @"\\", "."),
+                    () => File.OpenRead(Path.Combine(Path.GetDirectoryName(_projectFilePath), resource.ItemSpec)),
+                    true);
+            }
         }
     }
 }

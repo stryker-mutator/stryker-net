@@ -34,12 +34,12 @@ namespace Stryker.Core.Initialisation
 
             if (solutionFilePath is null)
             {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                manager = new AnalyzerManager(solutionFilePath);
+                manager = new AnalyzerManager();
             }
             else
             {
-                manager = new AnalyzerManager();
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                manager = new AnalyzerManager(solutionFilePath);
             }
             analyzerResult = manager.GetProject(projectFilePath).Build().First();
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
