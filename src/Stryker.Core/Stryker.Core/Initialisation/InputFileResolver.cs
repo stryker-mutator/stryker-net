@@ -1,8 +1,8 @@
-﻿using Buildalyzer;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +14,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(string currentDirectory, 
-            string projectUnderTestNameFilter, 
-            List<string> filesToExclude);
+        ProjectInfo ResolveInput(StrykerOptions options);
     }
 
     /// <summary>
@@ -43,20 +41,18 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(string currentDirectory, 
-            string projectUnderTestNameFilter, 
-            List<string> filesToExclude)
+        public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-            var projectFile = ScanProjectFile(currentDirectory);
+            var projectFile = ScanProjectFile(options.BasePath);
 
             // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile);
+            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
 
             // Determine project under test
             var reader = new ProjectFileReader();
-            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, projectUnderTestNameFilter);
-            
+            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
+
             // Analyze project under test
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest);
 
@@ -72,9 +68,9 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder, filesToExclude));
+                inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
             }
-            MarkInputFilesAsExcluded(inputFiles, filesToExclude, projectUnderTestDir);
+            MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
             result.ProjectContents = inputFiles;
 
             return result;
@@ -150,8 +146,8 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }
-            _logger.LogInformation("Using {0} as project file", projectFiles.First());
-            return projectFiles.First();
+            _logger.LogInformation("Using {0} as project file", projectFiles.Single());
+            return projectFiles.Single();
         }
 
         private IEnumerable<string> ExtractProjectFolders(string projectFilePath, bool fullFramework)

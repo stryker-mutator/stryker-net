@@ -12,7 +12,7 @@ namespace Stryker.Core.Initialisation
     {
         MutationTestInput Initialize(StrykerOptions options);
     }
-    
+
     public class InitialisationProcess : IInitialisationProcess
     {
         private IInputFileResolver _inputFileResolver { get; set; }
@@ -22,8 +22,8 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger { get; set; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
 
-        public InitialisationProcess( 
-            IInputFileResolver inputFileResolver = null, 
+        public InitialisationProcess(
+            IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
@@ -40,13 +40,11 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options.BasePath, 
-                options.ProjectUnderTestNameFilter,
-                options.FilesToExclude.ToList());
+            var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
-            
+
             // resolve assembly references
             var assemblyReferences = _assemblyReferenceResolver
                 .ResolveReferences(projectInfo.ProjectUnderTestAnalyzerResult)
