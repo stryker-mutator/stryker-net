@@ -45,9 +45,15 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     Properties = new Dictionary<string, string>
                     {
-                        { "MSBuildProjectDirectory", "C:\\ExampleProject" },
-                        { "OutputPath", "bin\\Debug" },
                         { "TargetFileName", "TestApp.dll" }
+                    }
+                },
+                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                {
+                    Properties = new Dictionary<string, string>
+                    {
+                        { "MSBuildProjectDirectory", "C:\\ExampleProject" },
+                        { "OutputPath", "bin\\Debug" }
                     }
                 }
             };
