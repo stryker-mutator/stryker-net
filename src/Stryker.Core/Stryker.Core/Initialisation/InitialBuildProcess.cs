@@ -11,7 +11,7 @@ namespace Stryker.Core.Initialisation
     {
         void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName);
     }
-    
+
     public class InitialBuildProcess : IInitialBuildProcess
     {
         private IProcessExecutor _processExecutor { get; set; }
@@ -31,7 +31,7 @@ namespace Stryker.Core.Initialisation
             {
                 if (string.IsNullOrWhiteSpace(solutionPath))
                 {
-                    throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution ...");
+                    throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);

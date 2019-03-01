@@ -6,14 +6,14 @@ using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 
 namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
-
         public string BasePath { get; }
         public string SolutionPath { get; set; }
         public IEnumerable<Reporter> Reporters { get; }
@@ -30,7 +30,12 @@ namespace Stryker.Core.Options
         public TestRunner TestRunner { get; }
         public IEnumerable<string> FilesToExclude { get; }
 
-        public StrykerOptions(string basePath = "",
+        private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
+        private readonly IFileSystem _fileSystem;
+
+        public StrykerOptions(
+            IFileSystem fileSystem = null,
+            string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 30000,
@@ -46,6 +51,8 @@ namespace Stryker.Core.Options
             string testRunner = "dotnettest",
             string solutionPath = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
+
             BasePath = basePath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -57,7 +64,7 @@ namespace Stryker.Core.Options
             ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
-            SolutionPath = solutionPath;
+            SolutionPath = ValidateSolutionPath(basePath, solutionPath);
         }
 
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)
@@ -204,6 +211,18 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
             }
+        }
+
+        private string ValidateSolutionPath(string basePath, string solutionPath)
+        {
+            if (string.IsNullOrWhiteSpace(basePath) || string.IsNullOrWhiteSpace(solutionPath))
+            {
+                return "";
+            }
+
+            solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
+
+            return solutionPath;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        ProjectAnalyzerResult AnalyzeProject(string path);
+        ProjectAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath = null);
         string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter);
         IEnumerable<string> FindSharedProjects(XDocument document);
     }
@@ -27,11 +27,22 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public ProjectAnalyzerResult AnalyzeProject(string projectFilePath)
+        public ProjectAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath = null)
         {
+            AnalyzerResult analyzerResult = null;
+            AnalyzerManager manager = null;
+
+            if (solutionFilePath is null)
+            {
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                manager = new AnalyzerManager(solutionFilePath);
+            }
+            else
+            {
+                manager = new AnalyzerManager();
+            }
+            analyzerResult = manager.GetProject(projectFilePath).Build().First();
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            AnalyzerManager manager = new AnalyzerManager();
-            var analyzerResult = manager.GetProject(projectFilePath).Build().First();
 
             return new ProjectAnalyzerResult(analyzerResult);
         }
