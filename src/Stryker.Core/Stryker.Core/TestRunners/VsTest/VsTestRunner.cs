@@ -29,14 +29,13 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly List<string> _messages = new List<string>();
 
 
-        private readonly int? _testCasesDiscovered;
+        private int _testCasesDiscovered;
         private IEnumerable<string> _sources;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, int? testCasesDiscovered)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
         {
             _options = options;
             _projectInfo = projectInfo;
-            _testCasesDiscovered = testCasesDiscovered;
             _vsTestHelper = new VsTestHelper(options);
 
             _vsTestConsole = PrepareVsTestConsole();
@@ -46,11 +45,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
-            if (_testCasesDiscovered is null)
-            {
-                throw new Exception("_testCasesDiscovered cannot be null when running tests");
-            }
-
             TestRunResult testResult = new TestRunResult() { Success = false };
             lock (runLock)
             {
@@ -60,7 +54,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 // For now we need to throw an OperationCanceledException when a testrun has timed out. 
                 // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
-                if (testResults.Count() < _testCasesDiscovered.Value)
+                if (testResults.Count() < _testCasesDiscovered)
                 {
                     throw new OperationCanceledException();
                 }
@@ -71,7 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     ResultMessage = string.Join(
                         Environment.NewLine,
                         testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                    TotalNumberOfTests = _testCasesDiscovered.Value
+                    TotalNumberOfTests = _testCasesDiscovered
                 };
 
                 Running = false;
@@ -79,7 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
+        public void DiscoverTests(string runSettings = null)
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle, _messages);
@@ -87,7 +81,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             waitHandle.WaitOne();
 
-            return handler.DiscoveredTestCases;
+            _testCasesDiscovered = handler.DiscoveredTestCases.Count;
         }
 
         private IEnumerable<TestResult> RunSelectedTests(IEnumerable<TestCase> testCases, string runSettings)
@@ -174,6 +168,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private void InitializeVsTestConsole()
         {
             var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, _projectInfo.GetTestBinariesPath()));
+            var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
             _sources = new List<string>()
             {
                 FilePathUtils.ConvertPathSeparators(testBinariesPath)
@@ -182,9 +177,10 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole.StartSession();
             _vsTestConsole.InitializeExtensions(new List<string>
             {
-                Path.GetDirectoryName(testBinariesPath),
+                testBinariesLocation,
                 _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
+            DiscoverTests();
         }
 
         #region IDisposable Support

@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -15,17 +16,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
-            IEnumerable<TestCase> testCases;
-
-            using (var runner = new VsTestRunner(options, projectInfo, null))
+            Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                testCases = runner.DiscoverTests();
-            }
-
-            for (var i = 0; i < options.ConcurrentTestrunners; i++)
-            {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases.Count()));
-            }
+                _availableRunners.Add(new VsTestRunner(options, projectInfo));
+            });
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
