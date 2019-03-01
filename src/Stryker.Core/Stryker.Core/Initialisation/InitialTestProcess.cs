@@ -2,9 +2,7 @@
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
-using System;
 using System.Diagnostics;
-using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -12,7 +10,7 @@ namespace Stryker.Core.Initialisation
     {
         int InitialTest(ITestRunner testRunner);
     }
-    
+
     public class InitialTestProcess : IInitialTestProcess
     {
         private ILogger _logger { get; set; }

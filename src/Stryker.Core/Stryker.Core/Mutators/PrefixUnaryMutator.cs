@@ -5,7 +5,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class PrefixUnaryMutator : Mutator<PrefixUnaryExpressionSyntax>, IMutator
+    public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>, IMutator
     {
         private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand),
                     DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = unaryKind.ToString().StartsWith("Unary") ? MutatorType.Unary : MutatorType.Update
+                    Type = unaryKind.ToString().StartsWith("Unary") ? Mutator.Unary : Mutator.Update
                 };
             }
             else if (UnaryToInitial.Contains(unaryKind))
@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = node.Operand,
                     DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
-                    Type = unaryKind.ToString().StartsWith("Logic") ? MutatorType.Boolean : MutatorType.Unary
+                    Type = unaryKind.ToString().StartsWith("Logic") ? Mutator.Boolean : Mutator.Unary
                 };
             }
         }

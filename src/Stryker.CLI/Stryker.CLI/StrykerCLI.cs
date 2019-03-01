@@ -48,7 +48,8 @@ namespace Stryker.CLI
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
-            var filesToExcludeParam = CreateOption(app, CLIOptions.FilesToExclude);
+            var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
+            var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
 
             app.HelpOption("--help | -h | -?");
@@ -70,8 +71,10 @@ namespace Stryker.CLI
                     thresholdHighParam,
                     thresholdLowParam,
                     thresholdBreakParam,
-                    filesToExcludeParam,
+                    filesToExclude,
+                    testRunner,
                     solutionPathParam);
+
                 RunStryker(options);
                 return ExitCode;
             });
@@ -90,31 +93,12 @@ namespace Stryker.CLI
             }
         }
 
-        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results) {
+        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results)
+        {
             _logger.LogError($@"Final mutation score: {results.MutationScore * 100} under breaking threshold value {options.ThresholdOptions.ThresholdBreak}.
 Setting exit code to 1 (failure).
 Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
             ExitCode = 1;
-        }
-
-        private void PrintStrykerASCIILogo()
-        {
-            Console.WriteLine("");
-            Chalk.Yellow("             |STRYKER|              "); Console.WriteLine("");
-            Chalk.Yellow("       ~control the mutants~        "); Console.WriteLine("");
-            Chalk.Blue("           ..####"); Console.Write("@"); Chalk.Blue("####..            "); Console.WriteLine("");
-            Chalk.Blue("        .########"); Console.Write("@"); Chalk.Blue("########.         "); Console.WriteLine("");
-            Chalk.Blue("      .#####################.       "); Console.WriteLine("");
-            Chalk.Blue("     #########"); Chalk.Yellow("#######"); Chalk.Blue("#########      "); Console.WriteLine("");
-            Chalk.Blue("    #########"); Chalk.Yellow("##"); Chalk.Blue("#####"); Chalk.Yellow("##"); Chalk.Blue("#########     "); Console.WriteLine("");
-            Chalk.Blue("    #########"); Chalk.Yellow("##"); Chalk.Blue("################     "); Console.WriteLine("");
-            Chalk.Blue("    "); Console.Write("@@@"); Chalk.Blue("#######"); Chalk.Yellow("#######"); Chalk.Blue("#######"); Console.Write("@@@"); Chalk.Blue("     "); Console.WriteLine("");
-            Chalk.Blue("    ################"); Chalk.Yellow("##"); Chalk.Blue("#########     "); Console.WriteLine("");
-            Chalk.Blue("    #########"); Chalk.Yellow("##"); Chalk.Blue("#####"); Chalk.Yellow("##"); Chalk.Blue("#########     "); Console.WriteLine("");
-            Chalk.Blue("     #########"); Chalk.Yellow("#######"); Chalk.Blue("#########      "); Console.WriteLine("");
-            Chalk.Blue("      '######################'      "); Console.WriteLine("");
-            Chalk.Blue("        '########"); Console.Write("@"); Chalk.Blue("#########'        "); Console.WriteLine("");
-            Chalk.Blue("            '####"); Console.Write("@"); Chalk.Blue("####'            "); Console.WriteLine("");
         }
 
         private void PrintStykerASCIIName()

@@ -6,7 +6,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class InterpolatedStringMutator: Mutator<InterpolatedStringExpressionSyntax>, IMutator
+    public class InterpolatedStringMutator: MutatorBase<InterpolatedStringExpressionSyntax>, IMutator
     {
         public override IEnumerable<Mutation> ApplyMutations(InterpolatedStringExpressionSyntax node)
         {
@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = CreateEmptyInterpolatedString(),
                     DisplayName = @"String mutation",
-                    Type = MutatorType.String
+                    Type = Mutator.String
                 };
             }
         }

@@ -5,7 +5,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class AssignmentStatementMutator : Mutator<AssignmentExpressionSyntax>, IMutator
+    public class AssignmentStatementMutator : MutatorBase<AssignmentExpressionSyntax>, IMutator
     {
         private static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
         {
@@ -30,7 +30,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignementKind, node.Left, node.Right),
                     DisplayName = $"{assignmentKind} to {targetAssignementKind} mutation",
-                    Type = MutatorType.Assignment
+                    Type = Mutator.Assignment
                 };
             }
         }

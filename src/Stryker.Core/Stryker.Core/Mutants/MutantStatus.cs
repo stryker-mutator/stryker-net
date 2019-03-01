@@ -6,7 +6,7 @@
         Killed,
         Survived,
         Timeout,
-        BuildError,
+        CompileError,
         Skipped
     }
 }

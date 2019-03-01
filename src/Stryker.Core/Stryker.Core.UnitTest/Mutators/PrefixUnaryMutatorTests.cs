@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldHaveSingleItem();
             var mutation = result.First();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
-            mutation.Type.ShouldBe(MutatorType.Unary);
+            mutation.Type.ShouldBe(Mutator.Unary);
         }
 
         [Theory]
@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldHaveSingleItem();
             var mutation = result.First();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
-            mutation.Type.ShouldBe(MutatorType.Update);
+            mutation.Type.ShouldBe(Mutator.Update);
         }
 
         [Theory]
@@ -59,10 +59,10 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression).ShouldBeTrue();
             if (original == SyntaxKind.BitwiseNotExpression)
             {
-                mutation.Type.ShouldBe(MutatorType.Unary);
+                mutation.Type.ShouldBe(Mutator.Unary);
             } else
             {
-                mutation.Type.ShouldBe(MutatorType.Boolean);
+                mutation.Type.ShouldBe(Mutator.Boolean);
             }
         }
         

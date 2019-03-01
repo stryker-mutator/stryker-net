@@ -28,13 +28,12 @@ namespace Stryker.Core.Compiling
         public RollbackProcess()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
+            _rollbackedIds = new List<int>();
         }
 
         public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
             bool devMode)
         {
-            _rollbackedIds = new List<int>();
-
             // match the diagnostics with their syntaxtrees
             var syntaxTreeMapping = new Dictionary<SyntaxTree, ICollection<Diagnostic>>();
             foreach (var syntaxTree in compiler.SyntaxTrees)
@@ -118,7 +117,6 @@ namespace Stryker.Core.Compiling
 
         private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
         {
-
             var id = ExtractMutationIfAndId(node);
             if (id != null)
             {
@@ -142,7 +140,8 @@ namespace Stryker.Core.Compiling
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
                 if (mutationIf == null)
                 {
-                    _logger.LogError("Unable to rollback mutation for node {0} with diagnostic message {1}.", brokenMutation, diagnostic.GetMessage());
+                    var errorLocation = diagnostic.Location.GetMappedLineSpan();
+                    _logger.LogError($"Unable to rollback mutation for node {brokenMutation} with error: {diagnostic.GetMessage()} (at {errorLocation.Path}, line: {errorLocation.StartLinePosition.Line}, col: {errorLocation.StartLinePosition.Character}).");
                     if (devMode)
                     {
                         _logger.LogCritical("Stryker.Net will stop (due to dev-mode option sets to true)");

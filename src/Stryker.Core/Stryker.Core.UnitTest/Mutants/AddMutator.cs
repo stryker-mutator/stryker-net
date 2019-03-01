@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutants
     /// <summary>
     /// A simple mutator that changes AddExpressions to SubtractExpressions, useful for UnitTesting
     /// </summary>
-    public class AddMutator : Mutator<BinaryExpressionSyntax>, IMutator
+    public class AddMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
     {
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Mutants
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, node.Left, node.Right),
                     DisplayName = "Add to Subtract mutation",
-                    Type = MutatorType.Arithmetic
+                    Type = Mutator.Arithmetic
                 };
             }
         }

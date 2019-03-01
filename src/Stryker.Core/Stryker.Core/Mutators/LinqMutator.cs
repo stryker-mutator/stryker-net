@@ -10,7 +10,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.Mutators
 {
     /// <summary> Mutator Implementation for LINQ Mutations </summary>
-    public class LinqMutator : Mutator<MemberAccessExpressionSyntax>, IMutator
+    public class LinqMutator : MutatorBase<MemberAccessExpressionSyntax>, IMutator
     {
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private Dictionary<LinqExpression, LinqExpression> _kindsToMutate { get; }
@@ -20,10 +20,6 @@ namespace Stryker.Core.Mutators
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
             {
-                { LinqExpression.Distinct, LinqExpression.None },
-                { LinqExpression.Reverse, LinqExpression.None },
-                { LinqExpression.OrderBy, LinqExpression.None },
-                { LinqExpression.OrderByDescending, LinqExpression.None },
                 { LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault },
                 { LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault },
                 { LinqExpression.First, LinqExpression.Last },
@@ -61,7 +57,7 @@ namespace Stryker.Core.Mutators
                     DisplayName = displayName,
                     OriginalNode = node,
                     ReplacementNode = node.ReplaceNode(node.Name, replacement),
-                    Type = MutatorType.Linq
+                    Type = Mutator.Linq
                 };
             }
         }

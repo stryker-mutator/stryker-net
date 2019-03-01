@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
@@ -60,8 +59,8 @@ namespace Stryker.Core.MutationTest
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, 
-                    path: file.FullPath, 
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
+                    path: file.FullPath,
                     options: new CSharpParseOptions(LanguageVersion.Latest));
 
                 if (!file.IsExcluded)
@@ -111,13 +110,13 @@ namespace Stryker.Core.MutationTest
                     foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
-                        mutant.ResultStatus = MutantStatus.BuildError;
+                        mutant.ResultStatus = MutantStatus.CompileError;
                     }
                 }
                 int numberOfBuildErrors = compileResult.RollbackResult?.RollbackedIds.Count() ?? 0;
                 if (numberOfBuildErrors > 0)
                 {
-                    _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.BuildError.ToString());
+                    _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.CompileError.ToString());
                 }
 
                 if (options.ExcludedMutations.Count() != 0)
@@ -139,25 +138,19 @@ namespace Stryker.Core.MutationTest
 
         public StrykerRunResult Test(StrykerOptions options)
         {
-            var logicalProcessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
+            var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            _reporter.OnStartMutantTestRun(mutantsNotRun);
 
-            if (options.MaxConcurrentTestrunners <= logicalProcessorCount)
-            {
-                usableProcessorCount = options.MaxConcurrentTestrunners;
-            }
-
-            var mutantsToTest = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
-            _reporter.OnStartMutantTestRun(mutantsToTest);
-
-            Parallel.ForEach(mutantsToTest,
-                new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
+            Parallel.ForEach(mutantsNotRun,
+                new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                 mutant =>
                 {
                     _mutationTestExecutor.Test(mutant);
 
                     _reporter.OnMutantTested(mutant);
                 });
+
+            _mutationTestExecutor.TestRunner.Dispose();
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());

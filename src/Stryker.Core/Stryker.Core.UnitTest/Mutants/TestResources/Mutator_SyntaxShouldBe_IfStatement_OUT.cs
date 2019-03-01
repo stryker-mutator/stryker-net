@@ -8,32 +8,10 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         void TestMethod()
         {
-            if (Stryker.ActiveMutationHelper.ActiveMutation==1)
+            string SomeLocalFunction()
             {
-                string SomeLocalFunction()
-                {
-                    var test3 = 2 + 5;
-                    return $"test{1 - test3}";
-                }
-            }
-            else
-            {
-                if (Stryker.ActiveMutationHelper.ActiveMutation==0)
-                {
-                    string SomeLocalFunction()
-                    {
-                        var test3 = 2 - 5;
-                        return $"test{1 + test3}";
-                    }
-                }
-                else
-                {
-                    string SomeLocalFunction()
-                    {
-                        var test3 = 2 + 5;
-                        return $"test{1 + test3}";
-                    }
-                }
+                var test3 = Stryker.ActiveMutationHelper.ActiveMutation==0 ?2-5:2 + 5;
+                return Stryker.ActiveMutationHelper.ActiveMutation==1?$"test{1 - test3}":$"test{1 + test3}";
             };
             Console.WriteLine(SomeLocalFunction());
         }

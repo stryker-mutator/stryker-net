@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Stryker.Core.Mutators
 {
-    public class CheckedMutator : Mutator<CheckedExpressionSyntax>, IMutator
+    public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>, IMutator
     {
         public override IEnumerable<Mutation> ApplyMutations(CheckedExpressionSyntax node)
         {
@@ -16,7 +16,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = node.Expression,
                     DisplayName = "Remove checked expression",
-                    Type = MutatorType.Checked
+                    Type = Mutator.Checked
                 };
             }
         }

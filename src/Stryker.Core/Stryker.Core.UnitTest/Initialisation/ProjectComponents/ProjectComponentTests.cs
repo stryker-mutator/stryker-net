@@ -91,7 +91,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
         {
             var target = new FolderComposite() { Name = "RootFolder" };
             var subFolder = new FolderComposite() { Name = "SubFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.BuildError } } });
+            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(null);

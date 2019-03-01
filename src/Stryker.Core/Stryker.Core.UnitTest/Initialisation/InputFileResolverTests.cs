@@ -10,9 +10,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    using Moq;
-    using System.Linq;
-
     public class InputFileResolverTests
     {
         private string _currentDirectory { get; set; }

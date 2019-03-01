@@ -25,7 +25,7 @@ namespace Stryker.Core.Initialisation
 
         public void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName)
         {
-            _logger.LogInformation("Starting initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
+            _logger.LogInformation("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
             ProcessResult result = null;
             if (fullFramework)
             {

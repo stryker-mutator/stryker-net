@@ -33,6 +33,24 @@ namespace Stryker.Core.Initialisation
             string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
             return injectionPath;
         }
+
+        public string GetTestBinariesPath()
+        {
+            var outputPath = "";
+            if (FullFramework)
+            {
+                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
+                    TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
+            }
+            else
+            {
+                outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
+            }
+
+            var targetFileName = TestProjectAnalyzerResult.Properties.GetValueOrDefault("TargetFileName");
+            string binariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
+            return binariesPath;
+        }
     }
 
     public class ProjectAnalyzerResult
