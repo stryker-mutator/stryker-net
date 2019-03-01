@@ -143,7 +143,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 case string s when s.Contains("netstandard"):
                     throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersion = $".NETFramework = v{targetFrameworkVersion}";
+                    targetFrameworkVersion = $"Framework40";
                     break;
             }
 
