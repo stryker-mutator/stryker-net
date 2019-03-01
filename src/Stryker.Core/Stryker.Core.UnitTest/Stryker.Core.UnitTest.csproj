@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="3.0.10" />
