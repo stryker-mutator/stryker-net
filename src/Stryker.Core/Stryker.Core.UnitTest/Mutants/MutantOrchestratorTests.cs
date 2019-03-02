@@ -43,6 +43,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
         [Theory]
         [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs")]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs")]
         public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile)
         {
             string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
