@@ -76,6 +76,11 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
+            // don't mutate parameters
+            if (currentNode is ParameterSyntax)
+            {
+                return currentNode;
+            }
             if (currentNode is StatementSyntax statement && currentNode.Kind() != SyntaxKind.Block)
             {
                 SyntaxNode result;
@@ -187,11 +192,11 @@ namespace Stryker.Core.Mutants
                     else if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
                     {
                         actualMutationNode = lambda.Body;
-                        //return MutateInPlace(currentNodeCopy, lambda.Body);
                     }
                     else if (expressionSyntax is InvocationExpressionSyntax invocation)
                     {
-                        actualMutationNode = invocation.Expression;
+                        currentNodeCopy = MutateInPlace(currentNodeCopy, expressionSyntax);
+                        //actualMutationNode = invocation.Expression;
                     }
                     else if (expressionSyntax is MemberAccessExpressionSyntax memberAccess)
                     {

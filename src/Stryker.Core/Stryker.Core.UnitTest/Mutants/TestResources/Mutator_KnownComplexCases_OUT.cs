@@ -9,9 +9,9 @@
         // attributes must be constant at build time => no possible mutation
         [Obsolete("thismustnotbemutated")]
         // default parameter must be constant at build time => no posible mutation
-        private void SomeMthod(bool option = Stryker.ActiveMutationHelper.ActiveMutation==2?false:true)
+        private void SomeMthod(bool option = true)
         {
-if(Stryker.ActiveMutationHelper.ActiveMutation==3){            // for statement can only me mutated through if(s)
+if(Stryker.ActiveMutationHelper.ActiveMutation==2){            // for statement can only me mutated through if(s)
             for (var i = 0; i < 10; i--)
             {
                 var x=1;
@@ -22,17 +22,17 @@ if(Stryker.ActiveMutationHelper.ActiveMutation==3){            // for statement 
                 x *=x+2;
             }
 }else{            // for statement can only me mutated through if(s)
-            for (var i = 0; Stryker.ActiveMutationHelper.ActiveMutation==5?i <= 10:Stryker.ActiveMutationHelper.ActiveMutation==4?i > 10:i < 10; i++)
+            for (var i = 0; Stryker.ActiveMutationHelper.ActiveMutation==4?i <= 10:Stryker.ActiveMutationHelper.ActiveMutation==3?i > 10:i < 10; i++)
             {
                 var x=1;
-if(Stryker.ActiveMutationHelper.ActiveMutation==6){                x--;
+if(Stryker.ActiveMutationHelper.ActiveMutation==5){                x--;
 }else{                x++;
 }                // should not be mutated (string concatenation)
-                var test = Stryker.ActiveMutationHelper.ActiveMutation==8?"first" + "":Stryker.ActiveMutationHelper.ActiveMutation==7?""+ "second":"first" + "second";
-if(Stryker.ActiveMutationHelper.ActiveMutation==9){                // complex mutation pattern
+                var test = Stryker.ActiveMutationHelper.ActiveMutation==7?"first" + "":Stryker.ActiveMutationHelper.ActiveMutation==6?""+ "second":"first" + "second";
+if(Stryker.ActiveMutationHelper.ActiveMutation==8){                // complex mutation pattern
                 x /=x+2;
 }else{                // complex mutation pattern
-                x *=Stryker.ActiveMutationHelper.ActiveMutation==10?x-2:x+2;
+                x *=Stryker.ActiveMutationHelper.ActiveMutation==9?x-2:x+2;
 }            }
 }        }
     }
