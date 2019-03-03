@@ -114,14 +114,20 @@ namespace Stryker.Core.Mutants
                         newNode = MutateSubExpressionWithIfStatements(newNode, incrementor);
                     }
 
-                    var originalFort = forStatement;
-                    if (newNode != originalFort)
+                    var originalFor = forStatement;
+                    if (newNode != originalFor)
                     {
-                        originalFort = (ForStatementSyntax) ((BlockSyntax)((IfStatementSyntax) newNode).Else.Statement).Statements[0];
+                        var scan = newNode;
+                        while (scan is IfStatementSyntax mutantIf)
+                        {
+                            scan = ((BlockSyntax)mutantIf.Else.Statement).Statements[0];
+                        }
+
+                        originalFor = (ForStatementSyntax) scan;
                     }
-                    forStatement = MutateInPlace(originalFort, originalFort.Condition);
+                    forStatement = MutateInPlace(originalFor, originalFor.Condition);
                     forStatement = MutateInPlace(forStatement, forStatement.Statement);
-                    return newNode.ReplaceNode(originalFort, forStatement);
+                    return newNode.ReplaceNode(originalFor, forStatement);
                 }
                 else
                 {
