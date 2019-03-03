@@ -25,7 +25,7 @@ namespace Stryker.Core.Mutators
             var assignmentKind = node.Kind();
             if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignmentKind))
             {
-                if (node.Kind() == SyntaxKind.AddAssignmentExpression &&(node.Left.IsString() || node.Right.IsString()))
+                if (node.Kind() == SyntaxKind.AddAssignmentExpression &&(node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
                 {
                     yield break;
                 }

@@ -35,7 +35,7 @@ namespace Stryker.Core.Mutators
             {
                 // skip string additions
                 
-                if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsString()||node.Right.IsString()))
+                if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
                 {
                     yield break;
                 }
