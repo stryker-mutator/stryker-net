@@ -87,15 +87,7 @@ namespace Stryker.Core.Mutants
  
                 if (currentNode is ExpressionStatementSyntax tentativeAssignment && expressionStatementNeedingIf.Contains(tentativeAssignment.Expression.GetType()))
                 {
-                    var mutants = FlatMutate(tentativeAssignment.Expression);
-                    var ast = statement;
-                    foreach (var mutant in mutants)
-                    {
-                        var mutatedNode = ApplyMutant(statement, mutant);
-                        ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
-                    }
-
-                    result = ast;
+                    result = MutateSubExpressionWithIfStatements(statement, tentativeAssignment.Expression);
                     if (!(tentativeAssignment.Expression is AssignmentExpressionSyntax))
                     {
                         return result;
@@ -119,13 +111,7 @@ namespace Stryker.Core.Mutants
                     StatementSyntax newNode = forStatement;
                     foreach (var incrementor in forStatement.Incrementors)
                     {
-                        var mutants = FlatMutate(incrementor);
-                        foreach (var mutant in mutants)
-                        {
-                            var newFor = ApplyMutant(forStatement, mutant);
-
-                            newNode = MutantPlacer.PlaceWithIfStatement(statement, newFor, mutant.Id);
-                        }
+                        newNode = MutateSubExpressionWithIfStatements(newNode, incrementor);
                     }
 
                     var originalFort = forStatement;
@@ -267,6 +253,20 @@ namespace Stryker.Core.Mutants
                 _mutants.Add(mutant);
                 var mutatedNode = ApplyMutant(statement, mutant);
                 ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
+            }
+            return ast;
+        }
+
+        private StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax currentNode, SyntaxNode expression)
+        {
+            var ast = currentNode;
+            StatementSyntax statement = currentNode;
+            // The mutations should be placed using an IfStatement
+            foreach (var mutant in FlatMutate(expression))
+            {
+                _mutants.Add(mutant);
+                var mutatedNode = ApplyMutant(statement, mutant);
+                ast = MutantPlacer.PlaceWithIfStatement(currentNode, mutatedNode, mutant.Id);
             }
             return ast;
         }
