@@ -179,16 +179,18 @@ namespace Stryker.Core.Mutants
                     else if (currentNode is ExpressionStatementSyntax)
                     {
                         // The expression of a ExpressionStatement cannot be mutated directly
-                        return MutateInPlace(currentNodeCopy, currentExpressionSyntax);
+                        return MutateInPlace(currentNode, expressionSyntax);
                     }
                     else if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
                     {
                         actualMutationNode = lambda.Body;
                     }
-                    else if (expressionSyntax is InvocationExpressionSyntax invocation)
+                    else if (expressionSyntax is InvocationExpressionSyntax )
                     {
-                        currentNodeCopy = MutateInPlace(currentNodeCopy, expressionSyntax);
-                        //actualMutationNode = invocation.Expression;
+                        var mutant = Mutate(expressionSyntax);
+                        currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
+ //                       currentNodeCopy = MutateInPlace(currentNodeCopy, expressionSyntax);
+                        //actualMutationNode = expressionSyntax;
                     }
                     else if (expressionSyntax is MemberAccessExpressionSyntax memberAccess)
                     {
@@ -289,7 +291,6 @@ namespace Stryker.Core.Mutants
             return expressionAst;
         }
 
-
         /// <summary>
         /// Mutates one single SyntaxNode using a mutator
         /// </summary>
@@ -308,10 +309,9 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        private T ApplyMutant<T>(T node, Mutant mutant) where T: SyntaxNode
+        private static T ApplyMutant<T>(T node, IReadOnlyMutant mutant) where T: SyntaxNode
         {
-            var mutatedNode = node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
-            return mutatedNode;
+            return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
 
         private IEnumerable<ExpressionSyntax> GetExpressionSyntax(SyntaxNode node)
