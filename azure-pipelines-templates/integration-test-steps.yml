@@ -6,30 +6,12 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release package in netcoreapp2.1'
+    displayName: 'Install pre-release tool in $(StrykerInstallPath)'
     inputs:
       command: custom
-      custom: add
-      arguments: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+      custom: tool
+      arguments: update StrykerMutator.DotNetCoreCli --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release package in netstandard2.0'
-    inputs:
-      command: custom
-      custom: add
-      arguments: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
-
-  - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
-    displayName: 'Update stryker integration test with pre-release'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Restore pre-release packages in integrationtest project'
-    inputs:
-      command: custom
-      custom: restore
-      projects: '$(IntegrationTestPath)/**/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
-      arguments: '-s $(PreReleaseFeedUri)'
-  
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test netstandard2.0'
     inputs:
