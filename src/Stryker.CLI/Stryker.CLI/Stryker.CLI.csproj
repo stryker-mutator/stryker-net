@@ -6,7 +6,7 @@
     <AssemblyName>stryker.net</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>strykernet</ToolCommandName>
+    <ToolCommandName>dotnet-stryker</ToolCommandName>
   </PropertyGroup>
   
   <PropertyGroup>
