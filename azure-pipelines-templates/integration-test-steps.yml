@@ -10,7 +10,7 @@ steps:
     inputs:
       command: custom
       custom: tool
-      arguments: update --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri) StrykerMutator.DotNetCoreCli
+      arguments: install StrykerMutator.DotNetCoreCli --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
 
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test netstandard2.0'
