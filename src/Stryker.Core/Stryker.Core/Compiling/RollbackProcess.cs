@@ -50,21 +50,7 @@ namespace Stryker.Core.Compiling
             {
                 if (devMode)
                 {
-                    _logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
-                    var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
-                    foreach (var diagnostic in syntaxTreeMap.Value)
-                    {
-                        var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
-                        _logger.LogInformation($"Error :{ diagnostic.GetMessage()}, {fileLinePositionSpan.ToString()}");
-                        for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
-                            i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line+1, sourceLines.Length - 1);
-                            i++)
-                        {
-                            _logger.LogInformation($"{i+1}: {sourceLines[i]}");
-                        }
-                    }
-
-                    _logger.LogInformation(Environment.NewLine);
+                    DumpBuildErrors(syntaxTreeMap);
                 }
                 else
                 {
@@ -149,6 +135,25 @@ namespace Stryker.Core.Compiling
             {
                 ScanAllMutationsIfsAndIds(childNode, scan);
             }
+        }
+
+        private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
+        {
+            _logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+            var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
+            foreach (var diagnostic in syntaxTreeMap.Value)
+            {
+                var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
+                _logger.LogInformation($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan.ToString()}");
+                for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
+                    i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
+                    i++)
+                {
+                    _logger.LogInformation($"{i + 1}: {sourceLines[i]}");
+                }
+            }
+
+            _logger.LogInformation(Environment.NewLine);
         }
 
         private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo, bool devMode)

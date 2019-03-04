@@ -34,7 +34,6 @@ namespace Stryker.Core.Mutators
             if(_kindsToMutate.ContainsKey(node.Kind()))
             {
                 // skip string additions
-                
                 if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
                 {
                     yield break;
@@ -45,7 +44,6 @@ namespace Stryker.Core.Mutators
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
                     // make sure the trivia stays in place for displaying
                     replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
-                    
 
                     yield return new Mutation()
                     {

@@ -21,9 +21,6 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Stryker.Core.UnitTest.v3.ncrunchproject" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
