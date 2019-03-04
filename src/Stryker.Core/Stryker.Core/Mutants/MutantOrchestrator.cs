@@ -179,7 +179,8 @@ namespace Stryker.Core.Mutants
                     else if (currentNode is ExpressionStatementSyntax)
                     {
                         // The expression of a ExpressionStatement cannot be mutated directly
-                        return MutateInPlace(currentNode, expressionSyntax);
+                        var mutant = Mutate(expressionSyntax);
+                        return currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
                     }
                     else if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
                     {
@@ -189,8 +190,6 @@ namespace Stryker.Core.Mutants
                     {
                         var mutant = Mutate(expressionSyntax);
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
- //                       currentNodeCopy = MutateInPlace(currentNodeCopy, expressionSyntax);
-                        //actualMutationNode = expressionSyntax;
                     }
                     else if (expressionSyntax is MemberAccessExpressionSyntax memberAccess)
                     {
