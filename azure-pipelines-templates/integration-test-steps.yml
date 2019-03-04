@@ -6,11 +6,11 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release tool in $(StrykerInstallPath)'
+    displayName: 'Install pre-release dotnet tool in agent tools directory'
     inputs:
       command: custom
       custom: tool
-      arguments: update StrykerMutator.DotNetCoreCli --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
+      arguments: update --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri) StrykerMutator.DotNetCoreCli
 
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test netstandard2.0'
