@@ -114,15 +114,19 @@ namespace Stryker.Core.Mutants
                 }
                 else if (currentNode is IfStatementSyntax ifStatement)
                 {
-                    if (!ifStatement.Condition.DescendantNodes().Any(x => x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern)))
+                    IfStatementSyntax mutatedIf;
+                    mutatedIf = ifStatement.Else != null ? ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement, ifStatement.Else) : ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement);
+
+                    if (!ifStatement.
+                        Condition.DescendantNodes().Any(x => x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern)))
                     {
-                        ifStatement = ifStatement.ReplaceNode(ifStatement.Condition, MutateWithConditionalExpressions(ifStatement.Condition));
+                        mutatedIf = mutatedIf.ReplaceNode(mutatedIf.GetCurrentNode(ifStatement.Condition), MutateWithConditionalExpressions(ifStatement.Condition));
                     }
                     if (ifStatement.Else != null)
                     {
-                        ifStatement = ifStatement.ReplaceNode(ifStatement.Else, Mutate(ifStatement.Else));
+                        mutatedIf = mutatedIf.ReplaceNode(mutatedIf.GetCurrentNode(ifStatement.Else), Mutate(ifStatement.Else));
                     }
-                    return ifStatement.ReplaceNode(ifStatement.Statement, Mutate(ifStatement.Statement));
+                    return mutatedIf.ReplaceNode(mutatedIf.GetCurrentNode(ifStatement.Statement), Mutate(ifStatement.Statement));
                 }
                 else if (currentNode is ForStatementSyntax forStatement)
                 {
