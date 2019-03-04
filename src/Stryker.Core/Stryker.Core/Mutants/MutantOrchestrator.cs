@@ -64,6 +64,31 @@ namespace Stryker.Core.Mutants
             return tempMutants;
         }
 
+
+        private bool CanBeMutated(SyntaxNode node)
+        {
+            // don't mutate attributes or their arguments
+            if (node is AttributeListSyntax)
+            {
+                return false;
+            }
+            // don't mutate parameters
+            if (node is ParameterSyntax)
+            {
+                return false;
+            }
+            // don't mutate constant fields
+            if (node is FieldDeclarationSyntax field)
+            {
+                if (field.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
@@ -71,13 +96,7 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            // don't mutate attributes or their arguments
-            if (currentNode is AttributeListSyntax)
-            {
-                return currentNode;
-            }
-            // don't mutate parameters
-            if (currentNode is ParameterSyntax)
+            if (!CanBeMutated(currentNode))
             {
                 return currentNode;
             }
@@ -211,7 +230,7 @@ namespace Stryker.Core.Mutants
                     else
                         // The mutations should be placed using a ConditionalExpression
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax,
-                            MutateWithConditionalExpressions(currentExpressionSyntax));
+                            MutateWithConditionalExpressions(expressionSyntax));
                 }
 
                 return currentNodeCopy;

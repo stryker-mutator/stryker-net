@@ -6,7 +6,8 @@ namespace TestCases
     {
         
         private string text = "Some" + "Text";
-
+        // const can't me mutated (need to be const at build time)
+        private const int x = 1 + 2;
         // attributes must be constant at build time => no possible mutation
         [Obsolete("thismustnotbemutated")]
         // default parameter must be constant at build time => no posible mutation
