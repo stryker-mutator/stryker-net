@@ -47,7 +47,7 @@ namespace Stryker.Core.Compiling
         /// <param name="devMode"></param>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
         {
-            var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("AssemblyTitle"),
+            var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: syntaxTrees,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true),
                 references: _input.AssemblyReferences);
@@ -95,7 +95,7 @@ namespace Stryker.Core.Compiling
             ms.SetLength(0);
 
             // second try compiling
-            var emitResult = rollbackProcessResult.Compilation.Emit(ms);
+            var emitResult = rollbackProcessResult.Compilation.Emit(ms, manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources);
             return (rollbackProcessResult, emitResult);
         }
 

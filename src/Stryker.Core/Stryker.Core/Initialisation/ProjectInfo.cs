@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Stryker.Core.Initialisation.ProjectComponent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -59,6 +58,11 @@ namespace Stryker.Core.Initialisation
     {
         private AnalyzerResult _analyzerResult { get; set; }
 
+        public ProjectAnalyzerResult(AnalyzerResult analyzerResult)
+        {
+            _analyzerResult = analyzerResult;
+        }
+
         private IEnumerable<string> _projectReferences;
         public IEnumerable<string> ProjectReferences
         {
@@ -106,25 +110,9 @@ namespace Stryker.Core.Initialisation
         {
             get
             {
-                return _resources ?? CreateResourceDescriptions(_analyzerResult.Items["EmbeddedResource"]);
+                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(_analyzerResult);
             }
             set => _resources = value;
-        }
-
-        public ProjectAnalyzerResult(AnalyzerResult analyzerResult)
-        {
-            _analyzerResult = analyzerResult;
-        }
-
-        private IEnumerable<ResourceDescription> CreateResourceDescriptions(ProjectItem[] embeddedResources)
-        {
-            foreach (var resource in embeddedResources)
-            {
-                yield return new ResourceDescription(
-                    /*_analyzerResult.Items[] + */Regex.Replace(Regex.Replace(resource.ItemSpec, @"/", "."), @"\\", "."),
-                    () => File.OpenRead(Path.Combine(Path.GetDirectoryName(_projectFilePath), resource.ItemSpec)),
-                    true);
-            }
         }
     }
 }
