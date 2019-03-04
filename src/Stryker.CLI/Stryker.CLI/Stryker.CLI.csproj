@@ -3,9 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Stryker.CLI</RootNamespace>
-    <AssemblyName>dotnet-stryker</AssemblyName>
+    <AssemblyName>stryker.net</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
+    <ToolCommandName>strykernet</ToolCommandName>
   </PropertyGroup>
   
   <PropertyGroup>
