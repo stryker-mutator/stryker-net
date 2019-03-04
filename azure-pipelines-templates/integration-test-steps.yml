@@ -12,6 +12,11 @@ steps:
       custom: tool
       arguments: install StrykerMutator.DotNetCoreCli -g --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
 
+  - script: dotnet tool list
+  - script: dotnet-stryker --dev-move
+    workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
+    displayName: 'Run integration test netstandard2.0'
+    failOnStderr: false
   - script: dotnet stryker --dev-move
     workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     displayName: 'Run integration test netstandard2.0'
