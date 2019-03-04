@@ -16,7 +16,7 @@ steps:
     displayName: 'Run integration test netstandard2.0'
     inputs:
       command: custom
-      custom: strykernet
+      custom: stryker
       arguments: '--dev-mode'
       workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     
@@ -24,7 +24,7 @@ steps:
     displayName: 'Run integration test netcoreapp2.1'
     inputs:
       command: custom
-      custom: strykernet
+      custom: stryker
       arguments: '--dev-mode'
       workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit
 
