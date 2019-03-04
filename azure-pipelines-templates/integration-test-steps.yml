@@ -8,7 +8,7 @@ steps:
   - task: DotNetCoreInstaller@0
     displayName: 'Use .NET Core sdk 2.1.300 because dotnet tools..'
     inputs:
-    version: 2.1.300
+      version: 2.1.300
 
   - task: DotNetCoreCLI@2
     displayName: 'Install pre-release dotnet tool'
@@ -17,17 +17,17 @@ steps:
       custom: tool
       arguments: install StrykerMutator.DotNetCoreCli -g --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
 
-  - script: dotnet tool list
-  - script: dotnet-stryker --dev-move
+  - script: dotnet tool list -g
+  - script: dotnet-stryker --dev-mode
     workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     displayName: 'Run integration test netstandard2.0'
     failOnStderr: false
-  - script: dotnet stryker --dev-move
+  - script: dotnet stryker --dev-mode
     workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     displayName: 'Run integration test netstandard2.0'
     failOnStderr: false
 
-  - script: dotnet stryker --dev-move
+  - script: dotnet stryker --dev-mode
     workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit
     displayName: 'Run integration test netstandard2.1'
     failOnStderr: false
