@@ -17,7 +17,6 @@ variables:
   PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtests
-  StrykerInstallPath: $(Agent.ToolsDirectory)/Stryker/
   PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
@@ -50,7 +49,7 @@ jobs:
     inputs:
       command: custom
       custom: 'nuget'
-      arguments: 'push StrykerMutator.*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
+      arguments: 'push *stryker*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
       workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
       
 - job: WaitOnMyGetProcessing

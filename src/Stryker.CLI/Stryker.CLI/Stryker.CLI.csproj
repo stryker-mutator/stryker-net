@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Stryker.CLI</RootNamespace>
-    <AssemblyName>stryker.net</AssemblyName>
+    <AssemblyName>Stryker.CLI</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-stryker</ToolCommandName>
@@ -11,10 +11,10 @@
   
   <PropertyGroup>
     <VersionPrefix>0.8.3</VersionPrefix>
-    <PackageId>StrykerMutator.DotNetCoreCli</PackageId>
+    <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>  
-    <Description>The Stryker.NET Command Line Interface Runner for .NET Core. Adds the dotnet stryker command to your test project.</Description>
+    <Description>The Stryker.NET dotnet CLI SDK runner. Install this cli runner with dotnet tool install -g dotnet-stryker.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>

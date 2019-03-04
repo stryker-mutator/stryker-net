@@ -11,8 +11,8 @@
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <VersionPrefix>0.8.3</VersionPrefix>
-    <PackageId>StrykerMutator.Core</PackageId>
-    <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install StrykerMutator.DotNetCoreCli to use this package.</Description>
+    <PackageId>stryker</PackageId>
+    <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Install dotnet-stryker to run stryker from the commandline.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
