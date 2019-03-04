@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <DebugType>Full</DebugType>
-    <Authors>Richard Werkman</Authors>
+    <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
