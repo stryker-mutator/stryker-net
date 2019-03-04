@@ -1,8 +1,6 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -15,14 +13,14 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectInfo()
             {
                 FullFramework = false,
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     Properties = new Dictionary<string, string>()
                     {
                         { "TargetFileName", "TestApp.dll" }
                     }
                 },
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     Properties = new Dictionary<string, string>
                     {
@@ -41,14 +39,14 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectInfo()
             {
                 FullFramework = true,
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     Properties = new Dictionary<string, string>
                     {
                         { "TargetFileName", "TestApp.dll" }
                     }
                 },
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     Properties = new Dictionary<string, string>
                     {

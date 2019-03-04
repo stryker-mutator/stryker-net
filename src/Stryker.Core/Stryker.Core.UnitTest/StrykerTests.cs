@@ -4,7 +4,6 @@ using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
-using System.IO.Abstractions.TestingHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
@@ -14,8 +13,6 @@ namespace Stryker.Core.UnitTest
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {
-            string basePath = @"c:\TestProject\";
-
             var initialisationMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
 

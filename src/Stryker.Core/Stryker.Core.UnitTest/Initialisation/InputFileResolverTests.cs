@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
                     TargetFramework = "netcoreapp2.1",
@@ -111,14 +111,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
@@ -195,14 +195,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
@@ -293,14 +293,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
@@ -368,14 +368,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
@@ -424,7 +424,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
                     TargetFramework = "netcoreapp2.1",
@@ -473,14 +473,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
@@ -503,7 +503,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
                     TargetFramework = "netcoreapp2.1",
@@ -546,7 +546,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null)
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
                     TargetFramework = "netcore2.1",

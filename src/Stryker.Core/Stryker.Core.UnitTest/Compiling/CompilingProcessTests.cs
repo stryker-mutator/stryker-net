@@ -35,7 +35,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -43,7 +43,7 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -87,7 +87,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -95,7 +95,7 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -145,7 +145,7 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -153,7 +153,7 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {

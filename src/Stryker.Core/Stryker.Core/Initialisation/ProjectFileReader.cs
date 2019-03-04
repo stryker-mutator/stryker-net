@@ -44,7 +44,7 @@ namespace Stryker.Core.Initialisation
             analyzerResult = manager.GetProject(projectFilePath).Build().First();
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
 
-            return new ProjectAnalyzerResult(analyzerResult);
+            return new ProjectAnalyzerResult(_logger, analyzerResult);
         }
 
         public IEnumerable<string> FindSharedProjects(XDocument document)

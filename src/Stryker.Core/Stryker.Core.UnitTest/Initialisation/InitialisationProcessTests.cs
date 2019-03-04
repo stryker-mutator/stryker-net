@@ -5,11 +5,9 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
-using Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -29,7 +27,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
                 .Returns(new ProjectInfo
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         ProjectFilePath = "C://Example/Dir/ProjectFolder"
                     },
@@ -77,7 +75,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
                 new ProjectInfo
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         ProjectFilePath = "C://Example/Dir/ProjectFolder"
                     },

@@ -35,9 +35,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
         {
-            var input = new MutationTestInput() {
-                ProjectInfo = new ProjectInfo() {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -45,7 +47,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -53,7 +55,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectContents = new FolderComposite() {
+                    ProjectContents = new FolderComposite()
+                    {
                         Name = Path.Combine(_filesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
                             new FileLeaf() {
@@ -112,9 +115,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             string sourceFile2 = _sourceFile.Replace("Recursive.cs", "Recursive2.cs");
             string sourceFile3 = _sourceFile.Replace("Recursive.cs", "Recursive3.cs");
 
-            var input = new MutationTestInput() {
-                ProjectInfo = new ProjectInfo() {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -122,7 +127,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -130,7 +135,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectContents = new FolderComposite() {
+                    ProjectContents = new FolderComposite()
+                    {
                         Name = Path.Combine(_filesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
                             new FileLeaf() {
@@ -199,9 +205,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
-            var input = new MutationTestInput() {
-                ProjectInfo = new ProjectInfo() {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -209,7 +217,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {
@@ -217,7 +225,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "ExampleProject.dll" }
                         }
                     },
-                    ProjectContents = new FolderComposite() {
+                    ProjectContents = new FolderComposite()
+                    {
                         Name = "ProjectRoot",
                         Children = new Collection<ProjectComponent>() {
                             new FileLeaf() {
@@ -278,7 +287,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
                         Properties = new Dictionary<string, string>()
                         {

@@ -1,5 +1,6 @@
 ﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.ProjectComponent;
 using System.Collections.Generic;
 using System.IO;
@@ -40,15 +41,15 @@ namespace Stryker.Core.Initialisation
             var outputPath = "";
             if (FullFramework)
             {
-                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
-                    TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
+                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties["MSBuildProjectDirectory"],
+                    TestProjectAnalyzerResult.Properties["OutputPath"]);
             }
             else
             {
-                outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
+                outputPath = TestProjectAnalyzerResult.Properties["OutputPath"];
             }
 
-            var targetFileName = TestProjectAnalyzerResult.Properties.GetValueOrDefault("TargetFileName");
+            var targetFileName = TestProjectAnalyzerResult.Properties["TargetFileName"];
             string binariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
             return binariesPath;
         }
@@ -56,10 +57,12 @@ namespace Stryker.Core.Initialisation
 
     public class ProjectAnalyzerResult
     {
-        private AnalyzerResult _analyzerResult { get; set; }
+        private readonly ILogger _logger;
+        private readonly AnalyzerResult _analyzerResult;
 
-        public ProjectAnalyzerResult(AnalyzerResult analyzerResult)
+        public ProjectAnalyzerResult(ILogger logger, AnalyzerResult analyzerResult)
         {
+            _logger = logger;
             _analyzerResult = analyzerResult;
         }
 
@@ -110,7 +113,7 @@ namespace Stryker.Core.Initialisation
         {
             get
             {
-                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(_analyzerResult);
+                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(_analyzerResult, _logger);
             }
             set => _resources = value;
         }
