@@ -3,8 +3,7 @@
     {
         "solution-path": "C:/Dev/ExampleProjects/FullFrameworkApp/FullFrameworkApp.sln",
         "reporters": [
-            "ConsoleProgressBar",
-            "ConsoleReport"
+            "Json"
         ],
         "test-runner": "vstest",
         "log-level": "trace",

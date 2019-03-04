@@ -4,9 +4,8 @@
         "reporters": [
             "Json"
         ],
-        "log-level": "info",
+        "log-level": "trace",
         "project-file": "ExampleProject.csproj",
-        "max-concurrent-test-runners": 4,
         "excluded-mutations": [
             "string"
         ]
