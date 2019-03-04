@@ -12,19 +12,20 @@ namespace Stryker.Core.Initialisation
         public static IEnumerable<ResourceDescription> GetManifestResources(AnalyzerResult analyzerResult)
         {
             var originalDllFile = Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath), analyzerResult.Items["IntermediateAssembly"][0].ItemSpec);
-            ModuleDefinition module = ModuleDefinition.ReadModule(originalDllFile);
-            var resourceDescriptions = new List<ResourceDescription>();
 
+            ModuleDefinition module = ModuleDefinition.ReadModule(originalDllFile);
+
+            if (module is null)
+            {
+                yield break;
+            }
             foreach (EmbeddedResource moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded))
             {
-                resourceDescriptions.Add(
-                    new ResourceDescription(
-                        moduleResource.Name,
-                        () => moduleResource.GetResourceStream(),
-                        moduleResource.IsPublic));
+                yield return new ResourceDescription(
+                    moduleResource.Name,
+                    () => moduleResource.GetResourceStream(),
+                    moduleResource.IsPublic);
             }
-
-            return resourceDescriptions;
         }
     }
 }

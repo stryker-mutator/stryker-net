@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InputFileResolver_InitializeShouldCrawlFilesRecursively()
+        public void InputFileResolver_InitializeShouldFIndFilesRecursively()
         {
             string projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            
+
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { projectUnderTestPath, new MockFileData(projectFile)},
@@ -110,7 +110,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, ""))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
@@ -194,7 +194,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, ""))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
@@ -276,7 +276,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     </ItemGroup>
                 
 </Project>";
-            
+
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject1", "Example.projitems"), new MockFileData(sharedItems)},
@@ -472,7 +472,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, ""))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
@@ -488,7 +488,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, filesToExclude: new [] { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") }));
+            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, filesToExclude: new[] { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") }));
 
             result.ProjectContents.GetAllFiles().Count(c => c.IsExcluded).ShouldBe(1);
         }

@@ -1,18 +1,16 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using Xunit;
-using Buildalyzer;
-using System.Linq;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -42,7 +40,16 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
-                        }
+                        },
+                        Resources = new List<ResourceDescription>()
+                    },
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>()
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -85,8 +92,17 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
-                        }
+                        },
+                        Resources = new List<ResourceDescription>()
                     },
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>()
+                    }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
@@ -94,10 +110,11 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()))
-                .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode) => 
-                new RollbackProcessResult() {
-                    Compilation = compilation
-                });
+                            .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode) =>
+                            new RollbackProcessResult()
+                            {
+                                Compilation = compilation
+                            });
 
             var target = new CompilingProcess(input, rollbackProcessMock.Object);
 
@@ -105,7 +122,7 @@ namespace ExampleProject
             {
                 Should.Throw<ApplicationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()), 
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()),
                 Times.Exactly(2));
         }
 
@@ -133,8 +150,17 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
-                        }
+                        },
+                        Resources = new List<ResourceDescription>()
                     },
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>()
+                    }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
