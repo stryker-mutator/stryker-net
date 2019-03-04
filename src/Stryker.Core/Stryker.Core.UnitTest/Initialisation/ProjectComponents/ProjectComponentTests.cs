@@ -4,7 +4,7 @@ using Stryker.Core.Mutants;
 using System.Collections.ObjectModel;
 using Xunit;
 
-namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
+namespace Stryker.Core.UnitTest.Initialisation.ProjectComponents
 {
     public class ProjectComponentTests
     {
@@ -48,7 +48,7 @@ namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
             target.Add(subFolder);
             subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
-                
+
             var result = target.GetMutationScore();
             result.ShouldBe(50M);
         }
