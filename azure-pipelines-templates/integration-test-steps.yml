@@ -10,23 +10,17 @@ steps:
     inputs:
       command: custom
       custom: tool
-      arguments: install StrykerMutator.DotNetCoreCli --tool-path $(StrykerInstallPath) --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
+      arguments: install StrykerMutator.DotNetCoreCli -g --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
 
-  - task: DotNetCoreCLI@2
+  - script: dotnet stryker --dev-move
+    workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
     displayName: 'Run integration test netstandard2.0'
-    inputs:
-      command: custom
-      custom: stryker
-      arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
-    
-  - task: DotNetCoreCLI@2
-    displayName: 'Run integration test netcoreapp2.1'
-    inputs:
-      command: custom
-      custom: stryker
-      arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit
+    failOnStderr: false
+
+  - script: dotnet stryker --dev-move
+    workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit
+    displayName: 'Run integration test netstandard2.1'
+    failOnStderr: false
 
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
