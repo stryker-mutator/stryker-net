@@ -324,8 +324,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
 
+
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()));
+            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
 
             var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
 

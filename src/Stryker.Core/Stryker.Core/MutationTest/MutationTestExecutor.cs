@@ -12,6 +12,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         void Test(Mutant mutant, int timeoutMs);
+        ITestRunner TestRunner { get; }
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
@@ -29,7 +30,7 @@ namespace Stryker.Core.MutationTest
         {
             try
             {
-                var result = _testRunner.RunAll(timeoutMs, mutant.Id);
+                var result = TestRunner.RunAll(timeoutMs, mutant.Id);
                 _logger.LogTrace("Testrun with output {0}", result.ResultMessage);
 
                 mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;

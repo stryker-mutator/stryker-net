@@ -31,7 +31,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             }
             if (i is int x)
             {
-                return Stryker.ActiveMutationHelper.ActiveMutation == 8 ? x - 1 : x + 1;
+                return Stryker.MutantControl.IsActive(8) ? x - 1 : x + 1;
             }
 
         }

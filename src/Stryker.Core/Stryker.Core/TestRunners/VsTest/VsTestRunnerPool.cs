@@ -39,6 +39,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
+        public TestRunResult CaptureCoverage(string pipeName)
+        {
+            throw new System.NotImplementedException();
+        }
+
         private VsTestRunner TakeRunner()
         {
             VsTestRunner runner;

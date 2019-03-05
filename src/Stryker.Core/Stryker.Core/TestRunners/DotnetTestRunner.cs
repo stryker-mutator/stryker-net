@@ -52,5 +52,9 @@ namespace Stryker.Core.TestRunners
             };
             return LaunchTestProcess(null, envVars);
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

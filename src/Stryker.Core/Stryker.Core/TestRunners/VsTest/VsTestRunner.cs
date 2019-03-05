@@ -79,6 +79,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
+        public TestRunResult CaptureCoverage(string pipeName)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
         {
             var waitHandle = new AutoResetEvent(false);

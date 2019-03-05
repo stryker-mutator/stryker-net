@@ -52,7 +52,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                _testRunner = new TestRunnerFactory().Create("", projectInfo.TestProjectPath);
+                _testRunner = new TestRunnerFactory().Create(options, projectInfo);
             }
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
