@@ -176,26 +176,14 @@ namespace Stryker.Core.Mutants
         private SyntaxNode MutateForStatement(ForStatementSyntax forStatement)
         {
             // for needs special treatments for its incrementors
-            StatementSyntax forWithMutantIncrementors = forStatement;
+            StatementSyntax forWithMutantIncrementors = forStatement.TrackNodes(forStatement);
 
             foreach (var incrementor in forStatement.Incrementors)
             {
                 forWithMutantIncrementors = MutateSubExpressionWithIfStatements(forStatement, forWithMutantIncrementors, incrementor);
             }
 
-            var originalFor = forWithMutantIncrementors;
-            if (forWithMutantIncrementors != forStatement)
-            {
-                var scan = forWithMutantIncrementors;
-                // traverse ifs to locate the 'for' that we have to mutate further
-                while (scan is IfStatementSyntax mutantIf)
-                {
-                    scan = ((BlockSyntax) mutantIf.Else.Statement).Statements[0];
-                }
-
-                originalFor = (ForStatementSyntax) scan;
-            }
-
+            var originalFor = forWithMutantIncrementors.GetCurrentNode(forStatement);
             // now we generate a mutant for the remainder of the for statement
             var mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
             mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
