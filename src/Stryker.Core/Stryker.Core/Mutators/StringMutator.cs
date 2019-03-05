@@ -5,7 +5,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class StringMutator: Mutator<LiteralExpressionSyntax>, IMutator
+    public class StringMutator: MutatorBase<LiteralExpressionSyntax>, IMutator
     {
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),
                     DisplayName = @"String mutation",
-                    Type = MutatorType.String
+                    Type = Mutator.String
                 };
             }
         }

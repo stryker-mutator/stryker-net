@@ -5,7 +5,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class BooleanMutator : Mutator<LiteralExpressionSyntax>, IMutator
+    public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
     {
         private Dictionary<SyntaxKind, SyntaxKind> _kindsToMutate { get; }
 
@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.LiteralExpression(_kindsToMutate[node.Kind()]),
                     DisplayName = "Boolean mutation",
-                    Type = MutatorType.Boolean
+                    Type = Mutator.Boolean
                 };
             }
         }

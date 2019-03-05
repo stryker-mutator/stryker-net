@@ -16,12 +16,12 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestExecutor : IMutationTestExecutor
     {
-        private ITestRunner _testRunner { get; set; }
-        private ILogger _logger { get; set; }
+        public ITestRunner TestRunner { get; }
+        private ILogger _logger { get; }
 
         public MutationTestExecutor(ITestRunner testRunner)
         {
-            _testRunner = testRunner;
+            TestRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 

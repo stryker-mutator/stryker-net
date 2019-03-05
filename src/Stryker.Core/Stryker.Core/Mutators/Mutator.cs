@@ -1,34 +1,60 @@
-﻿using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
-using System.Collections.Generic;
+﻿using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 
 namespace Stryker.Core.Mutators
 {
-    /// <summary>
-    /// Mutators can implement this class to check the type of the node and cast the node to the expected type.
-    /// Implementing this class is not obligatory for mutators.
-    /// </summary>
-    /// <typeparam name="T">The type of SyntaxNode to cast to</typeparam>
-    public abstract class Mutator<T> where T : SyntaxNode
+    public enum Mutator
     {
-        /// <summary>
-        /// Apply the given mutations to a single SyntaxNode
-        /// </summary>
-        /// <param name="node">The node to mutate</param>
-        /// <returns>One or more mutations</returns>
-        public abstract IEnumerable<Mutation> ApplyMutations(T node);
+        [Description("Arithmetic operators")]
+        Arithmetic,
+        [Description("Equality operators")]
+        Equality,
+        [Description("Boolean literals")]
+        Boolean,
+        [Description("Logical operators")]
+        Logical,
+        [Description("Assignment statements")]
+        Assignment,
+        [Description("Unary operators")]
+        Unary,
+        [Description("Update operators")]
+        Update,
+        [Description("Checked statements")]
+        Checked,
+        [Description("Linq methods")]
+        Linq,
+        [Description("String literals")]
+        String
+    }
 
-        public IEnumerable<Mutation> Mutate(SyntaxNode node)
+    public static class EnumExtension
+    {
+        public static string GetDescription<T>(this T e) where T : IConvertible
         {
-            if (node is T tNode)
+            if (e is Enum)
             {
-                // the node was of the expected type, so invoke the mutation method
-                return ApplyMutations(tNode);
-            } else
-            {
-                return Enumerable.Empty<Mutation>();
+                Type type = e.GetType();
+                Array values = Enum.GetValues(type);
+
+                foreach (int val in values)
+                {
+                    if (val == e.ToInt32(CultureInfo.InvariantCulture))
+                    {
+                        var memInfo = type.GetMember(type.GetEnumName(val));
+
+                        if (memInfo[0]
+                            .GetCustomAttributes(typeof(DescriptionAttribute), false)
+                            .FirstOrDefault() is DescriptionAttribute descriptionAttribute)
+                        {
+                            return descriptionAttribute.Description;
+                        }
+                    }
+                }
             }
+
+            return null;
         }
     }
 }

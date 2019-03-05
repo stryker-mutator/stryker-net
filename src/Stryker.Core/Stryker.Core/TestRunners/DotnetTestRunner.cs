@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Testing;
+﻿using Stryker.Core.Parsers;
+using Stryker.Core.Testing;
 using System.Collections.Generic;
-using Stryker.Core.Parsers;
 
 namespace Stryker.Core.TestRunners
 {

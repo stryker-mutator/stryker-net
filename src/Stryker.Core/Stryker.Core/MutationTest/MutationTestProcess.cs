@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
@@ -56,15 +55,15 @@ namespace Stryker.Core.MutationTest
         public void Mutate(StrykerOptions options)
         {
             var mutatedSyntaxTrees = new List<SyntaxTree>();
-            // add helper
+            {
+                // add helper
             _logger.LogDebug("Injecting helpers into assembly.");
             mutatedSyntaxTrees.AddRange(CodeInjection.MutantHelpers);
-
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode, 
-                    path: file.FullPath, 
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
+                    path: file.FullPath,
                     options: new CSharpParseOptions(LanguageVersion.Latest));
 
                 if (!file.IsExcluded)
@@ -140,25 +139,19 @@ namespace Stryker.Core.MutationTest
 
         public StrykerRunResult Test(StrykerOptions options)
         {
-            var logicalProcessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
-
-            if (options.MaxConcurrentTestrunners <= logicalProcessorCount)
-            {
-                usableProcessorCount = options.MaxConcurrentTestrunners;
-            }
-
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
             _reporter.OnStartMutantTestRun(mutantsNotRun);
 
             Parallel.ForEach(mutantsNotRun,
-                new ParallelOptions { MaxDegreeOfParallelism = usableProcessorCount },
+                new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                 mutant =>
                 {
                     _mutationTestExecutor.Test(mutant, _input.TimeoutMS);
 
                     _reporter.OnMutantTested(mutant);
                 });
+
+            _mutationTestExecutor.TestRunner.Dispose();
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());

@@ -15,7 +15,7 @@ namespace Stryker.Core.Initialisation
         int InitialTest(ITestRunner testRunner);
         IEnumerable<int> CoveredMutants { get; }
     }
-    
+
     public class InitialTestProcess : IInitialTestProcess
     {
         private ILogger _logger { get; set; }

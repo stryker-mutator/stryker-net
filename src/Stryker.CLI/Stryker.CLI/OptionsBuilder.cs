@@ -27,7 +27,8 @@ namespace Stryker.CLI
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
             CommandOption thresholdBreak,
-            CommandOption filesToExclude)
+            CommandOption filesToExclude,
+            CommandOption testRunner)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -51,7 +52,8 @@ namespace Stryker.CLI
                 GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
-                GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude));
+                GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
+                GetOption(testRunner.Value(), CLIOptions.TestRunner));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
@@ -97,7 +99,8 @@ namespace Stryker.CLI
                     // Convert value to desired type
                     return (T)Convert.ChangeType(value, typeof(T));
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new StrykerInputException("A value passed to an option was not valid.", $@"The option {option.ArgumentName} with value {value} is not valid.
 Hint:
