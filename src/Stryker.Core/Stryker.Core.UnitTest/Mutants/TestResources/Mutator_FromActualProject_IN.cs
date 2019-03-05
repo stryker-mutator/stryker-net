@@ -4,6 +4,7 @@
     public static class CharCheckExtensions
     {
         
+        // Following code lines have been extracted from NFluent source code (www.n-fluent.net)
         private static void ImplementContains<T>(ICheckLogic<IEnumerable<T>> checker, IEnumerable<T> otherEnumerable)
         {
             IList<object> notFoundValues = null;
@@ -15,6 +16,7 @@
                 .OnNegate("The {0} contains all the given values whereas it must not.")
                 .EndCheck();
         }
+
         public static ICheckLink<ICodeCheck<T>> LastsLessThan<T>(
             this ICodeCheck<T> check,
             double threshold,

@@ -162,7 +162,7 @@ namespace Stryker.Core.Mutants
             if (!ifStatement.Condition.ContainsDeclarations())
             {
                 mutatedIf = mutatedIf.ReplaceNode(mutatedIf.GetCurrentNode(ifStatement.Condition),
-                    MutateWithConditionalExpressions(ifStatement.Condition));
+                    MutateExpressions(ifStatement.Condition));
             }
 
             if (ifStatement.Else != null)
@@ -208,6 +208,12 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateExpressions(SyntaxNode currentNode)
         {
+            if (currentNode is ExpressionStatementSyntax expressionStatement)
+            {
+                // The subExpression of a ExpressionStatement cannot be mutated directly
+                var mutant = Mutate(expressionStatement.Expression);
+                return currentNode.ReplaceNode(expressionStatement.Expression, mutant);
+            }
             var expressions = GetExpressionSyntax(currentNode).Where(x => x != null);
             if (expressions.Any())
             {
@@ -215,47 +221,40 @@ namespace Stryker.Core.Mutants
                 foreach (var expressionSyntax in expressions)
                 {
                     var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
-                    SyntaxNode actualMutationNode = null;
-                    if (currentNode is AssignmentExpressionSyntax assign)
+                    if (expressionSyntax is InvocationExpressionSyntax )
                     {
-                        actualMutationNode = assign.Right;
-                    }
-                    else if (currentNode is ExpressionStatementSyntax)
-                    {
-                        // The subExpression of a ExpressionStatement cannot be mutated directly
-                        var mutant = Mutate(expressionSyntax);
-                        return currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
-                    }
-                    else if (expressionSyntax is InvocationExpressionSyntax )
-                    {
+                        // chained invocations, we will recurse
                         var mutant = Mutate(expressionSyntax);
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
-                    }
-                    else if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
+                    } 
+                    SyntaxNode mutationCandidate = null;
+                    
+                    if (expressionSyntax is ParenthesizedLambdaExpressionSyntax lambda)
                     {
-                        actualMutationNode = lambda.Body;
+                        mutationCandidate = lambda.Body;
                     }
                     else if (expressionSyntax is MemberAccessExpressionSyntax memberAccess)
                     {
-                        actualMutationNode = memberAccess.Expression;
+                        mutationCandidate = memberAccess.Expression;
                     }
                     else if (expressionSyntax is AnonymousFunctionExpressionSyntax anonymousFunction)
                     {
-                        actualMutationNode = anonymousFunction.Body;
+                        mutationCandidate = anonymousFunction.Body;
                     }
 
-                    if (actualMutationNode != null)
+                    if (mutationCandidate != null)
                     {
-                        var subNodeCopy = expressionSyntax.TrackNodes(actualMutationNode);
-                        var mutant = Mutate(actualMutationNode);
-                        var local = subNodeCopy.GetCurrentNode(actualMutationNode);
-                        var sub = subNodeCopy.ReplaceNode(local, mutant);
+                        // we can  mutate a part of expression
+                        var subNodeCopy = expressionSyntax.TrackNodes(mutationCandidate);
+                        var sub = subNodeCopy.ReplaceNode(subNodeCopy.GetCurrentNode(mutationCandidate), Mutate(mutationCandidate));
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, sub);
                     }
                     else
-                        // The mutations should be placed using a ConditionalExpression
+                    {
+                        // attempts to mutate the expression as a whole
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax,
                             MutateWithConditionalExpressions(expressionSyntax));
+                    }
                 }
 
                 return currentNodeCopy;
@@ -266,7 +265,10 @@ namespace Stryker.Core.Mutants
 
         private IEnumerable<Mutant> FindMutantsRecursive(SyntaxNode current)
         {
-            foreach (var mutant in FindMutants(current)) yield return mutant;
+            foreach (var mutant in FindMutants(current))
+            {
+                yield return mutant;
+            }
             foreach (var mutant in current.ChildNodes().SelectMany(FindMutantsRecursive))
             {
                 yield return mutant;
@@ -275,13 +277,7 @@ namespace Stryker.Core.Mutants
 
         private IEnumerable<Mutant> FindMutants(SyntaxNode current)
         {
-            foreach (var mutator in _mutators)
-            {
-                foreach (var mutation in ApplyMutator(current, mutator))
-                {
-                    yield return mutation;
-                }
-            }
+            return _mutators.SelectMany(mutator => ApplyMutator(current, mutator));
         }
 
         private StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode, StatementSyntax nodeToReplace, SyntaxNode subExpression)
@@ -336,6 +332,10 @@ namespace Stryker.Core.Mutants
         {
             switch (node.GetType().Name)
             {
+                case nameof(AssignmentExpressionSyntax):
+                    var assignementExpression = node as AssignmentExpressionSyntax;
+                    yield return assignementExpression.Right;
+                    yield break;
                 case nameof(LocalDeclarationStatementSyntax):
                     var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
                     foreach(var vars in localDeclarationStatement.Declaration.Variables.Select(x => x.Initializer?.Value))
@@ -350,10 +350,6 @@ namespace Stryker.Core.Mutants
                 case nameof(LocalFunctionStatementSyntax):
                     var localFunction = node as LocalFunctionStatementSyntax;
                     yield return localFunction.ExpressionBody?.Expression;
-                    yield break;
-                case nameof(ExpressionStatementSyntax):
-                    var expressionStatement = node as ExpressionStatementSyntax;
-                    yield return expressionStatement.Expression;
                     yield break;
                 case nameof(InvocationExpressionSyntax):
                     var invocationExpression = node as InvocationExpressionSyntax;
