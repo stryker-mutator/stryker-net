@@ -4,7 +4,11 @@
         <script src="mutation-test-elements.js"></script>
     </head>
     <body>
-        <a href="/">Back</a>
-        <mutation-test-report-app src="mutation-report.json"></mutation-test-report-app>
+        <mutation-test-report-app title-postfix="##REPORT_TITLE##"></mutation-test-report-app>
+        
+        <script>
+            document.querySelector('mutation-test-report-app').report =
+                ##REPORT_JSON##;
+        </script>
     </body>
 </html>

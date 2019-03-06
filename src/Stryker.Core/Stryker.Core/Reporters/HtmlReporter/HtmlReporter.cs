@@ -5,6 +5,7 @@ using Stryker.Core.Reporters.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 
 namespace Stryker.Core.Reporters.Html
 {
@@ -23,14 +24,22 @@ namespace Stryker.Core.Reporters.Html
         {
             var mutationReport = MutationReport.Build(_options, mutationTree);
 
-            // First generate json using json reporter
-            WriteReportToJsonFile(mutationReport.ToJson(), Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
+            var htmlFileName = "index.html";
+            var jsFileName = "mutation-test-elements.js";
 
-            foreach (var fileName in new Dictionary<string, string>
+            var resourceFiles = new Dictionary<string, string>
             {
-                { "index.html", "Stryker.Core.Reporters.HtmlReporter.index.html" },
-                { "mutation-test-elements.js", "Stryker.Core.Reporters.HtmlReporter.mutation-test-elements.js" }
-            })
+                {
+                    htmlFileName,
+                    "Stryker.Core.Reporters.HtmlReporter.index.html"
+                },
+                {
+                    jsFileName,
+                    typeof(HtmlReporter).Assembly.GetManifestResourceNames().Single(m => m.Contains(jsFileName))
+                }
+            };
+
+            foreach (var fileName in resourceFiles)
             {
                 using (var stream = typeof(HtmlReporter).Assembly.GetManifestResourceStream(fileName.Value))
                 {
@@ -39,7 +48,14 @@ namespace Stryker.Core.Reporters.Html
                         var filePath = Path.Combine(_options.OutputPath, "reports", fileName.Key);
                         using (var file = _fileSystem.File.CreateText(filePath))
                         {
-                            file.WriteLine(reader.ReadToEnd());
+                            var fileContent = reader.ReadToEnd();
+
+                            if (fileName.Key == htmlFileName)
+                            {
+                                fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker Dotnet Report");
+                                fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport.ToJson());
+                            }
+                            file.WriteLine(fileContent);
                         }
                     }
                 }
