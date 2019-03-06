@@ -4,6 +4,10 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_OUT.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_KnownComplexCases_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_KnownComplexCases_OUT.cs" />
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
@@ -17,6 +21,18 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_FromActualProject_OUT.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_KnownComplexCases_IN.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_KnownComplexCases_OUT.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestResources\ExampleSourceFile.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -52,8 +68,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeCoverage" Version="16.0.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
+    <PackageReference Include="Microsoft.CodeCoverage" Version="16.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="3.0.10" />

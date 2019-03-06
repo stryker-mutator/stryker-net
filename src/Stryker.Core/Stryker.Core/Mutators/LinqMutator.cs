@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
         {
             if (Enum.TryParse(node.Name.Identifier.ValueText, out LinqExpression expression) &&
-                _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression))
+                _kindsToMutate.TryGetValue(expression, out LinqExpression replacementExpression) && node.Parent is InvocationExpressionSyntax)
             {
                 SyntaxNode replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
                 string displayName = $"Linq method mutation ({node.Name.Identifier.ValueText}() to {replacement}())";

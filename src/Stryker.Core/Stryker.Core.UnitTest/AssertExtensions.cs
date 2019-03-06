@@ -27,6 +27,11 @@ namespace Stryker.Core.UnitTest
         /// <param name="expected">Expected code</param>
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
+            // for some reason, nodes can be different while being textually the same
+            if (actual.ToString() == expected.ToString())
+            {
+                return;
+            }
             SyntaxFactory.AreEquivalent(actual, expected)
                 .ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
         }
@@ -36,5 +41,6 @@ namespace Stryker.Core.UnitTest
             string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
         }
+
     }
 }
