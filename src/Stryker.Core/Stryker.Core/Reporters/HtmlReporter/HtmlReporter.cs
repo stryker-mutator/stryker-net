@@ -24,50 +24,37 @@ namespace Stryker.Core.Reporters.Html
         {
             var mutationReport = MutationReport.Build(_options, mutationTree);
 
-            var htmlFileName = "index.html";
-            var jsFileName = "mutation-test-elements.js";
-
-            var resourceFiles = new Dictionary<string, string>
-            {
-                {
-                    htmlFileName,
-                    "Stryker.Core.Reporters.HtmlReporter.index.html"
-                },
-                {
-                    jsFileName,
-                    typeof(HtmlReporter).Assembly.GetManifestResourceNames().Single(m => m.Contains(jsFileName))
-                }
-            };
-
-            foreach (var fileName in resourceFiles)
-            {
-                using (var stream = typeof(HtmlReporter).Assembly.GetManifestResourceStream(fileName.Value))
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var filePath = Path.Combine(_options.OutputPath, "reports", fileName.Key);
-                        using (var file = _fileSystem.File.CreateText(filePath))
-                        {
-                            var fileContent = reader.ReadToEnd();
-
-                            if (fileName.Key == htmlFileName)
-                            {
-                                fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker Dotnet Report");
-                                fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport.ToJson());
-                            }
-                            file.WriteLine(fileContent);
-                        }
-                    }
-                }
-            }
+            WriteHtmlReport(Path.Combine(_options.OutputPath, "reports", "mutation-report.html"), mutationReport.ToJson());
         }
 
-        private void WriteReportToJsonFile(string mutationReport, string filePath)
+        private void WriteHtmlReport(string filePath, string mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            using (var file = _fileSystem.File.CreateText(filePath))
+
+            using (var htmlStream = typeof(HtmlReporter).Assembly
+                .GetManifestResourceStream(typeof(HtmlReporter)
+                .Assembly.GetManifestResourceNames()
+                .Single(m => m.Contains("mutation-report.html"))))
+            using (var jsStream = typeof(HtmlReporter).Assembly
+                .GetManifestResourceStream(typeof(HtmlReporter)
+                .Assembly.GetManifestResourceNames()
+                .Single(m => m.Contains("mutation-test-elements.js"))))
+
             {
-                file.WriteLine(mutationReport);
+                using (var htmlReader = new StreamReader(htmlStream))
+                using (var jsReader = new StreamReader(jsStream))
+                {
+                    using (var file = _fileSystem.File.CreateText(filePath))
+                    {
+                        var fileContent = htmlReader.ReadToEnd();
+
+                        fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
+                        fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker Dotnet Report");
+                        fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
+
+                        file.WriteLine(fileContent);
+                    }
+                }
             }
         }
 
