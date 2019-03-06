@@ -65,30 +65,6 @@ namespace Stryker.Core.Mutants
             return tempMutants;
         }
 
-        private bool CanBeMutated(SyntaxNode node)
-        {
-            // don't mutate attributes or their arguments
-            if (node is AttributeListSyntax)
-            {
-                return false;
-            }
-            // don't mutate parameters
-            if (node is ParameterSyntax)
-            {
-                return false;
-            }
-            // don't mutate constant fields
-            if (node is FieldDeclarationSyntax field)
-            {
-                if (field.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
@@ -134,6 +110,30 @@ namespace Stryker.Core.Mutants
                 }
             }
             return childCopy;
+        }
+
+        private bool CanBeMutated(SyntaxNode node)
+        {
+            // don't mutate attributes or their arguments
+            if (node is AttributeListSyntax)
+            {
+                return false;
+            }
+            // don't mutate parameters
+            if (node is ParameterSyntax)
+            {
+                return false;
+            }
+            // don't mutate constant fields
+            if (node is FieldDeclarationSyntax field)
+            {
+                if (field.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private SyntaxNode MutateExpressionStatement(ExpressionStatementSyntax expressionStatement)
