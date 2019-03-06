@@ -75,6 +75,10 @@ namespace Stryker.Core.Compiling
             {
                 // compiling failed
                 _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
+                foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+                {
+                    _logger.LogWarning($"{emitResultDiagnostic}");
+                }
                 throw new ApplicationException("Failed to restore build able state.");
             }
             return new CompilingProcessResult()
