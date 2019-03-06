@@ -9,9 +9,9 @@ namespace Stryker.Core.Reporters.Json
 {
     public class MutationReport
     {
-        public string SchemaVersion { get; } = "0.0.6";
+        public string SchemaVersion { get; } = "0.0.7";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public IDictionary<string, JsonReportComponent> Files { get; } = new Dictionary<string, JsonReportComponent>();
+        public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
         private readonly StrykerOptions _options;
@@ -50,9 +50,9 @@ namespace Stryker.Core.Reporters.Json
             return json;
         }
 
-        private IDictionary<string, JsonReportComponent> GenerateReportComponents(IReadOnlyInputComponent component)
+        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
         {
-            Dictionary<string, JsonReportComponent> files = new Dictionary<string, JsonReportComponent>();
+            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
             if (component is FolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -65,9 +65,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportComponent> GenerateFolderReportComponents(FolderComposite folderComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(FolderComposite folderComponent)
         {
-            Dictionary<string, JsonReportComponent> files = new Dictionary<string, JsonReportComponent>();
+            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -76,14 +76,14 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportComponent> GenerateFileReportComponents(FileLeaf fileComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(FileLeaf fileComponent)
         {
-            var reportComponent = new JsonReportComponent(fileComponent)
+            var reportComponent = new JsonReportFileComponent(fileComponent)
             {
                 Health = CheckHealth(fileComponent)
             };
 
-            return new Dictionary<string, JsonReportComponent> { { fileComponent.RelativePath, reportComponent } };
+            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, reportComponent } };
         }
 
         private string CheckHealth(FileLeaf file)
