@@ -34,6 +34,7 @@ jobs:
 
   - script: 'npm install'
     displayName: 'Make mutation report webelements available to build'
+    workingDirectory: src/Stryker.Core/Stryker.Core
 
   - task: DotNetCoreCLI@2
     displayName: 'Run unit tests'
