@@ -12,6 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
+using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -32,6 +35,14 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly int? _testCasesDiscovered;
         private IEnumerable<string> _sources;
 
+        private static ILogger _logger { get; set; }
+
+        static VsTestRunner()
+        {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
+
+        }
+
         public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, int? testCasesDiscovered)
         {
             _options = options;
@@ -44,6 +55,8 @@ namespace Stryker.Core.TestRunners.VsTest
             InitializeVsTestConsole();
         }
 
+        public IEnumerable<int> CoveredMutants { get; private set; }
+
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             if (_testCasesDiscovered is null)
@@ -51,7 +64,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new Exception("_testCasesDiscovered cannot be null when running tests");
             }
 
-            TestRunResult testResult = new TestRunResult() { Success = false };
+            TestRunResult testResult = new TestRunResult { Success = false };
             lock (runLock)
             {
                 Running = true;
@@ -79,9 +92,26 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        public TestRunResult CaptureCoverage(string pipeName)
+        public TestRunResult CaptureCoverage()
         {
-            throw new NotImplementedException();
+            using (var coverageServer = new CoverageServer())
+            {
+                var envVars = new Dictionary<string, string>
+                {
+                    {MutantControl.EnvironmentPipeName, coverageServer.PipeName}
+                };
+                var result = RunAll(null, null);
+                if (!coverageServer.WaitReception())
+                {
+                    _logger.LogWarning("Did not receive mutant coverage data from initial run.");
+                }
+                else
+                {
+                    CoveredMutants = coverageServer.RanMutants;
+                }
+
+                return result;
+            }
         }
 
         public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
@@ -104,13 +134,14 @@ namespace Stryker.Core.TestRunners.VsTest
             waitHandle.WaitOne();
             return handler.TestResults;
         }
-
+            
         private IEnumerable<TestResult> RunAllTests(int? activeMutationId, string runSettings)
         {
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
             var handler = new RunEventHandler(runCompleteSignal, _messages);
-            var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), activeMutationId);
+            var envVars = new Dictionary<string, string> {["ActiveMutation"] = activeMutationId.ToString()};
+            var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
 
             _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
 
@@ -169,10 +200,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
+            var logFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
-                LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt")
+                LogFilePath = logFilePath
             });
         }
 

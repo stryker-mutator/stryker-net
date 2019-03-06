@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.TestRunners
 {
@@ -6,6 +7,8 @@ namespace Stryker.Core.TestRunners
     {
         TestRunResult RunAll(int? timeoutMS, int? activeMutationId);
 
-        TestRunResult CaptureCoverage(string pipeName);
+        TestRunResult CaptureCoverage();
+
+        IEnumerable<int> CoveredMutants { get; }
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
+using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners
 {
@@ -9,6 +12,13 @@ namespace Stryker.Core.TestRunners
         private readonly ITotalNumberOfTestsParser _totalNumberOfTestsParser;
         private string _path { get; set; }
         private IProcessExecutor _processExecutor { get; set; }
+        private static ILogger _logger { get; set; }
+
+        static DotnetTestRunner()
+        {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
+
+        }
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, ITotalNumberOfTestsParser totalNumberOfTestsParser)
         {
@@ -44,14 +54,28 @@ namespace Stryker.Core.TestRunners
             };
         }
 
-        public TestRunResult CaptureCoverage(string pipeName)
+        public TestRunResult CaptureCoverage()
         {
-            var envVars = new Dictionary<string, string>
+            using (var coverageServer = new CoverageServer())
             {
-                {MutantControl.EnvironmentPipeName, pipeName }
-            };
-            return LaunchTestProcess(null, envVars);
+                var envVars = new Dictionary<string, string>
+                {
+                    {MutantControl.EnvironmentPipeName, coverageServer.PipeName }
+                };
+                var result = LaunchTestProcess(null, envVars);
+                if (!coverageServer.WaitReception())
+                {
+                    _logger.LogWarning("Did not receive mutant coverage data from initial run.");
+                }
+                else
+                {
+                    CoveredMutants = coverageServer.RanMutants;
+                }
+                return result;
+            }
         }
+
+        public IEnumerable<int> CoveredMutants { get; private set; }
 
         public void Dispose()
         {

@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
-        public IEnumerable<int> CoveredMutants => _initialTestProcess.CoveredMutants;
+        public IEnumerable<int> CoveredMutants => _testRunner.CoveredMutants;
 
         public MutationTestInput Initialize(StrykerOptions options)
         {
