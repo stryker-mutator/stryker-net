@@ -29,7 +29,8 @@ jobs:
   
   steps:
   - task: NodeTool@0
-    inputs: '10.x'
+    inputs: 
+      versionSpec: '10.x'
 
   - script: 'npm install'
     displayName: 'Make mutation report webelements available to build'
