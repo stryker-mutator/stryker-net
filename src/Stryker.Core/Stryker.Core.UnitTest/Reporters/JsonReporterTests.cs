@@ -2,13 +2,18 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;
 
@@ -47,7 +52,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReportComponent_ShouldHaveLanguageSetToCs()
+        public void JsonReportFileComponent_ShouldHaveLanguageSetToCs()
         {
             var folderComponent = CreateProjectWith();
             var fileComponent = (folderComponent as FolderComposite).GetAllFiles().First();
@@ -56,7 +61,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReportComponent_ShouldContainOriginalSource()
+        public void JsonReportFileComponent_ShouldContainOriginalSource()
         {
             var folderComponent = CreateProjectWith();
             var fileComponent = (folderComponent as FolderComposite).GetAllFiles().First();
@@ -65,7 +70,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReportComponents_ShouldContainMutants()
+        public void JsonReportFileComponents_ShouldContainMutants()
         {
             var folderComponent = CreateProjectWith();
             foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
@@ -79,12 +84,13 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReportComponent_DoesNotContainDuplicateMutantsAndLogsWarningWhenDuplicateDetected()
+        public void JsonReportFileComponent_DoesNotContainDuplicateMutants()
         {
-            var folderComponent = CreateProjectWith();
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith(duplicateMutant: true);
             foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new JsonReportFileComponent(file);
+                var jsonReportComponent = new JsonReportFileComponent(file, loggerMock);
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id);
@@ -92,28 +98,111 @@ namespace Stryker.Core.UnitTest.Reporters
             }
         }
 
-        //[Fact]
-        //public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
-        //{
-        //    var mockFileSystem = new MockFileSystem();
-        //    var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
-        //    var reporter = new JsonReporter(options, mockFileSystem);
+        [Fact]
+        public void JsonReport_ThresholdsAreSet()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
 
-        //    reporter.OnAllMutantsTested(folder);
-        //    var reportPath = Path.Combine(options.BasePath, "StrykerOutput", "reports", $"mutation-report-{DateTime.Today.ToString("yyyy-MM-dd")}.json");
-        //    mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
 
-        //    var reportObject = JsonConvert.DeserializeObject<JsonReporter.JsonReportComponent>(mockFileSystem.GetFile(reportPath).TextContents);
-        //    reportObject.ThresholdHigh.ShouldBe(80);
-        //    reportObject.ThresholdLow.ShouldBe(60);
-        //    reportObject.ThresholdBreak.ShouldBe(0);
+            report.ShouldSatisfyAllConditions(
+                () => report.Thresholds.ShouldContainKey("high"),
+                () => report.Thresholds.ShouldContainKey("low"));
+        }
 
-        //    ValidateJsonReportComponent(reportObject, folder, "warning");
-        //    ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(0), folder.Children.ElementAt(0), "ok", 1);
-        //    ValidateJsonReportComponent(reportObject.ChildResults.ElementAt(1), folder.Children.ElementAt(1), "danger", 1);
-        //}
+        [Fact]
+        public void JsonReport_ShouldContainAtLeastOneFile()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
 
-        private IReadOnlyInputComponent CreateProjectWith(int folders = 1, int files = 3, int mutants = 2, int duplicateMutants = 0)
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+
+            report.Files.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void JsonReport_WithMutationScoreOverThresholdHighHasGoodHealth()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 20, thresholdLow: 10), folderComponent);
+
+            report.Files.First().Value.Health.ShouldBe("Good");
+        }
+
+        [Fact]
+        public void JsonReport_WithMutationScoreEqualToThresholdHighHasGoodHealth()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 66, thresholdLow: 10), folderComponent);
+
+            report.Files.First().Value.Health.ShouldBe("Good");
+        }
+
+        [Fact]
+        public void JsonReport_WithMutationScoreBetweenThresholdHighAndBreakHasWarningHealth()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdBreak: 50), folderComponent);
+
+            report.Files.First().Value.Health.ShouldBe("Warning");
+        }
+
+        [Fact]
+        public void JsonReport_WithMutationScoreUnderThresholdBreakHasDangerHealth()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 67), folderComponent);
+
+            report.Files.First().Value.Health.ShouldBe("Danger");
+        }
+
+        [Fact]
+        public void JsonReport_WithMutationScoreEqualToThresholdBreakHasDangerHealth()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 66), folderComponent);
+
+            report.Files.First().Value.Health.ShouldBe("Danger");
+        }
+
+        [Fact]
+        public void JsonReport_BuildReportReturnsSingletonJsonReport()
+        {
+            var loggerMock = Mock.Of<ILogger>();
+            var folderComponent = CreateProjectWith();
+            var options = new StrykerOptions();
+
+            var firstReport = JsonReport.Build(options, folderComponent);
+            var secondReport = JsonReport.Build(options, folderComponent);
+
+            secondReport.ShouldBe(firstReport);
+        }
+
+        [Fact]
+        public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
+        {
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var reporter = new JsonReporter(options, mockFileSystem);
+
+            reporter.OnAllMutantsTested(CreateProjectWith());
+            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
+            mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
+        }
+
+        private IReadOnlyInputComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
             var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
@@ -126,49 +215,35 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
-            folder.Add(new FileLeaf()
+            var folder = new FolderComposite { Name = "RootFolder", RelativePath = "src" };
+
+            for (var i = 1; i <= 2; i++)
             {
-                Name = "SomeFile.cs",
-                Mutants = new Collection<Mutant>()
+                var addedFolder = new FolderComposite { Name = $"{i}", RelativePath = $"src/{i}" };
+                folder.Add(addedFolder);
+
+                for (var y = 0; y <= 4; y++)
+                {
+                    var m = new Collection<Mutant>();
+                    addedFolder.Add(new FileLeaf()
                     {
-                        new Mutant()
-                        {
-                            Id = 55,
-                            ResultStatus = MutantStatus.Killed,
-                            Mutation = mutation
-                        }
-                    },
-                SourceCode = "void M(){ int i = 0 + 7; }"
-            });
-            folder.Add(new FileLeaf()
-            {
-                Name = "SomeOtherFile.cs",
-                Mutants = new Collection<Mutant>()
+                        Name = $"SomeFile{i}.cs",
+                        RelativePath = $"src/{i}/SomeFile{i}.cs",
+                        Mutants = m,
+                        SourceCode = "void M(){ int i = 0 + 8; }"
+                    });
+
+                    for (var z = 0; z <= 5; z++)
                     {
-                        new Mutant()
+                        m.Add(new Mutant()
                         {
-                            Id = 56,
-                            ResultStatus = MutantStatus.Survived,
+                            Id = duplicateMutant ? 2 : new Random().Next(1, 5000),
+                            ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
                             Mutation = mutation
-                        }
-                    },
-                SourceCode = "void M(){ int i = 0 + 8; }"
-            });
-            folder.Add(new FileLeaf()
-            {
-                Name = "SomeOtherFile.cs",
-                Mutants = new Collection<Mutant>()
-                    {
-                        new Mutant()
-                        {
-                            Id = 57,
-                            ResultStatus = MutantStatus.Skipped,
-                            Mutation = mutation
-                        }
-                    },
-                SourceCode = "void M(){ int i = 0 + 9; }"
-            });
+                        });
+                    }
+                }
+            }
 
             return folder;
         }

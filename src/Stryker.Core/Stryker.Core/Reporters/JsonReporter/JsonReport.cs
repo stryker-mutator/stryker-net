@@ -7,30 +7,36 @@ using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class MutationReport
+    public class JsonReport
     {
         public string SchemaVersion { get; } = "0.0.7";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
         public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
-        private readonly StrykerOptions _options;
+        private static StrykerOptions _options;
         [JsonIgnore]
-        private static MutationReport _report = null;
+        private static JsonReport _report = null;
 
-        private MutationReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        private JsonReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
             _options = options;
 
             Thresholds.Add("high", _options.ThresholdOptions.ThresholdHigh);
-            Thresholds.Add("low", _options.ThresholdOptions.ThresholdLow);
+            Thresholds.Add("low", _options.ThresholdOptions.ThresholdBreak);
 
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static MutationReport Build(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        public static JsonReport Build(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
-            _report = _report ?? new MutationReport(options, mutationReport);
+            // This should really only happen in unit tests. 
+            // We need this construct because in a unit test 
+            // we want to be able to generate different reports with different settings
+            _report = _options == options ? _report : null;
+
+            // If the report was already generated, return the existing report
+            _report = _report ?? new JsonReport(options, mutationReport);
 
             return _report;
         }
@@ -88,11 +94,12 @@ namespace Stryker.Core.Reporters.Json
 
         private string CheckHealth(FileLeaf file)
         {
-            if (file.GetMutationScore() >= _options.ThresholdOptions.ThresholdHigh)
+            int mutationScore = (int)file.GetMutationScore();
+            if (mutationScore >= _options.ThresholdOptions.ThresholdHigh)
             {
                 return "Good";
             }
-            else if (file.GetMutationScore() <= _options.ThresholdOptions.ThresholdBreak)
+            else if (mutationScore <= _options.ThresholdOptions.ThresholdBreak)
             {
                 return "Danger";
             }

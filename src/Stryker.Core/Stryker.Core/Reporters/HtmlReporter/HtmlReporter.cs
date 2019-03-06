@@ -22,7 +22,7 @@ namespace Stryker.Core.Reporters.Html
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
         {
-            var mutationReport = MutationReport.Build(_options, mutationTree);
+            var mutationReport = JsonReport.Build(_options, mutationTree);
 
             WriteHtmlReport(Path.Combine(_options.OutputPath, "reports", "mutation-report.html"), mutationReport.ToJson());
         }

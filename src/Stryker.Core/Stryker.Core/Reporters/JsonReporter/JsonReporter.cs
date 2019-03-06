@@ -20,7 +20,7 @@ namespace Stryker.Core.Reporters.Json
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
         {
-            var mutationReport = MutationReport.Build(_options, mutationTree);
+            var mutationReport = JsonReport.Build(_options, mutationTree);
 
             WriteReportToJsonFile(mutationReport.ToJson(), Path.Combine(_options.OutputPath, "reports", "mutation-report.json"));
         }

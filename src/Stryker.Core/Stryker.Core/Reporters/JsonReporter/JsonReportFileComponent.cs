@@ -1,4 +1,6 @@
-﻿using Stryker.Core.Initialisation.ProjectComponent;
+﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Logging;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters.Json
@@ -11,8 +13,10 @@ namespace Stryker.Core.Reporters.Json
 
         public ISet<JsonMutant> Mutants { get; }
 
-        public JsonReportFileComponent(FileLeaf file)
+        public JsonReportFileComponent(FileLeaf file, ILogger logger = null)
         {
+            var log = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+
             Source = file.SourceCode;
             Language = "cs";
             Mutants = new HashSet<JsonMutant>(new UniqueJsonMutantComparer());
@@ -28,10 +32,11 @@ namespace Stryker.Core.Reporters.Json
                     Status = mutant.ResultStatus.ToString()
                 };
 
-
                 if (!Mutants.Add(jsonMutant))
                 {
-                    // TODO: Log warning message something went wrong there was a duplicate mutant
+                    logger.LogWarning(
+                        $"Mutant {mutant.Id} was generated twice in file {file.RelativePath}. \n" +
+                        $"This should not have happened. Please create an issue at https://github.com/stryker-mutator/stryker-net/issues");
                 }
             }
         }
