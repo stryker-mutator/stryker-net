@@ -204,7 +204,7 @@ namespace Stryker.Core.Reporters.Json
                     DetectedMutations = component.DetectedMutants.Count(),
                     TotalMutants = component.TotalMutants.Count(),
                     KilledMutants = Where(MutantStatus.Killed),
-                    SurvivedMutants = Where(MutantStatus.Survived),
+                    SurvivedMutants = Where(MutantStatus.Survived) + Where(MutantStatus.Untouched),
                     SkippedMutants = Where(MutantStatus.Skipped),
                     TimeoutMutants = Where(MutantStatus.Timeout),
                     CompileErrors = Where(MutantStatus.CompileError),
