@@ -51,17 +51,16 @@ namespace Stryker.Core.ProjectComponents
         {
             var mutationScore = GetMutationScore();
 
-            if (mutationScore > threshold.High)
+            switch (mutationScore)
             {
-                return Health.Good;
-            }
-            else if (mutationScore > threshold.Low)
-            {
-                return Health.Warning;
-            }
-            else
-            {
-                return Health.Danger;
+                case var score when score > threshold.High:
+                    return Health.Good;
+                case var score when score <= threshold.High && score > threshold.Low:
+                    return Health.Warning;
+                case var score when score <= threshold.Low && score > threshold.Break:
+                    return Health.Danger;
+                default:
+                    return Health.Danger;
             }
         }
     }
