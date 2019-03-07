@@ -31,7 +31,7 @@ namespace Stryker.Core.Options
 
         public int ConcurrentTestrunners { get; }
 
-        public ThresholdOptions ThresholdOptions { get; }
+        public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; }
 
         public IEnumerable<string> FilesToExclude { get; }
@@ -68,7 +68,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
-            ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
         }
@@ -189,7 +189,7 @@ namespace Stryker.Core.Options
             return usableProcessorCount;
         }
 
-        private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
+        private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
             List<int> thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
             if (thresholdList.Any(x => x > 100 || x < 0))
@@ -207,7 +207,7 @@ namespace Stryker.Core.Options
                     "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
             }
 
-            return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
+            return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
         private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)

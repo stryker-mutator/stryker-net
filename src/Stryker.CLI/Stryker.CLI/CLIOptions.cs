@@ -107,8 +107,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
-            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {_defaultOptions.ThresholdOptions.ThresholdBreak} (default)",
-            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdBreak,
+            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {_defaultOptions.Thresholds.Break} (default)",
+            DefaultValue = _defaultOptions.Thresholds.Break,
             JsonKey = "threshold-break"
         };
 
@@ -116,8 +116,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
-            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {_defaultOptions.ThresholdOptions.ThresholdLow} (default)",
-            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdLow,
+            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {_defaultOptions.Thresholds.Low} (default)",
+            DefaultValue = _defaultOptions.Thresholds.Low,
             JsonKey = "threshold-low"
         };
 
@@ -125,8 +125,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.ThresholdOptions.ThresholdHigh} (default)",
-            DefaultValue = _defaultOptions.ThresholdOptions.ThresholdHigh,
+            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
+            DefaultValue = _defaultOptions.Thresholds.High,
             JsonKey = "threshold-high"
         };
 

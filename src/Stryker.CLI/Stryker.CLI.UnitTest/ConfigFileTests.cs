@@ -79,9 +79,9 @@ namespace Stryker.CLI.UnitTest
             actualOptions.Reporters.ShouldHaveSingleItem();
             actualOptions.Reporters.ShouldContain(Reporter.ConsoleReport);
             actualOptions.ConcurrentTestrunners.ShouldBe(1);
-            actualOptions.ThresholdOptions.ThresholdBreak.ShouldBe(20);
-            actualOptions.ThresholdOptions.ThresholdLow.ShouldBe(30);
-            actualOptions.ThresholdOptions.ThresholdHigh.ShouldBe(40);
+            actualOptions.Thresholds.Break.ShouldBe(20);
+            actualOptions.Thresholds.Low.ShouldBe(30);
+            actualOptions.Thresholds.High.ShouldBe(40);
             actualOptions.FilesToExclude.ShouldHaveSingleItem();
             actualOptions.FilesToExclude.ShouldContain(fileToExclude);
         }

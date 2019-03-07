@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
+using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters.Json
@@ -8,7 +8,7 @@ namespace Stryker.Core.Reporters.Json
     public class JsonReportFileComponent
     {
         public string Language { get; }
-        public string Health { get; set; }
+        public Health Health { get; set; }
         public string Source { get; }
 
         public ISet<JsonMutant> Mutants { get; }

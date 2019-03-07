@@ -1,8 +1,9 @@
 ﻿using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Core.Initialisation.ProjectComponent
+namespace Stryker.Core.ProjectComponents
 {
     public abstract class ProjectComponent : IReadOnlyInputComponent
     {
@@ -24,6 +25,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
 
 
         public abstract void Add(ProjectComponent component);
+
         public abstract void Display(int depth);
         public abstract IEnumerable<FileLeaf> GetAllFiles();
 
@@ -42,6 +44,24 @@ namespace Stryker.Core.Initialisation.ProjectComponent
             else
             {
                 return null;
+            }
+        }
+
+        public Health CheckHealth(Threshold threshold)
+        {
+            var mutationScore = GetMutationScore();
+
+            if (mutationScore > threshold.High)
+            {
+                return Health.Good;
+            }
+            else if (mutationScore > threshold.Low)
+            {
+                return Health.Warning;
+            }
+            else
+            {
+                return Health.Danger;
             }
         }
     }

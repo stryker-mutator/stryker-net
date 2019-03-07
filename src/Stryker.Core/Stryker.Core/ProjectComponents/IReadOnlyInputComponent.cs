@@ -1,7 +1,8 @@
 ﻿using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Initialisation.ProjectComponent
+namespace Stryker.Core.ProjectComponents
 {
     /// <summary>
     /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify components.
@@ -24,6 +25,7 @@ namespace Stryker.Core.Initialisation.ProjectComponent
         void Display(int depth);
 
         decimal? GetMutationScore();
+        Health CheckHealth(Threshold theshold);
     }
 
     public delegate void Display(int depth, IReadOnlyInputComponent current);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Stryker.Core.Initialisation.ProjectComponent
+namespace Stryker.Core.ProjectComponents
 {
     public class FolderComposite : ProjectComponent
     {

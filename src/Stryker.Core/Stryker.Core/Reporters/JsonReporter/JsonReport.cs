@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,8 +22,8 @@ namespace Stryker.Core.Reporters.Json
         {
             _options = options;
 
-            Thresholds.Add("high", _options.ThresholdOptions.ThresholdHigh);
-            Thresholds.Add("low", _options.ThresholdOptions.ThresholdBreak);
+            Thresholds.Add("high", _options.Thresholds.High);
+            Thresholds.Add("low", _options.Thresholds.Low);
 
             Merge(Files, GenerateReportComponents(mutationReport));
         }
@@ -86,27 +86,10 @@ namespace Stryker.Core.Reporters.Json
         {
             var reportComponent = new JsonReportFileComponent(fileComponent)
             {
-                Health = CheckHealth(fileComponent)
+                Health = fileComponent.CheckHealth(_options.Thresholds)
             };
 
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, reportComponent } };
-        }
-
-        private string CheckHealth(FileLeaf file)
-        {
-            int mutationScore = (int)file.GetMutationScore();
-            if (mutationScore >= _options.ThresholdOptions.ThresholdHigh)
-            {
-                return "Good";
-            }
-            else if (mutationScore <= _options.ThresholdOptions.ThresholdBreak)
-            {
-                return "Danger";
-            }
-            else
-            {
-                return "Warning";
-            }
         }
 
         private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)

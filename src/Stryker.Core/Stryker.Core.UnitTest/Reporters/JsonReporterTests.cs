@@ -5,11 +5,11 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
 using System;
 using System.Collections.ObjectModel;
@@ -134,7 +134,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 20, thresholdLow: 10), folderComponent);
 
-            report.Files.First().Value.Health.ShouldBe("Good");
+            report.Files.First().Value.Health.ShouldBe(Health.Good);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 66, thresholdLow: 10), folderComponent);
 
-            report.Files.First().Value.Health.ShouldBe("Good");
+            report.Files.First().Value.Health.ShouldBe(Health.Good);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdBreak: 50), folderComponent);
 
-            report.Files.First().Value.Health.ShouldBe("Warning");
+            report.Files.First().Value.Health.ShouldBe(Health.Warning);
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 67), folderComponent);
 
-            report.Files.First().Value.Health.ShouldBe("Danger");
+            report.Files.First().Value.Health.ShouldBe(Health.Danger);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 66), folderComponent);
 
-            report.Files.First().Value.Health.ShouldBe("Danger");
+            report.Files.First().Value.Health.ShouldBe(Health.Danger);
         }
 
         [Fact]

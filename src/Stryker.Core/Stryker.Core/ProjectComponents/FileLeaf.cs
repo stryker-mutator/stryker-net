@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Initialisation.ProjectComponent
+namespace Stryker.Core.ProjectComponents
 {
     public class FileLeaf : ProjectComponent
     {

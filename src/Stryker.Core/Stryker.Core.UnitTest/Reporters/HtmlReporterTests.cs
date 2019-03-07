@@ -2,11 +2,11 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Shouldly;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using System;
