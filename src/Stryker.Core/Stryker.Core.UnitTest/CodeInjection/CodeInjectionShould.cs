@@ -140,7 +140,7 @@ namespace Stryker.Core.UnitTest.CodeInjection
                     {
                         if (testProcess == null)
                         {
-                            Monitor.Wait(lck, 40);
+                            Monitor.Wait(lck, 400);
                         }
                     }
 
@@ -152,7 +152,7 @@ namespace Stryker.Core.UnitTest.CodeInjection
                     {
                         if (string.IsNullOrEmpty(message))
                         {
-                            Monitor.Wait(lck, 100);
+                            Monitor.Wait(lck, 200);
                         }
                     }
 
@@ -165,7 +165,7 @@ namespace Stryker.Core.UnitTest.CodeInjection
                     {
                         if (string.IsNullOrEmpty(message))
                         {
-                            Monitor.Wait(lck, 20);
+                            Monitor.Wait(lck, 200);
                         }
                     }
 

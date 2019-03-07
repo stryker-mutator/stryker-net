@@ -37,7 +37,7 @@ namespace Stryker
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
-                channel = CommunicationChannel.Client(pipeName, 10);
+                channel = CommunicationChannel.Client(pipeName, 100);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
