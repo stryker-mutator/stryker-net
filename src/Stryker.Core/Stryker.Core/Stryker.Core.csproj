@@ -20,11 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Reporters\HtmlReporter\mutation-report.html" />
-    <EmbeddedResource Include="node_modules\mutation-testing-elements\dist\mutation-test-elements.js" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Mutants\ActiveMutationHelper.cs" />
+    <None Remove="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -46,7 +47,8 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="System.IO.Abstractions" Version="3.0.10" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Folder Include="node_modules\" />
+    <Folder Include="Reporters\HtmlReporter\dist\src\" />
   </ItemGroup>
 </Project>

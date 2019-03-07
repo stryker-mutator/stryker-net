@@ -283,3 +283,4 @@ StrykerLogs/
 **/*.ncrunchsolution
 **/*.ncrunchproject
 *.orig
+/src/Stryker.Core/Stryker.Core/Reporters/HtmlReporter/Files/dist/mutation-test-elements.js
