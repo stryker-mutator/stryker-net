@@ -79,22 +79,29 @@ namespace Stryker.Core.UnitTest.CodeInjection
                     Assert.True(MutantControl.IsActive(12));
                     Assert.False(MutantControl.IsActive(11));
                     MutantControl.DumpState();
-                    lock (lck)
-                    {
-                        if (string.IsNullOrEmpty(message))
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                    }
+                    WaitOnLck(lck, () => !string.IsNullOrEmpty(message), 100);
 
                     Assert.Equal("12,11", message);
-
                 }
 
                 Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
                 Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, pipeName);
                 MutantControl.InitCoverage();
             }
+        }
+
+        static bool WaitOnLck(object lck, Func<bool> predicate, int timeout)
+        {
+            var watch = new Stopwatch();
+            lock (lck)
+            {
+                while (!predicate() && watch.ElapsedMilliseconds < timeout)
+                {
+                    Monitor.Wait(lck, Math.Max(0, (int)(timeout - watch.ElapsedMilliseconds)));
+                }
+            }
+
+            return predicate();
         }
 
         [Fact]
@@ -136,42 +143,25 @@ namespace Stryker.Core.UnitTest.CodeInjection
                     Environment.SetEnvironmentVariable(MutantControl.EnvironmentPipeName, server.PipeName);
                     testProcess = null;
                     MutantControl.InitCoverage();
-                    lock (lck)
-                    {
-                        if (testProcess == null)
-                        {
-                            Monitor.Wait(lck, 400);
-                        }
-                    }
+                    WaitOnLck(lck, () => testProcess != null, 400);
 
                     Assert.NotNull(testProcess);
 
                     Assert.False(MutantControl.IsActive(12));
                     testProcess.SendText("DUMP");
-                    lock (lck)
-                    {
-                        if (string.IsNullOrEmpty(message))
-                        {
-                            Monitor.Wait(lck, 200);
-                        }
-                    }
+
+                    WaitOnLck(lck, () => !string.IsNullOrEmpty(message), 200);
 
                     Assert.NotNull(message);
                     Assert.Equal("12", message);
                     message = string.Empty;
                     Assert.False(MutantControl.IsActive(11));
                     MutantControl.DumpState();
-                    lock (lck)
-                    {
-                        if (string.IsNullOrEmpty(message))
-                        {
-                            Monitor.Wait(lck, 200);
-                        }
-                    }
+
+                    WaitOnLck(lck, () => !string.IsNullOrEmpty(message), 200);
 
                     Assert.NotNull(message);
                     Assert.Equal("11", message);
-
                 }
 
                 Environment.SetEnvironmentVariable("ActiveMutation", activeMutation);
