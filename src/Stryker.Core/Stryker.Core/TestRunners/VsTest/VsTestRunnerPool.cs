@@ -28,11 +28,11 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
+        public TestRunResult RunAll(int? timeoutMS, int? mutationId)
         {
             var runner = TakeRunner();
 
-            TestRunResult result = runner.RunAll(timeoutMS, activeMutationId);
+            TestRunResult result = runner.RunAll(timeoutMS, mutationId);
 
             ReturnRunner(runner);
 
@@ -44,11 +44,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var runner = TakeRunner();
             var result = runner.CaptureCoverage();
+            CoveredMutants = runner.CoveredMutants;
             ReturnRunner(runner);
             return result;
         }
 
-        public IEnumerable<int> CoveredMutants { get; }
+        public IEnumerable<int> CoveredMutants { get; private set; }
 
         private VsTestRunner TakeRunner()
         {

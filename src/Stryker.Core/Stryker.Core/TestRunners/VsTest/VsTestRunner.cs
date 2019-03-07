@@ -57,19 +57,25 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<int> CoveredMutants { get; private set; }
 
-        public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
+        public TestRunResult RunAll(int? timeoutMS, int ?mutationId)
         {
             if (_testCasesDiscovered is null)
             {
                 throw new Exception("_testCasesDiscovered cannot be null when running tests");
             }
 
-            TestRunResult testResult = new TestRunResult { Success = false };
+            var envVars = new Dictionary<string, string>{["ActiveMutation"] = mutationId.ToString()};
+            return RunVsTest(timeoutMS, envVars);
+        }
+
+        private TestRunResult RunVsTest(int? timeoutMS, Dictionary<string, string> envVars)
+        {
+            TestRunResult testResult = new TestRunResult {Success = false};
             lock (runLock)
             {
                 Running = true;
 
-                var testResults = RunAllTests(activeMutationId, GenerateRunSettings(timeoutMS ?? 0));
+                var testResults = RunAllTests(envVars, GenerateRunSettings(timeoutMS ?? 0));
 
                 // For now we need to throw an OperationCanceledException when a testrun has timed out. 
                 // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -89,6 +95,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 Running = false;
             }
+
             return testResult;
         }
 
@@ -100,7 +107,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     {MutantControl.EnvironmentPipeName, coverageServer.PipeName}
                 };
-                var result = RunAll(null, null);
+                var result = RunVsTest(null, envVars);
                 if (!coverageServer.WaitReception())
                 {
                     _logger.LogWarning("Did not receive mutant coverage data from initial run.");
@@ -135,12 +142,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return handler.TestResults;
         }
             
-        private IEnumerable<TestResult> RunAllTests(int? activeMutationId, string runSettings)
+        private IEnumerable<TestResult> RunAllTests(Dictionary<string, string> envVars, string runSettings)
         {
             var runCompleteSignal = new AutoResetEvent(false);
             var processExitedSignal = new AutoResetEvent(false);
             var handler = new RunEventHandler(runCompleteSignal, _messages);
-            var envVars = new Dictionary<string, string> {["ActiveMutation"] = activeMutationId.ToString()};
             var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
 
             _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);

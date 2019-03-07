@@ -9,11 +9,11 @@
         {
             IList<object> notFoundValues = null;
             checker
-                .FailWhen((sut) => Stryker.ActiveMutationHelper.ActiveMutation==2?sut == null && otherEnumerable == null:Stryker.ActiveMutationHelper.ActiveMutation==1?sut != null && otherEnumerable != null:Stryker.ActiveMutationHelper.ActiveMutation==0?sut == null || otherEnumerable != null:sut == null && otherEnumerable != null, Stryker.ActiveMutationHelper.ActiveMutation==3?"":"The {0} is null and thus, does not contain the given expected value(s).")
+                .FailWhen((sut) => Stryker.MutantControl.IsActive(2)?sut == null && otherEnumerable == null:Stryker.MutantControl.IsActive(1)?sut != null && otherEnumerable != null:Stryker.MutantControl.IsActive(0)?sut == null || otherEnumerable != null:sut == null && otherEnumerable != null, Stryker.MutantControl.IsActive(3)?"":"The {0} is null and thus, does not contain the given expected value(s).")
                 .DefineExpectedValues(otherEnumerable, otherEnumerable.Count())
                 .Analyze((sut, _) => notFoundValues = ExtractNotFoundValues(sut, otherEnumerable))
-                .FailWhen((_) => notFoundValues.Any(), string.Format(Stryker.ActiveMutationHelper.ActiveMutation==6?"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "":Stryker.ActiveMutationHelper.ActiveMutation==5?""+ Environment.NewLine + "\t{0}":"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "\t{0}", notFoundValues.ToStringProperlyFormatted().DoubleCurlyBraces()))
-                .OnNegate(Stryker.ActiveMutationHelper.ActiveMutation==9?"":"The {0} contains all the given values whereas it must not.")
+                .FailWhen((_) => notFoundValues.Any(), string.Format(Stryker.MutantControl.IsActive(6)?"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "":Stryker.MutantControl.IsActive(5)?""+ Environment.NewLine + "\t{0}":"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "\t{0}", notFoundValues.ToStringProperlyFormatted().DoubleCurlyBraces()))
+                .OnNegate(Stryker.MutantControl.IsActive(9)?"":"The {0} contains all the given values whereas it must not.")
                 .EndCheck();
         }
 
@@ -26,11 +26,11 @@
             var durationThreshold = new Duration(threshold, timeUnit);
 
             ExtensibilityHelper.BeginCheck(check).
-                SetSutName(Stryker.ActiveMutationHelper.ActiveMutation==10?"":"code").
-                CheckSutAttributes(sut =>  new Duration(sut.ExecutionTime, timeUnit), Stryker.ActiveMutationHelper.ActiveMutation==11?"":"execution time").
-                FailWhen((sut) => Stryker.ActiveMutationHelper.ActiveMutation==13?sut >= durationThreshold:Stryker.ActiveMutationHelper.ActiveMutation==12?sut < durationThreshold:sut > durationThreshold, Stryker.ActiveMutationHelper.ActiveMutation==14?"":"The {checked} was too high.").
-                DefineExpectedValue(durationThreshold, Stryker.ActiveMutationHelper.ActiveMutation==15?"":"less than", Stryker.ActiveMutationHelper.ActiveMutation==16?"":"more than").
-                OnNegate(Stryker.ActiveMutationHelper.ActiveMutation==17?"":"The {checked} was too low.").
+                SetSutName(Stryker.MutantControl.IsActive(10)?"":"code").
+                CheckSutAttributes(sut =>  new Duration(sut.ExecutionTime, timeUnit), Stryker.MutantControl.IsActive(11)?"":"execution time").
+                FailWhen((sut) => Stryker.MutantControl.IsActive(13)?sut >= durationThreshold:Stryker.MutantControl.IsActive(12)?sut < durationThreshold:sut > durationThreshold, Stryker.MutantControl.IsActive(14)?"":"The {checked} was too high.").
+                DefineExpectedValue(durationThreshold, Stryker.MutantControl.IsActive(15)?"":"less than", Stryker.MutantControl.IsActive(16)?"":"more than").
+                OnNegate(Stryker.MutantControl.IsActive(17)?"":"The {checked} was too low.").
                 EndCheck();
 
             return ExtensibilityHelper.BuildCheckLink(check);
@@ -40,8 +40,8 @@
         {
 
             return ExtensibilityHelper.BeginCheck(check).
-                FailWhen(sut => Stryker.ActiveMutationHelper.ActiveMutation==18?IsALetter(sut):!IsALetter(sut), Stryker.ActiveMutationHelper.ActiveMutation==19?"":"The {0} is not a letter.").
-                OnNegate(Stryker.ActiveMutationHelper.ActiveMutation==20?"":"The {0} is a letter whereas it must not.").
+                FailWhen(sut => Stryker.MutantControl.IsActive(18)?IsALetter(sut):!IsALetter(sut), Stryker.MutantControl.IsActive(19)?"":"The {0} is not a letter.").
+                OnNegate(Stryker.MutantControl.IsActive(20)?"":"The {0} is a letter whereas it must not.").
                 EndCheck();
         }
     }
