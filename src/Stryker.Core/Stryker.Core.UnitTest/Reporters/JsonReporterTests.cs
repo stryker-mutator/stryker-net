@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -21,6 +22,12 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class JsonReporterTests
     {
+        public JsonReporterTests()
+        {
+            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
+            ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
+        }
+
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
@@ -101,7 +108,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_ThresholdsAreSet()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent);
@@ -114,7 +120,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_ShouldContainAtLeastOneFile()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent);
@@ -125,7 +130,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_WithMutationScoreOverThresholdHighHasGoodHealth()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 20, thresholdLow: 10), folderComponent);
@@ -136,7 +140,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_WithMutationScoreEqualToThresholdHighHasGoodHealth()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 66, thresholdLow: 10), folderComponent);
@@ -147,7 +150,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_WithMutationScoreBetweenThresholdHighAndBreakHasWarningHealth()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdBreak: 50), folderComponent);
@@ -158,7 +160,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_WithMutationScoreUnderThresholdBreakHasDangerHealth()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 67), folderComponent);
@@ -169,7 +170,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_WithMutationScoreEqualToThresholdBreakHasDangerHealth()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 66), folderComponent);
@@ -180,7 +180,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReport_BuildReportReturnsSingletonJsonReport()
         {
-            var loggerMock = Mock.Of<ILogger>();
             var folderComponent = CreateProjectWith();
             var options = new StrykerOptions();
 

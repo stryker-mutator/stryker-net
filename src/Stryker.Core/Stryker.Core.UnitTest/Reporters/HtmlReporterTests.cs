@@ -1,7 +1,9 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Shouldly;
 using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -18,6 +20,12 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class HtmlReporterTests
     {
+        public HtmlReporterTests()
+        {
+            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
+            ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
+        }
+
         [Fact]
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
