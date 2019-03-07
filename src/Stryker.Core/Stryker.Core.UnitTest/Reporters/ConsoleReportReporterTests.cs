@@ -1,23 +1,22 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
-using Stryker.Core.Options;
-using Stryker.Core.Exceptions;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Xunit;
-using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
     public class ConsoleReportReporterTests
     {
-        
+
         [Fact]
         public void ConsoleReportReporter_ShouldPrintOnReportDone()
         {
@@ -102,7 +101,7 @@ All mutants have been tested, and your mutation score has been calculated
                 DisplayName = "This name should display",
                 Type = Mutator.Arithmetic
             };
-            
+
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite() { Name = "RootFolder" };
@@ -164,7 +163,7 @@ All mutants have been tested, and your mutation score has been calculated
             });
 
             target.OnAllMutantsTested(folder);
-            
+
             chalkMock.Verify(x => x.Red(It.IsAny<string>()), Times.Exactly(4));
         }
 

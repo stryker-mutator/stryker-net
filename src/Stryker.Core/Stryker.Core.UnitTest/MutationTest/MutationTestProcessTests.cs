@@ -2,10 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Stryker.Core.Compiling;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;

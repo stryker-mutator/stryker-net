@@ -1,8 +1,8 @@
 using Moq;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using Xunit;
