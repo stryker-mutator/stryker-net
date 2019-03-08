@@ -136,12 +136,19 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new RunEventHandler(waitHandle, _messages);
+            handler.TestsFailed += Handler_TestsFailed;
             _vsTestConsole.RunTests(testCases, runSettings, handler);
-
+            handler.TestsFailed -= Handler_TestsFailed;
             waitHandle.WaitOne();
             return handler.TestResults;
         }
-            
+
+        private void Handler_TestsFailed(object sender, EventArgs e)
+        {
+            // one test has failed, we can stop
+            _vsTestConsole.AbortTestRun();
+        }
+
         private IEnumerable<TestResult> RunAllTests(Dictionary<string, string> envVars, string runSettings)
         {
             var runCompleteSignal = new AutoResetEvent(false);
@@ -149,7 +156,10 @@ namespace Stryker.Core.TestRunners.VsTest
             var handler = new RunEventHandler(runCompleteSignal, _messages);
             var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
 
+            handler.TestsFailed += Handler_TestsFailed;
             _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
+            handler.TestsFailed -= Handler_TestsFailed;
+
 
             // Test host exited signal comes after the run complete
             processExitedSignal.WaitOne();

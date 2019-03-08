@@ -56,6 +56,7 @@ namespace Stryker
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             DumpState(_coveredMutants);
+            GC.KeepAlive(_coveredMutants);
         }
 
         public static void DumpState(HashSet<int> state = null)
