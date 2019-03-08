@@ -38,7 +38,6 @@
 
         public static ICheckLink<ICheck<char>> IsALetter(this ICheck<char> check)
         {
-
             return ExtensibilityHelper.BeginCheck(check).
                 FailWhen(sut => Stryker.MutantControl.IsActive(18)?IsALetter(sut):!IsALetter(sut), Stryker.MutantControl.IsActive(19)?"":"The {0} is not a letter.").
                 OnNegate(Stryker.MutantControl.IsActive(20)?"":"The {0} is a letter whereas it must not.").
