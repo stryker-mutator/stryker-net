@@ -38,7 +38,6 @@
 
         public static ICheckLink<ICheck<char>> IsALetter(this ICheck<char> check)
         {
-
             return ExtensibilityHelper.BeginCheck(check).
                 FailWhen(sut => !IsALetter(sut), "The {0} is not a letter.").
                 OnNegate("The {0} is a letter whereas it must not.").

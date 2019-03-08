@@ -209,11 +209,12 @@ namespace Stryker.Core.Mutants
                 foreach (var expressionSyntax in expressions)
                 {
                     var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
-                    if (expressionSyntax is InvocationExpressionSyntax )
+                    if (expressionSyntax is InvocationExpressionSyntax)
                     {
                         // chained invocations, we will recurse
                         var mutant = Mutate(expressionSyntax);
                         currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
+                        continue;
                     } 
                     SyntaxNode mutationCandidate = null;
                     
@@ -342,7 +343,7 @@ namespace Stryker.Core.Mutants
                 case nameof(InvocationExpressionSyntax):
                     var invocationExpression = node as InvocationExpressionSyntax;
                     yield return invocationExpression.Expression;
-                    foreach(var arg in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
+                    foreach (var arg in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
                     {
                         yield return arg;
                     }
