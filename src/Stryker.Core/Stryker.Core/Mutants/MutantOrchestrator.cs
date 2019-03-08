@@ -342,10 +342,6 @@ namespace Stryker.Core.Mutants
                 case nameof(InvocationExpressionSyntax):
                     var invocationExpression = node as InvocationExpressionSyntax;
                     yield return invocationExpression.Expression;
-                    foreach(var arg in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
-                    {
-                        yield return arg;
-                    }
                     yield break;
             }
 
