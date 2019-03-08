@@ -5,6 +5,9 @@
             "Json"
         ],
         "log-level": "info",
-        "project-file": "TargetProject.csproj"
+        "project-file": "TargetProject.csproj",
+        "excluded-files": [
+          "./EndlessLoop.cs"
+        ]
     }
 }
