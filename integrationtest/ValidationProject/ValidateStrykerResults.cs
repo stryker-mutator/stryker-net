@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -60,18 +61,28 @@ namespace IntegrationTests
 
         }
 
-        //private IList<Mutant> GenerateMutants()
-        //{
-        //    var mutants = new List<JsonMutant>
-        //    {
-        //        new JsonMutant
-        //        {
-        //            Id = ,
-        //            Location = new JsonMutantLocation(
-        //                new JsonMutantPosition{ },
-        //                new JsonMutantPosition{ })
-        //        }
-        //    };
-        //}
+        private IEnumerable<JsonMutant> GenerateJsonMutants()
+        {
+            var mutants = new List<JsonMutant>
+            {
+                new JsonMutant
+                {
+                    Id = 0,
+                    Location = new JsonMutantLocation(
+                        new JsonMutantPosition
+                        {
+                            Column = 0,
+                            Line = 0
+                        },
+                        new JsonMutantPosition
+                        {
+                            Column = 0,
+                            Line = 0
+                        })
+                }
+            };
+
+            return mutants;
+        }
     }
 }
