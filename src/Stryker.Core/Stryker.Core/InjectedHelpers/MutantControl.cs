@@ -12,6 +12,7 @@ namespace Stryker
         private static bool captureCoverage;
         private static string pipeName;
         private static CommunicationChannel channel;
+        private static object lck = new object();
 
         public const string EnvironmentPipeName = "Coverage";
 
@@ -47,15 +48,22 @@ namespace Stryker
         {
             if (args == "DUMP")
             {
-                var temp = _coveredMutants;
-                _coveredMutants = new HashSet<int>();
+                HashSet<int> temp;
+                lock (lck)
+                {
+                    temp = _coveredMutants;
+                    _coveredMutants = new HashSet<int>();
+                }
                 DumpState(temp);
             }
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            DumpState(_coveredMutants);
+            lock (lck)
+            {
+                DumpState(_coveredMutants);
+            }
             GC.KeepAlive(_coveredMutants);
         }
 
@@ -85,8 +93,10 @@ namespace Stryker
         {
             if (captureCoverage)
             {
-                if (!_coveredMutants.Contains(id))
+                lock (lck)
+                {
                     _coveredMutants.Add(id);
+                }
             }
             return ActiveMutation == id;
         }
