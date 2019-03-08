@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -7,6 +8,7 @@ namespace Stryker.Core.Reporters.Json
         public JsonMutantPosition Start { get; }
         public JsonMutantPosition End { get; }
 
+        [JsonConstructor]
         public JsonMutantLocation(JsonMutantPosition start, JsonMutantPosition end)
         {
             Start = start;

@@ -18,6 +18,12 @@ namespace Stryker.Core.Reporters.Json
         [JsonIgnore]
         private static JsonReport _report = null;
 
+        [JsonConstructor]
+        private JsonReport()
+        {
+
+        }
+
         private JsonReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
             _options = options;

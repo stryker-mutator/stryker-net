@@ -17,6 +17,14 @@ namespace Stryker.Core.Reporters.Json
 
         public ISet<JsonMutant> Mutants { get; }
 
+        [JsonConstructor]
+        private JsonReportFileComponent(string language, string source, ISet<JsonMutant> mutants)
+        {
+            Language = language;
+            Source = source;
+            Mutants = mutants;
+        }
+
         public JsonReportFileComponent(FileLeaf file, ILogger logger = null)
         {
             var log = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
