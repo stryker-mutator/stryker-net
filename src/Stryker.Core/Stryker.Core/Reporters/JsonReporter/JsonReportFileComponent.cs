@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
@@ -8,6 +10,8 @@ namespace Stryker.Core.Reporters.Json
     public class JsonReportFileComponent
     {
         public string Language { get; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
         public Health Health { get; set; }
         public string Source { get; }
 
