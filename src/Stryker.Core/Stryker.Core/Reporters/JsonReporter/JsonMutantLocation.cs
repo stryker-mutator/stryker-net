@@ -7,6 +7,12 @@ namespace Stryker.Core.Reporters.Json
         public JsonMutantPosition Start { get; }
         public JsonMutantPosition End { get; }
 
+        public JsonMutantLocation(JsonMutantPosition start, JsonMutantPosition end)
+        {
+            Start = start;
+            End = end;
+        }
+
         public JsonMutantLocation(FileLinePositionSpan location)
         {
             Start = new JsonMutantPosition

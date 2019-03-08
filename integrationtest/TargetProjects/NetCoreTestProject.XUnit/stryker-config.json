@@ -1,0 +1,10 @@
+{
+    "stryker-config":
+    {
+        "reporters": [
+            "Json"
+        ],
+        "log-level": "info",
+        "project-file": "TargetProject.csproj"
+    }
+}
