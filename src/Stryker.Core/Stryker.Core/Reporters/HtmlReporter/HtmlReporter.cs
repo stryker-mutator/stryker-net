@@ -2,6 +2,7 @@
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -13,18 +14,25 @@ namespace Stryker.Core.Reporters.Html
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
+        private readonly IChalk _chalk;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
+            _chalk = chalk ?? new Chalk();
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
         {
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
-            WriteHtmlReport(Path.Combine(_options.OutputPath, "reports", "mutation-report.html"), mutationReport.ToJson());
+            var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
+            WriteHtmlReport(reportPath, mutationReport.ToJson());
+
+            _chalk.Green($"\nYour html report has been generated at: \n " +
+                $"{reportPath} \n" +
+                $"You can open it in your browser of choice. \n");
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)
