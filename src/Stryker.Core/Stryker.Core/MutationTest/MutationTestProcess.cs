@@ -186,7 +186,7 @@ namespace Stryker.Core.MutationTest
             }
             else
             {
-                _logger.LogInformation("{0} mutants got status {1}", count, MutantStatus.Untouched.ToString());
+                _logger.LogInformation("{0} mutants are not reached by any tests and will survive! (Marked as {0}).", count, MutantStatus.Untouched.ToString());
             }
         }
     }

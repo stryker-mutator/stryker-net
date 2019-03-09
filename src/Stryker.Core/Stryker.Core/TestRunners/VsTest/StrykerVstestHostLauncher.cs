@@ -28,25 +28,20 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory
             };
-            foreach (var envVar in _envVars)
+            foreach (var (key, value) in _envVars)
             {
-                processInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
+                processInfo.EnvironmentVariables[key] = value;
             }
 
             var process = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
             process.Start();
 
-            if (process != null)
+            process.Exited += (sender, args) =>
             {
-                process.Exited += (sender, args) =>
-                {
-                    _callback();
-                };
+                _callback();
+            };
 
-                return process.Id;
-            }
-
-            throw new Exception("Process in invalid state.");
+            return process.Id;
         }
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
