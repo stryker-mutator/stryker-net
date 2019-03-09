@@ -1,10 +1,9 @@
 ﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.ProjectComponent;
+using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.IO;
-using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {

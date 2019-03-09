@@ -31,7 +31,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private int _testCasesDiscovered;
         private IEnumerable<string> _sources;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, int? testCasesDiscovered, IFileSystem fileSystem = null)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
@@ -49,21 +49,21 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testResults = RunAllTests(activeMutationId, GenerateRunSettings(timeoutMS ?? 0));
 
-                // For now we need to throw an OperationCanceledException when a testrun has timed out. 
-                // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
-                if (testResults.Count() < _testCasesDiscovered)
-                {
-                    throw new OperationCanceledException();
-                }
+            // For now we need to throw an OperationCanceledException when a testrun has timed out. 
+            // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
+            if (testResults.Count() < _testCasesDiscovered)
+            {
+                throw new OperationCanceledException();
+            }
 
-                testResult = new TestRunResult
-                {
-                    Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
-                    ResultMessage = string.Join(
-                        Environment.NewLine,
-                        testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                    TotalNumberOfTests = _testCasesDiscovered
-                };
+            testResult = new TestRunResult
+            {
+                Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
+                ResultMessage = string.Join(
+                    Environment.NewLine,
+                    testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
+                TotalNumberOfTests = _testCasesDiscovered
+            };
 
             return testResult;
         }
@@ -175,6 +175,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 testBinariesLocation,
                 _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
+
             DiscoverTests();
         }
 
