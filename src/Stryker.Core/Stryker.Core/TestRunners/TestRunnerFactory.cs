@@ -22,6 +22,12 @@ namespace Stryker.Core.TestRunners
             _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
             ITestRunner testRunner = null;
 
+            if (projectInfo.FullFramework && options.TestRunner != TestRunner.VsTest)
+            {
+                _logger.LogWarning($"Setting testrunner to {TestRunner.VsTest} because {options.TestRunner} does not support Full framework");
+                options.TestRunner = TestRunner.VsTest;
+            }
+
             switch (options.TestRunner)
             {
                 case TestRunner.DotnetTest:

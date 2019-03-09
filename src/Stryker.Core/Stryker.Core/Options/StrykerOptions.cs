@@ -29,7 +29,7 @@ namespace Stryker.Core.Options
         public int ConcurrentTestrunners { get; }
 
         public Threshold Thresholds { get; }
-        public TestRunner TestRunner { get; }
+        public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";

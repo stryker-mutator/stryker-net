@@ -153,11 +153,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
+            if (_options.LogOptions.LogToFile)
             {
-                TraceLevel = DetermineTraceLevel(),
-                LogFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt")
-            });
+                var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
+
+                return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
+                {
+                    TraceLevel = DetermineTraceLevel(),
+                    LogFilePath = vstestLogPath
+                });
+            }
+
+            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
         }
 
         private void InitializeVsTestConsole()
