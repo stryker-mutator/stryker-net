@@ -1,0 +1,18 @@
+steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreInstaller@0
+    displayName: 'Use .NET Core sdk 2.1.300 because dotnet tools..'
+    inputs:
+      version: 2.1.300
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Install pre-release dotnet tool'
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install dotnet-stryker -g --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)

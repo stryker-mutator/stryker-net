@@ -65,6 +65,7 @@ jobs:
     name: Hosted VS2017
   
   steps:
+  - template: pipeline-templates/prepare-integration-test-steps.yml
   - template: pipeline-templates/run-integration-test-steps.yml
     parameters:
       testName: 'netstandard'
@@ -97,6 +98,7 @@ jobs:
     name: Hosted Ubuntu 1604
   
   steps:
+  - template: pipeline-templates/prepare-integration-test-steps.yml
   - template: pipeline-templates/run-integration-test-steps.yml
     parameters:
       testName: 'netstandard'
@@ -123,6 +125,7 @@ jobs:
     name: Hosted macOS
   
   steps:
+  - template: pipeline-templates/prepare-integration-test-steps.yml
   - template: pipeline-templates/run-integration-test-steps.yml
     parameters:
       testName: 'netstandard'
