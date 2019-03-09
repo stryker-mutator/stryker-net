@@ -13,7 +13,7 @@ resources:
   
 variables:
   PackageVersion: '0.9.0'
-  VersionBuildNumber: $[counter('$(PackageVersion)', 1)]
+  VersionBuildNumber: $[counter('0.9.0', 1)]
   PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestPath: integrationtest
