@@ -56,6 +56,7 @@ namespace Stryker.Core.MutationTest
                 // add helper
                 MutantPlacer.ActiveMutantSelectorHelper
             };
+
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file

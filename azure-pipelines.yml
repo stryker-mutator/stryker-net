@@ -16,7 +16,7 @@ variables:
   VersionBuildNumber: $[counter('$(PackageVersion)', 1)]
   PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  IntegrationTestPath: integrationtests
+  IntegrationTestPath: integrationtest
   PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 

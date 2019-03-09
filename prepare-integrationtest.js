@@ -14,8 +14,8 @@ const replaceVersionNumber = (path, oldString, newString) => {
 };
 
 const packages = [
-    { csproj: './integrationtests/TargetProjects/NetStandard2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj' },
-    { csproj: './integrationtests/TargetProjects/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj' }
+    { csproj: './integrationtest/TargetProjects/NetStandardTestProject.XUnit/NetStandardTestProject.XUnit.csproj' },
+    { csproj: './integrationtest/TargetProjects/NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj' }
 ];
 
 packages.forEach(package => {

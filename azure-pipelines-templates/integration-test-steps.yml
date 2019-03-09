@@ -10,24 +10,32 @@ steps:
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+      arguments: $(IntegrationTestPath)/TargetProjects/NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - task: DotNetCoreCLI@2
     displayName: 'Install pre-release package in netstandard2.0'
     inputs:
       command: custom
       custom: add
-      arguments: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit/ExampleProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
+      arguments: $(IntegrationTestPath)/TargetProjects/NetStandardTestProject.XUnit/NetStandardTestProject.XUnit.csproj package StrykerMutator.DotNetCoreCli -n -v $(PreReleaseVersion) -s $(PreReleaseFeedUri)
 
   - script: 'node prepare-integrationtest.js $(PreReleaseVersion)'
     displayName: 'Update stryker integration test with pre-release'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Restore pre-release packages in integrationtest project'
+    displayName: 'Restore pre-release packages in netcoreapp2.1'
     inputs:
       command: custom
       custom: restore
-      projects: '$(IntegrationTestPath)/**/ExampleProject.XUnit/ExampleProject.XUnit.csproj'
+      projects: '$(IntegrationTestPath)/TargetProjects/NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj'
+      arguments: '-s $(PreReleaseFeedUri)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Restore pre-release packages in netstandard2.0'
+    inputs:
+      command: custom
+      custom: restore
+      projects: '$(IntegrationTestPath)/TargetProjects/NetStandardTestProject.XUnit/NetStandardTestProject.XUnit.csproj'
       arguments: '-s $(PreReleaseFeedUri)'
   
   - task: DotNetCoreCLI@2
@@ -36,7 +44,7 @@ steps:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandard2_0/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetStandardTestProject.XUnit
     
   - task: DotNetCoreCLI@2
     displayName: 'Run integration test netcoreapp2.1'
@@ -44,11 +52,11 @@ steps:
       command: custom
       custom: stryker
       arguments: '--dev-mode'
-      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCore2_1/ExampleProject.XUnit
+      workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCoreTestProject.XUnit
 
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: '$(IntegrationTestPath)/**/IntegrationTests.csproj'
+      projects: '$(IntegrationTestPath)/ValidationProject/Validation.csproj'
       workingDirectory: $(IntegrationTestPath)

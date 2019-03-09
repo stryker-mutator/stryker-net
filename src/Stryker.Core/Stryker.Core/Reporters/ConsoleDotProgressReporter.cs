@@ -1,7 +1,6 @@
-﻿using Stryker.Core.Initialisation.ProjectComponent;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
-using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
@@ -25,7 +24,8 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            switch (result.ResultStatus) {
+            switch (result.ResultStatus)
+            {
                 case MutantStatus.Killed:
                     _chalk.Default(".");
                     break;
