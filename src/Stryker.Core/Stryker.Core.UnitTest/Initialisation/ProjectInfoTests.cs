@@ -1,6 +1,5 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -12,24 +11,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                FullFramework = false,
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    Properties = new Dictionary<string, string>()
-                    {
-                        { "TargetFileName", "TestApp.dll" }
-                    }
-                },
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    Properties = new Dictionary<string, string>
-                    {
-                        { "OutputPath", "bin\\Debug\\netcoreapp2.1" },
-                    }
+                    AssemblyPath = "/bin/Debug/netcoreapp2.1/TestApp.dll",
                 }
             };
 
-            string expectedPath = FilePathUtils.ConvertPathSeparators("bin\\Debug\\netcoreapp2.1\\TestApp.dll");
+            string expectedPath = "/bin/Debug/netcoreapp2.1/TestApp.dll";
             target.GetInjectionPath().ShouldBe(expectedPath);
         }
 
@@ -38,25 +26,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                FullFramework = true,
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    Properties = new Dictionary<string, string>
-                    {
-                        { "TargetFileName", "TestApp.dll" }
-                    }
-                },
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    Properties = new Dictionary<string, string>
-                    {
-                        { "MSBuildProjectDirectory", "C:\\ExampleProject" },
-                        { "OutputPath", "bin\\Debug" }
-                    }
+                    AssemblyPath = "/bin/Debug/TestApp.dll",
                 }
             };
 
-            string expectedPath = FilePathUtils.ConvertPathSeparators("C:\\ExampleProject\\bin\\Debug\\TestApp.dll");
+            string expectedPath = "/bin/Debug/TestApp.dll";
             target.GetInjectionPath().ShouldBe(expectedPath);
         }
     }

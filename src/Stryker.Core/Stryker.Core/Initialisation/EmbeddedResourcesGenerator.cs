@@ -1,32 +1,26 @@
-﻿using Buildalyzer;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
     public static class EmbeddedResourcesGenerator
     {
-        public static IEnumerable<ResourceDescription> GetManifestResources(AnalyzerResult analyzerResult, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, ILogger logger)
         {
-            var originalDllFile = Path.Combine(
-                Path.GetDirectoryName(analyzerResult.ProjectFilePath),
-                analyzerResult.Items["IntermediateAssembly"][0].ItemSpec);
-
             ModuleDefinition module;
 
             try
             {
-                module = ModuleDefinition.ReadModule(originalDllFile);
+                module = ModuleDefinition.ReadModule(assemblyPath);
             }
             catch (Exception e)
             {
                 logger.LogWarning(e,
-                    $"Original project under test {originalDllFile} could not be loaded. \n" +
+                    $"Original project under test {assemblyPath} could not be loaded. \n" +
                     $"Embedded Resources might be missing.");
 
                 yield break;
@@ -39,6 +33,7 @@ namespace Stryker.Core.Initialisation
                     () => moduleResource.GetResourceStream(),
                     moduleResource.IsPublic);
             }
+            module.Dispose();
         }
     }
 }

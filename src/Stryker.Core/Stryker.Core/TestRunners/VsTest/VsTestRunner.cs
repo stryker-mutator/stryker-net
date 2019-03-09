@@ -170,7 +170,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, _projectInfo.GetTestBinariesPath()));
+            var testBinariesPath = _projectInfo.GetTestBinariesPath();
+            if (!_fileSystem.File.Exists(testBinariesPath))
+            {
+                throw new ApplicationException($"The test project binaries could not be found at {testBinariesPath}, exiting...");
+            }
+
             var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
             _sources = new List<string>()
             {

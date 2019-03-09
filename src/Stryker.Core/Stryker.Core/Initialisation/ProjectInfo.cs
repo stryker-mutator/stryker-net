@@ -20,38 +20,12 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath()
         {
-            var outputPath = "";
-            if (FullFramework)
-            {
-                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties.GetValueOrDefault("MSBuildProjectDirectory"),
-                    TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath"));
-            }
-            else
-            {
-                outputPath = TestProjectAnalyzerResult.Properties.GetValueOrDefault("OutputPath");
-            }
-
-            var targetFileName = ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("TargetFileName");
-            string injectionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
-            return injectionPath;
+            return ProjectUnderTestAnalyzerResult.AssemblyPath;
         }
 
         public string GetTestBinariesPath()
         {
-            var outputPath = "";
-            if (FullFramework)
-            {
-                outputPath = Path.Combine(TestProjectAnalyzerResult.Properties["MSBuildProjectDirectory"],
-                    TestProjectAnalyzerResult.Properties["OutputPath"]);
-            }
-            else
-            {
-                outputPath = TestProjectAnalyzerResult.Properties["OutputPath"];
-            }
-
-            var targetFileName = TestProjectAnalyzerResult.Properties["TargetFileName"];
-            string binariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(outputPath, targetFileName));
-            return binariesPath;
+            return TestProjectAnalyzerResult.AssemblyPath;
         }
     }
 
@@ -64,6 +38,15 @@ namespace Stryker.Core.Initialisation
         {
             _logger = logger;
             _analyzerResult = analyzerResult;
+        }
+
+        private string _assemblyPath;
+        public string AssemblyPath
+        {
+            get => _assemblyPath ?? FilePathUtils.ConvertPathSeparators(Path.Combine(
+                _analyzerResult.Properties["TargetDir"],
+                _analyzerResult.Properties["TargetFileName"]));
+            set => _assemblyPath = value;
         }
 
         private IEnumerable<string> _projectReferences;
@@ -113,7 +96,7 @@ namespace Stryker.Core.Initialisation
         {
             get
             {
-                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(_analyzerResult, _logger);
+                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
             }
             set => _resources = value;
         }
