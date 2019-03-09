@@ -2,21 +2,46 @@
 The Stryker CLI is currently the only implemented way to use Stryker.NET. 
 
 ## Getting started
-To install Stryker.NET on your *test project* add the following lines to the root of your `.csproj` file.
+Starting from version 0.10.x Stryker.NET is distributed as a dotnet core tool. You install stryker in one of the following ways:
+
+### Global install
+`dotnet tool install -g dotnet-stryker`
+
+### Project install
+Starting from dotnet core 3.0 dotnet tools can also be installed on a project level. This requires the following steps:
+
+Create a file called dotnet-tools.json in your project folder. You can checkin to version control to make sure all team members have access to stryker
+
+`dotnet new tool-manifest` 
+
+Then install stryker without the -g flag while executing the following command in the project folder
+
+`dotnet tool install dotnet-stryker`
+
+### Update stryker dotnet tool
+Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update`
+
+### Csproj install [DEPRECATED]
+The old way of installing stryker is deprecated and replaced by the dotnet core tool.
+This kind of dotnet cli tool caused many package conflicts because dependencies are shared between the tool and the project it is installed in.
+The last supported version is 0.9.0. We urge users to upgrade to at least version 0.10.0 using the above mentioned way.
 
 ``` XML
 <ItemGroup>
-    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
-    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="*" />
+    <DotNetCliToolReference Include="StrykerMutator.DotNetCoreCli" Version="0.9.0" />
+    <PackageReference Include="StrykerMutator.DotNetCoreCli" Version="0.9.0" />
 </ItemGroup>
 ```
 
-After adding the references, install the packages by executing `dotnet restore` inside the project folder.
 
 ## Usage
 To kick off stryker, execute the following command inside the test project folder:
 
-`dotnet stryker`
+`dotnet stryker` or `dotnet-stryker`
+
+If stryker is installed as a dotnet core 3.0 local tool, use the following instead:
+
+`dotnet tool run dotnet-stryker`
 
 ## Configuration
 While Stryker.NET wants to be a non configuration needed tool, some settings are configurable.
@@ -169,8 +194,6 @@ Example:
     }
 }
 ```
-
-##### Note: The no-value options cannot be passed to the config file (like --dev-mode)
 
 ##### 
 
