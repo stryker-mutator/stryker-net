@@ -24,7 +24,7 @@ namespace Stryker.CLI
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
             ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters.First(), (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType())) }]
-                                                This argument takes a json array as a value. Example: ['{ Reporter.ConsoleProgressDots }', '{ Reporter.Json }']",
+                                                This argument takes a json array as a value. Example: ['{ Reporter.ConsoleProgressDots }', '{ Reporter.Html }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
