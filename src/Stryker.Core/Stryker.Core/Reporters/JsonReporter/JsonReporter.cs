@@ -32,7 +32,7 @@ namespace Stryker.Core.Reporters.Json
                 $"{reportPath} \n");
         }
 
-        private void WriteReportToJsonFile(string mutationReport, string filePath)
+        private void WriteReportToJsonFile(string filePath, string mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using (var file = _fileSystem.File.CreateText(filePath))
