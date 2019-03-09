@@ -75,12 +75,12 @@ jobs:
     parameters:
       testName: 'netcore'
       workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-      strykerCommands: '--dev-mode -tr vstest'    
+      strykerCommands: '--dev-mode -tr vstest -l trace'    
   - template: pipeline-templates/run-integration-test-steps.yml
     parameters:
       testName: 'netframework'
       workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-      strykerCommands: '--dev-mode -tr vstest'  
+      strykerCommands: '--dev-mode -tr vstest -l trace'  
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
     inputs:
