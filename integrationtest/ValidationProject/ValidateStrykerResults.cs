@@ -58,7 +58,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 25, skipped: 0, survived: 20, killed: 2, timeout: 1);
+            CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0);
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout)
