@@ -4,7 +4,10 @@ using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using Stryker.Core.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -12,19 +15,24 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private IEnumerable<TestCase> _discoveredTests;
+        private static readonly ILogger _logger;
+
+        static VsTestRunnerPool()
+        {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
+        }
 
         public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
-            IEnumerable<TestCase> testCases;
-
             using (var runner = new VsTestRunner(options, projectInfo, null))
             {
-                testCases = runner.DiscoverTests();
+                _discoveredTests = runner.DiscoverTests();
             }
 
             for (var i = 0; i < options.ConcurrentTestrunners; i++)
             {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases.Count()));
+                _availableRunners.Add(new VsTestRunner(options, projectInfo, _discoveredTests.Count()));
             }
         }
 
@@ -41,12 +49,28 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-
+            var mapping = new Dictionary<TestCase, IEnumerable<int>>(_discoveredTests.Count()); 
             var runner = TakeRunner();
-            var result = runner.CaptureCoverage();
-            CoveredMutants = runner.CoveredMutants;
+            foreach (var discoveredTest in _discoveredTests)
+            {
+                mapping[discoveredTest] = runner.CaptureCoverage(discoveredTest);
+            }
             ReturnRunner(runner);
-            return result;
+            CoveredMutants = mapping.Values.SelectMany( x => x);
+            LogMapping(mapping);
+            return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count()};
+        }
+
+        private void LogMapping(Dictionary<TestCase, IEnumerable<int>> mapping)
+        {
+            _logger.LogInformation("Coverage information");
+            foreach (var run in mapping)
+            {
+                var list = new StringBuilder();
+                list.AppendJoin(",", run.Value);
+                _logger.LogInformation($"Test '{run.Key.DisplayName}' covers [{list}].");
+            }
+            _logger.LogInformation("*****************");
         }
 
         public IEnumerable<int> CoveredMutants { get; private set; }

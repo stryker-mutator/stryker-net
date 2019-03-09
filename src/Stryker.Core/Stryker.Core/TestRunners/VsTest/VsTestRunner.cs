@@ -120,6 +120,37 @@ namespace Stryker.Core.TestRunners.VsTest
                 return result;
             }
         }
+       
+        public IEnumerable<int> CaptureCoverage(TestCase test)
+        {
+            using (var coverageServer = new CoverageServer())
+            {
+                var envVars = new Dictionary<string, string>
+                {
+                    {MutantControl.EnvironmentPipeName, coverageServer.PipeName}
+                };
+                var runCompleteSignal = new AutoResetEvent(false);
+                var processExitedSignal = new AutoResetEvent(false);
+                var handler = new RunEventHandler(runCompleteSignal, _messages);
+                var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
+
+                _vsTestConsole.RunTestsWithCustomTestHost(new [] {test}, GenerateRunSettings(0), handler, testHostLauncher);
+
+                // Test host exited signal comes after the run complete
+                processExitedSignal.WaitOne();
+
+                // At this point, run must have complete. Check signal for true
+                runCompleteSignal.WaitOne();
+
+                if (!coverageServer.WaitReception())
+                {
+                    _logger.LogWarning("Did not receive mutant coverage data from initial run.");
+                    return null;
+                }
+
+                return coverageServer.RanMutants;
+            }
+        }
 
         public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
         {
@@ -130,17 +161,6 @@ namespace Stryker.Core.TestRunners.VsTest
             waitHandle.WaitOne();
 
             return handler.DiscoveredTestCases;
-        }
-
-        private IEnumerable<TestResult> RunSelectedTests(IEnumerable<TestCase> testCases, string runSettings)
-        {
-            var waitHandle = new AutoResetEvent(false);
-            var handler = new RunEventHandler(waitHandle, _messages);
-            handler.TestsFailed += Handler_TestsFailed;
-            _vsTestConsole.RunTests(testCases, runSettings, handler);
-            handler.TestsFailed -= Handler_TestsFailed;
-            waitHandle.WaitOne();
-            return handler.TestResults;
         }
 
         private void Handler_TestsFailed(object sender, EventArgs e)
@@ -159,7 +179,6 @@ namespace Stryker.Core.TestRunners.VsTest
             handler.TestsFailed += Handler_TestsFailed;
             _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
             handler.TestsFailed -= Handler_TestsFailed;
-
 
             // Test host exited signal comes after the run complete
             processExitedSignal.WaitOne();
