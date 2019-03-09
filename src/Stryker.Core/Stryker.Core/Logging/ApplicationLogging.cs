@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Serilog;
+using System.IO;
 
 namespace Stryker.Core.Logging
 {
@@ -18,7 +19,8 @@ namespace Stryker.Core.Logging
             if (options.LogToFile)
             {
                 // log on the lowest level to the log file
-                LoggerFactory.AddFile("StrykerOutput/logs/log-{Date}.txt", LogLevel.Trace);
+                var logFilesPath = Path.Combine(options.OutputPath, "logs");
+                LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", LogLevel.Trace);
             }
         }
 

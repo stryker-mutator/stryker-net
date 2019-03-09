@@ -1,5 +1,5 @@
-﻿using Stryker.Core.Initialisation.ProjectComponent;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
 

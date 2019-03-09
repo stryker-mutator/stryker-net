@@ -7,5 +7,6 @@
         ConsoleProgressDots,
         ConsoleReport,
         Json,
+        Html
     }
 }

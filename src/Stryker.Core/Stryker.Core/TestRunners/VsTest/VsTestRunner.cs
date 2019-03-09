@@ -2,13 +2,14 @@
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
-using Stryker.Core.ToolHelpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,9 +18,7 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
-        public bool Running { get; private set; }
-        private readonly object runLock = new object();
-
+        private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
 
@@ -32,8 +31,9 @@ namespace Stryker.Core.TestRunners.VsTest
         private int _testCasesDiscovered;
         private IEnumerable<string> _sources;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, int? testCasesDiscovered, IFileSystem fileSystem = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
             _vsTestHelper = new VsTestHelper(options);
@@ -46,11 +46,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             TestRunResult testResult = new TestRunResult() { Success = false };
-            lock (runLock)
-            {
-                Running = true;
 
-                var testResults = RunAllTests(activeMutationId, GenerateRunSettings(timeoutMS ?? 0));
+            var testResults = RunAllTests(activeMutationId, GenerateRunSettings(timeoutMS ?? 0));
 
                 // For now we need to throw an OperationCanceledException when a testrun has timed out. 
                 // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -68,8 +65,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     TotalNumberOfTests = _testCasesDiscovered
                 };
 
-                Running = false;
-            }
             return testResult;
         }
 

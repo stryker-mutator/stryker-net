@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Mutants
     {
         private Collection<IMutator> _mutators { get; set; }
         private string _currentDirectory { get; set; }
-        private MutantOrchestrator _target { get; set; } 
+        private MutantOrchestrator _target { get; set; }
 
         public MutantOrchestratorTests()
         {
@@ -39,6 +39,25 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
+        }
+
+        [Theory]
+        [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 10, 2, 16, 6, 21)]
+        public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
+            int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
+        {
+            string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
+            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile);
+            var target = new MutantOrchestrator();
+            var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+
+            var mutants = target.GetLatestMutantBatch().ToList();
+            mutants.Count.ShouldBe(nbMutants);
+            mutants[mutant1Id].Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(mutant1Location);
+            mutants[mutant2Id].Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(mutant2Location);
         }
 
         [Theory]

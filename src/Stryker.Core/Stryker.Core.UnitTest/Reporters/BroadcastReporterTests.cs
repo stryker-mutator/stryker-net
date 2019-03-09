@@ -1,6 +1,6 @@
 ﻿using Moq;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using System.Collections.ObjectModel;
 using Xunit;
@@ -63,9 +63,9 @@ namespace Stryker.Core.UnitTest.Reporters
                 reporterMock.Object
             };
             var target = new BroadcastReporter(reporters);
-            
+
             target.OnMutantTested(exampleMutant);
-            
+
             reporterMock.Verify(x => x.OnMutantTested(exampleMutant), Times.Once);
         }
 

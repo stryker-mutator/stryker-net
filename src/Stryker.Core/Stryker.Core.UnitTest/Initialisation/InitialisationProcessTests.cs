@@ -2,8 +2,8 @@
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
 using System.Collections.ObjectModel;
 using System.Linq;

@@ -15,7 +15,8 @@ namespace Stryker.Core.Options
     public class StrykerOptions
     {
         public string BasePath { get; }
-        public string SolutionPath { get; set; }
+        public string SolutionPath { get; }
+        public string OutputPath { get; }
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -26,7 +27,8 @@ namespace Stryker.Core.Options
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public int ConcurrentTestrunners { get; }
-        public ThresholdOptions ThresholdOptions { get; }
+
+        public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; }
         public IEnumerable<string> FilesToExclude { get; }
 
@@ -53,18 +55,33 @@ namespace Stryker.Core.Options
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
+            var outputPath = ValidateOutputPath(basePath);
             BasePath = basePath;
+            OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
-            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile);
+            LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
-            ThresholdOptions = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
+        }
+
+        private string ValidateOutputPath(string basePath)
+        {
+            if (string.IsNullOrWhiteSpace(basePath))
+            {
+                return "";
+            }
+
+            var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+            _fileSystem.Directory.CreateDirectory(FilePathUtils.ConvertPathSeparators(outputPath));
+
+            return outputPath;
         }
 
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)
@@ -170,7 +187,7 @@ namespace Stryker.Core.Options
             return usableProcessorCount;
         }
 
-        private ThresholdOptions ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
+        private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
             List<int> thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
             if (thresholdList.Any(x => x > 100 || x < 0))
@@ -188,7 +205,7 @@ namespace Stryker.Core.Options
                     "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
             }
 
-            return new ThresholdOptions(thresholdHigh, thresholdLow, thresholdBreak);
+            return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
         private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)

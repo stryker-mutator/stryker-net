@@ -4,10 +4,10 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
@@ -318,7 +318,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
+            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,

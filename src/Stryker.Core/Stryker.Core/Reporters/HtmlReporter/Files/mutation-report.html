@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>##REPORT_JS##</script>
+    </head>
+    <body>
+        <mutation-test-report-app title-postfix="##REPORT_TITLE##"></mutation-test-report-app>
+        
+        <script>
+            document.querySelector('mutation-test-report-app').report =
+                ##REPORT_JSON##;
+        </script>
+    </body>
+</html>

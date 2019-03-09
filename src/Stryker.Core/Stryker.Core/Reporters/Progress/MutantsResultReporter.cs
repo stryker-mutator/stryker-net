@@ -13,18 +13,15 @@ namespace Stryker.Core.Reporters.Progress
         private readonly IConsoleOneLineLogger _mutantKilledLogger;
         private readonly IConsoleOneLineLogger _mutantSurvivedLogger;
         private readonly IConsoleOneLineLogger _mutantTimeoutLogger;
-        private readonly IConsoleOneLineLogger _mutantRuntimeErrorLogger;
 
         private int _mutantsKilledCount;
         private int _mutantsSurvivedCount;
         private int _mutantsTimeoutCount;
-        private int _mutantsRuntimeErrorCount;
 
         public MutantsResultReporter(
             IConsoleOneLineLogger mutantKilledLogger,
             IConsoleOneLineLogger mutantSurvivedLogger,
-            IConsoleOneLineLogger mutantTimeoutLogger,
-            IConsoleOneLineLogger mutantRuntimeErrorLogger)
+            IConsoleOneLineLogger mutantTimeoutLogger)
         {
             _mutantKilledLogger = mutantKilledLogger;
             _mutantSurvivedLogger = mutantSurvivedLogger;

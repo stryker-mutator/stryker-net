@@ -132,10 +132,9 @@ SSSSSSS.SSSSSST
 [Survived] String mutation on line 18: '"toto"' ==> '""'
 [Survived] Boolean mutation on line 19: 'true' ==> 'false'
 ```
- * Json - At the end of the mutation testrun, this reporter will output the testresult as a json object which can be used as input to a html report
+ * Json - At the end of the mutation testrun, this reporter will output the testresult as a json file
+ * Html - At the end of the mutation testrun, this reporter will generate a html file with a graphical and interactive representation of the stryker testrun which can be viewed in a browser
  * All - This will enable all available reporters
-
-Example: See https://github.com/stryker-mutator/mutation-testing-elements/issues/1#issue-339099563
 
 Defaults to `['ConsoleReport', 'ConsoleProgressBar']`
 

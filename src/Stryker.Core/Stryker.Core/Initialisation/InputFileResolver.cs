@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.ProjectComponent;
 using Stryker.Core.Logging;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
