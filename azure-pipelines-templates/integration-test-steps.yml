@@ -22,7 +22,7 @@ steps:
     displayName: 'Run integration test netstandard2.0'
     failOnStderr: false
 
-  - script: dotnet stryker --dev-mode
+  - script: dotnet stryker --dev-mode -tr vstest
     workingDirectory: $(IntegrationTestPath)/TargetProjects/NetCoreTestProject.XUnit
     displayName: 'Run integration test netstandard2.1'
     failOnStderr: false

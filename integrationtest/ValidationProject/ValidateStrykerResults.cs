@@ -11,7 +11,7 @@ namespace IntegrationTests
     public class ValidateStrykerResults
     {
         [Fact]
-        public void NetCore2_1()
+        public void NetCore()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
@@ -28,9 +28,26 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public void NetStandard2_0()
+        public void NetStandard()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetStandardTestProject.XUnit/StrykerOutput");
+            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+            var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 25, skipped: 0, survived: 20, killed: 2, timeout: 1);
+        }
+
+        [Fact]
+        public void NetFullFramework()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
             var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
