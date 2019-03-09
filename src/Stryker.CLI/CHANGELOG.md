@@ -1,3 +1,18 @@
+# [0.9.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.8.3...0.9.0) (2019-03-09)
+
+
+### Bug Fixes
+
+* **Missing mutations:** Improve mutation algorithm to find more mutants ([#373](https://github.com/stryker-mutator/stryker-net/issues/373)) ([63ef355](https://github.com/stryker-mutator/stryker-net/commit/63ef355))
+
+
+### Features
+
+* **html-reporter:** Implement html reporter using mutation report html elements ([#352](https://github.com/stryker-mutator/stryker-net/issues/352)) ([417a2b7](https://github.com/stryker-mutator/stryker-net/commit/417a2b7))
+* **testrunner:** Integrate with vstest testrunner on windows ([#319](https://github.com/stryker-mutator/stryker-net/issues/319)) ([4a1422a](https://github.com/stryker-mutator/stryker-net/commit/4a1422a))
+
+
+
 ## [0.8.3](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.DotNetCoreCli@0.8.2...0.8.3) (2019-02-07)
 
 
