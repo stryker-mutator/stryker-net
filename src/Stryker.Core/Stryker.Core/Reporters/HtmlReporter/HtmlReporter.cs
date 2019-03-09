@@ -57,7 +57,7 @@ namespace Stryker.Core.Reporters.Html
                         var fileContent = htmlReader.ReadToEnd();
 
                         fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
-                        fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker Dotnet Report");
+                        fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
                         fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
 
                         file.WriteLine(fileContent);
