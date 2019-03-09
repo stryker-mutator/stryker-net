@@ -275,7 +275,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
 
-            var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "test"));
+            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
