@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 }
             };
 
-            string expectedPath = "test/bin/Debug/AppToTest.dll";
+            string expectedPath = "/test/bin/Debug/AppToTest.dll";
             target.GetInjectionPath().ShouldBe(expectedPath);
         }
 
@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 }
             };
 
-            string expectedPath = "test/bin/Debug/TestApp.dll";
+            string expectedPath = "/test/bin/Debug/TestApp.dll";
             target.GetTestBinariesPath().ShouldBe(expectedPath);
         }
     }
