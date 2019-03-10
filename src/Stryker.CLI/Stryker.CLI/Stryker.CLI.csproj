@@ -29,6 +29,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.0.1" />
   </ItemGroup>
 
   <ItemGroup>

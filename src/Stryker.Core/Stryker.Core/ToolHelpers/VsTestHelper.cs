@@ -104,7 +104,7 @@ namespace Stryker.Core.ToolHelpers
         private IEnumerable<string> CollectNugetPackageFolders()
         {
             yield return Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(nugetPackagesLocation is null))
+            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(nugetPackagesLocation is null) && !(string.IsNullOrWhiteSpace(nugetPackagesLocation)))
             {
                 yield return Environment.GetEnvironmentVariable(@"NUGET_PACKAGES");
             }
