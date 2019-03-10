@@ -7,33 +7,41 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class ProjectInfoTests
     {
         [Fact]
-        public void ShouldGenerateInjectionPath_NetCore()
+        public void ShouldGenerateInjectionPath()
         {
             var target = new ProjectInfo()
             {
+                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                {
+                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/bin/Debug/netcoreapp2.1/TestApp.dll",
+                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
                 }
             };
 
-            string expectedPath = "/bin/Debug/netcoreapp2.1/TestApp.dll";
+            string expectedPath = "test/bin/Debug/AppToTest.dll";
             target.GetInjectionPath().ShouldBe(expectedPath);
         }
 
         [Fact]
-        public void ShouldGenerateInjectionPath_FullFramework()
+        public void ShouldGenerateTestBinariesPath()
         {
             var target = new ProjectInfo()
             {
+                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                {
+                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/bin/Debug/TestApp.dll",
+                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
                 }
             };
 
-            string expectedPath = "/bin/Debug/TestApp.dll";
-            target.GetInjectionPath().ShouldBe(expectedPath);
+            string expectedPath = "test/bin/Debug/TestApp.dll";
+            target.GetTestBinariesPath().ShouldBe(expectedPath);
         }
     }
 }
