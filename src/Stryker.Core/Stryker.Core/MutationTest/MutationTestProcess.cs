@@ -91,9 +91,9 @@ namespace Stryker.Core.MutationTest
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, options.DevMode);
 
                 string injectionPath = _input.ProjectInfo.GetInjectionPath();
-                if (!_fileSystem.Directory.Exists(injectionPath) && !_fileSystem.File.Exists(injectionPath))
+                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) && !_fileSystem.File.Exists(injectionPath))
                 {
-                    _fileSystem.Directory.CreateDirectory(injectionPath);
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
                 }
 
                 // inject the mutated Assembly into the test project
