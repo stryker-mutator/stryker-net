@@ -1,5 +1,5 @@
 ﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Stryker.Core.Options;
+using Stryker.Core.Initialisation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,18 +7,17 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
 
 namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
-        private readonly StrykerOptions _options;
+        private readonly ProjectInfo _projectInfo;
         private readonly IFileSystem _fileSystem;
 
-        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
+        public VsTestHelper(ProjectInfo projectInfo, IFileSystem fileSystem = null)
         {
-            _options = options;
+            _projectInfo = projectInfo;
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
@@ -103,35 +102,13 @@ namespace Stryker.Core.ToolHelpers
 
         private IEnumerable<string> CollectNugetPackageFolders()
         {
-            yield return Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(nugetPackagesLocation is null) && !(string.IsNullOrWhiteSpace(nugetPackagesLocation)))
+            if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
+            {
+                yield return Path.Combine(userProfile, ".nuget", "packages");
+            }
+            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(string.IsNullOrWhiteSpace(nugetPackagesLocation)))
             {
                 yield return Environment.GetEnvironmentVariable(@"NUGET_PACKAGES");
-            }
-            foreach (string nugetPackageFolder in ParseNugetPackageFolders())
-            {
-                yield return nugetPackageFolder;
-            }
-        }
-
-        private IEnumerable<string> ParseNugetPackageFolders()
-        {
-            string nugetPropsLocation = Path.Combine(_options.BasePath, "obj", $"{_options.ProjectUnderTestNameFilter}.nuget.g.props");
-
-            if (_fileSystem.File.Exists(nugetPropsLocation))
-            {
-                XElement document = XElement.Load(nugetPropsLocation);
-                string nugetPackageFolderElementValue = document.Descendants("NuGetPackageFolders").Select(e => e.Value).First();
-                string[] nugetPackageFolders = nugetPackageFolderElementValue.Split(";");
-
-                foreach (string nugetPackageFolder in nugetPackageFolders)
-                {
-                    yield return nugetPackageFolder;
-                }
-            }
-            else
-            {
-                yield break;
             }
         }
     }
