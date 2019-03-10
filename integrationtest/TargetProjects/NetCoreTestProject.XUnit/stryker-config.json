@@ -1,13 +1,13 @@
 {
-    "stryker-config":
-    {
-        "reporters": [
-            "Json"
-        ],
-        "log-level": "info",
-        "project-file": "TargetProject.csproj",
-        "excluded-mutations": [
-            "string"
-        ]
-    }
+  "stryker-config": {
+    "reporters": [
+      "Json"
+    ],
+    "log-level": "trace",
+    "log-file": true,
+    "project-file": "TargetProject.csproj",
+    "excluded-mutations": [
+      "string"
+    ]
+  }
 }
