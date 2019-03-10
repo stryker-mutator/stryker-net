@@ -1,9 +1,8 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,11 +12,15 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private readonly ILogger _logger;
 
         public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
+
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
+                _logger.LogTrace("Creating {0} testrunner {1} of {2}", TestRunner.VsTest, i + 1, options.ConcurrentTestrunners);
                 _availableRunners.Add(new VsTestRunner(options, projectInfo));
             });
         }

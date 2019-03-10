@@ -19,14 +19,14 @@ namespace Stryker.Core.TestRunners
 
         public ITestRunner Create(StrykerOptions options, ProjectInfo projectInfo)
         {
-            _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
-            ITestRunner testRunner = null;
-
             if (projectInfo.FullFramework && options.TestRunner != TestRunner.VsTest)
             {
-                _logger.LogWarning($"Setting testrunner to {TestRunner.VsTest} because {options.TestRunner} does not support Full framework");
+                _logger.LogWarning("Setting testrunner to {0} because {1} does not support Full framework", TestRunner.VsTest, options.TestRunner);
                 options.TestRunner = TestRunner.VsTest;
             }
+
+            _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
+            ITestRunner testRunner = null;
 
             switch (options.TestRunner)
             {
@@ -40,7 +40,7 @@ namespace Stryker.Core.TestRunners
                     testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
+            _logger.LogInformation("Using testrunner {0}", options.TestRunner);
             return testRunner;
         }
     }
