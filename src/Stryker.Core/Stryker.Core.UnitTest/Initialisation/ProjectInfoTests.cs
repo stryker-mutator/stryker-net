@@ -13,15 +13,15 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                    AssemblyPath = FilePathUtils.ConvertPathSeparators("\\test\\bin\\Debug\\TestApp.dll"),
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
+                    AssemblyPath = FilePathUtils.ConvertPathSeparators("\\app\\bin\\Debug\\AppToTest.dll"),
                 }
             };
 
-            string expectedPath = "/test/bin/Debug/AppToTest.dll";
+            string expectedPath = FilePathUtils.ConvertPathSeparators("\\test\\bin\\Debug\\AppToTest.dll");
             target.GetInjectionPath().ShouldBe(expectedPath);
         }
 
@@ -32,15 +32,15 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                    AssemblyPath = FilePathUtils.ConvertPathSeparators("\\test\\bin\\Debug\\TestApp.dll"),
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
+                    AssemblyPath = FilePathUtils.ConvertPathSeparators("\\app\\bin\\Debug\\AppToTest.dll"),
                 }
             };
 
-            string expectedPath = "/test/bin/Debug/TestApp.dll";
+            string expectedPath = FilePathUtils.ConvertPathSeparators("\\test\\bin\\Debug\\TestApp.dll");
             target.GetTestBinariesPath().ShouldBe(expectedPath);
         }
     }

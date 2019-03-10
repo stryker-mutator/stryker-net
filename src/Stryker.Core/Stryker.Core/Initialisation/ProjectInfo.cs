@@ -20,9 +20,9 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath()
         {
-            return Path.Combine(
-                Path.GetDirectoryName(TestProjectAnalyzerResult.AssemblyPath),
-                Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
+            return FilePathUtils.ConvertPathSeparators(Path.Combine(
+                FilePathUtils.ConvertPathSeparators(Path.GetDirectoryName(TestProjectAnalyzerResult.AssemblyPath)),
+                FilePathUtils.ConvertPathSeparators(Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath))));
         }
 
         public string GetTestBinariesPath()
@@ -46,8 +46,8 @@ namespace Stryker.Core.Initialisation
         public string AssemblyPath
         {
             get => _assemblyPath ?? FilePathUtils.ConvertPathSeparators(Path.Combine(
-                _analyzerResult.Properties["TargetDir"],
-                _analyzerResult.Properties["TargetFileName"]));
+                FilePathUtils.ConvertPathSeparators(_analyzerResult.Properties["TargetDir"]),
+                FilePathUtils.ConvertPathSeparators(_analyzerResult.Properties["TargetFileName"])));
             set => _assemblyPath = value;
         }
 
