@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Initialisation.ProjectComponent;
+﻿using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {

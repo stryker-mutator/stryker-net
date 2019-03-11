@@ -1,4 +1,5 @@
 ﻿using Stryker.Core.Options;
+using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 using System.Collections.Generic;
@@ -20,14 +21,20 @@ namespace Stryker.Core.Reporters
                 { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
                 { Reporter.ConsoleProgressBar, CreateProgressReporter() },
                 { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
-                { Reporter.Json, new JsonReporter(options) }
+                { Reporter.Json, new JsonReporter(options) },
+                { Reporter.Html, new HtmlReporter(options) }
             };
         }
 
         private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
-            return enabledReporters.Contains(Reporter.All) ? possibleReporters.Values :
-                possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key)).Select(reporter => reporter.Value);
+            if (enabledReporters.Contains(Reporter.All))
+            {
+                return possibleReporters.Values;
+            }
+
+            return possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
+                .Select(reporter => reporter.Value);
         }
 
         private static ProgressReporter CreateProgressReporter()
@@ -38,13 +45,11 @@ namespace Stryker.Core.Reporters
             var mutantKilledLogger = consoleOneLineLoggerFactory.Create();
             var mutantSurvivedLogger = consoleOneLineLoggerFactory.Create();
             var mutantTimeoutLogger = consoleOneLineLoggerFactory.Create();
-            var mutantRuntimeErrorLogger = consoleOneLineLoggerFactory.Create();
 
             var mutantsResultReporter = new MutantsResultReporter(
                 mutantKilledLogger,
                 mutantSurvivedLogger,
-                mutantTimeoutLogger,
-                mutantRuntimeErrorLogger);
+                mutantTimeoutLogger);
 
             return new ProgressReporter(mutantsResultReporter, progressBarReporter);
         }

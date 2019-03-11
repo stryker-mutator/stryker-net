@@ -24,8 +24,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
 
             _mutantsResultReporter = new MutantsResultReporter(_mutantKilledLogger.Object,
                                                      _mutantSurvivedLogger.Object,
-                                                     _mutantTimeoutLogger.Object,
-                                                     _mutantRuntimeErrorLogger.Object);
+                                                     _mutantTimeoutLogger.Object);
         }
 
         [Theory]
@@ -44,7 +43,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                 _mutantsResultReporter.ReportMutantTestResult(mutantTestResult);
 
                 // Verify the right oneline logger is called for each status
-                switch(status)
+                switch (status)
                 {
                     case MutantStatus.Killed:
                         _mutantKilledLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(), It.Is<object[]>(y => y.Length == 1 && (int)y.First() == i + 1)));

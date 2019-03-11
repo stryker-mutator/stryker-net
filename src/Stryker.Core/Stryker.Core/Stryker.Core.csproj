@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.8.3</VersionPrefix>
+    <VersionPrefix>0.9.0</VersionPrefix>
     <PackageId>StrykerMutator.Core</PackageId>
     <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Please install a Stryker.Runner.* package to use this package.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -18,17 +18,21 @@
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Remove="Stryker.Core.v3.ncrunchproject" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <None Remove="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
@@ -38,11 +42,16 @@
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.0.1" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.0.1" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.0.1" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="1.0.172" />
 	<PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Serilog" Version="2.8.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="System.IO.Abstractions" Version="3.0.10" />
+    <PackageReference Include="System.IO.Abstractions" Version="3.1.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Reporters\HtmlReporter\dist\src\" />
   </ItemGroup>
 </Project>

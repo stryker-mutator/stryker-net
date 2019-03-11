@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Initialisation.ProjectComponent;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters
             Console.WriteLine("");
 
             _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. Each mutant will now be tested, this could take a while. {Environment.NewLine}");
-            
+
             // print empty line for readability
             Console.WriteLine("");
         }
@@ -83,9 +83,6 @@ namespace Stryker.Core.Reporters
         {
             var score = inputComponent.GetMutationScore();
             // Convert the threshold integer values to decimal values
-            decimal thresholdHigh = _options.ThresholdOptions.ThresholdHigh;
-            decimal thresholdLow = _options.ThresholdOptions.ThresholdLow;
-            decimal thresholdBreak = _options.ThresholdOptions.ThresholdBreak;
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
             if (inputComponent.IsExcluded)
@@ -100,15 +97,15 @@ namespace Stryker.Core.Reporters
             {
                 // print the score as a percentage
                 string scoreText = $"({ (score.Value / 100).ToString("p", CultureInfo.InvariantCulture)})";
-                if (score > thresholdHigh)
+                if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
                     _chalk.Green(scoreText);
                 }
-                else if (score > thresholdLow)
+                else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Warning)
                 {
                     _chalk.Yellow(scoreText);
                 }
-                else if (score <= thresholdLow)
+                else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Danger)
                 {
                     _chalk.Red(scoreText);
                 }

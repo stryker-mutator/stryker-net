@@ -2,13 +2,14 @@
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
-using Stryker.Core.ToolHelpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,9 +22,7 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
-        public bool Running { get; private set; }
-        private readonly object runLock = new object();
-
+        private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
 
@@ -44,8 +43,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         }
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, ICollection<TestCase> testCasesDiscovered)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, ICollection<TestCase> testCasesDiscovered, IFileSystem fileSystem = null)
         {
+            _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
             _discoveredTests = testCasesDiscovered;
@@ -72,31 +72,26 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult RunVsTest(int? timeoutMS, Dictionary<string, string> envVars)
         {
             TestRunResult testResult;
-            lock (runLock)
-            {
-                Running = true;
 
                 var testResults = RunAllTests(envVars, GenerateRunSettings(timeoutMS ?? 0));
 
-                // For now we need to throw an OperationCanceledException when a testrun has timed out. 
-                // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
+            // For now we need to throw an OperationCanceledException when a testrun has timed out. 
+            // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
                 if (testResults.Count() < _discoveredTests.Count())
-                {
-                    throw new OperationCanceledException();
-                }
+            {
+                throw new OperationCanceledException();
+            }
 
-                testResult = new TestRunResult
-                {
-                    Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
-                    ResultMessage = string.Join(
-                        Environment.NewLine,
+            testResult = new TestRunResult
+            {
+                Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
+                ResultMessage = string.Join(
+                    Environment.NewLine,
                         testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                             .Select(tr => tr.ErrorMessage)),
                     TotalNumberOfTests = _discoveredTests.Count()
-                };
+            };
 
-                Running = false;
-            }
 
             return testResult;
         }
@@ -268,12 +263,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            var logFilePath = Path.Combine(_options.BasePath, "StrykerOutput", "logs", "vstest-log.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            var logPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.OutputPath, "vstest", "vstest-log.txt"));
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
-                LogFilePath = logFilePath
+                LogFilePath = logPath
             });
         }
 

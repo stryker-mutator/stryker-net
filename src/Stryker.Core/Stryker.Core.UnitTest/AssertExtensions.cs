@@ -41,6 +41,5 @@ namespace Stryker.Core.UnitTest
             string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
         }
-
     }
 }
