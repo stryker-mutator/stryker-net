@@ -27,11 +27,13 @@ jobs:
     name: Hosted VS2017
   
   steps:
-  - task: NuGetCommand@2
-    inputs:
-        command: restore
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+- task: NuGetCommand@2
+  displayName: 'Restore vstest binaries for pre-release'
+  inputs:
+    restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+    feedsToUse: config
+    nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+    restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
@@ -162,16 +164,17 @@ jobs:
   
   steps:
   - task: NuGetCommand@2
+    displayName: 'Restore vstest binaries for release'
     inputs:
-        command: restore
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+      feedsToUse: config
+      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+      restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
     inputs:
       command: pack
-      nobuild: false
       packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/release
 
