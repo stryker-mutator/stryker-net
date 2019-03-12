@@ -59,28 +59,29 @@ namespace Stryker.Core.ToolHelpers
             }
             else
             {
-                throw new FileNotFoundException("VsTest test framework adapters not found at " + extensionPath);
+                return "";
             }
         }
 
         private Dictionary<OSPlatform, string> GetVsTestToolPaths()
         {
-            if (!(_vstestPaths is null))
+            // If any of the found paths is for the current OS, just return the paths as we have what we need
+            if (_vstestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
             {
                 return _vstestPaths;
             }
 
             lock (_firstTimeVsTestDeployLock)
             {
-                if (_vstestPaths is null)
+                if (_vstestPaths.Count == 0)
                 {
                     var nugetPackageFolders = CollectNugetPackageFolders();
 
-                    if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies is null))
+                    if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies.Count == 0))
                     {
                         Merge(_vstestPaths, nugetAssemblies);
                     }
-                    if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths is null))
+                    if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths.Count == 0))
                     {
                         Merge(_vstestPaths, deployedPaths);
                     }
