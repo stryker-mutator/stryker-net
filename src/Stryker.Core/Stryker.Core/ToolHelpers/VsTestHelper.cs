@@ -15,7 +15,7 @@ namespace Stryker.Core.ToolHelpers
         private readonly object _firstTimeVsTestDeployLock = new object();
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private Dictionary<OSPlatform, string> _vstestPaths;
+        private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
 
         private static VsTestHelper _vsTestHelper;
 
@@ -72,52 +72,72 @@ namespace Stryker.Core.ToolHelpers
 
             lock (_firstTimeVsTestDeployLock)
             {
-                Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
-                string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
-                string portablePackageName = "microsoft.testplatform.portable";
-
-                var nugetPackageFolders = CollectNugetPackageFolders();
-
-                bool dllFound = false;
-                bool exeFound = false;
-                foreach (string nugetPackageFolder in nugetPackageFolders)
+                if (_vstestPaths is null)
                 {
-                    if (dllFound && exeFound)
+                    var nugetPackageFolders = CollectNugetPackageFolders();
+
+                    if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies is null))
                     {
-                        break;
+                        Merge(_vstestPaths, nugetAssemblies);
                     }
-
-                    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
-
-                    string dllPath = FilePathUtils.ConvertPathSeparators(
-                        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
-                    string exePath = FilePathUtils.ConvertPathSeparators(
-                        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
-
-                    if (!dllFound && _fileSystem.File.Exists(dllPath))
+                    if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths is null))
                     {
-                        vsTestPaths.Add(OSPlatform.Linux, dllPath);
-                        vsTestPaths.Add(OSPlatform.OSX, dllPath);
-                        dllFound = true;
+                        Merge(_vstestPaths, deployedPaths);
                     }
-                    if (!exeFound && _fileSystem.File.Exists(exePath))
+                    if (_vstestPaths.Count == 0)
                     {
-                        vsTestPaths.Add(OSPlatform.Windows, exePath);
-                        exeFound = true;
+                        throw new ApplicationException("Could not find or deploy vstest. Exiting.");
                     }
-                }
-
-                if (dllFound && exeFound)
-                {
-                    _vstestPaths = vsTestPaths;
-                }
-                else
-                {
-                    _vstestPaths = DeployEmbeddedVsTestBinaries();
                 }
             }
 
             return _vstestPaths;
+        }
+
+        private void Merge(Dictionary<OSPlatform, string> to, Dictionary<OSPlatform, string> from)
+        {
+            foreach (var val in from)
+            {
+                to[val.Key] = val.Value;
+            }
+        }
+
+        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders)
+        {
+            Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
+            string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
+            string portablePackageName = "microsoft.testplatform.portable";
+            bool dllFound = false;
+            bool exeFound = false;
+
+            foreach (string nugetPackageFolder in nugetPackageFolders)
+            {
+                if (dllFound && exeFound)
+                {
+                    break;
+                }
+
+                string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
+
+                string dllPath = FilePathUtils.ConvertPathSeparators(
+                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
+                string exePath = FilePathUtils.ConvertPathSeparators(
+                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
+
+                if (!dllFound && _fileSystem.File.Exists(dllPath))
+                {
+                    vsTestPaths[OSPlatform.Linux] = dllPath;
+                    vsTestPaths[OSPlatform.OSX] = dllPath;
+                    dllFound = true;
+                }
+                if (!exeFound && _fileSystem.File.Exists(exePath))
+                {
+                    vsTestPaths[OSPlatform.Windows] = exePath;
+                    exeFound = true;
+                }
+            }
+
+            return vsTestPaths;
         }
 
         private IEnumerable<string> CollectNugetPackageFolders()
@@ -156,17 +176,19 @@ namespace Stryker.Core.ToolHelpers
 
                     if (extension == "exe")
                     {
-                        paths.Add(OSPlatform.Windows, path);
+                        paths[OSPlatform.Windows] = path;
                     }
                     else
                     {
-                        paths.Add(OSPlatform.Linux, path);
-                        paths.Add(OSPlatform.OSX, path);
+                        paths[OSPlatform.Linux] = path;
+                        paths[OSPlatform.OSX] = path;
                     }
                 }
             }
 
             return paths;
         }
+
+
     }
 }
