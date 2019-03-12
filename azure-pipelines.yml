@@ -33,7 +33,7 @@ jobs:
       restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
       feedsToUse: config
       nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-      restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
+      restoreDirectory: ./.vstest/
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
@@ -169,7 +169,7 @@ jobs:
       restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
       feedsToUse: config
       nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-      restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
+      restoreDirectory: ./.vstest/
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
