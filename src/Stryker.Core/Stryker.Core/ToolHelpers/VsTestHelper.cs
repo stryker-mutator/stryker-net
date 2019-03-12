@@ -80,32 +80,32 @@ namespace Stryker.Core.ToolHelpers
 
                 bool dllFound = false;
                 bool exeFound = false;
-                //foreach (string nugetPackageFolder in nugetPackageFolders)
-                //{
-                //    if (dllFound && exeFound)
-                //    {
-                //        break;
-                //    }
+                foreach (string nugetPackageFolder in nugetPackageFolders)
+                {
+                    if (dllFound && exeFound)
+                    {
+                        break;
+                    }
 
-                //    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
+                    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
 
-                //    string dllPath = FilePathUtils.ConvertPathSeparators(
-                //        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
-                //    string exePath = FilePathUtils.ConvertPathSeparators(
-                //        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
+                    string dllPath = FilePathUtils.ConvertPathSeparators(
+                        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
+                    string exePath = FilePathUtils.ConvertPathSeparators(
+                        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
 
-                //    if (!dllFound && _fileSystem.File.Exists(dllPath))
-                //    {
-                //        vsTestPaths.Add(OSPlatform.Linux, dllPath);
-                //        vsTestPaths.Add(OSPlatform.OSX, dllPath);
-                //        dllFound = true;
-                //    }
-                //    if (!exeFound && _fileSystem.File.Exists(exePath))
-                //    {
-                //        vsTestPaths.Add(OSPlatform.Windows, exePath);
-                //        exeFound = true;
-                //    }
-                //}
+                    if (!dllFound && _fileSystem.File.Exists(dllPath))
+                    {
+                        vsTestPaths.Add(OSPlatform.Linux, dllPath);
+                        vsTestPaths.Add(OSPlatform.OSX, dllPath);
+                        dllFound = true;
+                    }
+                    if (!exeFound && _fileSystem.File.Exists(exePath))
+                    {
+                        vsTestPaths.Add(OSPlatform.Windows, exePath);
+                        exeFound = true;
+                    }
+                }
 
                 if (dllFound && exeFound)
                 {
