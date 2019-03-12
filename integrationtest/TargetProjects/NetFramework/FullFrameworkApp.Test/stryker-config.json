@@ -6,6 +6,6 @@
     ],
     "test-runner": "vstest",
     "log-level": "trace",
-    "log-file": true
+    "log-file": "true"
   }
 }

@@ -5,7 +5,7 @@
             "Json"
         ],
         "log-level": "trace",
-        "log-file":  true,
+        "log-file":  "true",
         "project-file": "TargetProject.csproj",
         "excluded-files": [
           "./EndlessLoop.cs"
