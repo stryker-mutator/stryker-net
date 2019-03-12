@@ -12,14 +12,23 @@ namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
+        private readonly object _firstTimeVsTestDeployLock = new object();
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private Dictionary<OSPlatform, string> _vstestPaths;
 
-        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
+        private static VsTestHelper _vsTestHelper;
+
+        private VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
+        }
+
+        public static VsTestHelper GetVsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
+        {
+            _vsTestHelper = _vsTestHelper ?? new VsTestHelper(options, fileSystem);
+            return _vsTestHelper;
         }
 
         public string GetCurrentPlatformVsTestToolPath()
@@ -40,60 +49,6 @@ namespace Stryker.Core.ToolHelpers
                 $"{ OSPlatform.OSX.ToString() }");
         }
 
-        public Dictionary<OSPlatform, string> GetVsTestToolPaths()
-        {
-            if (!(_vstestPaths is null))
-            {
-                return _vstestPaths;
-            }
-
-            Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
-            string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
-            string portablePackageName = "microsoft.testplatform.portable";
-
-            var nugetPackageFolders = CollectNugetPackageFolders();
-
-            bool dllFound = false;
-            bool exeFound = false;
-            foreach (string nugetPackageFolder in nugetPackageFolders)
-            {
-                if (dllFound && exeFound)
-                {
-                    break;
-                }
-
-                string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
-
-                string dllPath = FilePathUtils.ConvertPathSeparators(
-                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
-                string exePath = FilePathUtils.ConvertPathSeparators(
-                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
-
-                if (!dllFound && _fileSystem.File.Exists(dllPath))
-                {
-                    vsTestPaths.Add(OSPlatform.Linux, dllPath);
-                    vsTestPaths.Add(OSPlatform.OSX, dllPath);
-                    dllFound = true;
-                }
-                if (!exeFound && _fileSystem.File.Exists(exePath))
-                {
-                    vsTestPaths.Add(OSPlatform.Windows, exePath);
-                    exeFound = true;
-                }
-            }
-
-            if (dllFound && exeFound)
-            {
-                _vstestPaths = vsTestPaths;
-            }
-            else
-            {
-                _vstestPaths = DeployEmbeddedVsTestBinaries();
-            }
-
-            return _vstestPaths;
-        }
-
         public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
         {
             string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
@@ -106,6 +61,63 @@ namespace Stryker.Core.ToolHelpers
             {
                 throw new FileNotFoundException("VsTest test framework adapters not found at " + extensionPath);
             }
+        }
+
+        private Dictionary<OSPlatform, string> GetVsTestToolPaths()
+        {
+            if (!(_vstestPaths is null))
+            {
+                return _vstestPaths;
+            }
+
+            lock (_firstTimeVsTestDeployLock)
+            {
+                Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
+                string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
+                string portablePackageName = "microsoft.testplatform.portable";
+
+                var nugetPackageFolders = CollectNugetPackageFolders();
+
+                bool dllFound = false;
+                bool exeFound = false;
+                //foreach (string nugetPackageFolder in nugetPackageFolders)
+                //{
+                //    if (dllFound && exeFound)
+                //    {
+                //        break;
+                //    }
+
+                //    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
+
+                //    string dllPath = FilePathUtils.ConvertPathSeparators(
+                //        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
+                //    string exePath = FilePathUtils.ConvertPathSeparators(
+                //        Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
+
+                //    if (!dllFound && _fileSystem.File.Exists(dllPath))
+                //    {
+                //        vsTestPaths.Add(OSPlatform.Linux, dllPath);
+                //        vsTestPaths.Add(OSPlatform.OSX, dllPath);
+                //        dllFound = true;
+                //    }
+                //    if (!exeFound && _fileSystem.File.Exists(exePath))
+                //    {
+                //        vsTestPaths.Add(OSPlatform.Windows, exePath);
+                //        exeFound = true;
+                //    }
+                //}
+
+                if (dllFound && exeFound)
+                {
+                    _vstestPaths = vsTestPaths;
+                }
+                else
+                {
+                    _vstestPaths = DeployEmbeddedVsTestBinaries();
+                }
+            }
+
+            return _vstestPaths;
         }
 
         private IEnumerable<string> CollectNugetPackageFolders()
@@ -134,9 +146,10 @@ namespace Stryker.Core.ToolHelpers
                 .GetManifestResourceStream(vstest))
                 {
                     var extension = Path.GetExtension(vstest);
-                    var path = Path.Combine(_options.OutputPath, ".vstest", $"vstest.console.{extension}");
+                    var path = Path.Combine(_options.OutputPath, ".vstest", $"vstest.console{extension}");
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                    using (var file = _fileSystem.FileStream.Create(path, FileMode.Truncate))
+                    using (var file = _fileSystem.FileStream.Create(path, FileMode.Create))
                     {
                         stream.CopyTo(file);
                     }

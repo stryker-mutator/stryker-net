@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
-            _vsTestHelper = new VsTestHelper(options);
+            _vsTestHelper = VsTestHelper.GetVsTestHelper(options);
 
             _vsTestConsole = PrepareVsTestConsole();
 
