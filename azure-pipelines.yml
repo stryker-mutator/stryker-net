@@ -27,6 +27,12 @@ jobs:
     name: Hosted VS2017
   
   steps:
+  - task: NuGetCommand@2
+    inputs:
+        command: restore
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
     inputs:
@@ -155,6 +161,12 @@ jobs:
     name: Hosted VS2017
   
   steps:
+  - task: NuGetCommand@2
+    inputs:
+        command: restore
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+
   - task: DotNetCoreCLI@2
     displayName: 'Pack release package'
     inputs:
