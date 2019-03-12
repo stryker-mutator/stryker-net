@@ -27,13 +27,13 @@ jobs:
     name: Hosted VS2017
   
   steps:
-- task: NuGetCommand@2
-  displayName: 'Restore vstest binaries for pre-release'
-  inputs:
-    restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-    feedsToUse: config
-    nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-    restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
+  - task: NuGetCommand@2
+    displayName: 'Restore vstest binaries for pre-release'
+    inputs:
+      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+      feedsToUse: config
+      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+      restoreDirectory: src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 
   - task: DotNetCoreCLI@2
     displayName: 'Pack pre-release packages'
