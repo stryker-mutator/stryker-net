@@ -1,5 +1,5 @@
 ﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Stryker.Core.Initialisation;
+using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,12 +12,13 @@ namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
-        private readonly ProjectInfo _projectInfo;
+        private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
+        private Dictionary<OSPlatform, string> _vstestPaths;
 
-        public VsTestHelper(ProjectInfo projectInfo, IFileSystem fileSystem = null)
+        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
         {
-            _projectInfo = projectInfo;
+            _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
@@ -41,6 +42,11 @@ namespace Stryker.Core.ToolHelpers
 
         public Dictionary<OSPlatform, string> GetVsTestToolPaths()
         {
+            if (!(_vstestPaths is null))
+            {
+                return _vstestPaths;
+            }
+
             Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
             string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
             string portablePackageName = "microsoft.testplatform.portable";
@@ -78,12 +84,14 @@ namespace Stryker.Core.ToolHelpers
 
             if (dllFound && exeFound)
             {
-                return vsTestPaths;
+                _vstestPaths = vsTestPaths;
             }
             else
             {
-                throw new FileNotFoundException("VsTest executables could not be found in any of the following directories, please submit a bug report: " + string.Join(", ", nugetPackageFolders));
+                _vstestPaths = DeployEmbeddedVsTestBinaries();
             }
+
+            return _vstestPaths;
         }
 
         public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
@@ -110,6 +118,42 @@ namespace Stryker.Core.ToolHelpers
             {
                 yield return Environment.GetEnvironmentVariable(@"NUGET_PACKAGES");
             }
+        }
+
+        private Dictionary<OSPlatform, string> DeployEmbeddedVsTestBinaries()
+        {
+            var paths = new Dictionary<OSPlatform, string>();
+
+            var vsTestResources = typeof(VsTestHelper).Assembly
+                .GetManifestResourceNames()
+                .Where(r => r.Contains("vstest.console"));
+
+            foreach (var vstest in vsTestResources)
+            {
+                using (var stream = typeof(VsTestHelper).Assembly
+                .GetManifestResourceStream(vstest))
+                {
+                    var extension = Path.GetExtension(vstest);
+                    var path = Path.Combine(_options.OutputPath, ".vstest", $"vstest.console.{extension}");
+
+                    using (var file = _fileSystem.FileStream.Create(path, FileMode.Truncate))
+                    {
+                        stream.CopyTo(file);
+                    }
+
+                    if (extension == "exe")
+                    {
+                        paths.Add(OSPlatform.Windows, path);
+                    }
+                    else
+                    {
+                        paths.Add(OSPlatform.Linux, path);
+                        paths.Add(OSPlatform.OSX, path);
+                    }
+                }
+            }
+
+            return paths;
         }
     }
 }
