@@ -96,7 +96,7 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: **/Validation.csproj
+      projects: '**/Validation.csproj'
 
 - job: LinuxTests
   displayName: Run tests on Linux
@@ -122,7 +122,7 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: **/Validation.csproj
+      projects: '**/Validation.csproj'
 
 - job: MacOsTests
   displayName: Run tests on Mac OS
@@ -148,7 +148,7 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: **/Validation.csproj
+      projects: '**/Validation.csproj'
 
 - job: PublishRelease
   displayName: Publish Release Artifacts
