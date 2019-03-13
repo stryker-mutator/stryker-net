@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -71,9 +72,9 @@ namespace Stryker.Core.ToolHelpers
                 {
                     Merge(_vstestPaths, nugetAssemblies);
                 }
-                if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths.Count == 0))
+                if (DeployEmbeddedVsTestBinaries() is var deployPath)
                 {
-                    Merge(_vstestPaths, deployedPaths);
+                    Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 }
                 if (_vstestPaths.Count == 0)
                 {
@@ -92,27 +93,48 @@ namespace Stryker.Core.ToolHelpers
             }
         }
 
-        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders)
+        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders, bool versionDependent = true)
         {
             Dictionary<OSPlatform, string> vsTestPaths = new Dictionary<OSPlatform, string>();
+
             string versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
             string portablePackageName = "microsoft.testplatform.portable";
-            bool dllFound = false;
-            bool exeFound = false;
+            bool dllFound = false, exeFound = false;
 
             foreach (string nugetPackageFolder in nugetPackageFolders)
             {
+                string dllPath = null, exePath = null;
                 if (dllFound && exeFound)
                 {
                     break;
                 }
 
-                string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
+                if (versionDependent)
+                {
+                    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
 
-                string dllPath = FilePathUtils.ConvertPathSeparators(
-                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "netcoreapp2.0", "vstest.console.dll"));
-                string exePath = FilePathUtils.ConvertPathSeparators(
-                    Path.Combine(nugetPackageFolder, portablePackageFolder, versionString, "tools", "net451", "vstest.console.exe"));
+                    dllPath = FilePathUtils.ConvertPathSeparators(
+                        Path.Combine(
+                            nugetPackageFolder, portablePackageFolder, versionString,
+                            "tools", "netcoreapp2.0", "vstest.console.dll"));
+                    exePath = FilePathUtils.ConvertPathSeparators(
+                        Path.Combine(
+                            nugetPackageFolder, portablePackageFolder, versionString,
+                            "tools", "net451", "vstest.console.exe"));
+                }
+                else
+                {
+                    dllPath = FilePathUtils.ConvertPathSeparators(
+                        _fileSystem.Directory.GetFiles(
+                            nugetPackageFolder,
+                            "vstest.console.dll",
+                            SearchOption.AllDirectories).First());
+                    exePath = FilePathUtils.ConvertPathSeparators(
+                        _fileSystem.Directory.GetFiles(
+                            nugetPackageFolder,
+                            "vstest.console.exe",
+                            SearchOption.AllDirectories).First());
+                }
 
                 if (!dllFound && _fileSystem.File.Exists(dllPath))
                 {
@@ -142,91 +164,50 @@ namespace Stryker.Core.ToolHelpers
             }
         }
 
-        private Dictionary<OSPlatform, string> DeployEmbeddedVsTestBinaries()
+        private string DeployEmbeddedVsTestBinaries()
         {
-            var paths = new Dictionary<OSPlatform, string>();
-
-            var vsTestResources = typeof(VsTestHelper).Assembly
+            var vstestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
-                .Where(r => r.Contains("vstest.console"));
+                .Single(r => r.Contains("Microsoft.TestPlatform.Portable"));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
-            DeployEmbeddedVsTestExtensions(tempDir);
-
-            foreach (var vstest in vsTestResources)
+            using (var stream = typeof(VsTestHelper).Assembly
+            .GetManifestResourceStream(vstestZip))
             {
-                using (var stream = typeof(VsTestHelper).Assembly
-                .GetManifestResourceStream(vstest))
+                var zipPath = Path.Combine(tempDir, $"vstest.zip");
+                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+
+                using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
                 {
-                    var extension = Path.GetExtension(vstest);
-
-                    var binaryPath = Path.Combine(tempDir, $"vstest.console{extension}");
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(binaryPath));
-
-                    using (var file = _fileSystem.FileStream.Create(binaryPath, FileMode.Create))
-                    {
-                        stream.CopyTo(file);
-                    }
-
-                    _logger.LogDebug("VsTest binary was copied to: {0}", binaryPath);
-
-                    if (extension == ".exe")
-                    {
-                        paths[OSPlatform.Windows] = binaryPath;
-                    }
-                    else if (extension == ".dll")
-                    {
-                        paths[OSPlatform.Linux] = binaryPath;
-                        paths[OSPlatform.OSX] = binaryPath;
-                    }
+                    stream.CopyTo(file);
                 }
+
+                _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
+
+                ZipFile.ExtractToDirectory(zipPath, tempDir);
+                _fileSystem.File.Delete(zipPath);
+
+                _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
             }
 
-            return paths;
+            return tempDir;
         }
 
-        private void DeployEmbeddedVsTestExtensions(string tempDir)
+        public void Cleanup(int tries = 5)
         {
-            var vsTestExtensions = typeof(VsTestHelper).Assembly
-                .GetManifestResourceNames()
-                .Where(r => r.Contains("Extensions"));
-
-            var deployPath = Path.Combine(tempDir, "Extensions");
-            _fileSystem.Directory.CreateDirectory(deployPath);
-
-            foreach (var extensionName in vsTestExtensions)
-            {
-                using (var stream = typeof(VsTestHelper).Assembly.GetManifestResourceStream(extensionName))
-                {
-                    var splitExtensionName = extensionName.Split('.');
-                    var binaryPath = Path.Combine(deployPath,
-                        $"{splitExtensionName[splitExtensionName.Length - 2]}." +
-                        $"{splitExtensionName[splitExtensionName.Length - 1]}");
-
-                    using (var file = _fileSystem.FileStream.Create(binaryPath, FileMode.Create))
-                    {
-                        stream.CopyTo(file);
-                    }
-                    _logger.LogDebug("VsTest Extension was copied to: {0}", binaryPath);
-                }
-            }
-        }
-
-        public void Cleanup()
-        {
-            IList<string> pathsCleaned = new List<string>();
             var nugetPackageFolders = CollectNugetPackageFolders();
-            foreach (var vstestConsole in _vstestPaths)
+
+            try
             {
-                var path = vstestConsole.Value;
-                if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
+                foreach (var vstestConsole in _vstestPaths)
                 {
-                    if (!pathsCleaned.Contains(path))
+                    var path = vstestConsole.Value;
+                    // If vstest path is not in nuget package folder, clean it up
+                    if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
                     {
                         if (_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
                         {
-                            pathsCleaned.Add(path);
                             foreach (var entry in _fileSystem.Directory
                                 .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
                             {
@@ -234,6 +215,15 @@ namespace Stryker.Core.ToolHelpers
                             }
                         }
                     }
+                }
+            }
+            catch (Exception)
+            {
+                _logger.LogDebug($"Tried cleaning up used vstest resources but we weren't ready to clean. " +
+                    $"{(tries != 0 ? $"Trying {tries} more times." : "Out of tries, we're giving up sorry.")}");
+                if (tries > 0)
+                {
+                    Cleanup(tries - 1);
                 }
             }
         }
