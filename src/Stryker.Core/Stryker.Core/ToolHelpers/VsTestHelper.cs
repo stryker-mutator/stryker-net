@@ -47,8 +47,7 @@ namespace Stryker.Core.ToolHelpers
 
         public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
         {
-            string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
-            string extensionPath = Path.Combine(vstestMainPath, "Extensions");
+            string extensionPath = Path.Combine(Path.GetDirectoryName(vstestToolPath), "Extensions");
             if (_fileSystem.Directory.Exists(extensionPath))
             {
                 return extensionPath;
