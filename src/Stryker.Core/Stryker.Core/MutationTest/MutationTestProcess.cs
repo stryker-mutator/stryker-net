@@ -141,7 +141,8 @@ namespace Stryker.Core.MutationTest
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
             _reporter.OnStartMutantTestRun(mutantsNotRun);
 
-            Parallel.ForEach(mutantsNotRun,
+            Parallel.ForEach(
+                mutantsNotRun,
                 new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                 mutant =>
                 {
@@ -150,8 +151,9 @@ namespace Stryker.Core.MutationTest
                     _reporter.OnMutantTested(mutant);
                 });
 
-            _mutationTestExecutor.TestRunner.Dispose();
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
+
+            _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
