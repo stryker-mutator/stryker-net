@@ -136,7 +136,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
                     break;
                 case string s when s.Contains("netstandard"):
-                    throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
+                    throw new ApplicationException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
                     targetFrameworkVersion = $"Framework40";
                     break;
@@ -153,19 +153,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            if (_options.LogOptions.LogToFile)
+            try
             {
-                var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
-                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
-
-                return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
+                if (_options.LogOptions.LogToFile)
                 {
-                    TraceLevel = DetermineTraceLevel(),
-                    LogFilePath = vstestLogPath
-                });
-            }
+                    var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
-            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
+                    return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
+                    {
+                        TraceLevel = DetermineTraceLevel(),
+                        LogFilePath = vstestLogPath
+                    });
+                }
+
+                return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
+            }
         }
 
         private void InitializeVsTestConsole()

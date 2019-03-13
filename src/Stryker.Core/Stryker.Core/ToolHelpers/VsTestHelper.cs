@@ -1,4 +1,6 @@
-﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -12,12 +14,14 @@ namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
+        private readonly ILogger _logger;
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
 
-        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
+        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null, ILogger logger = null)
         {
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
         }
@@ -28,6 +32,7 @@ namespace Stryker.Core.ToolHelpers
             {
                 if (RuntimeInformation.IsOSPlatform(path.Key))
                 {
+                    _logger.LogDebug("Using vstest.console: {0}", path.Value);
                     return path.Value;
                 }
             }
@@ -166,6 +171,8 @@ namespace Stryker.Core.ToolHelpers
                     {
                         stream.CopyTo(file);
                     }
+
+                    _logger.LogDebug("VsTest binary was copied to: {0}", binaryPath);
 
                     if (extension == ".exe")
                     {
