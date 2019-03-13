@@ -167,7 +167,9 @@ namespace Stryker.Core.ToolHelpers
                 .GetManifestResourceStream(vstest))
                 {
                     var extension = Path.GetExtension(vstest);
-                    var path = Path.Combine(_options.OutputPath, ".vstest", $"vstest.console{extension}");
+                    var tempDir = Path.GetTempFileName();
+                    _fileSystem.Directory.CreateDirectory(tempDir);
+                    var path = Path.Combine(tempDir, ".vstest", $"vstest.console{extension}");
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                     using (var file = _fileSystem.FileStream.Create(path, FileMode.Create))
@@ -175,11 +177,11 @@ namespace Stryker.Core.ToolHelpers
                         stream.CopyTo(file);
                     }
 
-                    if (extension == "exe")
+                    if (extension == ".exe")
                     {
                         paths[OSPlatform.Windows] = path;
                     }
-                    else
+                    else if (extension == ".dll")
                     {
                         paths[OSPlatform.Linux] = path;
                         paths[OSPlatform.OSX] = path;
