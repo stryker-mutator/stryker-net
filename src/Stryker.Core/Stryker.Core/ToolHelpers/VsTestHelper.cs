@@ -188,13 +188,13 @@ namespace Stryker.Core.ToolHelpers
             return paths;
         }
 
-        private void DeployEmbeddedVsTestExtensions(string vsTestPath)
+        private void DeployEmbeddedVsTestExtensions(string tempDir)
         {
             var vsTestExtensions = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
                 .Where(r => r.Contains("Extensions"));
 
-            var deployPath = Path.Combine(vsTestPath, "Extensions");
+            var deployPath = Path.Combine(tempDir, "Extensions");
             _fileSystem.Directory.CreateDirectory(deployPath);
 
             foreach (var extensionName in vsTestExtensions)
@@ -206,7 +206,7 @@ namespace Stryker.Core.ToolHelpers
                         $"{splitExtensionName[splitExtensionName.Length - 2]}." +
                         $"{splitExtensionName[splitExtensionName.Length - 1]}");
 
-                    using (var file = _fileSystem.FileStream.Create(deployPath, FileMode.Create))
+                    using (var file = _fileSystem.FileStream.Create(binaryPath, FileMode.Create))
                     {
                         stream.CopyTo(file);
                     }
