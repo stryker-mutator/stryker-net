@@ -181,6 +181,21 @@ namespace Stryker.Core.ToolHelpers
             return paths;
         }
 
-
+        public void Cleanup()
+        {
+            IList<string> pathsCleaned = new List<string>();
+            var nugetPackageFolders = CollectNugetPackageFolders();
+            foreach (var vstestConsole in _vstestPaths)
+            {
+                if (!nugetPackageFolders.Any(nf => vstestConsole.Value.Contains(nf)))
+                {
+                    if (!pathsCleaned.Contains(vstestConsole.Value))
+                    {
+                        pathsCleaned.Add(vstestConsole.Value);
+                        _fileSystem.File.Delete(vstestConsole.Value);
+                    }
+                }
+            }
+        }
     }
 }

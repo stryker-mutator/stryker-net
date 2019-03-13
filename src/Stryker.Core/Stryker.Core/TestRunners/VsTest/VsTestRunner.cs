@@ -202,6 +202,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (disposing)
                 {
                     _vsTestConsole.EndSession();
+                    _vsTestHelper.Cleanup();
                 }
 
                 disposedValue = true;
