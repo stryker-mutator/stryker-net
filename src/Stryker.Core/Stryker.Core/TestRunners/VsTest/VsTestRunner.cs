@@ -1,8 +1,10 @@
-﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using System;
@@ -21,6 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
+        private readonly ILogger _logger;
 
         private readonly IVsTestConsoleWrapper _vsTestConsole;
 
@@ -31,9 +34,10 @@ namespace Stryker.Core.TestRunners.VsTest
         private int _testCasesDiscovered;
         private IEnumerable<string> _sources;
 
-        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, IFileSystem fileSystem = null)
+        public VsTestRunner(StrykerOptions options, ProjectInfo projectInfo, IFileSystem fileSystem = null, ILogger logger = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _options = options;
             _projectInfo = projectInfo;
             _vsTestHelper = new VsTestHelper(options);
@@ -109,20 +113,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TraceLevel DetermineTraceLevel()
         {
+            var traceLevel = TraceLevel.Off;
             switch (_options.LogOptions.LogLevel)
             {
                 case LogEventLevel.Debug:
                 case LogEventLevel.Verbose:
-                    return TraceLevel.Verbose;
+                    traceLevel = TraceLevel.Verbose;
+                    break;
                 case LogEventLevel.Error:
-                    return TraceLevel.Error;
+                    traceLevel = TraceLevel.Error;
+                    break;
                 case LogEventLevel.Warning:
-                    return TraceLevel.Warning;
+                    traceLevel = TraceLevel.Warning;
+                    break;
                 case LogEventLevel.Information:
-                    return TraceLevel.Info;
-                default:
-                    return TraceLevel.Off;
+                    traceLevel = TraceLevel.Info;
+                    break;
             }
+
+            _logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
+            return traceLevel;
         }
 
         private string GenerateRunSettings(int timeout)
@@ -142,37 +152,36 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            return $@"<RunSettings>
+            var runsettings = $@"<RunSettings>
   <RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
 </RunSettings>";
+
+            _logger.LogDebug("VsTest runsettings set to: {0}", runsettings);
+
+            return runsettings;
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            try
-            {
-                if (_options.LogOptions.LogToFile)
-                {
-                    var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
+            //if (_options.LogOptions.LogToFile)
+            //{
+            var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
-                    return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
-                    {
-                        TraceLevel = DetermineTraceLevel(),
-                        LogFilePath = vstestLogPath
-                    });
-                }
+            _logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
 
-                return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
-            }
-            catch (Exception e)
+            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
-                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
-            }
+                TraceLevel = DetermineTraceLevel(),
+                LogFilePath = vstestLogPath
+            });
+            //}
+
+            //return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
         }
 
         private void InitializeVsTestConsole()
@@ -189,12 +198,19 @@ namespace Stryker.Core.TestRunners.VsTest
                 FilePathUtils.ConvertPathSeparators(testBinariesPath)
             };
 
-            _vsTestConsole.StartSession();
-            _vsTestConsole.InitializeExtensions(new List<string>
+            try
             {
-                testBinariesLocation,
-                _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
-            });
+                _vsTestConsole.StartSession();
+                _vsTestConsole.InitializeExtensions(new List<string>
+                {
+                    testBinariesLocation,
+                    _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
+                });
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
+            }
 
             DiscoverTests();
         }
