@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
-            _vsTestHelper = VsTestHelper.GetVsTestHelper(options);
+            _vsTestHelper = new VsTestHelper(options);
 
             _vsTestConsole = PrepareVsTestConsole();
 
@@ -186,7 +186,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole.InitializeExtensions(new List<string>
             {
                 testBinariesLocation,
-                _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
+                _vsTestHelper.GetDefaultVsTestExtensionsPath()
             });
 
             DiscoverTests();

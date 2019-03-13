@@ -12,23 +12,14 @@ namespace Stryker.Core.ToolHelpers
 {
     public class VsTestHelper
     {
-        private readonly object _firstTimeVsTestDeployLock = new object();
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
 
-        private static VsTestHelper _vsTestHelper;
-
-        private VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
+        public VsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-        }
-
-        public static VsTestHelper GetVsTestHelper(StrykerOptions options, IFileSystem fileSystem = null)
-        {
-            _vsTestHelper = _vsTestHelper ?? new VsTestHelper(options, fileSystem);
-            return _vsTestHelper;
         }
 
         public string GetCurrentPlatformVsTestToolPath()
@@ -49,18 +40,19 @@ namespace Stryker.Core.ToolHelpers
                 $"{ OSPlatform.OSX.ToString() }");
         }
 
-        public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
+        public string GetDefaultVsTestExtensionsPath()
         {
-            string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
-            string extensionPath = Path.Combine(vstestMainPath, "Extensions");
-            if (_fileSystem.Directory.Exists(extensionPath))
-            {
-                return extensionPath;
-            }
-            else
-            {
-                return "";
-            }
+            //string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
+            //string extensionPath = Path.Combine(vstestMainPath, "Extensions");
+            //if (_fileSystem.Directory.Exists(extensionPath))
+            //{
+            //    return extensionPath;
+            //}
+            //else
+            //{
+            //    return "";
+            //}
+            return "";
         }
 
         private Dictionary<OSPlatform, string> GetVsTestToolPaths()
@@ -71,24 +63,21 @@ namespace Stryker.Core.ToolHelpers
                 return _vstestPaths;
             }
 
-            lock (_firstTimeVsTestDeployLock)
+            if (_vstestPaths.Count == 0)
             {
+                var nugetPackageFolders = CollectNugetPackageFolders();
+
+                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies.Count == 0))
+                {
+                    Merge(_vstestPaths, nugetAssemblies);
+                }
+                if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths.Count == 0))
+                {
+                    Merge(_vstestPaths, deployedPaths);
+                }
                 if (_vstestPaths.Count == 0)
                 {
-                    var nugetPackageFolders = CollectNugetPackageFolders();
-
-                    if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies.Count == 0))
-                    {
-                        Merge(_vstestPaths, nugetAssemblies);
-                    }
-                    if (DeployEmbeddedVsTestBinaries() is var deployedPaths && !(deployedPaths.Count == 0))
-                    {
-                        Merge(_vstestPaths, deployedPaths);
-                    }
-                    if (_vstestPaths.Count == 0)
-                    {
-                        throw new ApplicationException("Could not find or deploy vstest. Exiting.");
-                    }
+                    throw new ApplicationException("Could not find or deploy vstest. Exiting.");
                 }
             }
 
