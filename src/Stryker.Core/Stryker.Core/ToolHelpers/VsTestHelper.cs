@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.ToolHelpers
 {
@@ -152,7 +151,7 @@ namespace Stryker.Core.ToolHelpers
                 .GetManifestResourceNames()
                 .Where(r => r.Contains("vstest.console"));
 
-            var tempDir = Path.Combine(Path.GetTempPath(), Regex.Replace(Path.GetRandomFileName(), ".", ""));
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             DeployEmbeddedVsTestExtensions(tempDir);
 
