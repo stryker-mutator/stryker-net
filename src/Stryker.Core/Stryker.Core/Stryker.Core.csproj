@@ -27,6 +27,7 @@
   <ItemGroup Condition="">
     <EmbeddedResource Include="ToolHelpers\.vstest\Microsoft.TestPlatform.Portable.*\**\vstest.console.exe" />
     <EmbeddedResource Include="ToolHelpers\.vstest\Microsoft.TestPlatform.Portable.*\**\vstest.console.dll" />
+    <EmbeddedResource Include="ToolHelpers\.vstest\Microsoft.TestPlatform.Portable.*\**\tools\netcoreapp2.0\Extensions\*.dll" />
   </ItemGroup>
   
   <ItemGroup>

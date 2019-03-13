@@ -45,19 +45,15 @@ namespace Stryker.Core.ToolHelpers
                 $"{ OSPlatform.OSX.ToString() }");
         }
 
-        public string GetDefaultVsTestExtensionsPath()
+        public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
         {
-            //string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
-            //string extensionPath = Path.Combine(vstestMainPath, "Extensions");
-            //if (_fileSystem.Directory.Exists(extensionPath))
-            //{
-            //    return extensionPath;
-            //}
-            //else
-            //{
-            //    return "";
-            //}
-            return "";
+            string vstestMainPath = vstestToolPath.Substring(0, vstestToolPath.LastIndexOf(FilePathUtils.ConvertPathSeparators("\\")));
+            string extensionPath = Path.Combine(vstestMainPath, "Extensions");
+            if (_fileSystem.Directory.Exists(extensionPath))
+            {
+                return extensionPath;
+            }
+            throw new ApplicationException($"VsTest extensions not found in: {extensionPath}");
         }
 
         private Dictionary<OSPlatform, string> GetVsTestToolPaths()
@@ -155,14 +151,16 @@ namespace Stryker.Core.ToolHelpers
                 .GetManifestResourceNames()
                 .Where(r => r.Contains("vstest.console"));
 
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+            DeployEmbeddedVsTestExtensions(tempDir);
+
             foreach (var vstest in vsTestResources)
             {
                 using (var stream = typeof(VsTestHelper).Assembly
                 .GetManifestResourceStream(vstest))
                 {
                     var extension = Path.GetExtension(vstest);
-
-                    var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
                     var binaryPath = Path.Combine(tempDir, ".vstest", $"vstest.console{extension}");
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(binaryPath));
@@ -189,18 +187,53 @@ namespace Stryker.Core.ToolHelpers
             return paths;
         }
 
+        private void DeployEmbeddedVsTestExtensions(string vsTestPath)
+        {
+            var vsTestExtensions = typeof(VsTestHelper).Assembly
+                .GetManifestResourceNames()
+                .Where(r => r.Contains("Extensions"));
+
+            var deployPath = Path.Combine(vsTestPath, "Extensions");
+            _fileSystem.Directory.CreateDirectory(deployPath);
+
+            foreach (var extensionName in vsTestExtensions)
+            {
+                using (var stream = typeof(VsTestHelper).Assembly.GetManifestResourceStream(extensionName))
+                {
+                    var splitExtensionName = extensionName.Split('.');
+                    var binaryPath = Path.Combine(deployPath,
+                        $"{splitExtensionName[splitExtensionName.Length - 2]}." +
+                        $"{splitExtensionName[splitExtensionName.Length - 1]}");
+
+                    using (var file = _fileSystem.FileStream.Create(deployPath, FileMode.Create))
+                    {
+                        stream.CopyTo(file);
+                    }
+                    _logger.LogDebug("VsTest Extension was copied to: {0}", binaryPath);
+                }
+            }
+        }
+
         public void Cleanup()
         {
             IList<string> pathsCleaned = new List<string>();
             var nugetPackageFolders = CollectNugetPackageFolders();
             foreach (var vstestConsole in _vstestPaths)
             {
-                if (!nugetPackageFolders.Any(nf => vstestConsole.Value.Contains(nf)))
+                var path = vstestConsole.Value;
+                if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
                 {
-                    if (!pathsCleaned.Contains(vstestConsole.Value))
+                    if (!pathsCleaned.Contains(path))
                     {
-                        pathsCleaned.Add(vstestConsole.Value);
-                        _fileSystem.File.Delete(vstestConsole.Value);
+                        if (_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
+                        {
+                            pathsCleaned.Add(path);
+                            foreach (var entry in _fileSystem.Directory
+                                .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
+                            {
+                                _fileSystem.File.Delete(entry);
+                            }
+                        }
                     }
                 }
             }

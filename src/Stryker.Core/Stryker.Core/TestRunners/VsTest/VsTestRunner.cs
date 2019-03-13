@@ -193,7 +193,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole.InitializeExtensions(new List<string>
             {
                 testBinariesLocation,
-                _vsTestHelper.GetDefaultVsTestExtensionsPath()
+                _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
 
             DiscoverTests();
