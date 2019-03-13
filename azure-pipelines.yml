@@ -93,8 +93,8 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: '$(IntegrationTestPath)/ValidationProject/Validation.csproj'
-      workingDirectory: $(IntegrationTestPath)
+      projects: 'Validation.csproj'
+      workingDirectory: 'integrationtest/ValidationProject/'
 
 
 - job: LinuxTests
@@ -121,8 +121,8 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: '$(IntegrationTestPath)/ValidationProject/Validation.csproj'
-      workingDirectory: $(IntegrationTestPath)
+      projects: 'Validation.csproj'
+      workingDirectory: 'integrationtest/ValidationProject/'
 
 - job: MacOsTests
   displayName: Run tests on Mac OS
@@ -148,8 +148,8 @@ jobs:
     displayName: 'Assert integration test results'
     inputs:
       command: test
-      projects: '$(IntegrationTestPath)/ValidationProject/Validation.csproj'
-      workingDirectory: $(IntegrationTestPath)
+      projects: 'Validation.csproj'
+      workingDirectory: 'integrationtest/ValidationProject/'
 
 - job: PublishRelease
   displayName: Publish Release Artifacts
