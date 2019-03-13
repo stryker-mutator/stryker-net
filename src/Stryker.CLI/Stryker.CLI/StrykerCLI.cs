@@ -30,10 +30,10 @@ namespace Stryker.CLI
         {
             var app = new CommandLineApplication
             {
-                Name = "StrykerNet",
-                FullName = "StrykerNet: Stryker mutator for .Net Core",
-                Description = "Stryker mutator for .Net Core",
-                ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
+                Name = "Stryker",
+                FullName = "Stryker: Stryker mutator for .Net",
+                Description = "Stryker mutator for .Net",
+                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
             };
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);

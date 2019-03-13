@@ -2,7 +2,7 @@
     "stryker-config":
     {
         "reporters": [
-            "Json"
+            "All"
         ],
         "log-level": "trace",
         "log-file":  "true",
