@@ -150,7 +150,7 @@ namespace Stryker.Core.ToolHelpers
                 .GetManifestResourceNames()
                 .Where(r => r.Contains("vstest.console"));
 
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
             DeployEmbeddedVsTestExtensions(tempDir);
 
@@ -161,7 +161,7 @@ namespace Stryker.Core.ToolHelpers
                 {
                     var extension = Path.GetExtension(vstest);
 
-                    var binaryPath = Path.Combine(tempDir, ".vstest", $"vstest.console{extension}");
+                    var binaryPath = Path.Combine(tempDir, $"vstest.console{extension}");
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(binaryPath));
 
                     using (var file = _fileSystem.FileStream.Create(binaryPath, FileMode.Create))
