@@ -2,6 +2,7 @@
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +29,17 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             var runner = TakeRunner();
+            TestRunResult result = null;
 
-            TestRunResult result = runner.RunAll(timeoutMS, activeMutationId);
+            try
+            {
+                result = runner.RunAll(timeoutMS, activeMutationId);
+            }
+            catch (OperationCanceledException)
+            {
+                ReturnRunner(runner);
+                throw;
+            }
 
             ReturnRunner(runner);
 
