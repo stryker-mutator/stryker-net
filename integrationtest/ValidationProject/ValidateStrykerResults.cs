@@ -4,6 +4,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace IntegrationTests
@@ -47,18 +48,21 @@ namespace IntegrationTests
         [Fact]
         public void NetFullFramework()
         {
-            var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
+                directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
-            var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
+                var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .First();
 
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+                var strykerRunOutput = File.ReadAllText(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+                var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0);
+                CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0);
+            }
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout)
