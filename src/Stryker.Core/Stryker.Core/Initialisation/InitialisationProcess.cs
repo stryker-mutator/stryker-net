@@ -45,10 +45,11 @@ namespace Stryker.Core.Initialisation
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
 
-            // If project is full framework, we need to reload projectinfo after initial build to resolve nuget dependencies
+            // If project is full framework, we need to reload projectinfo and rebuild
             if (projectInfo.FullFramework)
             {
                 projectInfo = _inputFileResolver.ResolveInput(options);
+                _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
             }
 
             // resolve assembly references
