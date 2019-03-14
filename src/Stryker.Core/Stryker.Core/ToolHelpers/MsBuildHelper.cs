@@ -27,17 +27,19 @@ namespace Stryker.Core.ToolHelpers
         public string GetMsBuildPath()
         {
             // See if any MSBuild.exe can be found in visual studio installation folder
-            if (_fileSystem.Directory.Exists(@"C:\\Program Files (x86)\\Microsoft Visual Studio")) {
-                var msbuildPaths = _fileSystem.Directory.GetFiles(@"C:\\Program Files (x86)\\Microsoft Visual Studio", @"MSBuild.exe", SearchOption.AllDirectories);
+            var visualStudioPath = Path.Combine("C:", "Program Files (x86)", "Microsoft Visual Studio");
+            if (_fileSystem.Directory.Exists(visualStudioPath))
+            {
+                var msbuildPaths = _fileSystem.Directory.GetFiles(visualStudioPath, "MSBuild.exe", SearchOption.AllDirectories);
                 if (msbuildPaths.Any())
                 {
-                    var ordered = msbuildPaths.OrderByDescending(x => x.Substring(@"C:\\Program Files (x86)\\Microsoft Visual Studio\\".Length).Substring(0, 4)).ToList();
+                    var ordered = msbuildPaths.OrderByDescending(x => x.Substring(visualStudioPath.Length).Substring(0, 4)).ToList();
                     return ordered.First();
                 }
             }
-            
+
             // Else, find in default locations
-            foreach(string possiblePath in fallbackLocations)
+            foreach (string possiblePath in fallbackLocations)
             {
                 if (_fileSystem.File.Exists(possiblePath))
                 {

@@ -54,7 +54,7 @@ namespace Stryker.Core.Initialisation
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
                 _logger.LogDebug("Located MSBuild.exe at: {0}", msBuildPath);
 
-                result = _processExecutor.Start(solutionDir, msBuildPath, solutionPath);
+                result = _processExecutor.Start(solutionDir, msBuildPath, $"{solutionPath} /m /t:Build /p:Configuration=Debug");
             }
             else
             {
