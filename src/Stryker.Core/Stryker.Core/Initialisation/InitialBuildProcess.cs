@@ -43,18 +43,25 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
                 }
 
+                // Locate MSBuild.exe
+                var msBuildPath = new MsBuildHelper().GetMsBuildPath();
+                var msBuildVersionOutput = _processExecutor.Start(solutionDir, msBuildPath, "-version /nologo");
+                if (msBuildVersionOutput.ExitCode != 0)
+                {
+                    _logger.LogError("Unable to detect msbuild version");
+                }
+                _logger.LogInformation("Auto detected msbuild version {0} at: {1}", msBuildVersionOutput.Output.Trim(), msBuildPath);
+
                 // Restore packages using nuget.exe
-                var nugetRestoreResult = _processExecutor.Start(solutionDir, "powershell.exe", $"nuget restore {solutionPath}");
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, "powershell.exe", $"nuget restore {solutionPath} -MsBuildVersion {msBuildVersionOutput.Output.Trim()}");
                 if (nugetRestoreResult.ExitCode != 0)
                 {
-                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
+                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
                 }
                 _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
 
-                // Build project with MSBuild.exe
-                var msBuildPath = new MsBuildHelper().GetMsBuildPath();
-                _logger.LogDebug("Located MSBuild.exe at: {0}", msBuildPath);
 
+                // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msBuildPath, $"{solutionPath}");
             }
             else
