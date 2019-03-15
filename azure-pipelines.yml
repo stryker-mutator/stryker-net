@@ -179,10 +179,11 @@ jobs:
       packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/preview
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@0
     displayName: 'Publish Artifact: preview'
     inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/preview
+      artifactName: preview
+      targetPath: $(Build.ArtifactStagingDirectory)/preview
 
 - job: PublishRelease
   displayName: Publish Release Artifacts
@@ -211,7 +212,8 @@ jobs:
       packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/release
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish Artifact: release'
     inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/release
+      artifactName: release
+      targetPath: $(Build.ArtifactStagingDirectory)/release
