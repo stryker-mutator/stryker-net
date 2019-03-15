@@ -11,8 +11,8 @@ steps:
       version: 2.1.300
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install pre-release dotnet tool'
+    displayName: 'Install integrationtest dotnet tool'
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version $(PreReleaseVersion) --add-source $(PreReleaseFeedUri)
+      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(IntegrationTestFeedUri)

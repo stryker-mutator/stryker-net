@@ -14,21 +14,21 @@ resources:
 variables:
   PackageVersion: '0.9.0'
   VersionBuildNumber: $[counter('0.9.0', 1)]
-  PreReleaseVersion: $(PackageVersion)-beta.$(VersionBuildNumber)
+  IntegrationTestVersion: $(PackageVersion)-it.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  PreReleaseFeed: https://www.myget.org/F/stryker-mutator-integrationtest
-  PreReleaseFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  IntegrationTestFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  IntegrationTestFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 jobs:
-- job: PublishPreRelease
-  displayName: Prepare Pre-Release package
+- job: PublishIntegrationTestPackage
+  displayName: Prepare integrationtest package
 
   pool:
     name: Hosted VS2017
   
   steps:
   - task: NuGetCommand@2
-    displayName: 'Restore vstest binaries for pre-release'
+    displayName: 'Restore vstest binaries for integrationtest'
     inputs:
       restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
       feedsToUse: config
@@ -36,25 +36,25 @@ jobs:
       restoreDirectory: ./.vstest/
 
   - task: DotNetCoreCLI@2
-    displayName: 'Pack pre-release packages'
+    displayName: 'Pack integrationtest packages'
     inputs:
       command: pack
       versioningScheme: byEnvVar
-      versionEnvVar: PreReleaseVersion
+      versionEnvVar: IntegrationTestVersion
       packagesToPack: $(ProjectsToPack)
-      packDirectory: $(Build.ArtifactStagingDirectory)/pre-release
+      packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
 
   - task: DotNetCoreCLI@2
-    displayName: 'Publish pre-release packages'
+    displayName: 'Publish integrationtest packages'
     inputs:
       command: custom
       custom: 'nuget'
-      arguments: 'push *stryker*$(PreReleaseVersion).nupkg -s $(PreReleaseFeed) -k $(PreReleaseFeedKey)'
-      workingDirectory: '$(Build.ArtifactStagingDirectory)/pre-release'
+      arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+      workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
       
 - job: WaitOnMyGetProcessing
   displayName: Wait on pre-release packages to be processed on MyGet
-  dependsOn: PublishPreRelease
+  dependsOn: PublishIntegrationTestPackage
   
   pool: 
     name: server
@@ -150,6 +150,41 @@ jobs:
       command: test
       projects: '**/Validation.csproj'
 
+- job: PublishPreview
+  displayName: Publish Preview Artifacts
+  dependsOn: 
+  - WindowsTests
+  - LinuxTests
+  - MacOsTests
+  condition: and(succeeded(), and(ne('', variables['PreviewVersion']), endsWith(variables['PreviewVersion'], '-preview')))
+
+  pool:
+    name: Hosted VS2017
+  
+  steps:
+  - task: NuGetCommand@2
+    displayName: 'Restore vstest binaries for preview'
+    inputs:
+      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+      feedsToUse: config
+      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+      restoreDirectory: ./.vstest/
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Pack preview package'
+    inputs:
+      command: pack
+      versioningScheme: byEnvVar
+      versionEnvVar: PreviewVersion
+      packagesToPack: $(ProjectsToPack)
+      packDirectory: $(Build.ArtifactStagingDirectory)/preview
+
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish Artifact: preview'
+    inputs:
+      artifactName: preview
+      targetPath: $(Build.ArtifactStagingDirectory)/preview
+
 - job: PublishRelease
   displayName: Publish Release Artifacts
   dependsOn: 
@@ -177,7 +212,8 @@ jobs:
       packagesToPack: $(ProjectsToPack)
       packDirectory: $(Build.ArtifactStagingDirectory)/release
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
+  - task: PublishPipelineArtifact@0
+    displayName: 'Publish Artifact: release'
     inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/release
+      artifactName: release
+      targetPath: $(Build.ArtifactStagingDirectory)/release
