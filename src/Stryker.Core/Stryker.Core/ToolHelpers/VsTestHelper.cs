@@ -72,11 +72,11 @@ namespace Stryker.Core.ToolHelpers
                 {
                     Merge(_vstestPaths, nugetAssemblies);
                 }
-                if (DeployEmbeddedVsTestBinaries() is var deployPath)
+                else if (DeployEmbeddedVsTestBinaries() is var deployPath)
                 {
                     Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 }
-                if (_vstestPaths.Count == 0)
+                else if (_vstestPaths.Count == 0)
                 {
                     throw new ApplicationException("Could not find or deploy vstest. Exiting.");
                 }

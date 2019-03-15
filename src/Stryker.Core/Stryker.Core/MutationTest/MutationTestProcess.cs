@@ -83,7 +83,7 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            _logger.LogInformation("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
+            _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
 
             using (var ms = new MemoryStream())
             {

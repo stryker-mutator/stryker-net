@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -24,10 +25,13 @@ namespace Stryker.Core.Initialisation
                 {
                     foreach (EmbeddedResource moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded))
                     {
+                        var ms = new MemoryStream();
+                        moduleResource.GetResourceStream().CopyTo(ms);
+
                         resourceDescriptions.Add(
                             new ResourceDescription(
                                 moduleResource.Name,
-                                () => moduleResource.GetResourceStream(),
+                                () => ms,
                                 moduleResource.IsPublic));
                     }
                 }

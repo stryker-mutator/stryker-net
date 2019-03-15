@@ -49,6 +49,7 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
                 }
+                _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
 
                 // Build project with MSBuild.exe
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
@@ -70,7 +71,7 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException("Initial build of targeted project failed. Please make targeted project buildable.", result.Output);
+                throw new StrykerInputException(result.Output, "Initial build of targeted project failed. Please make targeted project buildable. See above message for build output.");
             }
             _logger.LogInformation("Initial build successful");
         }
