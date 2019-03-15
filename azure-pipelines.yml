@@ -156,7 +156,7 @@ jobs:
   - WindowsTests
   - LinuxTests
   - MacOsTests
-  condition: and(succeeded(), and(not(null(variables['PreviewVersion'])), endsWith(variables['PreviewVersion'], '-preview')))
+  condition: and(succeeded(), and(ne('', variables['PreviewVersion'])), endsWith(variables['PreviewVersion'], '-preview'))))
 
   pool:
     name: Hosted VS2017
