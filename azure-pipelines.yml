@@ -49,7 +49,7 @@ jobs:
     inputs:
       command: custom
       custom: 'nuget'
-      arguments: 'push *stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+      arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
       workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
       
 - job: WaitOnMyGetProcessing
