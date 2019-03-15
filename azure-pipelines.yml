@@ -14,7 +14,7 @@ resources:
 variables:
   PackageVersion: '0.9.0'
   VersionBuildNumber: $[counter('0.9.0', 1)]
-  IntegrationTestVersion: $(PackageVersion)-IT.$(VersionBuildNumber)
+  IntegrationTestVersion: $(PackageVersion)-it.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   IntegrationTestFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   IntegrationTestFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
