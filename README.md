@@ -1,10 +1,10 @@
+[![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
+[![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
+
 [![Nuget](https://img.shields.io/nuget/v/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
 [![Nuget](https://img.shields.io/nuget/dt/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
-
-
 [![Build Status](https://dev.azure.com/stryker-mutator/Stryker/_apis/build/status/stryker-net)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
 [![Gitter](https://badges.gitter.im/stryker-mutator/stryker-net.svg)](https://gitter.im/stryker-mutator/stryker-net?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/stryker-mutator/stryker-net.svg?columns=To%20Do,In%20Progress,Needs%20Review)](https://waffle.io/stryker-mutator/stryker-net)
 
 # Stryker.NET
 *Professor X: For someone who hates mutants... you certainly keep some strange company.*  
