@@ -12,7 +12,12 @@
         // default parameter must be constant at build time => no posible mutation
         private void SomeMthod(bool option = true)
         {
-if(Stryker.MutantControl.IsActive(2)){            // for statement can only me mutated through if(s)
+            // empty for are tricky
+            for (;;)
+            {
+                int x = Stryker.MutantControl.IsActive(2)?1 - 2:1 + 2;
+            }
+if(Stryker.MutantControl.IsActive(3)){            // for statement can only me mutated through if(s)
             for (var i = 0; i < 10; i--)
             {
                 var x=1;
@@ -23,17 +28,17 @@ if(Stryker.MutantControl.IsActive(2)){            // for statement can only me m
                 x *=x+2;
             }
 }else{            // for statement can only me mutated through if(s)
-            for (var i = 0; Stryker.MutantControl.IsActive(4)?i <= 10:Stryker.MutantControl.IsActive(3)?i > 10:i < 10; i++)
+            for (var i = 0; Stryker.MutantControl.IsActive(5)?i <= 10:Stryker.MutantControl.IsActive(4)?i > 10:i < 10; i++)
             {
                 var x=1;
-if(Stryker.MutantControl.IsActive(5)){                x--;
+if(Stryker.MutantControl.IsActive(6)){                x--;
 }else{                x++;
 }                // should not be mutated (string concatenation)
-                var test = Stryker.MutantControl.IsActive(7)?"first" + "":Stryker.MutantControl.IsActive(6)?""+ "second":"first" + "second";
-if(Stryker.MutantControl.IsActive(8)){                // complex mutation pattern
+                var test = Stryker.MutantControl.IsActive(8)?"first" + "":Stryker.MutantControl.IsActive(7)?""+ "second":"first" + "second";
+if(Stryker.MutantControl.IsActive(9)){                // complex mutation pattern
                 x /=x+2;
 }else{                // complex mutation pattern
-                x *=Stryker.MutantControl.IsActive(9)?x-2:x+2;
+                x *=Stryker.MutantControl.IsActive(10)?x-2:x+2;
 }            }
 }        }
     }

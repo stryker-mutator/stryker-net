@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Stryker
@@ -12,7 +13,6 @@ namespace Stryker
         private static bool captureCoverage;
         private static string pipeName;
         private static CommunicationChannel channel;
-        private static object lck = new object();
 
         public const string EnvironmentPipeName = "Coverage";
 
@@ -49,7 +49,7 @@ namespace Stryker
             if (args == "DUMP")
             {
                 HashSet<int> temp;
-                lock (lck)
+                lock (_coveredMutants)
                 {
                     temp = _coveredMutants;
                     _coveredMutants = new HashSet<int>();
@@ -60,10 +60,7 @@ namespace Stryker
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            lock (lck)
-            {
-                DumpState(_coveredMutants);
-            }
+            DumpState(_coveredMutants);
             GC.KeepAlive(_coveredMutants);
         }
 
@@ -71,18 +68,20 @@ namespace Stryker
         {
             var report = new StringBuilder();
             var firstTime = true;
-
-            foreach (var coveredMutant in state??_coveredMutants)
+            lock (_coveredMutants)
             {
-                if (firstTime)
+                foreach (var coveredMutant in state??_coveredMutants)
                 {
-                    firstTime = false;
+                    if (firstTime)
+                    {
+                        firstTime = false;
+                    }
+                    else
+                    {
+                        report.Append(',');
+                    }
+                    report.Append($"{coveredMutant}");
                 }
-                else
-                {
-                    report.Append(',');
-                }
-                report.Append($"{coveredMutant}");
             }
 
             channel.SendText(report.ToString());
@@ -93,7 +92,7 @@ namespace Stryker
         {
             if (captureCoverage)
             {
-                lock (lck)
+                lock (_coveredMutants)
                 {
                     _coveredMutants.Add(id);
                 }

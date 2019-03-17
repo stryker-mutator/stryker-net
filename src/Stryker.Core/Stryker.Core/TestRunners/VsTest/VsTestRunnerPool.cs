@@ -3,65 +3,93 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using Stryker.Core.Logging;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
+        private readonly OptimizationFlags _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
-        private ICollection<TestCase> _discoveredTests;
-        private static readonly ILogger Logger;
+        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly TestCoverageInfos _coverage = new TestCoverageInfos();
          
-        static VsTestRunnerPool()
+        public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-        }
-
-        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
-        {
-            using (var runner = new VsTestRunner(options, projectInfo, null))
+            _flags = flags;
+            using (var runner = new VsTestRunner(0, options, _flags, projectInfo, null, null))
             {
                 _discoveredTests = runner.DiscoverTests();
             }
 
             for (var i = 0; i < options.ConcurrentTestrunners; i++)
             {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, _discoveredTests));
+                _availableRunners.Add(new VsTestRunner(i, options, _flags, projectInfo, _discoveredTests, _coverage));
             }
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? mutationId)
         {
             var runner = TakeRunner();
-
             var result = runner.RunAll(timeoutMS, mutationId);
-
             ReturnRunner(runner);
-
             return result;
         }
 
         public TestRunResult CaptureCoverage()
         {
-            var mapping = new Dictionary<TestCase, IEnumerable<int>>(_discoveredTests.Count()); 
-            var runner = TakeRunner();
-            var result  = runner.CaptureCoverage();
-            foreach (var discoveredTest in _discoveredTests)
+            TestRunResult result;
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                mapping[discoveredTest] = runner.CaptureCoverage(discoveredTest);
+                Parallel.ForEach(_discoveredTests, new ParallelOptions(){MaxDegreeOfParallelism = _availableRunners.Count}, testCase =>
+                {
+                    VsTestRunner runner = null;
+                    IEnumerable<int> captureCoverage;
+                    try
+                    {
+                        runner = TakeRunner();
+                        captureCoverage = runner.CaptureCoverage(testCase);
+                    }
+                    finally
+                    {
+                        ReturnRunner(runner);
+                    }
+                    lock (this)
+                    {
+                        _coverage.DeclareMappingForATest(testCase, captureCoverage);
+                    }
+                });
+                result = new TestRunResult() {Success = true, TotalNumberOfTests = _discoveredTests.Count};
             }
-            ReturnRunner(runner);
-            CoveredMutants = runner.CoveredMutants;
+            else
+            {
+                var runner = TakeRunner();
+                try
+                {
+                    if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+                    {
+                        result = runner.CaptureCoverage();
+                        _coverage.DeclareCoveredMutants(runner.CoveredMutants);
+                    }
+                    else
+                    {
+                        result = runner.RunAll(null, null);
+                    }
+
+                }
+                finally
+                {
+                    ReturnRunner(runner);
+                }
+
+            }
+
             return result;
         }
 
-        public IEnumerable<int> CoveredMutants { get; private set; }
+        public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
 
         private VsTestRunner TakeRunner()
         {

@@ -18,17 +18,21 @@ namespace Stryker.Core.Coverage
         private volatile bool mustShutdown;
         private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
-        private ILogger<CommunicationServer> _logger;
+        private static readonly ILogger<CommunicationServer> Logger;
 
         public string PipeName { get; private set; }
 
         public event ConnectionEvent RaiseNewClientEvent;
         public event MessageReceived RaiseReceivedMessage;
 
+        static CommunicationServer()
+        {
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CommunicationServer>();
+        }
+
         public CommunicationServer(string name)
         {
             PipeName = $"Stryker.{name}.Pipe.{Stopwatch.GetTimestamp()}";
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CommunicationServer>();
         }
 
         public void Listen()
@@ -50,7 +54,7 @@ namespace Stryker.Core.Coverage
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Exception on connect {0}", e);
+                    Logger.LogError("Exception on connect {0}", e);
                     throw;
                 }
             }
@@ -71,7 +75,7 @@ namespace Stryker.Core.Coverage
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Exception on connect {0}", e);
+                    Logger.LogError("Exception on connect {0}", e);
                     throw;
                 }
 

@@ -5,17 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class RunEventHandler : ITestRunEventsHandler
     {
-        private AutoResetEvent waitHandle;
+        private readonly AutoResetEvent waitHandle;
         private readonly List<string> _messages;
         public List<TestResult> TestResults { get; private set; }
         private bool testFailed;
+        private static readonly ILogger Logger;
 
         public event EventHandler TestsFailed;
+        static RunEventHandler()
+        {
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RunEventHandler>();
+        }
 
         public RunEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
@@ -64,12 +71,14 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            _messages.Add("Test Run Raw Message: " + rawMessage);
+            var item = $"Test Run Message: [RAW] {rawMessage}";
+            _messages.Add(item);
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            _messages.Add("Test Run Message: " + message);
+            var item = $"Test Run Message: [{level}] {message}";
+            _messages.Add(item);
         }
     }
 }

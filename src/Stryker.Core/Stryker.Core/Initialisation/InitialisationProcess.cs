@@ -24,9 +24,11 @@ namespace Stryker.Core.Initialisation
         private IInitialBuildProcess _initialBuildProcess { get; set; }
         private IInitialTestProcess _initialTestProcess { get; set; }
         private ITestRunner _testRunner { get; set; }
-        private ILogger _logger { get; set; }
+        private ILogger Logger { get; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
         private ProjectInfo projectInfo;
+
+        private const OptimizationFlags Flags = 0; //OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants;
 
         public InitialisationProcess( 
             IInputFileResolver inputFileResolver = null, 
@@ -39,7 +41,7 @@ namespace Stryker.Core.Initialisation
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
@@ -52,7 +54,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                _testRunner = new TestRunnerFactory().Create(options, projectInfo);
+                _testRunner = new TestRunnerFactory().Create(options, Flags, projectInfo);
             }
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
@@ -81,5 +83,5 @@ namespace Stryker.Core.Initialisation
             
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
-        }
+    }
 }

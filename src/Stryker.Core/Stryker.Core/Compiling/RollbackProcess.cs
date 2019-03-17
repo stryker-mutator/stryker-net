@@ -56,7 +56,7 @@ namespace Stryker.Core.Compiling
                 {
                     _logger.LogTrace($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
                 }
-;
+
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
                 var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode);
 

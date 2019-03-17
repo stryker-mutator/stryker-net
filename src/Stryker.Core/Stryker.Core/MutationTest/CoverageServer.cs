@@ -8,17 +8,17 @@ namespace Stryker.Core.MutationTest
 {
     public class CoverageServer : IDisposable
     {
-        private CommunicationServer coverageServer;
+        private readonly CommunicationServer coverageServer;
         private List<int> ranMutants;
-        private object lck = new object();
+        private readonly object lck = new object();
 
         public IList<int> RanMutants => ranMutants;
 
         public string PipeName => coverageServer.PipeName;
 
-        public CoverageServer()
+        public CoverageServer(string name = "Coverage")
         {
-            coverageServer = new CommunicationServer("Coverage");
+            coverageServer = new CommunicationServer(name);
             coverageServer.RaiseReceivedMessage += (sender, args) =>
             {
                 var tmp = args.Split(',').Select(int.Parse);
@@ -31,7 +31,11 @@ namespace Stryker.Core.MutationTest
             coverageServer.Listen();
         }
 
-        public bool WaitReception(int timeoutInMs = 100)
+        public void Clear()
+        {
+            ranMutants = null;
+        }
+        public bool WaitReception()
         {
             lock (lck)
             {

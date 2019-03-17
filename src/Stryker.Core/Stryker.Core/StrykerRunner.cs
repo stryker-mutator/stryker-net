@@ -21,7 +21,6 @@ namespace Stryker.Core
     {
         private IReporter _reporter { get; set; }
         private IInitialisationProcess _initialisationProcess { get; set; }
-        private string _basePath { get; set; }
         private MutationTestInput _input { get; set; }
         private IMutationTestProcess _mutationTestProcess { get; set; }
         private IFileSystem _fileSystem { get; set; }
