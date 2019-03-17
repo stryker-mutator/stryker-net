@@ -185,9 +185,19 @@ namespace Stryker.Core.Mutants
 
             var originalFor = forWithMutantIncrementors.GetCurrentNode(forStatement);
             // now we generate a mutant for the remainder of the for statement
-            var mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
-            mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
-                Mutate(forStatement.Condition));
+            ForStatementSyntax mutatedFor;
+            if (forStatement.Condition == null)
+            {
+                // empty condition
+                mutatedFor = forStatement.TrackNodes(forStatement.Statement);
+            }
+            else
+            {
+                mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
+                mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
+                    Mutate(forStatement.Condition));
+            }
+
             mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Statement),
                 Mutate(forStatement.Statement));
             // and now we replace it
