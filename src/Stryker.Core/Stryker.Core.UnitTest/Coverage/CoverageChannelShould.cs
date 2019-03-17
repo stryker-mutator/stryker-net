@@ -1,9 +1,6 @@
 ﻿using System;
-using System.IO.Pipes;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using Newtonsoft.Json.Serialization;
+using Shouldly;
 using Stryker.Core.Coverage;
 using Stryker.Core.InjectedHelpers.Coverage;
 using Xunit;
@@ -44,14 +41,7 @@ namespace Stryker.Core.UnitTest.Coverage
 
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-                    lock (lck)
-                    {
-                        if (!notified)
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                        Assert.True(notified);
-                    }
+                    Helpers.WaitOnLck(lck, () => notified, 100).ShouldBeTrue();
                 }
             }
         }
@@ -74,7 +64,6 @@ namespace Stryker.Core.UnitTest.Coverage
                 };
                 using (var client = CommunicationChannel.Client(channel.PipeName, 1))
                 {
-
                     var message = "hello";
                     client.SendText(message);
                     WaitForMessage(lck, ()=> receivedMsg, message);
@@ -158,17 +147,9 @@ namespace Stryker.Core.UnitTest.Coverage
                     using(var otherClient= CommunicationChannel.Client(channel.PipeName))
                 {
                     var receivedMsg = string.Empty;
-                    Assert.True(client.IsConnected);
-                    lock (lck)
-                    {
-                        if (!notified)
-                        {
-                            Monitor.Wait(lck, 100);
-                            Assert.True(notified);
-                        }
-
-                        notified = false;
-                    }
+                    client.IsConnected.ShouldBeTrue();
+                    
+                    Helpers.WaitOnLck(lck, () => notified, 100).ShouldBeTrue();
 
                     channel.RaiseReceivedMessage += (o, e) =>
                     {
@@ -184,32 +165,14 @@ namespace Stryker.Core.UnitTest.Coverage
                     WaitForMessage(lck, ()=>receivedMsg, message);
                     message = "world";
                     otherClient.SendText(message);
-                    lock (lck)
-                    {
-                        if (receivedMsg != message)
-                        {
-                            Monitor.Wait(lck ,100);
-                        }
-
-                        Assert.Equal(message, receivedMsg);
-                    }
+                    Helpers.WaitOnLck(lck, () => receivedMsg == message, 100);
                 }
             }
         }
 
-        private static void WaitForMessage(object lck, Func<string> receiver, string message)
+        private static bool WaitForMessage(object lck, Func<string> receiver, string message)
         {
-            lock (lck)
-            {
-                if (receiver() != message)
-                {
-                    Monitor.Wait(lck, 100);
-                }
-
-                Assert.Equal(message, receiver());
-            }
+            return Helpers.WaitOnLck(lck, () => receiver() == message, 100);
         }
-
     }
-
 }
