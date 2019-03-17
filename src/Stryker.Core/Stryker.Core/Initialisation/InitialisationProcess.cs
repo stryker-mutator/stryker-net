@@ -28,7 +28,8 @@ namespace Stryker.Core.Initialisation
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
         private ProjectInfo projectInfo;
 
-        private const OptimizationFlags Flags = 0; //OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants;
+        // these flags control various optimisation techniques
+        private const OptimizationFlags Flags = false ? 0 : OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
 
         public InitialisationProcess( 
             IInputFileResolver inputFileResolver = null, 

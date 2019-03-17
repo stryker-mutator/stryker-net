@@ -62,6 +62,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                 });
                 result = new TestRunResult() {Success = true, TotalNumberOfTests = _discoveredTests.Count};
+                _coverage.Log();
             }
             else
             {
