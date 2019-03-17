@@ -167,9 +167,10 @@ namespace Stryker.Core.MutationTest
                 x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id));
             var first = true;
             var count = 0;
+            var mutantResultStatus = MutantStatus.Survived;
             foreach (var mutant in nonTested)
             {
-                mutant.ResultStatus = MutantStatus.Untouched;
+                mutant.ResultStatus = mutantResultStatus;
                 if (first)
                 {
                     first = false;
@@ -188,7 +189,7 @@ namespace Stryker.Core.MutationTest
             }
             else
             {
-                _logger.LogInformation($"{count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.Untouched}).");
+                _logger.LogInformation($"{count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
             }
         }
     }
