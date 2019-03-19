@@ -9,10 +9,10 @@
         {
             IList<object> notFoundValues = null;
             checker
-                .FailWhen((sut) => Stryker.ActiveMutationHelper.ActiveMutation==2?sut == null && otherEnumerable == null:Stryker.ActiveMutationHelper.ActiveMutation==1?sut != null && otherEnumerable != null:Stryker.ActiveMutationHelper.ActiveMutation==0?sut == null || otherEnumerable != null:sut == null && otherEnumerable != null, Stryker.ActiveMutationHelper.ActiveMutation==3?"":"The {0} is null and thus, does not contain the given expected value(s).")
+                .FailWhen((sut) => Stryker.ActiveMutationHelper.ActiveMutation==2?sut == null || otherEnumerable != null:Stryker.ActiveMutationHelper.ActiveMutation==0?sut != null :sut == null && Stryker.ActiveMutationHelper.ActiveMutation==1?otherEnumerable == null:otherEnumerable != null, Stryker.ActiveMutationHelper.ActiveMutation==3?"":"The {0} is null and thus, does not contain the given expected value(s).")
                 .DefineExpectedValues(otherEnumerable, otherEnumerable.Count())
                 .Analyze((sut, _) => notFoundValues = ExtractNotFoundValues(sut, otherEnumerable))
-                .FailWhen((_) => notFoundValues.Any(), string.Format(Stryker.ActiveMutationHelper.ActiveMutation==5?"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "":Stryker.ActiveMutationHelper.ActiveMutation==4?""+ Environment.NewLine + "\t{0}":"The {{0}} does not contain the expected value(s):" + Environment.NewLine + "\t{0}", notFoundValues.ToStringProperlyFormatted().DoubleCurlyBraces()))
+                .FailWhen((_) => notFoundValues.Any(), string.Format(Stryker.ActiveMutationHelper.ActiveMutation==4?"":"The {{0}} does not contain the expected value(s):" + Environment.NewLine + Stryker.ActiveMutationHelper.ActiveMutation==5?"":"\t{0}", notFoundValues.ToStringProperlyFormatted().DoubleCurlyBraces()))
                 .OnNegate(Stryker.ActiveMutationHelper.ActiveMutation==6?"":"The {0} contains all the given values whereas it must not.")
                 .EndCheck();
         }

@@ -4,7 +4,16 @@ namespace TestCases
     // list syntax construction that are difficult to mutate
     class ComplexCases
     {
-        
+
+        private void GoodLuck()
+        {
+            await SendRequest(url, HttpMethod.Get, (request) =>
+            {
+                request.Headers.Add("Accept", "application/json; version=1");
+                request.Headers.TryAddWithoutValidation("Date", datum);
+            }, ensureSuccessStatusCode: false);
+        }
+
         private string text = "Some" + "Text";
         // const can't me mutated (need to be const at build time)
         private const int x = 1 + 2;
@@ -22,6 +31,11 @@ namespace TestCases
                 var test = "first" + "second";
                 // complex mutation pattern
                 x *=x+2;
+            }
+
+            for (var j = 0;; j++)
+            {
+                break:
             }
         }
     }
