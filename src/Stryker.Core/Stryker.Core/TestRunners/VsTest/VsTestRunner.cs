@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -284,7 +285,20 @@ namespace Stryker.Core.TestRunners.VsTest
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
+     <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName=""StrykerCoverageCollector"" />
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>";
+            /*
+   <InProcDataCollectionRunSettings>  
+    <InProcDataCollectors>
+      <InProcDataCollector {InProcCoverageCollector.GetVsTestSettings()} >
+      </InProcDataCollector>
+    </InProcDataCollectors>
+  </InProcDataCollectionRunSettings>
+             */
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
@@ -306,10 +320,11 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")))
             };
-
+            var mine = Path.GetDirectoryName(typeof(CoverageCollector).Assembly.Location);
             _vsTestConsole.StartSession();
             _vsTestConsole.InitializeExtensions(new List<string>
             {
+                mine,
                 testBinariesPath,
                 _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
