@@ -53,7 +53,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Auto detected msbuild version {0} at: {1}", msBuildVersionOutput.Output.Trim(), msBuildPath);
 
                 // Restore packages using nuget.exe
-                var nugetRestoreResult = _processExecutor.Start(solutionDir, "powershell.exe", $"nuget restore {solutionPath} -MsBuildVersion {msBuildVersionOutput.Output.Trim()}");
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, "powershell.exe", $"nuget restore \"{solutionPath}\" -MsBuildVersion \"{msBuildVersionOutput.Output.Trim()}\"");
                 if (nugetRestoreResult.ExitCode != 0)
                 {
                     throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
@@ -62,7 +62,7 @@ namespace Stryker.Core.Initialisation
 
 
                 // Build project with MSBuild.exe
-                result = _processExecutor.Start(solutionDir, msBuildPath, $"{solutionPath}");
+                result = _processExecutor.Start(solutionDir, msBuildPath, $"\"{solutionPath}\"");
             }
             else
             {
@@ -71,7 +71,7 @@ namespace Stryker.Core.Initialisation
                     _logger.LogWarning("Stryker is running on a .net core project but a solution path was provided. The solution path option is only needed on .net framework projects and can be removed. Please update your stryker options.");
                 }
                 // Build with dotnet build
-                result = _processExecutor.Start(path, "dotnet", $"build {projectName}");
+                result = _processExecutor.Start(path, "dotnet", $"build \"{projectName}\"");
             }
 
             _logger.LogDebug("Initial build output {0}", result.Output);
