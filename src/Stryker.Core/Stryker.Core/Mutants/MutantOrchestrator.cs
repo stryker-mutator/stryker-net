@@ -187,19 +187,22 @@ namespace Stryker.Core.Mutants
             // now we generate a mutant for the remainder of the for statement
 
             ForStatementSyntax mutatedFor;
+            StatementSyntax statementPart;
             if (forStatement.Condition == null)
             {
-                mutatedFor = forStatement.ReplaceNode(forStatement.Statement,
-                    Mutate(forStatement.Statement));
+                mutatedFor = forStatement;
+                statementPart = forStatement.Statement;
             }
             else
             {
                 mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
                 mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
                     Mutate(forStatement.Condition));
-                mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Statement),
-                    Mutate(forStatement.Statement));
+                statementPart = mutatedFor.GetCurrentNode(forStatement.Statement);
             }
+
+            mutatedFor = mutatedFor.ReplaceNode(statementPart,
+                Mutate(forStatement.Statement));
             // and now we replace it
             return forWithMutantIncrementors.ReplaceNode(originalFor, mutatedFor);
         }
@@ -294,9 +297,7 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateWithConditionalExpressions(ExpressionSyntax currentNode)
         {
-            var nodeToTracks = new List<SyntaxNode>(currentNode.ChildNodes());
-            nodeToTracks.Add(currentNode);
-            var expressionAst = currentNode.TrackNodes(nodeToTracks);
+            var expressionAst = currentNode.TrackNodes(currentNode.ChildNodes().Append(currentNode));
             foreach (var childNode in currentNode.ChildNodes())
             {
                 var mutatedChild = Mutate(childNode);

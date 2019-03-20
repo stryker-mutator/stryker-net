@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using System.Collections.Generic;
-using System.Net.Http;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
