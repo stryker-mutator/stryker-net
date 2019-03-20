@@ -111,16 +111,23 @@ namespace Stryker.Core.ToolHelpers
 
                 if (versionDependent)
                 {
-                    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).First();
+                    string portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).FirstOrDefault();
 
-                    dllPath = FilePathUtils.ConvertPathSeparators(
-                        Path.Combine(
-                            nugetPackageFolder, portablePackageFolder, versionString,
-                            "tools", "netcoreapp2.0", "vstest.console.dll"));
-                    exePath = FilePathUtils.ConvertPathSeparators(
-                        Path.Combine(
-                            nugetPackageFolder, portablePackageFolder, versionString,
-                            "tools", "net451", "vstest.console.exe"));
+                    if (string.IsNullOrWhiteSpace(portablePackageFolder))
+                    {
+                        return vsTestPaths;
+                    }
+                    else
+                    {
+                        dllPath = FilePathUtils.ConvertPathSeparators(
+                            Path.Combine(
+                                nugetPackageFolder, portablePackageFolder, versionString,
+                                "tools", "netcoreapp2.0", "vstest.console.dll"));
+                        exePath = FilePathUtils.ConvertPathSeparators(
+                            Path.Combine(
+                                nugetPackageFolder, portablePackageFolder, versionString,
+                                "tools", "net451", "vstest.console.exe"));
+                    }
                 }
                 else
                 {
