@@ -307,6 +307,22 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
+        public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions(thresholdBreak: 0);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, null);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+            int result = target.Run(new string[] { });
+
+            mock.Verify();
+            Assert.Equal(0, target.ExitCode);
+            Assert.Equal(0, result);
+        }
+
+        [Fact]
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
