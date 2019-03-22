@@ -54,8 +54,4 @@
   <ItemGroup>
     <Folder Include="Reporters\HtmlReporter\dist\src\" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
-  </ItemGroup>
 </Project>

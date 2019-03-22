@@ -9,7 +9,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         void TestMethod()
         {
             int a = 1;
-            int b = Stryker.MutantControl.IsActive(1)? a += 1 - 2 : Stryker.MutantControl.IsActive(0) ? a -= 1 + 2 : a += 1 + 2;
+            int b = (Stryker.MutantControl.IsActive(1)?a -=1 + 2:a += (Stryker.MutantControl.IsActive(0)?1 -2:1 + 2));
         }
     }
 }

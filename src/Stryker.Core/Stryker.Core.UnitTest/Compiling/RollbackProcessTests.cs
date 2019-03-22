@@ -96,7 +96,7 @@ namespace ExampleProject
                 } 
                 while (first.Length < 2)
                 {
-                    return System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"" ? second - first : second + first;
+                    return (System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"" ? second - first : second + first);
                 }
                 return null;
             }
@@ -105,15 +105,15 @@ namespace ExampleProject
 }");
             var root = syntaxTree.GetRoot();
 
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+            var mutantIf = root.DescendantNodes().OfType<IfStatementSyntax>().First();
             root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "6"))
+                mutantIf,
+                mutantIf.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "6"))
             );
-            var mutantIf2 = root.DescendantNodes().OfType<ConditionalExpressionSyntax>().First();
+            var mutantCondition = root.DescendantNodes().First(x => x is ParenthesizedExpressionSyntax parenthesized && parenthesized.Expression is ConditionalExpressionSyntax);
             root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(new SyntaxAnnotation("MutationConditional", "7"))
+                mutantCondition,
+                mutantCondition.WithAdditionalAnnotations(new SyntaxAnnotation("MutationConditional", "7"))
             );
 
             var annotatedSyntaxTree = root.SyntaxTree;

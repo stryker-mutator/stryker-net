@@ -185,20 +185,23 @@ namespace Stryker.Core.Mutants
 
             var originalFor = forWithMutantIncrementors.GetCurrentNode(forStatement);
             // now we generate a mutant for the remainder of the for statement
+
             ForStatementSyntax mutatedFor;
+            StatementSyntax statementPart;
             if (forStatement.Condition == null)
             {
-                // empty condition
-                mutatedFor = forStatement.TrackNodes(forStatement.Statement);
+                mutatedFor = forStatement;
+                statementPart = forStatement.Statement;
             }
             else
             {
                 mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
                 mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
                     Mutate(forStatement.Condition));
+                statementPart = mutatedFor.GetCurrentNode(forStatement.Statement);
             }
 
-            mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Statement),
+            mutatedFor = mutatedFor.ReplaceNode(statementPart,
                 Mutate(forStatement.Statement));
             // and now we replace it
             return forWithMutantIncrementors.ReplaceNode(originalFor, mutatedFor);
@@ -294,8 +297,16 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateWithConditionalExpressions(ExpressionSyntax currentNode)
         {
-            var expressionAst = currentNode;
-            foreach (var mutant in FindMutantsRecursive(currentNode))
+            var expressionAst = currentNode.TrackNodes(currentNode.ChildNodes().Append(currentNode));
+            foreach (var childNode in currentNode.ChildNodes())
+            {
+                var mutatedChild = Mutate(childNode);
+                if (mutatedChild != childNode)
+                {
+                    expressionAst = expressionAst.ReplaceNode(expressionAst.GetCurrentNode(childNode), mutatedChild);
+                }
+            }
+            foreach (var mutant in FindMutants(currentNode))
             {
                 _mutants.Add(mutant);
                 var mutatedNode = ApplyMutant(currentNode, mutant);

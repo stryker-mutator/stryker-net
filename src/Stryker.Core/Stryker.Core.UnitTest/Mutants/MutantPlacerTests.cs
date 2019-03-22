@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 1 + 8;
             }");
 
-            var removedResult = MutantPlacer.RemoveByIfStatement(result);
+            var removedResult = MutantPlacer.RemoveMutant(result);
 
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
@@ -52,9 +52,9 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var result = MutantPlacer.PlaceWithConditionalExpression(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically(@"System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + ") ? 1 - 8 : 1 + 8;");
+            result.ToFullString().ShouldBeSemantically(@"(System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + ") ? 1 - 8 : 1 + 8);");
 
-            var removedResult = MutantPlacer.RemoveByConditionalExpression(result);
+            var removedResult = MutantPlacer.RemoveMutant(result);
 
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
