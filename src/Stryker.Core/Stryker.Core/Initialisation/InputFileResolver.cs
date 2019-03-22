@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -24,6 +25,9 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
+        private static readonly Regex PropertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
+        private static readonly IReadOnlyDictionary<string, string> EmptyProperties = new Dictionary<string, string>();
+
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private IProjectFileReader _projectFileReader { get; }
@@ -59,7 +63,7 @@ namespace Stryker.Core.Initialisation
             var inputFiles = new FolderComposite();
             result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult.ProjectFilePath, result.FullFramework))
+            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -150,8 +154,9 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        private IEnumerable<string> ExtractProjectFolders(string projectFilePath, bool fullFramework)
+        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)
         {
+            var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
             var xDocument = XDocument.Load(projectFile);
             var folders = new List<string>();
@@ -161,18 +166,31 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
+                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult.Properties ?? EmptyProperties);
 
-                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProject)))
+                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                     {
-                        throw new FileNotFoundException($"Missing shared project {sharedProject}");
+                        throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
                     }
 
-                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProject);
+                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
                     folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
                 }
             }
 
             return folders;
+        }
+
+        private static string ReplaceMsbuildProperties(string value, IReadOnlyDictionary<string, string> properties)
+        {
+            try
+            {
+                return PropertyRegex.Replace(value, m => properties[m.Groups[1].Value]);
+            }
+            catch (KeyNotFoundException e)
+            {
+                throw new FileNotFoundException($"Cannot replace all properties in {value}", e);
+            }
         }
     }
 }

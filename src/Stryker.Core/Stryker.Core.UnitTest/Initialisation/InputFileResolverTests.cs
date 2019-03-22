@@ -199,14 +199,16 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath
+                    ProjectFilePath = testProjectPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -297,14 +299,16 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath
+                    ProjectFilePath = testProjectPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -372,19 +376,185 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath
+                    ProjectFilePath = testProjectPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(),
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             Assert.Throws<FileNotFoundException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
 
+        }
+
+        [Fact]
+        public void InputFileResolver_InitializeShouldResolvePropertiesInSharedProjectImports()
+        {
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+
+            string sharedFile = "<Project />";
+
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <SharedDir>SharedProject</SharedDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+    <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+</Project>";
+
+            string testProjectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems"), new MockFileData(sharedFile)},
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
+                    { projectUnderTestPath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { testProjectPath, new MockFileData(testProjectFile)},
+                    { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { projectUnderTestPath },
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = testProjectPath,
+                });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>(),
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>()
+                    {
+                        { "SharedDir", "SharedProject" },
+                    },
+                });
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
+
+            var allFiles = result.ProjectContents.GetAllFiles();
+
+            allFiles.Count().ShouldBe(3);
+            allFiles.ShouldContain(f => f.Name == "Shared.cs");
+        }
+
+        [Fact]
+        public void InputFileResolver_InitializeShouldThrowIfImportPropertyCannotBeResolved()
+        {
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+
+            string sharedFile = "<Project />";
+
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+    <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+</Project>";
+
+            string testProjectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems"), new MockFileData(sharedFile)},
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
+                    { projectUnderTestPath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { testProjectPath, new MockFileData(testProjectFile)},
+                    { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { projectUnderTestPath },
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = testProjectPath,
+                });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>(),
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(),
+                });
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var exception = Assert.Throws<FileNotFoundException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
+            exception.InnerException.ShouldBeOfType<KeyNotFoundException>();
         }
 
         [Theory]
