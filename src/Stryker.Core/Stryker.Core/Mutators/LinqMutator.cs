@@ -20,9 +20,10 @@ namespace Stryker.Core.Mutators
         {
             _kindsToMutate = new Dictionary<LinqExpression, LinqExpression>
             {
-                { LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault },
-                { LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault },
-                { LinqExpression.First, LinqExpression.Last },
+                { LinqExpression.FirstOrDefault, LinqExpression.First },
+                { LinqExpression.First, LinqExpression.FirstOrDefault },
+                { LinqExpression.SingleOrDefault, LinqExpression.Single },
+                { LinqExpression.Single, LinqExpression.SingleOrDefault },
                 { LinqExpression.Last, LinqExpression.First },
                 { LinqExpression.All, LinqExpression.Any },
                 { LinqExpression.Any, LinqExpression.All },
@@ -33,7 +34,11 @@ namespace Stryker.Core.Mutators
                 { LinqExpression.Min, LinqExpression.Max },
                 { LinqExpression.Max, LinqExpression.Min },
                 { LinqExpression.Sum, LinqExpression.Count },
-                { LinqExpression.Count, LinqExpression.Sum }
+                { LinqExpression.Count, LinqExpression.Sum },
+                { LinqExpression.OrderBy, LinqExpression.OrderByDescending },
+                { LinqExpression.OrderByDescending, LinqExpression.OrderBy },
+                { LinqExpression.ThenBy, LinqExpression.ThenByDescending },
+                { LinqExpression.ThenByDescending, LinqExpression.ThenBy }
             };
         }
 
@@ -84,6 +89,9 @@ namespace Stryker.Core.Mutators
         Min,
         Max,
         Sum,
-        Count
+        Count,
+        ThenBy,
+        ThenByDescending,
+        Single
     }
 }
