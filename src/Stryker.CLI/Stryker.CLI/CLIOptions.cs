@@ -9,7 +9,7 @@ namespace Stryker.CLI
 {
     public static class CLIOptions
     {
-        private static StrykerOptions _defaultOptions = new StrykerOptions();
+        private static readonly StrykerOptions _defaultOptions = new StrykerOptions();
 
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {

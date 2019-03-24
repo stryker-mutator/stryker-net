@@ -8,6 +8,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
+using Stryker.DataCollector;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -284,20 +285,16 @@ namespace Stryker.Core.TestRunners.VsTest
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
-     <DataCollectionRunSettings>
-        <DataCollectors>
-            <DataCollector friendlyName=""StrykerCoverageCollector"" />
-        </DataCollectors>
-    </DataCollectionRunSettings>
-</RunSettings>";
-            /*
    <InProcDataCollectionRunSettings>  
     <InProcDataCollectors>
-      <InProcDataCollector {InProcCoverageCollector.GetVsTestSettings()} >
+      <InProcDataCollector {CoverageCollector.GetVsTestSettings()} >
+        <Configuration>
+          <Port>4312</Port>
+        </Configuration>
       </InProcDataCollector>
     </InProcDataCollectors>
   </InProcDataCollectionRunSettings>
-             */
+</RunSettings>";
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
