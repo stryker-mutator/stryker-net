@@ -90,8 +90,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | --------------------- | --------------------- |
 | `SingleOrDefault()`   | `Single()`            |
 | `Single()`            | `SingleOrDefault()`   |
-| `First()`             | `FirstOrDefault()`    |
 | `FirstOrDefault()`    | `First()`             |
+| `First()`             | `FirstOrDefault()`    |
 | `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
