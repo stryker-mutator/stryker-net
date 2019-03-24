@@ -77,8 +77,9 @@ namespace Stryker.Core.Mutators
         OrderBy,
         OrderByDescending,
         FirstOrDefault,
-        SingleOrDefault,
         First,
+        SingleOrDefault,
+        Single,
         Last,
         All,
         Any,
@@ -91,7 +92,6 @@ namespace Stryker.Core.Mutators
         Sum,
         Count,
         ThenBy,
-        ThenByDescending,
-        Single
+        ThenByDescending
     }
 }
