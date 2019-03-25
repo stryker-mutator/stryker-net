@@ -25,9 +25,6 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private static readonly Regex PropertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
-        private static readonly IReadOnlyDictionary<string, string> EmptyProperties = new Dictionary<string, string>();
-
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private IProjectFileReader _projectFileReader { get; }
@@ -166,7 +163,7 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
-                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult.Properties ?? EmptyProperties);
+                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult.Properties);
 
                     if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                     {
@@ -183,9 +180,11 @@ namespace Stryker.Core.Initialisation
 
         private static string ReplaceMsbuildProperties(string value, IReadOnlyDictionary<string, string> properties)
         {
+            var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
+
             try
             {
-                return PropertyRegex.Replace(value, m => properties[m.Groups[1].Value]);
+                return propertyRegex.Replace(value, m => properties[m.Groups[1].Value]);
             }
             catch (KeyNotFoundException e)
             {
