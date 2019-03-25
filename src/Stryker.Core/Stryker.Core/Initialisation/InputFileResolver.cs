@@ -189,7 +189,7 @@ namespace Stryker.Core.Initialisation
             }
             catch (KeyNotFoundException e)
             {
-                throw new FileNotFoundException($"Cannot replace all properties in {value}", e);
+                throw new StrykerInputException($"Cannot replace all properties in {value}", e);
             }
         }
     }
