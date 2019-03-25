@@ -10,8 +10,9 @@ namespace Stryker
     public static class MutantControl
     {
         private static HashSet<int> _coveredMutants;
-        private static bool captureCoverage;
+        private static bool usePipe;
         private static string pipeName;
+        private static bool captureCoverage;
         private static CommunicationChannel channel;
 
         public const string EnvironmentPipeName = "Coverage";
@@ -19,7 +20,7 @@ namespace Stryker
         static MutantControl()
         {
             InitCoverage();
-            if (captureCoverage)
+            if (usePipe)
             {
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             }
@@ -29,15 +30,21 @@ namespace Stryker
         {
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
             pipeName = Environment.GetEnvironmentVariable(EnvironmentPipeName);
-            captureCoverage = !string.IsNullOrEmpty(pipeName);
+            usePipe = !string.IsNullOrEmpty(pipeName);
             if (channel != null)
             {
                 channel?.Dispose();
                 channel = null;
             }
+
+            captureCoverage = usePipe;
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
+            }
+
+            if (usePipe)
+            {
                 channel = CommunicationChannel.Client(pipeName, 100);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
@@ -66,35 +73,32 @@ namespace Stryker
 
         public static void DumpState(HashSet<int> state = null)
         {
-            var report = new StringBuilder();
-            var firstTime = true;
-            lock (_coveredMutants)
+            string report;
+            state = state ?? _coveredMutants;
+            lock (state)
             {
-                foreach (var coveredMutant in state??_coveredMutants)
-                {
-                    if (firstTime)
-                    {
-                        firstTime = false;
-                    }
-                    else
-                    {
-                        report.Append(',');
-                    }
-                    report.Append($"{coveredMutant}");
-                }
+                report = string.Join(',', state);
             }
 
-            channel.SendText(report.ToString());
+            channel.SendText(report);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            if (captureCoverage)
+            if (usePipe)
             {
                 lock (_coveredMutants)
                 {
-                    _coveredMutants.Add(id);
+                    if (Environment.GetEnvironmentVariable("CoverageReset") != null)
+                    {
+                        Environment.SetEnvironmentVariable("CoverageReset", null);
+                        _coveredMutants.Clear();
+                    }
+                    if (_coveredMutants.Add(id))
+                    {
+                        Environment.SetEnvironmentVariable("Coverage", string.Join(',', _coveredMutants));
+                    }
                 }
             }
             return ActiveMutation == id;

@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.InjectedHelpers.Coverage;
-using Stryker.Core.Logging;
 
-namespace Stryker.Core.Coverage
+namespace Stryker.DataCollector
 {
-
     public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
     public sealed class CommunicationServer : IDisposable
@@ -18,17 +14,12 @@ namespace Stryker.Core.Coverage
         private volatile bool mustShutdown;
         private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
-        private static readonly ILogger<CommunicationServer> Logger;
 
         public string PipeName { get; private set; }
 
         public event ConnectionEvent RaiseNewClientEvent;
         public event MessageReceived RaiseReceivedMessage;
 
-        static CommunicationServer()
-        {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CommunicationServer>();
-        }
 
         public CommunicationServer(string name)
         {
@@ -54,7 +45,6 @@ namespace Stryker.Core.Coverage
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError("Exception on connect {0}", e);
                     throw;
                 }
             }
@@ -75,7 +65,6 @@ namespace Stryker.Core.Coverage
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError("Exception on connect {0}", e);
                     throw;
                 }
 
@@ -124,4 +113,5 @@ namespace Stryker.Core.Coverage
             }
         }
     }
+
 }

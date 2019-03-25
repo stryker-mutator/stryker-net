@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Stryker.Core.Coverage;
+using Stryker.DataCollector;
 
 namespace Stryker.Core.MutationTest
 {

@@ -167,7 +167,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 coverageOk = _coverageServer.WaitReception();
-            } while (attempts++ < 2 && !coverageOk);
+            } while (attempts++ < 3 && !coverageOk);
 
             if (!coverageOk)
             {
@@ -238,6 +238,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
                     // At this point, run must have complete. Check signal for true
                     runCompleteSignal.WaitOne();
+
+                    // dump coverage
+                    foreach (var result in handler.TestResults)
+                    {
+                        var propertyPair = result.GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
+                        Console.WriteLine("Coverage =>" + propertyPair.Value.ToString());
+                    }
                     return handler.TestResults;
                 }
             }
@@ -340,11 +347,11 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool _disposedValue = false; // To detect redundant calls
 
         private void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -352,7 +359,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _vsTestConsole.EndSession();
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

@@ -5,8 +5,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Coverage;
-using Stryker.Core.InjectedHelpers.Coverage;
+using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.CodeInjection

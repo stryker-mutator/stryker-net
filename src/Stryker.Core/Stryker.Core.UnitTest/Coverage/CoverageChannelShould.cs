@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Shouldly;
-using Stryker.Core.Coverage;
-using Stryker.Core.InjectedHelpers.Coverage;
+using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Coverage

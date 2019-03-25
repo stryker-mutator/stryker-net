@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Xml;
+using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
@@ -11,18 +11,25 @@ namespace Stryker.DataCollector
     [DataCollectorTypeUri("https://stryker-mutator.io/")]
     public class CoverageCollector: InProcDataCollection
     {
+        private IDataCollectionSink dataSink;
+
+
         public static string GetVsTestSettings()
         {
             var codeBase = typeof(CoverageCollector).Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
-            return $"friendlyName=\"StrykerCoverage\" uri=\"https://stryker-mutator.io/\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
+            var friendlyName = typeof(CoverageCollector).ExtractAttribute<DataCollectorFriendlyNameAttribute>().FriendlyName;
+            var uri = (typeof(CoverageCollector).GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
+                DataCollectorTypeUriAttribute).TypeUri;
+            return $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
         }
+
         public CoverageCollector()
         {}
 
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
-            Console.Error.WriteLine("Init me");
+            this.dataSink = dataCollectionSink;
         }
 
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
@@ -35,6 +42,9 @@ namespace Stryker.DataCollector
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
+            Console.Error.WriteLine("Store data");
+            this.dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", Environment.GetEnvironmentVariable("Coverage"));
+            Environment.SetEnvironmentVariable("CoverageReset", "");
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
