@@ -163,7 +163,7 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
-                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult.Properties);
+                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
 
                     if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                     {
@@ -178,18 +178,23 @@ namespace Stryker.Core.Initialisation
             return folders;
         }
 
-        private static string ReplaceMsbuildProperties(string value, IReadOnlyDictionary<string, string> properties)
+        private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
         {
             var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
+            var properties = projectAnalyzerResult.Properties;
 
-            try
-            {
-                return propertyRegex.Replace(value, m => properties[m.Groups[1].Value]);
-            }
-            catch (KeyNotFoundException e)
-            {
-                throw new StrykerInputException($"Cannot replace all properties in {value}", e);
-            }
+            return propertyRegex.Replace(projectReference,
+                m =>
+                {
+                    var property = m.Groups[1].Value;
+                    if (properties.TryGetValue(property, out var propertyValue))
+                    {
+                        return propertyValue;
+                    }
+
+                    var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
+                    throw new StrykerInputException(message);
+                });
         }
     }
 }

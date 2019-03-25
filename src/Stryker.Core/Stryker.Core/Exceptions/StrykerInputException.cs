@@ -17,19 +17,7 @@ namespace Stryker.Core.Exceptions
         {
         }
 
-        public StrykerInputException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        public StrykerInputException(string message, string details)
-            : base(message)
-        {
-            Details = details;
-        }
-
-        public StrykerInputException(string message, string details, Exception innerException)
-            : base(message, innerException)
+        public StrykerInputException(string message, string details) : base(message)
         {
             Details = details;
         }
