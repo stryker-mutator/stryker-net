@@ -14,4 +14,13 @@ public static class FilePathUtils
 			return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
 		}
 	}
+
+
+    public static string ToFullPath(this string path)
+    {
+        if (path == null)
+            return null;
+
+        return Path.GetFullPath(path);
+    }
 }

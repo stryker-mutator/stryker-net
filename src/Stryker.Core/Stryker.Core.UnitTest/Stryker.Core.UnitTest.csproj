@@ -21,6 +21,14 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="TestResources\StrongNameKeyFile.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestResources\StrongNameKeyFile.snk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -6,6 +6,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
@@ -47,14 +48,19 @@ namespace Stryker.Core.Compiling
         /// <param name="devMode"></param>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
         {
-            var compiler = CSharpCompilation.Create(_input.ProjectInfo.ProjectUnderTestAnalyzerResult.Properties.GetValueOrDefault("TargetName"),
+            var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+
+            var compiler = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: syntaxTrees,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true),
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                                                      allowUnsafe: true,
+                                                      cryptoKeyFile: analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null,
+                                                      strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider(ImmutableArray.Create(analyzerResult.AssemblyOriginatorKeyFile)) : null),
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult = null;
 
             // first try compiling
-            var emitResult = compiler.Emit(ms, manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources);
+            var emitResult = compiler.Emit(ms, manifestResources: analyzerResult.Resources);
 
             if (!emitResult.Success)
             {

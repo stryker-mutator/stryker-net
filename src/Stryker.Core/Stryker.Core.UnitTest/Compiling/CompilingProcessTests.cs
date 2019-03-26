@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -62,8 +63,8 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
-
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
@@ -174,6 +175,67 @@ namespace ExampleProject
             {
                 target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
 
+                ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
+            }
+        }
+
+
+
+
+        [Fact]
+        public void CompilingProcessTests_SignedAssembliesMustBeSigned()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Subtract(int first, int second)
+        {
+            return first - second;
+        }
+    }
+}");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>(),
+                        SignAssembly = true,
+                        AssemblyOriginatorKeyFile = Path.GetFullPath(@"TestResources\StrongNameKeyFile.snk")
+                    },
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>()
+                    }
+                },
+                AssemblyReferences = new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                },
+                
+            };
+            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+
+            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+
+            using (var ms = new MemoryStream())
+            {
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                result.Success.ShouldBe(true);
+
+                var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
+                key.Length.ShouldBe(160, "Assembly was not signed");
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
