@@ -185,7 +185,7 @@ namespace ExampleProject
         [Fact]
         public void CompilingProcessTests_SignedAssembliesMustBeSigned()
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
 
 namespace ExampleProject
 {
