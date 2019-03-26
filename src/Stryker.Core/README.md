@@ -88,9 +88,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Linq Methods
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
-| `SingleOrDefault()`   | `FirstOrDefault()`    |
-| `FirstOrDefault()`    | `SingleOrDefault()`   |
-| `First()`             | `Last()`              |
+| `SingleOrDefault()`   | `Single()`            |
+| `Single()`            | `SingleOrDefault()`   |
+| `FirstOrDefault()`    | `First()`             |
+| `First()`             | `FirstOrDefault()`    |
 | `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
@@ -102,6 +103,10 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Max()`               | `Min()`               |
 | `Sum()`               | `Count()`             |
 | `Count()`             | `Sum()`               |
+| `OrderBy()`           | `OrderByDescending()` |
+| `OrderByDescending()` | `OrderBy()`           |
+| `ThenBy()`            | `ThenByDescending()`  |
+| `ThenByDescending()`  | `ThenBy()`            |
 
 ## String Literals
 | Original | Mutated |

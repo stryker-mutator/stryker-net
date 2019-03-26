@@ -54,9 +54,10 @@ namespace TestApplication
         /// <param name="original"></param>
         /// <param name="expected"></param>
         [Theory]
-        [InlineData(LinqExpression.FirstOrDefault, LinqExpression.SingleOrDefault)]
-        [InlineData(LinqExpression.SingleOrDefault, LinqExpression.FirstOrDefault)]
-        [InlineData(LinqExpression.First, LinqExpression.Last)]
+        [InlineData(LinqExpression.FirstOrDefault, LinqExpression.First)]
+        [InlineData(LinqExpression.First, LinqExpression.FirstOrDefault)]
+        [InlineData(LinqExpression.SingleOrDefault, LinqExpression.Single)]
+        [InlineData(LinqExpression.Single, LinqExpression.SingleOrDefault)]
         [InlineData(LinqExpression.Last, LinqExpression.First)]
         [InlineData(LinqExpression.All, LinqExpression.Any)]
         [InlineData(LinqExpression.Any, LinqExpression.All)]
@@ -68,6 +69,10 @@ namespace TestApplication
         [InlineData(LinqExpression.Max, LinqExpression.Min)]
         [InlineData(LinqExpression.Sum, LinqExpression.Count)]
         [InlineData(LinqExpression.Count, LinqExpression.Sum)]
+        [InlineData(LinqExpression.OrderBy, LinqExpression.OrderByDescending)]
+        [InlineData(LinqExpression.OrderByDescending, LinqExpression.OrderBy)]
+        [InlineData(LinqExpression.ThenBy, LinqExpression.ThenByDescending)]
+        [InlineData(LinqExpression.ThenByDescending, LinqExpression.ThenBy)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();
