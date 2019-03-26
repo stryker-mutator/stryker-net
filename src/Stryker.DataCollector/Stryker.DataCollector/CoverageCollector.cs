@@ -42,9 +42,12 @@ namespace Stryker.DataCollector
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            Console.Error.WriteLine("Store data");
-            this.dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", Environment.GetEnvironmentVariable("Coverage"));
-            Environment.SetEnvironmentVariable("CoverageReset", "");
+            var coverageString = Environment.GetEnvironmentVariable("Coverage");
+            if (coverageString != null)
+            {
+                this.dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverageString);
+                Environment.SetEnvironmentVariable("CoverageReset", "");
+            }
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)

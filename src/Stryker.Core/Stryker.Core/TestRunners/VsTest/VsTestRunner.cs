@@ -34,7 +34,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _vsTestHelper;
         private readonly List<string> _messages = new List<string>();
         private readonly TestCoverageInfos _coverage;
-        private readonly CoverageServer _coverageServer;
 
         private IEnumerable<string> _sources;
 
@@ -57,7 +56,6 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestHelper = new VsTestHelper(options);
             _coverage = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = PrepareVsTestConsole();
-            _coverageServer = new CoverageServer($"Coverage{id}");
             InitializeVsTestConsole();
         }
 
@@ -129,52 +127,46 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var envVars = new Dictionary<string, string>
             {
-                {MutantControl.EnvironmentPipeName, _coverageServer.PipeName}
+                {MutantControl.EnvironmentCollectorMore, true.ToString()}
             };
             var testCases = new[] { test };
+            IEnumerable<int> coverage = null;
             Logger.LogInformation($"Running test {test.DisplayName}");
-            var coverageOk = false;
-            var attempts = 0;
-            do
+            using (var runCompleteSignal = new AutoResetEvent(false))
             {
-                _coverageServer.Clear();
-                using (var runCompleteSignal = new AutoResetEvent(false))
+                using (var processExitedSignal = new AutoResetEvent(false))
                 {
-                    using (var processExitedSignal = new AutoResetEvent(false))
+                    var handler = new RunEventHandler(runCompleteSignal, _messages);
+                    var testHostLauncher =
+                        new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
+
+                    _vsTestConsole.RunTestsWithCustomTestHost(testCases, GenerateRunSettings(0), handler,
+                        testHostLauncher);
+
+                    // Test host exited signal comes after the run complete
+                    processExitedSignal.WaitOne();
+                    // At this point, run must have complete. Check signal for true
+                    runCompleteSignal.WaitOne();
+                    if (handler.TestResults.Count != 1)
                     {
-                        var handler = new RunEventHandler(runCompleteSignal, _messages);
-                        var testHostLauncher =
-                            new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
-
-                        _vsTestConsole.RunTestsWithCustomTestHost(testCases, GenerateRunSettings(0), handler,
-                            testHostLauncher);
-
-                        // Test host exited signal comes after the run complete
-                        processExitedSignal.WaitOne();
-                        // At this point, run must have complete. Check signal for true
-                        runCompleteSignal.WaitOne();
-                        if (handler.TestResults.Count != 1)
-                        {
-                            Logger.LogWarning(
-                                $"{test.DisplayName}: Did not get the expected number of test results: {handler.TestResults.Count}");
-                        }
-                        else if (handler.TestResults[0].Outcome != TestOutcome.Passed)
-                        {
-                            Logger.LogWarning(
-                                $"{test.DisplayName}: did not pass: {handler.TestResults[0].ErrorMessage}");
-                        }
+                        Logger.LogWarning(
+                            $"{test.DisplayName}: Did not get the expected number of test results: {handler.TestResults.Count}");
                     }
+                    else if (handler.TestResults[0].Outcome != TestOutcome.Passed)
+                    {
+                        Logger.LogWarning(
+                            $"{test.DisplayName}: did not pass: {handler.TestResults[0].ErrorMessage}");
+                    }
+                    var propertyPair = handler.TestResults[0].GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
+                    if (propertyPair.Value != null)
+                    {
+                        coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
+                    }
+
                 }
-
-                coverageOk = _coverageServer.WaitReception();
-            } while (attempts++ < 3 && !coverageOk);
-
-            if (!coverageOk)
-            {
-                Logger.LogWarning($"Did not receive mutant coverage data for test {test.DisplayName}.");
-                return null;
             }
-            return _coverageServer.RanMutants;
+
+            return coverage;
         }
 
         public ICollection<TestCase> DiscoverTests(string runSettings = null)
@@ -240,12 +232,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     runCompleteSignal.WaitOne();
 
                     // dump coverage
-                    foreach (var result in handler.TestResults)
-                    {
-                        var propertyPair = result.GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
-                        Console.WriteLine("Coverage =>" + propertyPair.Value.ToString());
-                    }
-                    return handler.TestResults;
+                    var results = handler.TestResults;
+                    return results;
                 }
             }
         }
@@ -355,7 +343,6 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (disposing)
                 {
-                    _coverageServer.Dispose();
                     _vsTestConsole.EndSession();
                 }
 

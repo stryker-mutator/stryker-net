@@ -14,7 +14,6 @@ namespace Stryker.DataCollector
         private volatile bool mustShutdown;
         private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
-
         public string PipeName { get; private set; }
 
         public event ConnectionEvent RaiseNewClientEvent;

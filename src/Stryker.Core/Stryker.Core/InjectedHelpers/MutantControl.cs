@@ -11,11 +11,13 @@ namespace Stryker
     {
         private static HashSet<int> _coveredMutants;
         private static bool usePipe;
+        private static bool useEnv;
         private static string pipeName;
         private static bool captureCoverage;
         private static CommunicationChannel channel;
 
         public const string EnvironmentPipeName = "Coverage";
+        public const string EnvironmentCollectorMore = "CoverageCollector";
 
         static MutantControl()
         {
@@ -37,7 +39,11 @@ namespace Stryker
                 channel = null;
             }
 
-            captureCoverage = usePipe;
+            if (Environment.GetEnvironmentVariable(EnvironmentCollectorMore) != null)
+            {
+                useEnv = true;
+            }
+            captureCoverage = usePipe || useEnv;
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
@@ -86,16 +92,19 @@ namespace Stryker
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            if (usePipe)
+            if (captureCoverage)
             {
                 lock (_coveredMutants)
                 {
-                    if (Environment.GetEnvironmentVariable("CoverageReset") != null)
+                    if (useEnv)
                     {
-                        Environment.SetEnvironmentVariable("CoverageReset", null);
-                        _coveredMutants.Clear();
+                        if (Environment.GetEnvironmentVariable("CoverageReset") != null)
+                        {
+                            Environment.SetEnvironmentVariable("CoverageReset", null);
+                            _coveredMutants.Clear();
+                        }
                     }
-                    if (_coveredMutants.Add(id))
+                    if (_coveredMutants.Add(id) && useEnv)
                     {
                         Environment.SetEnvironmentVariable("Coverage", string.Join(',', _coveredMutants));
                     }
