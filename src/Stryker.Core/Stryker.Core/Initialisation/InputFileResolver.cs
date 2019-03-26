@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -59,7 +60,7 @@ namespace Stryker.Core.Initialisation
             var inputFiles = new FolderComposite();
             result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult.ProjectFilePath, result.FullFramework))
+            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -150,8 +151,9 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        private IEnumerable<string> ExtractProjectFolders(string projectFilePath, bool fullFramework)
+        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)
         {
+            var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
             var xDocument = XDocument.Load(projectFile);
             var folders = new List<string>();
@@ -161,18 +163,38 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
+                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
 
-                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProject)))
+                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                     {
-                        throw new FileNotFoundException($"Missing shared project {sharedProject}");
+                        throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
                     }
 
-                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProject);
+                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
                     folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
                 }
             }
 
             return folders;
+        }
+
+        private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
+        {
+            var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
+            var properties = projectAnalyzerResult.Properties;
+
+            return propertyRegex.Replace(projectReference,
+                m =>
+                {
+                    var property = m.Groups[1].Value;
+                    if (properties.TryGetValue(property, out var propertyValue))
+                    {
+                        return propertyValue;
+                    }
+
+                    var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
+                    throw new StrykerInputException(message);
+                });
         }
     }
 }
