@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
-using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
@@ -15,7 +14,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -37,14 +35,14 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IEnumerable<string> _sources;
 
-        private static ILogger Logger { get; set; }
+        private static ILogger Logger { get; }
 
         static VsTestRunner()
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
         }
 
-        public VsTestRunner(int id, StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo,
+        public VsTestRunner(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
             TestCoverageInfos mappingInfos, IFileSystem fileSystem = null)
         {
@@ -108,65 +106,28 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            var mapping = new Dictionary<TestCase, IEnumerable<int>>(_discoveredTests.Count());
-            foreach (var discoveredTest in _discoveredTests)
-            {
-                var captureCoverage = CaptureCoverage(discoveredTest);
-                mapping[discoveredTest] = captureCoverage;
-                _coverage.DeclareMappingForATest(discoveredTest, captureCoverage);
-            }
-
-            CoveredMutants = mapping.Values.SelectMany(x => x);
-            LogMapping(mapping);
-
-            _coverage.Log();
-            return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
-        }
-
-        public IEnumerable<int> CaptureCoverage(TestCase test)
-        {
             var envVars = new Dictionary<string, string>
             {
                 {MutantControl.EnvironmentCollectorMore, true.ToString()}
             };
-            var testCases = new[] { test };
-            IEnumerable<int> coverage = null;
-            Logger.LogInformation($"Running test {test.DisplayName}");
-            using (var runCompleteSignal = new AutoResetEvent(false))
+            var testResults = RunAllTests(null, envVars, GenerateRunSettings( 0));
+            foreach (var testResult in testResults)
             {
-                using (var processExitedSignal = new AutoResetEvent(false))
+                var propertyPair = testResult.GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
+                if (propertyPair.Value != null)
                 {
-                    var handler = new RunEventHandler(runCompleteSignal, _messages);
-                    var testHostLauncher =
-                        new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
-
-                    _vsTestConsole.RunTestsWithCustomTestHost(testCases, GenerateRunSettings(0), handler,
-                        testHostLauncher);
-
-                    // Test host exited signal comes after the run complete
-                    processExitedSignal.WaitOne();
-                    // At this point, run must have complete. Check signal for true
-                    runCompleteSignal.WaitOne();
-                    if (handler.TestResults.Count != 1)
-                    {
-                        Logger.LogWarning(
-                            $"{test.DisplayName}: Did not get the expected number of test results: {handler.TestResults.Count}");
-                    }
-                    else if (handler.TestResults[0].Outcome != TestOutcome.Passed)
-                    {
-                        Logger.LogWarning(
-                            $"{test.DisplayName}: did not pass: {handler.TestResults[0].ErrorMessage}");
-                    }
-                    var propertyPair = handler.TestResults[0].GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
-                    if (propertyPair.Value != null)
-                    {
-                        coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
-                    }
-
+                    var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
+                    _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
                 }
+                else
+                {
+                    Logger.LogWarning("No ");
+                }
+               
             }
 
-            return coverage;
+            CoveredMutants = _coverage.CoveredMutants;
+            return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
         }
 
         public ICollection<TestCase> DiscoverTests(string runSettings = null)
@@ -319,19 +280,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 testBinariesPath,
                 _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
-        }
-
-
-        private static void LogMapping(IDictionary<TestCase, IEnumerable<int>> mapping)
-        {
-            Logger.LogInformation("Test => mutants coverage information");
-            foreach (var (test, mutantIds) in mapping)
-            {
-                var list = new StringBuilder();
-                list.AppendJoin(",", mutantIds);
-                Logger.LogInformation($"Test '{test.DisplayName}' covers [{list}].");
-            }
-            Logger.LogInformation("*****************");
         }
 
         #region IDisposable Support

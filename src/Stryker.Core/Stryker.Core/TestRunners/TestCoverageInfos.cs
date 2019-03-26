@@ -54,19 +54,19 @@ namespace Stryker.Core.TestRunners
 
         public void Log()
         {
-            Logger.LogInformation("Mutant => Tests Coverage information");
+            Logger.LogDebug("Mutant => Tests Coverage information");
             foreach (var (mutantId, tests) in _mutantToTests)
             {
                 var list = new StringBuilder();
                 list.AppendJoin(",", tests.Select(x => x.ToString()));
-                Logger.LogInformation($"Mutant '{mutantId}' covered by [{list}].");
+                Logger.LogDebug($"Mutant '{mutantId}' covered by [{list}].");
             }
-            Logger.LogInformation("* Systematic Tests**");
+            Logger.LogDebug("* Systematic Tests**");
             foreach (var testsWithoutCoverageInfo in _testsWithoutCoverageInfos)
             {
-                Logger.LogInformation(testsWithoutCoverageInfo.ToString());
+                Logger.LogDebug(testsWithoutCoverageInfo.ToString());
             }
-            Logger.LogInformation("*****************");
+            Logger.LogDebug("*****************");
 
         }
 

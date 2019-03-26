@@ -4,7 +4,6 @@ using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -14,27 +13,34 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly ICollection<TestCase> _discoveredTests;
-        private readonly TestCoverageInfos _coverage = new TestCoverageInfos();
+        private TestCoverageInfos _coverage = new TestCoverageInfos();
          
         public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _flags = flags;
-            using (var runner = new VsTestRunner(0, options, _flags, projectInfo, null, null))
+            using (var runner = new VsTestRunner(options, _flags, projectInfo, null, null))
             {
                 _discoveredTests = runner.DiscoverTests();
             }
 
             for (var i = 0; i < options.ConcurrentTestrunners; i++)
             {
-                _availableRunners.Add(new VsTestRunner(i, options, _flags, projectInfo, _discoveredTests, _coverage));
+                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage));
             }
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? mutationId)
         {
             var runner = TakeRunner();
-            var result = runner.RunAll(timeoutMS, mutationId);
-            ReturnRunner(runner);
+            TestRunResult result;
+            try
+            {
+                result = runner.RunAll(timeoutMS, mutationId);
+            }
+            finally
+            {
+                ReturnRunner(runner);
+            }
             return result;
         }
 
@@ -43,25 +49,18 @@ namespace Stryker.Core.TestRunners.VsTest
             TestRunResult result;
             if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                Parallel.ForEach(_discoveredTests, new ParallelOptions(){MaxDegreeOfParallelism = _availableRunners.Count}, testCase =>
+                
+                VsTestRunner runner = null;
+                try
                 {
-                    VsTestRunner runner = null;
-                    IEnumerable<int> captureCoverage;
-                    try
-                    {
-                        runner = TakeRunner();
-                        captureCoverage = runner.CaptureCoverage(testCase);
-                    }
-                    finally
-                    {
-                        ReturnRunner(runner);
-                    }
-                    lock (this)
-                    {
-                        _coverage.DeclareMappingForATest(testCase, captureCoverage);
-                    }
-                });
-                result = new TestRunResult() {Success = true, TotalNumberOfTests = _discoveredTests.Count};
+                    runner = TakeRunner();
+                    result = runner.CaptureCoverage();
+                    _coverage = runner.FinalMapping;
+                }
+                finally
+                {
+                    ReturnRunner(runner);
+                }
                 _coverage.Log();
             }
             else

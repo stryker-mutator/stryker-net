@@ -46,7 +46,7 @@ namespace Stryker.DataCollector
             if (coverageString != null)
             {
                 this.dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverageString);
-                Environment.SetEnvironmentVariable("CoverageReset", "");
+                Environment.SetEnvironmentVariable("CoverageReset", "true");
             }
         }
 

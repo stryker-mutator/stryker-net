@@ -29,7 +29,7 @@ namespace Stryker.Core.Initialisation
         private ProjectInfo projectInfo;
 
         // these flags control various optimisation techniques
-        private const OptimizationFlags Flags = false ? 0 : OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
+        private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
 
         public InitialisationProcess( 
             IInputFileResolver inputFileResolver = null, 

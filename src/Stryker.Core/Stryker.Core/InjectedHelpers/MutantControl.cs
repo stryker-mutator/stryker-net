@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Stryker
 {
@@ -59,16 +57,17 @@ namespace Stryker
 
         private static void Channel_RaiseReceivedMessage(object sender, string args)
         {
-            if (args == "DUMP")
+            if (args != "DUMP")
             {
-                HashSet<int> temp;
-                lock (_coveredMutants)
-                {
-                    temp = _coveredMutants;
-                    _coveredMutants = new HashSet<int>();
-                }
-                DumpState(temp);
+                return;
             }
+            HashSet<int> temp;
+            lock (_coveredMutants)
+            {
+                temp = _coveredMutants;
+                _coveredMutants = new HashSet<int>();
+            }
+            DumpState(temp);
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
