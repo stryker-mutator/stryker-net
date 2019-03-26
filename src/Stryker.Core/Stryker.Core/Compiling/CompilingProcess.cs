@@ -117,7 +117,7 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err.GetMessage(), err.Location.SourceTree.FilePath);
+                    _logger.LogDebug("{0}, {1}", err?.GetMessage()??"No message", err?.Location?.SourceTree?.FilePath??"Unknown filepath");
                 }
             }
             else

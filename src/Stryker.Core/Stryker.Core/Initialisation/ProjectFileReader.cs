@@ -29,11 +29,23 @@ namespace Stryker.Core.Initialisation
 
         public ProjectAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
         {
-            _logger.LogDebug("Analyzing solution file {0}, project file {1}", solutionFilePath, projectFilePath);
-            var manager = new AnalyzerManager(solutionFilePath);
+            AnalyzerManager manager;
+            if (solutionFilePath == null)
+            {
+                manager = new AnalyzerManager();
+            }
+            else
+            {
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                manager = new AnalyzerManager(solutionFilePath);
+            }
+
+            _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
             if (!analyzerResult.Succeeded)
+            {
                 _logger.LogWarning("Analyzer result not successful");
+            }
 
             return new ProjectAnalyzerResult(_logger, analyzerResult);
         }
