@@ -12,6 +12,12 @@ namespace Stryker.DataCollector
     public class CoverageCollector: InProcDataCollection
     {
         private IDataCollectionSink dataSink;
+        private const string TemplateForConfiguration = @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
+        <Configuration>
+        </Configuration>
+        </InProcDataCollector>
+        </InProcDataCollectors>
+        </InProcDataCollectionRunSettings>";
 
 
         public static string GetVsTestSettings()
@@ -21,7 +27,8 @@ namespace Stryker.DataCollector
             var friendlyName = typeof(CoverageCollector).ExtractAttribute<DataCollectorFriendlyNameAttribute>().FriendlyName;
             var uri = (typeof(CoverageCollector).GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
                 DataCollectorTypeUriAttribute).TypeUri;
-            return $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
+            var line= $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
+            return string.Format(TemplateForConfiguration, line);
         }
 
         public CoverageCollector()

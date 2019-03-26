@@ -47,45 +47,24 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage()
         {
             TestRunResult result;
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+
+            var runner = TakeRunner();
+            try
             {
-                
-                VsTestRunner runner = null;
-                try
+                if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
-                    runner = TakeRunner();
                     result = runner.CaptureCoverage();
                     _coverage = runner.FinalMapping;
                 }
-                finally
+                else
                 {
-                    ReturnRunner(runner);
+                    result = runner.RunAll(null, null);
                 }
-                _coverage.Log();
             }
-            else
+            finally
             {
-                var runner = TakeRunner();
-                try
-                {
-                    if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
-                    {
-                        result = runner.CaptureCoverage();
-                        _coverage.DeclareCoveredMutants(runner.CoveredMutants);
-                    }
-                    else
-                    {
-                        result = runner.RunAll(null, null);
-                    }
-
-                }
-                finally
-                {
-                    ReturnRunner(runner);
-                }
-
+                ReturnRunner(runner);
             }
-
             return result;
         }
 

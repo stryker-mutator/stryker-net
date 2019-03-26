@@ -26,14 +26,16 @@ namespace Stryker.Core.TestRunners.VsTest
                                   defaultTestHostStartInfo.FileName,
                                   defaultTestHostStartInfo.Arguments)
             {
-                WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory
+                WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
+                RedirectStandardError =  true
             };
             foreach (var (key, value) in _envVars)
             {
                 processInfo.EnvironmentVariables[key] = value;
             }
 
-            var process = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
+            var process = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
+               
             process.Start();
 
             process.Exited += (sender, args) =>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -69,7 +68,6 @@ namespace Stryker.Core.TestRunners
             Logger.LogDebug("*****************");
 
         }
-
 
         public void DeclareCoveredMutants(IEnumerable<int> runnerCoveredMutants)
         {

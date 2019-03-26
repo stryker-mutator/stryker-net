@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 
-namespace Stryker.DataCollector
+namespace Stryker.Core.InjectedHelpers.Coverage
 {
     public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
@@ -14,10 +14,10 @@ namespace Stryker.DataCollector
         private volatile bool mustShutdown;
         private readonly IList<CommunicationChannel> channels = new List<CommunicationChannel>();
         private NamedPipeServerStream listener;
-        public string PipeName { get; private set; }
+        public string PipeName { get; }
 
         public event ConnectionEvent RaiseNewClientEvent;
-        public event MessageReceived RaiseReceivedMessage;
+        public event DataCollector.MessageReceived RaiseReceivedMessage;
 
 
         public CommunicationServer(string name)
@@ -38,14 +38,7 @@ namespace Stryker.DataCollector
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-                try
-                {
-                    listener.BeginWaitForConnection(OnConnect, null);
-                }
-                catch (Exception e)
-                {
-                    throw;
-                }
+                listener.BeginWaitForConnection(OnConnect, null);
             }
         }
 
@@ -61,10 +54,6 @@ namespace Stryker.DataCollector
                 catch (IOException)
                 {
                     return;
-                }
-                catch (Exception e)
-                {
-                    throw;
                 }
 
                 if (mustShutdown)

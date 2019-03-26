@@ -16,6 +16,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -235,21 +236,14 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
+            var dataCollectorSettings = CoverageCollector.GetVsTestSettings();
             return $@"<RunSettings>
   <RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
   </RunConfiguration>
-   <InProcDataCollectionRunSettings>  
-    <InProcDataCollectors>
-      <InProcDataCollector {CoverageCollector.GetVsTestSettings()} >
-        <Configuration>
-          <Port>4312</Port>
-        </Configuration>
-      </InProcDataCollector>
-    </InProcDataCollectors>
-  </InProcDataCollectionRunSettings>
+   {dataCollectorSettings}
 </RunSettings>";
         }
 
