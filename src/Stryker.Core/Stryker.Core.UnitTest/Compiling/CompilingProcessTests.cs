@@ -209,7 +209,7 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>(),
                         SignAssembly = true,
-                        AssemblyOriginatorKeyFile = Path.GetFullPath(@"TestResources\StrongNameKeyFile.snk")
+                        AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))
                     },
                     TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
