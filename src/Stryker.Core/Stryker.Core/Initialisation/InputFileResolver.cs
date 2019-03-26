@@ -138,7 +138,7 @@ namespace Stryker.Core.Initialisation
 
         public string ScanProjectFile(string currentDirectory)
         {
-            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj", SearchOption.AllDirectories);
+            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
             if (projectFiles.Count() > 1)
             {
