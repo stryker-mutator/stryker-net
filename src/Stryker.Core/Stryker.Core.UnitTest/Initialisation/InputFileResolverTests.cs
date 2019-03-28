@@ -480,8 +480,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem);
 
             var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
-            
-            actual.ShouldBe("C:\\ExampleProject\\ExampleProject.csproj");
+
+            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }
     }
 }
