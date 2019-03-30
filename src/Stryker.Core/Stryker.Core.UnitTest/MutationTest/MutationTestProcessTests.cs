@@ -287,7 +287,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant), Times.Once);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
@@ -336,7 +336,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant), Times.Never);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
             testResult.MutationScore.ShouldBeNull();
@@ -385,7 +385,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
             testResult.MutationScore.ShouldBeNull();
@@ -436,7 +436,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2)), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
             testResult.MutationScore.ShouldBeNull();
