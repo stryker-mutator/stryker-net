@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using System;
+using System.Linq;
 
 namespace Stryker.Core.UnitTest
 {
@@ -40,6 +41,12 @@ namespace Stryker.Core.UnitTest
         {
             string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
+        }
+        
+        public static void ShouldNotContainErrors(this SyntaxNode actual)
+        {
+            var errors = actual.SyntaxTree.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);
+            errors.ShouldBe(0);
         }
     }
 }

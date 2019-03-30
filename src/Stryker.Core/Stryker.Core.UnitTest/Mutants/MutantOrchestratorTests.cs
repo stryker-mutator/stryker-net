@@ -39,6 +39,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
         }
 
         [Theory]
@@ -53,6 +54,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
 
             var mutants = target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(nbMutants);
