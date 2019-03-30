@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -336,7 +337,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
-            Assert.Null(testResult.MutationScore);
+            testResult.MutationScore.ShouldBeNull();
         }
 
         [Fact]
@@ -385,7 +386,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
-            Assert.Null(testResult.MutationScore);
+            testResult.MutationScore.ShouldBeNull();
         }
 
         [Fact]
@@ -436,7 +437,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2)), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
-            Assert.Null(testResult.MutationScore);
+            testResult.MutationScore.ShouldBeNull();
         }
     }
 }

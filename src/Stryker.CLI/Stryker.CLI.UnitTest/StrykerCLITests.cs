@@ -302,8 +302,8 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(1, target.ExitCode);
-            Assert.Equal(1, result);
+            target.ExitCode.ShouldBe(1);
+            result.ShouldBe(1);
         }
 
         [Fact]
@@ -318,8 +318,8 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(0, target.ExitCode);
-            Assert.Equal(0, result);
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
         }
 
         [Fact]
@@ -334,8 +334,8 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(0, target.ExitCode);
-            Assert.Equal(0, result);
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
         }
 
         [Fact]
@@ -351,8 +351,8 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(0, target.ExitCode);
-            Assert.Equal(0, result);
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
         }
 
         [Fact]
