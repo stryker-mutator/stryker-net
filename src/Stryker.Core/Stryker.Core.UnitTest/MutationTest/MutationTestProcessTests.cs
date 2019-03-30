@@ -23,12 +23,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string _currentDirectory { get; set; }
         private string _filesystemRoot { get; set; }
         private string _sourceFile { get; set; }
+        private IEnumerable<PortableExecutableReference> _assemblies { get; set; }
 
         public MutationTestProcessTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            _assemblies = new ReferenceProvider().GetReferencedAssemblies();
         }
 
         [Fact]
@@ -53,7 +55,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }
                     },
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -130,7 +132,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }
                     },
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -200,7 +202,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     TargetFramework = "netcoreapp2.0",
                     AppendTargetFrameworkToOutputPath = true
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
 
@@ -265,7 +267,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                     TargetFramework = "netcoreapp2.0",
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -314,7 +316,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                     TargetFramework = "netcoreapp2.0",
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -363,7 +365,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                     TargetFramework = "netcoreapp2.0",
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -414,7 +416,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                     TargetFramework = "netcoreapp2.0",
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
