@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
         [Theory]
         [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
-        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 15, 2, 12, 6, 25)]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 15, 2, 14, 6, 27)]
         public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
             int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
         {
