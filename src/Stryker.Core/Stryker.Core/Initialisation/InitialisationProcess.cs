@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -56,6 +57,16 @@ namespace Stryker.Core.Initialisation
             var assemblyReferences = _assemblyReferenceResolver
                 .ResolveReferences(projectInfo.ProjectUnderTestAnalyzerResult)
                 .ToList();
+
+            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
+            // we have detected usage of mstest V1 and should exit
+            if (projectInfo.TestProjectAnalyzerResult.References
+                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
+            {
+                var errorMessage = "Please upgrade to MsTest V2. We do not support MsTest V1;";
+                var hintMessage = @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ upgrade instruction.";
+                throw new StrykerInputException(errorMessage, hintMessage);
+            }
 
             var input = new MutationTestInput()
             {
