@@ -39,11 +39,12 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
         }
 
         [Theory]
         [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
-        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 10, 2, 16, 6, 21)]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 15, 2, 14, 6, 27)]
         public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
             int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
         {
@@ -53,6 +54,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
 
             var mutants = target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(nbMutants);

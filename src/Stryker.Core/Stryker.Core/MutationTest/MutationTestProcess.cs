@@ -139,6 +139,18 @@ namespace Stryker.Core.MutationTest
         public StrykerRunResult Test(StrykerOptions options)
         {
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            if (!mutantsNotRun.Any())
+            {
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
+                {
+                    _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
+                }
+                else
+                {
+                    _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                }
+                return new StrykerRunResult(options, null);
+            }
             _reporter.OnStartMutantTestRun(mutantsNotRun);
 
             Parallel.ForEach(

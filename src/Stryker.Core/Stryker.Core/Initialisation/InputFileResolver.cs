@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -137,11 +138,19 @@ namespace Stryker.Core.Initialisation
 
         public string ScanProjectFile(string currentDirectory)
         {
-            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj", SearchOption.AllDirectories);
+            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
             if (projectFiles.Count() > 1)
             {
-                throw new StrykerInputException("Expected exactly one .csproj file, found more than one. Please fix your project contents");
+                var sb = new StringBuilder();
+                sb.AppendLine("Expected exactly one .csproj file, found more than one:");
+                foreach (var file in projectFiles)
+                {
+                    sb.AppendLine(file);
+                }
+                sb.AppendLine();
+                sb.AppendLine("Please fix your project contents");
+                throw new StrykerInputException(sb.ToString());
             }
             else if (!projectFiles.Any())
             {
