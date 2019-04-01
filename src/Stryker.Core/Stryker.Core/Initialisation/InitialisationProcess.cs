@@ -68,6 +68,17 @@ namespace Stryker.Core.Initialisation
                 throw new StrykerInputException(errorMessage, hintMessage);
             }
 
+            // if IsTestProject true property not found and project is full framework, force vstest runner
+            if (projectInfo.FullFramework &&
+                !(options.TestRunner == TestRunner.VsTest) &&
+                (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
+                (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&
+                !bool.Parse(projectInfo.TestProjectAnalyzerResult.Properties["IsTestProject"]))))
+            {
+                _logger.LogInformation($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
+                options.TestRunner = TestRunner.VsTest;
+            }
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = projectInfo,
