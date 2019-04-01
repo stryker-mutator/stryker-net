@@ -145,7 +145,9 @@ namespace Stryker.Core.Initialisation
                 var sb = new StringBuilder();
                 sb.AppendLine("Expected exactly one .csproj file, found more than one:");
                 foreach (var file in projectFiles)
+                {
                     sb.AppendLine(file);
+                }
                 sb.AppendLine();
                 sb.AppendLine("Please fix your project contents");
                 throw new StrykerInputException(sb.ToString());
