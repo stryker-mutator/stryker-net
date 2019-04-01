@@ -12,7 +12,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <VersionPrefix>0.9.0</VersionPrefix>
     <PackageId>stryker</PackageId>
-    <Description>The core package for Stryker.NET. Used by other Stryker packages to run. Install dotnet-stryker to run stryker from the commandline.</Description>
+    <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
