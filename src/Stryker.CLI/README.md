@@ -62,7 +62,7 @@ All available loglevels are:
 
 #### Mutation testrun reporters 
 
-`dotnet stryker --reporters ['ConsoleReport', 'ConsoleProgressBar']`
+`dotnet stryker --reporters "['ConsoleReport', 'ConsoleProgressBar']"`
 
 All available reporter options are:
  * ConsoleProgressBar - This reporter will display the progress of the mutation testrun as a progress bar
@@ -128,7 +128,7 @@ The defaults are respectivly: `80` `60` `0`
 #### Excluding files
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
-`dotnet stryker --files-to-exclude ['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']`
+`dotnet stryker --files-to-exclude "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']"`
 
 We recommend to use relative paths. When someone else is running Stryker for you unit test project, paths are automatically resolved. However it is also possible to use absolute paths.
 
