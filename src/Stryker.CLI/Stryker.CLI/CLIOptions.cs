@@ -143,7 +143,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--solution-path",
             ArgumentShortName = "-s <path>",
-            ArgumentDescription = "Full path to your .net framework solution file. This is a .net framework only option. The solution file is needed to build the project and resolve dependencies. Path can be relative from test project or full path.",
+            ArgumentDescription = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
+                                                .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
             DefaultValue = null,
             JsonKey = "solution-path"
         };

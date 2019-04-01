@@ -93,6 +93,19 @@ namespace Stryker.Core.Initialisation
             set => _references = value;
         }
 
+        private bool? _signAssembly;
+        public bool SignAssembly {
+            get => _signAssembly ?? bool.Parse(_analyzerResult?.Properties?.GetValueOrDefault("SignAssembly") ?? "false");
+            set => _signAssembly = value;
+        }
+
+        private string _assemblyOriginatorKeyFile;
+        public string AssemblyOriginatorKeyFile
+        {
+            get => _assemblyOriginatorKeyFile ?? _analyzerResult?.Properties?.GetValueOrDefault("AssemblyOriginatorKeyFile").ToFullPath();
+            set => _assemblyOriginatorKeyFile = value;
+        }
+
         private IEnumerable<ResourceDescription> _resources;
         public IEnumerable<ResourceDescription> Resources
         {
