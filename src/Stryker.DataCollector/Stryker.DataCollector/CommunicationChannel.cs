@@ -7,18 +7,17 @@ namespace Stryker.DataCollector
 {
     public class CommunicationChannel : IDisposable
     {
-        private readonly PipeStream pipeStream;
-        private byte[] buffer;
-        private int cursor;
-        private bool processingHeader;
+        private readonly PipeStream _pipeStream;
+        private byte[] _buffer;
+        private int _cursor;
+        private bool _processingHeader;
+        private readonly object _lck = new object();
 
         public event MessageReceived RaiseReceivedMessage;
 
-        public bool IsConnected => pipeStream.IsConnected;
-
         public CommunicationChannel(PipeStream stream)
         {
-            pipeStream = stream;
+            _pipeStream = stream;
         }
 
         public static CommunicationChannel Client(string pipename, int timeout = -1)
@@ -46,18 +45,24 @@ namespace Stryker.DataCollector
         {
             if (init)
             {
-                if (buffer != null && !processingHeader)
+                if (_buffer != null && !_processingHeader)
                 {
-                    RaiseReceivedMessage?.Invoke(this, Encoding.Unicode.GetString(buffer));
+                    RaiseReceivedMessage?.Invoke(this, Encoding.Unicode.GetString(_buffer));
                 }
-                processingHeader = !processingHeader;
-                buffer = new byte[processingHeader ? 4 : BitConverter.ToInt32(buffer,0)];
-                cursor = 0;
+                _processingHeader = !_processingHeader;
+                _buffer = new byte[_processingHeader ? 4 : BitConverter.ToInt32(_buffer,0)];
+                _cursor = 0;
+                if (!_processingHeader && _buffer.Length == 0)
+                {
+                    // we have NO DATA to read, notify of empty message and wait to read again.
+                    Begin();
+                    return;
+                }
             }
 
             try
             {
-                pipeStream.BeginRead(buffer, cursor, buffer.Length-cursor, WhenReceived, null);
+                _pipeStream.BeginRead(_buffer, _cursor, _buffer.Length-_cursor, WhenReceived, null);
             }
             catch (ObjectDisposedException)
             {
@@ -71,14 +76,14 @@ namespace Stryker.DataCollector
         {
             try
             {
-                var read = pipeStream.EndRead(ar);
+                var read = _pipeStream.EndRead(ar);
                 if (read == 0)
                 {
                     return;
                 }
 
-                cursor += read;
-                Begin(cursor == buffer.Length);
+                _cursor += read;
+                Begin(_cursor == _buffer.Length);
             }
             catch (ObjectDisposedException)
             {
@@ -93,8 +98,12 @@ namespace Stryker.DataCollector
             var messageBytes = Encoding.Unicode.GetBytes(message);
             try
             {
-                pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
-                pipeStream.Write(messageBytes, 0 , messageBytes.Length);
+                lock (_lck)
+                {
+                    _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
+                    _pipeStream.Write(messageBytes, 0 , messageBytes.Length);
+                    _pipeStream.WaitForPipeDrain();
+                }
             }
             catch (ObjectDisposedException)
             {
@@ -106,7 +115,7 @@ namespace Stryker.DataCollector
 
         public void Dispose()
         {
-            pipeStream.Dispose();
+            _pipeStream.Dispose();
         }
     }
 

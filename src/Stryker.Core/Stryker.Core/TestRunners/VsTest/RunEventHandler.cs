@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -16,13 +14,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly List<string> _messages;
         public List<TestResult> TestResults { get; private set; }
         private bool testFailed;
-        private static readonly ILogger Logger;
 
         public event EventHandler TestsFailed;
-        static RunEventHandler()
-        {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RunEventHandler>();
-        }
 
         public RunEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {

@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 
-namespace Stryker.Core.InjectedHelpers.Coverage
-{
-    public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
+namespace Stryker.DataCollector
+{ 
+    internal delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
-    public sealed class CommunicationServer : IDisposable
+    internal sealed class CommunicationServer : IDisposable
     {
         private readonly object lck = new object();
         private volatile bool _mustShutdown;

@@ -16,7 +16,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -109,12 +108,12 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var envVars = new Dictionary<string, string>
             {
-                {MutantControl.EnvironmentCollectorMore, true.ToString()}
+                {"CaptureCoverage", true.ToString()}
             };
             var testResults = RunAllTests(null, envVars, GenerateRunSettings( 0));
             foreach (var testResult in testResults)
             {
-                var propertyPair = testResult.GetProperties().First(x => x.Key.Id == "Stryker.Coverage");
+                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (propertyPair.Value != null)
                 {
                     var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
@@ -122,9 +121,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 else
                 {
-                    Logger.LogWarning("No ");
+                    Logger.LogWarning($"No coverage for {testResult.DisplayName}");
                 }
-               
             }
 
             CoveredMutants = _coverage.CoveredMutants;
@@ -266,12 +264,10 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")))
             };
-            //var mine = Path.GetDirectoryName(typeof(CoverageCollector).Assembly.Location);
             _vsTestConsole.StartSession();
             _vsTestConsole.InitializeExtensions(new List<string>
             {
-//                mine,
-                testBinariesPath,
+//                testBinariesPath,
                 _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
             });
         }

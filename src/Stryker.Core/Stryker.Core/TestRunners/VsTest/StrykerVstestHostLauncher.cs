@@ -36,12 +36,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var process = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
                
-            process.Start();
 
             process.Exited += (sender, args) =>
             {
                 _callback();
             };
+            process.Start();
 
             return process.Id;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Stryker
 {
@@ -9,14 +10,12 @@ namespace Stryker
     {
         private static HashSet<int> _coveredMutants;
         private static bool usePipe;
-        private static bool useEnv;
         private static string pipeName;
         private static bool captureCoverage;
         private static CommunicationChannel channel;
 
         public const string EnvironmentPipeName = "Coverage";
-        public const string EnvironmentCollectorMore = "CoverageCollector";
-
+        
         static MutantControl()
         {
             InitCoverage();
@@ -36,15 +35,14 @@ namespace Stryker
                 channel?.Dispose();
                 channel = null;
             }
-
-            if (Environment.GetEnvironmentVariable(EnvironmentCollectorMore) != null)
-            {
-                useEnv = true;
-            }
-            captureCoverage = usePipe || useEnv;
+            captureCoverage = usePipe;
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
+            }
+            else
+            {
+                Console.Error.WriteLine("NO coverage");
             }
 
             if (usePipe)
@@ -57,7 +55,7 @@ namespace Stryker
 
         private static void Channel_RaiseReceivedMessage(object sender, string args)
         {
-            if (args != "DUMP")
+            if (!args.StartsWith("DUMP"))
             {
                 return;
             }
@@ -95,18 +93,7 @@ namespace Stryker
             {
                 lock (_coveredMutants)
                 {
-                    if (useEnv)
-                    {
-                        if (Environment.GetEnvironmentVariable("CoverageReset") != null)
-                        {
-                            Environment.SetEnvironmentVariable("CoverageReset", null);
-                            _coveredMutants.Clear();
-                        }
-                    }
-                    if (_coveredMutants.Add(id) && useEnv)
-                    {
-                        Environment.SetEnvironmentVariable("Coverage", string.Join(',', _coveredMutants));
-                    }
+                    _coveredMutants.Add(id);
                 }
             }
             return ActiveMutation == id;

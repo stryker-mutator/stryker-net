@@ -13,7 +13,8 @@ namespace Stryker.Core.UnitTest.CodeInjection
     public class CodeInjectionShould
     {
         // this lock must be taken to ensure tests are seralized, as MutantControl must be a static class (for injection in tested assembly)
-        private static object serializer = new object();
+        private static readonly object serializer = new object();
+
         [Fact]
         void CompileInAnEmptyProject()
         {

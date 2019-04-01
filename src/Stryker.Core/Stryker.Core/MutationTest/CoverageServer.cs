@@ -35,6 +35,7 @@ namespace Stryker.Core.MutationTest
         {
             ranMutants = null;
         }
+
         public bool WaitReception()
         {
             lock (lck)
