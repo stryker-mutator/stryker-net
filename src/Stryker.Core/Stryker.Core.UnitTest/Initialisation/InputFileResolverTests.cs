@@ -446,5 +446,42 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
+
+        [Fact]
+        public void InputFileResolver_ShouldNotThrowExceptionOnTwoProjectFilesInDifferentLocations()
+        {
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include=""Microsoft.NET.Test.Sdk"" Version = ""15.5.0"" />
+        <PackageReference Include=""xunit"" Version=""2.3.1"" />
+        <PackageReference Include=""xunit.runner.visualstudio"" Version=""2.3.1"" />
+        <DotNetCliToolReference Include=""dotnet-xunit"" Version=""2.3.1"" />
+    </ItemGroup>
+               
+    <ItemGroup>
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
+    </ItemGroup>
+                
+</Project>";
+            
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(projectFile)},
+                { Path.Combine(_filesystemRoot, "ExampleProject\\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(projectFile)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+            });
+
+            var target = new InputFileResolver(fileSystem);
+
+            var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
+
+            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
+        }
     }
 }
