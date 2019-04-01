@@ -302,8 +302,40 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(1, target.ExitCode);
-            Assert.Equal(1, result);
+            target.ExitCode.ShouldBe(1);
+            result.ShouldBe(1);
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions(thresholdBreak: 0);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, null);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+            int result = target.Run(new string[] { });
+
+            mock.Verify();
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
+        }
+
+        [Fact]
+        public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions(thresholdBreak: 40);
+            StrykerRunResult strykerRunResult = new StrykerRunResult(options, null);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(strykerRunResult).Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+            int result = target.Run(new string[] { });
+
+            mock.Verify();
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
         }
 
         [Fact]
@@ -319,8 +351,8 @@ namespace Stryker.CLI.UnitTest
             int result = target.Run(new string[] { });
 
             mock.Verify();
-            Assert.Equal(0, target.ExitCode);
-            Assert.Equal(0, result);
+            target.ExitCode.ShouldBe(0);
+            result.ShouldBe(0);
         }
 
         [Fact]

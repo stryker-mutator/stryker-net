@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
+using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -22,12 +23,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string _currentDirectory { get; set; }
         private string _filesystemRoot { get; set; }
         private string _sourceFile { get; set; }
+        private IEnumerable<PortableExecutableReference> _assemblies { get; set; }
 
         public MutationTestProcessTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            _assemblies = new ReferenceProvider().GetReferencedAssemblies();
         }
 
         [Fact]
@@ -52,7 +55,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }
                     },
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -129,7 +132,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }
                     },
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -199,7 +202,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     TargetFramework = "netcoreapp2.0",
                     AppendTargetFrameworkToOutputPath = true
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
 
@@ -264,7 +267,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                     TargetFramework = "netcoreapp2.0",
                 },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                AssemblyReferences = _assemblies
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -284,9 +287,159 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Test(options);
 
             executorMock.Verify(x => x.Test(mutant), Times.Once);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1)), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
+        }
+
+        [Fact]
+        public void MutationTestProcess_ShouldNotTest_WhenAllMutationsWereSkipped()
+        {
+            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped};
+            string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                {
+                    TestProjectPath = basePath,
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                        new FileLeaf() {
+                            Name = "SomeFile.cs",
+                            Mutants = new Collection<Mutant>() { mutant }
+                        }
+                    }
+                    },
+                    ProjectUnderTestAssemblyName = "ExampleProject",
+                    ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                    TargetFramework = "netcoreapp2.0",
+                },
+                AssemblyReferences = _assemblies
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
+
+            var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
+
+            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
+
+            var testResult = target.Test(options);
+
+            executorMock.Verify(x => x.Test(mutant), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            testResult.MutationScore.ShouldBeNull();
+        }
+
+        [Fact]
+        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoMutationsAtAll()
+        {
+            string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                {
+                    TestProjectPath = basePath,
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                        new FileLeaf() {
+                            Name = "SomeFile.cs",
+                            Mutants = new Collection<Mutant>() { }
+                        }
+                    }
+                    },
+                    ProjectUnderTestAssemblyName = "ExampleProject",
+                    ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                    TargetFramework = "netcoreapp2.0",
+                },
+                AssemblyReferences = _assemblies
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
+
+            var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
+
+            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
+
+            var testResult = target.Test(options);
+
+            executorMock.Verify(x => x.Test(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            testResult.MutationScore.ShouldBeNull();
+        }
+
+        [Fact]
+        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoTestableMutations()
+        {
+            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
+            var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
+            string basePath = Path.Combine(_filesystemRoot, "ExampleProject.Test");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new Core.Initialisation.ProjectInfo()
+                {
+                    TestProjectPath = basePath,
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                        new FileLeaf() {
+                            Name = "SomeFile.cs",
+                            Mutants = new Collection<Mutant>() { mutant, mutant2 }
+                        }
+                    }
+                    },
+                    ProjectUnderTestAssemblyName = "ExampleProject",
+                    ProjectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                    TargetFramework = "netcoreapp2.0",
+                },
+                AssemblyReferences = _assemblies
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
+
+            var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.Setup(x => x.Test(It.IsAny<Mutant>()));
+
+            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
+
+            var testResult = target.Test(options);
+
+            executorMock.Verify(x => x.Test(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            testResult.MutationScore.ShouldBeNull();
         }
     }
 }
