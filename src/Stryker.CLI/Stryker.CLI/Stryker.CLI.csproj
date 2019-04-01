@@ -13,8 +13,8 @@
     <VersionPrefix>0.9.0</VersionPrefix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
-    <Product>Mutation Testing</Product>  
-    <Description>The Stryker.NET dotnet CLI SDK runner. Install this cli runner with dotnet tool install -g dotnet-stryker.</Description>
+    <Product>Mutation Testing</Product>
+    <Description>The Stryker.NET CLI tool. Install this tool to run stryker from the commandline.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
