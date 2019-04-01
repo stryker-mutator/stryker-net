@@ -1,10 +1,13 @@
-﻿namespace TestCases
+﻿using System;
+using System.Net.Http;
+
+namespace TestCases
 {
     // list syntax construction that are difficult to mutate
     class ComplexCases
     {
 
-        private void GoodLuck()
+        private async Task GoodLuck()
         {
             await SendRequest(url, HttpMethod.Get, (request) =>
             {
@@ -47,12 +50,12 @@ if(Stryker.ActiveMutationHelper.ActiveMutation==12){                // complex m
 }if(Stryker.ActiveMutationHelper.ActiveMutation==14){
             for (var j = 0;; j--)
             {
-                break:
+                break;
             }
 }else{
             for (var j = 0;; j++)
             {
-                break:
+                break;
             }
 }        }
     }
