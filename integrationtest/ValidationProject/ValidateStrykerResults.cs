@@ -4,6 +4,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace IntegrationTests
@@ -11,7 +12,7 @@ namespace IntegrationTests
     public class ValidateStrykerResults
     {
         [Fact]
-        public void NetCore2_1()
+        public void NetCore()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
@@ -28,7 +29,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public void NetStandard2_0()
+        public void NetStandard()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetStandardTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
@@ -42,6 +43,26 @@ namespace IntegrationTests
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
             CheckReportMutantCounts(report, total: 25, skipped: 0, survived: 20, killed: 2, timeout: 1);
+        }
+
+        [Fact]
+        public void NetFullFramework()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
+                directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+                var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .First();
+
+                var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+                var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+                CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0);
+            }
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout)

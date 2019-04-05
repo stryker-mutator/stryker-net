@@ -21,6 +21,14 @@
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="TestResources\StrongNameKeyFile.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestResources\StrongNameKeyFile.snk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -75,7 +83,7 @@
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="3.1.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.3.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />

@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.Mutants
         public void Mutator_TestResourcesInputShouldBecomeOutput(string inputFile, string outputFile)
         {
             string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
-            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile);
+            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", MutantPlacer.HelperNamespace);
 
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Mutants
             int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
         {
             string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
-            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile);
+            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", MutantPlacer.HelperNamespace);
             var target = new MutantOrchestrator();
             var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();

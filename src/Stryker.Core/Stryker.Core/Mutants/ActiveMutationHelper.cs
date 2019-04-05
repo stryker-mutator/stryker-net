@@ -1,4 +1,4 @@
-﻿namespace Stryker
+﻿namespace StrykerNamespace
 {
     public static class ActiveMutationHelper
     {

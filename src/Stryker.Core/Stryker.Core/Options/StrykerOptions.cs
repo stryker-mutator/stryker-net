@@ -15,25 +15,21 @@ namespace Stryker.Core.Options
     public class StrykerOptions
     {
         public string BasePath { get; }
+        public string SolutionPath { get; }
         public string OutputPath { get; }
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
-
         /// <summary>
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
-
         public int AdditionalTimeoutMS { get; }
-
         public IEnumerable<Mutator> ExcludedMutations { get; }
-
         public int ConcurrentTestrunners { get; }
 
         public Threshold Thresholds { get; }
-        public TestRunner TestRunner { get; }
-
+        public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
@@ -54,7 +50,8 @@ namespace Stryker.Core.Options
             int thresholdLow = 60,
             int thresholdBreak = 0,
             string[] filesToExclude = null,
-            string testRunner = "dotnettest")
+            string testRunner = "dotnettest",
+            string solutionPath = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -71,6 +68,7 @@ namespace Stryker.Core.Options
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
+            SolutionPath = ValidateSolutionPath(basePath, solutionPath);
         }
 
         private string ValidateOutputPath(string basePath)
@@ -230,6 +228,18 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
             }
+        }
+
+        private string ValidateSolutionPath(string basePath, string solutionPath)
+        {
+            if (string.IsNullOrWhiteSpace(basePath) || string.IsNullOrWhiteSpace(solutionPath))
+            {
+                return null;
+            }
+
+            solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
+
+            return solutionPath;
         }
     }
 }

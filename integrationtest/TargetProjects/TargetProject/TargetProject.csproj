@@ -5,8 +5,20 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
-  
+
+  <!--
+    This tests both proper import of Directory.Build.props and shared projects
+    with property references in path (though this project does not add any code
+    so no new mutations will be created).
+  -->
+  <Import Project="$(BuildDirectory)Library.props" />
+
   <ItemGroup>
-    <ProjectReference Include="..\Library\Library.csproj" />
+    <!--
+      This tests additional library reference as well as property reference in
+      project reference path (it also ensures the import above was properly
+      evaluated).
+    -->
+    <ProjectReference Include="..\$(LibraryDir)\Library.csproj" />
   </ItemGroup>
 </Project>

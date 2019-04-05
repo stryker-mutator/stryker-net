@@ -1,9 +1,7 @@
-# Mutators
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
 
 <!-- TOC -->
-
 - [Arithmetic Operators](#arithmetic-operators)
 - [Equality Operators](#equality-operators)
 - [Boolean Literals](#boolean-literals)
@@ -13,7 +11,6 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Checked Statements](#checked-statements)
 - [Linq Methods](#linq-methods)
 - [String Literals](#string-literals)
-
 <!-- /TOC -->
 
 ## Arithmetic Operators
@@ -42,8 +39,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Logical Operators
 | Original | Mutated | 
 | ------------- | ------------- | 
-| `&&` | `\|\|` | 
-| `\|\|` | `&&` |
+| `&&` | `||` | 
+| `||` | `&&` |
 
 ## Boolean Literals
 | Original | Mutated | 
@@ -62,8 +59,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`%= `	| `*= ` |
 |`<<=`  | `>>=` |
 |`>>=`  | `<<=` |
-|`&= `	| `\|= ` |
-|`\|= `	| `&= ` |
+|`&= `	| `|= ` |
+|`|= `	| `&= ` |
 
 ## Unary Operators
 |    Original   |   Mutated  | 
@@ -88,10 +85,9 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Linq Methods
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
-| `SingleOrDefault()`   | `Single()`            |
-| `Single()`            | `SingleOrDefault()`   |
-| `FirstOrDefault()`    | `First()`             |
-| `First()`             | `FirstOrDefault()`    |
+| `SingleOrDefault()`   | `FirstOrDefault()`    |
+| `FirstOrDefault()`    | `SingleOrDefault()`   |
+| `First()`             | `Last()`              |
 | `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
@@ -103,10 +99,6 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Max()`               | `Min()`               |
 | `Sum()`               | `Count()`             |
 | `Count()`             | `Sum()`               |
-| `OrderBy()`           | `OrderByDescending()` |
-| `OrderByDescending()` | `OrderBy()`           |
-| `ThenBy()`            | `ThenByDescending()`  |
-| `ThenByDescending()`  | `ThenBy()`            |
 
 ## String Literals
 | Original | Mutated |
