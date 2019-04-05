@@ -56,6 +56,8 @@ A basic reporter do display the progress of the mutationtest run. It indicates v
 dotnet stryker --reporters ["ConsoleProgressDots"]
 ```
 Example:
+
+
 ![console dots reporter](./images/console-dots-reporter-net.png)
 
 Where `"."` means killed, `"S"` means survived and `"T"` means timed out.
