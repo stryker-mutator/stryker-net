@@ -34,10 +34,10 @@ Then install stryker without the -g flag while executing the following command i
 ### Update stryker dotnet tool
 Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update`
 
-For the full documentation on how to use Stryker.NET, see our [website](http://stryker-mutator.io/stryker-net/quickstart).
+For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
 #### Upgrading from csproj install?
-The old way of installing stryker is deprecated and replaced by the dotnet core tool. For a guide on how to upgrade see our [blog](http://stryker-mutator.io/blog/2019-03-15/announcing-stryker-1-0).
+The old way of installing stryker is deprecated and replaced by the dotnet core tool. For a guide on how to upgrade see our [blog](http://stryker-mutator.io/blog/2019-04-05/announcing-dotnet-framework-support).
 
 #### Compatibility
 Runs on test projects targeting:
@@ -61,7 +61,16 @@ Right now, Stryker.NET supports the following mutations:
 - Linq Methods
 - String Literals
 
-For the full list of all available mutations, see the [website](https://stryker-mutator.io/stryker-net/mutators).
+For the full list of all available mutations, see the [mutator docs](/docs/Mutators.md).
+
+## Supported Reporters
+- Html reporter
+- Console reporter
+- Progress reporter
+- Console dots reporter
+- Json reporter
+
+For the full list of all available reporters, see the [reporter docs](/docs/Reporters.md).
 
 ## Contributing
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
