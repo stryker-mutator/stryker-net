@@ -90,12 +90,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(FileLeaf fileComponent)
         {
-            var reportComponent = new JsonReportFileComponent(fileComponent)
-            {
-                Health = fileComponent.CheckHealth(_options.Thresholds)
-            };
-
-            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, reportComponent } };
+            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }
 
         private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
