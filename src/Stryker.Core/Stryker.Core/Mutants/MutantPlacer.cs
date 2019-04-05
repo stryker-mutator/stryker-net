@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -8,19 +9,18 @@ namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
+        public static readonly string HelperNamespace = GetRandomNamespace();
+
         private const string Mutationconditional = "MutationConditional";
         private const string Mutationif = "MutationIf";
         private static readonly string helper;
 
         static MutantPlacer()
         {
-            using (var stream =
-                typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
+            using (var stream = typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
+            using (var reader = new StreamReader(stream))
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    helper = reader.ReadToEnd();
-                }
+                helper = reader.ReadToEnd().Replace("StrykerNamespace", HelperNamespace);
             }
         }
 
@@ -99,13 +99,27 @@ namespace Stryker.Core.Mutants
                         SyntaxKind.SimpleMemberAccessExpression,
                         SyntaxFactory.MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
-                            SyntaxFactory.IdentifierName("Stryker"),
+                            SyntaxFactory.IdentifierName(HelperNamespace),
                             SyntaxFactory.IdentifierName("ActiveMutationHelper")
                         ),
                         SyntaxFactory.IdentifierName("ActiveMutation")
                 ),
                 SyntaxFactory.LiteralExpression(
                     SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
+        }
+
+        private static string GetRandomNamespace()
+        {
+            // Create a string of characters, numbers, special characters that allowed in the password  
+            string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            Random random = new Random();
+
+            char[] chars = new char[15];
+            for (int i = 0; i < 15; i++)
+            {
+                chars[i] = validChars[random.Next(0, validChars.Length)];
+            }
+            return new string(chars);
         }
     }
 }
