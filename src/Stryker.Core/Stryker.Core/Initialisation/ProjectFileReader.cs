@@ -141,7 +141,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // Locate MSBuild.exe
-            var msbuildPath = new MsBuildHelper().GetMsBuildPath();
+            var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
             var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
             if (msBuildVersionOutput.ExitCode != 0)
             {

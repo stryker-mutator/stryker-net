@@ -32,7 +32,7 @@ namespace Stryker.Core.Initialisation
             {
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);
-                var msbuildPath = new MsBuildHelper().GetMsBuildPath();
+                var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
