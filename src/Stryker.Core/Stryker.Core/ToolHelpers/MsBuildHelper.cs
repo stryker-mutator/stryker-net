@@ -30,6 +30,10 @@ namespace Stryker.Core.ToolHelpers
 
         public string GetMsBuildPath(IProcessExecutor _processExecutor)
         {
+            if (File.Exists(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"))
+            {
+                return @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe";
+            }
             // See if any MSBuild.exe can be found in visual studio installation folder
             foreach (string drive in Directory.GetLogicalDrives()) {
                 var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");

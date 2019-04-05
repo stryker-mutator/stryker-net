@@ -35,6 +35,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (process != null)
             {
+                // Asynchronously read the standard output of the spawned process.
+                // This raises OutputDataReceived events for each line of output.
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
                 process.Exited += (sender, args) =>
                 {
                     _callback();

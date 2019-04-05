@@ -1,0 +1,19 @@
+{
+    "stryker-config":
+    {
+        "test-runner": "vstest",
+        "reporters": [
+            "ConsoleProgressBar",
+            "ConsoleReport",
+            "Html"
+        ],
+        "log-level": "info",
+        "timeout-ms": 20000,
+        "files-to-exclude": [
+            "./Testing/"
+        ],
+        "excluded-mutations": [
+            "string"
+        ]
+    }
+}
