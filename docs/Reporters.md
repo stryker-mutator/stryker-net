@@ -22,6 +22,7 @@ dotnet stryker --reporters ["html"]
 ```
 
 Example:
+
 ![html reporter](./images/html-report-net.png)
 
 ## Console reporter
@@ -32,6 +33,8 @@ dotnet stryker --reporters ["ConsoleReport"]
 ```
 
 Example:
+
+
 ![console reporter](./images/console-reporter-net.png)
 
 
@@ -42,6 +45,8 @@ This reporter outputs the current status of the mutation testrun. It has a nice 
 dotnet stryker --reporters ["ConsoleProgressBar"]
 ```
 Example:
+
+
 ![progress bar reporter](./images/progress-bar-net.png)
 
 ## Console dots reporter
