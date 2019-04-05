@@ -44,12 +44,13 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
                 }
+                var nugetExePath = nugetWhereExeResult.Output.Trim();
+                _logger.LogDebug($"Nuget.exe executable path found at {nugetExePath}");
 
                 _logger.LogDebug("Searching for msbuild.exe executable path");
                 // Locate MSBuild.exe
-                var msBuildPath = new MsBuildHelper().GetMsBuildPath();
+                var msBuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
-                _logger.LogDebug("Requesting msbuild.exe exact version");
                 var msBuildVersionOutput = _processExecutor.Start(solutionDir, msBuildPath, "-version /nologo");
                 if (msBuildVersionOutput.ExitCode != 0)
                 {
@@ -59,11 +60,11 @@ namespace Stryker.Core.Initialisation
 
                 // Restore packages using nuget.exe
                 var nugetRestoreCommand = string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", solutionPath, msBuildVersionOutput.Output.Trim());
-                _logger.LogDebug("Restoring packages using command: {0} {1}", nugetWhereExeResult.Output.Trim(), nugetRestoreCommand);
+                _logger.LogDebug("Restoring packages using command: {0} {1}", nugetExePath, nugetRestoreCommand);
 
                 try
                 {
-                    var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetWhereExeResult.Output.Trim(), nugetRestoreCommand, timeoutMS: 120000);
+                    var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetExePath, nugetRestoreCommand, timeoutMS: 120000);
                     if (nugetRestoreResult.ExitCode != 0)
                     {
                         throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
