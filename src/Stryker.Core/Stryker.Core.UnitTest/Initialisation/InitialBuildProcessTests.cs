@@ -34,9 +34,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.InitialBuild(false, "/", "/", "ExampleProject.csproj");
         }
 
-        [Fact]
+        [SkippableFact]
         public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
         {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
+
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("");
