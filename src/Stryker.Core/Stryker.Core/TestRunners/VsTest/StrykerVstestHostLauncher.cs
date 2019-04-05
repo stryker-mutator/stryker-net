@@ -21,11 +21,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
-            var processInfo = new ProcessStartInfo(
-                                  defaultTestHostStartInfo.FileName,
-                                  defaultTestHostStartInfo.Arguments)
+            var processInfo = new ProcessStartInfo(defaultTestHostStartInfo.FileName, defaultTestHostStartInfo.Arguments)
             {
-                WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory
+                WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             processInfo.EnvironmentVariables["ActiveMutation"] = _activeMutation.ToString();
 

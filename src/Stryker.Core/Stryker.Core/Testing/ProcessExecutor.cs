@@ -65,7 +65,7 @@ namespace Stryker.Core.Testing
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
         {
-            using (var process = new ProcessWrapper(info))
+            using (var process = new ProcessWrapper(info, RedirectOutput))
             {
                 var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
                 if (!process.WaitForExit(timeoutValue))
@@ -91,13 +91,16 @@ namespace Stryker.Core.Testing
             public int ExitCode => process.ExitCode;
             public string Output => output.ToString();
 
-            public ProcessWrapper(ProcessStartInfo info)
+            public ProcessWrapper(ProcessStartInfo info, bool redirectOutput)
             {
                 process = Process.Start(info);
-                process.OutputDataReceived += Process_OutputDataReceived;
-                process.ErrorDataReceived += Process_ErrorDataReceived;
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                if (redirectOutput)
+                {
+                    process.OutputDataReceived += Process_OutputDataReceived;
+                    process.ErrorDataReceived += Process_ErrorDataReceived;
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
             }
 
             public bool WaitForExit(int timeout = -1)
