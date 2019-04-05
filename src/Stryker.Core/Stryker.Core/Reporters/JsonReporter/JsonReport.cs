@@ -9,7 +9,7 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "0.0.7";
+        public string SchemaVersion { get; } = "1.0.0";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
         public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
 

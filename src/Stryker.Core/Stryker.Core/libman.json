@@ -3,7 +3,7 @@
   "defaultProvider": "unpkg",
   "libraries": [
     {
-      "library": "mutation-testing-elements@0.0.7",
+      "library": "mutation-testing-elements@1.0.2",
       "files": [
         "dist/mutation-test-elements.js"
       ],

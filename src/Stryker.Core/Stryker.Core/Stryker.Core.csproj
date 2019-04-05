@@ -20,12 +20,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
+    <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js"></EmbeddedResource>
     <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Mutants\ActiveMutationHelper.cs" />
-    <None Remove="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Mutants\ActiveMutationHelper.cs">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -50,6 +49,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Reporters\HtmlReporter\dist\src\" />
+    <Folder Include="Reporters\HtmlReporter\Files\dist\" />
   </ItemGroup>
 </Project>
