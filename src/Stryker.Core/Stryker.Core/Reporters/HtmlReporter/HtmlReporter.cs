@@ -28,7 +28,7 @@ namespace Stryker.Core.Reporters.Html
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
-            WriteHtmlReport(reportPath, mutationReport.ToJson());
+            WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
             _chalk.Green($"\nYour html report has been generated at: \n " +
                 $"{reportPath} \n" +
