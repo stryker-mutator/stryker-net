@@ -59,7 +59,7 @@ namespace Stryker.Core.Reporters.Json
                 NullValueHandling = NullValueHandling.Ignore
             });
 
-            return json;
+            return json.Replace("<", "<\" + \"");
         }
 
         private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
