@@ -4,7 +4,7 @@ using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
 using Xunit;
 
-namespace StrykerNet.UnitTest.Initialisation.ProjectComponents
+namespace Stryker.Core.UnitTest.ProjectComponents
 {
     public class ProjectComponentTests
     {

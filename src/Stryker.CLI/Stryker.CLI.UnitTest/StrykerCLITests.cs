@@ -140,6 +140,23 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--solution-path")]
+        [InlineData("-s")]
+        public void StrykerCLI_WithSolutionArgument_ShouldPassSolutionArgumentPlusBasePathToStryker(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3M);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "SomeSolutionPath.sln" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.SolutionPath.Contains("SomeSolutionPath.sln"))));
+        }
+
+        [Theory]
         [InlineData("--log-console")]
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)

@@ -14,8 +14,6 @@ namespace Stryker.Core.UnitTest
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {
-            string basePath = @"c:\TestProject\";
-
             var initialisationMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
@@ -24,7 +22,6 @@ namespace Stryker.Core.UnitTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectPath = basePath,
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
@@ -33,10 +30,7 @@ namespace Stryker.Core.UnitTest
                                 Name = "SomeFile.cs"
                             }
                         }
-                    },
-                    ProjectUnderTestAssemblyName = "ExampleProject.dll",
-                    ProjectUnderTestPath = @"c:\ExampleProject\",
-                    TargetFramework = "netcoreapp2.0"
+                    }
                 },
             });
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);

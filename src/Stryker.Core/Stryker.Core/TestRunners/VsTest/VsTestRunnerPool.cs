@@ -1,10 +1,11 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -12,27 +13,33 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private readonly ILogger _logger;
 
         public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
-            IEnumerable<TestCase> testCases;
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
-            using (var runner = new VsTestRunner(options, projectInfo, null))
+            Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                testCases = runner.DiscoverTests();
-            }
-
-            for (var i = 0; i < options.ConcurrentTestrunners; i++)
-            {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, testCases.Count()));
-            }
+                _logger.LogTrace("Creating {0} testrunner {1} of {2}", TestRunner.VsTest, i + 1, options.ConcurrentTestrunners);
+                _availableRunners.Add(new VsTestRunner(options, projectInfo));
+            });
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             var runner = TakeRunner();
+            TestRunResult result = null;
 
-            TestRunResult result = runner.RunAll(timeoutMS, activeMutationId);
+            try
+            {
+                result = runner.RunAll(timeoutMS, activeMutationId);
+            }
+            catch (OperationCanceledException)
+            {
+                ReturnRunner(runner);
+                throw;
+            }
 
             ReturnRunner(runner);
 

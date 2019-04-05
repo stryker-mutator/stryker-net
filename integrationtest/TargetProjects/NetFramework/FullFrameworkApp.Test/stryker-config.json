@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+    "solution-path": "../FullFrameworkApp.sln",
+    "reporters": [
+      "All"
+    ],
+    "test-runner": "vstest",
+    "log-level": "trace",
+    "log-file": "true"
+  }
+}

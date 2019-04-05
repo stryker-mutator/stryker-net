@@ -1,39 +1,68 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Buildalyzer;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using Stryker.Core.Testing;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    public class ProjectFileReader
+    public interface IProjectFileReader
+    {
+        ProjectAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath);
+        string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter);
+        IEnumerable<string> FindSharedProjects(XDocument document);
+    }
+
+    public class ProjectFileReader : IProjectFileReader
     {
         private const string ErrorMessage = "Project reference issue.";
+        private IProcessExecutor _processExecutor { get; set; }
         private ILogger _logger { get; set; }
 
-        public ProjectFileReader()
+        public ProjectFileReader(IProcessExecutor processExecutor = null)
         {
+            _processExecutor = processExecutor ?? new ProcessExecutor();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public ProjectFile ReadProjectFile(XDocument projectFileContents, string projectUnderTestNameFilter)
+        public ProjectAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
         {
-            _logger.LogDebug("Reading the project file {0}", projectFileContents.ToString());
-
-            var reference = FindProjectReference(projectFileContents, projectUnderTestNameFilter);
-            var targetFramework = FindTargetFrameworkReference(projectFileContents);
-            var assemblyName = FindAssemblyName(projectFileContents);
-            var appendTargetFrameworkToOutputPath = FindAppendTargetFrameworkToOutputPath(projectFileContents);
-
-            return new ProjectFile()
+            AnalyzerManager manager;
+            if (solutionFilePath == null)
             {
-                ProjectReference = reference,
-                TargetFramework = targetFramework,
-                AppendTargetFrameworkToOutputPath = appendTargetFrameworkToOutputPath
-            };
+                manager = new AnalyzerManager();
+            }
+            else
+            {
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                manager = new AnalyzerManager(solutionFilePath);
+            }
+
+            _logger.LogDebug("Analyzing project file {0}", projectFilePath);
+            var analyzerResult = manager.GetProject(projectFilePath).Build().First();
+            if (!analyzerResult.Succeeded)
+            {
+                if (!analyzerResult.TargetFramework.Contains("netcoreapp"))
+                {
+                    // buildalyzer failed to find restored packages, retry after nuget restore
+                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                    RestorePackages(solutionFilePath);
+                    analyzerResult = manager.GetProject(projectFilePath).Build().First();
+                } else
+                {
+                    // buildalyzer failed, but seems to work anyway.
+                    _logger.LogWarning("Project analyzer result not successful");
+                }
+            }
+
+            return new ProjectAnalyzerResult(_logger, analyzerResult);
         }
 
         public IEnumerable<string> FindSharedProjects(XDocument document)
@@ -42,26 +71,7 @@ namespace Stryker.Core.Initialisation
             return projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project"))).Select(y => FilePathUtils.ConvertPathSeparators(y.Value));
         }
 
-        private string FindProjectReference(XDocument document, string projectUnderTestNameFilter)
-        {
-            _logger.LogDebug("Determining project under test with name filter {0}", projectUnderTestNameFilter);
-
-            var projectReferenceElements = document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "ProjectReference", StringComparison.OrdinalIgnoreCase));
-            // get all the values from the projectReferenceElements
-            var projectReferences = projectReferenceElements.SelectMany(x => x.Attributes()).Where(x => string.Equals(x.Name.LocalName, "Include", StringComparison.OrdinalIgnoreCase)).Select(x => x?.Value).ToList();
-
-            if (!projectReferences.Any())
-            {
-                throw new StrykerInputException(
-                    ErrorMessage,
-                    "No project references found in test project file, unable to find project to mutate.");
-            }
-
-            var projectUnderTest = DetermineProjectUnderTest(projectReferences, projectUnderTestNameFilter);
-            return FilePathUtils.ConvertPathSeparators(projectUnderTest);
-        }
-
-        private string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
+        public string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
             var referenceChoise = BuildReferenceChoise(projectReferences);
 
@@ -74,6 +84,13 @@ namespace Stryker.Core.Initialisation
                     stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
                     stringBuilder.Append(referenceChoise);
                     AppendExampleIfPossible(stringBuilder, projectReferences);
+
+                    throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                }
+
+                if (!projectReferences.Any())
+                {
+                    stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
                 }
@@ -106,31 +123,49 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private string FindTargetFrameworkReference(XDocument document)
+        private void RestorePackages(string solutionPath)
         {
-            if (document.Elements().Descendants("TargetFrameworks").Any())
+            _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
+            if (string.IsNullOrWhiteSpace(solutionPath))
             {
-                return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFrameworks", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value.Split(';')[0];
+                throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
             }
-            else
-            {
-                return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "TargetFramework", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value;
-            }
-        }
+            solutionPath = Path.GetFullPath(solutionPath);
+            string solutionDir = Path.GetDirectoryName(solutionPath);
 
-        private bool FindAppendTargetFrameworkToOutputPath(XDocument document)
-        {
-            if (document.Elements().Descendants("AppendTargetFrameworkToOutputPath").Any())
+            // Validate nuget.exe is installed and included in path
+            var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
+            if (!nugetWhereExeResult.Output.Contains("nuget.exe"))
             {
-                return Convert.ToBoolean(document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "AppendTargetFrameworkToOutputPath", StringComparison.OrdinalIgnoreCase)).FirstOrDefault().Value);
+                throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
             }
 
-            return true;
-        }
+            // Locate MSBuild.exe
+            var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+            var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
+            if (msBuildVersionOutput.ExitCode != 0)
+            {
+                _logger.LogError("Unable to detect msbuild version");
+            }
+            _logger.LogDebug("Auto detected msbuild version {0} at: {1}", msBuildVersionOutput.Output.Trim(), msbuildPath);
 
-        public string FindAssemblyName(XDocument document)
-        {
-            return document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "AssemblyName", StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.Value;
+            // Restore packages using nuget.exe
+            var nugetRestoreCommand = string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", solutionPath, msBuildVersionOutput.Output.Trim());
+            _logger.LogDebug("Restoring packages using command: {0} {1}", nugetWhereExeResult.Output.Trim(), nugetRestoreCommand);
+
+            try
+            {
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetWhereExeResult.Output.Trim(), nugetRestoreCommand, timeoutMS: 120000);
+                if (nugetRestoreResult.ExitCode != 0)
+                {
+                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
+                }
+                _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
+            }
         }
 
         #region string helper methods
