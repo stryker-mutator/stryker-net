@@ -37,6 +37,7 @@ namespace Stryker.Core.Initialisation
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);
 
+                _logger.LogDebug("Searching for nuget.exe executable path");
                 // Validate nuget.exe is installed and included in path
                 var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
                 if (!nugetWhereExeResult.Output.Contains("nuget.exe"))
@@ -44,8 +45,11 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
                 }
 
+                _logger.LogDebug("Searching for msbuild.exe executable path");
                 // Locate MSBuild.exe
                 var msBuildPath = new MsBuildHelper().GetMsBuildPath();
+
+                _logger.LogDebug("Requesting msbuild.exe exact version");
                 var msBuildVersionOutput = _processExecutor.Start(solutionDir, msBuildPath, "-version /nologo");
                 if (msBuildVersionOutput.ExitCode != 0)
                 {
