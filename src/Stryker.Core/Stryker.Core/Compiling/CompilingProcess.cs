@@ -50,19 +50,13 @@ namespace Stryker.Core.Compiling
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
 
-            // Need PortableStrongNameProvider for non-windows systems.
-            // PortableStrongNameProvider is removed in CodeAnalysis 3.0.0, it's functionality is moved into the public type DesktopStrongNameProvider
-            // So, when moving to 3.0.0, this reflection nonsense is no longer necessary
-            Type portableStrongNameProviderType = typeof(StrongNameProvider).Assembly.GetType("Microsoft.CodeAnalysis.PortableStrongNameProvider");
-            var strongNameProvider = (StrongNameProvider)Activator.CreateInstance(portableStrongNameProviderType, default(ImmutableArray<string>), null);
-
             var compiler = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: syntaxTrees,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                                                       allowUnsafe: true,
                                                       cryptoKeyFile: analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null,
-                                                      strongNameProvider: analyzerResult.SignAssembly ? strongNameProvider : null),
-                
+                                                      strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null),
+
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult = null;
 
@@ -124,7 +118,7 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err?.GetMessage()??"No message", err?.Location?.SourceTree?.FilePath??"Unknown filepath");
+                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location?.SourceTree?.FilePath ?? "Unknown filepath");
                 }
             }
             else

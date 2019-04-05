@@ -167,8 +167,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            //if (_options.LogOptions.LogToFile)
-            //{
             var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
@@ -179,9 +177,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 TraceLevel = DetermineTraceLevel(),
                 LogFilePath = vstestLogPath
             });
-            //}
-
-            //return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath());
         }
 
         private void InitializeVsTestConsole()
