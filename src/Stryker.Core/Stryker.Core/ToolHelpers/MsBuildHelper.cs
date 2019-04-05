@@ -31,24 +31,25 @@ namespace Stryker.Core.ToolHelpers
         public string GetMsBuildPath(IProcessExecutor _processExecutor)
         {
             // See if any MSBuild.exe can be found in visual studio installation folder
-            var drive = Path.GetPathRoot(_fileSystem.Directory.GetCurrentDirectory());
-            var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
-            if (_fileSystem.Directory.Exists(visualStudioPath))
-            {
-                _logger.LogDebug("Using vswhere.exe to locate msbuild");
-
-                var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
-                var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -find MSBuild\\**\\Bin\\MSBuild.exe";
-                var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
-
-                if (vsWhereResult.ExitCode == 0)
+            foreach (string drive in Directory.GetLogicalDrives()) {
+                var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
+                if (_fileSystem.Directory.Exists(visualStudioPath))
                 {
-                    var msBuildPath = vsWhereResult.Output.Trim();
-                    if (_fileSystem.File.Exists(msBuildPath))
-                    {
-                        _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
+                    _logger.LogDebug("Using vswhere.exe to locate msbuild");
 
-                        return msBuildPath;
+                    var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
+                    var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
+                    var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
+
+                    if (vsWhereResult.ExitCode == 0)
+                    {
+                        var msBuildPath = vsWhereResult.Output.Trim();
+                        if (_fileSystem.File.Exists(msBuildPath))
+                        {
+                            _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
+
+                            return msBuildPath;
+                        }
                     }
                 }
             }
