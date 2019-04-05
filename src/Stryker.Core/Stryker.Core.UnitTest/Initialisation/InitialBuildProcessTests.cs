@@ -33,5 +33,24 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             target.InitialBuild(false, "/", "/", "ExampleProject.csproj");
         }
+
+        [Fact]
+        public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
+        {
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+            processMock.SetupProcessMockToReturn("");
+
+            var target = new InitialBuildProcess(processMock.Object);
+
+            target.InitialBuild(true, "/", "./ExampleProject.sln", "ExampleProject.csproj");
+
+            processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+                Times.Once);
+        }
     }
 }

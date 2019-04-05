@@ -30,49 +30,12 @@ namespace Stryker.Core.Initialisation
             ProcessResult result = null;
             if (fullFramework)
             {
-                if (string.IsNullOrWhiteSpace(solutionPath))
-                {
-                    throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
-                }
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);
-
-                // Validate nuget.exe is installed and included in path
-                var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
-                if (!nugetWhereExeResult.Output.Contains("nuget.exe"))
-                {
-                    throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
-                }
-
-                // Locate MSBuild.exe
-                var msBuildPath = new MsBuildHelper().GetMsBuildPath();
-                var msBuildVersionOutput = _processExecutor.Start(solutionDir, msBuildPath, "-version /nologo");
-                if (msBuildVersionOutput.ExitCode != 0)
-                {
-                    _logger.LogError("Unable to detect msbuild version");
-                }
-                _logger.LogInformation("Auto detected msbuild version {0} at: {1}", msBuildVersionOutput.Output.Trim(), msBuildPath);
-
-                // Restore packages using nuget.exe
-                var nugetRestoreCommand = string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", solutionPath, msBuildVersionOutput.Output.Trim());
-                _logger.LogDebug("Restoring packages using command: {0} {1}", nugetWhereExeResult.Output.Trim(), nugetRestoreCommand);
-
-                try
-                {
-                    var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetWhereExeResult.Output.Trim(), nugetRestoreCommand, timeoutMS: 120000);
-                    if (nugetRestoreResult.ExitCode != 0)
-                    {
-                        throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
-                    }
-                    _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
-                }
+                var msbuildPath = new MsBuildHelper().GetMsBuildPath();
 
                 // Build project with MSBuild.exe
-                result = _processExecutor.Start(solutionDir, msBuildPath, $"\"{solutionPath}\"");
+                result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
             }
             else
             {

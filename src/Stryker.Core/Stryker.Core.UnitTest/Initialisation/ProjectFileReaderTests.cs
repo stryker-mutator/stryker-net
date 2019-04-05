@@ -1,17 +1,28 @@
-﻿using Shouldly;
+﻿using Moq;
+using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using System;
+using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
     public class ProjectFileReaderTests
     {
+        [Fact]
+        public void ProjectFileReader_HappyFlow()
+        {
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+            var target = new ProjectFileReader(processMock.Object);
+
+            var result = target.DetermineProjectUnderTest(new List<string>() { @"..\ExampleProject\ExampleProject.csproj" }, null);
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+        }
+
         [Fact]
         public void ProjectFileReader_ShouldThrowOnNoProjectReference()
         {

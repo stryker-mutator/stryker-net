@@ -2,8 +2,11 @@
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
+using Stryker.Core.Testing;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -20,10 +23,12 @@ namespace Stryker.Core.Initialisation
     public class ProjectFileReader : IProjectFileReader
     {
         private const string ErrorMessage = "Project reference issue.";
+        private IProcessExecutor _processExecutor { get; set; }
         private ILogger _logger { get; set; }
 
-        public ProjectFileReader()
+        public ProjectFileReader(IProcessExecutor processExecutor = null)
         {
+            _processExecutor = processExecutor ?? new ProcessExecutor();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
@@ -44,7 +49,17 @@ namespace Stryker.Core.Initialisation
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
             if (!analyzerResult.Succeeded)
             {
-                _logger.LogWarning("Analyzer result not successful");
+                if (!analyzerResult.TargetFramework.Contains("netcoreapp"))
+                {
+                    // buildalyzer failed to find restored packages, retry after nuget restore
+                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                    RestorePackages(solutionFilePath);
+                    analyzerResult = manager.GetProject(projectFilePath).Build().First();
+                } else
+                {
+                    // buildalyzer failed, but seems to work anyway.
+                    _logger.LogWarning("Project analyzer result not successful");
+                }
             }
 
             return new ProjectAnalyzerResult(_logger, analyzerResult);
@@ -105,6 +120,51 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
                 }
                 return FilePathUtils.ConvertPathSeparators(searchResult.Single());
+            }
+        }
+
+        private void RestorePackages(string solutionPath)
+        {
+            _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
+            if (string.IsNullOrWhiteSpace(solutionPath))
+            {
+                throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
+            }
+            solutionPath = Path.GetFullPath(solutionPath);
+            string solutionDir = Path.GetDirectoryName(solutionPath);
+
+            // Validate nuget.exe is installed and included in path
+            var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
+            if (!nugetWhereExeResult.Output.Contains("nuget.exe"))
+            {
+                throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
+            }
+
+            // Locate MSBuild.exe
+            var msbuildPath = new MsBuildHelper().GetMsBuildPath();
+            var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
+            if (msBuildVersionOutput.ExitCode != 0)
+            {
+                _logger.LogError("Unable to detect msbuild version");
+            }
+            _logger.LogDebug("Auto detected msbuild version {0} at: {1}", msBuildVersionOutput.Output.Trim(), msbuildPath);
+
+            // Restore packages using nuget.exe
+            var nugetRestoreCommand = string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", solutionPath, msBuildVersionOutput.Output.Trim());
+            _logger.LogDebug("Restoring packages using command: {0} {1}", nugetWhereExeResult.Output.Trim(), nugetRestoreCommand);
+
+            try
+            {
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetWhereExeResult.Output.Trim(), nugetRestoreCommand, timeoutMS: 120000);
+                if (nugetRestoreResult.ExitCode != 0)
+                {
+                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
+                }
+                _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
             }
         }
 

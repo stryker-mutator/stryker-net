@@ -46,43 +46,10 @@ namespace Stryker.Core.Initialisation
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
 
-            // If project is full framework, we need to reload projectinfo and rebuild
-            if (projectInfo.FullFramework)
-            {
-                projectInfo = _inputFileResolver.ResolveInput(options);
-                _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
-            }
-
-            // resolve assembly references
-            var assemblyReferences = _assemblyReferenceResolver
-                .ResolveReferences(projectInfo.ProjectUnderTestAnalyzerResult)
-                .ToList();
-
-            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
-            // we have detected usage of mstest V1 and should exit
-            if (projectInfo.TestProjectAnalyzerResult.References
-                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
-            {
-                var errorMessage = "Please upgrade to MsTest V2. We do not support MsTest V1;";
-                var hintMessage = @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ upgrade instruction.";
-                throw new StrykerInputException(errorMessage, hintMessage);
-            }
-
-            // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.FullFramework &&
-                !(options.TestRunner == TestRunner.VsTest) &&
-                (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
-                (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(projectInfo.TestProjectAnalyzerResult.Properties["IsTestProject"]))))
-            {
-                _logger.LogInformation($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
-                options.TestRunner = TestRunner.VsTest;
-            }
-
             var input = new MutationTestInput()
             {
                 ProjectInfo = projectInfo,
-                AssemblyReferences = assemblyReferences,
+                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner ?? new TestRunnerFactory().Create(options, projectInfo)
             };
 

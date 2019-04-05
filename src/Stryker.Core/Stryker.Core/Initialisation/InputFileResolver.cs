@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Xml.Linq;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
 {
@@ -74,6 +75,8 @@ namespace Stryker.Core.Initialisation
             }
             MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
             result.ProjectContents = inputFiles;
+
+            ValidateResult(result, options);
 
             return result;
         }
@@ -204,6 +207,29 @@ namespace Stryker.Core.Initialisation
                     var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
                     throw new StrykerInputException(message);
                 });
+        }
+
+        private void ValidateResult(ProjectInfo projectInfo, StrykerOptions options)
+        {
+            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
+            // we have detected usage of mstest V1 and should exit
+            if (projectInfo.TestProjectAnalyzerResult.References
+                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
+            {
+                throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
+                    @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
+            }
+
+            // if IsTestProject true property not found and project is full framework, force vstest runner
+            if (projectInfo.FullFramework &&
+                options.TestRunner != TestRunner.VsTest &&
+                (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
+                (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&
+                !bool.Parse(projectInfo.TestProjectAnalyzerResult.Properties["IsTestProject"]))))
+            {
+                _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
+                options.TestRunner = TestRunner.VsTest;
+            }
         }
     }
 }
