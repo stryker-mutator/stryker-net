@@ -1,13 +1,10 @@
-[![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
-[![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
-
 [![Nuget](https://img.shields.io/nuget/v/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
 [![Nuget](https://img.shields.io/nuget/dt/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
 [![Build Status](https://dev.azure.com/stryker-mutator/Stryker/_apis/build/status/stryker-net)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
 [![Gitter](https://badges.gitter.im/stryker-mutator/stryker-net.svg)](https://gitter.im/stryker-mutator/stryker-net?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Stryker.NET
-*Professor X: For someone who hates mutants... you certainly keep some strange company.*  
+*Professor X: For someone who hates mutants... you certainly keep some strange company.*
 *William Stryker: Oh, they serve their purpose... as long as they can be controlled.*
 
 ## Introduction
@@ -36,7 +33,11 @@ Dotnet global tools do not auto update. To update stryker as a global tool run `
 
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
-#### Upgrading from csproj install?
+#### [Depricated] csproj install
+[![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
+[![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
+
+
 The old way of installing stryker is deprecated and replaced by the dotnet core tool. For a guide on how to upgrade see our [blog](http://stryker-mutator.io/blog/2019-04-05/announcing-dotnet-framework-support).
 
 #### Compatibility

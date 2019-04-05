@@ -119,7 +119,7 @@ namespace Stryker.Core.Mutants
             {
                 chars[i] = validChars[random.Next(0, validChars.Length)];
             }
-            return new string(chars);
+            return "Stryker" + new string(chars);
         }
     }
 }
