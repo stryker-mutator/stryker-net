@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.InitialBuild("/", "ExampleProject.csproj"));
+            var exception = Assert.Throws<StrykerInputException>(() => target.InitialBuild(false, "/", "/", "ExampleProject.csproj"));
         }
 
         [Fact]
@@ -31,7 +31,28 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild("/", "ExampleProject.csproj");
+            target.InitialBuild(false, "/", "/", "ExampleProject.csproj");
+        }
+
+        [SkippableFact]
+        public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
+        {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
+
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+            processMock.SetupProcessMockToReturn("");
+
+            var target = new InitialBuildProcess(processMock.Object);
+
+            target.InitialBuild(true, "/", "./ExampleProject.sln", "ExampleProject.csproj");
+
+            processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+                Times.Once);
         }
     }
 }

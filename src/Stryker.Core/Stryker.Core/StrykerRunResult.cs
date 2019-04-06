@@ -15,6 +15,12 @@ namespace Stryker.Core
 
         public bool IsScoreAboveThresholdBreak()
         {
+            if (MutationScore == null)
+            {
+                // Return true, because there were no mutations created.
+                return true;
+            }
+
             // Check if the mutation score is not below the threshold break
             return MutationScore >= _options.Thresholds.Break;
         }

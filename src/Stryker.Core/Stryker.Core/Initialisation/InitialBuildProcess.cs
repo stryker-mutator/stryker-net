@@ -2,15 +2,17 @@
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
+using Stryker.Core.ToolHelpers;
 using System;
+using System.IO;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(string path, string projectName);
+        void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName);
     }
-    
+
     public class InitialBuildProcess : IInitialBuildProcess
     {
         private IProcessExecutor _processExecutor { get; set; }
@@ -22,15 +24,34 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(string path, string projectName)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string projectName)
         {
-            _logger.LogInformation("Starting initial build");
-            var result = _processExecutor.Start(path, "dotnet", $"build {projectName}");
+            _logger.LogInformation("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
+            ProcessResult result = null;
+            if (fullFramework)
+            {
+                solutionPath = Path.GetFullPath(solutionPath);
+                string solutionDir = Path.GetDirectoryName(solutionPath);
+                var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+
+                // Build project with MSBuild.exe
+                result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(solutionPath))
+                {
+                    _logger.LogWarning("Stryker is running on a .net core project but a solution path was provided. The solution path option is only needed on .net framework projects and can be removed. Please update your stryker options.");
+                }
+                // Build with dotnet build
+                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{projectName}\"");
+            }
+
             _logger.LogDebug("Initial build output {0}", result.Output);
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException("Initial build of targeted project failed. Please make targeted project buildable.", result.Output);
+                throw new StrykerInputException(result.Output, "Initial build of targeted project failed. Please make targeted project buildable. See above message for build output.");
             }
             _logger.LogInformation("Initial build successful");
         }

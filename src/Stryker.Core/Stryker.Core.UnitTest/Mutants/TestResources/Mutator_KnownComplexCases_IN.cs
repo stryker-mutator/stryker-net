@@ -1,11 +1,13 @@
-﻿
+﻿using System;
+using System.Net.Http;
+
 namespace TestCases
 {
     // list syntax construction that are difficult to mutate
     class ComplexCases
     {
 
-        private void GoodLuck()
+        private async Task GoodLuck()
         {
             await SendRequest(url, HttpMethod.Get, (request) =>
             {
@@ -40,7 +42,7 @@ namespace TestCases
 
             for (var j = 0;; j++)
             {
-                break:
+                break;
             }
         }
     }

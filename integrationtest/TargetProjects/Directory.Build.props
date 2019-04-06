@@ -1,0 +1,8 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <RootDirectory>$(MSBuildThisFileDirectory)</RootDirectory>
+    <BuildDirectory>$(RootDirectory)BuildFiles\</BuildDirectory>
+  </PropertyGroup>
+
+</Project>

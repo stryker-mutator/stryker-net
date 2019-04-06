@@ -25,6 +25,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
         private readonly ProjectInfo _projectInfo;
+        private readonly ILogger _logger;
 
         private readonly IVsTestConsoleWrapper _vsTestConsole;
         private ICollection<TestCase> _discoveredTests;
@@ -47,6 +48,7 @@ namespace Stryker.Core.TestRunners.VsTest
             TestCoverageInfos mappingInfos, IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
@@ -63,11 +65,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
-            if (_discoveredTests is null)
-            {
-                throw new Exception("_discoveredTests cannot be null when running tests");
-            }
-
             var envVars = new Dictionary<string, string>();
             if (mutationId != null)
             {
@@ -200,26 +197,31 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TraceLevel DetermineTraceLevel()
         {
+            var traceLevel = TraceLevel.Off;
             switch (_options.LogOptions.LogLevel)
             {
                 case LogEventLevel.Debug:
                 case LogEventLevel.Verbose:
-                    return TraceLevel.Verbose;
+                    traceLevel = TraceLevel.Verbose;
+                    break;
                 case LogEventLevel.Error:
                 case LogEventLevel.Fatal:
-                    return TraceLevel.Error;
+                    break;
                 case LogEventLevel.Warning:
-                    return TraceLevel.Warning;
+                    traceLevel = TraceLevel.Warning;
+                    break;
                 case LogEventLevel.Information:
-                    return TraceLevel.Info;
-                default:
-                    return TraceLevel.Off;
+                    traceLevel = TraceLevel.Info;
+                    break;
             }
+
+            _logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
+            return traceLevel;
         }
 
         private string GenerateRunSettings(int timeout)
         {
-            var targetFramework = _projectInfo.TargetFramework;
+            string targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
             var targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
             switch (targetFramework)
@@ -228,14 +230,13 @@ namespace Stryker.Core.TestRunners.VsTest
                     targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
                     break;
                 case string s when s.Contains("netstandard"):
-                    throw new Exception("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
+                    throw new ApplicationException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersion = $".NETFramework = v{targetFrameworkVersion}";
+                    targetFrameworkVersion = $"Framework40";
                     break;
             }
 
             var dataCollectorSettings = CoverageCollector.GetVsTestSettings();
-            return $@"<RunSettings>
   <RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
@@ -243,33 +244,54 @@ namespace Stryker.Core.TestRunners.VsTest
   </RunConfiguration>
    {dataCollectorSettings}
 </RunSettings>";
+
+            _logger.LogDebug("VsTest runsettings set to: {0}", runsettings);
+
+            return runsettings;
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            var logPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.OutputPath, "vstest", "vstest-log.txt"));
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+            var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
+
+            _logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
-                LogFilePath = logPath
+                LogFilePath = vstestLogPath
             });
         }
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPath = FilePathUtils.ConvertPathSeparators(Path.Combine(_options.BasePath, "bin", "Debug", _projectInfo.TargetFramework));
+            var testBinariesPath = _projectInfo.GetTestBinariesPath();
+            if (!_fileSystem.File.Exists(testBinariesPath))
+            {
+                throw new ApplicationException($"The test project binaries could not be found at {testBinariesPath}, exiting...");
+            }
+
+            var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
             _sources = new List<string>()
             {
-                FilePathUtils.ConvertPathSeparators(Path.Combine(testBinariesPath, _projectInfo.TestProjectFileName.Replace("csproj", "dll")))
+                FilePathUtils.ConvertPathSeparators(testBinariesPath)
             };
-            _vsTestConsole.StartSession();
-            _vsTestConsole.InitializeExtensions(new List<string>
+            try
             {
-//                testBinariesPath,
-                _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
-            });
+                _vsTestConsole.StartSession();
+                _vsTestConsole.InitializeExtensions(new List<string>
+                {
+                    testBinariesLocation,
+                    _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
+                });
+            }
+            catch (Exception e)
+            {
+                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
+            }
+
+            DiscoverTests();
         }
 
         #region IDisposable Support
@@ -282,6 +304,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (disposing)
                 {
                     _vsTestConsole.EndSession();
+                    _vsTestHelper.Cleanup();
                 }
 
                 _disposedValue = true;

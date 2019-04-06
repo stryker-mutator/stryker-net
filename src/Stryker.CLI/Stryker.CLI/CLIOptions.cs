@@ -139,6 +139,16 @@ namespace Stryker.CLI
             JsonKey = "files-to-exclude"
         };
 
+        public static readonly CLIOption<string> SolutionPath = new CLIOption<string>
+        {
+            ArgumentName = "--solution-path",
+            ArgumentShortName = "-s <path>",
+            ArgumentDescription = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
+                                                .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
+            DefaultValue = null,
+            JsonKey = "solution-path"
+        };
+
         public static readonly CLIOption<string> TestRunner = new CLIOption<string>
         {
             ArgumentName = "--test-runner",

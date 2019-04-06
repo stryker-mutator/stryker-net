@@ -82,24 +82,26 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            _logger.LogInformation("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
+            _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
 
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, options.DevMode);
-                if (!_fileSystem.Directory.Exists(_input.GetInjectionPath()) && !_fileSystem.File.Exists(_input.GetInjectionPath()))
+
+                string injectionPath = _input.ProjectInfo.GetInjectionPath();
+                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) && !_fileSystem.File.Exists(injectionPath))
                 {
-                    _fileSystem.Directory.CreateDirectory(_input.GetInjectionPath());
+                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
                 }
 
                 // inject the mutated Assembly into the test project
-                using (var fs = _fileSystem.File.Create(_input.GetInjectionPath()))
+                using (var fs = _fileSystem.File.Create(injectionPath))
                 {
                     ms.Position = 0;
                     ms.CopyTo(fs);
                 }
-                _logger.LogDebug("Injected the mutated assembly file into {0}", _input.GetInjectionPath());
+                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
 
                 // if a rollback took place, mark the rollbacked mutants as status:BuildError
                 if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
@@ -136,9 +138,22 @@ namespace Stryker.Core.MutationTest
         public StrykerRunResult Test(StrykerOptions options)
         {
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            if (!mutantsNotRun.Any())
+            {
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
+                {
+                    _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
+                }
+                else
+                {
+                    _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                }
+                return new StrykerRunResult(options, null);
+            }
             _reporter.OnStartMutantTestRun(mutantsNotRun);
 
-            Parallel.ForEach(mutantsNotRun,
+            Parallel.ForEach(
+                mutantsNotRun,
                 new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                 mutant =>
                 {
@@ -147,8 +162,9 @@ namespace Stryker.Core.MutationTest
                     _reporter.OnMutantTested(mutant);
                 });
 
-            _mutationTestExecutor.TestRunner.Dispose();
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
+
+            _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }

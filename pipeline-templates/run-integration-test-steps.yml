@@ -1,0 +1,16 @@
+parameters:
+  testName: ''
+  workingDirectory: ''
+  strykerCommands: '--dev-mode'
+
+steps:
+  - script: dotnet-stryker ${{ parameters.strykerCommands }} -f -l trace
+    workingDirectory: ${{ parameters.workingDirectory }}
+    displayName: 'Run integration test ${{ parameters.testName }}'
+    failOnStderr: false
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: ${{ parameters.testName }}
+      targetPath: '${{ parameters.workingDirectory }}/StrykerOutput'
+    condition: always()

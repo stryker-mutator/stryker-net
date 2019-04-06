@@ -30,10 +30,10 @@ namespace Stryker.CLI
         {
             var app = new CommandLineApplication
             {
-                Name = "StrykerNet",
-                FullName = "StrykerNet: Stryker mutator for .Net Core",
-                Description = "Stryker mutator for .Net Core",
-                ExtendedHelpText = "Welcome to StrykerNet for .Net Core. Run dotnet stryker to kick off a mutation test run"
+                Name = "Stryker",
+                FullName = "Stryker: Stryker mutator for .Net",
+                Description = "Stryker mutator for .Net",
+                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
             };
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
@@ -50,6 +50,7 @@ namespace Stryker.CLI
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
+            var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
 
             app.HelpOption("--help | -h | -?");
 
@@ -71,7 +72,8 @@ namespace Stryker.CLI
                     thresholdLowParam,
                     thresholdBreakParam,
                     filesToExclude,
-                    testRunner);
+                    testRunner,
+                    solutionPathParam);
 
                 RunStryker(options);
                 return ExitCode;

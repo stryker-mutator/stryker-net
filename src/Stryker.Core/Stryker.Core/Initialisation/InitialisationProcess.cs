@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -17,7 +19,7 @@ namespace Stryker.Core.Initialisation
         IEnumerable<int> CoveredMutants { get; }
 
     }
-    
+
     public class InitialisationProcess : IInitialisationProcess
     {
         private IInputFileResolver _inputFileResolver { get; set; }
@@ -31,8 +33,8 @@ namespace Stryker.Core.Initialisation
         // these flags control various optimisation techniques
         private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
 
-        public InitialisationProcess( 
-            IInputFileResolver inputFileResolver = null, 
+        public InitialisationProcess(
+            IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
@@ -51,26 +53,19 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            projectInfo = _inputFileResolver.ResolveInput(options.BasePath, options.ProjectUnderTestNameFilter, options.FilesToExclude.ToList());
+            var projectInfo = _inputFileResolver.ResolveInput(options);
 
             if (_testRunner == null)
             {
                 _testRunner = new TestRunnerFactory().Create(options, Flags, projectInfo);
             }
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.TestProjectPath, projectInfo.TestProjectFileName);
-
-            // resolve assembly references
-            var references = _assemblyReferenceResolver.ResolveReferences(
-                    projectInfo.TestProjectPath,
-                    projectInfo.TestProjectFileName,
-                    projectInfo.ProjectUnderTestAssemblyName)
-                    .ToList();
+            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
 
             var input = new MutationTestInput()
             {
                 ProjectInfo = projectInfo,
-                AssemblyReferences = references,
+                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner
             };
 

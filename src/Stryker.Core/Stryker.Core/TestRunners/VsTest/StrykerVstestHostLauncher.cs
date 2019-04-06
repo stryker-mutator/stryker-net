@@ -22,12 +22,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
-            var processInfo = new ProcessStartInfo(
-                                  defaultTestHostStartInfo.FileName,
-                                  defaultTestHostStartInfo.Arguments)
+            var processInfo = new ProcessStartInfo(defaultTestHostStartInfo.FileName, defaultTestHostStartInfo.Arguments)
             {
                 WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
-                RedirectStandardError =  true
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             foreach (var (key, value) in _envVars)
             {
@@ -36,6 +36,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var process = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
                
+
+                // Asynchronously read the standard output of the spawned process.
+                // This raises OutputDataReceived events for each line of output.
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
             process.Exited += (sender, args) =>
             {

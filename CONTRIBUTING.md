@@ -13,11 +13,6 @@ New features are welcome! Either as requests or proposals.
 1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
 1.	Please create or edit unit tests or integration tests.
 1.	Run the tests and verify they pass
-1.  When creating commits, please conform to [the angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo).
-   Namely in the form `<type>(<scope>): <subject>\n\n[body]`
-   * Type: feat, fix, docs, style, refactor, test, chore.
-   * Scope: the file or group of files (not a strict right or wrong)
-   * Subject and body: present tense (~changed~*change*, ~added~*add*) and include motivation and contrasts with previous behavior
 
 #### Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [Visual Studio 2017](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
@@ -33,6 +28,13 @@ While developing on Stryker.NET we advise to work in [Visual Studio 2017](https:
 
 #### Compiler Platform SDK
 We advise to use the [.NET Compiler Platform SDK](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.NETCompilerPlatformSDK) during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators. 
+
+## Maintainers
+When merging pull requests or creating commits, please conform to [the angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo), so our changelog will be updated.
+   Namely in the form `<type>(<scope>): <subject>\n\n[body]`
+   * Type: feat, fix, docs, style, refactor, test, chore.
+   * Scope: the file or group of files (not a strict right or wrong)
+   * Subject and body: present tense (~changed~*change*, ~added~*add*) and include motivation and contrasts with previous behavior
 
 ## Community
 Do you want to help? Great! These are a few things you can do:

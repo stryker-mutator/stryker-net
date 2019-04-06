@@ -1,9 +1,11 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -19,14 +21,13 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _flags = flags;
             using (var runner = new VsTestRunner(options, _flags, projectInfo, null, null))
-            {
                 _discoveredTests = runner.DiscoverTests();
-            }
 
-            for (var i = 0; i < options.ConcurrentTestrunners; i++)
+            Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
                 _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage));
-            }
+                _availableRunners.Add(new VsTestRunner(options, projectInfo));
+            });
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? mutationId)
@@ -47,6 +48,12 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage()
         {
             TestRunResult result;
+            }
+            catch (OperationCanceledException)
+            {
+                ReturnRunner(runner);
+                throw;
+            }
 
             var runner = TakeRunner();
             try

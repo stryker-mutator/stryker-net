@@ -2,9 +2,10 @@
     "stryker-config":
     {
         "reporters": [
-            "Json"
+            "All"
         ],
-        "log-level": "info",
+        "log-level": "trace",
+        "log-file":  "true",
         "project-file": "TargetProject.csproj",
         "excluded-files": [
           "./EndlessLoop.cs"

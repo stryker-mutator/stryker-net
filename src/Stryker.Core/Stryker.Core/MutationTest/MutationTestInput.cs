@@ -2,7 +2,6 @@
 using Stryker.Core.Initialisation;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Stryker.Core.MutationTest
 {
@@ -27,14 +26,5 @@ namespace Stryker.Core.MutationTest
         /// All the needed references for compiling the input project
         /// </summary>
         public IEnumerable<PortableExecutableReference> AssemblyReferences { get; set; }
-
-        public string GetInjectionPath()
-        {
-            if (ProjectInfo.AppendTargetFrameworkToOutputPath)
-            {
-                return Path.Combine(ProjectInfo.TestProjectPath, "bin", "Debug", ProjectInfo.TargetFramework, ProjectInfo.ProjectUnderTestAssemblyName + ".dll");
-            }
-            return Path.Combine(ProjectInfo.TestProjectPath, "bin", "Debug", ProjectInfo.ProjectUnderTestAssemblyName + ".dll");
-        }
     }
 }
