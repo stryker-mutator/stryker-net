@@ -48,7 +48,7 @@ namespace Stryker.Core.TestRunners.VsTest
             TestCoverageInfos mappingInfos, IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
+            _logger =  ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
@@ -237,6 +237,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var dataCollectorSettings = CoverageCollector.GetVsTestSettings();
+            var runsettings = $@"
   <RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>

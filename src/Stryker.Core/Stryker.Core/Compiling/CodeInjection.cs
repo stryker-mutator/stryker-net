@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -14,7 +15,9 @@ namespace Stryker.Core.Compiling
         private static readonly IList<SyntaxTree> Helpers = new List<SyntaxTree>();
 
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
+
         public static readonly string SelectorExpression;
+        public static readonly string HelperNamespace;
 
         static CodeInjection()
         {
@@ -25,11 +28,27 @@ namespace Stryker.Core.Compiling
             {
                 throw new InvalidDataException("Internal error: failed to find expression for mutant selection.");
             }
-            SelectorExpression = result.Groups[1].Value;
+
+            HelperNamespace = GetRandomNamespace();
+            SelectorExpression = result.Groups[1].Value.Replace("Stryker", HelperNamespace);
             foreach (var file in Files)
             {
-                Helpers.Add(CSharpSyntaxTree.ParseText(GetSourceFromResource(file), new CSharpParseOptions(LanguageVersion.Latest)));
+                Helpers.Add(CSharpSyntaxTree.ParseText(GetSourceFromResource(file).Replace("Stryker", HelperNamespace), new CSharpParseOptions(LanguageVersion.Latest)));
             }
+        }
+
+        private static string GetRandomNamespace()
+        {
+            // Create a string of characters, numbers, special characters that allowed in the password  
+            const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+
+            var chars = new char[15];
+            for (int i = 0; i < 15; i++)
+            {
+                chars[i] = validChars[random.Next(0, validChars.Length)];
+            }
+            return "Stryker" + new string(chars);
         }
 
         public static IEnumerable<SyntaxTree> MutantHelpers => Helpers;
@@ -48,6 +67,5 @@ namespace Stryker.Core.Compiling
 
             return helper;
         }
-
     }
 }

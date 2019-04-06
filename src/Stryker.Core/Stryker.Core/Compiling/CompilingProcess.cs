@@ -6,7 +6,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 

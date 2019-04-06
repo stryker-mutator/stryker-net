@@ -6,6 +6,7 @@ using Stryker.Core.Mutators;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Stryker.Core.Compiling;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Mutants
         public void Mutator_TestResourcesInputShouldBecomeOutput(string inputFile, string outputFile)
         {
             string source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
-            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", MutantPlacer.HelperNamespace);
+            string expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", Stryker.Core.Compiling.CodeInjection.HelperNamespace);
 
             var actualNode = Target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
@@ -43,12 +44,12 @@ namespace Stryker.Core.UnitTest.Mutants
 
         [Theory]
         [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
-        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 15, 2, 14, 6, 27)]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 16, 2, 14, 6, 29)]
         public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
             int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
         {
             string source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
-            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", MutantPlacer.HelperNamespace);
+            string expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", Stryker.Core.Compiling.CodeInjection.HelperNamespace);
             var target = new MutantOrchestrator();
             var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();

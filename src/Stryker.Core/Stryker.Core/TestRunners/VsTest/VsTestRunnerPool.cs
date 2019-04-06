@@ -4,8 +4,10 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -26,7 +28,6 @@ namespace Stryker.Core.TestRunners.VsTest
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
                 _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage));
-                _availableRunners.Add(new VsTestRunner(options, projectInfo));
             });
         }
 
@@ -48,13 +49,6 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage()
         {
             TestRunResult result;
-            }
-            catch (OperationCanceledException)
-            {
-                ReturnRunner(runner);
-                throw;
-            }
-
             var runner = TakeRunner();
             try
             {
