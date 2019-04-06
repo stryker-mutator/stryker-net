@@ -16,7 +16,7 @@
     <Product>Mutation Testing</Product>
     <Description>The Stryker.NET CLI tool. Install this tool to run stryker from the commandline.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -33,5 +33,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.Core\Stryker.Core\Stryker.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\LICENS*" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>

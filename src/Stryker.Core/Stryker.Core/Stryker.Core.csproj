@@ -14,7 +14,7 @@
 	<PackageId>stryker</PackageId>
 	<Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
 	<PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
-	<PackageLicenseUrl>https://github.com/stryker-mutator/stryker-net/blob/master/LICENSE</PackageLicenseUrl>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
 	<RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
@@ -54,4 +54,8 @@
 	<PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
 	<PackageReference Include="System.IO.Abstractions" Version="3.1.1" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\..\LICENS*" Pack="true" PackagePath="" />
+	</ItemGroup>
 </Project>
