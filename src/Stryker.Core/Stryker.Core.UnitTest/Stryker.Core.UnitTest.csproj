@@ -19,6 +19,8 @@
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_IfStatementWithoutMutation_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_IfStatementWithoutMutation_OUT.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
@@ -26,6 +28,12 @@
   <ItemGroup>
     <Content Include="TestResources\StrongNameKeyFile.snk">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_IfStatementWithoutMutation_IN.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_IfStatementWithoutMutation_OUT.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

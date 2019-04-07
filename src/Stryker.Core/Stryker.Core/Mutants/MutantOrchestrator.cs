@@ -8,6 +8,7 @@ using Stryker.Core.Mutators;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Stryker.Core.Mutants
 {
@@ -161,8 +162,16 @@ namespace Stryker.Core.Mutants
 
             if (!ifStatement.Condition.ContainsDeclarations())
             {
+                var mutation = MutateExpressions(ifStatement.Condition);
+                var mutationFound = mutation == ifStatement.Condition;
+
+                if (!mutationFound)
+                {
+                    return ifStatement.WithCondition(SyntaxFactory.ParseExpression($"!{ifStatement.Condition}"));
+                }
+
                 mutatedIf = mutatedIf.ReplaceNode(mutatedIf.GetCurrentNode(ifStatement.Condition),
-                    MutateExpressions(ifStatement.Condition));
+                    mutation);
             }
 
             if (ifStatement.Else != null)
