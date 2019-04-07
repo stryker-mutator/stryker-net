@@ -163,7 +163,7 @@ namespace Stryker.Core.Mutants
             if (!ifStatement.Condition.ContainsDeclarations())
             {
                 var mutation = MutateExpressions(ifStatement.Condition);
-                var mutationFound = mutation == ifStatement.Condition;
+                var mutationFound = !SyntaxFactory.AreEquivalent(mutation, ifStatement.Condition);
 
                 if (!mutationFound)
                 {
