@@ -48,7 +48,8 @@ namespace Stryker.Core.Mutants
                     new CheckedMutator(),
                     new LinqMutator(),
                     new StringMutator(),
-                    new InterpolatedStringMutator()
+                    new InterpolatedStringMutator(),
+                    new IfStatementMutator(),
                 };
             _mutants = new Collection<Mutant>();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
@@ -84,7 +85,17 @@ namespace Stryker.Core.Mutants
             }
             else if (currentNode is IfStatementSyntax ifStatement)
             {
-                return MutateIfStatement(ifStatement);
+                var mutateIfStatement = MutateIfStatement(ifStatement);
+                if (mutateIfStatement.IsEquivalentTo(ifStatement))
+                {
+                    foreach (var mutant in FindMutants(ifStatement))
+                    {
+                        ifStatement = ApplyMutant(ifStatement, mutant);
+                    }
+
+                    return ifStatement;
+                }
+                return mutateIfStatement;
             }
             else if (currentNode is ForStatementSyntax forStatement)
             {

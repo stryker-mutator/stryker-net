@@ -21,7 +21,8 @@ namespace Stryker.Core.UnitTest.Mutants
             _target = new MutantOrchestrator(new Collection<IMutator>
             {
                 new AddMutator(),
-                new AssignmentStatementMutator()
+                new AssignmentStatementMutator(),
+                new IfStatementMutator()
             });
             _currentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
@@ -73,6 +74,20 @@ namespace Stryker.Core.UnitTest.Mutants
             var result = _target.Mutate(tree.GetRoot());
 
             _target.GetLatestMutantBatch().Count().ShouldBe(numberOfMutations);
+        }
+
+        [Theory]
+        [InlineData("Mutator_IfStatementWithoutMutation_IN.cs", "Mutator_IfStatementWithoutMutation_OUT.cs")]
+        public void NegateIfStatementWhenNoMutationFound(string inputFile, string outputFile)
+        {
+            string source = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + inputFile);
+            string expected = File.ReadAllText(_currentDirectory + "/Mutants/TestResources/" + outputFile);
+
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
         }
     }
 }
