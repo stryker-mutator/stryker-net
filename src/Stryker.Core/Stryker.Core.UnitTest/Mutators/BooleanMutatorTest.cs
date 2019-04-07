@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
