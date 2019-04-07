@@ -123,56 +123,6 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReport_WithMutationScoreOverThresholdHighHasGoodHealth()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-
-            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 20, thresholdLow: 10), folderComponent);
-
-            report.Files.First().Value.Health.ShouldBe(Health.Good);
-        }
-
-        [Fact]
-        public void JsonReport_WithMutationScoreEqualToThresholdHighHasWarningHealth()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-
-            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 67, thresholdLow: 10), folderComponent);
-
-            report.Files.First().Value.Health.ShouldBe(Health.Warning);
-        }
-
-        [Fact]
-        public void JsonReport_WithMutationScoreBetweenThresholdHighInclusiveAndLowNonInclusiveHasWarningHealth()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-
-            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 67, thresholdLow: 66), folderComponent);
-
-            report.Files.First().Value.Health.ShouldBe(Health.Warning);
-        }
-
-        [Fact]
-        public void JsonReport_WithMutationScoreEqualToThresholdLowHasWarningHealth()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-
-            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 65), folderComponent);
-
-            report.Files.First().Value.Health.ShouldBe(Health.Warning);
-        }
-
-        [Fact]
-        public void JsonReport_WithMutationScoreUnderThresholdLowHasDangerHealth()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-
-            var report = JsonReport.Build(new StrykerOptions(thresholdHigh: 80, thresholdLow: 67), folderComponent);
-
-            report.Files.First().Value.Health.ShouldBe(Health.Danger);
-        }
-
-        [Fact]
         public void JsonReport_BuildReportReturnsSingletonJsonReport()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();

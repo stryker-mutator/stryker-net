@@ -9,7 +9,7 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "0.0.7";
+        public string SchemaVersion { get; } = "1.0.0";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
         public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
 
@@ -62,6 +62,11 @@ namespace Stryker.Core.Reporters.Json
             return json;
         }
 
+        public string ToJsonHtmlSafe()
+        {
+            return ToJson().Replace("<", "<\" + \"");
+        }
+
         private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
@@ -90,12 +95,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(FileLeaf fileComponent)
         {
-            var reportComponent = new JsonReportFileComponent(fileComponent)
-            {
-                Health = fileComponent.CheckHealth(_options.Thresholds)
-            };
-
-            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, reportComponent } };
+            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }
 
         private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
