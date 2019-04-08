@@ -33,7 +33,7 @@ Dotnet global tools do not auto update. To update stryker as a global tool run `
 
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
-#### [Depricated] csproj install
+#### [Deprecated] csproj install
 [![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
 [![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
 
