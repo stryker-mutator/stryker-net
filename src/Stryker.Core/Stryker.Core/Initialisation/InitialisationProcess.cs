@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
@@ -12,6 +13,11 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerOptions options);
+        
+        int InitialTest(StrykerOptions option);
+
+        IEnumerable<int> CoveredMutants { get; }
+
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -20,11 +26,13 @@ namespace Stryker.Core.Initialisation
         private IInitialBuildProcess _initialBuildProcess { get; set; }
         private IInitialTestProcess _initialTestProcess { get; set; }
         private ITestRunner _testRunner { get; set; }
-        private ILogger _logger { get; set; }
+        private ILogger Logger { get; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
 
-        public InitialisationProcess(
-            IInputFileResolver inputFileResolver = null,
+        // these flags control various optimisation techniques
+        private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
+
+        public InitialisationProcess(ProjectInfo projectInfo, IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
@@ -34,9 +42,11 @@ namespace Stryker.Core.Initialisation
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
+
+        public IEnumerable<int> CoveredMutants => _testRunner.CoveredMutants;
 
         public MutationTestInput Initialize(StrykerOptions options)
         {
@@ -46,18 +56,27 @@ namespace Stryker.Core.Initialisation
             // initial build
             _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
 
+            if (_testRunner == null)
+            {
+                _testRunner = new TestRunnerFactory().Create(options, Flags, projectInfo);
+            }
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = projectInfo,
                 AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                TestRunner = _testRunner ?? new TestRunnerFactory().Create(options, projectInfo)
+                TestRunner = _testRunner
             };
 
-            // initial test
-            var initialTestDuration = _initialTestProcess.InitialTest(input.TestRunner);
-            input.TimeoutMS = new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
-
             return input;
+        }
+
+        public int InitialTest(StrykerOptions options)
+        {
+            // initial test
+            var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
+            
+            return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
     }
 }

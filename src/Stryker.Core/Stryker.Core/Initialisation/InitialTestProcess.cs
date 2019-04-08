@@ -28,21 +28,21 @@ namespace Stryker.Core.Initialisation
         public int InitialTest(ITestRunner testRunner)
         {
             _logger.LogInformation("Initial testrun started");
-
             // setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.RunAll(0, null);
-            _logger.LogInformation("Total number of tests found in initial test run: {0}", testResult.TotalNumberOfTests);
-
-            var duration = (int)stopwatch.ElapsedMilliseconds;
+            var testResult = testRunner.CaptureCoverage();
+            var duration = (int) stopwatch.ElapsedMilliseconds;
+            _logger.LogInformation("Total number of tests found in initial test run: {0}",
+                testResult.TotalNumberOfTests);
 
             _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);
             if (!testResult.Success)
             {
                 throw new StrykerInputException("Initial testrun was not successful.", testResult.ResultMessage);
             }
+
             _logger.LogInformation("Initial testrun successful in {0} ms", duration);
 
             return duration;

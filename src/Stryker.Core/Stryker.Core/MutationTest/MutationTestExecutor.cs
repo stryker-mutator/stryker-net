@@ -12,41 +12,32 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(Mutant mutant);
+        void Test(Mutant mutant, int timeoutMs);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
     {
         public ITestRunner TestRunner { get; }
-        private ILogger _logger { get; }
-        private int _timeoutMS { get; }
+        private ILogger Logger { get; }
 
-        public MutationTestExecutor(ITestRunner testRunner, int timeoutMS)
+        public MutationTestExecutor(ITestRunner testRunner)
         {
             TestRunner = testRunner;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _timeoutMS = timeoutMS;
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(Mutant mutant)
+        public void Test(Mutant mutant, int timeoutMs)
         {
             try
             {
-                var result = TestRunner.RunAll(_timeoutMS, mutant.Id);
-                _logger.LogTrace("Testrun with output {0}", result.ResultMessage);
+                var result = TestRunner.RunAll(timeoutMs, mutant.Id);
+                Logger.LogTrace("Testrun with output {0}", result.ResultMessage);
 
-                if (result.Success)
-                {
-                    mutant.ResultStatus = MutantStatus.Survived;
-                }
-                else
-                {
-                    mutant.ResultStatus = MutantStatus.Killed;
-                }
+                mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;
             }
             catch (OperationCanceledException)
             {
-                _logger.LogTrace("Testrun aborted due to timeout");
+                Logger.LogTrace("Testrun aborted due to timeout");
                 mutant.ResultStatus = MutantStatus.Timeout;
             }
         }

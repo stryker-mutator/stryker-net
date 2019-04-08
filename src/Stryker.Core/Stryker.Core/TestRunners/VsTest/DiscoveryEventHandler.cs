@@ -11,6 +11,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private AutoResetEvent waitHandle;
         private readonly List<string> _messages;
         public List<TestCase> DiscoveredTestCases { get; private set; }
+        public bool Aborted { get; private set; }
 
         public DiscoveryEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
@@ -33,6 +34,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 DiscoveredTestCases.AddRange(lastChunk);
             }
+
+            Aborted = isAborted;
             waitHandle.Set();
         }
 

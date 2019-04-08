@@ -3,20 +3,23 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-
     public class RunEventHandler : ITestRunEventsHandler
     {
-        private AutoResetEvent waitHandle;
+        private readonly AutoResetEvent _waitHandle;
         private readonly List<string> _messages;
-        public List<TestResult> TestResults { get; private set; }
+        public List<TestResult> TestResults { get; }
+        private bool _testFailed;
+
+        public event EventHandler TestsFailed;
 
         public RunEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
-            this.waitHandle = waitHandle;
+            _waitHandle = waitHandle;
             TestResults = new List<TestResult>();
             _messages = messages;
         }
@@ -29,17 +32,29 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (lastChunkArgs != null && lastChunkArgs.NewTestResults != null)
             {
-                TestResults.AddRange(lastChunkArgs.NewTestResults);
+                CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
-            waitHandle.Set();
+            _waitHandle.Set();
+        }
+
+        private void CaptureTestResults(IEnumerable<TestResult> results)
+        {
+            var testResults = results as TestResult[] ?? results.ToArray();
+            if (!_testFailed && testResults.Any(result => result.Outcome == TestOutcome.Failed))
+            {
+                // at least one test has failed
+                _testFailed = true;
+                TestsFailed?.Invoke(this, EventArgs.Empty);
+            }
+            TestResults.AddRange(testResults);
         }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
             if (testRunChangedArgs != null && testRunChangedArgs.NewTestResults != null)
             {
-                TestResults.AddRange(testRunChangedArgs.NewTestResults);
+                CaptureTestResults(testRunChangedArgs.NewTestResults);
             }
         }
 
@@ -50,12 +65,14 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            _messages.Add("Test Run Raw Message: " + rawMessage);
+            var item = $"Test Run Message: [RAW] {rawMessage}";
+            _messages.Add(item);
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            _messages.Add("Test Run Message: " + message);
+            var item = $"Test Run Message: [{level}] {message}";
+            _messages.Add(item);
         }
     }
 }

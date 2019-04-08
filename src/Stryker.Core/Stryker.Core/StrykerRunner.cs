@@ -23,7 +23,6 @@ namespace Stryker.Core
     {
         private IReporter _reporter { get; set; }
         private IInitialisationProcess _initialisationProcess { get; set; }
-        private string _basePath { get; set; }
         private MutationTestInput _input { get; set; }
         private IMutationTestProcess _mutationTestProcess { get; set; }
         private IFileSystem _fileSystem { get; set; }
@@ -71,11 +70,16 @@ namespace Stryker.Core
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
+                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner));
 
                 // mutate
                 _mutationTestProcess.Mutate(options);
 
+                // initial test
+                _input.TimeoutMs =_initialisationProcess.InitialTest(options);
+
+                _mutationTestProcess.Optimize(_initialisationProcess.CoveredMutants);
+              
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);
             }

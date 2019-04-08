@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -9,12 +10,12 @@ namespace Stryker.Core.TestRunners.VsTest
     public class StrykerVsTestHostLauncher : ITestHostLauncher
     {
         private readonly Action _callback;
-        private readonly int? _activeMutation;
+        private readonly Dictionary<string, string> _envVars;
 
-        public StrykerVsTestHostLauncher(Action callback, int? activeMutation)
+        public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars)
         {
             _callback = callback;
-            _activeMutation = activeMutation;
+            _envVars = envVars;
         }
 
         public bool IsDebug => false;
@@ -28,27 +29,26 @@ namespace Stryker.Core.TestRunners.VsTest
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
-            processInfo.EnvironmentVariables["ActiveMutation"] = _activeMutation.ToString();
-
-            var process = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
-            process.Start();
-
-            if (process != null)
+            foreach (var (key, value) in _envVars)
             {
+                processInfo.EnvironmentVariables[key] = value;
+            }
+
+            var process = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
+               
+
                 // Asynchronously read the standard output of the spawned process.
                 // This raises OutputDataReceived events for each line of output.
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                process.Exited += (sender, args) =>
-                {
-                    _callback();
-                };
+            process.Exited += (sender, args) =>
+            {
+                _callback();
+            };
+            process.Start();
 
-                return process.Id;
-            }
-
-            throw new Exception("Process in invalid state.");
+            return process.Id;
         }
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
