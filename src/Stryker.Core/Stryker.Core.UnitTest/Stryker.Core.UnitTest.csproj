@@ -27,14 +27,6 @@
     <Content Include="TestResources\StrongNameKeyFile.snk">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Remove="Mutants\TestResources\Mutator_IfStatementWithoutMutation_IN.cs" />
-    <Content Include="Mutants\TestResources\Mutator_IfStatementWithoutMutation_IN.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Compile Remove="Mutants\TestResources\Mutator_IfStatementWithoutMutation_OUT.cs" />
-    <Content Include="Mutants\TestResources\Mutator_IfStatementWithoutMutation_OUT.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
