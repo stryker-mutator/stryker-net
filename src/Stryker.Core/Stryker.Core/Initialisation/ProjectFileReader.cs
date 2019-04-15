@@ -1,4 +1,5 @@
 ﻿using Buildalyzer;
+using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
@@ -42,7 +43,13 @@ namespace Stryker.Core.Initialisation
             else
             {
                 _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                manager = new AnalyzerManager(solutionFilePath);
+                try
+                {
+                    manager = new AnalyzerManager(solutionFilePath);
+                } catch (InvalidProjectFileException)
+                {
+                    throw new StrykerInputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
+                }
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
