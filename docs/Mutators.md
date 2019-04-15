@@ -39,8 +39,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Logical Operators
 | Original | Mutated | 
 | ------------- | ------------- | 
-| `&&` | `||` | 
-| `||` | `&&` |
+| `&&` | `\|\|` | 
+| `\|\|` | `&&` |
 
 ## Boolean Literals
 | Original | Mutated | 
@@ -59,8 +59,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`%= `	| `*= ` |
 |`<<=`  | `>>=` |
 |`>>=`  | `<<=` |
-|`&= `	| `|= ` |
-|`|= `	| `&= ` |
+|`&= `	| `\|= ` |
+|`\|= `	| `&= ` |
 
 ## Unary Operators
 |    Original   |   Mutated  | 
