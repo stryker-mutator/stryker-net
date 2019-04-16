@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class ConditionStatementMutatorTests
     {
         [Fact]
-        public void IfStatement()
+        public void MutatesIfStatementWithMethodCallWithNoArguments()
         {
             var target = new ConditionStatementMutator();
 
@@ -18,11 +18,12 @@ namespace Stryker.Core.UnitTest.Mutators
                     SyntaxFactory.ParseExpression("Method()"),
                     SyntaxFactory.EmptyStatement()).Condition).ToList();
             
+            result.Count.ShouldBe(1);
             result.First().ReplacementNode.ToString().ShouldBe("!Method()");
         }
         
         [Fact]
-        public void IfStatement2()
+        public void ShouldNotMutateIfStatementWhenConditionNotInvocationExpression()
         {
             var target = new ConditionStatementMutator();
 
@@ -31,24 +32,11 @@ namespace Stryker.Core.UnitTest.Mutators
                     SyntaxFactory.ParseExpression("node.Parent != null"),
                     SyntaxFactory.EmptyStatement()).Condition).ToList();
             
-            result.First().ReplacementNode.ToString().ShouldBe("node.Parent != null");
+            result.Count.ShouldBe(0);
         }
         
         [Fact]
-        public void WhileStatement()
-        {
-            var target = new ConditionStatementMutator();
-
-            var result = target.ApplyMutations(
-                SyntaxFactory.WhileStatement(
-                    SyntaxFactory.ParseExpression("Method()"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
-            
-            result.First().ReplacementNode.ToString().ShouldBe("!Method()");
-        }
-        
-        [Fact]
-        public void ShouldNotMutateIfStatement()
+        public void ShouldNotMutateIfStatementWithArguments()
         {
             var target = new ConditionStatementMutator();
 
@@ -61,7 +49,21 @@ namespace Stryker.Core.UnitTest.Mutators
         }
         
         [Fact]
-        public void ShouldNotMutateWhileStatement()
+        public void MutatesWhileStatementWithMethodCallWithNoArguments()
+        {
+            var target = new ConditionStatementMutator();
+
+            var result = target.ApplyMutations(
+                SyntaxFactory.WhileStatement(
+                    SyntaxFactory.ParseExpression("Method()"),
+                    SyntaxFactory.EmptyStatement()).Condition).ToList();
+            
+            result.Count.ShouldBe(1);
+            result.First().ReplacementNode.ToString().ShouldBe("!Method()");
+        }
+        
+        [Fact]
+        public void ShouldNotMutateWhileStatementWithArguments()
         {
             var target = new ConditionStatementMutator();
 
@@ -70,6 +72,19 @@ namespace Stryker.Core.UnitTest.Mutators
                     SyntaxFactory.ParseExpression("Method(false)"),
                     SyntaxFactory.EmptyStatement()).Condition).ToList();
 
+            result.Count.ShouldBe(0);
+        }
+        
+        [Fact]
+        public void ShouldNotMutateWhileStatementWhenConditionNotInvocationExpression()
+        {
+            var target = new ConditionStatementMutator();
+
+            var result = target.ApplyMutations(
+                SyntaxFactory.WhileStatement(
+                    SyntaxFactory.ParseExpression("node.Parent != null"),
+                    SyntaxFactory.EmptyStatement()).Condition).ToList();
+            
             result.Count.ShouldBe(0);
         }
     }

@@ -27,8 +27,8 @@ namespace Stryker.Core.Mutators
         Linq,
         [Description("String literals")]
         String,
-        [Description("If statements")]
-        If
+        [Description("Statements")]
+        Statement
     }
 
     public static class EnumExtension

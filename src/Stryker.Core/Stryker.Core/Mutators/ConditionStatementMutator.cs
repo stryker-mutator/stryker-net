@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -13,6 +14,8 @@ namespace Stryker.Core.Mutators
             
             if (node.Parent is IfStatementSyntax ifStatementSyntax)
             {
+                if(!IsInvocationExpression(ifStatementSyntax.Condition)) yield break;
+                
                 var replacement = PrepareReplacement(ifStatementSyntax.Condition);
 
                 yield return new Mutation()
@@ -20,12 +23,14 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacement,
                     DisplayName = "If statement mutation",
-                    Type = Mutator.Unary
+                    Type = Mutator.Statement
                 };
             }
 
             if (node.Parent is WhileStatementSyntax whileStatementSyntax)
             {
+                if(!IsInvocationExpression(whileStatementSyntax.Condition)) yield break;
+                
                 var replacement = PrepareReplacement(whileStatementSyntax.Condition);
 
                 yield return new Mutation()
@@ -33,10 +38,13 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacement,
                     DisplayName = "While statement mutation",
-                    Type = Mutator.Unary
+                    Type = Mutator.Statement
                 };
             }
         }
+
+        private bool IsInvocationExpression(ExpressionSyntax condition)
+            => condition is InvocationExpressionSyntax;
 
         private static PrefixUnaryExpressionSyntax PrepareReplacement(ExpressionSyntax expressionSyntax)
         {
