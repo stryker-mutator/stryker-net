@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class ConditionStatementMutatorTests
+    public class NegateConditionMutatorTests
     {
         [Fact]
         public void MutatesIfStatementWithMethodCallWithNoArguments()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.IfStatement(
@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateIfStatementWhenConditionNotInvocationExpression()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.IfStatement(
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateIfStatementWithArguments()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.IfStatement(
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void MutatesWhileStatementWithMethodCallWithNoArguments()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.WhileStatement(
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateWhileStatementWithArguments()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.WhileStatement(
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateWhileStatementWhenConditionNotInvocationExpression()
         {
-            var target = new ConditionStatementMutator();
+            var target = new NegateConditionMutator();
 
             var result = target.ApplyMutations(
                 SyntaxFactory.WhileStatement(

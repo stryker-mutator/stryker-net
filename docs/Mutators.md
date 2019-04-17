@@ -11,6 +11,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Checked Statements](#checked-statements)
 - [Linq Methods](#linq-methods)
 - [String Literals](#string-literals)
+- [Conditions](#conditions)
 <!-- /TOC -->
 
 ## Arithmetic Operators
@@ -107,3 +108,9 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |  `""` | `"Stryker was here!"` |
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
+
+## Conditions
+| Original | Mutated |
+| ------------- | ------------- |
+| `if(enumerator.MoveNext())` | `if(!enumerator.MoveNext())` |
+| `while(enumerator.MoveNext())` | `while(!enumerator.MoveNext())` |

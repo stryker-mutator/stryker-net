@@ -49,7 +49,7 @@ namespace Stryker.Core.Mutants
                     new LinqMutator(),
                     new StringMutator(),
                     new InterpolatedStringMutator(),
-                    new ConditionStatementMutator(),
+                    new NegateConditionMutator(),
                 };
             _mutants = new Collection<Mutant>();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();

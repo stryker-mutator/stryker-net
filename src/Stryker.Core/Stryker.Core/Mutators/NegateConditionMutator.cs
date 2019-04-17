@@ -6,15 +6,21 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class ConditionStatementMutator : MutatorBase<ExpressionSyntax>, IMutator
+    public class NegateConditionMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
-            if (ContainsArguments(node)) yield break;
+            if (ContainsArguments(node))
+            {
+                yield break;
+            }
             
             if (node.Parent is IfStatementSyntax ifStatementSyntax)
             {
-                if(!IsInvocationExpression(ifStatementSyntax.Condition)) yield break;
+                if (!IsInvocationExpression(ifStatementSyntax.Condition))
+                {
+                    yield break;
+                }
                 
                 var replacement = PrepareReplacement(ifStatementSyntax.Condition);
 
@@ -23,13 +29,16 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacement,
                     DisplayName = "If statement mutation",
-                    Type = Mutator.Statement
+                    Type = Mutator.Boolean
                 };
             }
 
             if (node.Parent is WhileStatementSyntax whileStatementSyntax)
             {
-                if(!IsInvocationExpression(whileStatementSyntax.Condition)) yield break;
+                if (!IsInvocationExpression(whileStatementSyntax.Condition))
+                {
+                    yield break;
+                }
                 
                 var replacement = PrepareReplacement(whileStatementSyntax.Condition);
 
@@ -38,7 +47,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacement,
                     DisplayName = "While statement mutation",
-                    Type = Mutator.Statement
+                    Type = Mutator.Boolean
                 };
             }
         }
