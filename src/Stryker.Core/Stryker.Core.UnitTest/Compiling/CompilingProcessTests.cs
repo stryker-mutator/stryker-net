@@ -124,7 +124,7 @@ namespace ExampleProject
                 Should.Throw<ApplicationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
             rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()),
-                Times.Exactly(2));
+                Times.AtLeast(2));
         }
 
         [Fact]
