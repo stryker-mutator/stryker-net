@@ -63,15 +63,15 @@ namespace Stryker.Core.Compiling
             // first try compiling
             var emitResult = compiler.Emit(ms, manifestResources: analyzerResult.Resources);
 
+            // compilation did not succeed, rollbacking failed mutations
             if (!emitResult.Success)
             {
-                // second try compiling
                 (rollbackProcessResult, emitResult) = RetryCompilation(ms, compiler, emitResult, devMode);
             }
 
-            if (!emitResult.Success)
+            // compilation still did not succeed. let's compile a couple times more for good measure
+            for (var count = 0; !emitResult.Success && count < 100; count++)
             {
-                // third try compiling
                 (rollbackProcessResult, emitResult) = RetryCompilation(ms, rollbackProcessResult.Compilation, emitResult, devMode);
             }
 
