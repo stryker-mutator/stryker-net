@@ -32,7 +32,8 @@ namespace Stryker.Core.Initialisation
         // these flags control various optimisation techniques
         private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
 
-        public InitialisationProcess(ProjectInfo projectInfo, IInputFileResolver inputFileResolver = null,
+        public InitialisationProcess(
+            IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
