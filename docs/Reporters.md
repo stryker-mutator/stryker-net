@@ -11,14 +11,14 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 The default reporters are:
 
 ```
-dotnet stryker --reporters ["ConsoleReport", "ConsoleProgressBar"]
+dotnet stryker --reporters "['ConsoleReport', 'ConsoleProgressBar']"
 ```
 
 ## Html reporter
 Our html reporter will output a html file that will visually display your project and all mutations. This is our recomended reporter for larger projects, since it displays large number of mutations in a clear way. 
 
 ```
-dotnet stryker --reporters ["html"]
+dotnet stryker --reporters "['html']"
 ```
 
 Example:
@@ -29,7 +29,7 @@ Example:
 Stryker.NET default report. It displays all mutations right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system.
 
 ```
-dotnet stryker --reporters ["ConsoleReport"]
+dotnet stryker --reporters "['ConsoleReport']"
 ```
 
 Example:
@@ -42,7 +42,7 @@ Example:
 This reporter outputs the current status of the mutation testrun. It has a nice visual look so you can quickly see the progress. We recomend to use this reporter on large projects. It also shows an indication of the estimated time for Stryker.NET to complete.
 
 ```
-dotnet stryker --reporters ["ConsoleProgressBar"]
+dotnet stryker --reporters "['ConsoleProgressBar']"
 ```
 Example:
 
@@ -53,7 +53,7 @@ Example:
 A basic reporter do display the progress of the mutationtest run. It indicates very simple how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
 
 ```
-dotnet stryker --reporters ["ConsoleProgressDots"]
+dotnet stryker --reporters "['ConsoleProgressDots']"
 ```
 Example:
 
@@ -66,5 +66,5 @@ Where `"."` means killed, `"S"` means survived and `"T"` means timed out.
 This reporter outputs a json file with all mutation testrun info of the last run. The json is also used for the HTML reporter, but using this reporter you could use the file for your own purposes.
 
 ```
-dotnet stryker --reporters ["Json"]
+dotnet stryker --reporters "['Json']"
 ```

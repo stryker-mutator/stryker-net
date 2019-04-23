@@ -8,11 +8,12 @@
 *William Stryker: Oh, they serve their purpose... as long as they can be controlled.*
 
 ## Introduction
+Stryker.NET offers you mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs. 
 
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/). Looking for mutation testing in [JavaScript & Typescript](https://stryker-mutator.github.io/stryker) or [Scala](https://stryker-mutator.github.io/stryker4s)?
 
 ## Getting started
-Stryker.NET offers you mutation testing for your .NET Core projects. It allows you to test your tests by temporarily inserting bugs. Stryker.NET is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core global tool. Stryker.NET can be installed in one of these ways:
+Stryker.NET is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core global tool. Stryker.NET can be installed in one of these ways:
 
 ### Global install
 `dotnet tool install -g dotnet-stryker`
@@ -33,7 +34,7 @@ Dotnet global tools do not auto update. To update stryker as a global tool run `
 
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
-#### [Depricated] csproj install
+#### [Deprecated] csproj install
 [![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
 [![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
 
