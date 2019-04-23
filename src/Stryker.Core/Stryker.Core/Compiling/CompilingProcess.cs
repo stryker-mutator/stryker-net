@@ -63,16 +63,18 @@ namespace Stryker.Core.Compiling
             // first try compiling
             var emitResult = compiler.Emit(ms, manifestResources: analyzerResult.Resources);
 
+            var retryCount = 0;
+            // compilation did not succeed, rollbacking failed mutations
             if (!emitResult.Success)
             {
-                // second try compiling
-                (rollbackProcessResult, emitResult) = RetryCompilation(ms, compiler, emitResult, devMode);
+                retryCount = 1;
+                (rollbackProcessResult, emitResult, retryCount) = RetryCompilation(ms, compiler, emitResult, devMode, retryCount);
             }
 
-            if (!emitResult.Success)
+            // compilation still did not succeed. let's compile a couple times more for good measure
+            for (var count = 0; !emitResult.Success && count < 100; count++)
             {
-                // third try compiling
-                (rollbackProcessResult, emitResult) = RetryCompilation(ms, rollbackProcessResult.Compilation, emitResult, devMode);
+                (rollbackProcessResult, emitResult, retryCount) = RetryCompilation(ms, rollbackProcessResult.Compilation, emitResult, devMode, retryCount);
             }
 
             LogEmitResult(emitResult);
@@ -93,10 +95,11 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (RollbackProcessResult, EmitResult) RetryCompilation(MemoryStream ms,
+        private (RollbackProcessResult, EmitResult, int) RetryCompilation(MemoryStream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
-            bool devMode)
+            bool devMode,
+            int retryCount)
         {
             LogEmitResult(previousEmitResult);
             // remove broken mutations
@@ -105,9 +108,10 @@ namespace Stryker.Core.Compiling
             // reset the memoryStream for the second compilation
             ms.SetLength(0);
 
-            // second try compiling
+            _logger.LogDebug($"Retrying compilation for {retryCount}{FirstSecondThird(retryCount)} time.");
+
             var emitResult = rollbackProcessResult.Compilation.Emit(ms, manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources);
-            return (rollbackProcessResult, emitResult);
+            return (rollbackProcessResult, emitResult, ++retryCount);
         }
 
         private void LogEmitResult(EmitResult result)
@@ -125,6 +129,15 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogDebug("Compilation successful");
             }
+        }
+
+        private string FirstSecondThird(int number)
+        {
+            return
+                number > 3 ? "th" :
+                number == 3 ? "rd" :
+                number == 2 ? "nd" :
+                "st";
         }
     }
 }
