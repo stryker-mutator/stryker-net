@@ -33,7 +33,10 @@ namespace Stryker.Core.Compiling
             SelectorExpression = result.Groups[1].Value.Replace("Stryker", HelperNamespace);
             foreach (var file in Files)
             {
-                Helpers.Add(CSharpSyntaxTree.ParseText(GetSourceFromResource(file).Replace("Stryker", HelperNamespace), new CSharpParseOptions(LanguageVersion.Latest)));
+                var syntaxTree = CSharpSyntaxTree.ParseText(
+                    GetSourceFromResource(file).Replace("Stryker", HelperNamespace),
+                    new CSharpParseOptions(LanguageVersion.Latest), path:file);
+                Helpers.Add(syntaxTree);
             }
         }
 

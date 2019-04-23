@@ -79,7 +79,7 @@ namespace Stryker
             state = state ?? _coveredMutants;
             lock (state)
             {
-                report = string.Join(',', state);
+                report = string.Join(",", state);
             }
 
             channel.SendText(report);
