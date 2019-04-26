@@ -174,8 +174,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Example.props"), new MockFileData("")},
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "Example.props"), new MockFileData("")},
+                    { Path.Combine(_filesystemRoot, "NonSharedProject", "NonSharedSource.cs"), new MockFileData(sourceFile)},
                     { projectUnderTestPath, new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
