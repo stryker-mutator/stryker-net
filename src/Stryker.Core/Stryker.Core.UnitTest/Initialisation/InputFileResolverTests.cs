@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InputFileResolver_InitializeShouldFIndFilesRecursively()
+        public void InputFileResolver_InitializeShouldFindFilesRecursively()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -151,6 +151,62 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
+        }
+
+        [Fact]
+        public void InputFileResolver_InitializeShouldNotResolveImportedPropsFile()
+        {
+            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+               
+     <Import Project=""../NonSharedProject/Example.props"" Label=""Shared"" />
+
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { Path.Combine(_filesystemRoot, "NonSharedProject", "Example.props"), new MockFileData("")},
+                    { Path.Combine(_filesystemRoot, "NonSharedProject", "NonSharedSource.cs"), new MockFileData(sourceFile)},
+                    { projectUnderTestPath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { projectUnderTestPath },
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = testProjectPath,
+                    Properties = new Dictionary<string, string>(),
+                    References = new string[] { "" }
+                });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>(),
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>()
+                });
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
+
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
