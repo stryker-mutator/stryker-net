@@ -179,9 +179,6 @@ namespace ExampleProject
             }
         }
 
-
-
-
         [Fact]
         public void CompilingProcessTests_SignedAssembliesMustBeSigned()
         {
