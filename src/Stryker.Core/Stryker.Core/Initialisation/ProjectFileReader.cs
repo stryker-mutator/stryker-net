@@ -74,8 +74,15 @@ namespace Stryker.Core.Initialisation
 
         public IEnumerable<string> FindSharedProjects(XDocument document)
         {
-            var projectReferenceElements = document.Elements().Descendants().Where(x => string.Equals(x.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
-            return projectReferenceElements.SelectMany(x => x.Attributes(XName.Get("Project"))).Select(y => FilePathUtils.ConvertPathSeparators(y.Value));
+            var importStatements = document.Elements().Descendants()
+                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+
+            var sharedProjects = importStatements
+                .SelectMany(importStatement => importStatement.Attributes(
+                    XName.Get("Project")))
+                .Select(importFileLocation => FilePathUtils.ConvertPathSeparators(importFileLocation.Value))
+                .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
+            return sharedProjects;
         }
 
         public string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
