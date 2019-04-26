@@ -216,6 +216,15 @@ namespace Stryker.Core.Mutants
                 var mutant = Mutate(expressionStatement.Expression);
                 return currentNode.ReplaceNode(expressionStatement.Expression, mutant);
             }
+            if (currentNode is InvocationExpressionSyntax invocationExpression && invocationExpression.ArgumentList.Arguments.Count == 0)
+            {
+                var mutant = FindMutants(invocationExpression).FirstOrDefault();
+                if (mutant != null)
+                {
+                    _mutants.Add(mutant);
+                    return MutantPlacer.PlaceWithConditionalExpression(invocationExpression, mutant.Mutation.ReplacementNode as ExpressionSyntax, mutant.Id);
+                }
+            }
             var expressions = GetExpressionSyntax(currentNode).Where(x => x != null);
             if (expressions.Any())
             {
@@ -289,7 +298,6 @@ namespace Stryker.Core.Mutants
             // The mutations should be placed using an IfStatement
             foreach (var mutant in FindMutants(subExpression))
             {
-                _mutants.Add(mutant);
                 var mutatedNode = ApplyMutant(originalNode, mutant);
                 ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
             }
@@ -309,7 +317,6 @@ namespace Stryker.Core.Mutants
             }
             foreach (var mutant in FindMutants(currentNode))
             {
-                _mutants.Add(mutant);
                 var mutatedNode = ApplyMutant(currentNode, mutant);
                 expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, mutatedNode, mutant.Id);
             }
@@ -334,8 +341,9 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        private static T ApplyMutant<T>(T node, IReadOnlyMutant mutant) where T: SyntaxNode
+        private T ApplyMutant<T>(T node, Mutant mutant) where T: SyntaxNode
         {
+            _mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
 

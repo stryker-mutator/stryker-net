@@ -1,5 +1,7 @@
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using Xunit;
@@ -8,83 +10,61 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class NegateConditionMutatorTests
     {
-        [Fact]
-        public void MutatesIfStatementWithMethodCallWithNoArguments()
+
+        /// <summary>
+        ///     Generator for different Linqexpressions
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        private InvocationExpressionSyntax GenerateExpressions(string expression)
+        {
+            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+using System;
+ 
+namespace TestApplication
+{{
+    class Program
+    {{
+        static void Main(string[] args)
+        {{
+            {expression}
+        }}
+    }}
+}}");
+            var invocationExpression = tree.GetRoot()
+                .DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Single();
+
+            return invocationExpression;
+        }
+
+        [Theory]
+        [InlineData("if (Method()) => return true;")]
+        [InlineData("while (Method()) => age++;")]
+        public void MutatesStatementWithMethodCallWithNoArguments(string method)
         {
             var target = new NegateConditionMutator();
 
-            var result = target.ApplyMutations(
-                SyntaxFactory.IfStatement(
-                    SyntaxFactory.ParseExpression("Method()"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
+            var node = GenerateExpressions(method);
+
+            var result = target.ApplyMutations(node).ToList();
             
             result.Count.ShouldBe(1);
             result.First().ReplacementNode.ToString().ShouldBe("!Method()");
         }
-        
-        [Fact]
-        public void ShouldNotMutateIfStatementWhenConditionNotInvocationExpression()
+
+        [Theory]
+        [InlineData("if (Method(node.Parent != null)) => return true;")]
+        [InlineData("while (Method(false)) => return true;")]
+        public void ShouldNotMutateStatementWithArguments(string method)
         {
             var target = new NegateConditionMutator();
 
-            var result = target.ApplyMutations(
-                SyntaxFactory.IfStatement(
-                    SyntaxFactory.ParseExpression("node.Parent != null"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
-            
-            result.Count.ShouldBe(0);
-        }
-        
-        [Fact]
-        public void ShouldNotMutateIfStatementWithArguments()
-        {
-            var target = new NegateConditionMutator();
+            var node = GenerateExpressions(method);
 
-            var result = target.ApplyMutations(
-                SyntaxFactory.IfStatement(
-                    SyntaxFactory.ParseExpression("Method(false)"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
+            var result = target.ApplyMutations(node).ToList();
 
-            result.Count.ShouldBe(0);
-        }
-        
-        [Fact]
-        public void MutatesWhileStatementWithMethodCallWithNoArguments()
-        {
-            var target = new NegateConditionMutator();
-
-            var result = target.ApplyMutations(
-                SyntaxFactory.WhileStatement(
-                    SyntaxFactory.ParseExpression("Method()"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
-            
-            result.Count.ShouldBe(1);
-            result.First().ReplacementNode.ToString().ShouldBe("!Method()");
-        }
-        
-        [Fact]
-        public void ShouldNotMutateWhileStatementWithArguments()
-        {
-            var target = new NegateConditionMutator();
-
-            var result = target.ApplyMutations(
-                SyntaxFactory.WhileStatement(
-                    SyntaxFactory.ParseExpression("Method(false)"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
-
-            result.Count.ShouldBe(0);
-        }
-        
-        [Fact]
-        public void ShouldNotMutateWhileStatementWhenConditionNotInvocationExpression()
-        {
-            var target = new NegateConditionMutator();
-
-            var result = target.ApplyMutations(
-                SyntaxFactory.WhileStatement(
-                    SyntaxFactory.ParseExpression("node.Parent != null"),
-                    SyntaxFactory.EmptyStatement()).Condition).ToList();
-            
             result.Count.ShouldBe(0);
         }
     }
