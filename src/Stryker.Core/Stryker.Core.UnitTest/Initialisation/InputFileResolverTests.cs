@@ -168,13 +168,13 @@ namespace Stryker.Core.UnitTest.Initialisation
     <ItemGroup>
     </ItemGroup>
                
-     <Import Project=""../SharedProject/Example.props"" Label=""Shared"" />
+     <Import Project=""../NonSharedProject/Example.props"" Label=""Shared"" />
 
 </Project>";
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "Example.props"), new MockFileData("")},
+                    { Path.Combine(_filesystemRoot, "NonSharedProject", "Example.props"), new MockFileData("")},
                     { Path.Combine(_filesystemRoot, "NonSharedProject", "NonSharedSource.cs"), new MockFileData(sourceFile)},
                     { projectUnderTestPath, new MockFileData(projectFile)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
