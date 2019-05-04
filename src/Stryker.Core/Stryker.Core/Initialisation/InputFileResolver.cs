@@ -102,14 +102,17 @@ namespace Stryker.Core.Initialisation
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
-                var fileName = Path.GetFileName(file);
-                folderComposite.Add(new FileLeaf()
+                if (!file.EndsWith(".xaml.cs"))
                 {
-                    SourceCode = _fileSystem.File.ReadAllText(file),
-                    Name = _fileSystem.Path.GetFileName(file),
-                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                    FullPath = file
-                });
+                    var fileName = Path.GetFileName(file);
+                    folderComposite.Add(new FileLeaf()
+                    {
+                        SourceCode = _fileSystem.File.ReadAllText(file),
+                        Name = _fileSystem.Path.GetFileName(file),
+                        RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
+                        FullPath = file
+                    });
+                }
             }
 
             return folderComposite;
