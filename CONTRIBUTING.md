@@ -15,7 +15,7 @@ New features are welcome! Either as requests or proposals.
 1.	Run the tests and verify they pass
 
 #### Setup Stryker.NET locally
-While developing on Stryker.NET we advise to work in [Visual Studio 2017](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
+While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
 
 #### Example: Steps to run Stryker on Stryker
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
