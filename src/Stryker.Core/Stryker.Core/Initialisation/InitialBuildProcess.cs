@@ -39,10 +39,6 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(solutionPath))
-                {
-                    _logger.LogWarning("Stryker is running on a .net core project but a solution path was provided. The solution path option is only needed on .net framework projects and can be removed. Please update your stryker options.");
-                }
                 // Build with dotnet build
                 result = _processExecutor.Start(projectPath, "dotnet", $"build \"{projectName}\"");
             }
