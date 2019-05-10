@@ -20,7 +20,7 @@ namespace Stryker.CLI
                 Console.WriteLine(strEx.ToString());
                 return 1;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return 1;
             }

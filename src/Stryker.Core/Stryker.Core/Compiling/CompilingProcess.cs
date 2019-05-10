@@ -76,12 +76,6 @@ namespace Stryker.Core.Compiling
                 (rollbackProcessResult, emitResult, retryCount) = RetryCompilation(ms, compilation, emitResult, devMode, retryCount);
             }
 
-            // compilation still did not succeed. let's compile a couple times more for good measure
-            for (var count = 0; !emitResult.Success && count < 100; count++)
-            {
-                (rollbackProcessResult, emitResult, retryCount) = RetryCompilation(ms, rollbackProcessResult.Compilation, emitResult, devMode, retryCount);
-            }
-
             LogEmitResult(emitResult);
             if (!emitResult.Success)
             {
@@ -126,7 +120,7 @@ namespace Stryker.Core.Compiling
             // reset the memoryStream for the second compilation
             ms.SetLength(0);
 
-            _logger.LogDebug($"Retrying compilation for {retryCount}{FirstSecondThird(retryCount)} time.");
+            _logger.LogDebug($"Retrying compilation for the {ReadableNumber(retryCount)} time.");
 
             var emitResult = TryCompilation(ms, rollbackProcessResult.Compilation);
 
@@ -163,13 +157,19 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private string FirstSecondThird(int number)
+        private string ReadableNumber(int number)
         {
-            return
-                number > 3 ? "th" :
-                number == 3 ? "rd" :
-                number == 2 ? "nd" :
-                "st";
+            switch (number)
+            {
+                case 1:
+                    return "first";
+                case 2:
+                    return "second";
+                case 3:
+                    return "third";
+                default:
+                    return number + "th";
+            }
         }
     }
 }
