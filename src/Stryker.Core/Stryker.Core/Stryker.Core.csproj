@@ -42,9 +42,9 @@
 	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
 	<PackageReference Include="Microsoft.TestPlatform" Version="16.1.0" />
-	<PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.0.1" />
-	<PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.0.1" />
-	<PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.0.1" />
+	<PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.1.0" />
+	<PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.1.0" />
+	<PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.1.0" />
 	<PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.0.48" />
 	<PackageReference Include="Mono.Cecil" Version="0.10.3" />
 	<PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
