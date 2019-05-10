@@ -109,6 +109,7 @@ namespace Stryker.Core.Compiling
             {
                 // remove broken mutations
                 rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, devMode);
+                compilation = rollbackProcessResult.Compilation;
             }
 
             // reset the memoryStream
