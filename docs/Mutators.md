@@ -47,7 +47,9 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ------------- | 
 | `true`	| `false` |
 | `false`	| `true` |
-| `!`		| ` ` |
+| `!person.IsAdult()`		| `person.IsAdult()` |
+| `if(person.IsAdult())` | `if(!person.IsAdult())` |
+| `while(person.IsAdult())` | `while(!person.IsAdult())` |
 
 ## Assignment Statements
 | Original | Mutated | 
