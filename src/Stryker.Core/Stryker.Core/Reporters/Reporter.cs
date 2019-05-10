@@ -3,8 +3,11 @@
     public enum Reporter
     {
         All,
+        Progress,
         ConsoleProgressBar,
+        Dots,
         ConsoleProgressDots,
+        ClearText,
         ConsoleReport,
         Json,
         Html
