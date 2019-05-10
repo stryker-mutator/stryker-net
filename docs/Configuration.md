@@ -64,7 +64,7 @@ During a mutation testrun one or more reporters can be enabled. A reporter will 
 dotnet stryker --reporters "['html', 'progress']"
 ```
 
-You can find a list of all available reporters and what output they product in the [reporter docs](/Reporters.md)
+You can find a list of all available reporters and what output they product in the [reporter docs](/docs/Reporters.md)
 
 Default: `"['cleartext', 'progress']"`
 
