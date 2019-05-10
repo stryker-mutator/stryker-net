@@ -72,11 +72,8 @@ namespace Stryker.Core.Compiling
             
             for (var count = 1; !emitResult.Success && count < 50; count++)
             {
-                if (!emitResult.Success)
-                {
-                    // compilation did not succeed. let's compile a couple times more for good measure
-                    (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, emitResult, devMode, retryCount);
-                }
+                // compilation did not succeed. let's compile a couple times more for good measure
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, rollbackProcessResult?.Compilation ?? compilation, emitResult, devMode, retryCount);
             }
 
             if (!emitResult.Success)
