@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Stryker.Core.Compiling
 {
@@ -50,7 +52,10 @@ namespace Stryker.Core.Compiling
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
 
-            var compiler = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
+            // Set assembly and file info
+            AddVersionInfoSyntaxes(syntaxTrees, analyzerResult);
+
+            var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: syntaxTrees,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                                                       allowUnsafe: true,
@@ -61,16 +66,16 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult = null;
 
             // first try compiling
-            var emitResult = compiler.Emit(ms, manifestResources: analyzerResult.Resources);
-
-            // compilation did not succeed. let's compile a couple times more for good measure
+            EmitResult emitResult = null;
+            int retryCount = 1;
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
+            
             for (var count = 1; !emitResult.Success && count < 50; count++)
             {
-                (rollbackProcessResult, emitResult, count) = RetryCompilation(ms, compiler, emitResult, devMode, count);
-                compiler = rollbackProcessResult.Compilation;
+                // compilation did not succeed. let's compile a couple times more for good measure
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, rollbackProcessResult?.Compilation ?? compilation, emitResult, devMode, retryCount);
             }
 
-            LogEmitResult(emitResult);
             if (!emitResult.Success)
             {
                 // compiling failed
@@ -88,23 +93,52 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (RollbackProcessResult, EmitResult, int) RetryCompilation(MemoryStream ms,
+        private (RollbackProcessResult, EmitResult, int) TryCompilation(
+            MemoryStream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool devMode,
             int retryCount)
         {
-            LogEmitResult(previousEmitResult);
-            // remove broken mutations
-            var rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, devMode);
+            RollbackProcessResult rollbackProcessResult = null;
 
-            // reset the memoryStream for the second compilation
+            if (previousEmitResult != null)
+            {
+                // remove broken mutations
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, devMode);
+                compilation = rollbackProcessResult.Compilation;
+            }
+
+            // reset the memoryStream
             ms.SetLength(0);
 
-            _logger.LogDebug($"Retrying compilation for the {ReadableNumber(retryCount)} time.");
+            _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
 
-            var emitResult = rollbackProcessResult.Compilation.Emit(ms, manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources);
+            var emitResult = compilation.Emit(
+                ms,
+                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources,
+                win32Resources: compilation.CreateDefaultWin32Resources(
+                    versionResource: true, // Important!
+                    noManifest: false,
+                    manifestContents: null,
+                    iconInIcoFormat: null));
+
+            LogEmitResult(emitResult);
+
             return (rollbackProcessResult, emitResult, ++retryCount);
+        }
+
+        private void AddVersionInfoSyntaxes(IEnumerable<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
+        {
+            // add assembly info
+            StringBuilder assInfo = new StringBuilder();
+
+            assInfo.AppendLine("using System.Reflection;");
+            assInfo.AppendLine($"[assembly: AssemblyTitle(\"{analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
+            assInfo.AppendLine("[assembly: AssemblyVersion(\"0.0.0\")]");
+            assInfo.AppendLine("[assembly: AssemblyFileVersion(\"0.0.0\")]");
+
+            syntaxTrees.ToList().Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
         }
 
         private void LogEmitResult(EmitResult result)
