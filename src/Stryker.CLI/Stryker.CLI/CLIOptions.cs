@@ -88,17 +88,16 @@ namespace Stryker.CLI
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
         {
             ArgumentName = "--max-concurrent-test-runners",
-            ArgumentShortName = "-m <integer>",
+            ArgumentShortName = "-c <integer>",
             ArgumentDescription = @"Mutation testing is time consuming. 
-                                                By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
-                                                This setting allows you to override this default behavior.
+By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
+This setting allows you to override this default behavior.
 
-                                                Reasons you might want to lower this setting:
-                                                                 
-                                                    - Your test runner starts a browser (another CPU-intensive process)
-                                                    - You're running on a shared server
-                                                    - You are running stryker in the background while doing other work
-                                ",
+Reasons you might want to lower this setting:
+    - Your test project cannot run in parallel
+    - Your test runner starts a browser (another CPU-intensive process)
+    - You're running on a shared server
+    - You are running stryker in the background while doing other work",
             DefaultValue = _defaultOptions.ConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
         };
@@ -130,11 +129,20 @@ namespace Stryker.CLI
             JsonKey = "threshold-high"
         };
 
+        public static readonly CLIOption<string[]> Mutate = new CLIOption<string[]>
+        {
+            ArgumentName = "--mutate",
+            ArgumentShortName = "-m <mutate>",
+            ArgumentDescription = "Set files to use for mutation. Example: ['C:\\ExampleProject\\Example.cs'] or: ['!C:\\ExampleProject\\ExampleDir', '!C:\\ExampleProject\\Example.cs]",
+            DefaultValue = null,
+            JsonKey = "mutate"
+        };
+
         public static readonly CLIOption<string[]> FilesToExclude = new CLIOption<string[]>
         {
             ArgumentName = "--files-to-exclude",
             ArgumentShortName = "-fte <files-to-exclude>",
-            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
+            ArgumentDescription = "([Deprecated] Use 'mutate' instead) Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
             DefaultValue = null,
             JsonKey = "files-to-exclude"
         };

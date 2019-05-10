@@ -30,16 +30,18 @@ namespace Stryker.Core.Initialisation
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
         private IFileSystem _fileSystem { get; }
         private IProjectFileReader _projectFileReader { get; }
+        private IInputFileMatcher _inputFileMatcher { get; }
         private ILogger _logger { get; set; }
 
-        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
+        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, IInputFileMatcher inputFileMatcher)
         {
             _fileSystem = fileSystem;
             _projectFileReader = projectFileReader;
+            _inputFileMatcher = inputFileMatcher;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
-        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader()) { }
+        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), new InputFileMatcher()) { }
 
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
@@ -71,9 +73,10 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
+                inputFiles.Add(FindInputFiles(folder));
             }
-            MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
+            MarkInputFilesAsExcludedDeprecated(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
+            _inputFileMatcher.MatchInputFiles(inputFiles, options.Mutate.ToList(), projectUnderTestDir);
             result.ProjectContents = inputFiles;
 
             ValidateResult(result, options);
@@ -86,7 +89,7 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -98,7 +101,7 @@ namespace Stryker.Core.Initialisation
             };
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, folderComposite.RelativePath));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
@@ -120,8 +123,9 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
+        private void MarkInputFilesAsExcludedDeprecated(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
         {
+            _logger.LogWarning("Using 'files-to-exclude' is deprecated. Use 'mutate' instead.");
             var allFiles = root.GetAllFiles().ToList();
 
             foreach (var path in pathsToExclude)

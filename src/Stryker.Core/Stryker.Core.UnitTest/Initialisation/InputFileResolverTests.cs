@@ -79,7 +79,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -146,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>()
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -202,7 +202,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>()
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -283,7 +283,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -340,7 +340,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             Assert.Throws<FileNotFoundException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
 
@@ -403,7 +403,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "SharedDir", "SharedProject" },
                     },
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -465,7 +465,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (../$(SharedDir)/Example.projitems). Please check your project file ({projectUnderTestPath}) and try again.");
@@ -495,7 +495,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
@@ -532,7 +532,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, filesToExclude: new[] { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") }));
 
@@ -555,7 +555,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
@@ -578,7 +578,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcore2.1",
                     ProjectFilePath = testProjectPath
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
@@ -593,7 +593,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
-            var target = new InputFileResolver(fileSystem, null);
+            var target = new InputFileResolver(fileSystem, null, null);
 
             var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
 
@@ -620,7 +620,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     References = new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }
                 });
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
         }
@@ -646,7 +646,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     References = new string[] { "" }
                 });
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
 
             target.ResolveInput(options);
@@ -676,7 +676,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     References = new string[] { "" }
                 });
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
 
             target.ResolveInput(options);
@@ -705,7 +705,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     References = new string[0]
                 });
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
 
             target.ResolveInput(options);
@@ -733,7 +733,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     References = new string[0]
                 });
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
 
             target.ResolveInput(options);
@@ -772,7 +772,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, null);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 

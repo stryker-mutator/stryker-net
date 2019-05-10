@@ -48,6 +48,7 @@ namespace Stryker.CLI
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
+            var mutate = CreateOption(app, CLIOptions.Mutate);
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
@@ -71,6 +72,7 @@ namespace Stryker.CLI
                     thresholdHighParam,
                     thresholdLowParam,
                     thresholdBreakParam,
+                    mutate,
                     filesToExclude,
                     testRunner,
                     solutionPathParam);

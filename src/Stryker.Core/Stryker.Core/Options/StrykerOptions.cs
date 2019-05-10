@@ -1,4 +1,5 @@
-﻿using Serilog.Events;
+﻿using DotNet.Globbing;
+using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -29,6 +30,7 @@ namespace Stryker.Core.Options
         public int ConcurrentTestrunners { get; }
 
         public Threshold Thresholds { get; }
+        public IEnumerable<PathOption> Mutate { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
 
@@ -49,6 +51,7 @@ namespace Stryker.Core.Options
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
+            string[] mutate = null,
             string[] filesToExclude = null,
             string testRunner = "dotnettest",
             string solutionPath = null)
@@ -66,6 +69,7 @@ namespace Stryker.Core.Options
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
+            Mutate = ValidateMutate(mutate);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
@@ -208,12 +212,27 @@ namespace Stryker.Core.Options
             return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)
+
+        private IEnumerable<PathOption> ValidateMutate(string[] mutate)
         {
-            foreach (var excludedFile in filesToExclude ?? Enumerable.Empty<string>())
+            foreach (var path in mutate ?? Enumerable.Empty<string>())
             {
                 // The logger is not yet available here. The paths will be validated in the InputFileResolver
-                var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
+                var pathOption = new PathOption()
+                {
+                    Exclude = path.StartsWith('!'),
+                    Matcher = Glob.Parse(FilePathUtils.ConvertPathSeparators(path.Split('!').Last()))
+                };
+                yield return pathOption;
+            }
+        }
+
+        private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)
+        {
+            foreach (var path in filesToExclude ?? Enumerable.Empty<string>())
+            {
+                // The logger is not yet available here. The paths will be validated in the InputFileResolver
+                var platformFilePath = FilePathUtils.ConvertPathSeparators(path);
                 yield return platformFilePath;
             }
         }
