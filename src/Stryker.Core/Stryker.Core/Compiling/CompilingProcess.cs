@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System;
@@ -51,15 +52,8 @@ namespace Stryker.Core.Compiling
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
 
-            // add assembly info
-            StringBuilder assInfo = new StringBuilder();
-
-            assInfo.AppendLine("using System.Reflection;");
-            assInfo.AppendLine($"[assembly: AssemblyTitle(\"{analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
-            assInfo.AppendLine("[assembly: AssemblyVersion(\"0.0.0\")]");
-            assInfo.AppendLine("[assembly: AssemblyFileVersion(\"0.0.0\")]");
-
-            syntaxTrees.ToList().Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
+            // Set assembly and file info
+            AddVersionInfoSyntaxes(syntaxTrees, analyzerResult);
 
             var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: syntaxTrees,
@@ -72,14 +66,9 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult = null;
 
             // first try compiling
-            var emitResult = compilation.Emit(ms, 
-                manifestResources: analyzerResult.Resources, 
-                win32Resources: compilation.CreateDefaultWin32Resources(versionResource: true, // Important!
-                                                                noManifest: false,
-                                                                manifestContents: null,
-                                                                iconInIcoFormat: null));
-
             var retryCount = 0;
+            var emitResult = TryCompilation(ms, compilation);
+
             // compilation did not succeed, rollbacking failed mutations
             if (!emitResult.Success)
             {
@@ -111,7 +100,20 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (RollbackProcessResult, EmitResult, int) RetryCompilation(MemoryStream ms,
+        private EmitResult TryCompilation(MemoryStream ms, CSharpCompilation compilation)
+        {
+            return compilation.Emit(
+                ms,
+                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources,
+                win32Resources: compilation.CreateDefaultWin32Resources(
+                    versionResource: true, // Important!
+                    noManifest: false,
+                    manifestContents: null,
+                    iconInIcoFormat: null));
+        }
+
+        private (RollbackProcessResult, EmitResult, int) RetryCompilation(
+            MemoryStream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool devMode,
@@ -126,13 +128,22 @@ namespace Stryker.Core.Compiling
 
             _logger.LogDebug($"Retrying compilation for {retryCount}{FirstSecondThird(retryCount)} time.");
 
-            var emitResult = rollbackProcessResult.Compilation.Emit(ms, 
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources,
-                win32Resources: compilation.CreateDefaultWin32Resources(versionResource: true, // Important!
-                                                                noManifest: false,
-                                                                manifestContents: null,
-                                                                iconInIcoFormat: null));
+            var emitResult = TryCompilation(ms, rollbackProcessResult.Compilation);
+
             return (rollbackProcessResult, emitResult, ++retryCount);
+        }
+
+        private void AddVersionInfoSyntaxes(IEnumerable<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
+        {
+            // add assembly info
+            StringBuilder assInfo = new StringBuilder();
+
+            assInfo.AppendLine("using System.Reflection;");
+            assInfo.AppendLine($"[assembly: AssemblyTitle(\"{analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
+            assInfo.AppendLine("[assembly: AssemblyVersion(\"0.0.0\")]");
+            assInfo.AppendLine("[assembly: AssemblyFileVersion(\"0.0.0\")]");
+
+            syntaxTrees.ToList().Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
         }
 
         private void LogEmitResult(EmitResult result)
