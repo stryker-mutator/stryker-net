@@ -88,7 +88,7 @@ namespace Stryker.Core.Options
         {
             if (reporters == null)
             {
-                foreach (var reporter in new[] { Reporter.ConsoleProgressBar, Reporter.ConsoleReport })
+                foreach (var reporter in new[] { Reporter.Progress, Reporter.ClearText })
                 {
                     yield return reporter;
                 }
