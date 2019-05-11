@@ -167,19 +167,26 @@ namespace Stryker.Core.Compiling
                 if (mutationIf == null)
                 {
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
-                    _logger.LogError($"Unable to rollback mutation for node {brokenMutation} with error: {diagnostic.GetMessage()} (at {errorLocation.Path}, line: {errorLocation.StartLinePosition.Line}, col: {errorLocation.StartLinePosition.Character}).");
+                    _logger.LogWarning("Stryker.NET encountered an compile error in {0} with message: {1} (Source code: {2})", errorLocation.Path, diagnostic.GetMessage(), brokenMutation);
                     if (devMode)
                     {
-                        _logger.LogCritical("Stryker.Net will stop (due to dev-mode option sets to true)");
-                        throw new ApplicationException("Internal error due to failed rollback of a mutantt.");
+                        _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
+                        throw new ApplicationException("Internal error due to compile error.");
                     }
-                    _logger.LogError("This should not happen, please report this as an issue on github with the previous error message.");
-                    _logger.LogWarning("Safe Mode! Rolling back all mutations in method.", brokenMutation, diagnostic.GetMessage());
+                    _logger.LogWarning("Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutants in the node
 
                     var scan = new Dictionary<SyntaxNode, int>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
+
+                    if (!scan.Any())
+                    {
+                        // Not able to rollback anything
+                        _logger.LogCritical("Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
+                        throw new ApplicationException("Internal error due to compile error.");
+                    }
+
                     foreach (var entry in scan)
                     {
                         if (!brokenMutations.Contains(entry.Key))
