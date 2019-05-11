@@ -68,7 +68,7 @@ namespace Stryker.Core.ToolHelpers
             {
                 var nugetPackageFolders = CollectNugetPackageFolders();
 
-                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && !(nugetAssemblies.Count == 0))
+                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && nugetAssemblies.Count != 0)
                 {
                     Merge(_vstestPaths, nugetAssemblies);
                 }
@@ -76,7 +76,7 @@ namespace Stryker.Core.ToolHelpers
                 {
                     Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 }
-                else if (_vstestPaths.Count == 0)
+                else
                 {
                     throw new ApplicationException("Could not find or deploy vstest. Exiting.");
                 }

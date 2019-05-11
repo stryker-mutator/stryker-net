@@ -19,7 +19,6 @@ namespace Stryker.DataCollector
         public event ConnectionEvent RaiseNewClientEvent;
         public event DataCollector.MessageReceived RaiseReceivedMessage;
 
-
         public CommunicationServer(string name)
         {
             PipeName = $"Stryker.{name}.Pipe.{Stopwatch.GetTimestamp()}";

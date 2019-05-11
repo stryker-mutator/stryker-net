@@ -29,7 +29,8 @@ namespace Stryker.Core.Initialisation
         private ILogger Logger { get; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
 
-        // these flags control various optimisation techniques
+        // these flags control various optimization techniques
+        // TODO: expose these options through the CLI (once features is stable)
         private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill;
 
         public InitialisationProcess(

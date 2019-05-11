@@ -20,7 +20,8 @@ namespace Stryker.DataCollector
         private string _lastMessage;
         private bool _coverageOn;
 
-        private const string TemplateForConfiguration = @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
+        private const string TemplateForConfiguration = 
+            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
         <Configuration>
         </Configuration>
         </InProcDataCollector>

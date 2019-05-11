@@ -237,7 +237,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            var dataCollectorSettings = true ? "" : CoverageCollector.GetVsTestSettings();
+            var dataCollectorSettings = NeedCoverage() ? "" : CoverageCollector.GetVsTestSettings();
             var runSettings = $@"
 <RunSettings>
 <RunConfiguration>
@@ -251,6 +251,11 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
 
             return runSettings;
+        }
+
+        private bool NeedCoverage()
+        {
+            return _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
