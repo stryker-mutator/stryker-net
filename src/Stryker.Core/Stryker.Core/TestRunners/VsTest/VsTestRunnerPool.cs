@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
+﻿using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;

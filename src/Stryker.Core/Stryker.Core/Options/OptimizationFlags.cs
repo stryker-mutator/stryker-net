@@ -2,7 +2,7 @@
 
 namespace Stryker.Core.Options
 {
-    // Optmisation options 
+    // Optimization options 
     [Flags]
     public enum OptimizationFlags
     {

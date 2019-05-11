@@ -168,6 +168,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         handler.TestsFailed += Handler_TestsFailed;
                     }
+
                     if (testCases != null)
                     {
                         _vsTestConsole.RunTestsWithCustomTestHost(testCases, runSettings, handler, testHostLauncher);
@@ -177,16 +178,16 @@ namespace Stryker.Core.TestRunners.VsTest
                         _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
                     }
 
-                    if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill))
-                    {
-                        handler.TestsFailed -= Handler_TestsFailed;
-                    }
-
                     // Test host exited signal comes after the run complete
                     processExitedSignal.WaitOne();
 
                     // At this point, run must have complete. Check signal for true
                     runCompleteSignal.WaitOne();
+
+                    if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill))
+                    {
+                        handler.TestsFailed -= Handler_TestsFailed;
+                    }
 
                     // dump coverage
                     var results = handler.TestResults;
@@ -236,9 +237,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            var dataCollectorSettings = CoverageCollector.GetVsTestSettings();
-            var runsettings = $@"
-  <RunConfiguration>
+            var dataCollectorSettings = true ? "" : CoverageCollector.GetVsTestSettings();
+            var runSettings = $@"
+<RunSettings>
+<RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
@@ -246,9 +248,9 @@ namespace Stryker.Core.TestRunners.VsTest
    {dataCollectorSettings}
 </RunSettings>";
 
-            _logger.LogDebug("VsTest runsettings set to: {0}", runsettings);
+            _logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
 
-            return runsettings;
+            return runSettings;
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
