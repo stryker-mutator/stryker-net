@@ -6,8 +6,10 @@ namespace Stryker.Core.Options
     [Flags]
     public enum OptimizationFlags
     {
-        SkipUncoveredMutants,
-        CoverageBasedTest,
-        AbortTestOnKill
+        NoOptimization = 0,
+        SkipUncoveredMutants = 1,
+        CoverageBasedTest = 2,
+        AbortTestOnKill = 4,
+        CaptureCoveragePerTest = 8
     }
 }

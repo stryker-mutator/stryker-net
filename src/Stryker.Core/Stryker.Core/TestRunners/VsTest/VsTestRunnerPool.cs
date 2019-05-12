@@ -2,6 +2,7 @@
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -48,7 +49,26 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage()
         {
             TestRunResult result;
-            var runner = TakeRunner();
+            VsTestRunner runner;
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            {
+                var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+                Parallel.ForEach(_discoveredTests, options, testCase =>
+                {
+                    runner = TakeRunner();
+                    try
+                    {
+                        runner.CoverageForTest(testCase);
+                    }
+                    finally
+                    {
+                        ReturnRunner(runner);
+                    }
+
+                });
+                return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
+            }
+            runner = TakeRunner();
             try
             {
                 if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))

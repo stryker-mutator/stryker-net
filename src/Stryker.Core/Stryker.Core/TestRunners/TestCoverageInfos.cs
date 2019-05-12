@@ -30,24 +30,27 @@ namespace Stryker.Core.TestRunners
 
         public void DeclareMappingForATest(object discoveredTest, IEnumerable<int> captureCoverage)
         {
-            if (captureCoverage == null)
-            {
-                // no coverage info available, the test will have to be run for each mutant
-                _testsWithoutCoverageInfos.Add(discoveredTest);
-            }
-            else
-            {
-                foreach (var id in captureCoverage)
+            lock(_mutantToTests)
+            { 
+                if (captureCoverage == null)
                 {
-                    if (_mutantToTests.ContainsKey(id))
+                    // no coverage info available, the test will have to be run for each mutant
+                    _testsWithoutCoverageInfos.Add(discoveredTest);
+                }
+                else
+                {
+                    foreach (var id in captureCoverage)
                     {
-                        _mutantToTests[id].Add(discoveredTest);
-                    }
-                    else
-                    {
-                        _mutantToTests.Add(id, new List<object>{discoveredTest});
-                    }
-                }   
+                        if (_mutantToTests.ContainsKey(id))
+                        {
+                            _mutantToTests[id].Add(discoveredTest);
+                        }
+                        else
+                        {
+                            _mutantToTests.Add(id, new List<object>{discoveredTest});
+                        }
+                    }   
+                }
             }
         }
 
