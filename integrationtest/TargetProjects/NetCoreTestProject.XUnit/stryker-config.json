@@ -5,9 +5,8 @@
     ],
     "log-level": "trace",
     "log-file": "true",
+
     "project-file": "TargetProject.csproj",
-    "excluded-mutations": [
-      "string"
-    ]
+    "test-runner":  "VsTest"
   }
 }

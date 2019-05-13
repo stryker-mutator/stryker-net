@@ -189,7 +189,17 @@ namespace Stryker.Core.TestRunners.VsTest
                 using (var processExitedSignal = new AutoResetEvent(false))
                 {
                     var handler = new RunEventHandler(runCompleteSignal, _messages);
-                    var testHostLauncher = new StrykerVsTestHostLauncher(() => processExitedSignal.Set(), envVars);
+                    var testHostLauncher = new StrykerVsTestHostLauncher(() =>
+                    {
+                        try
+                        {
+                            processExitedSignal.Set();
+                        }
+                        catch (ObjectDisposedException e)
+                        {
+                            Logger.LogError($"Something went wrong with VsTest: {e}");
+                        }
+                    }, envVars);
                     if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                     {
                         handler.TestsFailed += Handler_TestsFailed;
