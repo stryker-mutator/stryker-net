@@ -82,7 +82,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult RunVsTest(ICollection<TestCase> testCases, int? timeoutMs,
             Dictionary<string, string> envVars)
         {
-            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs ?? 0), false);
+            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs ?? 0, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -107,7 +107,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( 0), true);
+            var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( 0, true), true);
             foreach (var testResult in testResults)
             {
                 var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
@@ -130,7 +130,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             Logger.LogDebug($"Capturing coverage for {test.FullyQualifiedName}.");
             IEnumerable<TestResult> testResults = null;
-            var generateRunSettings = GenerateRunSettings( 0);
+            var generateRunSettings = GenerateRunSettings( 0, true);
             for(var i = 0; i<3; i++)
             {
                 testResults = RunAllTests(new List<TestCase>{test}, _coverageEnvironment, generateRunSettings, true);
@@ -158,7 +158,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 using (var waitHandle = new AutoResetEvent(false))
                 {
                     var handler = new DiscoveryEventHandler(waitHandle, _messages);
-                    var generateRunSettings = GenerateRunSettings(0);
+                    var generateRunSettings = GenerateRunSettings(0, false);
                     _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
 
                     waitHandle.WaitOne();
@@ -252,7 +252,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return traceLevel;
         }
 
-        private string GenerateRunSettings(int timeout)
+        private string GenerateRunSettings(int timeout, bool forCoverage)
         {
             string targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
@@ -269,7 +269,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            var dataCollectorSettings = NeedCoverage() ? CoverageCollector.GetVsTestSettings() : "";
+            var dataCollectorSettings = (forCoverage && NeedCoverage()) ? CoverageCollector.GetVsTestSettings() : "";
             var runSettings = 
                 $@"<RunSettings>
 <RunConfiguration>
