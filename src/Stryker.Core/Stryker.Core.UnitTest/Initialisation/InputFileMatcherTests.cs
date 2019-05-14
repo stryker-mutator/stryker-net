@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             target.MatchInputFiles(root, matcher, "ProjectRoot");
 
-            root.ExcludedFiles.Count().ShouldBe(1);
+            root.ExcludedFiles.ShouldHaveSingleItem();
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             target.MatchInputFiles(root, matcher, "ProjectRoot");
 
-            root.ExcludedFiles.Count().ShouldBe(1);
+            root.ExcludedFiles.ShouldHaveSingleItem();
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     },
                     new FileLeaf
                     {
-                        Name = "SomeFile.cs",
+                        Name = "SomeOtherFile.cs",
                         RelativePath = "ProjectRoot/SomeOtherFile.cs"
                     }
                 }
@@ -91,7 +91,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             target.MatchInputFiles(root, matcher, "ProjectRoot");
 
-            root.ExcludedFiles.Count().ShouldBe(1);
+            root.ExcludedFiles.ShouldHaveSingleItem().Name.ShouldBe("SomeOtherFile.cs");
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     },
                     new FileLeaf
                     {
-                        Name = "SomeFile.cs",
+                        Name = "SomeOtherFile.cs",
                         RelativePath = "ProjectRoot/SomeOtherFile.cs"
                     },
                     new FolderComposite
@@ -121,7 +121,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         {
                             new FileLeaf
                             {
-                                Name = "SomeFile.cs",
+                                Name = "SomeDeeperFile.cs",
                                 RelativePath = "ProjectRoot/TestDir/SomeFile.cs"
                             },
                         }
@@ -134,6 +134,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.MatchInputFiles(root, matcher, "ProjectRoot");
 
             root.ExcludedFiles.Count().ShouldBe(2);
+            root.IncludedFiles.ShouldHaveSingleItem().Name.ShouldBe("SomeFile.cs");
         }
 
         [Fact]
@@ -153,7 +154,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     },
                     new FileLeaf
                     {
-                        Name = "SomeFile.cs",
+                        Name = "SomeOtherFile.cs",
                         RelativePath = "ProjectRoot/SomeOtherFile.cs"
                     },
                     new FolderComposite
@@ -163,8 +164,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                         {
                             new FileLeaf
                             {
-                                Name = "SomeFile.cs",
-                                RelativePath = "ProjectRoot/TestDir/SomeFile.cs"
+                                Name = "MyFile.cs",
+                                RelativePath = "ProjectRoot/TestDir/MyFile.cs"
                             },
                             new FileLeaf
                             {
@@ -178,12 +179,13 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var matcher = new List<PathOption>() {
                 new PathOption { Exclude = true, Matcher = Glob.Parse("ProjectRoot/TestDir/**/*.cs") },
-                new PathOption { Exclude = false, Matcher = Glob.Parse("ProjectRoot/TestDir/SomeFile.cs") }
+                new PathOption { Exclude = false, Matcher = Glob.Parse("ProjectRoot/TestDir/MyFile.cs") }
             };
 
             target.MatchInputFiles(root, matcher, "ProjectRoot");
 
-            root.ExcludedFiles.Count().ShouldBe(1);
+            root.ExcludedFiles.Count().ShouldBe(3);
+            root.IncludedFiles.ShouldHaveSingleItem().Name.ShouldBe("MyFile.cs");
         }
     }
 }

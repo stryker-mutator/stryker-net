@@ -125,7 +125,10 @@ namespace Stryker.Core.Initialisation
 
         private void MarkInputFilesAsExcludedDeprecated(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
         {
-            _logger.LogWarning("Using 'files-to-exclude' is deprecated. Use 'mutate' instead.");
+            if (pathsToExclude.Any())
+            {
+                _logger.LogWarning("Using 'files-to-exclude' is deprecated. Use 'mutate' instead.");
+            }
             var allFiles = root.GetAllFiles().ToList();
 
             foreach (var path in pathsToExclude)
