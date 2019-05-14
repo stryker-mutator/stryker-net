@@ -61,12 +61,12 @@ Default: `"30000"`
 During a mutation testrun one or more reporters can be enabled. A reporter will produce some kind of output during or after the mutation testrun.
 
 ```
-dotnet stryker --reporters "['Html', 'ConsoleProgressBar']"
+dotnet stryker --reporters "['html', 'progress']"
 ```
 
-You can find a list of all available reporters and what output they product in the reporters section
+You can find a list of all available reporters and what output they product in the [reporter docs](/docs/Reporters.md)
 
-Default: `"['ConsoleReport', 'ConsoleProgressBar']"`
+Default: `"['cleartext', 'progress']"`
 
 ## Logging to console
 To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.
@@ -156,8 +156,8 @@ Example config file:
     {
         "test-runner": "vstest",
         "reporters": [
-            "ConsoleProgressBar",
-            "ConsoleReport"
+            "progress",
+            "html"
         ],
         "log-level": "info",
         "log-file":true,

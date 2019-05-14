@@ -1,9 +1,11 @@
-﻿using Stryker.Core.Options;
+﻿using Microsoft.Extensions.CommandLineUtils;
+using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Stryker.CLI
 {
@@ -23,8 +25,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters.First(), (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType())) }]
-                                                This argument takes a json array as a value. Example: ['{ Reporter.ConsoleProgressDots }', '{ Reporter.Html }']",
+            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
+                                                This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
@@ -44,7 +46,7 @@ namespace Stryker.CLI
             ArgumentShortName = "-f",
             ArgumentDescription = "Makes the logger write to a file",
             DefaultValue = _defaultOptions.LogOptions.LogToFile,
-            ValueType = Microsoft.Extensions.CommandLineUtils.CommandOptionType.NoValue,
+            ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
 
@@ -55,7 +57,7 @@ namespace Stryker.CLI
             ArgumentDescription = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
                                                 Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
             DefaultValue = _defaultOptions.DevMode,
-            ValueType = Microsoft.Extensions.CommandLineUtils.CommandOptionType.NoValue,
+            ValueType = CommandOptionType.NoValue,
             JsonKey = "dev-mode"
         };
 
@@ -161,14 +163,41 @@ Reasons you might want to lower this setting:
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr",
-            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString<TestRunner>(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
             JsonKey = "test-runner"
         };
 
         private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
         {
-            return $"Options[{@default.ToString()} (default), {string.Join(",", options.Where(o => o.ToString() != @default.ToString()))}]";
+            return FormatOptionsString<T, T>(@default, options);
+        }
+
+        private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
+        {
+            return FormatOptionsString(new List<T> { @default }, options, new List<Y>());
+        }
+
+        private static string FormatOptionsString<T, Y>(IEnumerable<T> @default, IEnumerable<Y> options, IEnumerable<Y> deprecated)
+        {
+            StringBuilder optionsString = new StringBuilder();
+
+            optionsString.Append($"Options[(default) [{string.Join(", ", @default)}], ");
+            string nonDefaultOptions = string.Join(
+            ", ",
+            options
+            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
+            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
+
+            if(deprecated.Any())
+            {
+                string deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
+                optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+            }
+            
+            optionsString.Append("]");
+
+            return optionsString.ToString();
         }
     }
 }

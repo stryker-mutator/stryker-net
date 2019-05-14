@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Options;
+﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
@@ -18,9 +19,9 @@ namespace Stryker.Core.Reporters
         {
             return new Dictionary<Reporter, IReporter>
             {
-                { Reporter.ConsoleProgressDots, new ConsoleDotProgressReporter() },
-                { Reporter.ConsoleProgressBar, CreateProgressReporter() },
-                { Reporter.ConsoleReport, new ConsoleReportReporter(options) },
+                { Reporter.Dots, new ConsoleDotProgressReporter() },
+                { Reporter.Progress, CreateProgressReporter() },
+                { Reporter.ClearText, new ConsoleReportReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) }
             };
@@ -31,6 +32,20 @@ namespace Stryker.Core.Reporters
             if (enabledReporters.Contains(Reporter.All))
             {
                 return possibleReporters.Values;
+            }
+            var deprecated = new Dictionary<Reporter, Reporter>
+            {
+                { Reporter.ConsoleProgressBar, Reporter.Progress },
+                { Reporter.ConsoleProgressDots, Reporter.Dots },
+                { Reporter.ConsoleReport, Reporter.ClearText }
+            };
+            if(enabledReporters.Where(er => deprecated.Any(dr => dr.Key == er)) is var deprecatedReporters && deprecatedReporters.Count() > 0)
+            {
+                var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(typeof(ReporterFactory).Name);
+                foreach (var deprecatedReporter in deprecatedReporters)
+                {
+                    logger.LogWarning($"Reporter {deprecatedReporter.ToString()} is deprecated. Please use {deprecated[deprecatedReporter].ToString()} instead.");
+                }
             }
 
             return possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
