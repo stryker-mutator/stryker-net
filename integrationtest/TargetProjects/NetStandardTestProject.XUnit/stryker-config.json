@@ -5,7 +5,8 @@
             "All"
         ],
         "log-level": "trace",
-        "log-file":  "true",
+      "log-file": "true",
+        "test-runner" :  "VsTest", 
         "project-file": "TargetProject.csproj",
         "excluded-files": [
           "./EndlessLoop.cs"

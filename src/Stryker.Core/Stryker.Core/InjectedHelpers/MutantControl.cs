@@ -51,11 +51,7 @@ namespace Stryker
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
-                Console.WriteLine($"Coverage {pipeName}");
-            }
-            else
-            {
-                Console.WriteLine("NO coverage");
+                Console.WriteLine($"Capture Coverage");
             }
         }
 

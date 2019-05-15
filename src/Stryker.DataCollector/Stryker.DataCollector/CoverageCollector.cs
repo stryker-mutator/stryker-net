@@ -6,7 +6,6 @@ using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Stryker.DataCollector
 {
