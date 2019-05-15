@@ -11,7 +11,7 @@ The full list of Stryker.NET configuration options are:
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
 - [Specify files to mutate](#specify-files-to-mutate)
-- [Excluding files [Deprecated]](#excluding-files-[Deprecated])
+- [Excluding files [Deprecated]](#excluding-files-deprecated)
 - [Custom tresholds](#unary-operators)
 <!-- /TOC -->
 
