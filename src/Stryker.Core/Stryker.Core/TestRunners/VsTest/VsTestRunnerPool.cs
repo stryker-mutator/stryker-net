@@ -50,7 +50,8 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             TestRunResult result;
             VsTestRunner runner;
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
+            if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
             {
                 var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
                 Parallel.ForEach(_discoveredTests, options, testCase =>
@@ -71,7 +72,7 @@ namespace Stryker.Core.TestRunners.VsTest
             runner = TakeRunner();
             try
             {
-                if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+                if (needCoverage)
                 {
                     result = runner.CaptureCoverage();
                     _coverage = runner.FinalMapping;

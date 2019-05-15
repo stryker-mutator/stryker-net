@@ -84,6 +84,7 @@ namespace Stryker.DataCollector
             {
                 _mustShutdown = true;
                 // connect to self to shut down last open pipe
+                Console.WriteLine($"Stop listening to {PipeName}");
                 using (var client = new NamedPipeClientStream(PipeName))
                 {
                     try

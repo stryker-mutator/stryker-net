@@ -33,6 +33,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _vsTestHelper;
         private readonly List<string> _messages = new List<string>();
         private readonly TestCoverageInfos _coverage;
+        private readonly Dictionary<string, string> _coverageEnvironment;
 
         private IEnumerable<string> _sources;
 
@@ -41,10 +42,6 @@ namespace Stryker.Core.TestRunners.VsTest
         static VsTestRunner()
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
-            _coverageEnvironment = new Dictionary<string, string>
-            {
-                {"CaptureCoverage", true.ToString()}
-            };
         }
 
         public VsTestRunner(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo,
@@ -61,6 +58,10 @@ namespace Stryker.Core.TestRunners.VsTest
             _coverage = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = PrepareVsTestConsole();
             InitializeVsTestConsole();
+            _coverageEnvironment = new Dictionary<string, string>
+            {
+                {CoverageCollector.ModeEnvironmentVariable, flags.HasFlag(OptimizationFlags.UseEnvVariable) ? CoverageCollector.EnvMode : CoverageCollector.PipeMode}
+            };
         }
 
         public IEnumerable<int> CoveredMutants { get; private set; }
@@ -178,7 +179,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // one test has failed, we can stop
             Logger.LogDebug("At least one test failed, abort current test run.");
-            _vsTestConsole.AbortTestRun();
+            _vsTestConsole.CancelTestRun();
         }
 
         private IEnumerable<TestResult> RunAllTests(ICollection<TestCase> testCases, Dictionary<string, string> envVars,
@@ -336,7 +337,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         #region IDisposable Support
         private bool _disposedValue = false; // To detect redundant calls
-        private static Dictionary<string, string> _coverageEnvironment;
 
         private void Dispose(bool disposing)
         {

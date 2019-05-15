@@ -31,7 +31,7 @@ namespace Stryker.Core.Initialisation
 
         // these flags control various optimization techniques
         // TODO: expose these options through the CLI (once features is stable)
-        private const OptimizationFlags Flags = OptimizationFlags.CoverageBasedTest | OptimizationFlags.SkipUncoveredMutants | OptimizationFlags.AbortTestOnKill | OptimizationFlags.CaptureCoveragePerTest;
+        private const OptimizationFlags Flags = OptimizationFlags.DefaultMode;
 
 
         public InitialisationProcess(

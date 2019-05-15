@@ -184,6 +184,10 @@ namespace Stryker.Core.MutationTest
 
         public void Optimize(IEnumerable<int> coveredMutants)
         {
+            if (coveredMutants == null)
+            {
+                return;
+            }
             var covered = new HashSet<int>(coveredMutants);
             if (covered.Count == 0)
             {

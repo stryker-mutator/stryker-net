@@ -10,6 +10,7 @@ namespace Stryker
         private static HashSet<int> _coveredMutants;
         private static bool usePipe;
         private static string pipeName;
+        private static string envName;
         private static bool captureCoverage;
         private static CommunicationChannel channel;
 
@@ -27,28 +28,34 @@ namespace Stryker
         public static void InitCoverage()
         {
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
-            pipeName = Environment.GetEnvironmentVariable(EnvironmentPipeName);
-            usePipe = !string.IsNullOrEmpty(pipeName);
             if (channel != null)
             {
                 channel?.Dispose();
                 channel = null;
             }
-            captureCoverage = usePipe;
-            if (captureCoverage)
+            var coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName)??string.Empty;
+            if (coverageMode.StartsWith("pipe:"))
             {
-                _coveredMutants = new HashSet<int>();
-            }
-            else
-            {
-                Console.Error.WriteLine("NO coverage");
-            }
-
-            if (usePipe)
-            {
+                pipeName = coverageMode.Substring(5);
+                usePipe = true;
+                captureCoverage = true;
                 channel = CommunicationChannel.Client(pipeName, 100);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
+            }
+            else if (coverageMode.StartsWith("env:"))
+            {
+                envName = coverageMode.Substring(4);
+                captureCoverage = true;
+            }
+            if (captureCoverage)
+            {
+                _coveredMutants = new HashSet<int>();
+                Console.WriteLine($"Coverage {pipeName}");
+            }
+            else
+            {
+                Console.WriteLine("NO coverage");
             }
         }
 
@@ -92,7 +99,13 @@ namespace Stryker
             {
                 lock (_coveredMutants)
                 {
-                    _coveredMutants.Add(id);
+                    if (_coveredMutants.Add(id))
+                    {
+                        if (!usePipe)
+                        {
+                            Environment.SetEnvironmentVariable(envName, string.Join(",", _coveredMutants));
+                        }
+                    }
                 }
             }
             return ActiveMutation == id;

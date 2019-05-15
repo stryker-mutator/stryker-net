@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Stryker.DataCollector
 {
@@ -16,9 +18,15 @@ namespace Stryker.DataCollector
         private IDataCollectionSink _dataSink;
         private CommunicationServer _server;
         private CommunicationChannel _client;
-        private readonly object lck = new object();
+        private bool _usePipe;
+        private readonly object _lck = new object();
         private string _lastMessage;
         private bool _coverageOn;
+
+        public const string ModeEnvironmentVariable = "CaptureCoverage";
+        public const string EnvMode = "env";
+        public const string PipeMode = "pipe";
+        private const string EnvName = "CoveredMutants";
 
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
@@ -57,34 +65,65 @@ namespace Stryker.DataCollector
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
             this._dataSink = dataCollectionSink;
-            _server = new CommunicationServer(Process.GetCurrentProcess().Id.ToString());
-            Environment.SetEnvironmentVariable("Coverage", _server.PipeName);
-            _server.Listen();
+            Init(true);
+        }
+
+        public void Init(bool usePipe)
+        {
+            if (usePipe)
+            {
+                _server = new CommunicationServer(Process.GetCurrentProcess().Id.ToString());
+                _server.Listen();
+                _usePipe = true;
+                _server.RaiseNewClientEvent += ConnectionEstablished;
+            }
+        }
+
+        public IDictionary<string, string> GetEnvironmentVariables()
+        {
+            var result = new Dictionary<string, string>();
+            if (_usePipe)
+            {
+                result["Coverage"]= $"{PipeMode}:{_server.PipeName}";
+                result[ModeEnvironmentVariable] = PipeMode;
+            }
+            else
+            {
+                result["Coverage"]= $"{EnvMode}:{EnvName}";
+                result[ModeEnvironmentVariable] = EnvMode;
+            }
+
+            return result;
         }
 
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {
-            var coverageString = Environment.GetEnvironmentVariable("CaptureCoverage");
+            var coverageString = Environment.GetEnvironmentVariable(ModeEnvironmentVariable);
             _coverageOn = coverageString != null;
-            _server.RaiseNewClientEvent += ConnectionEstablished;
+            _usePipe = (coverageString == PipeMode);
+
+            foreach (var environmentVariable in GetEnvironmentVariables())
+            {
+                Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
+            }
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)
         {
-            lock (lck)
+            lock (_lck)
             {
                 _client = e.Client;
                 _client.RaiseReceivedMessage += ReceivedMutant;
-                Monitor.Pulse(lck);
+                Monitor.Pulse(_lck);
             }
         }
 
         private void ReceivedMutant(object sender, string args)
         {
-            lock (lck)
+            lock (_lck)
             {
                 _lastMessage = args;
-                Monitor.Pulse(lck);
+                Monitor.Pulse(_lck);
             }
         }
 
@@ -96,23 +135,45 @@ namespace Stryker.DataCollector
         {
             if (_coverageOn)
             {
-                if (!WaitOnLck(lck, () => _client != null, 500))
+                var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
+                if (_usePipe)
                 {
-                    throw new InvalidOperationException("connection");
+                    if (!WaitOnLck(_lck, () => _client != null, 500))
+                    {
+                        throw new InvalidOperationException("connection");
+                    }
+                    _client.SendText($"DUMP {testCaseDisplayName}");
                 }
 
-                _client.SendText($"DUMP {testCaseEndArgs.DataCollectionContext.TestCase.DisplayName}");
-                if (!WaitOnLck(lck, () => _lastMessage != null, 5000))
+                var coverData = RetrieveCoverData(testCaseDisplayName);
+                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
+            }
+        }
+
+        public string RetrieveCoverData(string testCase)
+        {
+            var coverData = string.Empty;
+            if (_usePipe)
+            {
+                if (!WaitOnLck(_lck, () => _lastMessage != null, 5000))
                 {
-                    throw new InvalidOperationException(testCaseEndArgs.DataCollectionContext.TestCase.DisplayName);
+                    throw new InvalidOperationException(testCase);
                 }
 
                 if (_lastMessage != null)
                 {
-                    _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", _lastMessage);
+                    coverData = _lastMessage;
                 }
+
                 _lastMessage = null;
             }
+            else
+            {
+                // get coverage 
+                coverData = Environment.GetEnvironmentVariable(EnvName);
+            }
+
+            return coverData;
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
