@@ -187,5 +187,72 @@ namespace Stryker.Core.UnitTest.Initialisation
             root.ExcludedFiles.Count().ShouldBe(3);
             root.IncludedFiles.ShouldHaveSingleItem().Name.ShouldBe("MyFile.cs");
         }
+
+        [Fact]
+        public void ShouldMatchIncludedFolderFileRecursive()
+        {
+            var target = new InputFileMatcher();
+
+            var root = new FolderComposite
+            {
+                Name = "ProjectRoot",
+                Children = new Collection<ProjectComponent>
+                {
+                    new FileLeaf
+                    {
+                        Name = "SomeFile.cs",
+                        RelativePath = "ProjectRoot/SomeFile.cs"
+                    },
+                    new FileLeaf
+                    {
+                        Name = "SomeOtherFile.cs",
+                        RelativePath = "ProjectRoot/SomeOtherFile.cs"
+                    },
+                    new FolderComposite
+                    {
+                        Name = "TestDir",
+                        Children = new Collection<ProjectComponent>
+                        {
+                            new FileLeaf
+                            {
+                                Name = "SomeFile.cs",
+                                RelativePath = "ProjectRoot/TestDir/SomeFile.cs"
+                            },
+                            new FileLeaf
+                            {
+                                Name = "SomeOtherFile.cs",
+                                RelativePath = "ProjectRoot/TestDir/SomeOtherFile.cs"
+                            },
+                            new FolderComposite
+                            {
+                                Name = "DeeperTestDir",
+                                Children = new Collection<ProjectComponent>
+                                {
+                                    new FileLeaf
+                                    {
+                                        Name = "MyFile.cs",
+                                        RelativePath = "ProjectRoot/TestDir/DeeperTestDir/MyFile.cs"
+                                    },
+                                    new FileLeaf
+                                    {
+                                        Name = "MyOtherFile.cs",
+                                        RelativePath = "ProjectRoot/TestDir/DeeperTestDir/MyOtherFile.cs"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var matcher = new List<PathOption>() {
+                new PathOption { Exclude = false, Matcher = Glob.Parse("ProjectRoot/**/DeeperTestDir/*.cs") }
+            };
+
+            target.MatchInputFiles(root, matcher, "ProjectRoot");
+
+            root.ExcludedFiles.Count().ShouldBe(4);
+            root.IncludedFiles.Count().ShouldBe(2);
+        }
     }
 }
