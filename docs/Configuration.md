@@ -10,7 +10,8 @@ The full list of Stryker.NET configuration options are:
 - [Reporters](#reporters)
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
-- [Excluding files](#excluding-files)
+- [Specify files to mutate](#specify-files-to-mutate)
+- [Excluding files [Deprecated]](#excluding-files-[Deprecated])
 - [Custom tresholds](#unary-operators)
 <!-- /TOC -->
 
@@ -133,7 +134,51 @@ dotnet stryker --excluded-mutations "['string', 'logical']"
 
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too exited, skipping mutations doesn't improve your mutation score ;)
 
-## Excluding files
+## Specify files to mutate
+You can configure what files should be mutated. Files and folders can both be included and/or excluded. This all goes through the `--mutate` option. By default all files will be mutated.
+
+#### Exclude files
+Exclude files by placing a `!` before the file path.
+
+`dotnet stryker --mutate "['!/SkipThisfile.cs']"`
+
+The file `SkipThisFile.cs` will be excluded.
+
+`dotnet stryker --mutate "['!/SkipThisfile.cs', '!/SkipThisFileToo.cs']"`
+
+The file `SkipThisFile.cs` and `SkipThisFileToo.cs` will be excluded.
+
+`dotnet stryker --mutate "['!/**/SkipThisfile.cs']"`
+
+All files that are named `SkipThisFile.cs` will be excluded.
+
+`dotnet stryker --mutate "['!/SkipThisFolder/**/*.cs']"`
+
+All files in the folder `SkipThisFolder` will be excluded.
+
+`dotnet stryker --mutate "['!/**/SkipTheseFolders/**/*.cs']"`
+
+All files in **any** folder called `SkipTheseFolders` are excluded.
+
+#### Include files
+`dotnet stryker --mutate "['/**/OnlyMutateThisFile.cs']"`
+
+All files are excluded **except** for files called `OnlyMutateThisFile.cs`.
+
+`dotnet stryker --mutate "['/OnlyMutateThisFolder/**/*.cs']"`
+
+All files are excluded **except** for files in the folder `OnlyMutateThisFolder`.
+
+`dotnet stryker --mutate "['/**/OnlyMutateThisFolder/**/*.cs']"`
+
+All files are excluded **except** for files in  **any** folder called `OnlyMutateThisFolder`.
+
+#### Combine include and exclude
+`dotnet stryker --mutate "['/OnlyMutateThisFolder/**/*.cs', '!/OnlyMutateThisFolder/**/ExceptForThisFile.cs']"`
+
+All files are excluded **except** for files in the folder `OnlyMutateThisFolder`. The file `ExceptForThisFile.cs` in the included folder will be excluded. 
+
+## Excluding files [Deprecated]
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
 `
