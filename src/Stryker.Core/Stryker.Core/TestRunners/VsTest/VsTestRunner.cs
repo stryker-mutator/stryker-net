@@ -25,7 +25,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
         private readonly ProjectInfo _projectInfo;
-        private readonly ILogger _logger;
 
         private readonly IVsTestConsoleWrapper _vsTestConsole;
         private ICollection<TestCase> _discoveredTests;
@@ -41,7 +40,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         static VsTestRunner()
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
         }
 
         public VsTestRunner(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo,
@@ -49,7 +48,6 @@ namespace Stryker.Core.TestRunners.VsTest
             TestCoverageInfos mappingInfos, IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
-            _logger =  ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
@@ -137,6 +135,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 testResults = RunAllTests(new List<TestCase>{test}, _coverageEnvironment, generateRunSettings, true);
                 foreach (var testResult in testResults)
                 {
+                    foreach (var testResultMessage in testResult.Messages)
+                    {
+                        Logger.LogDebug($"Test output:{Environment.NewLine}{testResultMessage.Text}");
+                    }
                     var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                     if (propertyPair.Value != null)
                     {
@@ -179,7 +181,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // one test has failed, we can stop
             Logger.LogDebug("At least one test failed, abort current test run.");
-            _vsTestConsole.CancelTestRun();
+            _vsTestConsole.AbortTestRun();
         }
 
         private IEnumerable<TestResult> RunAllTests(ICollection<TestCase> testCases, Dictionary<string, string> envVars,
@@ -216,7 +218,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
 
                     // Test host exited signal comes after the run complete
-                    processExitedSignal.WaitOne();
+                    testHostLauncher.WaitProcessExit();
 
                     // At this point, run must have complete. Check signal for true
                     runCompleteSignal.WaitOne();
@@ -249,7 +251,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
+            Logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
             return traceLevel;
         }
 
@@ -281,7 +283,7 @@ namespace Stryker.Core.TestRunners.VsTest
    {dataCollectorSettings}
 </RunSettings>";
 
-            _logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
+            Logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
 
             return runSettings;
         }
@@ -296,7 +298,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
-            _logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
+            Logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {

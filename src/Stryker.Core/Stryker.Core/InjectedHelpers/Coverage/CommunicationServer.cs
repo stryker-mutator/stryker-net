@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading;
 
 namespace Stryker.Core.InjectedHelpers.Coverage
 {
@@ -19,9 +20,11 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         public event ConnectionEvent RaiseNewClientEvent;
         public event MessageReceived RaiseReceivedMessage;
 
+
+        private static int _instanceCounter = 0;
         public CommunicationServer(string name)
         {
-            PipeName = $"Stryker.{name}.Pipe.{Stopwatch.GetTimestamp()}";
+            PipeName = $"Stryker.{name}.Pipe.{Process.GetCurrentProcess().Id}:{Interlocked.Increment(ref _instanceCounter)}";
         }
 
         public void Listen()
@@ -60,7 +63,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
                 if (_listener.IsConnected)
                 {
-                    session = new CommunicationChannel(_listener);
+                    session = new CommunicationChannel(_listener, $"{PipeName}:S");
                     _channels.Add(session);
                     _listener = null;
                     session.RaiseReceivedMessage += Session_RaiseReceivedMessage;

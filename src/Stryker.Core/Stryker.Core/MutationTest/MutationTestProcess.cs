@@ -155,9 +155,8 @@ namespace Stryker.Core.MutationTest
             Task.Run(() =>
             {
                 // Test against an empty mutant. If the mutant is killed we know something is wrong and there will be a lot of false positives.
-                var emptyMutant = new Mutant() { Id = -1 };
-                MutationTestExecutor.Test(emptyMutant, Input.TimeoutMs);
-                if (emptyMutant.ResultStatus == MutantStatus.Killed)
+                var result = MutationTestExecutor.TestRunner.RunAll(Input.TimeoutMs, null);
+                if (!result.Success)
                 {
                     Logger.LogWarning(@"Testrun with no mutation failed. This can have two reasons: 
 - Your tests are randomly failing

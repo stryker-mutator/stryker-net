@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -11,6 +13,14 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly Action _callback;
         private readonly Dictionary<string, string> _envVars;
+        private Process _currentProcess;
+        private readonly object lck = new object();
+        private static ILogger Logger { get; }
+
+        static StrykerVsTestHostLauncher()
+        {
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
+        }
 
         public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars)
         {
@@ -28,28 +38,71 @@ namespace Stryker.Core.TestRunners.VsTest
                 WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
                 UseShellExecute = false,
                 RedirectStandardOutput = redirect,
-                RedirectStandardError = redirect
+                RedirectStandardError = redirect,
             };
             foreach (var (key, value) in _envVars)
             {
                 processInfo.EnvironmentVariables[key] = value;
             }
-            var process = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
+            _currentProcess = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
 
-            process.Exited += (sender, args) =>
+            _currentProcess.Exited += CurrentProcess_Exited;
+
+            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
+            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
+
+            if (!_currentProcess.Start())
             {
-                _callback();
-            };
-            process.Start();
+                Logger.LogError($"Failed to start process {processInfo.Arguments}.");
+            }
             // Asynchronously read the standard output of the spawned process.
             // This raises OutputDataReceived events for each line of output.
             if (redirect)
             {
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                _currentProcess.BeginOutputReadLine();
+                _currentProcess.BeginErrorReadLine();
             }
 
-            return process.Id;
+            return _currentProcess.Id;
+        }
+
+        private void CurrentProcess_Exited(object sender, EventArgs e)
+        {
+            lock (lck)
+            {
+                Monitor.Pulse(lck);
+            }
+            _callback();
+        }
+
+        public bool WaitProcessExit()
+        {
+            lock (lck)
+            {
+                if (_currentProcess == null)
+                {
+                    Logger.LogInformation("VsTest returned cached results.");
+                    return false;
+                }
+                while (!_currentProcess.HasExited)
+                {
+                    Monitor.Wait(lck, 5000);
+                }
+            }
+
+            return true;
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+             Logger.LogInformation($"{Environment.NewLine}{e.Data} (VsTest error)");
+        }
+
+        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data !=null)
+              Logger.LogDebug($"{e.Data} (VsTest output)");
         }
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)

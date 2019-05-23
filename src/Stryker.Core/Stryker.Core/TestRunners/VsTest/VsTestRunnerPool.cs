@@ -1,8 +1,8 @@
-﻿using Stryker.Core.Initialisation;
+﻿using System;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -60,6 +60,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     try
                     {
                         runner.CoverageForTest(testCase);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine(e);
                     }
                     finally
                     {

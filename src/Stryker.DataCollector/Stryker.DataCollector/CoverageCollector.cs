@@ -71,7 +71,7 @@ namespace Stryker.DataCollector
         {
             if (usePipe)
             {
-                _server = new CommunicationServer(Process.GetCurrentProcess().Id.ToString());
+                _server = new CommunicationServer("CoverageCollector");
                 _server.Listen();
                 _usePipe = true;
                 _server.RaiseNewClientEvent += ConnectionEstablished;
@@ -132,37 +132,32 @@ namespace Stryker.DataCollector
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            if (_coverageOn)
+            if (!_coverageOn) return;
+            var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
+            if (_usePipe)
             {
-                var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
-                if (_usePipe)
+                if (!WaitOnLck(_lck, () => _client != null, 500))
                 {
-                    if (!WaitOnLck(_lck, () => _client != null, 500))
-                    {
-                        throw new InvalidOperationException("connection");
-                    }
-                    _client.SendText($"DUMP {testCaseDisplayName}");
+                    throw new InvalidOperationException("connection");
                 }
-
-                var coverData = RetrieveCoverData(testCaseDisplayName);
-                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
+                _client.SendText($"DUMP {testCaseDisplayName}");
             }
+
+            var coverData = RetrieveCoverData(testCaseDisplayName);
+            _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
         }
 
         public string RetrieveCoverData(string testCase)
         {
-            var coverData = string.Empty;
+            string coverData;
             if (_usePipe)
             {
-                if (!WaitOnLck(_lck, () => _lastMessage != null, 5000))
+                if (!WaitOnLck(_lck, () => _lastMessage != null, 500))
                 {
-                    throw new InvalidOperationException(testCase);
+                    throw new InvalidOperationException($"Failed to retrieve coverage data for {testCase}");
                 }
 
-                if (_lastMessage != null)
-                {
-                    coverData = _lastMessage;
-                }
+                coverData = _lastMessage;
 
                 _lastMessage = null;
             }

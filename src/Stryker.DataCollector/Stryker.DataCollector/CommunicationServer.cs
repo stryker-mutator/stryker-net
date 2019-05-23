@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading;
 
 namespace Stryker.DataCollector
-{ 
-    internal delegate void ConnectionEvent(object s, ConnectionEventArgs e);
+{
+    public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
-    internal sealed class CommunicationServer : IDisposable
+    public sealed class CommunicationServer : IDisposable
     {
         private readonly object lck = new object();
         private volatile bool _mustShutdown;
@@ -17,11 +18,13 @@ namespace Stryker.DataCollector
         public string PipeName { get; }
 
         public event ConnectionEvent RaiseNewClientEvent;
-        public event DataCollector.MessageReceived RaiseReceivedMessage;
+        public event MessageReceived RaiseReceivedMessage;
 
+
+        private static int _instanceCounter = 0;
         public CommunicationServer(string name)
         {
-            PipeName = $"Stryker.{name}.Pipe.{Stopwatch.GetTimestamp()}";
+            PipeName = $"Stryker.{name}.Pipe.{Process.GetCurrentProcess().Id}:{Interlocked.Increment(ref _instanceCounter)}";
         }
 
         public void Listen()
@@ -60,7 +63,7 @@ namespace Stryker.DataCollector
 
                 if (_listener.IsConnected)
                 {
-                    session = new CommunicationChannel(_listener);
+                    session = new CommunicationChannel(_listener, $"{PipeName}:S");
                     _channels.Add(session);
                     _listener = null;
                     session.RaiseReceivedMessage += Session_RaiseReceivedMessage;
@@ -84,7 +87,6 @@ namespace Stryker.DataCollector
             {
                 _mustShutdown = true;
                 // connect to self to shut down last open pipe
-                Console.WriteLine($"Stop listening to {PipeName}");
                 using (var client = new NamedPipeClientStream(PipeName))
                 {
                     try

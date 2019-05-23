@@ -47,11 +47,11 @@ namespace Stryker
             {
                 envName = coverageMode.Substring(4);
                 captureCoverage = true;
+                usePipe = false;
             }
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
-                Console.WriteLine($"Capture Coverage");
             }
         }
 
@@ -72,6 +72,7 @@ namespace Stryker
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
+            Console.WriteLine($"AppDomainUnload");
             DumpState(_coveredMutants);
             GC.KeepAlive(_coveredMutants);
         }
@@ -85,6 +86,7 @@ namespace Stryker
                 report = string.Join(",", state);
             }
 
+            Console.WriteLine($"DumpState {state.Count}");
             channel.SendText(report);
         }
 
