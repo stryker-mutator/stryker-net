@@ -135,7 +135,6 @@ namespace Stryker.DataCollector
                     _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
                     Log($"Send message: [{message}] ({messageBytes.Length} bytes)");
                     _pipeStream.Write(messageBytes, 0 , messageBytes.Length);
-                    _pipeStream.WaitForPipeDrain();
                 }
             }
             catch (ObjectDisposedException)
