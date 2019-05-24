@@ -37,7 +37,7 @@ When Stryker finds two or more project references inside your test project, it n
 
 ```
 dotnet stryker --project-file SomeProjectName.csproj
-dotnet stryker -pf SomeProjectName.csproj
+dotnet stryker -p SomeProjectName.csproj
 ```
 
 ## Specify testrunner
