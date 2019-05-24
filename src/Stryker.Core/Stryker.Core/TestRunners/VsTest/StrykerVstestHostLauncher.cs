@@ -77,32 +77,35 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public bool WaitProcessExit()
         {
-            lock (lck)
+            if (_currentProcess == null)
             {
-                if (_currentProcess == null)
-                {
-                    Logger.LogInformation("VsTest returned cached results.");
-                    return false;
-                }
-                while (!_currentProcess.HasExited)
+                Logger.LogInformation("VsTest returned cached results.");
+                return false;
+            }
+            while (!_currentProcess.HasExited)
+            {
+                lock (lck)
                 {
                     Monitor.Wait(lck, 5000);
                 }
             }
-
             return true;
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data != null)
-             Logger.LogInformation($"{Environment.NewLine}{e.Data} (VsTest error)");
+            {
+                Logger.LogInformation($"{Environment.NewLine}{e.Data} (VsTest error)");
+            }
         }
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (e.Data !=null)
-              Logger.LogDebug($"{e.Data} (VsTest output)");
+            if (e.Data != null)
+            {
+                Logger.LogDebug($"{e.Data} (VsTest output)");
+            }
         }
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)

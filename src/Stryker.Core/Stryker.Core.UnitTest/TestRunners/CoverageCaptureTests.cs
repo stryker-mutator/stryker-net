@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     {
                         if (count <2)
                         {
-                            Monitor.Wait(lck, 10);
+                            Monitor.Wait(lck, 100);
                         }
                         Assert.Equal(2, count);
                     }
