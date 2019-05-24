@@ -19,6 +19,7 @@ namespace Stryker.Core.Initialisation
         ProjectAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath);
         string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter);
         IEnumerable<string> FindSharedProjects(XDocument document);
+        IDictionary<string, string> FindLinkedFiles(XDocument document);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -46,7 +47,8 @@ namespace Stryker.Core.Initialisation
                 try
                 {
                     manager = new AnalyzerManager(solutionFilePath);
-                } catch (InvalidProjectFileException)
+                }
+                catch (InvalidProjectFileException)
                 {
                     throw new StrykerInputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
                 }
@@ -62,7 +64,8 @@ namespace Stryker.Core.Initialisation
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     RestorePackages(solutionFilePath);
                     analyzerResult = manager.GetProject(projectFilePath).Build().First();
-                } else
+                }
+                else
                 {
                     // buildalyzer failed, but seems to work anyway.
                     _logger.LogWarning("Project analyzer result not successful");
@@ -85,9 +88,23 @@ namespace Stryker.Core.Initialisation
             return sharedProjects;
         }
 
+        public IDictionary<string, string> FindLinkedFiles(XDocument document)
+        {
+            var compileLinkStatements = document.Elements().Descendants()
+                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Compile", StringComparison.OrdinalIgnoreCase))
+                .Where(compileElement => compileElement.Attributes().Any(att => string.Equals(att.Name.LocalName, "Link", StringComparison.OrdinalIgnoreCase)));
+
+            var compileLinkFiles = compileLinkStatements
+                .ToDictionary(compileLink =>
+                compileLink.Attributes(XName.Get("Include")).Single().Value,
+                compileLink => compileLink.Attributes(XName.Get("Link")).Single().Value);
+
+            return compileLinkFiles;
+        }
+
         public string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
-            var referenceChoise = BuildReferenceChoise(projectReferences);
+            var referenceChoise = BuildReferenceChoice(projectReferences);
 
             var stringBuilder = new StringBuilder();
 
@@ -198,7 +215,7 @@ namespace Stryker.Core.Initialisation
             builder.AppendLine($"Example: --project-file={otherProjectReference}");
         }
 
-        private string BuildReferenceChoise(IEnumerable<string> projectReferences)
+        private string BuildReferenceChoice(IEnumerable<string> projectReferences)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"Choose one of the following references:");

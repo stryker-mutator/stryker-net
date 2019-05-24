@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
 {
@@ -46,23 +46,29 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
-            var result = new ProjectInfo();
+            var projectAnalyzerResult = new ProjectInfo();
             var projectFile = ScanProjectFile(options.BasePath);
 
             // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
+            projectAnalyzerResult.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
 
             // Determine project under test
             var reader = new ProjectFileReader();
-            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
+            var projectUnderTest = reader.DetermineProjectUnderTest(projectAnalyzerResult.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
 
             // Analyze project under test
-            result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
+            projectAnalyzerResult.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
             var inputFiles = new FolderComposite();
-            result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
-            var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
+            projectAnalyzerResult.FullFramework = !projectAnalyzerResult.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
+            var projectUnderTestDir = Path.GetDirectoryName(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+
+            IDictionary<string, string> compileIncludeLinkedFiles = FindCompileLinkedFiles(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+            var sharedProjectFilePaths = FindSharedProjects(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath, projectAnalyzerResult.TestProjectAnalyzerResult);
+
+            var projectFolders = ExtractProjectFolders(projectAnalyzerResult.ProjectUnderTestAnalyzerResult, sharedProjectFilePaths);
+
+            foreach (var dir in projectFolders)
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -73,12 +79,35 @@ namespace Stryker.Core.Initialisation
                 }
                 inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
             }
+
+            foreach (var sharedProjectFile in sharedProjectFilePaths)
+            {
+                compileIncludeLinkedFiles.ToList().AddRange(FindCompileLinkedFiles(sharedProjectFile));
+            }
+
+            foreach (var compileIncludeLinkedFile in compileIncludeLinkedFiles.OrderBy(a => a.Value))
+            {
+                var fullActualFilePath = Path.GetFullPath(compileIncludeLinkedFile.Key);
+                var fullLinkFilePath = Path.GetFullPath(Path.Combine(
+                    Path.GetDirectoryName(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath), compileIncludeLinkedFile.Value));
+                if (inputFiles.Children.First().FullPath == Path.GetDirectoryName(fullLinkFilePath))
+                {
+                    inputFiles.Children.Add(new FileLeaf()
+                    {
+                        SourceCode = _fileSystem.File.ReadAllText(fullActualFilePath),
+                        Name = _fileSystem.Path.GetFileName(fullActualFilePath),
+                        RelativePath = Path.Combine(inputFiles.Children.First().RelativePath, Path.GetFileName(fullLinkFilePath)),
+                        FullPath = fullLinkFilePath
+                    });
+                }
+            }
+
             MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
-            result.ProjectContents = inputFiles;
+            projectAnalyzerResult.ProjectContents = inputFiles;
 
-            ValidateResult(result, options);
+            ValidateResult(projectAnalyzerResult, options);
 
-            return result;
+            return projectAnalyzerResult;
         }
 
         /// <summary>
@@ -168,31 +197,66 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)
+        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, IEnumerable<string> sharedProjects)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            var xDocument = XDocument.Load(projectFile);
-            var folders = new List<string>();
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
-            folders.Add(projectDirectory);
-            if (!fullFramework)
+
+            var folders = new List<string>
             {
-                foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
-                {
-                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
+                projectDirectory
+            };
 
-                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
-                    {
-                        throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
-                    }
-
-                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
-                    folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
-                }
+            foreach (var sharedProjectFile in sharedProjects)
+            {
+                var sharedProjectDirectoryName = _fileSystem.Path.GetDirectoryName(sharedProjectFile);
+                folders.Add(_fileSystem.Path.Combine(projectDirectory, sharedProjectDirectoryName));
             }
 
             return folders;
+        }
+
+        private IEnumerable<string> FindSharedProjects(string projectFilePath, ProjectAnalyzerResult projectAnalyzerResult)
+        {
+            var sharedProjects = new List<string>();
+            var projectFile = _fileSystem.File.OpenText(projectFilePath);
+            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+
+            var xDocument = XDocument.Load(projectFile);
+            foreach (var sharedProject in _projectFileReader.FindSharedProjects(xDocument))
+            {
+                var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
+
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
+                {
+                    throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
+                }
+
+                sharedProjects.Add(_fileSystem.Path.Combine(projectDirectory, sharedProject));
+            }
+
+            return sharedProjects;
+        }
+
+        private IDictionary<string, string> FindCompileLinkedFiles(string projectFilePath)
+        {
+            var files = new Dictionary<string, string>();
+            var projectFile = _fileSystem.File.OpenText(projectFilePath);
+            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+
+            var xDocument = XDocument.Load(projectFile);
+
+            foreach (var compileLinkedFile in _projectFileReader.FindLinkedFiles(xDocument))
+            {
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, compileLinkedFile.Key)))
+                {
+                    throw new FileNotFoundException($"Missing compile linked file {compileLinkedFile}");
+                }
+
+                files.Add(_fileSystem.Path.Combine(projectDirectory, compileLinkedFile.Key), compileLinkedFile.Value);
+            }
+
+            return files;
         }
 
         private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
