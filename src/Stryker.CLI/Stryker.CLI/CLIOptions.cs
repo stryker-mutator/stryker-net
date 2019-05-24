@@ -53,7 +53,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<bool> DevMode = new CLIOption<bool>
         {
             ArgumentName = "--dev-mode",
-            ArgumentShortName = "-dm",
+            ArgumentShortName = "-dev",
             ArgumentDescription = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
     Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
             DefaultValue = _defaultOptions.DevMode,
