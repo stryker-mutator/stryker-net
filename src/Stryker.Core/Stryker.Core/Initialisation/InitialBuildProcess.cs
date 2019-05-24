@@ -30,6 +30,10 @@ namespace Stryker.Core.Initialisation
             ProcessResult result = null;
             if (fullFramework)
             {
+                if (string.IsNullOrEmpty(solutionPath))
+                {
+                    throw new StrykerInputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
+                }
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);
                 var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
