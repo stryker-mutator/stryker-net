@@ -19,6 +19,7 @@ On .NET Framework projects Stryker needs your `.sln` file path.
 
 ```
 dotnet stryker --solution-path "..\\ExampleProject.sln"
+dotnet stryker -s "..\\ExampleProject.sln"
 ```
 
 Stryker.NET needs the path to execute:
@@ -36,6 +37,7 @@ When Stryker finds two or more project references inside your test project, it n
 
 ```
 dotnet stryker --project-file SomeProjectName.csproj
+dotnet stryker -p SomeProjectName.csproj
 ```
 
 ## Specify testrunner
@@ -44,6 +46,7 @@ To use the experimental vstest testrunner pass the following option to stryker:
 
 ```
 dotnet stryker --test-runner vstest
+dotnet stryker -tr vstest
 ```
 
 Default: `"dotnet test"`
@@ -53,6 +56,7 @@ Some mutations can create endless loops inside your code. To detect and stop the
 
 ```
 dotnet stryker --timeout-ms 5000
+dotnet stryker -t 5000
 ```
 
 Default: `"30000"`
@@ -62,6 +66,7 @@ During a mutation testrun one or more reporters can be enabled. A reporter will 
 
 ```
 dotnet stryker --reporters "['html', 'progress']"
+dotnet stryker -r "['html', 'progress']"
 ```
 
 You can find a list of all available reporters and what output they product in the [reporter docs](/docs/Reporters.md)
@@ -71,7 +76,8 @@ Default: `"['cleartext', 'progress']"`
 ## Logging to console
 To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.
 ```
-dotnet stryker --log-console "debug"
+dotnet stryker --log-level "debug"
+dotnet stryker -l "debug"
 ```
 
 All available loglevels are:
@@ -86,7 +92,11 @@ Default: `"info"`
 ## Logging to a file
 When creating an issue for Stryker.NET on github you can include a logfile. File logging always uses loglevel `trace`.
 
-`dotnet stryker --log-file`
+```
+dotnet stryker --log-file
+dotnet stryker -f
+
+```
 
 Default: `false`
 
@@ -95,22 +105,24 @@ By default Stryker.NET will use as much CPU power as you allow it to use during 
 
 ```
 dotnet stryker --max-concurrent-test-runners 4
+dotnet stryker -c 4
 ```
 
 This setting can also be used to disable parallel testing. This can be useful if your test project cannot handle paralel testruns.
 ```
-dotnet stryker --max-concurrent-test-runners 1
+dotnet stryker -c 1
 ```
 
 Default: `your number of logical processors / 2`*
 
-p * This usually equals your physical processor count
-:markdown-it
+\* This usually equals your physical processor count
+
 ## Custom thresholds
 If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
 
 ```
 dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50
+dotnet stryker -th 90 -tl 75 -tb 50
 ```
 
 - `mutation score > threshold-high`: 
@@ -129,6 +141,7 @@ If you deem some mutations unwanted for your project you can disable mutations.
 
 ```
 dotnet stryker --excluded-mutations "['string', 'logical']"
+dotnet stryker -em "['string', 'logical']"
 ```
 
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too exited, skipping mutations doesn't improve your mutation score ;)
@@ -136,9 +149,10 @@ The mutations of these kinds will be skipped and not be shown in your reports. T
 ## Excluding files
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
-`
+```
 dotnet stryker --files-to-exclude "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']"
-`
+dotnet stryker -fte "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']"
+```
 
 We recommend to use relative paths. Relative paths are automatically resolved. Absolute paths break easily on different devices. However it is also possible to use absolute paths.
 

@@ -26,16 +26,16 @@ namespace Stryker.CLI
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
             ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
-                                                This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
+    This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
 
         public static readonly CLIOption<string> LogLevel = new CLIOption<string>
         {
-            ArgumentName = "--log-console",
+            ArgumentName = "--log-level",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = "Sets the logging level | Options [error, warning, info (default), debug, trace]",
+            ArgumentDescription = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]",
             DefaultValue = "info",
             JsonKey = "log-level"
         };
@@ -44,7 +44,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
-            ArgumentDescription = "Makes the logger write to a file",
+            ArgumentDescription = "Makes the logger write to a file (Logging to file always uses loglevel trace)",
             DefaultValue = _defaultOptions.LogOptions.LogToFile,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
@@ -53,9 +53,9 @@ namespace Stryker.CLI
         public static readonly CLIOption<bool> DevMode = new CLIOption<bool>
         {
             ArgumentName = "--dev-mode",
-            ArgumentShortName = "-dm",
+            ArgumentShortName = "-dev",
             ArgumentDescription = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
-                                                Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
+    Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
             DefaultValue = _defaultOptions.DevMode,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dev-mode"
@@ -75,7 +75,7 @@ namespace Stryker.CLI
             ArgumentName = "--excluded-mutations",
             ArgumentShortName = "-em <mutators>",
             ArgumentDescription = @"The given mutators will be excluded for this mutation testrun.
-                                                This argument takes a json array as value. Example: ['string', 'logical']",
+    This argument takes a json array as value. Example: ['string', 'logical']",
             JsonKey = "excluded-mutations"
         };
 
@@ -90,17 +90,16 @@ namespace Stryker.CLI
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
         {
             ArgumentName = "--max-concurrent-test-runners",
-            ArgumentShortName = "-m <integer>",
+            ArgumentShortName = "-c <integer>",
             ArgumentDescription = @"Mutation testing is time consuming. 
-                                                By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
-                                                This setting allows you to override this default behavior.
+    By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
+    This setting allows you to override this default behavior.
 
-                                                Reasons you might want to lower this setting:
+    Reasons you might want to lower this setting:
                                                                  
-                                                    - Your test runner starts a browser (another CPU-intensive process)
-                                                    - You're running on a shared server
-                                                    - You are running stryker in the background while doing other work
-                                ",
+        - Your test runner starts a browser (another CPU-intensive process)
+        - You're running on a shared server
+        - You are running stryker in the background while doing other work",
             DefaultValue = _defaultOptions.ConcurrentTestrunners,
             JsonKey = "max-concurrent-test-runners"
         };
@@ -146,7 +145,7 @@ namespace Stryker.CLI
             ArgumentName = "--solution-path",
             ArgumentShortName = "-s <path>",
             ArgumentDescription = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
-                                                .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
+    .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
             DefaultValue = null,
             JsonKey = "solution-path"
         };

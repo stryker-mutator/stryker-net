@@ -157,7 +157,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--log-console")]
+        [InlineData("--log-level")]
         [InlineData("-l")]
         public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
         {
@@ -237,7 +237,7 @@ namespace Stryker.CLI.UnitTest
 
         [Theory]
         [InlineData("--max-concurrent-test-runners")]
-        [InlineData("-m")]
+        [InlineData("-c")]
         public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions();

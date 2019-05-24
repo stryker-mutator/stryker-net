@@ -3,9 +3,9 @@
     {
         "test-runner": "vstest",
         "reporters": [
-            "ConsoleProgressBar",
-            "ConsoleReport",
-            "Html"
+            "cleartext",
+            "progress",
+            "html"
         ],
         "log-level": "info",
         "timeout-ms": 20000,
