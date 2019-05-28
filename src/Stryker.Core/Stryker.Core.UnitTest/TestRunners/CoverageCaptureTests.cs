@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using Stryker.Core.InjectedHelpers.Coverage;
 using Xunit;
@@ -7,6 +8,26 @@ namespace Stryker.Core.UnitTest.TestRunners
 {
     public class CoverageCaptureTests
     {
+
+        private static bool WaitFor(object lck, Func<bool> predicate, int timeout)
+        {
+            var start = new Stopwatch();
+            start.Start();
+            while (start.ElapsedMilliseconds<=timeout)
+            {
+                lock (lck)
+                {
+                    if (predicate())
+                    {
+                        return true;
+                    }
+                    Monitor.Wait(lck, (int)Math.Max(0, timeout - start.ElapsedMilliseconds));
+                }
+            }
+
+            return false;
+        }
+        
         [Fact]
         public void CanConnect()
         {
@@ -25,26 +46,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
                     Assert.True(client.IsConnected);
-                    lock (lck)
-                    {
-                        if (count == 0)
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                        Assert.Equal(1, count);
-                    }
+                    Assert.True(WaitFor(lck, () =>  count==1, 100));
                 }
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
                     Assert.True(client.IsConnected);
-                    lock (lck)
-                    {
-                        if (count <2)
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                        Assert.Equal(2, count);
-                    }
+                    Assert.True(WaitFor(lck, () =>  count==2, 100));
                 }
             }
         }
@@ -76,30 +83,17 @@ namespace Stryker.Core.UnitTest.TestRunners
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
                     Assert.True(client.IsConnected);
-                    lock (lck)
-                    {
-                        if (serverSide == null)
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                    }
+                    Assert.True(WaitFor(lck, () =>  serverSide!=null, 100));
                     client.Start();
                     client.RaiseReceivedMessage += (o, msg) =>
                     {
                         client.SendText(msg);
                     };
                     serverSide.SendText("it works");
-                    lock (lck)
-                    {
-                        if (string.IsNullOrEmpty(message))
-                        {
-                            Monitor.Wait(lck, 100);
-                        }
-                    }
+                    Assert.True(WaitFor(lck, () =>  !string.IsNullOrEmpty(message), 100));
                     Assert.Equal("it works", message);
                 }
             }
-
         }
     }
 }
