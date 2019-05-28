@@ -12,6 +12,5 @@ namespace Stryker.Core.Options
         AbortTestOnKill = 4,
         CaptureCoveragePerTest = 8,
         UseEnvVariable = 16,
-        DefaultMode =  CoverageBasedTest + SkipUncoveredMutants + UseEnvVariable//+ CaptureCoveragePerTest + NoOptimization
-    }
+        DefaultMode = NoOptimization //CoverageBasedTest + SkipUncoveredMutants + AbortTestOnKill
 }

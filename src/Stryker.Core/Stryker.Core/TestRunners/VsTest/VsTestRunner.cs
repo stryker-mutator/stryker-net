@@ -290,9 +290,7 @@ namespace Stryker.Core.TestRunners.VsTest
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
-{sequentialMode}
-</RunConfiguration>
-   {dataCollectorSettings}
+{sequentialMode}</RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
             Logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
