@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -36,6 +37,7 @@ namespace Stryker.Core.Reporters.Json
                     MutatorName = mutant.Mutation.DisplayName,
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                     Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
+                    Tests =  mutant.CoveringTest?.ToArray(),
                     Status = mutant.ResultStatus.ToString()
                 };
 

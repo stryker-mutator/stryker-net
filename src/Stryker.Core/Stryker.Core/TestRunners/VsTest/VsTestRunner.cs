@@ -64,7 +64,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<int> CoveredMutants { get; private set; }
 
-        public TestCoverageInfos FinalMapping => _coverage;
+        public TestCoverageInfos CoverageMutants => _coverage;
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
@@ -106,21 +106,31 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( 0, true), true);
-            foreach (var testResult in testResults)
+            const int maxAttempts = 3;
+            IList<TestCase> failed = null;
+            for (var retryCount = 0; retryCount < maxAttempts; retryCount++)
             {
-                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
-                if (propertyPair.Value != null)
+                var testResults = RunAllTests(failed, _coverageEnvironment, GenerateRunSettings( 0, true), true);
+                failed = new List<TestCase>();
+                foreach (var testResult in testResults)
                 {
-                    var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
-                    _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
-                }
-                else
-                {
-                    Logger.LogWarning($"No coverage for {testResult.DisplayName}");
+                    var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
+                    if (propertyPair.Value != null)
+                    {
+                        var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
+                        _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
+                    }
+                    else
+                    {
+                        if (retryCount == maxAttempts - 1)
+                        {
+                            Logger.LogWarning($"No coverage for {testResult.DisplayName}");
+                        }
+                        failed.Add(testResult.TestCase);
+                    }
                 }
             }
-
+            // retry the failed ones
             CoveredMutants = _coverage.CoveredMutants;
             return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
         }
@@ -273,13 +283,15 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var dataCollectorSettings = (forCoverage && NeedCoverage()) ? CoverageCollector.GetVsTestSettings() : "";
+            var sequentialMode = (forCoverage && NeedCoverage()) ? "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>" : "";
             var runSettings = 
                 $@"<RunSettings>
 <RunConfiguration>
     <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
     <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
     <TestSessionTimeout>{timeout}</TestSessionTimeout>
-  </RunConfiguration>
+{sequentialMode}
+</RunConfiguration>
    {dataCollectorSettings}
 </RunSettings>";
 

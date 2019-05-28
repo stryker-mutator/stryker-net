@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation
         
         int InitialTest(StrykerOptions option);
 
-        IEnumerable<int> CoveredMutants { get; }
+        TestCoverageInfos CoveredMutants { get; }
 
     }
 
@@ -49,7 +49,7 @@ namespace Stryker.Core.Initialisation
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
-        public IEnumerable<int> CoveredMutants => _testRunner.CoveredMutants;
+        public TestCoverageInfos CoveredMutants => _testRunner.CoverageMutants;
 
         public MutationTestInput Initialize(StrykerOptions options)
         {

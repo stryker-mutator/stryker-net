@@ -7,6 +7,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
@@ -36,7 +37,8 @@ namespace Stryker.Core.UnitTest
                 },
             });
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
-            var coveredMutants = new[]{2,3};
+            var coveredMutants = new TestCoverageInfos();
+            coveredMutants.DeclareMappingForATest("1", new []{2,3});
             initialisationMock.SetupGet(x => x.CoveredMutants).Returns(coveredMutants);
             initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(0);
 
@@ -44,7 +46,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
 
-            mutationTestProcessMock.Setup( x=> x.Optimize(It.IsAny<IEnumerable<int>>()));
+            mutationTestProcessMock.Setup( x=> x.Optimize(It.IsAny<TestCoverageInfos>()));
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
 
 

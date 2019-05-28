@@ -12,6 +12,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest
 {
@@ -19,7 +20,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate(StrykerOptions options);
         StrykerRunResult Test(StrykerOptions options);
-        void Optimize(IEnumerable<int> coveredMutants);
+        void Optimize(TestCoverageInfos coveredMutants);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -181,13 +182,13 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(options, Input.ProjectInfo.ProjectContents.GetMutationScore());
         }
 
-        public void Optimize(IEnumerable<int> coveredMutants)
+        public void Optimize(TestCoverageInfos coveredMutants)
         {
             if (coveredMutants == null)
             {
                 return;
             }
-            var covered = new HashSet<int>(coveredMutants);
+            var covered = new HashSet<int>(coveredMutants.CoveredMutants);
             if (covered.Count == 0)
             {
                 // we assume 
@@ -201,6 +202,16 @@ namespace Stryker.Core.MutationTest
             foreach (var mutant in nonTested)
             {
                 mutant.ResultStatus = mutantResultStatus;
+            }
+
+            foreach (var mutant in Input.ProjectInfo.ProjectContents.Mutants)
+            {
+                var tests = coveredMutants.GetTests<object>(mutant.Id);
+                if (tests == null)
+                {
+                    continue;
+                }
+                mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
             }
 
             report.AppendJoin(',', nonTested.Select(x => x.Id));

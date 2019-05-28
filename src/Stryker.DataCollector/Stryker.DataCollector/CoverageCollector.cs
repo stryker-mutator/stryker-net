@@ -165,6 +165,7 @@ namespace Stryker.DataCollector
             {
                 // get coverage 
                 coverData = Environment.GetEnvironmentVariable(EnvName);
+                Environment.SetEnvironmentVariable(EnvName, null);
             }
 
             return coverData;

@@ -402,8 +402,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 executorMock.Object);
-          
-            target.Optimize(new [] {2});
+            var coverage = new TestCoverageInfos();
+            coverage.DeclareMappingForATest("toto", new []{2});
+            target.Optimize(coverage);
 
             target.Test(options);
 

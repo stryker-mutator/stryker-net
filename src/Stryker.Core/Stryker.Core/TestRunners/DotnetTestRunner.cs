@@ -70,6 +70,8 @@ namespace Stryker.Core.TestRunners
             return result;
         }
 
+        public TestCoverageInfos CoverageMutants => null;
+
         public IEnumerable<int> CoveredMutants { get; private set; }
 
         public void Dispose()

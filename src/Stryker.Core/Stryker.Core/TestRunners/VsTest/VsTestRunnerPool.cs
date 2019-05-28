@@ -79,7 +79,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (needCoverage)
                 {
                     result = runner.CaptureCoverage();
-                    _coverage = runner.FinalMapping;
+                    _coverage = runner.CoverageMutants;
                 }
                 else
                 {
@@ -92,6 +92,8 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             return result;
         }
+
+        public TestCoverageInfos CoverageMutants => _coverage;
 
         public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
 

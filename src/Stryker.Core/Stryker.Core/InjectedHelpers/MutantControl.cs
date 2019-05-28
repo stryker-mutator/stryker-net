@@ -97,6 +97,13 @@ namespace Stryker
             {
                 lock (_coveredMutants)
                 {
+                    if (!usePipe)
+                    {
+                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
+                        {
+                            _coveredMutants = new HashSet<int>();
+                        }
+                    }
                     if (_coveredMutants.Add(id))
                     {
                         if (!usePipe)
