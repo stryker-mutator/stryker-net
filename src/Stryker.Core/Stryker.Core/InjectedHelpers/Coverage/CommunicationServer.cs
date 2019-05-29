@@ -24,7 +24,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         private static int _instanceCounter = 0;
         public CommunicationServer(string name)
         {
-            PipeName = $"Stryker.{name}.Pipe.{Process.GetCurrentProcess().Id}:{Interlocked.Increment(ref _instanceCounter)}";
+            PipeName = $"StrykerPipe.{name}.{Process.GetCurrentProcess().Id}.{AppDomain.CurrentDomain.Id}:{Interlocked.Increment(ref _instanceCounter)}";
         }
 
         public void Listen()
