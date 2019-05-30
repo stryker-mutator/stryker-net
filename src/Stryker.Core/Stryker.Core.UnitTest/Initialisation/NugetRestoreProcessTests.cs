@@ -3,6 +3,7 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
+using System;
 using System.IO;
 using Xunit;
 
@@ -13,9 +14,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         private const string solutionPath = @"..\MySolution.sln";
         private readonly string solutionDir = Path.GetDirectoryName(Path.GetFullPath(solutionPath));
 
-        [Fact]
+        [SkippableFact]
         public void HappyFlow()
         {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
+
             string nugetPath = @"C:\choco\bin\NuGet.exe";
             string msBuildVersion = "16.0.0";
 
@@ -46,9 +49,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.RestorePackages(solutionPath);
         }
 
-        [Fact]
+        [SkippableFact]
         public void ShouldThrowOnNugetNotInstalled()
         {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
+
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processExecutorMock.Setup(x => x.Start(solutionDir, "where.exe", "nuget.exe", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
@@ -65,9 +70,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
         }
 
-        [Fact]
+        [SkippableFact]
         public void ShouldPickFirstNugetPath()
         {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
+
             string firstNugetPath = @"C:\choco\bin\NuGet.exe";
             string msBuildVersion = "16.0.0";
 
