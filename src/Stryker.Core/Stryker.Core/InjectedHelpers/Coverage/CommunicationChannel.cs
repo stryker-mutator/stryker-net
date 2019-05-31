@@ -142,9 +142,8 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             {
                 lock (_lck)
                 {
-                    _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
                     Log($"Send message: [{message}] ({messageBytes.Length} bytes)");
-                    _pipeStream.Write(messageBytes, 0 , messageBytes.Length);
+                    _pipeStream.BeginWrite(BitConverter.GetBytes(messageBytes.Length), 0, 4, HeaderSent, messageBytes);
                 }
             }
             catch (ObjectDisposedException)
@@ -153,6 +152,43 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             catch (IOException)
             {
             }
+        }
+
+        private void HeaderSent(IAsyncResult ar)
+        {
+            try
+            {
+                var data = (byte[]) ar.AsyncState;
+                lock (_lck)
+                {
+                    _pipeStream.EndWrite(ar);
+                    _pipeStream.BeginWrite(data, 0, data.Length, DataSent, data);
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (IOException)
+            {
+            } 
+        }
+
+        private void DataSent(IAsyncResult ar)
+        {
+            try
+            {
+                lock (_lck)
+                {
+                    _pipeStream.EndWrite(ar);
+                }
+                Log("Send message sent.");
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (IOException)
+            {
+            } 
         }
 
         public void Dispose()

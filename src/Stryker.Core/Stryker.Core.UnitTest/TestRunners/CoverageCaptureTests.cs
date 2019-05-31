@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using Stryker.Core.InjectedHelpers.Coverage;
+using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
     public class CoverageCaptureTests
     {
-
         private static bool WaitFor(object lck, Func<bool> predicate, int timeout)
         {
             var start = new Stopwatch();

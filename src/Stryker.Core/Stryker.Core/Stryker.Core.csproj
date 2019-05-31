@@ -21,10 +21,8 @@
 
   <ItemGroup>
 	<EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs">
-	  <CopyToOutputDirectory>NEver</CopyToOutputDirectory>
 	</EmbeddedResource>
 	<EmbeddedResource Include="InjectedHelpers\MutantControl.cs">
-	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	</EmbeddedResource>
 	<EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
 	<EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
