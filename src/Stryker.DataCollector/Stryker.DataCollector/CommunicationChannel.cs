@@ -55,12 +55,15 @@ namespace Stryker.DataCollector
 
         public void Start()
         {
-            if (_started)
+            lock(_lck)
             {
-                return;
+                if (_started)
+                {
+                    return;
+                }
+                _started = true;
             }
 
-            _started = true;
             Begin();
         }
 
@@ -75,7 +78,14 @@ namespace Stryker.DataCollector
                     RaiseReceivedMessage?.Invoke(this, message);
                 }
                 _processingHeader = !_processingHeader;
-                _buffer = new byte[_processingHeader ? 4 : BitConverter.ToInt32(_buffer,0)];
+                var len = _processingHeader ? 4 : BitConverter.ToInt32(_buffer,0);
+                if (len<0)
+                {
+                    Log($"Got invalid length, synchro lost. Aborting!");
+                    _pipeStream.Close();
+                    return;
+                }
+                _buffer = new byte[len];
                 _cursor = 0;
                 if (!_processingHeader && _buffer.Length == 0)
                 {

@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var start = new Stopwatch();
             start.Start();
-            while (start.ElapsedMilliseconds<=timeout)
+            while (start.ElapsedMilliseconds<timeout)
             {
                 lock (lck)
                 {
@@ -25,13 +25,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                 }
             }
 
-            return false;
+            return predicate();
         }
         
         [Fact]
         public void CanConnect()
         {
-            using (var server = new CommunicationServer("test"))
+            using (var server = new CommunicationServer("testConnect"))
             {
                 var count = 0;
                 var lck = new object();
