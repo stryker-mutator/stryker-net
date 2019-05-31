@@ -25,7 +25,7 @@ namespace Stryker.Core.Initialisation
         public NugetRestoreProcess(IProcessExecutor processExecutor = null)
         {
             _processExecutor = processExecutor ?? new ProcessExecutor();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<NugetRestoreProcess>();
         }
 
         public void RestorePackages(string solutionPath)
