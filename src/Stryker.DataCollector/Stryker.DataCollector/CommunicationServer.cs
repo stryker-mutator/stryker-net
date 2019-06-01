@@ -65,7 +65,7 @@ namespace Stryker.DataCollector
 
                 if (_listener.IsConnected)
                 {
-                    session = new CommunicationChannel(_listener, $"{PipeName}:S");
+                    session = new CommunicationChannel(_listener, $"{PipeName}:S({_channels.Count})");
                     Log($"New connection.");
                     _channels.Add(session);
                     _listener = null;

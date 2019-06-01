@@ -114,7 +114,7 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            Console.WriteLine($"{message}({_pipeName}).");
+            Console.Error.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
         }
 
         private void WhenReceived(IAsyncResult ar)
@@ -151,10 +151,8 @@ namespace Stryker.DataCollector
                 {
                     Log($"Send message header");
                     _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
-                    //_pipeStream.BeginWrite(BitConverter.GetBytes(messageBytes.Length), 0, 4, HeaderSent, messageBytes);
                     Log($"Send message data: {messageBytes.Length} bytes");
                     _pipeStream.Write(messageBytes, 0, messageBytes.Length);
-                    //_pipeStream.BeginWrite(messageBytes, 0, messageBytes.Length, DataSent, messageBytes);
                 }
             }
             catch (ObjectDisposedException e)
@@ -165,48 +163,6 @@ namespace Stryker.DataCollector
             {
                 Log($"Begin Read {e} exception.");
             }
-        }
-
-        private void HeaderSent(IAsyncResult ar)
-        {
-            try
-            {
-                var messageBytes = (byte[]) ar.AsyncState;
-                lock (_lck)
-                {
-                    _pipeStream.EndWrite(ar);
-                    Log($"Send message data: {messageBytes.Length} bytes");
-                    _pipeStream.BeginWrite(messageBytes, 0, messageBytes.Length, DataSent, messageBytes);
-                }
-            }
-            catch (ObjectDisposedException e)
-            {
-                Log($"Begin Read {e} exception.");
-            }
-            catch (IOException e)
-            {
-                Log($"Begin Read {e} exception.");
-            } 
-        }
-
-        private void DataSent(IAsyncResult ar)
-        {
-            try
-            {
-                lock (_lck)
-                {
-                    _pipeStream.EndWrite(ar);
-                }
-                Log("Send message sent.");
-            }
-            catch (ObjectDisposedException e)
-            {
-                Log($"Begin Read {e} exception.");
-            }
-            catch (IOException e)
-            {
-                Log($"Begin Read {e} exception.");
-            } 
         }
 
         public void Dispose()

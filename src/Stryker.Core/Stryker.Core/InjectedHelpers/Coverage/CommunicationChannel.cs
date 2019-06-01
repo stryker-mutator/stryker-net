@@ -102,9 +102,9 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 Log($"Begin Read {bufferLength} bytes.");
                 _pipeStream.BeginRead(_buffer, _cursor, bufferLength, WhenReceived, null);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Connection closed.");
             }
             catch (IOException e)
             {
