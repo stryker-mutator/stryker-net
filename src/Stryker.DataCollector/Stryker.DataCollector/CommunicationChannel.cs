@@ -156,9 +156,9 @@ namespace Stryker.DataCollector
                     _pipeStream.Write(messageBytes, 0, messageBytes.Length);
                 }
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Nothing to read, connection closed.");
             }
             catch (IOException e)
             {

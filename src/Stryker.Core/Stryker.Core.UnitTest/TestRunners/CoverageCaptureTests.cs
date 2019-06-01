@@ -64,18 +64,18 @@ namespace Stryker.Core.UnitTest.TestRunners
                 string message = string.Empty;
                 CommunicationChannel serverSide = null;
                 server.Listen();
-                server.RaiseReceivedMessage += (o, msg) =>
-                {
-                    lock (lck)
-                    {
-                        message = msg;
-                        Monitor.Pulse(lck);
-                    }
-                };
                 server.RaiseNewClientEvent += (o, e) => {
                     lock (lck)
                     {
                         serverSide = e.Client; 
+                        serverSide.RaiseReceivedMessage+=(o2, msg) =>
+                        {
+                            lock (lck)
+                            {
+                                message = msg;
+                                Monitor.Pulse(lck);
+                            }
+                        };
                         Monitor.Pulse(lck);
                     }
                 };
