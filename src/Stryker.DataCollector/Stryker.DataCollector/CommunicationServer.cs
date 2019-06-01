@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.DataCollector
 {
@@ -11,7 +12,7 @@ namespace Stryker.DataCollector
 
     public sealed class CommunicationServer : IDisposable
     {
-        private readonly object lck = new object();
+        private readonly object _lck = new object();
         private volatile bool _mustShutdown;
         private readonly IList<CommunicationChannel> _channels = new List<CommunicationChannel>();
         private NamedPipeServerStream _listener;
@@ -29,8 +30,9 @@ namespace Stryker.DataCollector
 
         public void Listen()
         {
-            lock (lck)
+            lock (_lck)
             {
+                Log("Listen for client.");
                 if (_mustShutdown)
                 {
                     return;
@@ -47,7 +49,7 @@ namespace Stryker.DataCollector
         private void OnConnect(IAsyncResult ar)
         {
             CommunicationChannel session = null;
-            lock (lck)
+            lock (_lck)
             {
                 try
                 {
@@ -64,16 +66,22 @@ namespace Stryker.DataCollector
                 if (_listener.IsConnected)
                 {
                     session = new CommunicationChannel(_listener, $"{PipeName}:S");
+                    Log($"New connection.");
                     _channels.Add(session);
                     _listener = null;
                     session.RaiseReceivedMessage += Session_RaiseReceivedMessage;
-                    session.Start();
                 }
                 Listen();
             }
-
             RaiseNewClientEvent?.Invoke(this, new ConnectionEventArgs(session));
+            session.Start();
         }
+
+        private void Log(string message)
+        {
+            Console.WriteLine($"{message}({PipeName}).");
+        }
+
 
         private void Session_RaiseReceivedMessage(object sender, string args)
         {
@@ -83,7 +91,7 @@ namespace Stryker.DataCollector
 
         public void Dispose()
         {
-            lock (lck)
+            lock (_lck)
             {
                 _mustShutdown = true;
                 // connect to self to shut down last open pipe

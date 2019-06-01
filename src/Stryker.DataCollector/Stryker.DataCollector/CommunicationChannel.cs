@@ -98,14 +98,17 @@ namespace Stryker.DataCollector
 
             try
             {
-                Log("Begin Read");
-                _pipeStream.BeginRead(_buffer, _cursor, _buffer.Length-_cursor, WhenReceived, null);
+                var bufferLength = _buffer.Length-_cursor;
+                Log($"Begin Read {bufferLength} bytes.");
+                _pipeStream.BeginRead(_buffer, _cursor, bufferLength, WhenReceived, null);
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException e)
             {
+                Log($"Begin Read {e} exception.");
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Log($"Begin Read {e} exception.");
             }
         }
 
@@ -121,17 +124,21 @@ namespace Stryker.DataCollector
                 var read = _pipeStream.EndRead(ar);
                 if (read == 0)
                 {
+                    Log($"Nothing to read, connection closed.");
                     return;
                 }
 
                 _cursor += read;
+                Log($"Received {read} bytes.");
                 Begin(_cursor == _buffer.Length);
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException e)
             {
+                Log($"Begin Read {e} exception.");
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Log($"Begin Read {e} exception.");
             }
         }
 
@@ -142,15 +149,21 @@ namespace Stryker.DataCollector
             {
                 lock (_lck)
                 {
-                    Log($"Send message: [{message}] ({messageBytes.Length} bytes)");
-                    _pipeStream.BeginWrite(BitConverter.GetBytes(messageBytes.Length), 0, 4, HeaderSent, messageBytes);
+                    Log($"Send message header");
+                    _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
+                    //_pipeStream.BeginWrite(BitConverter.GetBytes(messageBytes.Length), 0, 4, HeaderSent, messageBytes);
+                    Log($"Send message data: {messageBytes.Length} bytes");
+                    _pipeStream.Write(messageBytes, 0, messageBytes.Length);
+                    //_pipeStream.BeginWrite(messageBytes, 0, messageBytes.Length, DataSent, messageBytes);
                 }
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException e)
             {
+                Log($"Begin Read {e} exception.");
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Log($"Begin Read {e} exception.");
             }
         }
 
@@ -158,18 +171,21 @@ namespace Stryker.DataCollector
         {
             try
             {
-                var data = (byte[]) ar.AsyncState;
+                var messageBytes = (byte[]) ar.AsyncState;
                 lock (_lck)
                 {
                     _pipeStream.EndWrite(ar);
-                    _pipeStream.BeginWrite(data, 0, data.Length, DataSent, data);
+                    Log($"Send message data: {messageBytes.Length} bytes");
+                    _pipeStream.BeginWrite(messageBytes, 0, messageBytes.Length, DataSent, messageBytes);
                 }
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException e)
             {
+                Log($"Begin Read {e} exception.");
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Log($"Begin Read {e} exception.");
             } 
         }
 
@@ -183,11 +199,13 @@ namespace Stryker.DataCollector
                 }
                 Log("Send message sent.");
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException e)
             {
+                Log($"Begin Read {e} exception.");
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Log($"Begin Read {e} exception.");
             } 
         }
 

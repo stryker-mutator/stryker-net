@@ -72,9 +72,9 @@ namespace Stryker.DataCollector
             if (usePipe)
             {
                 _server = new CommunicationServer("CoverageCollector");
+                _server.RaiseNewClientEvent += ConnectionEstablished;
                 _server.Listen();
                 _usePipe = true;
-                _server.RaiseNewClientEvent += ConnectionEstablished;
             }
         }
 
@@ -154,7 +154,8 @@ namespace Stryker.DataCollector
             {
                 if (!WaitOnLck(_lck, () => _lastMessage != null, 500))
                 {
-                    throw new InvalidOperationException($"Failed to retrieve coverage data for {testCase}");
+                    // Failed to retrieve coverage data for {testCase
+                    return string.Empty;
                 }
 
                 coverData = _lastMessage;
