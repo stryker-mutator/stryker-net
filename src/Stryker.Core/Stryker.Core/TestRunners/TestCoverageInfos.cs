@@ -22,7 +22,7 @@ namespace Stryker.Core.TestRunners
         {
             if (_mutantToTests.ContainsKey(mutationId))
             {
-                return _mutantToTests[mutationId].Union(_testsWithoutCoverageInfos).Cast<T>().ToList();
+                return _mutantToTests[mutationId].Cast<T>().ToList();
             }
 
             return null;
@@ -34,11 +34,13 @@ namespace Stryker.Core.TestRunners
             { 
                 if (captureCoverage == null)
                 {
-                    // no coverage info available, the test will have to be run for each mutant
+                    // no coverage info available, we keep track of it
+                    Logger.LogDebug($"No covered mutants for {discoveredTest}.");
                     _testsWithoutCoverageInfos.Add(discoveredTest);
                 }
                 else
                 {
+                    Logger.LogDebug($"Covered mutants for {discoveredTest} are: {string.Join(", ", captureCoverage)}.");
                     foreach (var id in captureCoverage)
                     {
                         if (_mutantToTests.ContainsKey(id))

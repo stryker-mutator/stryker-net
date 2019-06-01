@@ -91,9 +91,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new OperationCanceledException();
             }
 
+            foreach (var result in resultAsArray.Where( x => x.Outcome != TestOutcome.Passed))
+            {
+                Logger.LogDebug($"Test {result.TestCase.DisplayName} is {result.Outcome}");
+            }
+
             var testResult = new TestRunResult
             {
-                Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed),
+                Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped),
                 ResultMessage = string.Join(
                     Environment.NewLine,
                     resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -106,6 +111,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
+            Logger.LogDebug($"Capturing coverage.");
             const int maxAttempts = 3;
             IList<TestCase> failed = null;
             for (var retryCount = 0; retryCount < maxAttempts; retryCount++)
@@ -120,15 +126,21 @@ namespace Stryker.Core.TestRunners.VsTest
                         var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
                         _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
                     }
-                    else
+                    else if (testResult.Outcome == TestOutcome.Passed)
                     {
-                        if (retryCount == maxAttempts - 1)
-                        {
-                            Logger.LogWarning($"No coverage for {testResult.DisplayName}");
-                        }
                         failed.Add(testResult.TestCase);
                     }
                 }
+                if (failed.Count == 0)
+                {
+                    break;
+                }
+                Logger.LogDebug("Retry to capture coverage.");
+            }
+
+            foreach (var testCase in failed)
+            {
+                Logger.LogWarning($"No coverage for {testCase.FullyQualifiedName}, maybe this test does not actually test anything.");
             }
             // retry the failed ones
             CoveredMutants = _coverage.CoveredMutants;
@@ -154,12 +166,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
                         _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
-                        Logger.LogDebug($"Covered mutants for {test.FullyQualifiedName} are: {propertyPair.Value}.");
                         return testResults;
                     }
+                    Logger.LogDebug("Retry to capture coverage.");
                 }
             }
-            Logger.LogWarning($"No coverage for {test.FullyQualifiedName}.");
+            Logger.LogWarning($"No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
 
             return testResults;
         }
