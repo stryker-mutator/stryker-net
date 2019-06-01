@@ -102,9 +102,9 @@ namespace Stryker.DataCollector
                 Log($"Begin Read {bufferLength} bytes.");
                 _pipeStream.BeginRead(_buffer, _cursor, bufferLength, WhenReceived, null);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Nothing to read, connection closed.");
             }
             catch (IOException e)
             {
@@ -114,7 +114,8 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            Console.Error.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
+            // TODO: control this with logging options
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
         }
 
         private void WhenReceived(IAsyncResult ar)
@@ -132,9 +133,9 @@ namespace Stryker.DataCollector
                 Log($"Received {read} bytes.");
                 Begin(_cursor == _buffer.Length);
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Nothing to read, connection closed.");
             }
             catch (IOException e)
             {

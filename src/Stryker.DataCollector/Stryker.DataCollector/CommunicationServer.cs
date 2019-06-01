@@ -79,7 +79,8 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            Console.WriteLine($"{message}({PipeName}).");
+            // TODO: control this with logging options
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({PipeName}).");
         }
 
 
