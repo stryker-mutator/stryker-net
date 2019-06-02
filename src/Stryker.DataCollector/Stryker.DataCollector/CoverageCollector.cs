@@ -28,12 +28,8 @@ namespace Stryker.DataCollector
         private const string EnvName = "CoveredMutants";
 
         private const string TemplateForConfiguration = 
-            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
-        <Configuration>
-        </Configuration>
-        </InProcDataCollector>
-        </InProcDataCollectors>
-        </InProcDataCollectionRunSettings>";
+            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} 
+<Configuration></Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
         public static string GetVsTestSettings()
         {
@@ -76,6 +72,11 @@ namespace Stryker.DataCollector
                 _server.Listen();
                 _usePipe = true;
             }
+        }
+
+        public void SetLogger(Action<string> logger)
+        {
+            _server.SetLogger(logger);
         }
 
         public IDictionary<string, string> GetEnvironmentVariables()

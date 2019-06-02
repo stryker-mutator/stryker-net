@@ -91,11 +91,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new OperationCanceledException();
             }
 
-            foreach (var result in resultAsArray.Where( x => x.Outcome != TestOutcome.Passed))
-            {
-                Logger.LogDebug($"Test {result.TestCase.DisplayName} is {result.Outcome}");
-            }
-
             var testResult = new TestRunResult
             {
                 Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped),
@@ -298,11 +293,11 @@ namespace Stryker.Core.TestRunners.VsTest
             var sequentialMode = (forCoverage && NeedCoverage()) ? "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>" : "";
             var runSettings = 
                 $@"<RunSettings>
-<RunConfiguration>
-    <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
-    <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-    <TestSessionTimeout>{timeout}</TestSessionTimeout>
-{sequentialMode}</RunConfiguration>{dataCollectorSettings}
+ <RunConfiguration>
+  <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
+  <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
+  <TestSessionTimeout>{timeout}</TestSessionTimeout>{sequentialMode}
+ </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
             Logger.LogDebug("VsTest runsettings set to: {0}", runSettings);

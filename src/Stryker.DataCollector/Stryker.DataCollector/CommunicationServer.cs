@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.DataCollector
 {
@@ -21,11 +20,18 @@ namespace Stryker.DataCollector
         public event ConnectionEvent RaiseNewClientEvent;
         public event MessageReceived RaiseReceivedMessage;
 
+        private Action<string> _logger;
 
         private static int _instanceCounter = 0;
+
         public CommunicationServer(string name)
         {
             PipeName = $"StrykerPipe.{name}.{Process.GetCurrentProcess().Id}.{AppDomain.CurrentDomain.Id}:{Interlocked.Increment(ref _instanceCounter)}";
+        }
+
+        public void SetLogger(Action<string> logger)
+        {
+            _logger = logger;
         }
 
         public void Listen()
@@ -66,6 +72,7 @@ namespace Stryker.DataCollector
                 if (_listener.IsConnected)
                 {
                     session = new CommunicationChannel(_listener, $"{PipeName}:S({_channels.Count})");
+                    session.SetLogger(_logger);
                     Log($"New connection.");
                     _channels.Add(session);
                     _listener = null;
@@ -79,10 +86,16 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            // TODO: control this with logging options
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({PipeName}).");
+            var logLine = $"{message}({PipeName}).";
+            if (_logger == null)
+            {
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {logLine}");
+            }
+            else
+            {
+                _logger(logLine);
+            }
         }
-
 
         private void Session_RaiseReceivedMessage(object sender, string args)
         {

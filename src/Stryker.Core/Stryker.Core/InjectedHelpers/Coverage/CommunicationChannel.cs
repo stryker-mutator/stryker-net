@@ -10,16 +10,15 @@ namespace Stryker.Core.InjectedHelpers.Coverage
     public class CommunicationChannel : IDisposable
     {
         private readonly PipeStream _pipeStream;
-        private byte[] _buffer;
-        private int _cursor;
-        private string _pipeName;
-        private bool _processingHeader;
-        private bool _started;
+        private readonly string _pipeName;
         private readonly object _lck = new object();
 
-        public event MessageReceived RaiseReceivedMessage;
+        private byte[] _buffer;
+        private int _cursor;
+        private bool _processingHeader;
+        private bool _started;
 
-        public bool IsConnected => _pipeStream.IsConnected;
+        public event MessageReceived RaiseReceivedMessage;
 
         public CommunicationChannel(PipeStream stream, string name)
         {
@@ -105,7 +104,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         private void Log(string message)
         {
             // TODO: control this with logging options
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
+ //           Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
         }
 
         private void WhenReceived(IAsyncResult ar)

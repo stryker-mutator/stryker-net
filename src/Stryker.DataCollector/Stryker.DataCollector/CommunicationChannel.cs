@@ -25,6 +25,7 @@ namespace Stryker.DataCollector
         private string _pipeName;
         private bool _processingHeader;
         private bool _started;
+        private Action<string> _logger;
         private readonly object _lck = new object();
 
         public event MessageReceived RaiseReceivedMessage;
@@ -51,6 +52,10 @@ namespace Stryker.DataCollector
                 throw;
             }
             return new CommunicationChannel(pipe, $"{pipeName}:C");
+        }
+        public void SetLogger(Action<string> logger)
+        {
+            _logger = logger;
         }
 
         public void Start()
@@ -114,8 +119,15 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            // TODO: control this with logging options
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
+            var logLine = $"{message}({_pipeName}).";
+            if (_logger == null)
+            {
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {logLine}");
+            }
+            else
+            {
+                _logger(logLine);
+            }
         }
 
         private void WhenReceived(IAsyncResult ar)

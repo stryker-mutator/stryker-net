@@ -61,6 +61,7 @@ namespace Stryker.Core.TestRunners
         {
             var collector = new CoverageCollector();
             collector.Init(true);
+            collector.SetLogger((message) => _logger.LogDebug(message));
             var coverageEnvironment = collector.GetEnvironmentVariables();
             var result = LaunchTestProcess(null, coverageEnvironment);
 
