@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Stryker.DataCollector
 {
@@ -145,7 +146,7 @@ namespace Stryker.DataCollector
                 Log($"Received {read} bytes.");
                 Begin(_cursor == _buffer.Length);
             }
-            catch (ObjectDisposedException)
+            catch (NullReferenceException)
             {
                 Log($"Nothing to read, connection closed.");
             }
