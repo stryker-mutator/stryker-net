@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
-        public void ShouldNotMutate()
+        public void ShouldNotMutateSimpleAssignment()
         {
             var target = new AssignmentStatementMutator();
 
@@ -44,6 +44,52 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxKind.SimpleAssignmentExpression,
                 SyntaxFactory.IdentifierName("a"),
                 SyntaxFactory.IdentifierName("b")
+            );
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateStringLiteralsLeft()
+        {
+            var target = new AssignmentStatementMutator();
+
+            var originalNode = SyntaxFactory.AssignmentExpression(
+                SyntaxKind.AddAssignmentExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression),
+                SyntaxFactory.IdentifierName("b")
+            );
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+
+        [Fact]
+        public void ShouldNotMutateStringLiteralsRight()
+        {
+            var target = new AssignmentStatementMutator();
+
+            var originalNode = SyntaxFactory.AssignmentExpression(
+                SyntaxKind.AddAssignmentExpression,
+                SyntaxFactory.IdentifierName("b"),
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression)
+            );
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateStringLiteralsBoth()
+        {
+            var target = new AssignmentStatementMutator();
+
+            var originalNode = SyntaxFactory.AssignmentExpression(
+                SyntaxKind.AddAssignmentExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression),
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression)
             );
             var result = target.ApplyMutations(originalNode).ToList();
 

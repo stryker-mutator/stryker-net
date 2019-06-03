@@ -23,8 +23,8 @@ namespace Stryker.Core.Reporters.Progress
         private readonly IConsoleOneLineLogger _testsProgressLogger;
         private readonly IStopWatchProvider _stopWatch; 
 
-        private int _totalNumberOfTests;
-        private int _numberOfTestsRun;
+        private int _totalNumberOfMutants;
+        private int _numberOfMutantsRun;
 
         public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger, IStopWatchProvider stopWatch)
         {
@@ -34,66 +34,44 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportInitialState(int totalNumberOfTests)
         {
-  
             _stopWatch.Start();
-            if (totalNumberOfTests == 0)
-            {
-                _testsProgressLogger.StartLog(LoggingFormat,
-                                              GenerateProgressBar(MaxProgressBar),
-                                              0,
-                                              0,
-                                              100,
-                                              RemainingTime());
-                return;
-            }
-
-            _totalNumberOfTests = totalNumberOfTests;
-            var totalNumberOfTestsPercentage = _numberOfTestsRun * 100 / _totalNumberOfTests;
-
-            var progressBar = GenerateProgressBar(ProgressBarInitialState);
+            _totalNumberOfMutants = totalNumberOfTests;
 
             _testsProgressLogger.StartLog(LoggingFormat,
-                                          progressBar,
-                                          _numberOfTestsRun,
-                                          _totalNumberOfTests,
-                                          totalNumberOfTestsPercentage,
-                                            RemainingTime());
+                                        GenerateProgressBar(0),
+                                        0,
+                                        _totalNumberOfMutants,
+                                        0,
+                                        RemainingTime());
+
         }
 
         public void ReportRunTest()
         {
-            if (_totalNumberOfTests == 0)
-            {
-                _testsProgressLogger.ReplaceLog(LoggingFormat,
-                                              GenerateProgressBar(MaxProgressBar),
-                                              0,
-                                              0,
-                                              100,
-                                              RemainingTime());
-                return;
-            }
+            _numberOfMutantsRun++;
 
-            _numberOfTestsRun++;
-
-            var totalNumberOfTestsPercentage = _numberOfTestsRun * 100 / _totalNumberOfTests;
+            var totalNumberOfTestsPercentage = _numberOfMutantsRun * 100 / _totalNumberOfMutants;
             var progressBarCount = totalNumberOfTestsPercentage / 10;
 
             var stringBuilder = GenerateProgressBar(progressBarCount);
 
             _testsProgressLogger.ReplaceLog(LoggingFormat,
-                                            stringBuilder, _numberOfTestsRun, _totalNumberOfTests,
-                                            totalNumberOfTestsPercentage, RemainingTime());
+                                            stringBuilder,
+                                            _numberOfMutantsRun,
+                                            _totalNumberOfMutants,
+                                            totalNumberOfTestsPercentage,
+                                            RemainingTime());
         }
 
         private string RemainingTime()
         {
-            if (_totalNumberOfTests == 0 || _numberOfTestsRun == 0)
+            if (_totalNumberOfMutants == 0 || _numberOfMutantsRun == 0)
             {
                 return "NA";
             }
 
             var elapsed = _stopWatch.GetElapsedMillisecond();
-            var remaining = (_totalNumberOfTests - _numberOfTestsRun) * elapsed / _numberOfTestsRun;
+            var remaining = (_totalNumberOfMutants - _numberOfMutantsRun) * elapsed / _numberOfMutantsRun;
             
             return MillisecondsToText(remaining);
         }

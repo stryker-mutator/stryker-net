@@ -117,7 +117,7 @@ jobs:
     parameters:
       testName: 'linux-netcore'
       workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-      strykerCommands: '--dev-mode'  
+      strykerCommands: '--dev-mode'
   - task: DotNetCoreCLI@2
     displayName: 'Assert integration test results'
     inputs:
