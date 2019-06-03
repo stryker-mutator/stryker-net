@@ -81,7 +81,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult RunVsTest(ICollection<TestCase> testCases, int? timeoutMs,
             Dictionary<string, string> envVars)
         {
-            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs ?? 0, false), false);
+            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -178,7 +178,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 using (var waitHandle = new AutoResetEvent(false))
                 {
                     var handler = new DiscoveryEventHandler(waitHandle, _messages);
-                    var generateRunSettings = GenerateRunSettings(0, false);
+                    var generateRunSettings = GenerateRunSettings(null, false);
                     _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
 
                     waitHandle.WaitOne();
@@ -202,24 +202,12 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         private IEnumerable<TestResult> RunAllTests(ICollection<TestCase> testCases, Dictionary<string, string> envVars,
-            string runSettings, bool forCoverage)
+            string runSettings, bool forCoverage) 
         {
             using (var runCompleteSignal = new AutoResetEvent(false))
             {
-                using (var processExitedSignal = new AutoResetEvent(false))
-                {
                     var handler = new RunEventHandler(runCompleteSignal, _messages);
-                    var testHostLauncher = new StrykerVsTestHostLauncher(() =>
-                    {
-                        try
-                        {
-                            processExitedSignal.Set();
-                        }
-                        catch (ObjectDisposedException e)
-                        {
-                            Logger.LogError($"Something went wrong with VsTest: {e}");
-                        }
-                    }, envVars);
+                    var testHostLauncher = new StrykerVsTestHostLauncher(null, envVars);
                     if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                     {
                         handler.TestsFailed += Handler_TestsFailed;
@@ -244,7 +232,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
                     var results = handler.TestResults;
                     return results;
-                }
             }
         }
 
@@ -272,7 +259,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return traceLevel;
         }
 
-        private string GenerateRunSettings(int timeout, bool forCoverage)
+        private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
             string targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
@@ -291,12 +278,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var dataCollectorSettings = (forCoverage && NeedCoverage()) ? CoverageCollector.GetVsTestSettings() : "";
             var sequentialMode = (forCoverage && NeedCoverage()) ? "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>" : "";
+            var timeOutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>":"";
             var runSettings = 
                 $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-  <TestSessionTimeout>{timeout}</TestSessionTimeout>{sequentialMode}
+  {timeOutSettings}{sequentialMode}
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 

@@ -32,13 +32,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
-            var redirect = true;
             var processInfo = new ProcessStartInfo(defaultTestHostStartInfo.FileName, defaultTestHostStartInfo.Arguments)
             {
                 WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
                 UseShellExecute = false,
-                RedirectStandardOutput = redirect,
-                RedirectStandardError = redirect,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
             foreach (var (key, value) in _envVars)
             {
@@ -55,13 +54,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 Logger.LogError($"Failed to start process {processInfo.Arguments}.");
             }
-            // Asynchronously read the standard output of the spawned process.
-            // This raises OutputDataReceived events for each line of output.
-            if (redirect)
-            {
-                _currentProcess.BeginOutputReadLine();
-                _currentProcess.BeginErrorReadLine();
-            }
+            _currentProcess.BeginOutputReadLine();
+            _currentProcess.BeginErrorReadLine();
 
             return _currentProcess.Id;
         }
@@ -72,7 +66,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 Monitor.Pulse(lck);
             }
-            _callback();
+
+            _callback?.Invoke();
         }
 
         public bool WaitProcessExit()
@@ -96,7 +91,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogInformation($"{Environment.NewLine}{e.Data} (VsTest error)");
+                Logger.LogInformation($"{e.Data} (VsTest error)");
             }
         }
 

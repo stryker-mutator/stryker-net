@@ -28,7 +28,7 @@ namespace Stryker.DataCollector
         private const string EnvName = "CoveredMutants";
 
         private const string TemplateForConfiguration = 
-            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} 
+            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
 <Configuration></Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
         public static string GetVsTestSettings()
@@ -145,7 +145,10 @@ namespace Stryker.DataCollector
             }
 
             var coverData = RetrieveCoverData(testCaseDisplayName);
-            _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
+            if (!string.IsNullOrEmpty(coverData))
+            {
+                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
+            }
         }
 
         public string RetrieveCoverData(string testCase)
@@ -175,7 +178,7 @@ namespace Stryker.DataCollector
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
-            _client.Dispose();
+            _client?.Dispose();
             _client = null;
             _server.RaiseNewClientEvent -= ConnectionEstablished;
         }
