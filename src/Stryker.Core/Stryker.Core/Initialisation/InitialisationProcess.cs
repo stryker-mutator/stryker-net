@@ -26,14 +26,9 @@ namespace Stryker.Core.Initialisation
         private IInitialBuildProcess _initialBuildProcess { get; set; }
         private IInitialTestProcess _initialTestProcess { get; set; }
         private ITestRunner _testRunner { get; set; }
-        private ILogger Logger { get; }
         private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
 
         // these flags control various optimization techniques
-        // TODO: expose these options through the CLI (once features is stable)
-        private const OptimizationFlags Flags = OptimizationFlags.DefaultMode;
-
-
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
@@ -45,7 +40,6 @@ namespace Stryker.Core.Initialisation
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
         }
 
@@ -61,7 +55,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                _testRunner = new TestRunnerFactory().Create(options, Flags, projectInfo);
+                _testRunner = new TestRunnerFactory().Create(options, options.Optimizations, projectInfo);
             }
 
             var input = new MutationTestInput()

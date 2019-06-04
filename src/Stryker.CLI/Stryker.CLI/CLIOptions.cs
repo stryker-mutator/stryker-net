@@ -87,6 +87,15 @@ namespace Stryker.CLI
             JsonKey = "project-file"
         };
 
+        public static readonly CLIOption<string> Mode = new CLIOption<string>
+        {
+            ArgumentName = "--mode",
+            ArgumentShortName = "-m <mode>",
+            DefaultValue = "safe",
+            ArgumentDescription = @"Use coverage info to speed up execution. Fast mode uses coverage information and only runs relevant tests. Safe mode executes all tests, use it if you have issues with Fast mode.",
+            JsonKey = "mode"
+        };
+
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
         {
             ArgumentName = "--max-concurrent-test-runners",

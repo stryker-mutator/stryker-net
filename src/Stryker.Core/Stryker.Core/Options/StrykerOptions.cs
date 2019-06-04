@@ -31,6 +31,7 @@ namespace Stryker.Core.Options
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
+        public OptimizationFlags Optimizations { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -45,6 +46,7 @@ namespace Stryker.Core.Options
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
+            string mode = "",
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
@@ -64,11 +66,28 @@ namespace Stryker.Core.Options
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
+            Optimizations = ValidateMode(mode);
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
+        }
+
+        private OptimizationFlags ValidateMode(string mode)
+        {
+            switch (mode.ToLower())
+            {
+                case "fast":
+                    case "":
+                    return OptimizationFlags.DefaultMode;
+                case "safe":
+                    return OptimizationFlags.NoOptimization;
+                default:
+                    throw new StrykerInputException(
+                        ErrorMessage,
+                        $"Incorrect mode {mode}. The mode options are [Fast, Safe]");
+            }
         }
 
         private string ValidateOutputPath(string basePath)
