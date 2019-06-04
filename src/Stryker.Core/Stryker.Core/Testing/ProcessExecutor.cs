@@ -78,7 +78,7 @@ namespace Stryker.Core.Testing
                     ExitCode = process.ExitCode,
                     Output = process.Output,
                     Error = process.Error
-                };
+                };  
             }
         }
 

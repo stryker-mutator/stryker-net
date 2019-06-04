@@ -261,7 +261,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
-            string targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
+            var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
             var targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
             switch (targetFramework)
