@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -64,6 +65,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -129,6 +132,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>() { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems") });
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -185,6 +190,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -266,6 +273,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>()
+            {
+                Path.Combine(_filesystemRoot, "SharedProject1", "Example.projitems"),
+                Path.Combine(_filesystemRoot, "SharedProject2", "Example.projitems")
+            });
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -324,6 +337,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -331,6 +346,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string>(),
+                    References = new string[] { }
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
@@ -339,6 +355,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
+                    References = new string[] { }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -384,13 +401,16 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>() { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems") });
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
+                    References = new string[] { "" },
+                    Properties = new Dictionary<string, string>()
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
@@ -450,12 +470,16 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
+                    Properties = new Dictionary<string, string>(),
+                    References = new string[] { }
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
@@ -464,6 +488,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
+                    References = new string[] { }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -487,6 +512,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -517,6 +544,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -611,6 +640,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -636,6 +667,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -675,6 +708,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
                     References = new string[] { "" }
                 });
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
@@ -695,6 +730,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -724,6 +761,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -757,6 +796,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string>());
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>());
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {

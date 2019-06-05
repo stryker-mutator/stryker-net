@@ -59,14 +59,22 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectAnalyzerResult.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
-            var inputFiles = new FolderComposite();
+            var projectContents = new FolderComposite();
             projectAnalyzerResult.FullFramework = !projectAnalyzerResult.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
             var projectUnderTestDir = Path.GetDirectoryName(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath);
 
+            // Search for compile linked source files in project under test
             IDictionary<string, string> compileIncludeLinkedFiles = FindCompileLinkedFiles(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+
             var sharedProjectFilePaths = FindSharedProjects(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath, projectAnalyzerResult.TestProjectAnalyzerResult);
 
             var projectFolders = ExtractProjectFolders(projectAnalyzerResult.ProjectUnderTestAnalyzerResult, sharedProjectFilePaths);
+
+            // Search for compile linked source files in all linked shared projects
+            foreach (var sharedProjectFile in sharedProjectFilePaths)
+            {
+                compileIncludeLinkedFiles.ToList().AddRange(FindCompileLinkedFiles(sharedProjectFile));
+            }
 
             foreach (var dir in projectFolders)
             {
@@ -77,33 +85,11 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
+                projectContents.Add(FindInputFiles(folder, options.FilesToExclude.ToList(), compileIncludeLinkedFiles));
             }
 
-            foreach (var sharedProjectFile in sharedProjectFilePaths)
-            {
-                compileIncludeLinkedFiles.ToList().AddRange(FindCompileLinkedFiles(sharedProjectFile));
-            }
-
-            foreach (var compileIncludeLinkedFile in compileIncludeLinkedFiles.OrderBy(a => a.Value))
-            {
-                var fullActualFilePath = Path.GetFullPath(compileIncludeLinkedFile.Key);
-                var fullLinkFilePath = Path.GetFullPath(Path.Combine(
-                    Path.GetDirectoryName(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath), compileIncludeLinkedFile.Value));
-                if (inputFiles.Children.First().FullPath == Path.GetDirectoryName(fullLinkFilePath))
-                {
-                    inputFiles.Children.Add(new FileLeaf()
-                    {
-                        SourceCode = _fileSystem.File.ReadAllText(fullActualFilePath),
-                        Name = _fileSystem.Path.GetFileName(fullActualFilePath),
-                        RelativePath = Path.Combine(inputFiles.Children.First().RelativePath, Path.GetFileName(fullLinkFilePath)),
-                        FullPath = fullLinkFilePath
-                    });
-                }
-            }
-
-            MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
-            projectAnalyzerResult.ProjectContents = inputFiles;
+            MarkInputFilesAsExcluded(projectContents, options.FilesToExclude.ToList(), projectUnderTestDir);
+            projectAnalyzerResult.ProjectContents = projectContents;
 
             ValidateResult(projectAnalyzerResult, options);
 
@@ -115,7 +101,7 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, IDictionary<string, string> compileIncludeLinkedFiles, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -125,15 +111,17 @@ namespace Stryker.Core.Initialisation
                 FullPath = Path.GetFullPath(path),
                 RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
             };
-            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
+
+            // If directory actually exists, search it for files
+            if (_fileSystem.Directory.Exists(folderComposite.FullPath))
             {
-                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
-            }
-            foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
-            {
-                // Roslyn cannot compile xaml.cs files generated by xamarin. 
-                // Since the files are generated they should not be mutated anyway, so skip these files.
-                if (!file.EndsWith(".xaml.cs"))
+                foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
+                {
+                    folderComposite.Add(FindInputFiles(folder, filesToExclude, compileIncludeLinkedFiles, folderComposite.RelativePath));
+                }
+
+                // Find all cs files on disk except .xaml.cs files as they do not need to be compiled
+                foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly).Where(f => !f.EndsWith(".xaml.cs")))
                 {
                     var fileName = Path.GetFileName(file);
                     folderComposite.Add(new FileLeaf()
@@ -142,6 +130,43 @@ namespace Stryker.Core.Initialisation
                         Name = _fileSystem.Path.GetFileName(file),
                         RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                         FullPath = file
+                    });
+                }
+            }
+
+            // For each folder on this directory level that does not yet exist, create folder recursively
+            var currentDepth = folderComposite.FullPath.Split(Path.DirectorySeparatorChar).Length;
+            var nextDepthFolders = compileIncludeLinkedFiles
+                .Select(f => Path.GetDirectoryName(f.Value))
+                .Where(f => f.Split(Path.DirectorySeparatorChar).Length == (currentDepth + 1));
+
+            foreach (var folder in nextDepthFolders)
+            {
+                var leftOverCompileIncludeFiles = compileIncludeLinkedFiles
+                    .Where(f => Path.GetDirectoryName(f.Value).Split(Path.DirectorySeparatorChar).Length > currentDepth)
+                    .ToDictionary(a => a.Key, a => a.Value);
+
+                folderComposite.Add(FindInputFiles(folder, filesToExclude, leftOverCompileIncludeFiles, folderComposite.RelativePath));
+            }
+
+            // Find all compile linked source files on disk
+            var currentDepthFiles = compileIncludeLinkedFiles
+            .Where(f => Path.GetDirectoryName(f.Value).Split(Path.DirectorySeparatorChar).Length == currentDepth);
+
+            foreach (var compileIncludeLinkedFile in currentDepthFiles)
+            {
+                var fullActualFilePath = Path.GetFullPath(compileIncludeLinkedFile.Key);
+                var fullLinkFilePath = Path.GetFullPath(Path.Combine(folderComposite.FullPath, compileIncludeLinkedFile.Value));
+
+                if (Path.GetDirectoryName(fullLinkFilePath) == folderComposite.FullPath)
+                {
+                    var fileName = _fileSystem.Path.GetFileName(fullLinkFilePath);
+                    folderComposite.Add(new FileLeaf()
+                    {
+                        SourceCode = _fileSystem.File.ReadAllText(fullActualFilePath),
+                        Name = fileName,
+                        RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
+                        FullPath = fullActualFilePath
                     });
                 }
             }
@@ -253,7 +278,7 @@ namespace Stryker.Core.Initialisation
                     throw new FileNotFoundException($"Missing compile linked file {compileLinkedFile}");
                 }
 
-                files.Add(_fileSystem.Path.Combine(projectDirectory, compileLinkedFile.Key), compileLinkedFile.Value);
+                files.Add(_fileSystem.Path.Combine(projectDirectory, compileLinkedFile.Key), _fileSystem.Path.Combine(projectDirectory, compileLinkedFile.Value));
             }
 
             return files;

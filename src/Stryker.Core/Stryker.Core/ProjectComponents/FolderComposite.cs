@@ -27,7 +27,21 @@ namespace Stryker.Core.ProjectComponents
 
         public override void Add(ProjectComponent component)
         {
-            Children.Add(component);
+            if (component is FolderComposite folder && Children.Any(c => c.FullPath == folder.FullPath))
+            {
+                var existingChild = Children.Single(c => c.FullPath == component.FullPath);
+                foreach (var extraComponent in folder.Children)
+                {
+                    existingChild.Add(extraComponent);
+                }
+            }
+            else
+            {
+                if (!Children.Any(c => c.FullPath == component.FullPath))
+                {
+                    Children.Add(component);
+                }
+            }
         }
 
         public override void Display(int depth)
