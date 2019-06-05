@@ -87,13 +87,16 @@ namespace Stryker.CLI
             JsonKey = "project-file"
         };
 
-        public static readonly CLIOption<string> Mode = new CLIOption<string>
+        public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
-            ArgumentName = "--mode",
-            ArgumentShortName = "-m <mode>",
-            DefaultValue = "safe",
-            ArgumentDescription = @"Use coverage info to speed up execution. Fast mode uses coverage information and only runs relevant tests. Safe mode executes all tests, use it if you have issues with Fast mode.",
-            JsonKey = "mode"
+            ArgumentName = "--coverageAnalysis",
+            ArgumentShortName = "-ca <mode>",
+            DefaultValue = "off",
+            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest.
+    - off: coverage data is not captured (default mode)
+    - all: capture the list of mutants covered by the test. Test only this mutants; non covered ones are assumed as survivors.
+    - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one. Only supported by vsTest runner for now",
+            JsonKey = "coverageAnalysis"
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
@@ -186,8 +189,8 @@ namespace Stryker.CLI
             string nonDefaultOptions = string.Join(
             ", ",
             options
-            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
-            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
+            .Where(o => @default.All(d => d.ToString() != o.ToString()))
+            .Where(o => deprecated.All(d => d.ToString() != o.ToString())));
 
             if(deprecated.Any())
             {

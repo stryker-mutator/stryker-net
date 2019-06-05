@@ -51,7 +51,7 @@ namespace Stryker.CLI
                 logToFile: GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
                 devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
-                mode: GetOption(mode.Value(), CLIOptions.Mode),
+                mode: GetOption(mode.Value(), CLIOptions.CoverageAnalysis),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
@@ -64,7 +64,7 @@ namespace Stryker.CLI
         {
             if (cliValue != null)
             {
-                // Convert the cliValue string to the disired type
+                // Convert the cliValue string to the desired type
                 return ConvertTo(cliValue, option);
             }
             else if (config != null)

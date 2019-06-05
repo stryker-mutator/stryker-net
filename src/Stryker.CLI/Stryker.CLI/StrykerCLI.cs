@@ -40,7 +40,7 @@ namespace Stryker.CLI
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
-            var mode = CreateOption(app, CLIOptions.Mode);
+            var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
@@ -67,7 +67,7 @@ namespace Stryker.CLI
                     logConsoleParam,
                     fileLogParam,
                     devMode,
-                    mode,
+                    coverageAnalysis,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,

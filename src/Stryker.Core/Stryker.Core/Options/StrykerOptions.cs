@@ -76,17 +76,19 @@ namespace Stryker.Core.Options
 
         private OptimizationFlags ValidateMode(string mode)
         {
-            switch (mode.ToLower())
+            switch (mode)
             {
-                case "fast":
+                case "perTest":
                     case "":
-                    return OptimizationFlags.DefaultMode;
-                case "safe":
+                    return OptimizationFlags.CoverageBasedTest;
+                case "all":
+                    return OptimizationFlags.SkipUncoveredMutants;
+                case "off":
                     return OptimizationFlags.NoOptimization;
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect mode {mode}. The mode options are [Fast, Safe]");
+                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest].");
             }
         }
 
