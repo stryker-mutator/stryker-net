@@ -118,8 +118,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                     if (propertyPair.Value != null)
                     {
-                        var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
-                        _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
+                        var propertyPairValue = (propertyPair.Value as string);
+                        if (!string.IsNullOrWhiteSpace(propertyPairValue))
+                        {
+                            var coverage = propertyPairValue.Split(',').Select(int.Parse);
+                            _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
+                        }
                     }
                     else if (testResult.Outcome == TestOutcome.Passed)
                     {

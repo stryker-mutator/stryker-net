@@ -151,7 +151,6 @@ namespace Stryker.Core.MutationTest
                 }
                 return new StrykerRunResult(options, null);
             }
-            Reporter.OnStartMutantTestRun(mutantsNotRun);
 
             Task.Run(() =>
             {
@@ -165,6 +164,7 @@ namespace Stryker.Core.MutationTest
                 }
             });
 
+            Reporter.OnStartMutantTestRun(mutantsNotRun);
             Parallel.ForEach(
                 mutantsNotRun,
                 new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },

@@ -145,8 +145,14 @@ namespace Stryker.DataCollector
             }
 
             var coverData = RetrieveCoverData(testCaseDisplayName);
-            if (!string.IsNullOrEmpty(coverData))
+            // null means we failed to retrieve data
+            if (coverData != null)
             {
+                if (coverData == string.Empty)
+                {
+                    // test covers no mutant, but empty string is not a valid value
+                    coverData = " ";
+                }
                 _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
             }
         }
@@ -159,11 +165,10 @@ namespace Stryker.DataCollector
                 if (!WaitOnLck(_lck, () => _lastMessage != null, 500))
                 {
                     // Failed to retrieve coverage data for {testCase
-                    return string.Empty;
+                    return null;
                 }
 
                 coverData = _lastMessage;
-
                 _lastMessage = null;
             }
             else

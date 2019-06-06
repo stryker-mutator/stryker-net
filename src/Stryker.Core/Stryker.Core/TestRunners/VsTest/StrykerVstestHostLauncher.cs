@@ -91,7 +91,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogInformation($"{e.Data} (VsTest error)");
+                Logger.LogDebug($"{e.Data} (VsTest error)");
             }
         }
 
