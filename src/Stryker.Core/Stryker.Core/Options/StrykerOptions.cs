@@ -73,12 +73,10 @@ namespace Stryker.Core.Options
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
-            if (advanced!=null)
+            if (advanced == null) return;
+            foreach (var option in advanced)
             {
-                foreach (var option in advanced)
-                {
-                    ValidateAdvancedOption(option);
-                }
+                ValidateAdvancedOption(option);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Stryker.Core.Reporters.Json
 {
     public class JsonMutant
@@ -8,7 +7,6 @@ namespace Stryker.Core.Reporters.Json
         public string MutatorName { get; set; }
         public string Replacement { get; set; }
         public JsonMutantLocation Location { get; set; }
-        public string[] Tests {get ; set; }
         public string Status { get; set; }
     }
 }
