@@ -89,7 +89,7 @@ namespace Stryker.CLI
 
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
-            ArgumentName = "--coverageAnalysis",
+            ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
             DefaultValue = "off",
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest.
