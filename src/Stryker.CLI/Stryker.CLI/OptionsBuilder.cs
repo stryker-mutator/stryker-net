@@ -22,7 +22,7 @@ namespace Stryker.CLI
             CommandOption logLevel,
             CommandOption logToFile,
             CommandOption devMode,
-            CommandOption mode,
+            CommandOption coverageAnalysis,
             CommandOption advancedOptions,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
