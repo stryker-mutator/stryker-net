@@ -72,15 +72,15 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        public void DiscoverTests(string runSettings = null)
+        public int DiscoverTests()
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle, _messages);
-            _vsTestConsole.DiscoverTests(_sources, runSettings ?? GenerateRunSettings(0), handler);
+            _vsTestConsole.DiscoverTests(_sources, GenerateRunSettings(0), handler);
 
             waitHandle.WaitOne();
 
-            _testCasesDiscovered = handler.DiscoveredTestCases.Count;
+            return handler.DiscoveredTestCases.Count;
         }
 
         private IEnumerable<TestResult> RunSelectedTests(IEnumerable<TestCase> testCases, string runSettings)
@@ -207,7 +207,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new ApplicationException("Stryker failed to connect to vstest.console", e);
             }
 
-            DiscoverTests();
+            _testCasesDiscovered = DiscoverTests();
         }
 
         #region IDisposable Support

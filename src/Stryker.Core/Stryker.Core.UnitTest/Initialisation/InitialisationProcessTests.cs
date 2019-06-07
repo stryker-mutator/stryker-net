@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Moq;
-using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
@@ -59,7 +57,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
-                assemblyReferenceResolverMock.Object);
+                assemblyReferenceResolverMock.Object,
+                testRunnerMock.Object);
 
             var options = new StrykerOptions();
 

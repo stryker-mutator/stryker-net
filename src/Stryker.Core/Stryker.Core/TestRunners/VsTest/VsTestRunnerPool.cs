@@ -26,10 +26,21 @@ namespace Stryker.Core.TestRunners.VsTest
             });
         }
 
+        public int DiscoverTests()
+        {
+            var runner = TakeRunner();
+
+            var result = runner.DiscoverTests();
+
+            ReturnRunner(runner);
+
+            return result;
+        }
+
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
         {
             var runner = TakeRunner();
-            TestRunResult result = null;
+            TestRunResult result;
 
             try
             {

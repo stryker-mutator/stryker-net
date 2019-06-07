@@ -13,7 +13,7 @@ namespace Stryker.Core.Initialisation
 
     public class InitialTestProcess : IInitialTestProcess
     {
-        private ILogger _logger { get; set; }
+        private readonly ILogger _logger;
 
         public InitialTestProcess()
         {
@@ -34,8 +34,8 @@ namespace Stryker.Core.Initialisation
             stopwatch.Start();
 
             var testResult = testRunner.RunAll(0, null);
-            _logger.LogInformation("Total number of tests found in initial test run: {0}", testResult.TotalNumberOfTests);
 
+            stopwatch.Stop();
             var duration = (int)stopwatch.ElapsedMilliseconds;
 
             _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);

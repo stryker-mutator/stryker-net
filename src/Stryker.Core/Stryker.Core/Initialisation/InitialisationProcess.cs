@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 using System.IO;
 using System.Linq;
 
@@ -16,19 +16,21 @@ namespace Stryker.Core.Initialisation
 
     public class InitialisationProcess : IInitialisationProcess
     {
-        private IInputFileResolver _inputFileResolver { get; set; }
-        private IInitialBuildProcess _initialBuildProcess { get; set; }
-        private IInitialTestProcess _initialTestProcess { get; set; }
-        private ITestRunner _testRunner { get; set; }
-        private ILogger _logger { get; set; }
-        private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
+        private readonly IInputFileResolver _inputFileResolver;
+        private readonly IInitialBuildProcess _initialBuildProcess;
+        private readonly IInitialTestProcess _initialTestProcess;
+        private readonly ITestRunner _testRunner;
+        private readonly ILogger _logger;
+        private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
+        private readonly ITestRunner _testCaseDiscoverer;
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null)
+            IAssemblyReferenceResolver assemblyReferenceResolver = null,
+            ITestRunner testCaseDiscoverer = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
@@ -36,6 +38,7 @@ namespace Stryker.Core.Initialisation
             _testRunner = testRunner;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
+            _testCaseDiscoverer = testCaseDiscoverer;
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
@@ -52,6 +55,11 @@ namespace Stryker.Core.Initialisation
                 AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner ?? new TestRunnerFactory().Create(options, projectInfo)
             };
+
+            using (var testDiscoverer = _testCaseDiscoverer ?? new VsTestRunner(options, projectInfo))
+            {
+                _logger.LogInformation("Total number of tests found: {0}", testDiscoverer.DiscoverTests());
+            }
 
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(input.TestRunner);

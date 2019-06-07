@@ -1,20 +1,22 @@
-﻿using Stryker.Core.Parsers;
-using Stryker.Core.Testing;
+﻿using Stryker.Core.Testing;
 using System.Collections.Generic;
 
 namespace Stryker.Core.TestRunners
 {
     public class DotnetTestRunner : ITestRunner
     {
-        private readonly ITotalNumberOfTestsParser _totalNumberOfTestsParser;
         private string _path { get; set; }
         private IProcessExecutor _processExecutor { get; set; }
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, ITotalNumberOfTestsParser totalNumberOfTestsParser)
+        public DotnetTestRunner(string path, IProcessExecutor processProxy)
         {
-            _totalNumberOfTestsParser = totalNumberOfTestsParser;
             _path = path;
             _processExecutor = processProxy;
+        }
+
+        public int DiscoverTests()
+        {
+            return 0;
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
@@ -32,8 +34,7 @@ namespace Stryker.Core.TestRunners
             return new TestRunResult
             {
                 Success = result.ExitCode == 0,
-                ResultMessage = result.Output,
-                TotalNumberOfTests = _totalNumberOfTestsParser.ParseTotalNumberOfTests(result.Output)
+                ResultMessage = result.Output
             };
         }
 

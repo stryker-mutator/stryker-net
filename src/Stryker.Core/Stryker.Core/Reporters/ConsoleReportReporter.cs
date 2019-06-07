@@ -15,8 +15,8 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleReportReporter : IReporter
     {
-        private IChalk _chalk { get; set; }
-        private StrykerOptions _options { get; }
+        private readonly IChalk _chalk;
+        private readonly StrykerOptions _options;
 
         public ConsoleReportReporter(StrykerOptions strykerOptions, IChalk chalk = null)
         {
