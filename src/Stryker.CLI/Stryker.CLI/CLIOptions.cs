@@ -96,7 +96,7 @@ namespace Stryker.CLI
     - off: coverage data is not captured (default mode).
     - all: capture the list of mutants covered by the test. Test only this mutants; non covered ones are assumed as survivors.
     - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one. Only supported by vsTest runner for now",
-            JsonKey = "coverageAnalysis"
+            JsonKey = "coverage-analysis"
         };
 
         public static readonly CLIOption<string[]> AdvancedOptions = new CLIOption<string[]>()
@@ -148,7 +148,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
+            ArgumentDescription = $"Set the preferred mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
             DefaultValue = _defaultOptions.Thresholds.High,
             JsonKey = "threshold-high"
         };

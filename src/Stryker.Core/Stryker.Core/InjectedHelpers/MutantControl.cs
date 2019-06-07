@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core.InjectedHelpers.Coverage;
+using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker
 {

@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Stryker.Core.Compiling;
+using Stryker.Core.InjectedHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants

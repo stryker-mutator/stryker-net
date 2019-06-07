@@ -1,9 +1,11 @@
 {
     "stryker-config":
     {
-        "reporters": [
-            "All"
-        ],
+      "reporters": [
+        "All"
+      ],
+      "test-runner": "VsTest", 
+      "coverage-analysis":  "perTest",
         "log-level": "trace",
         "log-file":  "true",
         "project-file": "TargetProject.csproj",

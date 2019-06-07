@@ -12,6 +12,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest

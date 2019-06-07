@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
-using Stryker.Core.Compiling;
+using Stryker.Core.InjectedHelpers;
 
 namespace Stryker.Core.Mutants
 {

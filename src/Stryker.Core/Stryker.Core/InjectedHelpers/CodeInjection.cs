@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Stryker.Core.Compiling
+namespace Stryker.Core.InjectedHelpers
 {
     public static class CodeInjection
     {
