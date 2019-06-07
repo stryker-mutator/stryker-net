@@ -65,8 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 Success = testResults.All(tr => tr.Outcome == TestOutcome.Passed),
                 ResultMessage = string.Join(
                     Environment.NewLine,
-                    testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage)),
-                TotalNumberOfTests = _testCasesDiscovered
+                    testResults.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage)).Select(tr => tr.ErrorMessage))
             };
 
             return testResult;
