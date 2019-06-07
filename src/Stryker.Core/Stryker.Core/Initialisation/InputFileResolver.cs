@@ -47,10 +47,10 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var projectAnalyzerResult = new ProjectInfo();
-            var projectFile = ScanProjectFile(options.BasePath);
+            var testProjectFile = ScanProjectFile(options.BasePath);
 
             // Analyze the test project
-            projectAnalyzerResult.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
+            projectAnalyzerResult.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
 
             // Determine project under test
             var reader = new ProjectFileReader();
@@ -66,7 +66,7 @@ namespace Stryker.Core.Initialisation
             // Search for compile linked source files in project under test
             IDictionary<string, string> compileIncludeLinkedFiles = FindCompileLinkedFiles(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath);
 
-            var sharedProjectFilePaths = FindSharedProjects(projectAnalyzerResult.ProjectUnderTestAnalyzerResult.ProjectFilePath, projectAnalyzerResult.TestProjectAnalyzerResult);
+            var sharedProjectFilePaths = FindSharedProjects(projectAnalyzerResult.ProjectUnderTestAnalyzerResult);
 
             var projectFolders = ExtractProjectFolders(projectAnalyzerResult.ProjectUnderTestAnalyzerResult, sharedProjectFilePaths);
 
@@ -241,11 +241,11 @@ namespace Stryker.Core.Initialisation
             return folders;
         }
 
-        private IEnumerable<string> FindSharedProjects(string projectFilePath, ProjectAnalyzerResult projectAnalyzerResult)
+        private IEnumerable<string> FindSharedProjects(ProjectAnalyzerResult projectAnalyzerResult)
         {
             var sharedProjects = new List<string>();
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+            var projectFile = _fileSystem.File.OpenText(projectAnalyzerResult.ProjectFilePath);
+            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectAnalyzerResult.ProjectFilePath);
 
             var xDocument = XDocument.Load(projectFile);
             foreach (var sharedProject in _projectFileReader.FindSharedProjects(xDocument))

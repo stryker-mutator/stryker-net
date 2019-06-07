@@ -479,7 +479,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectReferences = new List<string>() { _projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = _testProjectPath,
-                    Properties = new Dictionary<string, string>(),
                     References = new string[] { }
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null))
@@ -488,7 +487,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectReferences = new List<string>(),
                     TargetFramework = "netcoreapp2.1",
                     ProjectFilePath = _projectUnderTestPath,
-                    //Properties = new Dictionary<string, string>(),
+                    Properties = new Dictionary<string, string>(),
                     References = new string[] { }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
