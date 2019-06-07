@@ -3,6 +3,7 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -494,6 +495,66 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath)));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (../$(SharedDir)/Example.projitems). Please check your project file ({_projectUnderTestPath}) and try again.");
+        }
+
+        [Fact]
+        public void InputFileResolver_ResolveInputShouldFindCompileLinkedFiles()
+        {
+            string compileLinkedFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+
+            string projectFile = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include=""..\..\ExampleSourceFile.cs"" Link=""ExampleSourceFile.cs"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+</Project>";
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { Path.Combine(_filesystemRoot, "ExtraFile", "ExampleSourceFile.cs"), new MockFileData(compileLinkedFile)},
+                    { _projectUnderTestPath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(compileLinkedFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(compileLinkedFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                    { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.FindSharedProjects(It.IsAny<XDocument>())).Returns(new List<string> { });
+            projectFileReaderMock.Setup(x => x.FindLinkedFiles(It.IsAny<XDocument>())).Returns(new Dictionary<string, string>() { { Path.Combine(_filesystemRoot, "ExtraFile", "ExampleSourceFile.cs"), Path.Combine(_filesystemRoot, "ExampleProject", "ExampleSourceFile.cs") } });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { _projectUnderTestPath },
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = _testProjectPath,
+                    References = new string[] { }
+                });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>(),
+                    TargetFramework = "netcoreapp2.1",
+                    ProjectFilePath = _projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(),
+                    References = new string[] { }
+                });
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
+
+            (result.ProjectContents.Children.First() as FolderComposite).Children.Any(c => c.FullPath == Path.Combine(_filesystemRoot, "ExtraFile", "ExampleSourceFile.cs")).ShouldBeTrue("Compile linked file should be included in project contents");
+            (result.ProjectContents.Children.First() as FolderComposite).Children.Any(c => c.RelativePath == Path.Combine("ExampleProject", "ExampleSourceFile.cs")).ShouldBeTrue("Compile linked file should be included in project contents");
         }
 
         [Theory]
