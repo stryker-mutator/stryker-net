@@ -81,8 +81,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult RunVsTest(ICollection<TestCase> testCases, int? timeoutMs,
             Dictionary<string, string> envVars)
         {
-            var rebuilt = _discoveredTests.Where(x => testCases.Any(y => x.Id == y.Id)).ToList();
-            var testResults = RunAllTests(rebuilt, envVars, GenerateRunSettings(timeoutMs, false), false);
+            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -118,7 +117,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     if (!string.IsNullOrWhiteSpace(propertyPairValue))
                     {
                         var coverage = propertyPairValue.Split(',').Select(int.Parse);
-                        _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
+                        // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
+                        _coverage.DeclareMappingForATest(_discoveredTests.First(testCase => testCase.Id == testResult.TestCase.Id), coverage);
                     }
                 }
             }
@@ -131,26 +131,25 @@ namespace Stryker.Core.TestRunners.VsTest
             Logger.LogDebug($"Capturing coverage for {test.FullyQualifiedName}.");
             IEnumerable<TestResult> testResults = null;
             var generateRunSettings = GenerateRunSettings( 0, true);
-            for(var i = 0; i<3; i++)
+            testResults = RunAllTests(new List<TestCase>{test}, _coverageEnvironment, generateRunSettings, true);
+            foreach (var testResult in testResults)
             {
-                testResults = RunAllTests(new List<TestCase>{test}, _coverageEnvironment, generateRunSettings, true);
-                foreach (var testResult in testResults)
+                foreach (var testResultMessage in testResult.Messages)
                 {
-                    foreach (var testResultMessage in testResult.Messages)
-                    {
-                        Logger.LogDebug($"Test output:{Environment.NewLine}{testResultMessage.Text}");
-                    }
-                    var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
-                    if (propertyPair.Value != null)
-                    {
-                        var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
-                        _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
-                        return testResults;
-                    }
-                    Logger.LogDebug("Retry to capture coverage.");
+                    Logger.LogDebug($"Test output:{Environment.NewLine}{testResultMessage.Text}");
                 }
+
+                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
+                if (propertyPair.Value != null)
+                {
+                    var coverage = (propertyPair.Value as string).Split(',').Select(int.Parse);
+                    _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
+                    return testResults;
+                }
+
+                Logger.LogWarning(
+                    $"No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
             }
-            Logger.LogWarning($"No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
 
             return testResults;
         }
