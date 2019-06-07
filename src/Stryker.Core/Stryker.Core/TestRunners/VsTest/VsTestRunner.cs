@@ -81,7 +81,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult RunVsTest(ICollection<TestCase> testCases, int? timeoutMs,
             Dictionary<string, string> envVars)
         {
-            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
+            var rebuilt = _discoveredTests.Where(x => testCases.Any(y => x.Id == y.Id)).ToList();
+            var testResults = RunAllTests(rebuilt, envVars, GenerateRunSettings(timeoutMs, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
@@ -107,40 +108,19 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage()
         {
             Logger.LogDebug($"Capturing coverage.");
-            const int maxAttempts = 3;
-            IList<TestCase> failed = null;
-            for (var retryCount = 0; retryCount < maxAttempts; retryCount++)
+            var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( 0, true), true);
+            foreach (var testResult in testResults)
             {
-                var testResults = RunAllTests(failed, _coverageEnvironment, GenerateRunSettings( 0, true), true);
-                failed = new List<TestCase>();
-                foreach (var testResult in testResults)
+                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
+                if (propertyPair.Value != null)
                 {
-                    var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
-                    if (propertyPair.Value != null)
+                    var propertyPairValue = (propertyPair.Value as string);
+                    if (!string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        var propertyPairValue = (propertyPair.Value as string);
-                        if (!string.IsNullOrWhiteSpace(propertyPairValue))
-                        {
-                            var coverage = propertyPairValue.Split(',').Select(int.Parse);
-                            _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
-                        }
-                    }
-                    else if (testResult.Outcome == TestOutcome.Passed)
-                    {
-                        failed.Add(testResult.TestCase);
+                        var coverage = propertyPairValue.Split(',').Select(int.Parse);
+                        _coverage.DeclareMappingForATest(testResult.TestCase, coverage);
                     }
                 }
-                if (failed.Count == 0)
-                {
-                    break;
-                }
-                // retry the failed ones
-                Logger.LogDebug("Retry to capture coverage.");
-            }
-
-            foreach (var testCase in failed)
-            {
-                Logger.LogWarning($"No coverage for {testCase.FullyQualifiedName}, maybe this test does not actually test anything.");
             }
             CoveredMutants = _coverage.CoveredMutants;
             return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
