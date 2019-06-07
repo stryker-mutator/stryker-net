@@ -27,5 +27,15 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
         }
+
+        [Fact]
+        public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
+        {
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
+            result.ShouldBeOfType(typeof(BroadcastReporter));
+            result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
+            result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
+            result.Reporters.ShouldContain(r => r is ProgressReporter);
+        }
     }
 }
