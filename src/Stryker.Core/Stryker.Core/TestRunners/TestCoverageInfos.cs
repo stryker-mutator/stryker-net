@@ -55,34 +55,5 @@ namespace Stryker.Core.TestRunners
                 }
             }
         }
-
-        public void Log()
-        {
-            Logger.LogDebug("Mutant => Tests Coverage information");
-            foreach (var (mutantId, tests) in _mutantToTests)
-            {
-                var list = new StringBuilder();
-                list.AppendJoin(",", tests.Select(x => x.ToString()));
-                Logger.LogDebug($"Mutant '{mutantId}' covered by [{list}].");
-            }
-            Logger.LogDebug("* Systematic Tests**");
-            foreach (var testsWithoutCoverageInfo in _testsWithoutCoverageInfos)
-            {
-                Logger.LogDebug(testsWithoutCoverageInfo.ToString());
-            }
-            Logger.LogDebug("*****************");
-
-        }
-
-        public void DeclareCoveredMutants(IEnumerable<int> runnerCoveredMutants)
-        {
-            foreach (var runnerCoveredMutant in runnerCoveredMutants)
-            {
-                if (!_mutantToTests.ContainsKey(runnerCoveredMutant))
-                {
-                    _mutantToTests.Add(runnerCoveredMutant, null);
-                }
-            }
-        }
     }
 }

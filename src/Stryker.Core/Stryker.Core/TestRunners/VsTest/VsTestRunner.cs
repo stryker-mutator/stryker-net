@@ -134,6 +134,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     break;
                 }
+                // retry the failed ones
                 Logger.LogDebug("Retry to capture coverage.");
             }
 
@@ -141,7 +142,6 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 Logger.LogWarning($"No coverage for {testCase.FullyQualifiedName}, maybe this test does not actually test anything.");
             }
-            // retry the failed ones
             CoveredMutants = _coverage.CoveredMutants;
             return new TestRunResult { Success = true, TotalNumberOfTests = _discoveredTests.Count };
         }
