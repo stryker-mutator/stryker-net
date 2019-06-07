@@ -51,6 +51,7 @@ namespace Stryker.CLI
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
+            var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
 
             app.HelpOption("--help | -h | -?");
 
@@ -73,7 +74,8 @@ namespace Stryker.CLI
                     thresholdBreakParam,
                     filesToExclude,
                     testRunner,
-                    solutionPathParam);
+                    solutionPathParam,
+                    languageVersion);
 
                 RunStryker(options);
                 return ExitCode;

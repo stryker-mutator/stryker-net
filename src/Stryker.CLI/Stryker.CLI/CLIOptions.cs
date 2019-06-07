@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.CommandLineUtils;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -159,6 +160,15 @@ namespace Stryker.CLI
             JsonKey = "test-runner"
         };
 
+        public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
+        {
+            ArgumentName = "--language-version",
+            ArgumentShortName = "-lv",
+            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString<LanguageVersion>(_defaultOptions.LanguageVersion, (IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))) }",
+            DefaultValue = _defaultOptions.LanguageVersion.ToString(),
+            JsonKey = "language-version"
+        };
+
         private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
         {
             return FormatOptionsString<T, T>(@default, options);
@@ -180,12 +190,12 @@ namespace Stryker.CLI
             .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
             .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
 
-            if(deprecated.Any())
+            if (deprecated.Any())
             {
                 string deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
                 optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
             }
-            
+
             optionsString.Append("]");
 
             return optionsString.ToString();

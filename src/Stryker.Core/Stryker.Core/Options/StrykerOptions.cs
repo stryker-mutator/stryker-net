@@ -1,4 +1,5 @@
-﻿using Serilog.Events;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -31,6 +32,7 @@ namespace Stryker.Core.Options
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
+        public LanguageVersion LanguageVersion { get; set; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -51,7 +53,8 @@ namespace Stryker.Core.Options
             int thresholdBreak = 0,
             string[] filesToExclude = null,
             string testRunner = "dotnettest",
-            string solutionPath = null)
+            string solutionPath = null,
+            string languageVersion = "latest")
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -69,6 +72,7 @@ namespace Stryker.Core.Options
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
+            LanguageVersion = ValidateLanguageVersion(languageVersion);
         }
 
         private string ValidateOutputPath(string basePath)
@@ -240,6 +244,18 @@ namespace Stryker.Core.Options
             solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
+        }
+
+        private LanguageVersion ValidateLanguageVersion(string languageVersion)
+        {
+            if (Enum.TryParse(languageVersion, true, out LanguageVersion result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage, $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(LanguageVersion)))}]");
+            }
         }
     }
 }
