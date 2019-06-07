@@ -5,7 +5,9 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Xml.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -26,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ProjectFileReader_ShouldThrowOnNoProjectReference()
         {
-            var ex = Assert.Throws<StrykerInputException>(() => 
+            var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 new ProjectFileReader().DetermineProjectUnderTest(Enumerable.Empty<string>(), null);
             });
@@ -65,7 +67,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
         }
-        
+
         [Theory]
         [InlineData("Project.csproj")]
         [InlineData("project.csproj")]
@@ -101,6 +103,38 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("no project", Case.Insensitive);
+        }
+
+        [Fact]
+        public void ProjectFileReader_ShouldFindCompileLinkReferencedFiles_AndReturnActualAndVirtualFilePaths()
+        {
+            string projectFileContent = @"
+<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include=""..\ExtraFile\ExampleSourceFile.cs"" Link=""ExampleSourceFile.cs"" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+    </ItemGroup>
+</Project>";
+
+            var projectFilePath = Path.Combine("C:\\", "ExampleProject", "ExampleProject.csproj");
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { projectFilePath, new MockFileData(projectFileContent)}
+            });
+
+            var projectFileStream = fileSystem.File.OpenText(projectFilePath);
+
+            var projectFile = XDocument.Load(projectFileStream);
+
+            new ProjectFileReader().FindLinkedFiles(projectFile).ShouldContainKeyAndValue(@"..\ExtraFile\ExampleSourceFile.cs", "ExampleSourceFile.cs");
         }
     }
 }
