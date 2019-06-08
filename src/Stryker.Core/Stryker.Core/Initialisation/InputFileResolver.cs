@@ -27,7 +27,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
+        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", ".vs" };
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
@@ -112,63 +112,50 @@ namespace Stryker.Core.Initialisation
                 RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
             };
 
-            // If directory actually exists, search it for files
+            var currentFileSystemDepth = folderComposite.FullPath.Split(Path.DirectorySeparatorChar).Length;
+
+            // Find all virtual directories which are a child of the current directory
+            var foldersToScan = compileIncludeLinkedFiles
+                .Where(f => Path.GetFullPath(f.Value).Split(Path.DirectorySeparatorChar).Length == (currentFileSystemDepth + 2))
+                .Select(f => Path.GetDirectoryName(Path.GetFullPath(f.Value))).ToList();
+
+            // Find all virtual files which are a child of the current directory
+            var filesToScan = compileIncludeLinkedFiles
+                .Where(clf => Path.GetDirectoryName(clf.Value).Split(Path.DirectorySeparatorChar).Length == currentFileSystemDepth)
+                .Select(clf => clf.Key).ToList();
+
             if (_fileSystem.Directory.Exists(folderComposite.FullPath))
             {
-                foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
-                {
-                    folderComposite.Add(FindInputFiles(folder, filesToExclude, compileIncludeLinkedFiles, folderComposite.RelativePath));
-                }
+                // Find all real directories which are a child of the current directory
+                var realFoldersToScan = _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath);
 
-                // Find all cs files on disk except .xaml.cs files as they do not need to be compiled
-                foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly).Where(f => !f.EndsWith(".xaml.cs")))
-                {
-                    var fileName = Path.GetFileName(file);
-                    folderComposite.Add(new FileLeaf()
-                    {
-                        SourceCode = _fileSystem.File.ReadAllText(file),
-                        Name = _fileSystem.Path.GetFileName(file),
-                        RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                        FullPath = file
-                    });
-                }
+                // Merge virtual and real folders to scan
+                foldersToScan.AddRange(realFoldersToScan);
+
+                // Find all real files which are a child of the current directory
+                var realFilesToScan = _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly).ToList();
+
+                // Merge virtual and real files to scan
+                filesToScan.AddRange(realFilesToScan);
             }
 
-            // For each folder on this directory level that does not yet exist, create folder recursively
-            var currentDepth = folderComposite.FullPath.Split(Path.DirectorySeparatorChar).Length;
-            var nextDepthFolders = compileIncludeLinkedFiles
-                .Select(f => Path.GetDirectoryName(f.Value))
-                .Where(f => f.Split(Path.DirectorySeparatorChar).Length == (currentDepth + 1));
-
-            foreach (var folder in nextDepthFolders)
+            // Repeat recursive for each child folder to scan
+            foreach (var folder in foldersToScan.Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))).Distinct())
             {
-                var leftOverCompileIncludeFiles = compileIncludeLinkedFiles
-                    .Where(f => Path.GetDirectoryName(f.Value).Split(Path.DirectorySeparatorChar).Length > currentDepth)
-                    .ToDictionary(a => a.Key, a => a.Value);
-
-                folderComposite.Add(FindInputFiles(folder, filesToExclude, leftOverCompileIncludeFiles, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, filesToExclude, compileIncludeLinkedFiles, folderComposite.RelativePath));
             }
 
-            // Find all compile linked source files on disk
-            var currentDepthFiles = compileIncludeLinkedFiles
-            .Where(f => Path.GetDirectoryName(f.Value).Split(Path.DirectorySeparatorChar).Length == currentDepth);
-
-            foreach (var compileIncludeLinkedFile in currentDepthFiles)
+            // Create FileLeafs for all files except .xaml.cs files as they do not need to be compiled
+            foreach (var file in filesToScan.Where(f => !f.EndsWith(".xaml.cs")).Distinct())
             {
-                var fullActualFilePath = Path.GetFullPath(compileIncludeLinkedFile.Key);
-                var fullLinkFilePath = Path.GetFullPath(Path.Combine(folderComposite.FullPath, compileIncludeLinkedFile.Value));
-
-                if (Path.GetDirectoryName(fullLinkFilePath) == folderComposite.FullPath)
+                var fileName = Path.GetFileName(file);
+                folderComposite.Add(new FileLeaf()
                 {
-                    var fileName = _fileSystem.Path.GetFileName(fullLinkFilePath);
-                    folderComposite.Add(new FileLeaf()
-                    {
-                        SourceCode = _fileSystem.File.ReadAllText(fullActualFilePath),
-                        Name = fileName,
-                        RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                        FullPath = fullActualFilePath
-                    });
-                }
+                    SourceCode = _fileSystem.File.ReadAllText(file),
+                    Name = _fileSystem.Path.GetFileName(file),
+                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
+                    FullPath = file
+                });
             }
 
             return folderComposite;
