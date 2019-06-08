@@ -28,9 +28,9 @@ namespace Stryker.Core.Initialisation
     public class InputFileResolver : IInputFileResolver
     {
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
-        private IFileSystem _fileSystem { get; }
-        private IProjectFileReader _projectFileReader { get; }
-        private ILogger _logger { get; set; }
+        private readonly IFileSystem _fileSystem;
+        private readonly IProjectFileReader _projectFileReader;
+        private readonly ILogger _logger;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
