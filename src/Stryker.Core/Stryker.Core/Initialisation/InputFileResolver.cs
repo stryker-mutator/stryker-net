@@ -103,25 +103,26 @@ namespace Stryker.Core.Initialisation
         /// <returns></returns>
         private FolderComposite FindInputFiles(string path, List<string> filesToExclude, IDictionary<string, string> compileIncludeLinkedFiles, string parentFolder = null)
         {
-            var lastPathComponent = Path.GetFileName(path);
+            var folderName = Path.GetFileName(path);
 
             var folderComposite = new FolderComposite
             {
-                Name = lastPathComponent,
+                Name = folderName,
                 FullPath = Path.GetFullPath(path),
-                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
+                RelativePath = parentFolder is null ? folderName : Path.Combine(parentFolder, folderName)
             };
 
             var currentFileSystemDepth = folderComposite.FullPath.Split(Path.DirectorySeparatorChar).Length;
 
-            // Find all virtual directories which are a child of the current directory
+            // Find all virtual directories which are a child of the current directory and select their virtual filepath
             var foldersToScan = compileIncludeLinkedFiles
                 .Where(f => Path.GetFullPath(f.Value).Split(Path.DirectorySeparatorChar).Length == (currentFileSystemDepth + 2))
                 .Select(f => Path.GetDirectoryName(Path.GetFullPath(f.Value))).ToList();
 
-            // Find all virtual files which are a child of the current directory
+            // Find all virtual files which are a child of the current directory and select their real filepath
             var filesToScan = compileIncludeLinkedFiles
                 .Where(clf => Path.GetDirectoryName(clf.Value).Split(Path.DirectorySeparatorChar).Length == currentFileSystemDepth)
+                .Where(clf => Path.GetFullPath(Path.GetDirectoryName(clf.Value)).StartsWith(folderComposite.FullPath))
                 .Select(clf => clf.Key).ToList();
 
             if (_fileSystem.Directory.Exists(folderComposite.FullPath))
@@ -149,10 +150,16 @@ namespace Stryker.Core.Initialisation
             foreach (var file in filesToScan.Where(f => !f.EndsWith(".xaml.cs")).Distinct())
             {
                 var fileName = Path.GetFileName(file);
+
+                if (compileIncludeLinkedFiles.ContainsKey(file))
+                {
+                    fileName = Path.GetFileName(compileIncludeLinkedFiles[file]);
+                }
+
                 folderComposite.Add(new FileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(file),
-                    Name = _fileSystem.Path.GetFileName(file),
+                    Name = fileName,
                     RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = file
                 });
