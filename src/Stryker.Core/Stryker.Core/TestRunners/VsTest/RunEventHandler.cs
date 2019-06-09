@@ -41,18 +41,18 @@ namespace Stryker.Core.TestRunners.VsTest
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
             var testResults = results as TestResult[] ?? results.ToArray();
+            TestResults.AddRange(testResults);
             if (!_testFailed && testResults.Any(result => result.Outcome == TestOutcome.Failed))
             {
                 // at least one test has failed
                 _testFailed = true;
                 TestsFailed?.Invoke(this, EventArgs.Empty);
             }
-            TestResults.AddRange(testResults);
         }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
-            if (testRunChangedArgs != null && testRunChangedArgs.NewTestResults != null)
+            if (testRunChangedArgs?.NewTestResults != null)
             {
                 CaptureTestResults(testRunChangedArgs.NewTestResults);
             }

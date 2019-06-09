@@ -104,7 +104,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         private void Log(string message)
         {
             // TODO: control this with logging options
- //           Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
         }
 
         private void WhenReceived(IAsyncResult ar)
@@ -128,7 +128,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             }
             catch (IOException e)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"End Read {e} exception.");
             }
         }
 
@@ -145,13 +145,13 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                     _pipeStream.Write(messageBytes, 0, messageBytes.Length);
                 }
             }
-            catch (ObjectDisposedException e)
+            catch (ObjectDisposedException)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Send message aborted: pipe closed.");
             }
             catch (IOException e)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Send message arborted {e} exception.");
             }
         }
 

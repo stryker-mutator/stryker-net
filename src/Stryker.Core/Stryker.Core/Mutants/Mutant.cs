@@ -10,8 +10,8 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
-
         IList<string> CoveringTest { get; }
+        string DisplayName {get;}
     }
     
     /// <summary>
@@ -23,5 +23,6 @@ namespace Stryker.Core.Mutants
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
         public IList<string> CoveringTest { get; set; }
+        public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
     }
 }

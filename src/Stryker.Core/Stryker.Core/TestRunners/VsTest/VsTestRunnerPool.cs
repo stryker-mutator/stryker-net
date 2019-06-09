@@ -3,6 +3,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -50,10 +51,11 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             TestRunResult result;
             VsTestRunner runner;
+            bool withXUnit = _discoveredTests.Any(testCase => testCase.Properties.Any(p => p.Id == "XunitTestCase"));
             var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
-            if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            if (needCoverage && (_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest) || withXUnit))
             {
-                var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+                var options = new ParallelOptions {MaxDegreeOfParallelism = withXUnit ? 1: _availableRunners.Count};
                 Parallel.ForEach(_discoveredTests, options, testCase =>
                 {
                     runner = TakeRunner();

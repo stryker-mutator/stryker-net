@@ -2,7 +2,6 @@
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Stryker.DataCollector
 {
@@ -165,7 +164,7 @@ namespace Stryker.DataCollector
                 {
                     Log($"Send message header");
                     _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
-                    Log($"Send message data: {messageBytes.Length} bytes");
+                    Log($"Send message data: {message} ({messageBytes.Length} bytes).");
                     _pipeStream.Write(messageBytes, 0, messageBytes.Length);
                 }
             }

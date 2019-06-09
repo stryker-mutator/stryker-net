@@ -1,16 +1,15 @@
 {
-    "stryker-config":
-    {
-      "reporters": [
-        "All"
-      ],
-      "test-runner": "VsTest", 
-      "coverage-analysis":  "perTest",
-        "log-level": "trace",
-        "log-file":  "true",
-        "project-file": "TargetProject.csproj",
-        "excluded-files": [
-          "./EndlessLoop.cs"
-        ]
-    }
+  "stryker-config": {
+    "reporters": [
+      "All"
+    ],
+    "test-runner": "VsTest",
+    "coverage-analysis": "perTest",
+    "log-level": "trace",
+    "log-file": "true",
+    "project-file": "TargetProject.csproj",
+    "excluded-files": [
+      "./EndlessLoop.cs"
+    ]
+  }
 }

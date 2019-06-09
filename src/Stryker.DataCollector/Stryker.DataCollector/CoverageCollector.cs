@@ -106,6 +106,9 @@ namespace Stryker.DataCollector
             {
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
             }
+#if DEBUG
+            Console.WriteLine($"Test Session start with conf {testSessionStartArgs.Configuration}.");
+#endif
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)
@@ -129,10 +132,16 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
+#if DEBUG
+            Console.WriteLine($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts.");
+#endif
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
+#if DEBUG
+            Console.WriteLine($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
+#endif
             if (!_coverageOn) return;
             var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
             if (_usePipe)
@@ -183,6 +192,9 @@ namespace Stryker.DataCollector
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
+#if DEBUG
+            Console.WriteLine($"TestSession ends.");
+#endif
             _client?.Dispose();
             _client = null;
             _server.RaiseNewClientEvent -= ConnectionEstablished;
