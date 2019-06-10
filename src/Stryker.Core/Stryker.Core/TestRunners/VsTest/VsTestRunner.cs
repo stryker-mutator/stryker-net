@@ -52,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _flags = flags;
             _projectInfo = projectInfo;
             SetListOfTests(testCasesDiscovered);
-            _vsTestHelper = new VsTestHelper(options);
+            _vsTestHelper = new VsTestHelper();
             CoverageMutants = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = PrepareVsTestConsole();
             InitializeVsTestConsole();

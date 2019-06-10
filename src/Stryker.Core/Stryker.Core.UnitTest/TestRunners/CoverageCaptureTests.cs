@@ -61,10 +61,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var server = new CommunicationServer("test"))
             {
                 var lck = new object();
-                string message = string.Empty;
+                var message = string.Empty;
                 CommunicationChannel serverSide = null;
                 server.Listen();
-                server.RaiseNewClientEvent += (o, e) => {
+                server.RaiseNewClientEvent += (o, e) => 
+                {
                     lock (lck)
                     {
                         serverSide = e.Client; 
@@ -82,14 +83,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
                     Assert.True(client.IsConnected);
-                    Assert.True(WaitFor(lck, () =>  serverSide!=null, 100));
+                    Assert.True(WaitFor(lck, () => serverSide!=null, 100));
                     client.Start();
                     client.RaiseReceivedMessage += (o, msg) =>
                     {
                         client.SendText(msg);
                     };
                     serverSide.SendText("it works");
-                    Assert.True(WaitFor(lck, () =>  !string.IsNullOrEmpty(message), 100));
+                    Assert.True(WaitFor(lck, () => !string.IsNullOrEmpty(message), 100));
                     Assert.Equal("it works", message);
                 }
             }

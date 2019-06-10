@@ -20,7 +20,8 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
         public void InjectHelpers_ShouldCompile()
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var needed = new[] {".CoreLib", ".Runtime", "System.IO.", ".Collections", ".Console" };
+            // it would be good to be ensure those assemblies are referenced by the build project
+            var needed = new[] {".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
             var references = new List<MetadataReference>();
             var hack = new NamedPipeClientStream("test");
             foreach (var assembly in assemblies)

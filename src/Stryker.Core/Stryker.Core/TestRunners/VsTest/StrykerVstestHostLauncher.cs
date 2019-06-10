@@ -15,6 +15,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Dictionary<string, string> _envVars;
         private Process _currentProcess;
         private readonly object lck = new object();
+        public bool Corrupted { get; private set; }
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher()
@@ -74,8 +75,9 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (_currentProcess == null)
             {
-                Logger.LogInformation("VsTest returned cached results.");
-                return false;
+                Logger.LogInformation("VsTest session seems corrupted.");
+                Corrupted = true;
+                return true;
             }
             while (!_currentProcess.HasExited)
             {

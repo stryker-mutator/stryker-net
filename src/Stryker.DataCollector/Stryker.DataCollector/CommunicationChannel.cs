@@ -158,10 +158,12 @@ namespace Stryker.DataCollector
             {
                 lock (_lck)
                 {
-                    Log($"Send message header");
-                    _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
                     Log($"Send message data: {message} ({messageBytes.Length} bytes).");
-                    _pipeStream.Write(messageBytes, 0, messageBytes.Length);
+                    var convertedBytes = BitConverter.GetBytes(messageBytes.Length);
+                    var buffer = new byte[convertedBytes.Length+messageBytes.Length];
+                    Array.Copy(convertedBytes, buffer, convertedBytes.Length);
+                    Array.Copy(messageBytes, 0, buffer, convertedBytes.Length, messageBytes.Length);
+                    _pipeStream.Write(buffer, 0, buffer.Length);
                 }
             }
             catch (ObjectDisposedException)
