@@ -55,7 +55,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
             if (needCoverage && (_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest) || withXUnit))
             {
-                var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+                var options = new ParallelOptions {MaxDegreeOfParallelism = withXUnit ? 1 : _availableRunners.Count};
                 Parallel.ForEach(_discoveredTests, options, testCase =>
                 {
                     runner = TakeRunner();
