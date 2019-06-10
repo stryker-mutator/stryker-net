@@ -62,11 +62,11 @@ namespace Stryker.Core.Compiling
                                                       strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null),
                 references: _input.AssemblyReferences);
 
-            RollbackProcessResult rollbackProcessResult = null;
+            RollbackProcessResult rollbackProcessResult;
 
             // first try compiling
-            EmitResult emitResult = null;
-            int retryCount = 1;
+            EmitResult emitResult;
+            var retryCount = 1;
             (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
             
             for (var count = 1; !emitResult.Success && count < 50; count++)

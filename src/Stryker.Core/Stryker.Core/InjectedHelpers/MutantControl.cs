@@ -39,6 +39,7 @@ namespace Stryker
                 usePipe = true;
                 captureCoverage = true;
                 channel = CommunicationChannel.Client(pipeName, 100);
+                channel.SetLogger(Log);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
@@ -87,6 +88,11 @@ namespace Stryker
 
             Console.WriteLine($"DumpState {state.Count}");
             channel.SendText(report);
+        }
+
+        private static void Log(string message)
+        {
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}");
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)

@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
-            if (lastChunkArgs != null && lastChunkArgs.NewTestResults != null)
+            if (lastChunkArgs?.NewTestResults != null)
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }

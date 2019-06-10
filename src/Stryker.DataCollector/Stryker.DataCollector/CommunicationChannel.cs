@@ -119,13 +119,9 @@ namespace Stryker.DataCollector
 
         private void Log(string message)
         {
-            var logLine = $"{message}({_pipeName}).";
-            if (_logger == null)
+            if (_logger != null)
             {
-                Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {logLine}");
-            }
-            else
-            {
+                var logLine = $"{message}({_pipeName}).";
                 _logger(logLine);
             }
         }
@@ -151,7 +147,7 @@ namespace Stryker.DataCollector
             }
             catch (IOException e)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"End Read {e}.");
             }
         }
 
@@ -170,11 +166,11 @@ namespace Stryker.DataCollector
             }
             catch (ObjectDisposedException)
             {
-                Log($"Nothing to read, connection closed.");
+                Log($"Can't send, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Can't send {e.Message}.");
             }
         }
 

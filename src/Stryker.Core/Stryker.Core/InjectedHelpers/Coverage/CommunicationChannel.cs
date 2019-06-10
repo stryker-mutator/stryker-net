@@ -5,20 +5,23 @@ using System.Text;
 
 namespace Stryker.Core.InjectedHelpers.Coverage
 {
+
     public delegate void MessageReceived(object sender, string args);
 
     public class CommunicationChannel : IDisposable
     {
         private readonly PipeStream _pipeStream;
-        private readonly string _pipeName;
-        private readonly object _lck = new object();
-
         private byte[] _buffer;
         private int _cursor;
+        private string _pipeName;
         private bool _processingHeader;
         private bool _started;
+        private Action<string> _logger;
+        private readonly object _lck = new object();
 
         public event MessageReceived RaiseReceivedMessage;
+
+        public bool IsConnected => _pipeStream.IsConnected;
 
         public CommunicationChannel(PipeStream stream, string name)
         {
@@ -40,6 +43,10 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 throw;
             }
             return new CommunicationChannel(pipe, $"{pipeName}:C");
+        }
+        public void SetLogger(Action<string> logger)
+        {
+            _logger = logger;
         }
 
         public void Start()
@@ -103,8 +110,11 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         private void Log(string message)
         {
-            // TODO: control this with logging options
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}({_pipeName}).");
+            if (_logger != null)
+            {
+                var logLine = $"{message}({_pipeName}).";
+                _logger(logLine);
+            }
         }
 
         private void WhenReceived(IAsyncResult ar)
@@ -122,13 +132,13 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 Log($"Received {read} bytes.");
                 Begin(_cursor == _buffer.Length);
             }
-            catch (ObjectDisposedException)
+            catch (NullReferenceException)
             {
                 Log($"Nothing to read, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"End Read {e} exception.");
+                Log($"End Read {e}.");
             }
         }
 
@@ -141,17 +151,17 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 {
                     Log($"Send message header");
                     _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
-                    Log($"Send message data: {messageBytes.Length} bytes");
+                    Log($"Send message data: {message} ({messageBytes.Length} bytes).");
                     _pipeStream.Write(messageBytes, 0, messageBytes.Length);
                 }
             }
             catch (ObjectDisposedException)
             {
-                Log($"Send message aborted: pipe closed.");
+                Log($"Can't send, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"Send message arborted {e} exception.");
+                Log($"Can't send {e.Message}.");
             }
         }
 
