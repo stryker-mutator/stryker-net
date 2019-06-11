@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -16,6 +17,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly ICollection<TestCase> _discoveredTests;
+        private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
          
         public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
@@ -28,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage));
+                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
             });
         }
 
@@ -122,6 +124,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 runner.Dispose();
             }
+            _helper.Cleanup();
             _runnerAvailableHandler.Dispose();
         }
     }

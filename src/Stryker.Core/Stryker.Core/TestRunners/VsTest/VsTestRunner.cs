@@ -30,6 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private ICollection<TestCase> _discoveredTests;
 
         private readonly VsTestHelper _vsTestHelper;
+        private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
         private readonly Dictionary<string, string> _coverageEnvironment;
 
@@ -43,16 +44,21 @@ namespace Stryker.Core.TestRunners.VsTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
         }
 
-        public VsTestRunner(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo,
+        public VsTestRunner(StrykerOptions options, 
+            OptimizationFlags flags, 
+            ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
-            TestCoverageInfos mappingInfos, IFileSystem fileSystem = null)
+            TestCoverageInfos mappingInfos, 
+            IFileSystem fileSystem = null,
+            VsTestHelper helper = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
             SetListOfTests(testCasesDiscovered);
-            _vsTestHelper = new VsTestHelper();
+            _ownHelper = helper == null;
+            _vsTestHelper = helper ?? new VsTestHelper();
             CoverageMutants = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = PrepareVsTestConsole();
             InitializeVsTestConsole();
@@ -201,33 +207,33 @@ namespace Stryker.Core.TestRunners.VsTest
             string runSettings, bool forCoverage) 
         {
             using (var runCompleteSignal = new AutoResetEvent(false))
-            {
-                    var handler = new RunEventHandler(runCompleteSignal, _messages);
-                    var testHostLauncher = new StrykerVsTestHostLauncher(null, envVars);
-                    if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
-                    {
-                        handler.TestsFailed += Handler_TestsFailed;
-                    }
+            { 
+                var handler = new RunEventHandler(runCompleteSignal, _messages);
+                var testHostLauncher = new StrykerVsTestHostLauncher(null, envVars);
+                if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
+                {
+                    handler.TestsFailed += Handler_TestsFailed;
+                }
 
-                    if (testCases != null)
-                    {
-                        _vsTestConsole.RunTestsWithCustomTestHost(testCases, runSettings, handler, testHostLauncher);
-                    }
-                    else
-                    {
-                        _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
-                    }
+                if (testCases != null)
+                {
+                    _vsTestConsole.RunTestsWithCustomTestHost(testCases, runSettings, handler, testHostLauncher);
+                }
+                else
+                {
+                    _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
+                }
 
-                    // Test host exited signal comes after the run complete
-                    testHostLauncher.WaitProcessExit();
+                // Test host exited signal comes after the run complete
+                testHostLauncher.WaitProcessExit();
 
-                    // At this point, run must have complete. Check signal for true
-                    runCompleteSignal.WaitOne();
+                // At this point, run must have complete. Check signal for true
+                runCompleteSignal.WaitOne();
 
-                    handler.TestsFailed -= Handler_TestsFailed;
+                handler.TestsFailed -= Handler_TestsFailed;
 
-                    var results = handler.TestResults;
-                    return results;
+                var results = handler.TestResults;
+                return results;
             }
         }
 
@@ -348,7 +354,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (disposing)
                 {
                     _vsTestConsole.EndSession();
-                    _vsTestHelper.Cleanup();
+                    if (_ownHelper)
+                    {
+                        _vsTestHelper.Cleanup();
+                    }
                 }
 
                 _disposedValue = true;
