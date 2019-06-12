@@ -18,6 +18,7 @@ namespace Stryker.Core.ToolHelpers
         private readonly IFileSystem _fileSystem;
         private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
         private string _platformVsTestToolPath;
+        private object _lck = new object();
 
         public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
         {
@@ -27,26 +28,29 @@ namespace Stryker.Core.ToolHelpers
 
         public string GetCurrentPlatformVsTestToolPath()
         {
-            if (string.IsNullOrEmpty(_platformVsTestToolPath))
+            lock (_lck)
             {
-                foreach (var path in GetVsTestToolPaths())
+                if (string.IsNullOrEmpty(_platformVsTestToolPath))
                 {
-                    if (RuntimeInformation.IsOSPlatform(path.Key))
+                    foreach (var path in GetVsTestToolPaths())
                     {
-                        _logger.LogDebug("Using vstest.console: {0}", path.Value);
-                        _platformVsTestToolPath = path.Value;
-                        break;
+                        if (RuntimeInformation.IsOSPlatform(path.Key))
+                        {
+                            _logger.LogDebug("Using vstest.console: {0}", path.Value);
+                            _platformVsTestToolPath = path.Value;
+                            break;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(_platformVsTestToolPath))
+                    {
+                        throw new PlatformNotSupportedException(
+                            $"The current OS is not any of the following supported: " +
+                            $"{ OSPlatform.Windows.ToString() }, " +
+                            $"{ OSPlatform.Linux.ToString() } " +
+                            $"or " +
+                            $"{ OSPlatform.OSX.ToString() }");
                     }
                 }
-            }
-            if (string.IsNullOrEmpty(_platformVsTestToolPath))
-            {
-                throw new PlatformNotSupportedException(
-                $"The current OS is not any of the following supported: " +
-                $"{ OSPlatform.Windows.ToString() }, " +
-                $"{ OSPlatform.Linux.ToString() } " +
-                $"or " +
-                $"{ OSPlatform.OSX.ToString() }");
             }
 
             return _platformVsTestToolPath;

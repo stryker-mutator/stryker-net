@@ -41,7 +41,7 @@ namespace Stryker.CLI
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
-            var advancedOptions = CreateOption(app, CLIOptions.AdvancedOptions);
+            var advancedOptions = CreateOption(app, CLIOptions.AbortOnFailTest);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);

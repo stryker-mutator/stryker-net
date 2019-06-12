@@ -99,14 +99,13 @@ namespace Stryker.CLI
             JsonKey = "coverage-analysis"
         };
 
-        public static readonly CLIOption<string[]> AdvancedOptions = new CLIOption<string[]>()
+        public static readonly CLIOption<bool> AbortOnFailTest = new CLIOption<bool>
         {
-            ArgumentName = "--advancedOptions",
-            ArgumentShortName = "-ao <mode>",
-            DefaultValue = new string[0],
-            ArgumentDescription = @"Advanced options allowing to customize Stryker behaviour. Available options:
-    - abortTestOnFail: abort test runs as soon as a test fails",
-            JsonKey = "advancedOptions"
+            ArgumentName = "--abort-test-on-fail",
+            ArgumentShortName = "-atof",
+            DefaultValue = false,
+            ArgumentDescription = @"Abort test runs as soon as any test fails. This reduce the overall running time",
+            JsonKey = "abort-test-on-fail"
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>

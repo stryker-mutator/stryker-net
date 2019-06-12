@@ -14,7 +14,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Action _callback;
         private readonly Dictionary<string, string> _envVars;
         private Process _currentProcess;
-        private readonly object lck = new object();
+        private readonly object _lck = new object();
+        private int _id;
         public bool Corrupted { get; private set; }
         private static ILogger Logger { get; }
 
@@ -23,10 +24,11 @@ namespace Stryker.Core.TestRunners.VsTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
         }
 
-        public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars)
+        public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars, int id)
         {
             _callback = callback;
             _envVars = envVars;
+            _id = id;
         }
 
         public bool IsDebug => false;
@@ -53,8 +55,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (!_currentProcess.Start())
             {
-                Logger.LogError($"Failed to start process {processInfo.Arguments}.");
+                Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
             }
+
             _currentProcess.BeginOutputReadLine();
             _currentProcess.BeginErrorReadLine();
 
@@ -63,9 +66,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void CurrentProcess_Exited(object sender, EventArgs e)
         {
-            lock (lck)
+            lock (_lck)
             {
-                Monitor.Pulse(lck);
+                Monitor.Pulse(_lck);
             }
 
             _callback?.Invoke();
@@ -73,17 +76,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public bool WaitProcessExit()
         {
-            if (_currentProcess == null)
-            {
-                Logger.LogInformation("VsTest session seems corrupted.");
-                Corrupted = true;
-                return true;
-            }
             while (!_currentProcess.HasExited)
             {
-                lock (lck)
+                lock (_lck)
                 {
-                    Monitor.Wait(lck, 5000);
+                    Monitor.Wait(_lck, 5000);
                 }
             }
             return true;
@@ -93,7 +90,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogDebug($"{e.Data} (VsTest error)");
+                Logger.LogDebug($"{e.Data} (Runner {_id}: VsTest error)");
             }
         }
 
@@ -101,7 +98,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogDebug($"{e.Data} (VsTest output)");
+                Logger.LogDebug($"{e.Data} (Runner {_id}: VsTest output)");
             }
         }
 

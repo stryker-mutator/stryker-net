@@ -47,7 +47,7 @@ namespace Stryker.Core.Options
             bool logToFile = false,
             bool devMode = false,
             string coverageAnalysis = "",
-            string[] advanced = null,
+            bool abortOnFail = false,
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
@@ -67,31 +67,12 @@ namespace Stryker.Core.Options
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
-            Optimizations = ValidateMode(coverageAnalysis);
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
+            Optimizations = ValidateMode(coverageAnalysis) | (abortOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
-            if (advanced == null) return;
-            foreach (var option in advanced)
-            {
-                ValidateAdvancedOption(option);
-            }
-        }
-
-        private void ValidateAdvancedOption(string option)
-        {
-            switch (option)
-            {
-                case "abortTestOnFail":
-                    Optimizations|=OptimizationFlags.AbortTestOnKill;
-                    break;
-                default:
-                    throw new StrykerInputException(
-                        ErrorMessage,
-                        $"Incorrect advanced option {option}. The possible options are [].");
-            }
         }
 
         private OptimizationFlags ValidateMode(string mode)

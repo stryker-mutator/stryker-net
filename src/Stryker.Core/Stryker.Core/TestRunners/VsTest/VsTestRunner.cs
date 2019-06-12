@@ -36,6 +36,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IEnumerable<string> _sources;
         private bool _disposedValue; // To detect redundant calls
+        private static int _count;
+        private readonly int _id;
+        private bool _withNUnit;
+        private bool _withXUnit;
 
         private static ILogger Logger { get; }
 
@@ -61,6 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestHelper = helper ?? new VsTestHelper();
             CoverageMutants = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = PrepareVsTestConsole();
+            _id = _count++;
             InitializeVsTestConsole();
             _coverageEnvironment = new Dictionary<string, string>
             {
@@ -83,11 +88,11 @@ namespace Stryker.Core.TestRunners.VsTest
             var testCases = (mutationId == null || !_flags.HasFlag(OptimizationFlags.CoverageBasedTest)) ? null : CoverageMutants.GetTests<TestCase>(mutationId.Value);
             if (testCases == null)
             {
-                Logger.LogDebug($"Testing {mutationId} against all tests.");
+                Logger.LogDebug($"Runner {_id}: Testing {mutationId} against all tests.");
             }
             else
             {
-                Logger.LogDebug($"Testing {mutationId} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                Logger.LogDebug($"Runner {_id}: Testing {mutationId} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
             }
             return RunVsTest(testCases, timeoutMs, envVars);
         }
@@ -95,6 +100,11 @@ namespace Stryker.Core.TestRunners.VsTest
         private void SetListOfTests(ICollection<TestCase> tests)
         {
             _discoveredTests = tests;
+            if (tests != null)
+            {
+                _withNUnit = tests.Any(testCase => testCase.ExecutorUri.AbsoluteUri.Contains("nunit"));
+                _withXUnit = _discoveredTests.Any(testCase => testCase.Properties.Any(p => p.Id == "XunitTestCase"));
+            }
         }
 
         public ICollection<TestCase> DiscoverTests(string runSettings = null)
@@ -110,7 +120,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     waitHandle.WaitOne();
                     if (handler.Aborted)
                     {
-                        Logger.LogError("Test discovery has been aborted!");
+                        Logger.LogError($"Runner {_id}: Test discovery has been aborted!");
                     }
 
                     SetListOfTests(handler.DiscoveredTestCases);
@@ -148,7 +158,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            Logger.LogDebug($"Capturing coverage.");
+            Logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( null, true), true);
             foreach (var testResult in testResults)
             {
@@ -160,7 +170,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         var coverage = propertyPairValue.Split(',').Select(int.Parse);
                         // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
-                        CoverageMutants.DeclareMappingForATest(_discoveredTests.First(testCase => testCase.Id == testResult.TestCase.Id), coverage);
+                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, coverage);
                     }
                 }
             }
@@ -170,15 +180,15 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestResult> CoverageForTest(TestCase test)
         {
-            Logger.LogDebug($"Capturing coverage for {test.FullyQualifiedName}.");
+            Logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings( 0, true);
-            var testResults = RunAllTests(new List<TestCase>{test}, _coverageEnvironment, generateRunSettings, true);
+            var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
             foreach (var testResult in coverageForTest)
             {
                 foreach (var testResultMessage in testResult.Messages)
                 {
-                    Logger.LogDebug($"Test output:{Environment.NewLine}{testResultMessage.Text}");
+                    Logger.LogDebug($"TRunner {_id}: est output:{Environment.NewLine}{testResultMessage.Text}");
                 }
 
                 var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
@@ -190,7 +200,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 Logger.LogWarning(
-                    $"No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
+                    $"Runner {_id}: No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
             }
 
             return coverageForTest;
@@ -199,41 +209,43 @@ namespace Stryker.Core.TestRunners.VsTest
         private void Handler_TestsFailed(object sender, EventArgs e)
         {
             // one test has failed, we can stop
-            Logger.LogDebug("At least one test failed, abort current test run.");
+            Logger.LogDebug($"Runner {_id}: At least one test failed, abort current test run.");
             _vsTestConsole.AbortTestRun();
         }
 
         private IEnumerable<TestResult> RunAllTests(ICollection<TestCase> testCases, Dictionary<string, string> envVars,
-            string runSettings, bool forCoverage) 
+            string runSettings, bool forCoverage)
         {
             using (var runCompleteSignal = new AutoResetEvent(false))
-            { 
-                var handler = new RunEventHandler(runCompleteSignal, _messages);
-                var testHostLauncher = new StrykerVsTestHostLauncher(null, envVars);
+            {
+                var eventHandler = new RunEventHandler(runCompleteSignal, _messages);
+                var strykerVsTestHostLauncher1 = new StrykerVsTestHostLauncher(null, envVars, _id);
                 if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                 {
-                    handler.TestsFailed += Handler_TestsFailed;
+                    eventHandler.TestsFailed += Handler_TestsFailed;
                 }
 
                 if (testCases != null)
                 {
-                    _vsTestConsole.RunTestsWithCustomTestHost(testCases, runSettings, handler, testHostLauncher);
+                    var finalTestCases1 =
+                        _discoveredTests.Where(discoveredTest => testCases.Any(test => test.Id == discoveredTest.Id));
+                    _vsTestConsole.RunTestsWithCustomTestHost(finalTestCases1, runSettings, eventHandler, strykerVsTestHostLauncher1);
                 }
                 else
-                {
-                    _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, handler, testHostLauncher);
+                { 
+                    _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler, strykerVsTestHostLauncher1);
                 }
 
                 // Test host exited signal comes after the run complete
-                testHostLauncher.WaitProcessExit();
+                strykerVsTestHostLauncher1.WaitProcessExit();
 
                 // At this point, run must have complete. Check signal for true
                 runCompleteSignal.WaitOne();
+                Thread.Sleep(200);
 
-                handler.TestsFailed -= Handler_TestsFailed;
+                eventHandler.TestsFailed -= Handler_TestsFailed;
 
-                var results = handler.TestResults;
-                return results;
+                return eventHandler.TestResults;
             }
         }
 
@@ -280,14 +292,25 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = needCoverage ? CoverageCollector.GetVsTestSettings() : "";
-            var sequentialMode = needCoverage ? "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>" : "";
+            var settingsForCoverage = string.Empty;
+            if (needCoverage)
+            {
+                if (_withNUnit)
+                {
+                    settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
+                }
+
+                if (_withXUnit)
+                {
+                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
+                }
+            }
             var timeOutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>":"";
             var runSettings = 
                 $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
-  <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-  {timeOutSettings}{sequentialMode}
+  <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>{timeOutSettings}{settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
