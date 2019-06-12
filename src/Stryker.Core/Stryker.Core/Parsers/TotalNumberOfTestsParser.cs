@@ -10,11 +10,12 @@ namespace Stryker.Core.Parsers
     public class TotalNumberOfTestsParser : ITotalNumberOfTestsParser
     {
         private const string TotalTestsStartToken = "Total tests:";
-        private const string TotalTestsEndToken = ".";
 
         public int ParseTotalNumberOfTests(string testProcessRunnerOutput)
         {
-            var tokenIndex = testProcessRunnerOutput.AsSpan().IndexOf(TotalTestsStartToken.AsSpan());
+            var testProcessRunnerOutputSpan = testProcessRunnerOutput.AsSpan();
+
+            var tokenIndex = testProcessRunnerOutputSpan.IndexOf(TotalTestsStartToken.AsSpan());
 
             if (tokenIndex == -1)
             {
@@ -23,9 +24,26 @@ namespace Stryker.Core.Parsers
 
             var endOfStartTokenIndex = tokenIndex + TotalTestsStartToken.Length;
 
-            var endTokenIndex = testProcessRunnerOutput.AsSpan().Slice(endOfStartTokenIndex).IndexOf(TotalTestsEndToken.AsSpan());
+            var firstNonWhiteSpaceIndex = IndexOfFirstNonWhiteSpace(testProcessRunnerOutputSpan.Slice(endOfStartTokenIndex));
 
-            var totalTestsString = testProcessRunnerOutput.AsSpan().Slice(endOfStartTokenIndex, endTokenIndex);
+            if (firstNonWhiteSpaceIndex == -1)
+            {
+                return 0;
+            }
+
+            var firstDigitIndex = endOfStartTokenIndex + firstNonWhiteSpaceIndex;
+
+            var firstNonDigitIndex = IndexOfFirstNonDigit(testProcessRunnerOutputSpan.Slice(firstDigitIndex));
+
+            ReadOnlySpan<char> totalTestsString;
+            if (firstNonDigitIndex == -1)
+            {
+                totalTestsString = testProcessRunnerOutputSpan.Slice(firstDigitIndex);
+            }
+            else
+            {
+                totalTestsString = testProcessRunnerOutputSpan.Slice(firstDigitIndex, firstNonDigitIndex);
+            }
 
             if (int.TryParse(totalTestsString.ToString(), out var totalTests))
             {
@@ -33,6 +51,32 @@ namespace Stryker.Core.Parsers
             }
 
             return 0;
+        }
+
+        private int IndexOfFirstNonWhiteSpace(ReadOnlySpan<char> text)
+        {
+            for (int i = 0; i < text.Length; ++i)
+            {
+                if (!char.IsWhiteSpace(text[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private int IndexOfFirstNonDigit(ReadOnlySpan<char> text)
+        {
+            for (int i = 0; i < text.Length; ++i)
+            {
+                if (!char.IsDigit(text[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
     }
 }

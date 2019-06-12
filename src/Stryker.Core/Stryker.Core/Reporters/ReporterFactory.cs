@@ -12,7 +12,7 @@ namespace Stryker.Core.Reporters
     {
         public static IReporter Create(StrykerOptions options)
         {
-            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters, CreateReporters(options)));
+            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
         private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
@@ -27,24 +27,26 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        private static IEnumerable<IReporter> DetermineEnabledReporters(IEnumerable<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
+        private static IEnumerable<IReporter> DetermineEnabledReporters(IList<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
             if (enabledReporters.Contains(Reporter.All))
             {
                 return possibleReporters.Values;
             }
-            var deprecated = new Dictionary<Reporter, Reporter>
+            var replacementFor = new Dictionary<Reporter, Reporter>
             {
                 { Reporter.ConsoleProgressBar, Reporter.Progress },
                 { Reporter.ConsoleProgressDots, Reporter.Dots },
                 { Reporter.ConsoleReport, Reporter.ClearText }
             };
-            if(enabledReporters.Where(er => deprecated.Any(dr => dr.Key == er)) is var deprecatedReporters && deprecatedReporters.Count() > 0)
+            if (enabledReporters.Where(deprecated => replacementFor.Any(replacement => replacement.Key == deprecated)).ToList() is var deprecatedReporters && deprecatedReporters.Count() > 0)
             {
                 var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(typeof(ReporterFactory).Name);
                 foreach (var deprecatedReporter in deprecatedReporters)
                 {
-                    logger.LogWarning($"Reporter {deprecatedReporter.ToString()} is deprecated. Please use {deprecated[deprecatedReporter].ToString()} instead.");
+                    logger.LogWarning($"Reporter {deprecatedReporter.ToString()} is deprecated. Please use {replacementFor[deprecatedReporter].ToString()} instead.");
+
+                    enabledReporters.Add(replacementFor[deprecatedReporter]);
                 }
             }
 
