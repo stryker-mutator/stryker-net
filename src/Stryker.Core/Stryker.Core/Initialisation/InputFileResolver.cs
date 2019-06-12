@@ -73,7 +73,7 @@ namespace Stryker.Core.Initialisation
             // Search for compile linked source files in all linked shared projects
             foreach (var sharedProjectFile in sharedProjectFilePaths)
             {
-                compileIncludeLinkedFiles.ToList().AddRange(FindCompileLinkedFiles(sharedProjectFile));
+                FindCompileLinkedFiles(sharedProjectFile).ToList().ForEach(from => compileIncludeLinkedFiles[from.Key] = from.Value);
             }
 
             foreach (var dir in projectFolders)
