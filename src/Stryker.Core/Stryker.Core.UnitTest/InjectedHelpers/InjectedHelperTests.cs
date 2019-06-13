@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Shouldly;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
-using Stryker.Core.MutationTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.InjectedHelpers
@@ -37,21 +33,8 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
-            // first try compiling
-            using (var ms = new MemoryStream())
-            {
-                // reset the memoryStream
-                var emitResult = compilation.Emit(
-                    ms,
-                    null,
-                    win32Resources: compilation.CreateDefaultWin32Resources(
-                        versionResource: true, // Important!
-                        noManifest: false,
-                        manifestContents: null,
-                        iconInIcoFormat: null));
-
-                emitResult.Success.ShouldBe(true);
-            }
+            var errors = compilation.GetDiagnostics();
+            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error));
         }
 
 
