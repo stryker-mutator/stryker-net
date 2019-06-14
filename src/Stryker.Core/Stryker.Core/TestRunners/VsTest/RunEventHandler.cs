@@ -5,23 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class RunEventHandler : ITestRunEventsHandler
     {
         private readonly AutoResetEvent _waitHandle;
-        private readonly List<string> _messages;
-        public List<TestResult> TestResults { get; }
+        private readonly ILogger _logger;
         private bool _testFailed;
 
         public event EventHandler TestsFailed;
+        public List<TestResult> TestResults { get; }
 
-        public RunEventHandler(AutoResetEvent waitHandle, List<string> messages)
+        public RunEventHandler(AutoResetEvent waitHandle, ILogger logger)
         {
             _waitHandle = waitHandle;
             TestResults = new List<TestResult>();
-            _messages = messages;
+            _logger = logger;
         }
 
         public void HandleTestRunComplete(
@@ -65,20 +66,27 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            var item = $"Test Run Message: [RAW] {rawMessage}";
-            lock (_messages)
-            {
-                _messages.Add(item);
-            }
+            _logger.LogTrace($"Runner: {rawMessage} [RAW]");
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            var item = $"Test Run Message: [{level}] {message}";
-            lock (_messages)
+            LogLevel levelFinal;
+            switch (level)
             {
-                _messages.Add(item);
+                case TestMessageLevel.Informational:
+                    levelFinal = LogLevel.Debug;
+                    break;
+                case TestMessageLevel.Warning:
+                    levelFinal = LogLevel.Information;
+                    break;
+                case TestMessageLevel.Error:
+                    levelFinal = LogLevel.Warning;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
+            _logger.Log(levelFinal, $"Runner: {message}");
         }
     }
 }

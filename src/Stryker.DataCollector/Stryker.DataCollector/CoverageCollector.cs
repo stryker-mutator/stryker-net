@@ -49,7 +49,7 @@ namespace Stryker.DataCollector
             watch.Start();
             lock (lck)
             {
-                while (!predicate() && watch.ElapsedMilliseconds < timeout)
+                while (!predicate() && watch.ElapsedMilliseconds <= timeout)
                 {
                     Monitor.Wait(lck, Math.Max(1, (int)(timeout - watch.ElapsedMilliseconds)));
                 }
@@ -66,13 +66,14 @@ namespace Stryker.DataCollector
 
         public void Init(bool usePipe)
         {
-            if (usePipe)
+            if (!usePipe)
             {
-                _server = new CommunicationServer("CoverageCollector");
-                _server.RaiseNewClientEvent += ConnectionEstablished;
-                _server.Listen();
-                _usePipe = true;
+                return;
             }
+            _server = new CommunicationServer("CoverageCollector");
+            _server.RaiseNewClientEvent += ConnectionEstablished;
+            _server.Listen();
+            _usePipe = true;
         }
 
         public void SetLogger(Action<string> logger)
@@ -83,10 +84,7 @@ namespace Stryker.DataCollector
 
         public void Log(string message)
         {
-            if (_logger != null)
-            {
-                _logger(message);
-            }
+            _logger?.Invoke(message);
         }
 
         public IDictionary<string, string> GetEnvironmentVariables()
@@ -146,7 +144,10 @@ namespace Stryker.DataCollector
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
-            if (!_coverageOn) return;
+            if (!_coverageOn)
+            {
+                return;
+            }
             var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
             if (_usePipe)
             {

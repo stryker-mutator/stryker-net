@@ -185,7 +185,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public IEnumerable<TestResult> CoverageForTest(TestCase test)
         {
             Logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
-            var generateRunSettings = GenerateRunSettings( 0, true);
+            var generateRunSettings = GenerateRunSettings( null, true);
             var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
             foreach (var testResult in coverageForTest)
@@ -222,7 +222,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             using (var runCompleteSignal = new AutoResetEvent(false))
             {
-                var eventHandler = new RunEventHandler(runCompleteSignal, _messages);
+                var eventHandler = new RunEventHandler(runCompleteSignal, Logger);
                 var strykerVsTestHostLauncher1 = new StrykerVsTestHostLauncher(null, envVars, _id);
                 if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                 {
@@ -245,7 +245,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 // At this point, run must have complete. Check signal for true
                 runCompleteSignal.WaitOne();
-                Thread.Sleep(200);
 
                 eventHandler.TestsFailed -= Handler_TestsFailed;
 
