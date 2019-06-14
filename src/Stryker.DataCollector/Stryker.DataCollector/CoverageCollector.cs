@@ -173,7 +173,7 @@ namespace Stryker.DataCollector
             {
                 if (!WaitOnLck(_lck, () => _lastMessage != null, 500))
                 {
-                    // Failed to retrieve coverage data for {testCase
+                    // Failed to retrieve coverage data for testCase
                     return null;
                 }
 

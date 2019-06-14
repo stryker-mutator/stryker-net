@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Stryker.Core.InjectedHelpers.Coverage
 {
-
     public delegate void MessageReceived(object sender, string args);
 
     public class CommunicationChannel : IDisposable
@@ -13,7 +12,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         private readonly PipeStream _pipeStream;
         private byte[] _buffer;
         private int _cursor;
-        private string _pipeName;
+        private readonly string _pipeName;
         private bool _processingHeader;
         private bool _started;
         private Action<string> _logger;
@@ -95,8 +94,8 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             try
             {
                 var bufferLength = _buffer.Length-_cursor;
-                Log($"Begin Read {bufferLength} bytes.");
                 _pipeStream.BeginRead(_buffer, _cursor, bufferLength, WhenReceived, null);
+                Log($"Waiting to read ({bufferLength} bytes).");
             }
             catch (ObjectDisposedException)
             {
@@ -104,7 +103,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             }
             catch (IOException e)
             {
-                Log($"Begin Read {e} exception.");
+                Log($"Begin Read error:{e}.");
             }
         }
 
@@ -138,21 +137,24 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             }
             catch (IOException e)
             {
-                Log($"End Read {e}.");
+                Log($"End Read error: {e}.");
             }
         }
 
         public void SendText(string message)
         {
             var messageBytes = Encoding.Unicode.GetBytes(message);
+            Log($"Send message: [{message}].");
+            var convertedBytes = BitConverter.GetBytes(messageBytes.Length);
+            var buffer = new byte[convertedBytes.Length+messageBytes.Length];
+            Array.Copy(convertedBytes, buffer, convertedBytes.Length);
+            Array.Copy(messageBytes, 0, buffer, convertedBytes.Length, messageBytes.Length);
             try
             {
                 lock (_lck)
                 {
-                    Log($"Send message header");
-                    _pipeStream.Write(BitConverter.GetBytes(messageBytes.Length), 0, 4);
-                    Log($"Send message data: {message} ({messageBytes.Length} bytes).");
-                    _pipeStream.Write(messageBytes, 0, messageBytes.Length);
+                    _pipeStream.Write(buffer, 0, buffer.Length);
+                    Log($"Sent message data: {messageBytes.Length} bytes.");
                 }
             }
             catch (ObjectDisposedException)
