@@ -83,7 +83,7 @@ namespace Stryker.DataCollector
 
         public void Log(string message)
         {
-            if (_logger == null)
+            if (_logger != null)
             {
                 _logger(message);
             }
