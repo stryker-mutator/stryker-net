@@ -22,7 +22,7 @@ namespace Stryker.DataCollector
         private readonly PipeStream _pipeStream;
         private byte[] _buffer;
         private int _cursor;
-        private string _pipeName;
+        private readonly string _pipeName;
         private bool _processingHeader;
         private bool _started;
         private Action<string> _logger;

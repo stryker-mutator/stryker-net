@@ -22,7 +22,7 @@ namespace Stryker.DataCollector
 
         private Action<string> _logger;
 
-        private static int _instanceCounter = 0;
+        private static int _instanceCounter;
 
         public CommunicationServer(string name)
         {
@@ -72,7 +72,7 @@ namespace Stryker.DataCollector
                 if (_listener.IsConnected)
                 {
                     session = new CommunicationChannel(_listener, $"{PipeName}:S({_channels.Count})");
-                    session.SetLogger(_logger);
+                    session.SetLogger(OutputToLog);
                     Log($"New connection.");
                     _channels.Add(session);
                     _listener = null;
@@ -87,6 +87,11 @@ namespace Stryker.DataCollector
         private void Log(string message)
         {
             var logLine = $"{message}({PipeName}).";
+            OutputToLog(logLine);
+        }
+
+        private void OutputToLog(string logLine)
+        {
             if (_logger == null)
             {
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {logLine}");

@@ -162,10 +162,14 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings( null, true), true);
             foreach (var testResult in testResults)
             {
-                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
-                if (propertyPair.Value != null)
+                var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
+                if (key == null)
                 {
-                    var propertyPairValue = (propertyPair.Value as string);
+                    Logger.LogWarning($"Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
+                }
+                else if (value != null)
+                {
+                    var propertyPairValue = (value as string);
                     if (!string.IsNullOrWhiteSpace(propertyPairValue))
                     {
                         var coverage = propertyPairValue.Split(',').Select(int.Parse);
