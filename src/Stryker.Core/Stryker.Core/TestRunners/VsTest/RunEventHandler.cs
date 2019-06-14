@@ -66,13 +66,19 @@ namespace Stryker.Core.TestRunners.VsTest
         public void HandleRawMessage(string rawMessage)
         {
             var item = $"Test Run Message: [RAW] {rawMessage}";
-            _messages.Add(item);
+            lock (_messages)
+            {
+                _messages.Add(item);
+            }
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
             var item = $"Test Run Message: [{level}] {message}";
-            _messages.Add(item);
+            lock (_messages)
+            {
+                _messages.Add(item);
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Stryker.DataCollector
         private readonly object _lck = new object();
         private string _lastMessage;
         private bool _coverageOn;
+        private Action<string> _logger;
 
         public const string ModeEnvironmentVariable = "CaptureCoverage";
         public const string EnvMode = "env";
@@ -76,7 +77,16 @@ namespace Stryker.DataCollector
 
         public void SetLogger(Action<string> logger)
         {
+            _logger = logger;
             _server.SetLogger(logger);
+        }
+
+        public void Log(string message)
+        {
+            if (_logger == null)
+            {
+                _logger(message);
+            }
         }
 
         public IDictionary<string, string> GetEnvironmentVariables()
@@ -106,9 +116,7 @@ namespace Stryker.DataCollector
             {
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
             }
-#if DEBUG
-            Console.WriteLine($"Test Session start with conf {testSessionStartArgs.Configuration}.");
-#endif
+            Log($"Test Session start with conf {testSessionStartArgs.Configuration}.");
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)
@@ -132,16 +140,12 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-#if DEBUG
-            Console.WriteLine($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts.");
-#endif
+            Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts.");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-#if DEBUG
-            Console.WriteLine($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
-#endif
+            Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn) return;
             var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
             if (_usePipe)
@@ -164,6 +168,10 @@ namespace Stryker.DataCollector
                 }
                 _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
             }
+            else
+            {
+                Log($"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
+            }
         }
 
         public string RetrieveCoverData(string testCase)
@@ -171,7 +179,7 @@ namespace Stryker.DataCollector
             string coverData;
             if (_usePipe)
             {
-                if (!WaitOnLck(_lck, () => _lastMessage != null, 500))
+                if (!WaitOnLck(_lck, () => _lastMessage != null, 5000))
                 {
                     // Failed to retrieve coverage data for testCase
                     return null;
@@ -192,9 +200,7 @@ namespace Stryker.DataCollector
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
-#if DEBUG
-            Console.WriteLine($"TestSession ends.");
-#endif
+            Log($"TestSession ends.");
             _client?.Dispose();
             _client = null;
             _server.RaiseNewClientEvent -= ConnectionEstablished;
