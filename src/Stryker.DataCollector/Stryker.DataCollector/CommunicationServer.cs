@@ -47,7 +47,7 @@ namespace Stryker.DataCollector
                 _listener = new NamedPipeServerStream(PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous|PipeOptions.WriteThrough);
                 _listener.BeginWaitForConnection(OnConnect, null);
             }
         }
@@ -71,7 +71,7 @@ namespace Stryker.DataCollector
 
                 if (_listener.IsConnected)
                 {
-                    session = new CommunicationChannel(_listener, $"{PipeName}:S({_channels.Count})");
+                    session = new CommunicationChannel(_listener, $"S({_channels.Count}):[{PipeName}])");
                     session.SetLogger(OutputToLog);
                     Log($"New connection.");
                     _channels.Add(session);

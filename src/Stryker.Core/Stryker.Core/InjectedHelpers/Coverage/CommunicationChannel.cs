@@ -27,11 +27,10 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             _pipeName = name;
             _pipeStream = stream;
         }
-
         public static CommunicationChannel Client(string pipeName, int timeout = -1)
         {
             var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
-                PipeOptions.Asynchronous);
+                PipeOptions.Asynchronous|PipeOptions.WriteThrough);
             try
             {
                 pipe.Connect(timeout);
@@ -41,8 +40,9 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 pipe.Dispose();
                 throw;
             }
-            return new CommunicationChannel(pipe, $"{pipeName}:C");
+            return new CommunicationChannel(pipe, $"C[{pipeName}]");
         }
+
         public void SetLogger(Action<string> logger)
         {
             _logger = logger;
