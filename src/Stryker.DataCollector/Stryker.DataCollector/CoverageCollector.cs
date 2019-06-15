@@ -71,6 +71,7 @@ namespace Stryker.DataCollector
                 return;
             }
             _server = new CommunicationServer("CoverageCollector");
+            _server.SetLogger(_logger);
             _server.RaiseNewClientEvent += ConnectionEstablished;
             _server.Listen();
             _usePipe = true;
@@ -79,7 +80,7 @@ namespace Stryker.DataCollector
         public void SetLogger(Action<string> logger)
         {
             _logger = logger;
-            _server.SetLogger(logger);
+            _server?.SetLogger(logger);
         }
 
         public void Log(string message)

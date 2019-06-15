@@ -27,6 +27,17 @@ namespace Stryker.Core.TestRunners
             return null;
         }
 
+        public void DeclareCoveredMutants(IEnumerable<int> list)
+        {
+            lock(_mutantToTests)
+            {
+                foreach (var mutant in list)
+                {
+                    _mutantToTests[mutant] = new List<object>();
+                }
+            }
+        }
+
         public void DeclareMappingForATest(object discoveredTest, IEnumerable<int> captureCoverage)
         {
             lock(_mutantToTests)

@@ -12,42 +12,45 @@ namespace Stryker.Core.TestRunners
     public class DotnetTestRunner : ITestRunner
     {
         private readonly ITotalNumberOfTestsParser _totalNumberOfTestsParser;
-        private string _path { get; }
-        private IProcessExecutor _processExecutor { get; }
-        private static ILogger _logger { get; }
         private readonly OptimizationFlags _flags;
 
         static DotnetTestRunner()
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
         }
+        private static ILogger Logger { get; }
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, ITotalNumberOfTestsParser totalNumberOfTestsParser, OptimizationFlags flags)
         {
             _totalNumberOfTestsParser = totalNumberOfTestsParser;
-            _path = path;
-            _processExecutor = processProxy;
-            _flags = flags & ~OptimizationFlags.UseEnvVariable;
+            _flags = flags;
+            Path = path;
+            ProcessExecutor = processProxy;
+            CoverageMutants = new TestCoverageInfos();
         }
 
-        public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
+        private string Path { get; }
+        private IProcessExecutor ProcessExecutor { get; }
+        public TestCoverageInfos CoverageMutants { get; }
+
+        public TestRunResult RunAll(int? timeoutMs, int? activeMutationId)
         {
             Dictionary<string, string> envVars = activeMutationId == null ? null : 
                 new Dictionary<string, string>
             {
                 {"ActiveMutation", activeMutationId.ToString() }
             };
-            return LaunchTestProcess(timeoutMS, envVars);
+            return LaunchTestProcess(timeoutMs, envVars);
         }
 
-        private TestRunResult LaunchTestProcess(int? timeoutMS, IDictionary<string, string> envVars)
+        private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)
         {
-            var result = _processExecutor.Start(
-                _path,
+            var result = ProcessExecutor.Start(
+                Path,
                 "dotnet",
                 "test --no-build --no-restore",
                 envVars,
-                timeoutMS ?? 0);
+                timeoutMs ?? 0);
 
             return new TestRunResult
             {
@@ -59,22 +62,26 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult CaptureCoverage()
         {
-            var collector = new CoverageCollector();
-            collector.Init(true);
-            collector.SetLogger((message) => _logger.LogDebug(message));
-            var coverageEnvironment = collector.GetEnvironmentVariables();
-            var result = LaunchTestProcess(null, coverageEnvironment);
+            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            {
+                var collector = new CoverageCollector();
+                collector.SetLogger((message) => Logger.LogTrace(message));
+                collector.Init(true);
+                var coverageEnvironment = collector.GetEnvironmentVariables();
+                var result = LaunchTestProcess(null, coverageEnvironment);
 
-            var data = collector.RetrieveCoverData("full");
+                var data = collector.RetrieveCoverData("full");
 
-            CoveredMutants = data.Split(",").Select(int.Parse); 
-            return result;
+                CoverageMutants.DeclareCoveredMutants(data.Split(",").Select(int.Parse));
+                return result;
+            }
+            else
+            {
+                return LaunchTestProcess(null, null);
+            }
         }
 
-        public TestCoverageInfos CoverageMutants => null;
-
-        public IEnumerable<int> CoveredMutants { get; private set; }
-
+        
         public void Dispose()
         {
         }

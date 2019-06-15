@@ -11,6 +11,5 @@ namespace Stryker.Core.TestRunners
 
         TestCoverageInfos CoverageMutants { get; }
 
-        IEnumerable<int> CoveredMutants { get; }
     }
 }
