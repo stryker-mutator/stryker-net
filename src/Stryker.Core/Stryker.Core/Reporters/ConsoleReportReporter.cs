@@ -37,7 +37,7 @@ namespace Stryker.Core.Reporters
 
         public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
         {
-            _chalk.Default($"{mutantsToBeTested.Count()} mutants  mutant will now be tested, this could take a while. {Environment.NewLine}");
+            _chalk.Default($"{mutantsToBeTested.Count()} mutants will now be tested, this could take a while. {Environment.NewLine}");
         }
 
         public void OnMutantTested(IReadOnlyMutant result)

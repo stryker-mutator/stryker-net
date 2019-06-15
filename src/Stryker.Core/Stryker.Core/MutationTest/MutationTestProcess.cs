@@ -153,18 +153,6 @@ namespace Stryker.Core.MutationTest
                 return new StrykerRunResult(options, null);
             }
 
-            Task.Run(() =>
-            {
-                // Test against an empty mutant. If the mutant is killed we know something is wrong and there will be a lot of false positives.
-                var result = MutationTestExecutor.TestRunner.RunAll(Input.TimeoutMs, null);
-                if (!result.Success)
-                {
-                    Logger.LogWarning(@"Testrun with no mutation failed. This can have two reasons: 
-- Your tests are randomly failing
-- Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
-                }
-            });
-
             Reporter.OnStartMutantTestRun(mutantsNotRun);
             Parallel.ForEach(
                 mutantsNotRun,
@@ -192,7 +180,7 @@ namespace Stryker.Core.MutationTest
             var covered = new HashSet<int>(coveredMutants.CoveredMutants);
             if (covered.Count == 0)
             {
-                // we assume 
+                Logger.LogDebug("No mutant is covered by any test, no optimization done.");
                 return;
             }
             Logger.LogDebug("Optimize test runs according to coverage info.");

@@ -33,6 +33,12 @@ namespace Stryker.Core.Initialisation
             stopwatch.Start();
 
             var testResult = testRunner.CaptureCoverage();
+            if (!testResult.Success)
+            {
+                _logger.LogWarning(@"Test run with no active mutation failed. This can have two reasons: 
+- Your tests are randomly failing
+- Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
+            }
             var duration = (int) stopwatch.ElapsedMilliseconds;
             _logger.LogInformation("Total number of tests found in initial test run: {0}",
                 testResult.TotalNumberOfTests);

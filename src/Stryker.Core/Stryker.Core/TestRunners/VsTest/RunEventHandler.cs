@@ -86,7 +86,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
-            _logger.Log(levelFinal, $"Runner: {message}");
+            _logger.LogTrace($"Runner:[{levelFinal}] {message}");
         }
     }
 }
