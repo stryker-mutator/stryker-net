@@ -138,6 +138,23 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestNameFilter == "SomeProjectName.csproj")));
         }
+        
+        [Theory]
+        [InlineData("--test-project-file")]
+        [InlineData("-tp")]
+        public void StrykerCLI_WithTestProjectArgument_ShouldPassTestProjectArgumentsToStryker(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3M);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "SomeTestProjectName.csproj" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == "SomeTestProjectName.csproj")));
+        }
 
         [Theory]
         [InlineData("--solution-path")]

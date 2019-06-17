@@ -24,6 +24,7 @@ namespace Stryker.Core.Options
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
+        public string TestProjectNameFilter { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public int ConcurrentTestrunners { get; }
@@ -40,6 +41,7 @@ namespace Stryker.Core.Options
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
+            string testProjectNameFilter = "",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string logLevel = "info",
@@ -60,6 +62,7 @@ namespace Stryker.Core.Options
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
+            TestProjectNameFilter = testProjectNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
