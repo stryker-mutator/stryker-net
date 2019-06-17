@@ -47,10 +47,10 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-            var projectFile = ScanProjectFile(options.BasePath);
+            var testProjectFile = ScanProjectFile(options.BasePath);
 
             // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
+            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
 
             // Determine project under test
             var reader = new ProjectFileReader();
