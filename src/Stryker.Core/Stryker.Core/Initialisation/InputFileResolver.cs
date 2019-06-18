@@ -144,10 +144,21 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public string ScanProjectFile(string currentDirectory)
+        public string ScanProjectFile( string currentDirectory, string testProjectNameFilter = "")
         {
+            var noProjectFilesFoundErrorMessage =
+                $"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}";
+            
             var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
+
+            if (!string.IsNullOrEmpty(testProjectNameFilter))
+            {
+                projectFiles = projectFiles.Where(file => file == testProjectNameFilter).ToArray();
+                noProjectFilesFoundErrorMessage =
+                    $"No .csproj file found, matching testProjectParameter: {testProjectNameFilter}";
+            }
+
             if (projectFiles.Count() > 1)
             {
                 var sb = new StringBuilder();
@@ -157,12 +168,12 @@ namespace Stryker.Core.Initialisation
                     sb.AppendLine(file);
                 }
                 sb.AppendLine();
-                sb.AppendLine("Please fix your project contents");
+                sb.AppendLine("Please specify a testProjectFile.");
                 throw new StrykerInputException(sb.ToString());
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
+                throw new StrykerInputException(noProjectFilesFoundErrorMessage);
             }
             _logger.LogInformation("Using {0} as project file", projectFiles.Single());
             return projectFiles.Single();
