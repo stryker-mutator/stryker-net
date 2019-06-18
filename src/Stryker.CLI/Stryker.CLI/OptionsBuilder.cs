@@ -42,18 +42,20 @@ namespace Stryker.CLI
                         .Build().GetSection("stryker-config");
             }
 
+            var testProjectName = testProjectNameFilter.Value();
             if (testProjectNameFilter.HasValue())
             {
-                var directory = Path.GetDirectoryName(testProjectNameFilter.Value());
+                var directory = Path.GetDirectoryName(testProjectName);
                 var combinedDirectory = Path.Combine(basePath, directory);
                 basePath = combinedDirectory;
+                testProjectName = Path.GetFileName(testProjectNameFilter.Value());
             }
 
             return new StrykerOptions(
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
-                testProjectNameFilter: GetOption(testProjectNameFilter.Value(), CLIOptions.TestProjectFileName),
+                testProjectNameFilter: GetOption(testProjectName, CLIOptions.TestProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 logLevel: GetOption(logLevel.Value(), CLIOptions.LogLevel),
