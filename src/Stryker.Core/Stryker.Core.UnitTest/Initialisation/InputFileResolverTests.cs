@@ -687,23 +687,22 @@ Please specify a testProjectFile.
             exception.Message.ShouldBe("No .csproj file found, matching testProjectParameter: GivenTestProject.csproj");
         }
         
-        
-//        [Fact]
-//        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
-//        {
-//            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-//            {
-//                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-//                { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-//                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
-//            });
-//            var target = new InputFileResolver(fileSystem, null);
-//
-//            var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "/ExampleProject/TestProject.csproj");
-//
-//            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
-//        }
+        [Fact]
+        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
+        {
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+            });
+            var target = new InputFileResolver(fileSystem, null);
 
+            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "SubFolder/TestProject.csproj");
+
+            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"));
+        }
+        
         [Fact]
         public void InitialisationProcess_ShouldThrowOnMsTestV1Detected()
         {
