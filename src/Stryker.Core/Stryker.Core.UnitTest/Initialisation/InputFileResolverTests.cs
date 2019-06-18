@@ -129,7 +129,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, testProjectNameFilter: "/TestProject/AlternateTestProject.csproj"));
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, testProjectNameFilter: "AlternateTestProject.csproj"));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -668,7 +668,7 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "/ExampleProject/TestProject.csproj");
+            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "TestProject.csproj");
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
         }
@@ -683,9 +683,26 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "/ExampleProject/GivenTestProject.csproj"));
-            exception.Message.ShouldBe("No .csproj file found, matching testProjectParameter: /ExampleProject/GivenTestProject.csproj");
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "GivenTestProject.csproj"));
+            exception.Message.ShouldBe("No .csproj file found, matching testProjectParameter: GivenTestProject.csproj");
         }
+        
+        
+//        [Fact]
+//        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
+//        {
+//            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+//            {
+//                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+//                { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+//                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+//            });
+//            var target = new InputFileResolver(fileSystem, null);
+//
+//            var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "/ExampleProject/TestProject.csproj");
+//
+//            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
+//        }
 
         [Fact]
         public void InitialisationProcess_ShouldThrowOnMsTestV1Detected()

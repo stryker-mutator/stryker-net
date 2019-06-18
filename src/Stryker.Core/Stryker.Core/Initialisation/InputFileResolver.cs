@@ -47,7 +47,10 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-            var testProjectFile = ScanProjectFile(options.BasePath, options.TestProjectNameFilter);
+            
+            var testProjectFile = string.IsNullOrEmpty(options.TestProjectNameFilter) 
+                ? ScanProjectFile(options.BasePath)
+                : FindSpecificTestProjectFile(options.BasePath, options.TestProjectNameFilter);
 
             // Analyze the test project
             result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
@@ -143,21 +146,24 @@ namespace Stryker.Core.Initialisation
                 }
             }
         }
-
-        public string ScanProjectFile( string currentDirectory, string testProjectNameFilter = "")
+        
+        public string FindSpecificTestProjectFile(string currentDirectory, string testProjectNameFilter)
         {
-            var noProjectFilesFoundErrorMessage =
-                $"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}";
+            var testProjectFile = _fileSystem.Directory.GetFiles(currentDirectory, $"{testProjectNameFilter}");
+
+            if (!testProjectFile.Any())
+            {
+                throw new StrykerInputException(
+                    $"No .csproj file found, matching testProjectParameter: {testProjectNameFilter}");
+            }
             
+            return testProjectFile.First();
+        }
+
+        public string ScanProjectFile( string currentDirectory)
+        {
             var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
-
-            if (!string.IsNullOrEmpty(testProjectNameFilter))
-            {
-                projectFiles = projectFiles.Where(file => file == testProjectNameFilter).ToArray();
-                noProjectFilesFoundErrorMessage =
-                    $"No .csproj file found, matching testProjectParameter: {testProjectNameFilter}";
-            }
 
             if (projectFiles.Count() > 1)
             {
@@ -173,7 +179,7 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException(noProjectFilesFoundErrorMessage);
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }
             _logger.LogInformation("Using {0} as project file", projectFiles.Single());
             return projectFiles.Single();
