@@ -43,8 +43,10 @@ namespace Stryker.Core.Initialisation
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
+            options.UpdateBasePath(Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
+            
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath, options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
+            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, options.BasePath , options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
 
             var input = new MutationTestInput()
             {

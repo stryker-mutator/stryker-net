@@ -14,7 +14,7 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        public string BasePath { get; }
+        public string BasePath { get; private set; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
         public IEnumerable<Reporter> Reporters { get; }
@@ -243,6 +243,11 @@ namespace Stryker.Core.Options
             solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
+        }
+
+        public void UpdateBasePath(string newBaseDirectory)
+        {
+            BasePath = newBaseDirectory;
         }
     }
 }

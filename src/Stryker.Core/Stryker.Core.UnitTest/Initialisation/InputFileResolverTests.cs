@@ -109,7 +109,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath,
+                    ProjectFilePath = alternateTestProjectPath,
                     References = new string[] { "" }
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
