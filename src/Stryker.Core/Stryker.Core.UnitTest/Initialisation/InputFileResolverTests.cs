@@ -698,7 +698,7 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "SubFolder/TestProject.csproj");
+            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), FilePathUtils.ConvertPathSeparators("SubFolder\\TestProject.csproj"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"));
         }
