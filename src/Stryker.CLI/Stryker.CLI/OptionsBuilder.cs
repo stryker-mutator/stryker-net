@@ -33,12 +33,20 @@ namespace Stryker.CLI
             CommandOption solutionPath)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
+            
             if (File.Exists(fileLocation))
             {
                 config = new ConfigurationBuilder()
                         .SetBasePath(basePath)
                         .AddJsonFile(fileLocation)
                         .Build().GetSection("stryker-config");
+            }
+
+            if (testProjectNameFilter.HasValue())
+            {
+                var directory = Path.GetDirectoryName(testProjectNameFilter.Value());
+                var combinedDirectory = Path.Combine(basePath, directory);
+                basePath = combinedDirectory;
             }
 
             return new StrykerOptions(

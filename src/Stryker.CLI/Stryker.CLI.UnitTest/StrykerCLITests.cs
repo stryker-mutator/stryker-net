@@ -155,7 +155,25 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == "SomeTestProjectName.csproj")));
         }
+          
+        [Theory]
+        [InlineData("--test-project-file")]
+        [InlineData("-tp")]
+        public void StrykerCLI_WithTestProjectArgument_ShouldPassTestProjectDirectoryAsBasePathArgumentToStryker(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3M);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+            var targetBaseDirectory = Path.GetDirectoryName(Path.GetFullPath("TestProjectFolder/SomeTestProjectName.csproj"));
+            
+            var target = new StrykerCLI(mock.Object);
 
+            target.Run(new string[] { argName, "TestProjectFolder/SomeTestProjectName.csproj" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BasePath == targetBaseDirectory)));
+        }
+        
         [Theory]
         [InlineData("--solution-path")]
         [InlineData("-s")]
