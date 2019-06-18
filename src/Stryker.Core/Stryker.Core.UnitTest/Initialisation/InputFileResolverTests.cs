@@ -629,9 +629,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var errorMessage = 
-@"Expected exactly one .csproj file, found more than one:
-/ExampleProject/ExampleProject.csproj
-/ExampleProject/ExampleProject2.csproj
+$@"Expected exactly one .csproj file, found more than one:
+{Path.GetFullPath("/ExampleProject/ExampleProject.csproj")}
+{Path.GetFullPath("/ExampleProject/ExampleProject2.csproj")}
 
 Please specify a testProjectFile.
 ";            
