@@ -7,8 +7,6 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-stryker</ToolCommandName>
-    <Configurations>Debug;Release;TestProject</Configurations>
-    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   
   <PropertyGroup>
