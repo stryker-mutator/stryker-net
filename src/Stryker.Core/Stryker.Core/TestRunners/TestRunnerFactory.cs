@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.IO;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -25,13 +26,13 @@ namespace Stryker.Core.TestRunners
             switch (options.TestRunner)
             {
                 case TestRunner.DotnetTest:
-                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    testRunner = new DotnetTestRunner(Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath), new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
                 case TestRunner.VsTest:
                     testRunner = new VsTestRunnerPool(options, projectInfo);
                     break;
                 default:
-                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    testRunner = new DotnetTestRunner(Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath), new ProcessExecutor(), new TotalNumberOfTestsParser());
                     break;
             }
             _logger.LogInformation("Using testrunner {0}", options.TestRunner);
