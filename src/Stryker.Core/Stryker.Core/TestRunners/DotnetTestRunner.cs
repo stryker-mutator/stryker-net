@@ -1,4 +1,5 @@
 ﻿using Stryker.Core.Testing;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.TestRunners
@@ -16,7 +17,7 @@ namespace Stryker.Core.TestRunners
 
         public int DiscoverTests()
         {
-            return 0;
+            throw new NotImplementedException("Dotnet test cannot return the found testcases.");
         }
 
         public TestRunResult RunAll(int? timeoutMS, int? activeMutationId)
