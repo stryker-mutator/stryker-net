@@ -225,6 +225,21 @@ Action act = () => Console.WriteLine((StrykerNamespace.ActiveMutationHelper.Acti
         }
 
         [Fact]
+        public void ShouldMutateLinqMethods()
+        {
+            string source = @"public int TestLinq(int count){ 
+    var list = Enumerable.Range(1, count);
+    return list.Last();
+}";
+            string expected = @"public int TestLinq(int count){ 
+    var list = Enumerable.Range(1, count);
+    return (StrykerNamespace.ActiveMutationHelper.ActiveMutation==0?list.First():list.Last());
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateAssignmentStatementsWithIfStatement()
         {
             string source = @"public void SomeMethod() {
