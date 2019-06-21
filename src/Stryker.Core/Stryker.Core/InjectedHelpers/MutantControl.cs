@@ -72,7 +72,6 @@ namespace Stryker
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            Console.WriteLine($"AppDomainUnload");
             DumpState(_coveredMutants);
             GC.KeepAlive(_coveredMutants);
         }

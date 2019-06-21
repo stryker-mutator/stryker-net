@@ -81,7 +81,6 @@ namespace Stryker.Core.TestRunners
             }
         }
 
-        
         public void Dispose()
         {
         }
