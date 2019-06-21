@@ -13,20 +13,19 @@ namespace Stryker.Core.Mutants
 
         private const string Mutationconditional = "MutationConditional";
         private const string Mutationif = "MutationIf";
-        private static readonly string helper;
 
         static MutantPlacer()
         {
             using (var stream = typeof(MutantPlacer).Assembly.GetManifestResourceStream("Stryker.Core.Mutants.ActiveMutationHelper.cs"))
             using (var reader = new StreamReader(stream))
             {
-                helper = reader.ReadToEnd().Replace("StrykerNamespace", HelperNamespace);
+                ActiveMutantSelectorHelper = reader.ReadToEnd().Replace("StrykerNamespace", HelperNamespace);
             }
         }
 
-        public static string[] MutationMarkers => new[] {Mutationconditional, Mutationif};
+        public static string[] MutationMarkers => new[] { Mutationconditional, Mutationif };
 
-        public static SyntaxTree ActiveMutantSelectorHelper => CSharpSyntaxTree.ParseText(helper, options: new CSharpParseOptions(LanguageVersion.Latest));
+        public static string ActiveMutantSelectorHelper { get; private set; }
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
@@ -45,7 +44,8 @@ namespace Stryker.Core.Mutants
             if (nodeToRemove is IfStatementSyntax ifStatement)
             {
                 return MutantPlacer.RemoveByIfStatement(ifStatement);
-            } else if (nodeToRemove is ParenthesizedExpressionSyntax parenthesizedExpression)
+            }
+            else if (nodeToRemove is ParenthesizedExpressionSyntax parenthesizedExpression)
             {
                 return MutantPlacer.RemoveByConditionalExpression(parenthesizedExpression);
             }

@@ -53,7 +53,7 @@ namespace Stryker.Core.MutationTest
             var mutatedSyntaxTrees = new Collection<SyntaxTree>
             {
                 // add helper
-                MutantPlacer.ActiveMutantSelectorHelper
+                CSharpSyntaxTree.ParseText(MutantPlacer.ActiveMutantSelectorHelper, options: new CSharpParseOptions(options.LanguageVersion))
             };
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
