@@ -29,12 +29,12 @@ namespace Stryker.Core.UnitTest
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
             // for some reason, nodes can be different while being textually the same
-            if (actual.ToString() == expected.ToString())
+            if (actual.ToFullString() == expected.ToFullString())
             {
                 return;
             }
-            SyntaxFactory.AreEquivalent(actual, expected)
-                .ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
+            SyntaxFactory.AreEquivalent(actual.WithoutTrivia(), expected.WithoutTrivia())
+                .ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}\"{actual}\",{Environment.NewLine}expected: {Environment.NewLine}\"{expected}\"");
         }
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)

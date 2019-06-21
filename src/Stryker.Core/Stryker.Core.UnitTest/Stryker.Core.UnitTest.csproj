@@ -4,21 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_OUT.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_KnownComplexCases_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_KnownComplexCases_OUT.cs" />
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_AssignStatements_OUT.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_NoMutationsShouldBeMade.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_IN.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs" />
-    <Compile Remove="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
@@ -29,49 +15,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Mutants\TestResources\Mutator_FromActualProject_IN.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_FromActualProject_OUT.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_KnownComplexCases_IN.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_KnownComplexCases_OUT.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestResources\ExampleSourceFile.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_AssignStatements_OUT.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_IN.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_AssignStatements_IN.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_OUT.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_SyntaxShouldBe_IfStatement_IN.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_NoMutationsShouldBeMade.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
