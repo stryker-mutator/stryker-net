@@ -40,7 +40,7 @@ namespace Stryker.Core.Options
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
-            int additionalTimeoutMS = 30000,
+            int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string logLevel = "info",
             bool logToFile = false,
