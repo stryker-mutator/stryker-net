@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
             testRunnerMock.Setup(x => x.CaptureCoverage())
                 .Returns(new TestRunResult {Success = false});
 
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
             testRunnerMock.Setup(x => x.CaptureCoverage())
                 .Returns(new TestRunResult {Success = true});
 
