@@ -164,7 +164,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--language-version",
             ArgumentShortName = "-lv",
-            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())) }",
+            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
             DefaultValue = _defaultOptions.LanguageVersion.ToString(),
             JsonKey = "language-version"
         };

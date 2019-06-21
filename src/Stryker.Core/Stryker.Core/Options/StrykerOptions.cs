@@ -248,13 +248,14 @@ namespace Stryker.Core.Options
 
         private LanguageVersion ValidateLanguageVersion(string languageVersion)
         {
-            if (Enum.TryParse(languageVersion, true, out LanguageVersion result))
+            if (Enum.TryParse(languageVersion, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)
             {
                 return result;
             }
             else
             {
-                throw new StrykerInputException(ErrorMessage, $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(LanguageVersion)))}]");
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
         }
     }

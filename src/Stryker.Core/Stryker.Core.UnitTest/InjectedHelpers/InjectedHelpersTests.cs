@@ -12,7 +12,6 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
     public class InjectedHelperTests
     {
         [Theory]
-        [InlineData(LanguageVersion.CSharp1)]
         [InlineData(LanguageVersion.CSharp2)]
         [InlineData(LanguageVersion.CSharp3)]
         [InlineData(LanguageVersion.CSharp4)]
