@@ -78,9 +78,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
-    <PackageReference Include="Moq" Version="4.11.0" />
+    <PackageReference Include="Moq" Version="4.12.0" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="6.0.1" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="6.0.7" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.3.12" />
