@@ -9,9 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using Xunit;
 
@@ -222,7 +220,7 @@ namespace ExampleProject
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 },
-                
+
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
