@@ -26,11 +26,11 @@ namespace Stryker.Core.TestRunners.VsTest
             });
         }
 
-        public int DiscoverTests()
+        public int DiscoverNumberOfTests()
         {
             var runner = TakeRunner();
 
-            var result = runner.DiscoverTests();
+            var result = runner.DiscoverNumberOfTests();
 
             ReturnRunner(runner);
 

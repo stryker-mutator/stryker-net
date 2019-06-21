@@ -58,7 +58,7 @@ namespace Stryker.Core.Initialisation
 
             using (var testDiscoverer = _testCaseDiscoverer ?? new VsTestRunner(options, projectInfo))
             {
-                _logger.LogInformation("Total number of tests found: {0}", testDiscoverer.DiscoverTests());
+                _logger.LogInformation("Total number of tests found: {0}", testDiscoverer.DiscoverNumberOfTests());
             }
 
             // initial test

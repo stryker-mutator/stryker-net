@@ -15,7 +15,7 @@ namespace Stryker.Core.TestRunners
             _processExecutor = processProxy;
         }
 
-        public int DiscoverTests()
+        public int DiscoverNumberOfTests()
         {
             throw new NotImplementedException("Dotnet test cannot return the found testcases.");
         }

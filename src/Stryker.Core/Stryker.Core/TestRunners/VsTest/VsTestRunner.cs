@@ -71,7 +71,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        public int DiscoverTests()
+        public int DiscoverNumberOfTests()
         {
             var waitHandle = new AutoResetEvent(false);
             var handler = new DiscoveryEventHandler(waitHandle, _messages);
@@ -206,7 +206,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new ApplicationException("Stryker failed to connect to vstest.console", e);
             }
 
-            _testCasesDiscovered = DiscoverTests();
+            _testCasesDiscovered = DiscoverNumberOfTests();
         }
 
         #region IDisposable Support
