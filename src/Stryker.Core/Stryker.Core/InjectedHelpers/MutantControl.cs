@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Stryker.Core.InjectedHelpers.Coverage;
+using System;
 using System.Collections.Generic;
-using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker
 {
-    public static class MutantControl
+    public class MutantControl
     {
         private static HashSet<int> _coveredMutants;
         private static bool usePipe;
@@ -14,7 +14,7 @@ namespace Stryker
         private static CommunicationChannel channel;
 
         public const string EnvironmentPipeName = "Coverage";
-        
+
         static MutantControl()
         {
             InitCoverage();
@@ -29,10 +29,10 @@ namespace Stryker
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
             if (channel != null)
             {
-                channel?.Dispose();
+                channel.Dispose();
                 channel = null;
             }
-            var coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName)??string.Empty;
+            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
             if (coverageMode.StartsWith("pipe:"))
             {
                 pipeName = coverageMode.Substring(5);
@@ -76,7 +76,12 @@ namespace Stryker
             GC.KeepAlive(_coveredMutants);
         }
 
-        public static void DumpState(HashSet<int> state = null)
+        public static void DumpState()
+        {
+            DumpState(null);
+        }
+
+        public static void DumpState(HashSet<int> state)
         {
             string report;
             state = state ?? _coveredMutants;
@@ -85,13 +90,13 @@ namespace Stryker
                 report = string.Join(",", state);
             }
 
-            Console.WriteLine($"DumpState {state.Count}");
+            Console.WriteLine("DumpState " + state.Count);
             channel.SendText(report);
         }
 
         private static void Log(string message)
         {
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff} DBG] {message}");
+            Console.WriteLine("["+DateTime.Now.ToString(":HH:mm:ss.fff") + " DBG]"+  message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -120,6 +125,6 @@ namespace Stryker
             return ActiveMutation == id;
         }
 
-        private static int ActiveMutation { get; set;}
+        public static int ActiveMutation;
     }
 }
