@@ -35,9 +35,6 @@ Dotnet global tools do not auto update. To update stryker as a global tool run `
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
 #### [Deprecated] csproj install
-[![Nuget](https://img.shields.io/nuget/v/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
-[![Nuget](https://img.shields.io/nuget/dt/StrykerMutator.DotNetCoreCli.svg)](https://www.nuget.org/packages/StrykerMutator.DotNetCoreCli/)
-
 
 The old way of installing stryker is deprecated and replaced by the dotnet core tool. For a guide on how to upgrade see our [blog](http://stryker-mutator.io/blog/2019-04-05/announcing-dotnet-framework-support).
 
