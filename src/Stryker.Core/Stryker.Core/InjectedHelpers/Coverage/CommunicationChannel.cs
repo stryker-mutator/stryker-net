@@ -20,17 +20,23 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         public event MessageReceived RaiseReceivedMessage;
 
-        public bool IsConnected => _pipeStream.IsConnected;
+        public bool IsConnected { get { return _pipeStream.IsConnected; } }
 
         public CommunicationChannel(PipeStream stream, string name)
         {
             _pipeName = name;
             _pipeStream = stream;
         }
-        public static CommunicationChannel Client(string pipeName, int timeout = -1)
+
+        public static CommunicationChannel Client(string pipeName)
         {
-            var pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
-                PipeOptions.Asynchronous|PipeOptions.WriteThrough);
+            return Client(pipeName, -1);
+        }
+
+        public static CommunicationChannel Client(string pipeName, int timeout)
+        {
+            NamedPipeClientStream pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
+                PipeOptions.Asynchronous | PipeOptions.WriteThrough);
             try
             {
                 pipe.Connect(timeout);
@@ -40,7 +46,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 pipe.Dispose();
                 throw;
             }
-            return new CommunicationChannel(pipe, $"C[{pipeName}]");
+            return new CommunicationChannel(pipe, "C[" + pipeName + "]");
         }
 
         public void SetLogger(Action<string> logger)
@@ -50,7 +56,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         public void Start()
         {
-            lock(_lck)
+            lock (_lck)
             {
                 if (_started)
                 {
@@ -59,24 +65,28 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 _started = true;
             }
 
-            Begin();
+            Begin(true);
         }
 
-        private void Begin(bool init = true)
+        private void Begin(bool init)
         {
             if (init)
             {
                 if (_buffer != null && !_processingHeader)
                 {
-                    var message = Encoding.Unicode.GetString(_buffer);
-                    Log($"Received message: [{message}] ({_buffer.Length} bytes).");
-                    RaiseReceivedMessage?.Invoke(this, message);
+                    string message = Encoding.Unicode.GetString(_buffer);
+                    Log("Received message: [" + message + "] (" + _buffer.Length + " bytes).");
+
+                    if (RaiseReceivedMessage != null)
+                    {
+                        RaiseReceivedMessage.Invoke(this, message);
+                    }
                 }
                 _processingHeader = !_processingHeader;
-                var len = _processingHeader ? 4 : BitConverter.ToInt32(_buffer,0);
-                if (len<0)
+                int len = _processingHeader ? 4 : BitConverter.ToInt32(_buffer, 0);
+                if (len < 0)
                 {
-                    Log($"Got invalid length, synchro lost. Aborting!");
+                    Log("Got invalid length, synchro lost. Aborting!");
                     _pipeStream.Close();
                     return;
                 }
@@ -86,24 +96,24 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 {
                     // we have NO DATA to read, notify of empty message and wait to read again.
                     Log("Empty message.");
-                    Begin();
+                    Begin(true);
                     return;
                 }
             }
 
             try
             {
-                var bufferLength = _buffer.Length-_cursor;
+                int bufferLength = _buffer.Length - _cursor;
                 _pipeStream.BeginRead(_buffer, _cursor, bufferLength, WhenReceived, null);
-                Log($"Waiting to read ({bufferLength} bytes).");
+                Log("Waiting to read (" + bufferLength + " bytes).");
             }
             catch (ObjectDisposedException)
             {
-                Log($"Nothing to read, connection closed.");
+                Log("Nothing to read, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"Begin Read error:{e}.");
+                Log("Begin Read error:" + e);
             }
         }
 
@@ -111,7 +121,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         {
             if (_logger != null)
             {
-                var logLine = $"{message}({_pipeName}).";
+                string logLine = message + "(" + _pipeName + ").";
                 _logger(logLine);
             }
         }
@@ -120,33 +130,33 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         {
             try
             {
-                var read = _pipeStream.EndRead(ar);
+                int read = _pipeStream.EndRead(ar);
                 if (read == 0)
                 {
-                    Log($"Nothing to read, connection closed.");
+                    Log("Nothing to read, connection closed.");
                     return;
                 }
 
                 _cursor += read;
-                Log($"Received {read} bytes.");
+                Log("Received " + read + " bytes.");
                 Begin(_cursor == _buffer.Length);
             }
             catch (NullReferenceException)
             {
-                Log($"Nothing to read, connection closed.");
+                Log("Nothing to read, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"End Read error: {e}.");
+                Log("End Read error: " + e);
             }
         }
 
         public void SendText(string message)
         {
-            var messageBytes = Encoding.Unicode.GetBytes(message);
-            Log($"Send message: [{message}].");
-            var convertedBytes = BitConverter.GetBytes(messageBytes.Length);
-            var buffer = new byte[convertedBytes.Length+messageBytes.Length];
+            byte[] messageBytes = Encoding.Unicode.GetBytes(message);
+            Log("Send message: [" + message + "].");
+            byte[] convertedBytes = BitConverter.GetBytes(messageBytes.Length);
+            byte[] buffer = new byte[convertedBytes.Length + messageBytes.Length];
             Array.Copy(convertedBytes, buffer, convertedBytes.Length);
             Array.Copy(messageBytes, 0, buffer, convertedBytes.Length, messageBytes.Length);
             try
@@ -154,16 +164,16 @@ namespace Stryker.Core.InjectedHelpers.Coverage
                 lock (_lck)
                 {
                     _pipeStream.Write(buffer, 0, buffer.Length);
-                    Log($"Sent message data: {messageBytes.Length} bytes.");
+                    Log("Sent message data: " + messageBytes.Length + " bytes.");
                 }
             }
             catch (ObjectDisposedException)
             {
-                Log($"Can't send, connection closed.");
+                Log("Can't send, connection closed.");
             }
             catch (IOException e)
             {
-                Log($"Can't send {e.Message}.");
+                Log("Can't send " + e.Message);
             }
         }
 
