@@ -96,7 +96,7 @@ namespace Stryker.CLI
             {
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    // Convert json array to IEnummerable of desired type
+                    // Convert json array to IEnumerable of desired type
                     var list = JsonConvert.DeserializeObject<T>(value as string);
                     return list;
                 }

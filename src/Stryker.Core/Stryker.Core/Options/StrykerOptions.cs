@@ -79,6 +79,8 @@ namespace Stryker.Core.Options
         {
             switch (mode)
             {
+                case "perTestInIsolation":
+                    return OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest;
                 case "perTest":
                     return OptimizationFlags.CoverageBasedTest;
                 case "all":
@@ -89,7 +91,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest].");
+                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest or perTestInIsolation].");
             }
         }
 

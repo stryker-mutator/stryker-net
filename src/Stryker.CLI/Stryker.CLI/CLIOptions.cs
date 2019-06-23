@@ -92,10 +92,11 @@ namespace Stryker.CLI
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
             DefaultValue = "off",
-            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest.
+            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured (default mode).
     - all: capture the list of mutants covered by the test. Test only this mutants; non covered ones are assumed as survivors.
-    - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one. Only supported by vsTest runner for now",
+    - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one. Only supported by VsTest runner for now.
+    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Only supported by VsTest runner for now",
             JsonKey = "coverage-analysis"
         };
 
