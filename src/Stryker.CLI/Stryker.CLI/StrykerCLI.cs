@@ -91,7 +91,7 @@ namespace Stryker.CLI
         private void RunStryker(StrykerOptions options)
         {
             PrintStykerASCIIName();
-            _ = PrintStrykerVersionInformation();
+            Task.Run(() => PrintStrykerVersionInformationAsync());
 
             StrykerRunResult results = _stryker.RunMutationTest(options);
             if (!results.IsScoreAboveThresholdBreak())
@@ -123,14 +123,16 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
             Console.WriteLine();
         }
 
-        private async Task PrintStrykerVersionInformation()
+        private async Task PrintStrykerVersionInformationAsync()
         {
             var chalk = new Chalk();
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
 
-            chalk.Green($@"Current version: {currentVersion} (beta)");
+            Console.Write("Version: ");
+            chalk.Green(currentVersion);
+            Console.WriteLine(" (beta)");
             Console.WriteLine();
 
             var nugetInfo = await StrykerNugetFeedInfo.Create();
@@ -138,9 +140,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
 
             if (latestVersion != null && latestVersion != currentVersion)
             {
-                chalk.Yellow($@"Latest version: {latestVersion} (beta)");
-                Console.WriteLine();
-                chalk.Yellow($@"There is an update available. You can upgrade using `dotnet tool update -g dotnet-stryker`");
+                chalk.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker` {Environment.NewLine}");
                 Console.WriteLine();
             }
         }
