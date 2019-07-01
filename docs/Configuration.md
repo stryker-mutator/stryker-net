@@ -12,6 +12,8 @@ The full list of Stryker.NET configuration options are:
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files](#excluding-files)
 - [Custom tresholds](#unary-operators)
+- [Coverage analysis](#coverage-analysis)
+- [Abort testrun on test failure](#abort-test-on-fail)
 <!-- /TOC -->
 
 ## Solution path
@@ -202,3 +204,20 @@ dotnet stryker --config-file-path <relativePathToFile>
 ```
 
 Default: `"./stryker-config.json"`
+
+## Coverage analysis
+Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+
+- off: coverage data is not captured.
+- all: capture the list of mutants covered by the test. Test only this mutants. Non covered mutants are assumed as survivors.
+- perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one.
+- perTestInIsolation: like 'perTest', but running each test in an isolated run. Slower than perTest.
+
+```
+dotnet stryker --coverage-analysis all
+```
+
+Default: `"off"`
+
+## Abort test on fail
+Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.

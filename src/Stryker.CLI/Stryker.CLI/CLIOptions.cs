@@ -1,13 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Stryker.CLI
+﻿namespace Stryker.CLI
 {
     public static class CLIOptions
     {
@@ -94,9 +85,9 @@ namespace Stryker.CLI
             DefaultValue = "off",
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured (default mode).
-    - all: capture the list of mutants covered by the test. Test only this mutants; non covered ones are assumed as survivors.
-    - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one. Only supported by VsTest runner for now.
-    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Only supported by VsTest runner for now",
+    - all: capture the list of mutants covered by the test. Test only this mutants. Non covered mutants are assumed as survivors.
+    - perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one.
+    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slower than perTest.",
             JsonKey = "coverage-analysis"
         };
 
@@ -105,7 +96,7 @@ namespace Stryker.CLI
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
             DefaultValue = false,
-            ArgumentDescription = @"Abort test runs as soon as any test fails. This reduce the overall running time",
+            ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             JsonKey = "abort-test-on-fail"
         };
 
@@ -202,12 +193,12 @@ namespace Stryker.CLI
             .Where(o => @default.All(d => d.ToString() != o.ToString()))
             .Where(o => deprecated.All(d => d.ToString() != o.ToString())));
 
-            if(deprecated.Any())
+            if (deprecated.Any())
             {
                 string deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
                 optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
             }
-            
+
             optionsString.Append("]");
 
             return optionsString.ToString();
