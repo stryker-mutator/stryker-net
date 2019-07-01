@@ -4,30 +4,28 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Stryker.CLI.NuGet
 {
     public class StrykerNugetFeedInfo
     {
         [JsonProperty("items")]
-        private List<NuGetLibraryItem> _items = null;
+        private readonly List<NuGetLibraryItem> _items = null;
 
-        public string LatestVersion
-        {
-            get
-            {
-                return _items.First().Upper;
-            }
-        }
+        public string LatestVersion { get; private set; }
 
-        public static StrykerNugetFeedInfo Create()
+        public static async Task<StrykerNugetFeedInfo> Create()
         {
             using (var httpclient = new HttpClient())
             {
                 try
                 {
-                    var json = httpclient.GetStringAsync("https://api.nuget.org/v3/registration3/dotnet-stryker/index.json").Result;
-                    return JsonConvert.DeserializeObject<StrykerNugetFeedInfo>(json, Converter.Settings);
+                    var json = await httpclient.GetStringAsync("https://api.nuget.org/v3/registration3/dotnet-stryker/index.json");
+                    var instance = JsonConvert.DeserializeObject<StrykerNugetFeedInfo>(json, Converter.Settings);
+                    instance.LatestVersion = instance._items.First().Upper;
+
+                    return instance;
                 }
                 catch
                 {

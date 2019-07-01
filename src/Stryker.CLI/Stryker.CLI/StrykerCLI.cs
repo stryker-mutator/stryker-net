@@ -8,6 +8,7 @@ using Stryker.Core.Testing;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Stryker.CLI
 {
@@ -90,7 +91,7 @@ namespace Stryker.CLI
         private void RunStryker(StrykerOptions options)
         {
             PrintStykerASCIIName();
-            PrintStrykerVersionInformation();
+            _ = PrintStrykerVersionInformation();
 
             StrykerRunResult results = _stryker.RunMutationTest(options);
             if (!results.IsScoreAboveThresholdBreak())
@@ -109,7 +110,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
 
         private void PrintStykerASCIIName()
         {
-            new Chalk().Red(@"
+            new Chalk().Default(@"
    _____ _              _               _   _ ______ _______ 
   / ____| |            | |             | \ | |  ____|__   __|
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |   
@@ -122,26 +123,24 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
             Console.WriteLine();
         }
 
-        private void PrintStrykerVersionInformation()
+        private async Task PrintStrykerVersionInformation()
         {
             var chalk = new Chalk();
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
 
-            var latestVersion = StrykerNugetFeedInfo.Create()?.LatestVersion;
+            chalk.Green($@"Current version: {currentVersion} (beta)");
+            Console.WriteLine();
+
+            var nugetInfo = await StrykerNugetFeedInfo.Create();
+            var latestVersion = nugetInfo?.LatestVersion;
+
             if (latestVersion != null && latestVersion != currentVersion)
             {
-                chalk.Yellow($@"Current version: {currentVersion} (beta)");
-                Console.WriteLine();
-                chalk.Yellow($@"Latest version: {latestVersion}");
+                chalk.Yellow($@"Latest version: {latestVersion} (beta)");
                 Console.WriteLine();
                 chalk.Yellow($@"There is an update available. You can upgrade using `dotnet tool update -g dotnet-stryker`");
-                Console.WriteLine();
-            }
-            else
-            {
-                chalk.Green($@"Current version: {currentVersion} (beta)");
                 Console.WriteLine();
             }
         }
