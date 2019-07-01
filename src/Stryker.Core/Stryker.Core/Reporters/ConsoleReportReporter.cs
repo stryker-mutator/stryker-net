@@ -15,8 +15,8 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleReportReporter : IReporter
     {
-        private IChalk _chalk { get; set; }
-        private StrykerOptions _options { get; }
+        private readonly IChalk _chalk;
+        private readonly StrykerOptions _options;
 
         public ConsoleReportReporter(StrykerOptions strykerOptions, IChalk chalk = null)
         {
@@ -29,7 +29,7 @@ namespace Stryker.Core.Reporters
             // print empty line for readability
             Console.WriteLine("");
 
-            _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. Each mutant will now be tested, this could take a while. {Environment.NewLine}");
+            _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. {Environment.NewLine}");
 
             // print empty line for readability
             Console.WriteLine("");
@@ -37,6 +37,7 @@ namespace Stryker.Core.Reporters
 
         public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
         {
+            _chalk.Default($"{mutantsToBeTested.Count()} mutants will now be tested, this could take a while. {Environment.NewLine}");
         }
 
         public void OnMutantTested(IReadOnlyMutant result)

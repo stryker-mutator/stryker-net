@@ -1,20 +1,34 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class StrykerVsTestHostLauncher : ITestHostLauncher
     {
         private readonly Action _callback;
-        private readonly int? _activeMutation;
+        private readonly Dictionary<string, string> _envVars;
+        private Process _currentProcess;
+        private readonly object _lck = new object();
+        private int _id;
+        public bool Corrupted { get; private set; }
+        private static ILogger Logger { get; }
 
-        public StrykerVsTestHostLauncher(Action callback, int? activeMutation)
+        static StrykerVsTestHostLauncher()
+        {
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
+        }
+
+        public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars, int id)
         {
             _callback = callback;
-            _activeMutation = activeMutation;
+            _envVars = envVars;
+            _id = id;
         }
 
         public bool IsDebug => false;
@@ -26,29 +40,66 @@ namespace Stryker.Core.TestRunners.VsTest
                 WorkingDirectory = defaultTestHostStartInfo.WorkingDirectory,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
             };
-            processInfo.EnvironmentVariables["ActiveMutation"] = _activeMutation.ToString();
-
-            var process = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
-            process.Start();
-
-            if (process != null)
+            foreach (var (key, value) in _envVars)
             {
-                // Asynchronously read the standard output of the spawned process.
-                // This raises OutputDataReceived events for each line of output.
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                processInfo.EnvironmentVariables[key] = value;
+            }
+            _currentProcess = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
 
-                process.Exited += (sender, args) =>
-                {
-                    _callback();
-                };
+            _currentProcess.Exited += CurrentProcess_Exited;
 
-                return process.Id;
+            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
+            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
+
+            if (!_currentProcess.Start())
+            {
+                Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
             }
 
-            throw new Exception("Process in invalid state.");
+            _currentProcess.BeginOutputReadLine();
+            _currentProcess.BeginErrorReadLine();
+
+            return _currentProcess.Id;
+        }
+
+        private void CurrentProcess_Exited(object sender, EventArgs e)
+        {
+            lock (_lck)
+            {
+                Monitor.Pulse(_lck);
+            }
+
+            _callback?.Invoke();
+        }
+
+        public bool WaitProcessExit()
+        {
+            while (!_currentProcess.HasExited)
+            {
+                lock (_lck)
+                {
+                    Monitor.Wait(_lck, 5000);
+                }
+            }
+            return true;
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                Logger.LogDebug($"{e.Data} (Runner {_id}: VsTest error)");
+            }
+        }
+
+        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                Logger.LogDebug($"{e.Data} (Runner {_id}: VsTest output)");
+            }
         }
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)

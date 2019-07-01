@@ -21,18 +21,17 @@ namespace Stryker.Core
 
     public class StrykerRunner : IStrykerRunner
     {
-        private IReporter _reporter { get; set; }
-        private IInitialisationProcess _initialisationProcess { get; set; }
-        private string _basePath { get; set; }
-        private MutationTestInput _input { get; set; }
-        private IMutationTestProcess _mutationTestProcess { get; set; }
-        private IFileSystem _fileSystem { get; set; }
+        private IReporter Reporter { get; set; }
+        private IInitialisationProcess InitialisationProcess { get; set; }
+        private MutationTestInput Input { get; set; }
+        private IMutationTestProcess MutationTestProcess { get; set; }
+        private IFileSystem FileSystem { get; }
 
         public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null)
         {
-            _initialisationProcess = initialisationProcess;
-            _mutationTestProcess = mutationTestProcess;
-            _fileSystem = fileSystem ?? new FileSystem();
+            InitialisationProcess = initialisationProcess;
+            MutationTestProcess = mutationTestProcess;
+            FileSystem = fileSystem ?? new FileSystem();
         }
 
         /// <summary>
@@ -47,9 +46,9 @@ namespace Stryker.Core
             stopwatch.Start();
 
             // Create output dir with gitignore
-            _fileSystem.Directory.CreateDirectory(options.OutputPath);
-            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
+            FileSystem.Directory.CreateDirectory(options.OutputPath);
+            FileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
+            using (var file = FileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
             {
                 file.WriteLine("*");
             }
@@ -64,20 +63,28 @@ namespace Stryker.Core
             try
             {
                 // initialize 
-                _reporter = ReporterFactory.Create(options);
-                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
-                _input = _initialisationProcess.Initialize(options);
+                Reporter = ReporterFactory.Create(options);
+                InitialisationProcess = InitialisationProcess ?? new InitialisationProcess();
+                Input = InitialisationProcess.Initialize(options);
 
-                _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
-                    mutationTestInput: _input,
-                    reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner, _input.TimeoutMS));
+                MutationTestProcess = MutationTestProcess ?? new MutationTestProcess(
+                    mutationTestInput: Input,
+                    reporter: Reporter,
+                    mutationTestExecutor: new MutationTestExecutor(Input.TestRunner));
+
+                // initial test
+                Input.TimeoutMs =InitialisationProcess.InitialTest(options);
 
                 // mutate
-                _mutationTestProcess.Mutate(options);
+                MutationTestProcess.Mutate(options);
 
+                // coverage
+                var coverage = InitialisationProcess.GetCoverage(options);
+                
+                MutationTestProcess.Optimize(coverage);
+              
                 // test mutations and return results
-                return _mutationTestProcess.Test(options);
+                return MutationTestProcess.Test(options);
             }
             catch (Exception ex) when (!(ex is StrykerInputException))
             {

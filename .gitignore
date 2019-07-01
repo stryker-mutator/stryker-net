@@ -286,3 +286,4 @@ StrykerLogs/
 /src/Stryker.Core/Stryker.Core/Reporters/HtmlReporter/Files/
 /src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 *.buildlog
+*.DotSettings

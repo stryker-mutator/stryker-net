@@ -7,5 +7,6 @@ namespace Stryker.Core.Testing
     {
         public int ExitCode;
         public string Output;
+        public string Error;
     }
 }

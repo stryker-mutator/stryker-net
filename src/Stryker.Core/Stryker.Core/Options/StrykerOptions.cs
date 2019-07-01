@@ -31,6 +31,7 @@ namespace Stryker.Core.Options
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
+        public OptimizationFlags Optimizations { get; private set; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -45,6 +46,8 @@ namespace Stryker.Core.Options
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
+            string coverageAnalysis = "",
+            bool abortOnFail = false,
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
@@ -65,10 +68,31 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
+            Optimizations = ValidateMode(coverageAnalysis) | (abortOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
+        }
+
+        private OptimizationFlags ValidateMode(string mode)
+        {
+            switch (mode)
+            {
+                case "perTestInIsolation":
+                    return OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest;
+                case "perTest":
+                    return OptimizationFlags.CoverageBasedTest;
+                case "all":
+                    return OptimizationFlags.SkipUncoveredMutants;
+                case "off":
+                case "":
+                    return OptimizationFlags.NoOptimization;
+                default:
+                    throw new StrykerInputException(
+                        ErrorMessage,
+                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest or perTestInIsolation].");
+            }
         }
 
         private string ValidateOutputPath(string basePath)
