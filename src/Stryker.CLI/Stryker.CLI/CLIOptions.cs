@@ -1,4 +1,13 @@
-﻿namespace Stryker.CLI
+﻿using Microsoft.Extensions.CommandLineUtils;
+using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Stryker.CLI
 {
     public static class CLIOptions
     {
