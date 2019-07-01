@@ -73,16 +73,16 @@ namespace Stryker.Core
                     mutationTestExecutor: new MutationTestExecutor(Input.TestRunner));
 
                 // initial test
-                Input.TimeoutMs =InitialisationProcess.InitialTest(options);
+                Input.TimeoutMs = InitialisationProcess.InitialTest(options);
 
                 // mutate
                 MutationTestProcess.Mutate(options);
 
                 // coverage
                 var coverage = InitialisationProcess.GetCoverage(options);
-                
+
                 MutationTestProcess.Optimize(coverage);
-              
+
                 // test mutations and return results
                 return MutationTestProcess.Test(options);
             }
