@@ -206,18 +206,22 @@ dotnet stryker --config-file-path <relativePathToFile>
 Default: `"./stryker-config.json"`
 
 ## Coverage analysis
-Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
 
-- off: coverage data is not captured.
-- all: capture the list of mutants covered by the test. Test only this mutants. Non covered mutants are assumed as survivors.
-- perTest: capture the list of mutants covered by each test. Only the tests that cover a particular mutant are tested for each one.
-- perTestInIsolation: like 'perTest', but running each test in an isolated run. Slower than perTest.
+- off: coverage data is not captured (default mode).
+- perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+- all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+- perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.
 
 ```
-dotnet stryker --coverage-analysis all
+dotnet stryker --coverage-analysis perTest
 ```
 
 Default: `"off"`
 
 ## Abort test on fail
 Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.
+
+```
+dotnet stryker --abort-test-on-fail
+```
