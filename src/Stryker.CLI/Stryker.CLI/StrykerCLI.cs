@@ -130,7 +130,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
             var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
 
             var latestVersion = StrykerNugetFeedInfo.Create()?.LatestVersion;
-            if (currentVersion != null && currentVersion != latestVersion)
+            if (latestVersion != null && latestVersion != currentVersion)
             {
                 chalk.Yellow($@"Current version: {currentVersion} (beta)");
                 Console.WriteLine();
