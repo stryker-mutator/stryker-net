@@ -26,18 +26,10 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent)
         {
-            // print empty line for readability
-            Console.WriteLine("");
-
-            _chalk.Default($"{inputComponent.TotalMutants.Count()} mutants have been created. {Environment.NewLine}");
-
-            // print empty line for readability
-            Console.WriteLine("");
         }
 
         public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
         {
-            _chalk.Default($"{mutantsToBeTested.Count()} mutants will now be tested, this could take a while. {Environment.NewLine}");
         }
 
         public void OnMutantTested(IReadOnlyMutant result)

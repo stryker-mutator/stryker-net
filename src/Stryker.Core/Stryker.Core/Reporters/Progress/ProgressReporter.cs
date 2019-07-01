@@ -1,5 +1,6 @@
 ﻿using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,6 +22,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
         {
+            Console.WriteLine();
             _progressBarReporter.ReportInitialState(mutantsToBeTested.Count());
             _mutantsResultReporter.ReportInitialState();
         }
