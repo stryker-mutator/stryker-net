@@ -91,7 +91,7 @@ namespace Stryker.CLI
         private void RunStryker(StrykerOptions options)
         {
             PrintStykerASCIIName();
-            Task.Run(() => PrintStrykerVersionInformationAsync());
+            _ = PrintStrykerVersionInformationAsync();
 
             StrykerRunResult results = _stryker.RunMutationTest(options);
             if (!results.IsScoreAboveThresholdBreak())
