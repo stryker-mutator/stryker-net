@@ -26,7 +26,7 @@ namespace Stryker.DataCollector
 
         public CommunicationServer(string name)
         {
-            PipeName = $"StrykerPipe.{name}.{Process.GetCurrentProcess().Id}.{AppDomain.CurrentDomain.Id}:{Interlocked.Increment(ref _instanceCounter)}";
+            PipeName = $"Stryker{name}_{Process.GetCurrentProcess().Id}_{AppDomain.CurrentDomain.Id}_{Interlocked.Increment(ref _instanceCounter)}";
         }
 
         public void SetLogger(Action<string> logger)
