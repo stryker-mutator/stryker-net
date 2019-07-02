@@ -1,7 +1,6 @@
 ﻿using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
 using System.IO;
 using System.Linq;
 
@@ -10,9 +9,7 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerOptions options);
-        
         int InitialTest(StrykerOptions option);
-
         TestCoverageInfos GetCoverage(StrykerOptions options);
     }
 
@@ -21,10 +18,8 @@ namespace Stryker.Core.Initialisation
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
-        private readonly ITestRunner _testRunner;
-        private readonly ILogger _logger;
         private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
-        private readonly ITestRunner _testCaseDiscoverer;
+        private ITestRunner _testRunner;
 
         // these flags control various optimization techniques
         public InitialisationProcess(
@@ -32,15 +27,13 @@ namespace Stryker.Core.Initialisation
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null,
-            ITestRunner testCaseDiscoverer = null)
+            IAssemblyReferenceResolver assemblyReferenceResolver = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
-            _testCaseDiscoverer = testCaseDiscoverer;
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
@@ -70,14 +63,12 @@ namespace Stryker.Core.Initialisation
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
-            
+
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
         public TestCoverageInfos GetCoverage(StrykerOptions options)
         {
             return _initialTestProcess.GetCoverage(_testRunner);
         }
-
-
     }
 }

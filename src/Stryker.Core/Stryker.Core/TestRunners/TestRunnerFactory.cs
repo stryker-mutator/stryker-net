@@ -9,11 +9,11 @@ namespace Stryker.Core.TestRunners
 {
     public class TestRunnerFactory
     {
-        private ILogger Logger { get; }
+        private readonly ILogger _logger;
 
         public TestRunnerFactory()
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
         public ITestRunner Create(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
@@ -31,7 +31,7 @@ namespace Stryker.Core.TestRunners
                     testRunner = new VsTestRunnerPool(options, flags, projectInfo);
                     break;
             }
-            Logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
+            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
             return testRunner;
         }
     }

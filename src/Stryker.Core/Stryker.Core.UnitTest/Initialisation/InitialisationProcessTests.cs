@@ -59,8 +59,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
-                assemblyReferenceResolverMock.Object,
-                testRunnerMock.Object);
+                assemblyReferenceResolverMock.Object);
 
             var options = new StrykerOptions();
 
@@ -115,8 +114,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
-                assemblyReferenceResolverMock.Object,
-                testRunnerMock.Object);
+                assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 
             target.Initialize(options);
