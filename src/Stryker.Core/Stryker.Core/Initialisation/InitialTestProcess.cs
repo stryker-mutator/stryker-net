@@ -9,6 +9,7 @@ namespace Stryker.Core.Initialisation
     public interface IInitialTestProcess
     {
         int InitialTest(ITestRunner testRunner);
+        TestCoverageInfos GetCoverage(ITestRunner testRunner);
     }
 
     public class InitialTestProcess : IInitialTestProcess
@@ -28,24 +29,42 @@ namespace Stryker.Core.Initialisation
         public int InitialTest(ITestRunner testRunner)
         {
             _logger.LogInformation("Initial testrun started");
-
             // setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.RunAll(0, null);
-
+            var testResult = testRunner.RunAll(null, null);
             stopwatch.Stop();
-            var duration = (int)stopwatch.ElapsedMilliseconds;
+            var duration = (int) stopwatch.ElapsedMilliseconds;
+            _logger.LogInformation("Total number of tests found in initial test run: {0}",
+                testResult.TotalNumberOfTests);
 
+            
             _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);
             if (!testResult.Success)
             {
+                _logger.LogWarning("Initial test run failed. Mutation score cannot be computed.");
                 throw new StrykerInputException("Initial testrun was not successful.", testResult.ResultMessage);
             }
-            _logger.LogInformation("Initial testrun successful in {0} ms", duration);
 
             return duration;
+        }
+
+        /// <summary>
+        /// Capture coverage informaiton
+        /// </summary>
+        /// <param name="testRunner"></param>
+        /// <returns></returns>
+        public TestCoverageInfos GetCoverage(ITestRunner testRunner)
+        {
+            var testResult = testRunner.CaptureCoverage();
+            if (!testResult.Success)
+            {
+                _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
+                throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
+            }
+
+            return testRunner.CoverageMutants;
         }
     }
 }

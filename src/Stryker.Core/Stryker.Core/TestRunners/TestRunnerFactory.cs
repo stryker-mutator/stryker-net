@@ -9,14 +9,14 @@ namespace Stryker.Core.TestRunners
 {
     public class TestRunnerFactory
     {
-        private ILogger _logger { get; set; }
+        private ILogger Logger { get; }
 
         public TestRunnerFactory()
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(StrykerOptions options, ProjectInfo projectInfo)
+        public ITestRunner Create(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
             ITestRunner testRunner;
@@ -24,16 +24,14 @@ namespace Stryker.Core.TestRunners
             switch (options.TestRunner)
             {
                 case TestRunner.DotnetTest:
-                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor());
+                default:
+                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor(), flags);
                     break;
                 case TestRunner.VsTest:
-                    testRunner = new VsTestRunnerPool(options, projectInfo);
-                    break;
-                default:
-                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor());
+                    testRunner = new VsTestRunnerPool(options, flags, projectInfo);
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", options.TestRunner);
+            Logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
             return testRunner;
         }
     }

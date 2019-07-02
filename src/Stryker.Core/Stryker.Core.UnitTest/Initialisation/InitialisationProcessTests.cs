@@ -119,7 +119,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testRunnerMock.Object);
             var options = new StrykerOptions();
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.Initialize(options));
+            target.Initialize(options);
+            Assert.Throws<StrykerInputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();

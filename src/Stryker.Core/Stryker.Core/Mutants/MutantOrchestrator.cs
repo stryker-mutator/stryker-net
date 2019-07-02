@@ -275,18 +275,6 @@ namespace Stryker.Core.Mutants
             return null;
         }
 
-        private IEnumerable<Mutant> FindMutantsRecursive(SyntaxNode current)
-        {
-            foreach (var mutant in FindMutants(current))
-            {
-                yield return mutant;
-            }
-            foreach (var mutant in current.ChildNodes().SelectMany(FindMutantsRecursive))
-            {
-                yield return mutant;
-            }
-        }
-
         private IEnumerable<Mutant> FindMutants(SyntaxNode current)
         {
             return _mutators.SelectMany(mutator => ApplyMutator(current, mutator));
@@ -352,8 +340,8 @@ namespace Stryker.Core.Mutants
             switch (node.GetType().Name)
             {
                 case nameof(AssignmentExpressionSyntax):
-                    var assignementExpression = node as AssignmentExpressionSyntax;
-                    yield return assignementExpression.Right;
+                    var assignmentExpression = node as AssignmentExpressionSyntax;
+                    yield return assignmentExpression.Right;
                     yield break;
                 case nameof(LocalDeclarationStatementSyntax):
                     var localDeclarationStatement = node as LocalDeclarationStatementSyntax;
