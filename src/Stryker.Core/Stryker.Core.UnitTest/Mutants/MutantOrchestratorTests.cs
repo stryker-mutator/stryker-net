@@ -1,12 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Stryker.Core.Compiling;
 using Stryker.Core.InjectedHelpers;
 using Xunit;
 
@@ -45,12 +43,12 @@ namespace Stryker.Core.UnitTest.Mutants
 
         [Theory]
         [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
-        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 16, 2, 14, 6, 29)]
+        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 19, 2, 14, 6, 24)]
         public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
             int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
         {
-            string source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
-            string expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+            var source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
+            var expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var target = new MutantOrchestrator();
             var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
@@ -74,6 +72,25 @@ namespace Stryker.Core.UnitTest.Mutants
             Target.Mutate(tree.GetRoot());
 
             Target.GetLatestMutantBatch().Count().ShouldBe(numberOfMutations);
+        }
+
+        [Theory]
+        [InlineData("Mutator_Flag_MutatedStatics_IN.cs")]
+        public void Mutator_ShouldFlagMutatedStatics(string inputFile)
+        {
+            var source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
+            var tree = CSharpSyntaxTree.ParseText(source);
+
+            var target = new MutantOrchestrator();
+            var result = target.Mutate(tree.GetRoot());
+            
+            var mutants = target.GetLatestMutantBatch().ToList();
+
+            mutants.Count.ShouldBe(3);
+
+            mutants[0].IsStaticValue.ShouldBe(true);
+            mutants[1].IsStaticValue.ShouldBe(false);
+            mutants[2].IsStaticValue.ShouldBe(true);
         }
     }
 }

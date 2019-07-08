@@ -24,5 +24,6 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
         public IList<string> CoveringTest { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+        public bool IsStaticValue { get; set; }
     }
 }

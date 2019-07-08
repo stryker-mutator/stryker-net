@@ -31,7 +31,7 @@ namespace Stryker.Core.MutationTest
             try
             {
                 Logger.LogDebug($"Testing {mutant.DisplayName}.");
-                var result = TestRunner.RunAll(timeoutMs, mutant.Id);
+                var result = TestRunner.RunAll(timeoutMs, mutant);
                 Logger.LogTrace($"Testrun for {mutant.DisplayName} with output {result.ResultMessage}");
 
                 mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;

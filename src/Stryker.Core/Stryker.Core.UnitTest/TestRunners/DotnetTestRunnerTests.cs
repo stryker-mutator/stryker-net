@@ -3,6 +3,7 @@ using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Parsers;
 using Xunit;
@@ -66,7 +67,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = "/test";
             var target = new DotnetTestRunner(path, processMock.Object, totalNumberOfTestsParserMock.Object, OptimizationFlags.NoOptimization);
             
-            var result = target.RunAll(null, 1);
+            var result = target.RunAll(null, new Mutant(){Id =  1});
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(

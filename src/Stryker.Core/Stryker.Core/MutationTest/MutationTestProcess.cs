@@ -200,12 +200,20 @@ namespace Stryker.Core.MutationTest
                 {
                     continue;
                 }
-                mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
+                if (mutant.IsStaticValue)
+                {
+                    Logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we cannot have reliable coverage info. No optimization done.");
+                }
+                else
+                {
+                    mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
+                }
             }
 
             report.AppendJoin(',', nonTested.Select(x => x.Id));
             Logger.LogInformation(nonTested.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
+
                 : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
         }
     }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Core.Mutants;
 using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -36,13 +37,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
 
-        public TestRunResult RunAll(int? timeoutMs, int? mutationId)
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var runner = TakeRunner();
             TestRunResult result;
             try
             {
-                result = runner.RunAll(timeoutMs, mutationId);
+                result = runner.RunAll(timeoutMs, mutant);
             }
             finally
             {

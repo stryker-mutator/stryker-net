@@ -12,7 +12,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             if (i + 8 == 8 + i)
             {
                 i--;
-            };
+            }
         }
     }
 }

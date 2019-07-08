@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.DataCollector;
 
@@ -33,12 +34,12 @@ namespace Stryker.Core.TestRunners
         private IProcessExecutor ProcessExecutor { get; }
         public TestCoverageInfos CoverageMutants { get; }
 
-        public TestRunResult RunAll(int? timeoutMs, int? activeMutationId)
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
-            Dictionary<string, string> envVars = activeMutationId == null ? null : 
+            Dictionary<string, string> envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
-                {"ActiveMutation", activeMutationId.ToString() }
+                {"ActiveMutation", mutant.Id.ToString() }
             };
             return LaunchTestProcess(timeoutMs, envVars);
         }

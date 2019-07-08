@@ -33,8 +33,19 @@ namespace Stryker.Core.UnitTest
             {
                 return;
             }
-            SyntaxFactory.AreEquivalent(actual, expected)
-                .ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
+            var issame = SyntaxFactory.AreEquivalent(actual, expected);
+
+            if (!issame)
+            {
+                // find the different
+                var actuaLines = actual.ToString().Split(Environment.NewLine);
+                var expectedLines = expected.ToString().Split(Environment.NewLine);
+                for(var i = 0; i < actuaLines.Length; i++)
+                {
+                    actuaLines[i].ShouldBe(expectedLines[i], $"Difference at line {i}.");
+                }
+            }
+            issame.ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
         }
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)

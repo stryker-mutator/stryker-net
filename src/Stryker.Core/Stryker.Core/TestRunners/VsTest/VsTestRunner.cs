@@ -16,6 +16,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -77,22 +78,22 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestCoverageInfos CoverageMutants {get;}
 
-        public TestRunResult RunAll(int? timeoutMs, int? mutationId)
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var envVars = new Dictionary<string, string>();
-            if (mutationId != null)
+            if (mutant != null)
             {
-                envVars["ActiveMutation"] = mutationId.ToString();
+                envVars["ActiveMutation"] = mutant.Id.ToString();
             }
 
-            var testCases = (mutationId == null || !_flags.HasFlag(OptimizationFlags.CoverageBasedTest)) ? null : CoverageMutants.GetTests<TestCase>(mutationId.Value);
+            var testCases = (mutant?.CoveringTest == null || !_flags.HasFlag(OptimizationFlags.CoverageBasedTest)) ? null : _discoveredTests.Where( t =>  mutant.CoveringTest.Contains(t.FullyQualifiedName)).ToList();
             if (testCases == null)
             {
-                Logger.LogDebug($"Runner {_id}: Testing {mutationId} against all tests.");
+                Logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
             }
             else
             {
-                Logger.LogDebug($"Runner {_id}: Testing {mutationId} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                Logger.LogDebug($"Runner {_id}: Testing {mutant} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
             }
             return RunVsTest(testCases, timeoutMs, envVars);
         }
