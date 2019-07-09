@@ -17,14 +17,14 @@ namespace Stryker.Core.Mutators
 
             SyntaxNode replacement = null;
 
-            if (node.Parent is IfStatementSyntax ifStatementSyntax)
-            {                
-                replacement = NegateCondition(ifStatementSyntax?.Condition);
-            }
-
-            if (node.Parent is WhileStatementSyntax whileStatementSyntax)
+            switch (node.Parent)
             {
-                replacement = NegateCondition(whileStatementSyntax.Condition);
+                case IfStatementSyntax ifStatementSyntax:
+                    replacement = NegateCondition(ifStatementSyntax?.Condition);
+                    break;
+                case WhileStatementSyntax whileStatementSyntax:
+                    replacement = NegateCondition(whileStatementSyntax.Condition);
+                    break;
             }
 
             if (replacement != null)

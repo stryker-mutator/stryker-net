@@ -204,6 +204,7 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateExpressions(SyntaxNode currentNode, MutationContext context)
         {
+            
             switch (currentNode)
             {
                 case InvocationExpressionSyntax invocationExpression when invocationExpression.ArgumentList.Arguments.Count == 0:
@@ -217,55 +218,31 @@ namespace Stryker.Core.Mutants
                     break;
                 }
             }
-
+            
             var expressions = SyntaxHelper.EnumerateSubExpressions(currentNode).Where(x => x != null).ToList();
-            if (expressions.Any())
+            if (!expressions.Any())
             {
-                var currentNodeCopy = currentNode.TrackNodes(expressions);
-                foreach (var expressionSyntax in expressions)
+                return null;
+            }
+            
+            var currentNodeCopy = currentNode.TrackNodes(expressions);
+            foreach (var expressionSyntax in expressions)
+            {
+                var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
+                if (expressionSyntax is InvocationExpressionSyntax)
                 {
-                    var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
-                    if (expressionSyntax is InvocationExpressionSyntax)
-                    {
-                        // chained invocations, we will recurse
-                        var mutant = Mutate(expressionSyntax, context);
-                        currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
-                        continue;
-                    } 
-                    SyntaxNode mutationCandidate = null;
-                    
-                    switch (expressionSyntax)
-                    {
-                        case ParenthesizedLambdaExpressionSyntax lambda:
-                            mutationCandidate = lambda.Body;
-                            break;
-                        case MemberAccessExpressionSyntax memberAccess:
-                            mutationCandidate = memberAccess.Expression;
-                            break;
-                        case AnonymousFunctionExpressionSyntax anonymousFunction:
-                            mutationCandidate = anonymousFunction.Body;
-                            break;
-                    }
-
-                    if (mutationCandidate != null)
-                    {
-                        // we can  mutate a part of expression
-                        var subNodeCopy = expressionSyntax.TrackNodes(mutationCandidate);
-                        var sub = subNodeCopy.ReplaceNode(subNodeCopy.GetCurrentNode(mutationCandidate), Mutate(mutationCandidate, context));
-                        currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, sub);
-                    }
-                    else
-                    {
-                        // attempts to mutate the expression as a whole
-                        currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax,
-                            MutateWithConditionalExpressions(expressionSyntax, context));
-                    }
+                    // chained invocations, we will recurse
+                    var mutant = Mutate(expressionSyntax, context);
+                    currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
+                    continue;
                 }
-
-                return currentNodeCopy;
+ // attempts to mutate the expression as a whole
+                    currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax,
+                        MutateWithConditionalExpressions(expressionSyntax, context));
             }
 
-            return null;
+            return currentNodeCopy;
+
         }
 
         private IEnumerable<Mutant> FindMutants(SyntaxNode current, MutationContext context)

@@ -42,10 +42,12 @@ namespace Stryker.Core.UnitTest
                 var expectedLines = expected.ToString().Split(Environment.NewLine);
                 for(var i = 0; i < actuaLines.Length; i++)
                 {
-                    actuaLines[i].ShouldBe(expectedLines[i], $"Difference at line {i}.");
+                    if (actuaLines[i] != expectedLines[i])
+                    {
+                        issame.ShouldBeTrue($"AST's are not equivalent. Line[{i+1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                    }
                 }
             }
-            issame.ShouldBeTrue($"AST's are not equivalent. Actual: {Environment.NewLine}{actual}, expected: {Environment.NewLine}{expected}");
         }
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)

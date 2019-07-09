@@ -26,23 +26,9 @@ namespace Stryker.Core
         // enumerate subexpressions of interest of a node
         public static IEnumerable<ExpressionSyntax> EnumerateSubExpressions(SyntaxNode node)
         {
+            
             switch (node)
             {
-                case AssignmentExpressionSyntax assignmentExpression:
-                    yield return assignmentExpression.Right;
-                    yield break;
-                case LocalDeclarationStatementSyntax localDeclarationStatement:
-                    foreach(var vars in localDeclarationStatement.Declaration.Variables.Select(x => x.Initializer?.Value))
-                    {
-                        yield return vars;
-                    }
-                    yield break;
-                case ReturnStatementSyntax returnStatement:
-                    yield return returnStatement.Expression;
-                    yield break;
-                case LocalFunctionStatementSyntax localFunction:
-                    yield return localFunction.ExpressionBody?.Expression;
-                    yield break;
                 case InvocationExpressionSyntax invocationExpression:
                     yield return invocationExpression.Expression;
                     foreach (var arg in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
@@ -51,7 +37,6 @@ namespace Stryker.Core
                     }
                     yield break;
             }
-
             if (node is ExpressionSyntax expression)
             {
                 yield return expression;
