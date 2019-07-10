@@ -9,7 +9,7 @@
         {
             IList<object> notFoundValues = null;
             checker
-                .FailWhen((sut) => (StrykerNamespace.MutantControl.IsActive(2)?sut == null || otherEnumerable != null:(StrykerNamespace.MutantControl.IsActive(0)?sut != null :sut == null )&& (StrykerNamespace.MutantControl.IsActive(1)?otherEnumerable == null:otherEnumerable != null)), (StrykerNamespace.MutantControl.IsActive(3)?"":"The {0} is null and thus, does not contain the given expected value(s)."))
+                .FailWhen((sut) => (StrykerNamespace.MutantControl.IsActive(0)?sut == null || otherEnumerable != null:(StrykerNamespace.MutantControl.IsActive(1)?sut != null :sut == null )&& (StrykerNamespace.MutantControl.IsActive(2)?otherEnumerable == null:otherEnumerable != null)), (StrykerNamespace.MutantControl.IsActive(3)?"":"The {0} is null and thus, does not contain the given expected value(s)."))
                 .DefineExpectedValues(otherEnumerable, otherEnumerable.Count())
                 .Analyze((sut, _) => notFoundValues = ExtractNotFoundValues(sut, otherEnumerable))
                 .FailWhen((_) => notFoundValues.Any(), string.Format((StrykerNamespace.MutantControl.IsActive(4)?"":"The {{0}} does not contain the expected value(s):" )+ Environment.NewLine + (StrykerNamespace.MutantControl.IsActive(5)?"":"\t{0}"), notFoundValues.ToStringProperlyFormatted().DoubleCurlyBraces()))

@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -34,11 +33,11 @@ namespace Stryker.Core.Mutants
 
         private static readonly Type[] ExpressionStatementNeedingIf =
         {
-            typeof(AssignmentExpressionSyntax), 
-            typeof(PostfixUnaryExpressionSyntax), 
+            typeof(AssignmentExpressionSyntax),
+            typeof(PostfixUnaryExpressionSyntax),
             typeof(PrefixUnaryExpressionSyntax)
         };
-        
+
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators = null)
         {
@@ -170,7 +169,7 @@ namespace Stryker.Core.Mutants
             // and now we replace it
             return forWithMutantIncrementors.ReplaceNode(originalFor, mutatedFor);
         }
-    
+
         private SyntaxNode MutateUnaryStatement(ExpressionStatementSyntax expressionStatement, MutationContext context)
         {
             var expressionCopy = expressionStatement.TrackNodes(expressionStatement, expressionStatement.Expression);
@@ -179,70 +178,39 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateExpression(SyntaxNode currentNode, MutationContext context)
         {
-            
-            var replaceNode = MutateExpressions(currentNode, context);
-            if (replaceNode != null)
-            {
-                return replaceNode;
-            }
-            
             // Nothing to mutate, dig further
+            if (!(currentNode is ExpressionSyntax expression))
+            {
+                return MutateChildren(currentNode, context);
+            }
+            var newNode = MutateSubExpressionWithConditional(expression, context);
+            if (newNode != currentNode)
+            {
+                currentNode = MutantPlacer.FindOriginalNonMutatedNode(newNode);
+                var tracker = newNode.TrackNodes(currentNode);
+
+                return tracker.ReplaceNode(tracker.GetCurrentNode(currentNode), MutateChildren(currentNode, context));
+            }
+
+            return MutateChildren(currentNode, context);
+        }
+
+        private SyntaxNode MutateChildren(SyntaxNode currentNode, MutationContext context)
+        {
             var children = currentNode.ChildNodes().ToList();
-            var childCopy = currentNode.TrackNodes(children);
+            var childCopy = currentNode.TrackNodes(children.Append(currentNode));
             foreach (var child in children)
             {
                 var originalNode = childCopy.GetCurrentNode(child);
                 var mutatedNode = Mutate(child, context);
                 // if mutation was successful
-                if (!mutatedNode.IsEquivalentTo(originalNode))
+                if (mutatedNode != child)
                 {
                     childCopy = childCopy.ReplaceNode(originalNode, mutatedNode);
                 }
             }
+
             return childCopy;
-        }
-
-        private SyntaxNode MutateExpressions(SyntaxNode currentNode, MutationContext context)
-        {
-            
-            switch (currentNode)
-            {
-                case InvocationExpressionSyntax invocationExpression when invocationExpression.ArgumentList.Arguments.Count == 0:
-                {
-                    var mutant = FindMutants(invocationExpression, context).FirstOrDefault();
-                    if (mutant != null)
-                    {
-                        Mutants.Add(mutant);
-                        return MutantPlacer.PlaceWithConditionalExpression(invocationExpression, mutant.Mutation.ReplacementNode as ExpressionSyntax, mutant.Id);
-                    }
-                    break;
-                }
-            }
-            
-            var expressions = SyntaxHelper.EnumerateSubExpressions(currentNode).Where(x => x != null).ToList();
-            if (!expressions.Any())
-            {
-                return null;
-            }
-            
-            var currentNodeCopy = currentNode.TrackNodes(expressions);
-            foreach (var expressionSyntax in expressions)
-            {
-                var currentExpressionSyntax = currentNodeCopy.GetCurrentNode(expressionSyntax);
-                if (expressionSyntax is InvocationExpressionSyntax)
-                {
-                    // chained invocations, we will recurse
-                    var mutant = Mutate(expressionSyntax, context);
-                    currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax, mutant);
-                    continue;
-                }
- // attempts to mutate the expression as a whole
-                    currentNodeCopy = currentNodeCopy.ReplaceNode(currentExpressionSyntax,
-                        MutateWithConditionalExpressions(expressionSyntax, context));
-            }
-
-            return currentNodeCopy;
-
         }
 
         private IEnumerable<Mutant> FindMutants(SyntaxNode current, MutationContext context)
@@ -262,18 +230,9 @@ namespace Stryker.Core.Mutants
             return ast;
         }
 
-        private SyntaxNode MutateWithConditionalExpressions(ExpressionSyntax currentNode, MutationContext context)
+        private ExpressionSyntax MutateSubExpressionWithConditional(ExpressionSyntax currentNode, MutationContext context)
         {
-            var expressionAst = currentNode.TrackNodes(currentNode.ChildNodes().Append(currentNode));
-            foreach (var childNode in currentNode.ChildNodes())
-            {
-                var mutatedChild = Mutate(childNode, context);
-                if (mutatedChild != childNode)
-                {
-                    expressionAst = expressionAst.ReplaceNode(expressionAst.GetCurrentNode(childNode), mutatedChild);
-                }
-            }
-
+            var expressionAst = currentNode;
             foreach (var mutant in FindMutants(currentNode, context))
             {
                 expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, ApplyMutant(currentNode, mutant), mutant.Id);
@@ -300,7 +259,7 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        private T ApplyMutant<T>(T node, Mutant mutant) where T: SyntaxNode
+        private T ApplyMutant<T>(T node, Mutant mutant) where T : SyntaxNode
         {
             Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);

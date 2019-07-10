@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,26 +20,6 @@ namespace Stryker.Core
         {
             return node.DescendantNodes().Any(x =>
                 x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
-        }
-
-        // enumerate subexpressions of interest of a node
-        public static IEnumerable<ExpressionSyntax> EnumerateSubExpressions(SyntaxNode node)
-        {
-            
-            switch (node)
-            {
-                case InvocationExpressionSyntax invocationExpression:
-                    yield return invocationExpression.Expression;
-                    foreach (var arg in invocationExpression.ArgumentList.Arguments.Select(x => x.Expression))
-                    {
-                        yield return arg;
-                    }
-                    yield break;
-            }
-            if (node is ExpressionSyntax expression)
-            {
-                yield return expression;
-            }
         }
 
         public static bool CanBeMutated(SyntaxNode node)
