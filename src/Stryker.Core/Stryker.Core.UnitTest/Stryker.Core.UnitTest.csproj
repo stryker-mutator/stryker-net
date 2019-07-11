@@ -4,6 +4,8 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_OUT.cs" />
@@ -25,6 +27,9 @@
     <None Remove="TestResources\StrongNameKeyFile.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -77,6 +82,11 @@
     </Content>
     <Content Include="Mutants\TestResources\Mutator_TwoMutationsInOneStatmentShouldBeMade.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Mutants\TestResources\Mutator_Chained_Mutation_IN.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
