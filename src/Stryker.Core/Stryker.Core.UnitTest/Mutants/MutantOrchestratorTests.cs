@@ -30,12 +30,26 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData("Mutator_SyntaxShouldBe_IfStatement_IN.cs", "Mutator_SyntaxShouldBe_IfStatement_OUT.cs")]
         [InlineData("Mutator_SyntaxShouldBe_ConditionalStatement_IN.cs", "Mutator_SyntaxShouldBe_ConditionalStatement_OUT.cs")]
         [InlineData("Mutator_AssignStatements_IN.cs", "Mutator_AssignStatements_OUT.cs")]
-        public void Mutator_TestResourcesInputShouldBecomeOutput(string inputFile, string outputFile)
+        public void Mutator_TestResourcesInputShouldBecomeOutputBasicMutators(string inputFile, string outputFile)
         {
             string source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
             string expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
 
             var actualNode = Target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Theory]
+        [InlineData("Mutator_Basic_IN.cs", "Mutator_Basic_OUT.cs")]
+        public void Mutator_TestResourcesInputShouldBecomeOutputAllMutators(string inputFile, string outputFile)
+        {
+            string source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
+            string expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+
+            var target = new MutantOrchestrator();
+            var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();

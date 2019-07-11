@@ -15,8 +15,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Dictionary<string, string> _envVars;
         private Process _currentProcess;
         private readonly object _lck = new object();
-        private int _id;
-        public bool Corrupted { get; private set; }
+        private readonly int _id;
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher()
@@ -76,6 +75,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public bool WaitProcessExit()
         {
+            if (_currentProcess == null)
+            {
+                return false;
+            }
+
             while (!_currentProcess.HasExited)
             {
                 lock (_lck)
