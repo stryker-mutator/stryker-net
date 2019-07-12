@@ -59,8 +59,6 @@ namespace Stryker.Core.MutationTest
                 mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(helper.Value, path: helper.Key, options: new CSharpParseOptions(options.LanguageVersion)));
             }
 
-            //mutatedSyntaxTrees.AddRange(CodeInjection.MutantHelpers);
-
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
