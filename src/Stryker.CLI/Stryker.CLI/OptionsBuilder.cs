@@ -53,7 +53,7 @@ namespace Stryker.CLI
                 devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
-                abortOnFail: GetOption(abortOnFail.Value(), CLIOptions.AbortOnFailTest),
+                abortTestOnFail: GetOption(abortOnFail.HasValue(), CLIOptions.AbortTestOnFail),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
