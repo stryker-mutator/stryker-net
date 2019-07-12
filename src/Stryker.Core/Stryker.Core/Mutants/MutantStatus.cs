@@ -6,6 +6,7 @@
         Killed,
         Survived,
         Timeout,
+        NoCoverage,
         CompileError,
         Skipped
     }

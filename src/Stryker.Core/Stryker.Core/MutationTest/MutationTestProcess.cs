@@ -184,11 +184,10 @@ namespace Stryker.Core.MutationTest
                 return;
             }
             Logger.LogDebug("Optimize test runs according to coverage info.");
-            var report = new StringBuilder();
-            var nonTested = Input.ProjectInfo.ProjectContents.Mutants.Where(x =>
-                x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
-            const MutantStatus mutantResultStatus = MutantStatus.Survived;
-            foreach (var mutant in nonTested)
+
+            var nonCoveredMutants = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
+            const MutantStatus mutantResultStatus = MutantStatus.NoCoverage;
+            foreach (var mutant in nonCoveredMutants)
             {
                 mutant.ResultStatus = mutantResultStatus;
             }
@@ -203,10 +202,9 @@ namespace Stryker.Core.MutationTest
                 mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
             }
 
-            report.AppendJoin(',', nonTested.Select(x => x.Id));
-            Logger.LogInformation(nonTested.Count == 0
+            Logger.LogInformation(nonCoveredMutants.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
-                : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
+                : $"{nonCoveredMutants.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
         }
     }
 }

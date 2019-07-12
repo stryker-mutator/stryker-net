@@ -21,6 +21,9 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
+        public IEnumerable<int> CoveredMutants { get; private set; }
+        public TestCoverageInfos CoverageMutants { get; }
+
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
@@ -72,10 +75,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 {CoverageCollector.ModeEnvironmentVariable, flags.HasFlag(OptimizationFlags.UseEnvVariable) ? CoverageCollector.EnvMode : CoverageCollector.PipeMode}
             };
         }
-
-        public IEnumerable<int> CoveredMutants { get; private set; }
-
-        public TestCoverageInfos CoverageMutants {get;}
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
