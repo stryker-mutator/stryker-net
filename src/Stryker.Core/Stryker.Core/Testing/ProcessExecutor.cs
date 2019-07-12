@@ -76,30 +76,32 @@ namespace Stryker.Core.Testing
                 return new ProcessResult()
                 {
                     ExitCode = process.ExitCode,
-                    Output = process.Output
-                };
+                    Output = process.Output,
+                    Error = process.Error
+                };  
             }
         }
 
         private sealed class ProcessWrapper : IDisposable
         {
-            private readonly Process process;
-            private readonly StringBuilder output = new StringBuilder();
-            private readonly StringBuilder error = new StringBuilder();
-            private static readonly TimeSpan killTimeOut = TimeSpan.FromSeconds(60);
+            private readonly Process _process;
+            private readonly StringBuilder _output = new StringBuilder();
+            private readonly StringBuilder _error = new StringBuilder();
+            private static readonly TimeSpan KillTimeOut = TimeSpan.FromSeconds(60);
 
-            public int ExitCode => process.ExitCode;
-            public string Output => output.ToString();
+            public int ExitCode => _process.ExitCode;
+            public string Output => _output.ToString();
+            public string Error => _error.ToString();
 
             public ProcessWrapper(ProcessStartInfo info, bool redirectOutput)
             {
-                process = Process.Start(info);
+                _process = Process.Start(info);
                 if (redirectOutput)
                 {
-                    process.OutputDataReceived += Process_OutputDataReceived;
-                    process.ErrorDataReceived += Process_ErrorDataReceived;
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
+                    _process.OutputDataReceived += Process_OutputDataReceived;
+                    _process.ErrorDataReceived += Process_ErrorDataReceived;
+                    _process.BeginOutputReadLine();
+                    _process.BeginErrorReadLine();
                 }
             }
 
@@ -109,7 +111,7 @@ namespace Stryker.Core.Testing
                 var slice = timeout == -1 ? timeout : Math.Max(timeout / 20, 1);
                 do
                 {
-                    if (process.WaitForExit(slice))
+                    if (_process.WaitForExit(slice))
                     {
                         return true;
                     }
@@ -117,7 +119,7 @@ namespace Stryker.Core.Testing
                     totalWait += slice;
                 } while (timeout == -1 || totalWait < timeout);
 
-                process.KillTree(killTimeOut);
+                _process.KillTree(KillTimeOut);
                 return false;
             }
 
@@ -125,7 +127,7 @@ namespace Stryker.Core.Testing
             {
                 if (e.Data != null)
                 {
-                    output.AppendLine(e.Data);
+                    _error.AppendLine(e.Data);
                 }
             }
 
@@ -133,15 +135,15 @@ namespace Stryker.Core.Testing
             {
                 if (e.Data != null)
                 {
-                    output.AppendLine(e.Data);
+                    _output.AppendLine(e.Data);
                 }
             }
 
             public void Dispose()
             {
-                process.OutputDataReceived -= Process_OutputDataReceived;
-                process.ErrorDataReceived -= Process_ErrorDataReceived;
-                process.Dispose();
+                _process.OutputDataReceived -= Process_OutputDataReceived;
+                _process.ErrorDataReceived -= Process_ErrorDataReceived;
+                _process.Dispose();
             }
         }
     }

@@ -1,3 +1,24 @@
+# 0.12.0 (2019-07-01)
+
+
+### Bug Fixes
+
+* **Multiple nuget.exe paths:** Choose first nuget.exe path found.  ([#540](https://github.com/stryker-mutator/stryker-net/issues/540)) ([8635d6e](https://github.com/stryker-mutator/stryker-net/commit/8635d6e))
+* **shared projects:** Only include .projitems files in shared projects import ([#479](https://github.com/stryker-mutator/stryker-net/issues/479)) ([8f21ce1](https://github.com/stryker-mutator/stryker-net/commit/8f21ce1))
+* **total number of tests parser:** Improved parsing of total number of tests in test result. ([#556](https://github.com/stryker-mutator/stryker-net/issues/556)) ([0e35f1a](https://github.com/stryker-mutator/stryker-net/commit/0e35f1a))
+* system.memory dependency issue by bumping dotnet core version to 2.1 ([#245](https://github.com/stryker-mutator/stryker-net/issues/245)) ([3b35d90](https://github.com/stryker-mutator/stryker-net/commit/3b35d90)), closes [#234](https://github.com/stryker-mutator/stryker-net/issues/234)
+
+### Features
+
+* **Additional timeout:** Decrease default additional timeout value to 5000 ([#567](https://github.com/stryker-mutator/stryker-net/issues/567)) ([f0903d7](https://github.com/stryker-mutator/stryker-net/commit/f0903d7))
+* **coverage analysis:** Implement coverage analysis with vstest ([#506](https://github.com/stryker-mutator/stryker-net/issues/506)) ([3858bbc](https://github.com/stryker-mutator/stryker-net/commit/3858bbc))
+* **update checks:** Add version updates check ([#612](https://github.com/stryker-mutator/stryker-net/issues/612)) ([a6c940a](https://github.com/stryker-mutator/stryker-net/commit/a6c940a))
+* Add assignment statement mutator ([955d871](https://github.com/stryker-mutator/stryker-net/commit/955d871))
+* add PrefixUnaryMutator and PostfixUnaryMutator ([3c7242c](https://github.com/stryker-mutator/stryker-net/commit/3c7242c))
+* Checked mutator ([375c040](https://github.com/stryker-mutator/stryker-net/commit/375c040))
+* Support for timeouts ([#25](https://github.com/stryker-mutator/stryker-net/issues/25)) ([eb56899](https://github.com/stryker-mutator/stryker-net/commit/eb56899))
+
+
 # [0.11.0](https://github.com/stryker-mutator/stryker-net/compare/StrykerMutator.Core@0.10.0...0.11.0) (2019-05-10)
 
 

@@ -12,6 +12,8 @@ The full list of Stryker.NET configuration options are:
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files](#excluding-files)
 - [Custom tresholds](#unary-operators)
+- [Coverage analysis](#coverage-analysis)
+- [Abort testrun on test failure](#abort-test-on-fail)
 <!-- /TOC -->
 
 ## Solution path
@@ -41,25 +43,28 @@ dotnet stryker -p SomeProjectName.csproj
 ```
 
 ## Specify testrunner
-Stryker supports `dotnet test` and `vstest` as testrunners. Dotnet test is currently the default because it has been more thoroughly tested, but vstest offers us more tight integration with the testrunner itself.
-To use the experimental vstest testrunner pass the following option to stryker:
+Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
+VsTest is the default because it offers tight integration with all test frameworks (MsTest, xUnit, NUnit etc).
+Dotnet test can be used if VsTest causes issues for some reason. Please also submit an issue with us if you experience difficulties with VsTest.
+
 
 ```
-dotnet stryker --test-runner vstest
-dotnet stryker -tr vstest
+dotnet stryker --test-runner dotnettest
+dotnet stryker -tr dotnettest
 ```
 
-Default: `"dotnet test"`
+Default: `"vstest"`
 
 ## Timeout time
-Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker generates timeouts after some time. Using this parameter you can increase or decrease the time before a timeout will be thrown.
+Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker cancels a unit test run after a set time.
+Using this parameter you can increase or decrease the time before a test will time out.
 
 ```
-dotnet stryker --timeout-ms 5000
-dotnet stryker -t 5000
+dotnet stryker --timeout-ms 1000
+dotnet stryker -t 1000
 ```
 
-Default: `"30000"`
+Default: `"5000"`
 
 ## Reporters
 During a mutation testrun one or more reporters can be enabled. A reporter will produce some kind of output during or after the mutation testrun.
@@ -69,7 +74,7 @@ dotnet stryker --reporters "['html', 'progress']"
 dotnet stryker -r "['html', 'progress']"
 ```
 
-You can find a list of all available reporters and what output they product in the [reporter docs](/docs/Reporters.md)
+You can find a list of all available reporters and what output they produce in the [reporter docs](/docs/Reporters.md)
 
 Default: `"['cleartext', 'progress']"`
 
@@ -98,17 +103,17 @@ dotnet stryker -f
 
 ```
 
-Default: `false`
+Default: `off`
 
 ## Maximum concurrent test runners  
-By default Stryker.NET will use as much CPU power as you allow it to use during a mutation testrun. You can lower this setting to lower your CPU presure.
+By default Stryker.NET will use as much CPU power as you allow it to use during a mutation testrun. You can lower this setting to lower your CPU usage.
 
 ```
 dotnet stryker --max-concurrent-test-runners 4
 dotnet stryker -c 4
 ```
 
-This setting can also be used to disable parallel testing. This can be useful if your test project cannot handle paralel testruns.
+This setting can also be used to disable parallel testing. This can be useful if your test project cannot handle parallel testruns.
 ```
 dotnet stryker -c 1
 ```
@@ -199,6 +204,32 @@ Example config file:
 If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command
 ```
 dotnet stryker --config-file-path <relativePathToFile>
+dotnet stryker -cp <relativePathToFile>
 ```
 
 Default: `"./stryker-config.json"`
+
+## Coverage analysis
+Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
+
+- off: coverage data is not captured (default mode).
+- perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+- all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+- perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.
+
+```
+dotnet stryker --coverage-analysis perTest
+dotnet stryker -ca perTest
+```
+
+Default: `"off"`
+
+## Abort test on fail
+Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.
+
+```
+dotnet stryker --abort-test-on-fail
+dotnet stryker -atof
+```
+
+Default: `"off"`

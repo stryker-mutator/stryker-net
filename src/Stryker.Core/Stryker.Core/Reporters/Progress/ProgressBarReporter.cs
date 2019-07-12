@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
 namespace Stryker.Core.Reporters.Progress
@@ -17,7 +14,6 @@ namespace Stryker.Core.Reporters.Progress
         private const int MaxProgressBar = 10;
         private const char ProgressBarDoneToken = '\u2588';
         private const char ProgressBarLeftToken = '-';
-        private const int ProgressBarInitialState = -1;
         private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
@@ -43,7 +39,6 @@ namespace Stryker.Core.Reporters.Progress
                                         _totalNumberOfMutants,
                                         0,
                                         RemainingTime());
-
         }
 
         public void ReportRunTest()

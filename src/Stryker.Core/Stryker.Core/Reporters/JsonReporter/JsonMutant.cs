@@ -1,4 +1,5 @@
-﻿namespace Stryker.Core.Reporters.Json
+﻿
+namespace Stryker.Core.Reporters.Json
 {
     public class JsonMutant
     {
