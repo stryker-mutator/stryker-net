@@ -2,18 +2,18 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest
 {
@@ -26,13 +26,13 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        private MutationTestInput _input { get; set; }
-        private IReporter _reporter { get; set; }
-        private IMutantOrchestrator _orchestrator { get; set; }
-        private IFileSystem _fileSystem { get; }
-        private ICompilingProcess _compilingProcess { get; set; }
-        private IMutationTestExecutor _mutationTestExecutor { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly MutationTestInput _input;
+        private readonly IReporter _reporter;
+        private readonly IMutantOrchestrator _orchestrator;
+        private readonly IFileSystem _fileSystem;
+        private readonly ICompilingProcess _compilingProcess;
+        private readonly IMutationTestExecutor _mutationTestExecutor;
+        private readonly ILogger _logger;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -53,15 +53,15 @@ namespace Stryker.Core.MutationTest
         public void Mutate(StrykerOptions options)
         {
             _logger.LogDebug("Injecting helpers into assembly.");
-            var mutatedSyntaxTrees = new Collection<SyntaxTree>
+            var mutatedSyntaxTrees = new List<SyntaxTree>();
+            foreach (var helper in CodeInjection.MutantHelpers)
             {
-                // add helper
-                CSharpSyntaxTree.ParseText(MutantPlacer.ActiveMutantSelectorHelper, options: new CSharpParseOptions(options.LanguageVersion))
-            };
-            
+                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(helper.Value, path: helper.Key, options: new CSharpParseOptions(options.LanguageVersion)));
+            }
+
             //mutatedSyntaxTrees.AddRange(CodeInjection.MutantHelpers);
 
-            foreach (var file in Input.ProjectInfo.ProjectContents.GetAllFiles())
+            foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
@@ -162,12 +162,12 @@ namespace Stryker.Core.MutationTest
                 new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                 mutant =>
                 {
-                    _mutationTestExecutor.Test(mutant);
+                    _mutationTestExecutor.Test(mutant, 0);
 
                     _reporter.OnMutantTested(mutant);
                 });
 
-            _reporter.OnAllMutantsTested(Input.ProjectInfo.ProjectContents);
+            _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
             _mutationTestExecutor.TestRunner.Dispose();
 

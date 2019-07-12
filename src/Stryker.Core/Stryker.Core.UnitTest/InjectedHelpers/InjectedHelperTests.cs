@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using System;
 using System.Collections.Generic;
@@ -27,8 +28,15 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 }
             }
 
+            var syntaxes = new List<SyntaxTree>();
+
+            foreach (var helper in CodeInjection.MutantHelpers)
+            {
+                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: LanguageVersion.Latest)));
+            }
+
             var compilation = CSharpCompilation.Create("dummy.dll",
-                CodeInjection.MutantHelpers,
+                syntaxes,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
@@ -68,9 +76,9 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 
             var syntaxes = new List<SyntaxTree>();
 
-            foreach (var syntax in CodeInjection.MutantHelpers)
+            foreach (var helper in CodeInjection.MutantHelpers)
             {
-                syntaxes.Add(CSharpSyntaxTree.ParseText(syntax.GetText(), new CSharpParseOptions(languageVersion: version)));
+                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: version)));
             }
 
             var compilation = CSharpCompilation.Create("dummy.dll",
@@ -79,7 +87,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 references: references);
 
             var errors = compilation.GetDiagnostics();
-            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error), string.Join("\n", errors.Where(diag => diag.Severity == DiagnosticSeverity.Error).Select(e => e.GetMessage())));
+            errors.ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error);
         }
     }
 }
