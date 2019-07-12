@@ -52,15 +52,13 @@ namespace Stryker.Core.Mutants
         public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
         {
             // place the mutated statement inside the if statement
-            var result = SyntaxFactory.ParenthesizedExpression(
-                SyntaxFactory.ConditionalExpression(
-                condition: GetBinaryExpression(mutantId),
-                whenTrue: mutated,
-                whenFalse: original))
+            return SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.ConditionalExpression(
+                        condition: GetBinaryExpression(mutantId),
+                        whenTrue: mutated,
+                        whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
-            // provides the new location of the original node
-            return result;
         }
 
         public static ExpressionSyntax FindOriginalNonMutatedNode(ExpressionSyntax node)

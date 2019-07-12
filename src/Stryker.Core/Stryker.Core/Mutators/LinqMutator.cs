@@ -13,7 +13,7 @@ namespace Stryker.Core.Mutators
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
        /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
-        private static Dictionary<LinqExpression, bool> RequireFilter { get; }
+        private static HashSet<LinqExpression> RequireArguments { get; }
 
         /// <summary> Constructor for the <see cref="LinqMutator"/> </summary>
         static LinqMutator()
@@ -40,27 +40,16 @@ namespace Stryker.Core.Mutators
                 { LinqExpression.ThenBy, LinqExpression.ThenByDescending },
                 { LinqExpression.ThenByDescending, LinqExpression.ThenBy }
             };
-            RequireFilter = new Dictionary<LinqExpression, bool>
+            RequireArguments = new HashSet<LinqExpression>
             {
-                { LinqExpression.FirstOrDefault, false },
-                { LinqExpression.First, false },
-                { LinqExpression.SingleOrDefault, false },
-                { LinqExpression.Single, false },
-                { LinqExpression.Last, false },
-                { LinqExpression.All, true },
-                { LinqExpression.Any, false },
-                { LinqExpression.Skip, false },
-                { LinqExpression.Take, false },
-                { LinqExpression.SkipWhile, true },
-                { LinqExpression.TakeWhile, true },
-                { LinqExpression.Min, false },
-                { LinqExpression.Max, false },
-                { LinqExpression.Sum, true },
-                { LinqExpression.Count, false },
-                { LinqExpression.OrderBy, true },
-                { LinqExpression.OrderByDescending, true },
-                { LinqExpression.ThenBy, true },
-                { LinqExpression.ThenByDescending, true }
+                LinqExpression.All,
+                LinqExpression.SkipWhile,
+                LinqExpression.TakeWhile,
+                LinqExpression.Sum,
+                LinqExpression.OrderBy,
+                LinqExpression.OrderByDescending,
+                LinqExpression.ThenBy,
+                LinqExpression.ThenByDescending
             };
         }
 
@@ -75,7 +64,7 @@ namespace Stryker.Core.Mutators
                     var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
                     var displayName = $"Linq method mutation ({node.Name.Identifier.ValueText}() to {replacement}())";
 
-                    if (RequireFilter[replacementExpression] && parent.ArgumentList.Arguments.Count==0)
+                    if (RequireArguments.Contains(replacementExpression) && parent.ArgumentList.Arguments.Count==0)
                     {
                         yield break;
                     }
