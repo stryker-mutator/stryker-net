@@ -12,7 +12,7 @@ namespace Stryker.CLI
 {
     public static class CLIOptions
     {
-        private static StrykerOptions _defaultOptions = new StrykerOptions();
+        private static readonly StrykerOptions _defaultOptions = new StrykerOptions();
 
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
@@ -88,6 +88,28 @@ namespace Stryker.CLI
             JsonKey = "project-file"
         };
 
+        public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
+        {
+            ArgumentName = "--coverage-analysis",
+            ArgumentShortName = "-ca <mode>",
+            DefaultValue = "off",
+            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+    - off: coverage data is not captured (default mode).
+    - perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+    - all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
+            JsonKey = "coverage-analysis"
+        };
+
+        public static readonly CLIOption<bool> AbortOnFailTest = new CLIOption<bool>
+        {
+            ArgumentName = "--abort-test-on-fail",
+            ArgumentShortName = "-atof",
+            DefaultValue = false,
+            ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
+            JsonKey = "abort-test-on-fail"
+        };
+
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
         {
             ArgumentName = "--max-concurrent-test-runners",
@@ -127,7 +149,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
+            ArgumentDescription = $"Set the preferred mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
             DefaultValue = _defaultOptions.Thresholds.High,
             JsonKey = "threshold-high"
         };

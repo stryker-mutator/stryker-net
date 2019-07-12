@@ -6,13 +6,14 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest
 {
@@ -20,6 +21,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate(StrykerOptions options);
         StrykerRunResult Test(StrykerOptions options);
+        void Optimize(TestCoverageInfos coveredMutants);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -50,13 +52,16 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate(StrykerOptions options)
         {
+            _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new Collection<SyntaxTree>
             {
                 // add helper
                 CSharpSyntaxTree.ParseText(MutantPlacer.ActiveMutantSelectorHelper, options: new CSharpParseOptions(options.LanguageVersion))
             };
+            
+            //mutatedSyntaxTrees.AddRange(CodeInjection.MutantHelpers);
 
-            foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
+            foreach (var file in Input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
@@ -151,20 +156,6 @@ namespace Stryker.Core.MutationTest
                 }
                 return new StrykerRunResult(options, null);
             }
-            _reporter.OnStartMutantTestRun(mutantsNotRun);
-
-            Task.Run(() =>
-            {
-                // Test against an empty mutant. If the mutant is killed we know something is wrong and there will be a lot of false positives.
-                var emptyMutant = new Mutant() { Id = -1 };
-                _mutationTestExecutor.Test(emptyMutant);
-                if (emptyMutant.ResultStatus == MutantStatus.Killed)
-                {
-                    _logger.LogWarning(@"Testrun with no mutation failed. This can have two reasons: 
-- Your tests are randomly failing
-- Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
-                }
-            });
 
             Parallel.ForEach(
                 mutantsNotRun,
@@ -176,11 +167,49 @@ namespace Stryker.Core.MutationTest
                     _reporter.OnMutantTested(mutant);
                 });
 
-            _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
+            _reporter.OnAllMutantsTested(Input.ProjectInfo.ProjectContents);
 
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
+        }
+
+        public void Optimize(TestCoverageInfos coveredMutants)
+        {
+            if (coveredMutants == null)
+            {
+                return;
+            }
+            var covered = new HashSet<int>(coveredMutants.CoveredMutants);
+            if (covered.Count == 0)
+            {
+                _logger.LogDebug("No mutant is covered by any test, no optimization done.");
+                return;
+            }
+            _logger.LogDebug("Optimize test runs according to coverage info.");
+            var report = new StringBuilder();
+            var nonTested = _input.ProjectInfo.ProjectContents.Mutants.Where(x =>
+                x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
+            const MutantStatus mutantResultStatus = MutantStatus.Survived;
+            foreach (var mutant in nonTested)
+            {
+                mutant.ResultStatus = mutantResultStatus;
+            }
+
+            foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants)
+            {
+                var tests = coveredMutants.GetTests<object>(mutant.Id);
+                if (tests == null)
+                {
+                    continue;
+                }
+                mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
+            }
+
+            report.AppendJoin(',', nonTested.Select(x => x.Id));
+            _logger.LogInformation(nonTested.Count == 0
+                ? "Congratulations, all mutants are covered by tests!"
+                : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
         }
     }
 }

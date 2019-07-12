@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Moq;
-using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
@@ -115,7 +113,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.Initialize(options));
+            target.Initialize(options);
+            Assert.Throws<StrykerInputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();

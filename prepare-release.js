@@ -16,8 +16,8 @@ const replaceVersionNumber = (path, oldString, newString) => {
 };
 
 const packages = [
-    { name: 'StrykerMutator.Core', path: './src/Stryker.Core', csproj: './src/Stryker.Core/Stryker.Core/Stryker.Core.csproj' },
-    { name: 'StrykerMutator.DotNetCoreCli', path: './src/Stryker.CLI', csproj: './src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj' }
+    { name: 'stryker', path: './src/Stryker.Core', csproj: './src/Stryker.Core/Stryker.Core/Stryker.Core.csproj' },
+    { name: 'dotnet-stryker', path: './src/Stryker.CLI', csproj: './src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj' }
 ];
 
 const oldVersionNumber = packagejson.version;

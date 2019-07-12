@@ -16,9 +16,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>())).Returns(new TestRunResult { Success = true });
             
             var mutant = new Mutant { Id = 1 };
-            var target = new MutationTestExecutor(testRunnerMock.Object, 0);
+            var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant);
+            target.Test(mutant, 0);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
             testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), 1), Times.Once);
@@ -31,9 +31,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>())).Returns(new TestRunResult { Success = false });
             
             var mutant = new Mutant { Id = 1 };
-            var target = new MutationTestExecutor(testRunnerMock.Object, 0);
+            var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant);
+            target.Test(mutant, 0);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
             testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), 1), Times.Once);
@@ -46,9 +46,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int>())).Returns(new TestRunResult { Success = false });
 
             var mutant = new Mutant { Id = 1 };
-            var target = new MutationTestExecutor(testRunnerMock.Object, 1999);
+            var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant);
+            target.Test(mutant, 1999);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
             testRunnerMock.Verify(x => x.RunAll(1999, 1), Times.Once);

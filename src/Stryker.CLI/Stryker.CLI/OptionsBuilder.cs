@@ -22,6 +22,8 @@ namespace Stryker.CLI
             CommandOption logLevel,
             CommandOption logToFile,
             CommandOption devMode,
+            CommandOption coverageAnalysis,
+            CommandOption abortOnFail,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
@@ -51,6 +53,8 @@ namespace Stryker.CLI
                 logToFile: GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
                 devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
+                coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
+                abortOnFail: GetOption(abortOnFail.Value(), CLIOptions.AbortOnFailTest),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
@@ -64,7 +68,7 @@ namespace Stryker.CLI
         {
             if (cliValue != null)
             {
-                // Convert the cliValue string to the disired type
+                // Convert the cliValue string to the desired type
                 return ConvertTo(cliValue, option);
             }
             else if (config != null)
@@ -94,7 +98,7 @@ namespace Stryker.CLI
             {
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    // Convert json array to IEnummerable of desired type
+                    // Convert json array to IEnumerable of desired type
                     var list = JsonConvert.DeserializeObject<T>(value as string);
                     return list;
                 }
