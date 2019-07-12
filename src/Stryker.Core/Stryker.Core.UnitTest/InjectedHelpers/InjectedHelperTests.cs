@@ -12,38 +12,6 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 {
     public class InjectedHelperTests
     {
-        [Fact]
-        public void InjectHelpers_ShouldCompile()
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            // it would be good to be ensure those assemblies are referenced by the build project
-            var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
-            var references = new List<MetadataReference>();
-            var hack = new NamedPipeClientStream("test");
-            foreach (var assembly in assemblies)
-            {
-                if (needed.Any(x => assembly.FullName.Contains(x)))
-                {
-                    references.Add(MetadataReference.CreateFromFile(assembly.Location));
-                }
-            }
-
-            var syntaxes = new List<SyntaxTree>();
-
-            foreach (var helper in CodeInjection.MutantHelpers)
-            {
-                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: LanguageVersion.Latest)));
-            }
-
-            var compilation = CSharpCompilation.Create("dummy.dll",
-                syntaxes,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: references);
-
-            var errors = compilation.GetDiagnostics();
-            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error));
-        }
-
         [Theory]
         [InlineData(LanguageVersion.CSharp2)]
         [InlineData(LanguageVersion.CSharp3)]
@@ -86,8 +54,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
-            var errors = compilation.GetDiagnostics();
-            errors.ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error);
+            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error);
         }
     }
 }
