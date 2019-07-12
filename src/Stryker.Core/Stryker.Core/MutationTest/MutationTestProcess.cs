@@ -148,9 +148,9 @@ namespace Stryker.Core.MutationTest
                 }
                 if (Input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    Logger.LogWarning("Not a single mutant is covered. Go add some tests!");
+                    Logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
                 }
-                else
+                if (!Input.ProjectInfo.ProjectContents.Mutants.Any())
                 {
                     Logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     new StrykerRunResult(options, null);
