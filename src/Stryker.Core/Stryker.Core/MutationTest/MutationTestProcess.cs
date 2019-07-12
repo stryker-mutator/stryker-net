@@ -146,23 +146,30 @@ namespace Stryker.Core.MutationTest
                 {
                     Logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
                 }
+                if (Input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
+                {
+                    Logger.LogWarning("Not a single mutant is covered. Go add some tests!");
+                }
                 else
                 {
                     Logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                    new StrykerRunResult(options, null);
                 }
-                return new StrykerRunResult(options, null);
             }
 
-            Reporter.OnStartMutantTestRun(mutantsNotRun);
-            Parallel.ForEach(
-                mutantsNotRun,
-                new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
-                mutant =>
-                {
-                    MutationTestExecutor.Test(mutant, Input.TimeoutMs);
+            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
+            if (mutantsToTest.Any())
+            {
+                Reporter.OnStartMutantTestRun(mutantsNotRun);
+                Parallel.ForEach(mutantsToTest,
+                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
+                    mutant =>
+                    {
+                        MutationTestExecutor.Test(mutant, Input.TimeoutMs);
 
-                    Reporter.OnMutantTested(mutant);
-                });
+                        Reporter.OnMutantTested(mutant);
+                    });
+            }
 
             Reporter.OnAllMutantsTested(Input.ProjectInfo.ProjectContents);
 
@@ -175,14 +182,11 @@ namespace Stryker.Core.MutationTest
         {
             if (coveredMutants == null)
             {
-                return;
-            }
-            var covered = new HashSet<int>(coveredMutants.CoveredMutants);
-            if (covered.Count == 0)
-            {
                 Logger.LogDebug("No mutant is covered by any test, no optimization done.");
                 return;
             }
+            var covered = new HashSet<int>(coveredMutants.CoveredMutants);
+
             Logger.LogDebug("Optimize test runs according to coverage info.");
 
             var nonCoveredMutants = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
