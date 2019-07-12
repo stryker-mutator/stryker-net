@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }
         private string SourceFile { get; }
-        private IEnumerable<PortableExecutableReference> _assemblies { get; set; }
+        private readonly IEnumerable<PortableExecutableReference> _assemblies;
 
         public MutationTestProcessTests()
         {
@@ -291,7 +291,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestProcess_ShouldCallExecutorForEveryMutant()
         {
             var mutant = new Mutant { Id = 1 };
-            var otherMutant = new Mutant {Id = 2};
+            var otherMutant = new Mutant { Id = 2 };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
@@ -349,8 +349,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutationTestProcess_ShouldNotCallExecutorForNotCoveredMutants()
         {
-            var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Survived};
-            var otherMutant = new Mutant {Id = 2, ResultStatus = MutantStatus.NotRun};
+            var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Survived };
+            var otherMutant = new Mutant { Id = 2, ResultStatus = MutantStatus.NotRun };
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
@@ -403,7 +403,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object);
             var coverage = new TestCoverageInfos();
-            coverage.DeclareMappingForATest("toto", new []{2});
+            coverage.DeclareMappingForATest("toto", new[] { 2 });
             target.Optimize(coverage);
 
             target.Test(options);
