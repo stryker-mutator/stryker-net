@@ -16,9 +16,9 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     public class InputFileResolverTests
     {
-        private string _currentDirectory { get; set; }
-        private string _filesystemRoot { get; set; }
-        private string _basePath { get; set; }
+        private readonly string _currentDirectory;
+        private readonly string _filesystemRoot;
+        private readonly string _basePath;
         private readonly string sourceFile;
         private readonly string testProjectPath;
         private readonly string projectUnderTestPath;
@@ -647,7 +647,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-            var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
+            var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, testRunner: "dotnettest");
 
             target.ResolveInput(options);
 
@@ -711,34 +711,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.ResolveInput(options);
 
             options.TestRunner.ShouldBe(TestRunner.VsTest);
-        }
-
-        [Fact]
-        public void InitialisationProcess_ShouldKeepDotnetTestIfNotFullFramework()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
-            });
-
-            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>() { "" },
-                    TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath,
-                    References = new string[0]
-                });
-
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-            var options = new StrykerOptions(fileSystem: fileSystem, basePath: _basePath);
-
-            target.ResolveInput(options);
-
-            options.TestRunner.ShouldBe(TestRunner.DotnetTest);
         }
 
         [Fact]

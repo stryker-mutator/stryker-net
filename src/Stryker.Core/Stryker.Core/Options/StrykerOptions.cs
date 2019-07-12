@@ -53,7 +53,7 @@ namespace Stryker.Core.Options
             int thresholdLow = 60,
             int thresholdBreak = 0,
             string[] filesToExclude = null,
-            string testRunner = "dotnettest",
+            string testRunner = "vstest",
             string solutionPath = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
