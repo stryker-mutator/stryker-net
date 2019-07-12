@@ -1,10 +1,12 @@
-﻿namespace Stryker.Core.TestRunners
+﻿using System;
+
+namespace Stryker.Core.TestRunners
 {
+    [Flags]
     public enum TestFramework
     {
-        Undefined,
-        msTest,
-        xUnit,
-        nUnit
+        msTest = 1,
+        xUnit = 2,
+        nUnit = 4
     }
 }

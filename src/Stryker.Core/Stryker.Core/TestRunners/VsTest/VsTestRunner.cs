@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool _disposedValue; // To detect redundant calls
         private static int _count;
         private readonly int _id;
-        private TestFramework _testFramework = TestFramework.Undefined;
+        private TestFramework _testFramework;
 
 
         private readonly ILogger _logger;
@@ -128,13 +128,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void DetectTestFramework(IEnumerable<TestCase> tests)
         {
-            _testFramework = TestFramework.msTest;
             if (tests.Any(testCase => testCase.ExecutorUri.AbsoluteUri.Contains("nunit")))
             {
-                _testFramework = TestFramework.nUnit;
-            } else if (tests.Any(testCase => testCase.Properties.Any(p => p.Id == "XunitTestCase")))
+                _testFramework |= TestFramework.nUnit;
+            }
+            if (tests.Any(testCase => testCase.Properties.Any(p => p.Id == "XunitTestCase")))
             {
-                _testFramework = TestFramework.xUnit;
+                _testFramework |= TestFramework.xUnit;
             }
         }
 
@@ -305,12 +305,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var settingsForCoverage = string.Empty;
             if (needCoverage)
             {
-                if (_testFramework == TestFramework.nUnit)
+                if (_testFramework.HasFlag(TestFramework.nUnit))
                 {
                     settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
                 }
 
-                if (_testFramework == TestFramework.xUnit)
+                if (_testFramework.HasFlag(TestFramework.xUnit))
                 {
                     settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
                 }
