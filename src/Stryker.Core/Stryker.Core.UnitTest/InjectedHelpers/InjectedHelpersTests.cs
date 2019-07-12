@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,9 +50,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                references: references);
 
             var errors = compilation.GetDiagnostics();
-            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error));
+            errors.ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error);
         }
-
-
     }
 }
