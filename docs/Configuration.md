@@ -56,8 +56,8 @@ dotnet stryker -tr dotnettest
 Default: `"vstest"`
 
 ## Timeout time
-Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker generates timeouts after some time. 
-Using this parameter you can increase or decrease the time before a timeout will be thrown. Decreasing the timeout might speed up the testrun if you have a lot of timeouts in your project.
+Some mutations can create endless loops inside your code. To detect and stop these loops, Stryker cancels a unit test run after a set time.
+Using this parameter you can increase or decrease the time before a test will time out.
 
 ```
 dotnet stryker --timeout-ms 1000
