@@ -64,7 +64,7 @@ namespace Stryker.CLI
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            if (cliValue != null)
+            if (cliValue != null && ((option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue == true) || option.ValueType != CommandOptionType.NoValue))
             {
                 // Convert the cliValue string to the desired type
                 return ConvertTo(cliValue, option);

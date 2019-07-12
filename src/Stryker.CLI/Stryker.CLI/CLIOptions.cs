@@ -104,7 +104,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
-            DefaultValue = false,
+            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill),
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
