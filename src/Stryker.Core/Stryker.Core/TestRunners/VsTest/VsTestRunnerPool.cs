@@ -2,18 +2,18 @@
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.ToolHelpers;
 using System.Threading.Tasks.Dataflow;
+using System.Collections.Concurrent;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
         private readonly OptimizationFlags _flags;
-        private readonly BufferBlock<VsTestRunner> _availableRunners = new BufferBlock<VsTestRunner>();
+        private readonly ConcurrentQueue<VsTestRunner> _availableRunners = new ConcurrentQueue<VsTestRunner>();
         private readonly ICollection<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
@@ -28,7 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Post(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
+                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
             });
         }
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
-            var runner = TakeRunner().Result;
+            var runner = TakeRunner();
             TestRunResult result;
             try
             {
@@ -59,7 +59,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return CaptureCoveragePerIsolatedTests();
             }
-            var runner = TakeRunner().Result;
+            var runner = TakeRunner();
             try
             {
                 if (needCoverage)
@@ -82,12 +82,12 @@ namespace Stryker.Core.TestRunners.VsTest
         private TestRunResult CaptureCoveragePerIsolatedTests()
         {
             var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
-            Parallel.ForEach(_discoveredTests, options, async testCase =>
+            Parallel.ForEach(_discoveredTests, options, testCase =>
             {
-                var runnerLoop = await TakeRunner();
+                var runner = TakeRunner();
                 try
                 {
-                    runnerLoop.CoverageForTest(testCase);
+                    runner.CoverageForTest(testCase);
                 }
                 catch (Exception e)
                 {
@@ -95,31 +95,29 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 finally
                 {
-                    ReturnRunner(runnerLoop);
+                    ReturnRunner(runner);
                 }
             });
             return new TestRunResult {Success = true, TotalNumberOfTests = _discoveredTests.Count};
         }
 
-        private async Task<VsTestRunner> TakeRunner()
+        private VsTestRunner TakeRunner()
         {
-            return await _availableRunners.ReceiveAsync();
+            _availableRunners.TryDequeue(out var testRunner);
+            return testRunner;
         }
 
         private void ReturnRunner(VsTestRunner runner)
         {
-            _availableRunners.Post(runner);
+            _availableRunners.Enqueue(runner);
         }
 
         public void Dispose()
         {
-            IList<VsTestRunner> testRunners = null;
-            _availableRunners.TryReceiveAll(out testRunners);
-            foreach (var testRunner in testRunners)
+            foreach (var testRunner in _availableRunners)
             {
                 testRunner.Dispose();
             }
-            _availableRunners.Complete();
             _helper.Cleanup();
         }
     }
