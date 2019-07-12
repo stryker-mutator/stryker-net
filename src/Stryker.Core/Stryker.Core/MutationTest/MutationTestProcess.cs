@@ -204,9 +204,13 @@ namespace Stryker.Core.MutationTest
             }
 
             report.AppendJoin(',', nonTested.Select(x => x.Id));
-            Logger.LogInformation(nonTested.Count == 0
-                ? "Congratulations, all mutants are covered by tests!"
-                : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
+            if (nonTested.Any())
+            {
+                Logger.LogInformation("{0} mutants are not reached by any tests and will survive! (Marked as {1}).", nonTested.Count, mutantResultStatus);
+            } else
+            {
+                Logger.LogInformation("Congratulations, {0} mutants are covered by tests!", "all");
+            }
         }
     }
 }

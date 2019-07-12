@@ -4,6 +4,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly OptimizationFlags _flags;
         private readonly Queue<VsTestRunner> _availableRunners = new Queue<VsTestRunner>();
-        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly IEnumerable<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
         private readonly object _lck = new object();
@@ -133,7 +134,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int DiscoverNumberOfTests()
         {
-            return _discoveredTests.Count;
+            return _discoveredTests.Count();
         }
     }
 }
