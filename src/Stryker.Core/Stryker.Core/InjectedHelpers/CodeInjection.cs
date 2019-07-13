@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Stryker.Core.InjectedHelpers
 {
     public static class CodeInjection
     {
         // files to be injected into the mutated assembly
-        private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs", 
+        private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
             "Stryker.Core.InjectedHelpers.Coverage.CommunicationChannel.cs"};
-        private static readonly IList<SyntaxTree> Helpers = new List<SyntaxTree>();
-
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
 
         public static readonly string SelectorExpression;
@@ -33,10 +29,8 @@ namespace Stryker.Core.InjectedHelpers
             SelectorExpression = result.Groups[1].Value.Replace("Stryker", HelperNamespace);
             foreach (var file in Files)
             {
-                var syntaxTree = CSharpSyntaxTree.ParseText(
-                    GetSourceFromResource(file).Replace("Stryker", HelperNamespace),
-                    new CSharpParseOptions(LanguageVersion.Latest), path:file);
-                Helpers.Add(syntaxTree);
+                var fileContents = GetSourceFromResource(file).Replace("Stryker", HelperNamespace);
+                MutantHelpers.Add(file, fileContents);
             }
         }
 
@@ -54,7 +48,7 @@ namespace Stryker.Core.InjectedHelpers
             return "Stryker" + new string(chars);
         }
 
-        public static IEnumerable<SyntaxTree> MutantHelpers => Helpers;
+        public static IDictionary<string, string> MutantHelpers { get; } = new Dictionary<string, string>();
 
         private static string GetSourceFromResource(string sourceResourceName)
         {

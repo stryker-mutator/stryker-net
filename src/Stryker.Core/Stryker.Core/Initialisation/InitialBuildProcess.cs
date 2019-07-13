@@ -3,7 +3,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
 using System.IO;
 
 namespace Stryker.Core.Initialisation
@@ -15,8 +14,8 @@ namespace Stryker.Core.Initialisation
 
     public class InitialBuildProcess : IInitialBuildProcess
     {
-        private IProcessExecutor _processExecutor { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly IProcessExecutor _processExecutor;
+        private readonly ILogger _logger;
 
         public InitialBuildProcess(IProcessExecutor processExecutor = null)
         {
@@ -27,7 +26,7 @@ namespace Stryker.Core.Initialisation
         public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string projectName)
         {
             _logger.LogInformation("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
-            ProcessResult result = null;
+            ProcessResult result;
             if (fullFramework)
             {
                 if (string.IsNullOrEmpty(solutionPath))
