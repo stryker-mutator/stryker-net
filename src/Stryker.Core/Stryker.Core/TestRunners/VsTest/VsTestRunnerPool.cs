@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -13,7 +14,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly OptimizationFlags _flags;
         private readonly Queue<VsTestRunner> _availableRunners = new Queue<VsTestRunner>();
-        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly IEnumerable<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
         private readonly object _lck = new object();
@@ -28,13 +29,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
+                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper: _helper));
             });
         }
 
         public TestCoverageInfos CoverageMutants => _coverage;
-
-        public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
@@ -81,7 +80,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TestRunResult CaptureCoveragePerIsolatedTests()
         {
-            var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+            var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
             Parallel.ForEach(_discoveredTests, options, testCase =>
             {
                 var runnerLoop = TakeRunner();
@@ -98,7 +97,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     ReturnRunner(runnerLoop);
                 }
             });
-            return new TestRunResult {Success = true, TotalNumberOfTests = _discoveredTests.Count};
+            return new TestRunResult { Success = true };
         }
 
         private VsTestRunner TakeRunner()
@@ -131,6 +130,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 runner.Dispose();
             }
             _helper.Cleanup();
+        }
+
+        public int DiscoverNumberOfTests()
+        {
+            return _discoveredTests.Count();
         }
     }
 }
