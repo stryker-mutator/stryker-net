@@ -5,7 +5,6 @@ using Stryker.Core;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.IO;
-using System.Reflection;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -13,13 +12,6 @@ namespace Stryker.CLI.UnitTest
     [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class ConfigFileTests
     {
-        private string _currentDirectory { get; set; }
-
-        public ConfigFileTests()
-        {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        }
-
         [Fact]
         public void StrykerCLI_WithNoArgumentsAndEmptyConfig_ShouldStartStrykerWithDefaultOptions()
         {
@@ -84,6 +76,7 @@ namespace Stryker.CLI.UnitTest
             actualOptions.Thresholds.High.ShouldBe(40);
             actualOptions.FilesToExclude.ShouldHaveSingleItem();
             actualOptions.FilesToExclude.ShouldContain(fileToExclude);
+            actualOptions.Optimizations.ShouldBe(OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill);
         }
     }
 }

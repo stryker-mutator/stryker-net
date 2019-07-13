@@ -59,6 +59,8 @@ namespace Stryker.Core.Initialisation
             var reader = new ProjectFileReader();
             var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
 
+            _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
+
             // Analyze project under test
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
@@ -132,7 +134,7 @@ namespace Stryker.Core.Initialisation
                 var fullPath = path.StartsWith(projectUnderTestPath) ? path : Path.GetFullPath(projectUnderTestPath + path);
                 if (!Path.HasExtension(path))
                 {
-                    _logger.LogInformation("Scanning dir {0} for files to exclude.", fullPath);
+                    _logger.LogDebug("Scanning dir {0} for files to exclude.", fullPath);
                 }
                 var filesToExclude = allFiles.Where(x => x.FullPath.StartsWith(fullPath)).ToList();
                 if (filesToExclude.Count() == 0)
@@ -141,9 +143,15 @@ namespace Stryker.Core.Initialisation
                 }
                 foreach (var file in filesToExclude)
                 {
-                    _logger.LogInformation("File {0} will be excluded from mutation.", file.FullPath);
+                    _logger.LogDebug("File {0} will be excluded from mutation.", file.FullPath);
                     file.IsExcluded = true;
                 }
+            }
+
+            var excludedCount = allFiles.Where(x => x.IsExcluded).Count();
+            if (excludedCount > 0)
+            {
+                _logger.LogInformation("Your settings have excluded {0} files from mutation", excludedCount);
             }
         }
         
@@ -181,7 +189,7 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }
-            _logger.LogInformation("Using {0} as project file", projectFiles.Single());
+            _logger.LogDebug("Using {0} as project file", projectFiles.Single());
             return projectFiles.Single();
         }
 

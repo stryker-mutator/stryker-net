@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     public class InitialTestProcessTests
     {
-        public InitialTestProcess _target { get; set; }
+        private readonly InitialTestProcess _target;
 
         public InitialTestProcessTests()
         {
@@ -19,7 +19,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.CaptureCoverage())
+                .Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 
             var exception = Assert.Throws<StrykerInputException>(() => _target.InitialTest(testRunnerMock.Object));
         }
@@ -28,7 +31,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), It.IsAny<int?>())).Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.CaptureCoverage())
+                .Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 
             var result = _target.InitialTest(testRunnerMock.Object);
         }

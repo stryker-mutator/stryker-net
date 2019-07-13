@@ -12,6 +12,7 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class NugetRestoreProcessTests
     {
         private const string solutionPath = @"..\MySolution.sln";
+        private const string CProgramFilesX86MicrosoftVisualStudio = "C:\\Program Files (x86)\\Microsoft Visual Studio";
         private readonly string solutionDir = Path.GetDirectoryName(Path.GetFullPath(solutionPath));
 
         [SkippableFact]
@@ -23,11 +24,19 @@ namespace Stryker.Core.UnitTest.Initialisation
             string msBuildVersion = "16.0.0";
 
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-            processExecutorMock.Setup(x => x.Start(solutionDir, "where.exe", "nuget.exe", null, It.IsAny<int>()))
+            processExecutorMock.Setup(x => x.Start(solutionDir,  It.Is<string>( (p) => p.EndsWith("where.exe")), "nuget.exe", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
                     Output = nugetPath
+                });
+
+            processExecutorMock.Setup(x => x.Start(CProgramFilesX86MicrosoftVisualStudio, It.Is<string>( (p) => p.EndsWith("where.exe")), 
+                    "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = CProgramFilesX86MicrosoftVisualStudio
                 });
 
             processExecutorMock.Setup(x => x.Start(solutionDir, It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()))
@@ -42,6 +51,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ExitCode = 0,
                     Output = "Packages restored"
+                });
+
+            processExecutorMock.Setup(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")), @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = "Msbuild executable path found at "
                 });
 
             var target = new NugetRestoreProcess(processExecutorMock.Object);
@@ -87,6 +103,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 C:\Users\LEON\bin\NuGet.exe"
                 });
 
+            processExecutorMock.Setup(x => x.Start(CProgramFilesX86MicrosoftVisualStudio, It.Is<string>( (p) => p.EndsWith("where.exe")), 
+                    "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = CProgramFilesX86MicrosoftVisualStudio
+                });
+
             processExecutorMock.Setup(x => x.Start(solutionDir, It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
@@ -99,6 +123,13 @@ C:\Users\LEON\bin\NuGet.exe"
                 {
                     ExitCode = 0,
                     Output = "Packages restored"
+                });
+
+            processExecutorMock.Setup(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")), @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = "Msbuild executable path found at "
                 });
 
             var target = new NugetRestoreProcess(processExecutorMock.Object);

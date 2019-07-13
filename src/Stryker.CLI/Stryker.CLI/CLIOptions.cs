@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.CommandLineUtils;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -11,7 +12,7 @@ namespace Stryker.CLI
 {
     public static class CLIOptions
     {
-        private static StrykerOptions _defaultOptions = new StrykerOptions();
+        private static readonly StrykerOptions _defaultOptions = new StrykerOptions();
 
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
@@ -25,7 +26,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
+            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
     This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
@@ -95,6 +96,28 @@ namespace Stryker.CLI
             JsonKey = "test-project-file"
         };
 
+        public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
+        {
+            ArgumentName = "--coverage-analysis",
+            ArgumentShortName = "-ca <mode>",
+            DefaultValue = "off",
+            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+    - off: coverage data is not captured (default mode).
+    - perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+    - all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
+            JsonKey = "coverage-analysis"
+        };
+
+        public static readonly CLIOption<bool> AbortOnFailTest = new CLIOption<bool>
+        {
+            ArgumentName = "--abort-test-on-fail",
+            ArgumentShortName = "-atof",
+            DefaultValue = false,
+            ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
+            JsonKey = "abort-test-on-fail"
+        };
+
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
         {
             ArgumentName = "--max-concurrent-test-runners",
@@ -134,7 +157,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the prefered mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
+            ArgumentDescription = $"Set the preferred mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
             DefaultValue = _defaultOptions.Thresholds.High,
             JsonKey = "threshold-high"
         };
@@ -162,15 +185,19 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr",
-            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString<TestRunner>(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
             JsonKey = "test-runner"
         };
 
-        private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
+        public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
         {
-            return FormatOptionsString<T, T>(@default, options);
-        }
+            ArgumentName = "--language-version",
+            ArgumentShortName = "-lv",
+            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
+            DefaultValue = _defaultOptions.LanguageVersion.ToString(),
+            JsonKey = "language-version"
+        };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
         {
@@ -181,20 +208,21 @@ namespace Stryker.CLI
         {
             StringBuilder optionsString = new StringBuilder();
 
-            optionsString.Append($"Options[(default) [{string.Join(", ", @default)}], ");
+            optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
             string nonDefaultOptions = string.Join(
             ", ",
             options
             .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
             .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
 
-            if(deprecated.Any())
+            string deprecatedOptions = "";
+            if (deprecated.Any())
             {
-                string deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
-                optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+                deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
             }
-            
-            optionsString.Append("]");
+
+            optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+            optionsString.Append(" ]");
 
             return optionsString.ToString();
         }

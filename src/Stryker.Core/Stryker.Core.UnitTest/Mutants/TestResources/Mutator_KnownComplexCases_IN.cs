@@ -24,6 +24,11 @@ namespace TestCases
         // default parameter must be constant at build time => no posible mutation
         private void SomeMthod(bool option = true)
         {
+            // empty for are tricky
+            for (;;)
+            {
+                int x = 1 + 2;
+            }
             // for statement can only me mutated through if(s)
             for (var i = 0; i < 10; i++)
             {

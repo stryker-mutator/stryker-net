@@ -23,6 +23,8 @@ namespace Stryker.CLI
             CommandOption logLevel,
             CommandOption logToFile,
             CommandOption devMode,
+            CommandOption coverageAnalysis,
+            CommandOption abortOnFail,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
@@ -30,7 +32,8 @@ namespace Stryker.CLI
             CommandOption thresholdBreak,
             CommandOption filesToExclude,
             CommandOption testRunner,
-            CommandOption solutionPath)
+            CommandOption solutionPath,
+            CommandOption languageVersion)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -52,19 +55,22 @@ namespace Stryker.CLI
                 logToFile: GetOption(logToFile.HasValue(), CLIOptions.LogToFile),
                 devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
+                coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
+                abortOnFail: GetOption(abortOnFail.Value(), CLIOptions.AbortOnFailTest),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
-                solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath));
+                solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
+                languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
             if (cliValue != null)
             {
-                // Convert the cliValue string to the disired type
+                // Convert the cliValue string to the desired type
                 return ConvertTo(cliValue, option);
             }
             else if (config != null)
@@ -94,7 +100,7 @@ namespace Stryker.CLI
             {
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    // Convert json array to IEnummerable of desired type
+                    // Convert json array to IEnumerable of desired type
                     var list = JsonConvert.DeserializeObject<T>(value as string);
                     return list;
                 }

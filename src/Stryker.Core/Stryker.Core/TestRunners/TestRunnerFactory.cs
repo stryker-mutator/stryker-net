@@ -1,9 +1,7 @@
-﻿using System.IO;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.Parsers;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -11,31 +9,29 @@ namespace Stryker.Core.TestRunners
 {
     public class TestRunnerFactory
     {
-        private ILogger _logger { get; set; }
+        private readonly ILogger _logger;
 
         public TestRunnerFactory()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(StrykerOptions options, ProjectInfo projectInfo)
+        public ITestRunner Create(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
-            ITestRunner testRunner = null;
+            ITestRunner testRunner;
 
             switch (options.TestRunner)
             {
                 case TestRunner.DotnetTest:
-                    testRunner = new DotnetTestRunner(Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath), new ProcessExecutor(), new TotalNumberOfTestsParser());
+                default:
+                    testRunner = new DotnetTestRunner(options.BasePath, new ProcessExecutor(), flags);
                     break;
                 case TestRunner.VsTest:
-                    testRunner = new VsTestRunnerPool(options, projectInfo);
-                    break;
-                default:
-                    testRunner = new DotnetTestRunner(Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath), new ProcessExecutor(), new TotalNumberOfTestsParser());
+                    testRunner = new VsTestRunnerPool(options, flags, projectInfo);
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", options.TestRunner);
+            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
             return testRunner;
         }
     }
