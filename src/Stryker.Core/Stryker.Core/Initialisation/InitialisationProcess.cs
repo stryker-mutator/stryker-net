@@ -1,7 +1,6 @@
 ﻿using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -42,8 +41,7 @@ namespace Stryker.Core.Initialisation
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, Path.GetDirectoryName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath), 
-                options.SolutionPath, Path.GetFileName(projectInfo.TestProjectAnalyzerResult.ProjectFilePath));
+            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
 
             if (_testRunner == null)
             {
