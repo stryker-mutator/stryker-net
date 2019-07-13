@@ -87,7 +87,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
-        
+
         [Fact]
         public void InputFileResolver_InitializeShouldFindSpecifiedTestProjectFile()
         {
@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            
+
             projectFileReaderMock.Setup(x => x.AnalyzeProject(alternateTestProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -605,7 +605,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null));
         }
 
         [Fact]
@@ -628,15 +628,15 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var errorMessage = 
+            var errorMessage =
 $@"Expected exactly one .csproj file, found more than one:
 {Path.GetFullPath("/ExampleProject/ExampleProject.csproj")}
 {Path.GetFullPath("/ExampleProject/ExampleProject2.csproj")}
 
 Please specify a testProjectFile.
-";            
-               
-            var exception = Assert.Throws<StrykerInputException>(() => target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+";
+
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -652,11 +652,11 @@ Please specify a testProjectFile.
 
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.ScanProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null);
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }
-        
+
         [Fact]
         public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible()
         {
@@ -668,11 +668,11 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "TestProject.csproj");
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "TestProject.csproj");
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
         }
-        
+
         [Fact]
         public void InputFileResolver_ShouldThrowExceptionIfGivenTestFileDoesNotExist()
         {
@@ -683,10 +683,10 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "GivenTestProject.csproj"));
-            exception.Message.ShouldBe("No .csproj file found, matching testProjectParameter: GivenTestProject.csproj");
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "GivenTestProject.csproj"));
+            exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
         }
-        
+
         [Fact]
         public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
         {
@@ -698,11 +698,11 @@ Please specify a testProjectFile.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindSpecificTestProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), FilePathUtils.ConvertPathSeparators("SubFolder\\TestProject.csproj"));
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), FilePathUtils.ConvertPathSeparators("SubFolder\\TestProject.csproj"));
 
-            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"));
+            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
-        
+
         [Fact]
         public void InitialisationProcess_ShouldThrowOnMsTestV1Detected()
         {

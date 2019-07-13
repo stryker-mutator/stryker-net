@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,9 +28,9 @@ namespace Stryker.Core.Initialisation
     public class InputFileResolver : IInputFileResolver
     {
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
-        private IFileSystem _fileSystem { get; }
-        private IProjectFileReader _projectFileReader { get; }
-        private ILogger _logger { get; set; }
+        private readonly IFileSystem _fileSystem;
+        private readonly IProjectFileReader _projectFileReader;
+        private readonly ILogger _logger;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
@@ -47,10 +47,8 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-            
-            var testProjectFile = string.IsNullOrEmpty(options.TestProjectNameFilter) 
-                ? ScanProjectFile(options.BasePath)
-                : FindSpecificTestProjectFile(options.BasePath, options.TestProjectNameFilter);
+
+            var testProjectFile = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
 
             // Analyze the test project
             result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
@@ -154,23 +152,16 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Your settings have excluded {0} files from mutation", excludedCount);
             }
         }
-        
-        public string FindSpecificTestProjectFile(string currentDirectory, string testProjectNameFilter)
-        {
-            var testProjectFile = _fileSystem.Directory.GetFiles(currentDirectory, $"{testProjectNameFilter}");
 
-            if (!testProjectFile.Any())
+        public string FindProjectFile(string currentDirectory, string testProjectNameFilter)
+        {
+            if (string.IsNullOrEmpty(testProjectNameFilter))
             {
-                throw new StrykerInputException(
-                    $"No .csproj file found, matching testProjectParameter: {testProjectNameFilter}");
+                testProjectNameFilter = "*.csproj";
             }
-            
-            return testProjectFile.First();
-        }
 
-        public string ScanProjectFile( string currentDirectory)
-        {
-            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
+            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, testProjectNameFilter);
+
             _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
 
             if (projectFiles.Count() > 1)
@@ -189,7 +180,9 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
             }
+
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
+
             return projectFiles.Single();
         }
 
