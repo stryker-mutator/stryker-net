@@ -29,12 +29,11 @@ namespace Stryker.Core.Options
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public int ConcurrentTestrunners { get; }
-
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
-        public LanguageVersion LanguageVersion { get; set; }
-        public OptimizationFlags Optimizations { get; private set; }
+        public LanguageVersion LanguageVersion { get; }
+        public OptimizationFlags Optimizations { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -44,7 +43,7 @@ namespace Stryker.Core.Options
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
-            string testProjectNameFilter = "",
+            string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string logLevel = "info",

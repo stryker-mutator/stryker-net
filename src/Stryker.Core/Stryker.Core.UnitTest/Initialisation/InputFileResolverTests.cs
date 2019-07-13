@@ -605,7 +605,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null));
+            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj"));
         }
 
         [Fact]
@@ -633,10 +633,10 @@ $@"Expected exactly one .csproj file, found more than one:
 {Path.GetFullPath("/ExampleProject/ExampleProject.csproj")}
 {Path.GetFullPath("/ExampleProject/ExampleProject2.csproj")}
 
-Please specify a testProjectFile.
+Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj"));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -652,7 +652,7 @@ Please specify a testProjectFile.
 
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), null);
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj");
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }

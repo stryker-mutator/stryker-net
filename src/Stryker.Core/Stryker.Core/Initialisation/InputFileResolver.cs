@@ -155,14 +155,9 @@ namespace Stryker.Core.Initialisation
 
         public string FindProjectFile(string currentDirectory, string testProjectNameFilter)
         {
-            if (string.IsNullOrEmpty(testProjectNameFilter))
-            {
-                testProjectNameFilter = "*.csproj";
-            }
-
             var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, testProjectNameFilter);
 
-            _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
+            _logger.LogTrace("Scanned the current directory for {0} files: found {1}", testProjectNameFilter, projectFiles);
 
             if (projectFiles.Count() > 1)
             {
@@ -173,7 +168,7 @@ namespace Stryker.Core.Initialisation
                     sb.AppendLine(file);
                 }
                 sb.AppendLine();
-                sb.AppendLine("Please specify a testProjectFile.");
+                sb.AppendLine("Please specify a test project name filter that results in one project.");
                 throw new StrykerInputException(sb.ToString());
             }
             else if (!projectFiles.Any())
