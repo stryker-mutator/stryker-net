@@ -87,12 +87,13 @@ namespace Stryker.CLI
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
             JsonKey = "project-file"
         };
-       
+
         public static readonly CLIOption<string> TestProjectFileName = new CLIOption<string>
         {
             ArgumentName = "--test-project-file",
             ArgumentShortName = "-tp <testProjectFileName>",
             ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
+            DefaultValue = _defaultOptions.TestProjectNameFilter,
             JsonKey = "test-project-file"
         };
 
