@@ -5,7 +5,6 @@ using Stryker.Core;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.IO;
-using System.Reflection;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -13,13 +12,6 @@ namespace Stryker.CLI.UnitTest
     [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class ConfigFileTests
     {
-        private string _currentDirectory { get; set; }
-
-        public ConfigFileTests()
-        {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        }
-
         [Fact]
         public void StrykerCLI_WithNoArgumentsAndEmptyConfig_ShouldStartStrykerWithDefaultOptions()
         {

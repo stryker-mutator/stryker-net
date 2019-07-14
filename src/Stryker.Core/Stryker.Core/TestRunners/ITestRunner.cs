@@ -6,6 +6,7 @@ namespace Stryker.Core.TestRunners
     public interface ITestRunner : IDisposable
     {
         TestRunResult RunAll(int? timeoutMS, IReadOnlyMutant activeMutant);
+        int DiscoverNumberOfTests();
 
         TestRunResult CaptureCoverage();
 

@@ -14,7 +14,7 @@ namespace Stryker.Core.Initialisation
 
     public class InitialTestProcess : IInitialTestProcess
     {
-        private ILogger _logger { get; set; }
+        private readonly ILogger _logger;
 
         public InitialTestProcess()
         {
@@ -28,15 +28,18 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial testrun</returns>
         public int InitialTest(ITestRunner testRunner)
         {
+            var totalNumberOfTests = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
+            _logger.LogInformation("Total number of tests found: {0}", totalNumberOfTests);
+
             _logger.LogInformation("Initial testrun started");
-            // setup a stopwatch to record the initial test duration
+
+            // Setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             var testResult = testRunner.RunAll(null, null);
-            var duration = (int) stopwatch.ElapsedMilliseconds;
-            _logger.LogInformation("Total number of tests found in initial test run: {0}",
-                testResult.TotalNumberOfTests);
+            // Stop stopwatch immediately after testrun
+            stopwatch.Stop();
 
             _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);
             if (!testResult.Success)
@@ -45,7 +48,7 @@ namespace Stryker.Core.Initialisation
                 throw new StrykerInputException("Initial testrun was not successful.", testResult.ResultMessage);
             }
 
-            return duration;
+            return (int)stopwatch.ElapsedMilliseconds;
         }
 
         /// <summary>

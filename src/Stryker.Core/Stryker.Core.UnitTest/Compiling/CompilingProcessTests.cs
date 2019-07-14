@@ -220,7 +220,7 @@ namespace ExampleProject
                 AssemblyReferences = new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 },
-                
+
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 

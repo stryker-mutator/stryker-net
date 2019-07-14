@@ -1,11 +1,11 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Stryker.Core.InjectedHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants

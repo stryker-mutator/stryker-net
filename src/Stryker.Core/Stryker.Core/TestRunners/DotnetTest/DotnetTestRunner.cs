@@ -1,18 +1,16 @@
-﻿using Stryker.Core.Parsers;
-using Stryker.Core.Testing;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Testing;
 using Stryker.DataCollector;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.TestRunners
 {
     public class DotnetTestRunner : ITestRunner
     {
-        private readonly ITotalNumberOfTestsParser _totalNumberOfTestsParser;
         private readonly OptimizationFlags _flags;
 
         static DotnetTestRunner()
@@ -21,9 +19,6 @@ namespace Stryker.Core.TestRunners
         }
         private static ILogger Logger { get; }
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, ITotalNumberOfTestsParser totalNumberOfTestsParser, OptimizationFlags flags)
-        {
-            _totalNumberOfTestsParser = totalNumberOfTestsParser;
             _flags = flags;
             Path = path;
             ProcessExecutor = processProxy;
@@ -56,8 +51,7 @@ namespace Stryker.Core.TestRunners
             return new TestRunResult
             {
                 Success = result.ExitCode == 0,
-                ResultMessage = result.Output,
-                TotalNumberOfTests = _totalNumberOfTestsParser.ParseTotalNumberOfTests(result.Output)
+                ResultMessage = result.Output
             };
         }
 
@@ -80,6 +74,11 @@ namespace Stryker.Core.TestRunners
             {
                 return LaunchTestProcess(null, null);
             }
+        }
+
+        public int DiscoverNumberOfTests()
+        {
+            return -1;
         }
 
         public void Dispose()
