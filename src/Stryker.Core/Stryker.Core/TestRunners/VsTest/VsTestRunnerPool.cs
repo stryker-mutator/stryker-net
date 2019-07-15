@@ -5,6 +5,7 @@ using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Stryker.Core.Mutants;
@@ -111,12 +112,21 @@ namespace Stryker.Core.TestRunners.VsTest
                     Monitor.Wait(_lck);
                 }
             }
-
+            // should not happen, placed to chase an elusive bug on MacOS
+            if (runner == null)
+            {
+                throw new InvalidOperationException();
+            }
             return runner;
         }
 
         private void ReturnRunner(VsTestRunner runner)
         {
+            // should not happen, placed to chase an elusive bug on MacOS
+            if (runner == null)
+            {
+                throw new ArgumentNullException(nameof(runner));
+;            }
             lock (_lck)
             {
                 _availableRunners.Enqueue(runner);
