@@ -99,10 +99,10 @@ namespace Stryker.Core.TestRunners.VsTest
             return RunVsTest(testCases, timeoutMs, envVars);
         }
 
-        private void SetListOfTests(ICollection<TestCase> tests)
+        private void SetListOfTests(IEnumerable<TestCase> tests)
         {
             _discoveredTests = tests;
-            DetectTestFramework(handler.DiscoveredTestCases);
+            DetectTestFramework(_discoveredTests);
         }
         
         public int DiscoverNumberOfTests()

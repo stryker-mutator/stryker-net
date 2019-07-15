@@ -205,7 +205,7 @@ namespace Stryker.Core.MutationTest
                 }
                 if (mutant.IsStaticValue)
                 {
-                    Logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we cannot have reliable coverage info. No optimization done.");
+                    _logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we cannot have reliable coverage info. No optimization done.");
                 }
                 else
                 {

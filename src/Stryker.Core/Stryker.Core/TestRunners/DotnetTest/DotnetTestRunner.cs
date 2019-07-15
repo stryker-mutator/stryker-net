@@ -12,21 +12,20 @@ namespace Stryker.Core.TestRunners
     public class DotnetTestRunner : ITestRunner
     {
         private readonly OptimizationFlags _flags;
+        private readonly ILogger _logger;
+        private readonly string _path;
+        private readonly IProcessExecutor _processExecutor;
 
-        static DotnetTestRunner()
+        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
-        }
-        private static ILogger Logger { get; }
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
 
             _flags = flags;
-            Path = path;
-            ProcessExecutor = processProxy;
+            _path = path;
+            _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }
 
-        private string Path { get; }
-        private IProcessExecutor ProcessExecutor { get; }
         public TestCoverageInfos CoverageMutants { get; }
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
@@ -41,8 +40,8 @@ namespace Stryker.Core.TestRunners
 
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)
         {
-            var result = ProcessExecutor.Start(
-                Path,
+            var result = _processExecutor.Start(
+                _path,
                 "dotnet",
                 "test --no-build --no-restore",
                 envVars,
@@ -60,7 +59,7 @@ namespace Stryker.Core.TestRunners
             if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants))
             {
                 var collector = new CoverageCollector();
-                collector.SetLogger((message) => Logger.LogTrace(message));
+                collector.SetLogger((message) => _logger.LogTrace(message));
                 collector.Init(true);
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);
