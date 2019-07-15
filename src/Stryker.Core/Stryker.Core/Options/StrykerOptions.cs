@@ -67,7 +67,7 @@ namespace Stryker.Core.Options
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
-            TestProjectNameFilter = testProjectNameFilter;
+            TestProjectNameFilter = ValidateTestProjectFilter(basePath, testProjectNameFilter);
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
@@ -270,6 +270,26 @@ namespace Stryker.Core.Options
             solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
+        }
+
+        private string ValidateTestProjectFilter(string basePath, string userSuppliedFilter)
+        {
+            string filter;
+            if (userSuppliedFilter.Contains(".."))
+            {
+                filter = FilePathUtils.ConvertPathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
+            }
+            else
+            {
+                filter = FilePathUtils.ConvertPathSeparators(userSuppliedFilter);
+            }
+
+            if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
+            {
+                throw new StrykerInputException(ErrorMessage,
+                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {basePath} so this is not allowed.");
+            }
+            return filter;
         }
 
         private LanguageVersion ValidateLanguageVersion(string languageVersion)

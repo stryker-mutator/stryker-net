@@ -609,7 +609,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InputFileResolver_ShouldThrowStrykerInputExceptionOnTwoProjectFiles__AndNoTestProjectFileSpecified()
+        public void InputFileResolver_ShouldThrowStrykerInputExceptionOnTwoProjectFiles_AndNoTestProjectFileSpecified()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -699,6 +699,23 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver(fileSystem, null);
 
             var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), FilePathUtils.ConvertPathSeparators("SubFolder\\TestProject.csproj"));
+
+            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
+        }
+
+        [Fact]
+        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtFullPath()
+        {
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+            });
+            var target = new InputFileResolver(fileSystem, null);
+
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"),
+                FilePathUtils.ConvertPathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj")));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }

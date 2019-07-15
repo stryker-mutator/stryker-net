@@ -153,11 +153,13 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public string FindProjectFile(string currentDirectory, string testProjectNameFilter)
+        public string FindProjectFile(string basePath, string testProjectNameFilter)
         {
-            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, testProjectNameFilter);
+            string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
 
-            _logger.LogTrace("Scanned the current directory for {0} files: found {1}", testProjectNameFilter, projectFiles);
+            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
+
+            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
 
             if (projectFiles.Count() > 1)
             {
@@ -173,12 +175,26 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {basePath}");
             }
 
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
 
             return projectFiles.Single();
+        }
+
+        private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
+        {
+            // Make sure the filter is relative to the base path otherwise we cannot find it
+            var filter = FilePathUtils.ConvertPathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
+
+            // If the filter starts with directory separator char, remove it
+            filter = filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar) ?
+                filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length) : filter;
+            // Make sure filter contains wildcard
+            filter = $"*{filter}";
+
+            return filter;
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)

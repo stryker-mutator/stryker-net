@@ -6,29 +6,14 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Stryker.CLI.UnitTest
 {
 
     public class StrykerCLITests
     {
-        private readonly ITestOutputHelper _output;
-        private string _fileSystemRoot { get; }
-
-        private string _currentDirectory { get; }
-
-        public StrykerCLITests(ITestOutputHelper output)
-        {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
-            _output = output;
-        }
-
         [Theory]
         [InlineData("--help")]
         [InlineData("-h")]
@@ -138,7 +123,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestNameFilter == "SomeProjectName.csproj")));
         }
-        
+
         [Theory]
         [InlineData("--test-project-file")]
         [InlineData("-tp")]
@@ -155,7 +140,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == "TestProjectFolder/SomeTestProjectName.csproj")));
         }
-        
+
         [Theory]
         [InlineData("--solution-path")]
         [InlineData("-s")]
