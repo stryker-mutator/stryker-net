@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
+        public void MutateShouldCallMutantOrchestrator()
         {
             var input = new MutationTestInput()
             {
@@ -114,7 +114,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ExcludeFilesToMutate_MutationCalledOnce()
+        public void ExcludeFilesToMutate_MutationCalledOnce()
         {
             string sourceFile2 = SourceFile.Replace("Recursive.cs", "Recursive2.cs");
             string sourceFile3 = SourceFile.Replace("Recursive.cs", "Recursive3.cs");
@@ -208,7 +208,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
+        public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
@@ -288,7 +288,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldCallExecutorForEveryMutant()
+        public void ShouldCallExecutorForEveryMutant()
         {
             var mutant = new Mutant { Id = 1 };
             var otherMutant = new Mutant {Id = 2};
@@ -347,7 +347,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotCallExecutorForNotCoveredMutants()
+        public void ShouldNotCallExecutorForNotCoveredMutants()
         {
             var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Survived};
             var otherMutant = new Mutant {Id = 2, ResultStatus = MutantStatus.NotRun};
@@ -415,7 +415,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenAllMutationsWereSkipped()
+        public void ShouldNotTest_WhenAllMutationsWereSkipped()
         {
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -462,7 +462,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoMutationsAtAll()
+        public void ShouldNotTest_WhenThereAreNoMutationsAtAll()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
@@ -507,7 +507,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoTestableMutations()
+        public void ShouldNotTest_WhenThereAreNoTestableMutations()
         {
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
             var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
@@ -551,6 +551,45 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
+        }
+
+        [Fact]
+        public void ShouldMarkNotCoveredMutantsAsNotCovered()
+        {
+            var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.NotRun };
+            var otherMutant = new Mutant { Id = 2, ResultStatus = MutantStatus.NotRun };
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectContents = new FolderComposite()
+                    {
+                        Name = "ProjectRoot",
+                        Children = new Collection<ProjectComponent>() {
+                            new FileLeaf() {
+                                Name = "SomeFile.cs",
+                                Mutants = new Collection<Mutant>() { mutant, otherMutant }
+                            }
+                        }
+                    },
+
+                },
+                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                executorMock.Object);
+            var coverage = new TestCoverageInfos();
+            coverage.DeclareMappingForATest("toto", new[] { 2 }); // Only mutant 2 is hit by a test
+
+            target.Optimize(coverage);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.NoCoverage); // Mutant 1 should have no coverage
+            otherMutant.ResultStatus.ShouldBe(MutantStatus.NotRun); // Mutant 2 should still be tested
         }
     }
 }
