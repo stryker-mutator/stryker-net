@@ -216,7 +216,6 @@ namespace Stryker.Core.MutationTest
             report.AppendJoin(',', nonTested.Select(x => x.Id));
             _logger.LogInformation(nonTested.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
-
                 : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
         }
     }
