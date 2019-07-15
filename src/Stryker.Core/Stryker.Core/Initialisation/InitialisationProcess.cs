@@ -9,19 +9,17 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerOptions options);
-        
         int InitialTest(StrykerOptions option);
-
         TestCoverageInfos GetCoverage(StrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
     {
-        private IInputFileResolver _inputFileResolver { get; set; }
-        private IInitialBuildProcess _initialBuildProcess { get; set; }
-        private IInitialTestProcess _initialTestProcess { get; set; }
-        private ITestRunner _testRunner { get; set; }
-        private IAssemblyReferenceResolver _assemblyReferenceResolver { get; set; }
+        private readonly IInputFileResolver _inputFileResolver;
+        private readonly IInitialBuildProcess _initialBuildProcess;
+        private readonly IInitialTestProcess _initialTestProcess;
+        private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
+        private ITestRunner _testRunner;
 
         // these flags control various optimization techniques
         public InitialisationProcess(
@@ -65,14 +63,12 @@ namespace Stryker.Core.Initialisation
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
-            
+
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
         public TestCoverageInfos GetCoverage(StrykerOptions options)
         {
             return _initialTestProcess.GetCoverage(_testRunner);
         }
-
-
     }
 }
