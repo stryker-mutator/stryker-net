@@ -457,7 +457,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(mutant, It.IsAny<int>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
         }
 
@@ -502,7 +502,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
         }
 
@@ -549,7 +549,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
         }
     }
