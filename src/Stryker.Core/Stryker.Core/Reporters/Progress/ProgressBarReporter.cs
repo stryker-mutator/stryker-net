@@ -14,7 +14,7 @@ namespace Stryker.Core.Reporters.Progress
         private const int MaxProgressBar = 10;
         private const char ProgressBarDoneToken = '\u2588';
         private const char ProgressBarLeftToken = '-';
-        private const string LoggingFormat = "Mutant progress | {0} | {1} / {2} | {3} % | {4} |";
+        private const string LoggingFormat = "Testing mutant | {0} | {1} / {2} | {3} % | {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
         private readonly IStopWatchProvider _stopWatch;
