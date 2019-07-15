@@ -136,6 +136,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void DetectTestFramework(IEnumerable<TestCase> tests)
         {
+            if (tests == null)
+            {
+                _testFramework = 0;
+                return;
+            }
             if (tests.Any(testCase => testCase.ExecutorUri.AbsoluteUri.Contains("nunit")))
             {
                 _testFramework |= TestFramework.nUnit;
