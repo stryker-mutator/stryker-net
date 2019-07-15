@@ -401,7 +401,14 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (disposing)
                 {
-                    _vsTestConsole.EndSession();
+                    try
+                    {
+                        _vsTestConsole.EndSession();
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"Exception when disposing Runner {_id}: {0}", e);
+                    }
                     if (_ownHelper)
                     {
                         _vsTestHelper.Cleanup();
