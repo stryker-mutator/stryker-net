@@ -59,7 +59,10 @@ namespace Stryker.Core.UnitTest
         public static void ShouldNotContainErrors(this SyntaxNode actual)
         {
             var errors = actual.SyntaxTree.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);
-            errors.ShouldBe(0);
+            if (errors > 0)
+            {
+                errors.ShouldBe(0, $"errors: {string.Join(Environment.NewLine, actual.SyntaxTree.GetDiagnostics())}");
+            }
         }
     }
 }

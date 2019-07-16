@@ -16,7 +16,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly OptimizationFlags _flags;
         private readonly Queue<VsTestRunner> _availableRunners = new Queue<VsTestRunner>();
-        private readonly IEnumerable<TestCase> _discoveredTests;
+        private readonly ICollection<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
         private readonly object _lck = new object();

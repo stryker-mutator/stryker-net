@@ -403,7 +403,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object);
             var coverage = new TestCoverageInfos();
-            coverage.DeclareMappingForATest("toto", new[] { 2 });
+            coverage.DeclareMappingForATest("toto", new[] { 2 }, new int[0]);
             target.Optimize(coverage);
 
             target.Test(options);

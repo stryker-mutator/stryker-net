@@ -7,6 +7,7 @@ namespace Stryker
     public class MutantControl
     {
         private static HashSet<int> _coveredMutants;
+        private static HashSet<int> _staticMutants;
         private static bool usePipe;
         private static string pipeName;
         private static string envName;
@@ -52,6 +53,7 @@ namespace Stryker
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
+                _staticMutants = new HashSet<int>();
             }
         }
 
@@ -61,36 +63,36 @@ namespace Stryker
             {
                 return;
             }
-            HashSet<int> temp;
+            HashSet<int> temp, tempStatic;
             lock (_coveredMutants)
             {
                 temp = _coveredMutants;
+                tempStatic = _staticMutants;
                 _coveredMutants = new HashSet<int>();
+                _staticMutants = new HashSet<int>();
             }
-            DumpState(temp);
+            DumpState(temp, tempStatic);
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            DumpState(_coveredMutants);
+            DumpState();
             GC.KeepAlive(_coveredMutants);
         }
 
         public static void DumpState()
         {
-            DumpState(null);
+            DumpState(_coveredMutants, _staticMutants);
         }
 
-        public static void DumpState(HashSet<int> state)
+        public static void DumpState(HashSet<int> state, HashSet<int> staticMutants)
         {
             string report;
-            state = state ?? _coveredMutants;
             lock (state)
             {
-                report = string.Join(",", state);
+                report = string.Join(",", state)+";"+string.Join(",", staticMutants);
             }
 
-            Console.WriteLine("DumpState " + state.Count);
             channel.SendText(report);
         }
 
@@ -111,6 +113,7 @@ namespace Stryker
                         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
                         {
                             _coveredMutants = new HashSet<int>();
+                            _staticMutants = new HashSet<int>();
                         }
                     }
                     if (_coveredMutants.Add(id))
@@ -119,6 +122,11 @@ namespace Stryker
                         {
                             Environment.SetEnvironmentVariable(envName, string.Join(",", _coveredMutants));
                         }
+                    }
+
+                    if (StaticContext.InStatic())
+                    {
+                        _staticMutants.Add(id);
                     }
                 }
             }

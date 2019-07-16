@@ -9,6 +9,7 @@
     <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Flag_MutatedStatics_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs" />
@@ -37,6 +38,9 @@
     </Content>
     <Content Include="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_Flag_MutatedStatics_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

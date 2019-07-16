@@ -2,28 +2,48 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
     public class TestCoverageInfos
     {
         private readonly Dictionary<int, IList<object>> _mutantToTests = new Dictionary<int, IList<object>>();
+        private readonly HashSet<int> _mutantsInStatic = new HashSet<int>();
         private readonly IList<object> _testsWithoutCoverageInfos = new List<object>();
         private static ILogger Logger { get; }
-        public IEnumerable<int> CoveredMutants => _mutantToTests.Keys;
+
+        public IEnumerable<int> CoveredMutants
+        {
+            get
+            {
+                lock (_mutantToTests)
+                {
+                    return _mutantToTests.Keys;
+                }
+            }
+        }
 
         static TestCoverageInfos()
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<TestCoverageInfos>();
         }
 
-        public ICollection<T> GetTests<T>(int mutationId)
+        public bool NeedAllTests(IReadOnlyMutant mutant)
         {
-            if (_mutantToTests.ContainsKey(mutationId))
-            {
-                return _mutantToTests[mutationId].Cast<T>().ToList();
-            }
+            return mutant.IsStaticValue || this._mutantsInStatic.Contains(mutant.Id);
+        }
 
+        public ICollection<T> GetTests<T>(IReadOnlyMutant mutant)
+        {
+            lock (_mutantToTests)
+            {
+                if (_mutantToTests.ContainsKey(mutant.Id))
+                {
+                    return _mutantToTests[mutant.Id].Cast<T>().ToList();
+                }
+                
+            }
             return null;
         }
 
@@ -38,7 +58,7 @@ namespace Stryker.Core.TestRunners
             }
         }
 
-        public void DeclareMappingForATest(object discoveredTest, IEnumerable<int> captureCoverage)
+        public void DeclareMappingForATest(object discoveredTest, ICollection<int> captureCoverage, ICollection<int> staticMutants)
         {
             lock(_mutantToTests)
             { 
@@ -61,7 +81,15 @@ namespace Stryker.Core.TestRunners
                         {
                             _mutantToTests.Add(id, new List<object>{discoveredTest});
                         }
-                    }   
+                    }
+                    if (staticMutants.Any())
+                    {
+                        Logger.LogDebug($"Those are being executed in a static constructor context: {string.Join(", ", staticMutants)}.");
+                        foreach (var staticMutant in staticMutants)
+                        {
+                            _mutantsInStatic.Add(staticMutant);
+                        }
+                    }
                 }
             }
         }

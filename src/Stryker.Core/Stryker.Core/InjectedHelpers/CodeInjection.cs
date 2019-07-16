@@ -9,11 +9,8 @@ namespace Stryker.Core.InjectedHelpers
     {
         // files to be injected into the mutated assembly
         private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
-            "Stryker.Core.InjectedHelpers.Coverage.CommunicationChannel.cs"};
+            "Stryker.Core.InjectedHelpers.Coverage.StaticContext.cs", "Stryker.Core.InjectedHelpers.Coverage.CommunicationChannel.cs"};
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
-
-        public static readonly string SelectorExpression;
-        public static readonly string HelperNamespace;
 
         static CodeInjection()
         {
@@ -27,12 +24,19 @@ namespace Stryker.Core.InjectedHelpers
 
             HelperNamespace = GetRandomNamespace();
             SelectorExpression = result.Groups[1].Value.Replace("Stryker", HelperNamespace);
+            StaticMarker = $"new {HelperNamespace}.StaticContext()";
+
             foreach (var file in Files)
             {
                 var fileContents = GetSourceFromResource(file).Replace("Stryker", HelperNamespace);
                 MutantHelpers.Add(file, fileContents);
             }
         }
+
+        public static string SelectorExpression {get;}
+        public static string HelperNamespace {get;}
+
+        public static string StaticMarker { get; set; }
 
         private static string GetRandomNamespace()
         {

@@ -32,8 +32,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly List<string> _messages = new List<string>();
         private readonly Dictionary<string, string> _coverageEnvironment;
 
-        private IEnumerable<TestCase> _discoveredTests;
-        private IEnumerable<string> _sources;
+        private ICollection<TestCase> _discoveredTests;
+        private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
         private static int _count;
         private readonly int _id;
@@ -46,11 +46,12 @@ namespace Stryker.Core.TestRunners.VsTest
             StrykerOptions options,
             OptimizationFlags flags,
             ProjectInfo projectInfo,
-            IEnumerable<TestCase> testCasesDiscovered,
+            ICollection<TestCase> testCasesDiscovered,
             TestCoverageInfos mappingInfos,
             IFileSystem fileSystem = null,
             VsTestHelper helper = null,
-            ILogger logger = null)
+            ILogger logger = null,
+            IVsTestConsoleWrapper wrapper = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
@@ -61,7 +62,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
             CoverageMutants = mappingInfos ?? new TestCoverageInfos();
-            _vsTestConsole = PrepareVsTestConsole();
+            _vsTestConsole = wrapper ?? PrepareVsTestConsole();
             _id = _count++;
             if (testCasesDiscovered != null)
             {
@@ -99,7 +100,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return RunVsTest(testCases, timeoutMs, envVars);
         }
 
-        private void SetListOfTests(IEnumerable<TestCase> tests)
+        private void SetListOfTests(ICollection<TestCase> tests)
         {
             _discoveredTests = tests;
             DetectTestFramework(_discoveredTests);
@@ -110,31 +111,32 @@ namespace Stryker.Core.TestRunners.VsTest
             return DiscoverTests().Count();
         }
 
-        public IEnumerable<TestCase> DiscoverTests(string runSettings = null)
+        public ICollection<TestCase> DiscoverTests(string runSettings = null)
         {
-            if (_discoveredTests == null)
+            if (_discoveredTests != null)
             {
-                using (var waitHandle = new AutoResetEvent(false))
+                return _discoveredTests;
+            }
+            using (var waitHandle = new AutoResetEvent(false))
+            {
+                var handler = new DiscoveryEventHandler(waitHandle, _messages);
+                var generateRunSettings = GenerateRunSettings(null, false);
+                _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
+
+                waitHandle.WaitOne();
+                if (handler.Aborted)
                 {
-                    var handler = new DiscoveryEventHandler(waitHandle, _messages);
-                    var generateRunSettings = GenerateRunSettings(null, false);
-                    _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
-
-                    waitHandle.WaitOne();
-                    if (handler.Aborted)
-                    {
-                        _logger.LogError($"Runner {_id}: Test discovery has been aborted!");
-                    }
-
-                    _discoveredTests = handler.DiscoveredTestCases;
-                    DetectTestFramework(handler.DiscoveredTestCases);
+                    _logger.LogError($"Runner {_id}: Test discovery has been aborted!");
                 }
+
+                _discoveredTests = handler.DiscoveredTestCases;
+                DetectTestFramework(handler.DiscoveredTestCases);
             }
 
             return _discoveredTests;
         }
 
-        private void DetectTestFramework(IEnumerable<TestCase> tests)
+        private void DetectTestFramework(ICollection<TestCase> tests)
         {
             if (tests == null)
             {
@@ -180,6 +182,13 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
+            ParseResultsForCoverage(testResults);
+            CoveredMutants = CoverageMutants.CoveredMutants;
+            return new TestRunResult { Success = true };
+        }
+
+        private void ParseResultsForCoverage(IEnumerable<TestResult> testResults)
+        {
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
@@ -190,16 +199,19 @@ namespace Stryker.Core.TestRunners.VsTest
                 else if (value != null)
                 {
                     var propertyPairValue = (value as string);
-                    if (!string.IsNullOrWhiteSpace(propertyPairValue))
+                    if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        var coverage = propertyPairValue.Split(',').Select(int.Parse);
-                        // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
-                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, coverage);
+                        continue;
                     }
+
+                    var parts = propertyPairValue.Split(';');
+                    // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
+                    var coveredMutants = string.IsNullOrEmpty(parts[0]) ? new List<int>() :parts[0].Split(',').Select(int.Parse).ToList();
+                    var staticMutants = string.IsNullOrEmpty(parts[1]) ? new List<int>() : parts[1].Split(',').Select(int.Parse).ToList();
+                    CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants,
+                        staticMutants);
                 }
             }
-            CoveredMutants = CoverageMutants.CoveredMutants;
-            return new TestRunResult { Success = true };
         }
 
         public IEnumerable<TestResult> CoverageForTest(TestCase test)
@@ -208,25 +220,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var generateRunSettings = GenerateRunSettings(null, true);
             var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
-            foreach (var testResult in coverageForTest)
-            {
-                foreach (var testResultMessage in testResult.Messages)
-                {
-                    _logger.LogDebug($"Runner {_id}: Test output:{Environment.NewLine}{testResultMessage.Text}");
-                }
-
-                var propertyPair = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
-                if (propertyPair.Value != null)
-                {
-                    var coverage = (propertyPair.Value as string)?.Split(',').Select(int.Parse);
-                    CoverageMutants.DeclareMappingForATest(testResult.TestCase, coverage);
-                    return coverageForTest;
-                }
-
-                _logger.LogWarning(
-                    $"Runner {_id}: No coverage for {test.FullyQualifiedName}, maybe this test does not actually test anything.");
-            }
-
+            ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase == test));
             return coverageForTest;
         }
 

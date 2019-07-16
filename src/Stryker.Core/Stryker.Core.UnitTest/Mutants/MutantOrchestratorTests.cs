@@ -95,14 +95,18 @@ namespace Stryker.Core.UnitTest.Mutants
         public void Mutator_ShouldFlagMutatedStatics(string inputFile)
         {
             var source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
+            var expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile.Replace("_IN", "_OUT")).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var tree = CSharpSyntaxTree.ParseText(source);
 
             var target = new MutantOrchestrator();
-            var result = target.Mutate(tree.GetRoot());
+            var actualNode = target.Mutate(tree.GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
             
             var mutants = target.GetLatestMutantBatch().ToList();
 
-            mutants.Count.ShouldBe(3);
+            mutants.Count.ShouldBe(4);
 
             mutants[0].IsStaticValue.ShouldBe(true);
             mutants[1].IsStaticValue.ShouldBe(false);

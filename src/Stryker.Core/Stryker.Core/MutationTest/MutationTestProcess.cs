@@ -68,6 +68,7 @@ namespace Stryker.Core.MutationTest
 
                 if (!file.IsExcluded)
                 {
+                    _logger.LogDebug($"Mutating {file.Name}");
                     // Mutate the syntax tree
                     var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                     // Add the mutated syntax tree for compilation
@@ -198,17 +199,17 @@ namespace Stryker.Core.MutationTest
 
             foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants)
             {
-                var tests = coveredMutants.GetTests<object>(mutant.Id);
-                if (tests == null)
-                {
-                    continue;
-                }
-                if (mutant.IsStaticValue)
+                if (coveredMutants.NeedAllTests(mutant))
                 {
                     _logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we cannot have reliable coverage info. No optimization done.");
                 }
                 else
                 {
+                    var tests = coveredMutants.GetTests<object>(mutant);
+                    if (tests == null)
+                    {
+                        continue;
+                    }
                     mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
                 }
             }

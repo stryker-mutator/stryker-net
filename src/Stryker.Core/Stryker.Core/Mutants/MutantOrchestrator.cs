@@ -6,6 +6,7 @@ using Stryker.Core.Mutators;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Stryker.Core.Mutants
 {
@@ -80,7 +81,23 @@ namespace Stryker.Core.Mutants
                 return currentNode;
             }
 
-            context = context.UpdateContext(currentNode);
+            // identify static related structure
+            switch (currentNode)
+            {
+                // static fields
+                case FieldDeclarationSyntax fieldDeclaration when fieldDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
+                    context = new MutationContext {InStaticValue = true};
+                    break;
+                // static constructors
+                case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
+                    context = new MutationContext {InStaticValue = true};
+                    return MutateStaticConstructor(constructorDeclaration, context);
+                // static properties
+                case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
+                    context = new MutationContext() {InStaticValue = true};
+                    return MutateStaticAccessor(propertyDeclaration, context);
+            }
+
             switch (currentNode)
             {
                 // apply statement specific strategies (where applicable)
@@ -97,6 +114,36 @@ namespace Stryker.Core.Mutants
                     return MutateForStatement(forStatement, context);
             }
             return MutateExpression(currentNode, context);
+        }
+
+        private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
+        {
+            var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
+            var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
+
+            var markedBlock = MutantPlacer.PlaceContextMarker(mutatedBlock);
+
+            return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
+        }
+
+        private SyntaxNode MutateStaticAccessor(PropertyDeclarationSyntax accessorDeclaration, MutationContext context)
+        {
+            var trackedNode = accessorDeclaration.TrackNodes(accessorDeclaration.AccessorList.Accessors.Select(x => (SyntaxNode) x.Body ?? x.ExpressionBody).Where(x => x != null));
+            foreach (var accessor in accessorDeclaration.AccessorList.Accessors)
+            {
+                if (accessor.ExpressionBody != null)
+                {
+                    var markedBlock = Mutate(accessor.ExpressionBody, context);
+                    trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.ExpressionBody), markedBlock);
+                }
+                else if (accessor.Body != null)
+                {
+                    var markedBlock = MutantPlacer.PlaceContextMarker((BlockSyntax) Mutate(accessor.Body, context));
+                    trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
+                }
+            }
+
+            return trackedNode;
         }
 
         private SyntaxNode MutateAssignment(ExpressionStatementSyntax tentativeAssignment, AssignmentExpressionSyntax assign, MutationContext context)

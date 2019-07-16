@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest
             });
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
             var coveredMutants = new TestCoverageInfos();
-            coveredMutants.DeclareMappingForATest("1", new []{2,3});
+            coveredMutants.DeclareMappingForATest("1", new []{2,3}, new []{2});
             initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(0);
             initialisationMock.Setup(x => x.GetCoverage(It.IsAny<StrykerOptions>())).Returns(coveredMutants);
 
