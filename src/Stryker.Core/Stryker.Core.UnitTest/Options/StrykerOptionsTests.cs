@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Options
                     testProjectNameFilter: userSuppliedFilter);
             });
 
-            ex.Details.ShouldContain($"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {fullPath}");
+            ex.Details.ShouldContain($"The test project filter {userSuppliedFilter} is invalid.");
         }
     }
 }
