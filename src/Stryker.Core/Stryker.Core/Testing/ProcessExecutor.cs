@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -42,7 +43,7 @@ namespace Stryker.Core.Testing
             var info = new ProcessStartInfo(application, arguments)
             {
                 UseShellExecute = false,
-                WorkingDirectory = path,
+                WorkingDirectory = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path)),
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardError = RedirectOutput
             };
@@ -78,7 +79,7 @@ namespace Stryker.Core.Testing
                     ExitCode = process.ExitCode,
                     Output = process.Output,
                     Error = process.Error
-                };  
+                };
             }
         }
 

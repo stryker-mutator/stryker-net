@@ -1,13 +1,7 @@
-﻿using Buildalyzer;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.Testing;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
@@ -22,7 +16,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class AssemblyReferenceResolver : IAssemblyReferenceResolver
     {
-        private ILogger _logger { get; set; }
+        private readonly ILogger _logger;
 
         public AssemblyReferenceResolver()
         {
