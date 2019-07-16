@@ -287,7 +287,7 @@ namespace Stryker.Core.Options
             if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {basePath} so this is not allowed.");
+                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.ConvertPathSeparators(basePath)} so this is not allowed.");
             }
             return filter;
         }
