@@ -4,6 +4,7 @@ using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.DataCollector;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.TestRunners
@@ -21,7 +22,7 @@ namespace Stryker.Core.TestRunners
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
 
             _flags = flags;
-            _path = path;
+            _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }

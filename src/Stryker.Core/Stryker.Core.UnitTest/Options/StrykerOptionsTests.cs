@@ -1,11 +1,11 @@
-﻿using System;
-using Serilog.Events;
+﻿using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using System.IO;
 using Xunit;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Core.UnitTest.Options
 {
     public class StrykerOptionsTests
     {
@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest
         [InlineData("trace", LogEventLevel.Verbose)]
         public void Constructor_WithCorrectLoglevelArgument_ShouldAssignCorrectLogLevel(string argValue, LogEventLevel expectedLogLevel)
         {
-            var options = new StrykerOptions(logLevel:argValue);
+            var options = new StrykerOptions(logLevel: argValue);
 
             options.LogOptions.ShouldNotBeNull();
             options.LogOptions.LogLevel.ShouldBe(expectedLogLevel);
@@ -49,6 +49,23 @@ namespace Stryker.Core.UnitTest
             });
 
             ex.Details.ShouldNotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public void CustomTestProjectFilter_WithRelativePath_ShouldIncludeBasePath()
+        {
+            var userSuppliedFilter = "..\\ExampleActualTestProject\\TestProject.csproj";
+            var basePath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
+            var fullPath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
+
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new StrykerOptions(
+                    basePath: basePath,
+                    testProjectNameFilter: userSuppliedFilter);
+            });
+
+            ex.Details.ShouldContain($"The test project filter {userSuppliedFilter} is invalid.");
         }
     }
 }

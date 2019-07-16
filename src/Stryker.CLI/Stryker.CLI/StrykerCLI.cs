@@ -49,6 +49,7 @@ namespace Stryker.CLI
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
+            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -67,6 +68,7 @@ namespace Stryker.CLI
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
+                    testProjectNameParam,
                     timeoutParam,
                     exludedMutationsParam,
                     logConsoleParam,
