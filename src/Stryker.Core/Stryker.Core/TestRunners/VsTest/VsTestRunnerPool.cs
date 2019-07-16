@@ -1,22 +1,23 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.ToolHelpers;
-using System.Threading.Tasks.Dataflow;
-using System.Collections.Concurrent;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
         private readonly OptimizationFlags _flags;
-        private readonly ConcurrentQueue<VsTestRunner> _availableRunners = new ConcurrentQueue<VsTestRunner>();
-        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly Queue<VsTestRunner> _availableRunners = new Queue<VsTestRunner>();
+        private readonly IEnumerable<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private TestCoverageInfos _coverage = new TestCoverageInfos();
+        private readonly object _lck = new object();
 
         public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
@@ -28,13 +29,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
+                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper: _helper));
             });
         }
 
         public TestCoverageInfos CoverageMutants => _coverage;
-
-        public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
 
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
@@ -81,13 +80,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TestRunResult CaptureCoveragePerIsolatedTests()
         {
-            var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+            var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
             Parallel.ForEach(_discoveredTests, options, testCase =>
             {
-                var runner = TakeRunner();
+                var runnerLoop = TakeRunner();
                 try
                 {
-                    runner.CoverageForTest(testCase);
+                    runnerLoop.CoverageForTest(testCase);
                 }
                 catch (Exception e)
                 {
@@ -95,30 +94,47 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 finally
                 {
-                    ReturnRunner(runner);
+                    ReturnRunner(runnerLoop);
                 }
             });
-            return new TestRunResult {Success = true, TotalNumberOfTests = _discoveredTests.Count};
+            return new TestRunResult { Success = true };
         }
 
         private VsTestRunner TakeRunner()
         {
-            _availableRunners.TryDequeue(out var testRunner);
-            return testRunner;
+            VsTestRunner runner;
+            lock (_lck)
+            {
+                while (!_availableRunners.TryDequeue(out runner))
+                {
+                    Monitor.Wait(_lck);
+                }
+            }
+
+            return runner;
         }
 
         private void ReturnRunner(VsTestRunner runner)
         {
-            _availableRunners.Enqueue(runner);
+            lock (_lck)
+            {
+                _availableRunners.Enqueue(runner);
+                Monitor.Pulse(_lck);
+            }
         }
 
         public void Dispose()
         {
-            foreach (var testRunner in _availableRunners)
+            foreach (var runner in _availableRunners)
             {
-                testRunner.Dispose();
+                runner.Dispose();
             }
             _helper.Cleanup();
+        }
+
+        public int DiscoverNumberOfTests()
+        {
+            return _discoveredTests.Count();
         }
     }
 }

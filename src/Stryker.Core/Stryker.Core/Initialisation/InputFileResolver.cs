@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,9 +28,9 @@ namespace Stryker.Core.Initialisation
     public class InputFileResolver : IInputFileResolver
     {
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
-        private IFileSystem _fileSystem { get; }
-        private IProjectFileReader _projectFileReader { get; }
-        private ILogger _logger { get; set; }
+        private readonly IFileSystem _fileSystem;
+        private readonly IProjectFileReader _projectFileReader;
+        private readonly ILogger _logger;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
@@ -47,10 +47,11 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-            var projectFile = ScanProjectFile(options.BasePath);
+
+            var testProjectFile = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
 
             // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(projectFile, options.SolutionPath);
+            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
 
             // Determine project under test
             var reader = new ProjectFileReader();
@@ -152,10 +153,14 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public string ScanProjectFile(string currentDirectory)
+        public string FindProjectFile(string basePath, string testProjectNameFilter)
         {
-            var projectFiles = _fileSystem.Directory.GetFiles(currentDirectory, "*.csproj");
-            _logger.LogTrace("Scanned the current directory for *.csproj files: found {0}", projectFiles);
+            string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
+
+            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
+
+            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
+
             if (projectFiles.Count() > 1)
             {
                 var sb = new StringBuilder();
@@ -165,15 +170,34 @@ namespace Stryker.Core.Initialisation
                     sb.AppendLine(file);
                 }
                 sb.AppendLine();
-                sb.AppendLine("Please fix your project contents");
+                sb.AppendLine("Please specify a test project name filter that results in one project.");
                 throw new StrykerInputException(sb.ToString());
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {Directory.GetCurrentDirectory()}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {basePath}");
             }
+
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
+
             return projectFiles.Single();
+        }
+
+        private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
+        {
+            // Make sure the filter is relative to the base path otherwise we cannot find it
+            var filter = FilePathUtils.ConvertPathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
+
+            // If the filter starts with directory separator char, remove it
+            if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
+            {
+                filter = filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length);
+            }
+
+            // Make sure filter contains wildcard
+            filter = $"*{filter}";
+
+            return filter;
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)

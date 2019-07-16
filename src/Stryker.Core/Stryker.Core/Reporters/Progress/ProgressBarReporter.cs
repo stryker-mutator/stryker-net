@@ -14,10 +14,10 @@ namespace Stryker.Core.Reporters.Progress
         private const int MaxProgressBar = 10;
         private const char ProgressBarDoneToken = '\u2588';
         private const char ProgressBarLeftToken = '-';
-        private const string LoggingFormat = "Tests progress | {0} | {1} / {2} | {3} % | {4} |";
+        private const string LoggingFormat = "Testing mutant | {0} | {1} / {2} | {3} % | {4} |";
 
         private readonly IConsoleOneLineLogger _testsProgressLogger;
-        private readonly IStopWatchProvider _stopWatch; 
+        private readonly IStopWatchProvider _stopWatch;
 
         private int _totalNumberOfMutants;
         private int _numberOfMutantsRun;
@@ -67,7 +67,7 @@ namespace Stryker.Core.Reporters.Progress
 
             var elapsed = _stopWatch.GetElapsedMillisecond();
             var remaining = (_totalNumberOfMutants - _numberOfMutantsRun) * elapsed / _numberOfMutantsRun;
-            
+
             return MillisecondsToText(remaining);
         }
 
