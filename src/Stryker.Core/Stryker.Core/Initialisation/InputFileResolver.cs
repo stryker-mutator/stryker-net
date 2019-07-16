@@ -189,8 +189,11 @@ namespace Stryker.Core.Initialisation
             var filter = FilePathUtils.ConvertPathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
 
             // If the filter starts with directory separator char, remove it
-            filter = filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar) ?
-                filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length) : filter;
+            if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
+            {
+                filter = filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length);
+            }
+
             // Make sure filter contains wildcard
             filter = $"*{filter}";
 
