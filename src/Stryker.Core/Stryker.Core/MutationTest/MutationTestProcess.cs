@@ -190,10 +190,9 @@ namespace Stryker.Core.MutationTest
             Logger.LogDebug("Optimize test runs according to coverage info.");
 
             var nonCoveredMutants = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
-            const MutantStatus mutantResultStatus = MutantStatus.NoCoverage;
             foreach (var mutant in nonCoveredMutants)
             {
-                mutant.ResultStatus = mutantResultStatus;
+                mutant.ResultStatus = MutantStatus.NoCoverage;
             }
 
             foreach (var mutant in Input.ProjectInfo.ProjectContents.Mutants)
