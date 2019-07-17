@@ -207,7 +207,7 @@ namespace Stryker.Core.MutationTest
 
             Logger.LogInformation(nonCoveredMutants.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
-                : $"{nonCoveredMutants.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
+                : $"{nonCoveredMutants.Count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.NoCoverage}).");
         }
     }
 }
