@@ -240,6 +240,84 @@ namespace Stryker.Core.UnitTest.TestRunners
             }
         }
 
+        [Fact]
+        public void AbortOnError()
+        {
+            var options = new StrykerOptions();
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestMock(options);
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.AbortTestOnKill,
+                    _targetProject,
+                    null,
+                    null,
+                    _fileSystem,
+                    wrapper: mockVsTest.Object,
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+
+                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                        It.IsAny<string>(),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        MoqTestRun(testRunEvents, _testCases, false);
+                        endProcess.Set();
+                    });
+
+                var result = runner.RunAll(null, _mutant);
+                // verify Abort has been called
+                Mock.Verify(mockVsTest);
+                result.Success.ShouldBe(false);
+            }
+        }
+
+        [Fact]
+        public void CaptureCoverage()
+        {
+            var options = new StrykerOptions();
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestMock(options);
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.AbortTestOnKill,
+                    _targetProject,
+                    null,
+                    null,
+                    _fileSystem,
+                    wrapper: mockVsTest.Object,
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+
+                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                        It.IsAny<string>(),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        MoqTestRun(testRunEvents, _testCases, false);
+                        endProcess.Set();
+                    });
+
+                var result = runner.RunAll(null, _mutant);
+                // verify Abort has been called
+                Mock.Verify(mockVsTest);
+                result.Success.ShouldBe(false);
+            }
+        }
+
         private void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestCase> testCases, bool pass)
         {
             Task.Run(() =>
