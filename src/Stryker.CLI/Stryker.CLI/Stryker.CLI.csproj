@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Stryker.CLI</RootNamespace>
     <AssemblyName>Stryker.CLI</AssemblyName>
+    <LangVersion>7.1</LangVersion>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-stryker</ToolCommandName>
