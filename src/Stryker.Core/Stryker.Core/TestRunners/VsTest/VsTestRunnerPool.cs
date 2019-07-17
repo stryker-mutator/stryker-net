@@ -1,25 +1,33 @@
-﻿using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
         private readonly OptimizationFlags _flags;
-        private readonly Queue<VsTestRunner> _availableRunners = new Queue<VsTestRunner>();
-        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
+        private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private readonly IEnumerable<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
-        private TestCoverageInfos _coverage;
-        private readonly object _lck = new object();
+        private readonly ILogger _logger;
+        
+        public TestCoverageInfos CoverageMutants { get; private set; } = new TestCoverageInfos();
 
         public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
+
             _flags = flags;
             using (var runner = new VsTestRunner(options, _flags, projectInfo, null, null))
             {
@@ -28,18 +36,15 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Enqueue(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, _coverage, helper:_helper));
+                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, CoverageMutants, helper: _helper));
             });
         }
-
-        public TestCoverageInfos CoverageMutants => _coverage;
-
-        public IEnumerable<int> CoveredMutants => _coverage.CoveredMutants;
-
+        
         public TestRunResult RunAll(int? timeoutMs, int? mutationId)
         {
             var runner = TakeRunner();
             TestRunResult result;
+
             try
             {
                 result = runner.RunAll(timeoutMs, mutationId);
@@ -53,19 +58,21 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            TestRunResult result;
             var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
             if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
             {
                 return CaptureCoveragePerIsolatedTests();
             }
+
             var runner = TakeRunner();
+            TestRunResult result;
+
             try
             {
                 if (needCoverage)
                 {
                     result = runner.CaptureCoverage();
-                    _coverage = runner.CoverageMutants;
+                    CoverageMutants = runner.CoverageMutants;
                 }
                 else
                 {
@@ -81,35 +88,34 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TestRunResult CaptureCoveragePerIsolatedTests()
         {
-            var options = new ParallelOptions {MaxDegreeOfParallelism = _availableRunners.Count};
+            var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
+
             Parallel.ForEach(_discoveredTests, options, testCase =>
             {
-                var runnerLoop = TakeRunner();
+                var runner = TakeRunner();
                 try
                 {
-                    runnerLoop.CoverageForTest(testCase);
+                    runner.CoverageForTest(testCase);
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e);
+                    _logger.LogError("Something went wrong while capturing coverage", e);
                 }
                 finally
                 {
-                    ReturnRunner(runnerLoop);
+                    ReturnRunner(runner);
                 }
             });
-            return new TestRunResult {Success = true, TotalNumberOfTests = _discoveredTests.Count};
+
+            return new TestRunResult { Success = true };
         }
 
         private VsTestRunner TakeRunner()
         {
             VsTestRunner runner;
-            lock (_lck)
+            while (!_availableRunners.TryTake(out runner))
             {
-                while (!_availableRunners.TryDequeue(out runner))
-                {
-                    Monitor.Wait(_lck);
-                }
+                _runnerAvailableHandler.WaitOne();
             }
 
             return runner;
@@ -117,11 +123,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void ReturnRunner(VsTestRunner runner)
         {
-            lock (_lck)
-            {
-                _availableRunners.Enqueue(runner);
-                Monitor.Pulse(_lck);
-            }
+            _availableRunners.Add(runner);
+            _runnerAvailableHandler.Set();
         }
 
         public void Dispose()
@@ -131,6 +134,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 runner.Dispose();
             }
             _helper.Cleanup();
+            _runnerAvailableHandler.Dispose();
+        }
+
+        public int DiscoverNumberOfTests()
+        {
+            return _discoveredTests.Count();
         }
     }
 }

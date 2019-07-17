@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Stryker.Core.Exceptions;
@@ -17,13 +17,14 @@ namespace Stryker.CLI
             string basePath,
             CommandOption reporter,
             CommandOption projectUnderTestNameFilter,
+            CommandOption testProjectNameFilter,
             CommandOption additionalTimeoutMS,
             CommandOption excludedMutations,
             CommandOption logLevel,
             CommandOption logToFile,
             CommandOption devMode,
             CommandOption coverageAnalysis,
-            CommandOption abortOnFail,
+            CommandOption abortTestOnFail,
             CommandOption configFilePath,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
@@ -31,7 +32,8 @@ namespace Stryker.CLI
             CommandOption thresholdBreak,
             CommandOption filesToExclude,
             CommandOption testRunner,
-            CommandOption solutionPath)
+            CommandOption solutionPath,
+            CommandOption languageVersion)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -46,6 +48,7 @@ namespace Stryker.CLI
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
+                testProjectNameFilter: GetOption(testProjectNameFilter.Value(), CLIOptions.TestProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 logLevel: GetOption(logLevel.Value(), CLIOptions.LogLevel),
@@ -53,18 +56,19 @@ namespace Stryker.CLI
                 devMode: GetOption(devMode.HasValue(), CLIOptions.DevMode),
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
-                abortOnFail: GetOption(abortOnFail.Value(), CLIOptions.AbortOnFailTest),
+                abortTestOnFail: GetOption(abortTestOnFail.HasValue(), CLIOptions.AbortTestOnFail),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
-                solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath));
+                solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
+                languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            if (cliValue != null)
+            if (cliValue != null && ((option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue == true) || option.ValueType != CommandOptionType.NoValue))
             {
                 // Convert the cliValue string to the desired type
                 return ConvertTo(cliValue, option);

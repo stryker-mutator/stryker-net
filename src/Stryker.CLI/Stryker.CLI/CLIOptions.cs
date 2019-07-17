@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -25,7 +26,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
+            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
     This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
             DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
@@ -87,6 +88,15 @@ namespace Stryker.CLI
             JsonKey = "project-file"
         };
 
+        public static readonly CLIOption<string> TestProjectFileName = new CLIOption<string>
+        {
+            ArgumentName = "--test-project-file",
+            ArgumentShortName = "-tp <testProjectFileName>",
+            ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
+            DefaultValue = _defaultOptions.TestProjectNameFilter,
+            JsonKey = "test-project-file"
+        };
+
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
             ArgumentName = "--coverage-analysis",
@@ -100,12 +110,13 @@ namespace Stryker.CLI
             JsonKey = "coverage-analysis"
         };
 
-        public static readonly CLIOption<bool> AbortOnFailTest = new CLIOption<bool>
+        public static readonly CLIOption<bool> AbortTestOnFail = new CLIOption<bool>
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
-            DefaultValue = false,
+            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill),
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
+            ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
         };
 
@@ -176,15 +187,19 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr",
-            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString<TestRunner>(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
             JsonKey = "test-runner"
         };
 
-        private static string FormatOptionsString<T>(T @default, IEnumerable<T> options)
+        public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
         {
-            return FormatOptionsString<T, T>(@default, options);
-        }
+            ArgumentName = "--language-version",
+            ArgumentShortName = "-lv",
+            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
+            DefaultValue = _defaultOptions.LanguageVersion.ToString(),
+            JsonKey = "language-version"
+        };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
         {
@@ -195,20 +210,21 @@ namespace Stryker.CLI
         {
             StringBuilder optionsString = new StringBuilder();
 
-            optionsString.Append($"Options[(default) [{string.Join(", ", @default)}], ");
+            optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
             string nonDefaultOptions = string.Join(
             ", ",
             options
-            .Where(o => @default.All(d => d.ToString() != o.ToString()))
-            .Where(o => deprecated.All(d => d.ToString() != o.ToString())));
+            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
+            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
 
+            string deprecatedOptions = "";
             if (deprecated.Any())
             {
-                string deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
-                optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+                deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
             }
 
-            optionsString.Append("]");
+            optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+            optionsString.Append(" ]");
 
             return optionsString.ToString();
         }

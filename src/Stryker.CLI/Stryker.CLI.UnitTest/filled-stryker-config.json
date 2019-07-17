@@ -6,7 +6,7 @@
     "log-level": "trace",
     "dev-mode": true,
     "coverage-analysis": "perTest",
-   "abort-test-on-fail":  true,  
+    "abort-test-on-fail": true,
     "timeout-ms": 9999,
     "log-file": true,
     "project-file": "ExampleProject.csproj",

@@ -35,11 +35,19 @@ MSBuild.exe "*.sln"
 ```
 
 ## Project file
-When Stryker finds two or more project references inside your test project, it needs to know what project should be mutated. Pass the name of this project using:
+When Stryker finds two or more project references inside your test project, it needs to know which project should be mutated. Pass the name of this project using:
 
 ```
 dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
+```
+
+## Test Project file
+When Stryker finds two or more project files in the working directory, it needs to which is your test project. Pass the name of this project using:
+
+```
+dotnet stryker --test-project-file ExampleTestProject.csproj
+dotnet stryker -tp ExampleTestProject.csproj
 ```
 
 ## Specify testrunner
