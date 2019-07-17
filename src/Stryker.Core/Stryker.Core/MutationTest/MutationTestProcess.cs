@@ -148,13 +148,13 @@ namespace Stryker.Core.MutationTest
                 {
                     _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
                 }
-                if (Input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    Logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
+                    _logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
                 }
-                if (!Input.ProjectInfo.ProjectContents.Mutants.Any())
+                if (!_input.ProjectInfo.ProjectContents.Mutants.Any())
                 {
-                    Logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                    _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     new StrykerRunResult(options, null);
                 }
             }
@@ -168,7 +168,7 @@ namespace Stryker.Core.MutationTest
                     new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                     mutant =>
                     {
-                        _mutationTestExecutor.Test(mutant, Input.TimeoutMs);
+                        _mutationTestExecutor.Test(mutant, _input.TimeoutMs);
 
                         _reporter.OnMutantTested(mutant);
                     });
@@ -192,7 +192,7 @@ namespace Stryker.Core.MutationTest
 
             _logger.LogDebug("Optimize test runs according to coverage info.");
 
-            var nonCoveredMutants = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
+            var nonCoveredMutants = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
 
             foreach (var mutant in nonCoveredMutants)
             {
