@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -88,6 +88,15 @@ namespace Stryker.CLI
             JsonKey = "project-file"
         };
 
+        public static readonly CLIOption<string> TestProjectFileName = new CLIOption<string>
+        {
+            ArgumentName = "--test-project-file",
+            ArgumentShortName = "-tp <testProjectFileName>",
+            ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
+            DefaultValue = _defaultOptions.TestProjectNameFilter,
+            JsonKey = "test-project-file"
+        };
+
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
             ArgumentName = "--coverage-analysis",
@@ -101,12 +110,13 @@ namespace Stryker.CLI
             JsonKey = "coverage-analysis"
         };
 
-        public static readonly CLIOption<bool> AbortOnFailTest = new CLIOption<bool>
+        public static readonly CLIOption<bool> AbortTestOnFail = new CLIOption<bool>
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
-            DefaultValue = false,
+            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill),
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
+            ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
         };
 

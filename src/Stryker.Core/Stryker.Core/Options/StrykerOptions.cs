@@ -25,15 +25,15 @@ namespace Stryker.Core.Options
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
+        public string TestProjectNameFilter { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public int ConcurrentTestrunners { get; }
-
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<string> FilesToExclude { get; }
-        public LanguageVersion LanguageVersion { get; set; }
-        public OptimizationFlags Optimizations { get; private set; }
+        public LanguageVersion LanguageVersion { get; }
+        public OptimizationFlags Optimizations { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -43,13 +43,14 @@ namespace Stryker.Core.Options
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
+            string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
             string coverageAnalysis = "",
-            bool abortOnFail = false,
+            bool abortTestOnFail = false,
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
@@ -66,12 +67,13 @@ namespace Stryker.Core.Options
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
+            TestProjectNameFilter = ValidateTestProjectFilter(basePath, testProjectNameFilter);
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
-            Optimizations = ValidateMode(coverageAnalysis) | (abortOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
+            Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilesToExclude = ValidateFilesToExclude(filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
@@ -268,6 +270,26 @@ namespace Stryker.Core.Options
             solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
+        }
+
+        private string ValidateTestProjectFilter(string basePath, string userSuppliedFilter)
+        {
+            string filter;
+            if (userSuppliedFilter.Contains(".."))
+            {
+                filter = FilePathUtils.ConvertPathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
+            }
+            else
+            {
+                filter = FilePathUtils.ConvertPathSeparators(userSuppliedFilter);
+            }
+
+            if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
+            {
+                throw new StrykerInputException(ErrorMessage,
+                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.ConvertPathSeparators(basePath)} so this is not allowed.");
+            }
+            return filter;
         }
 
         private LanguageVersion ValidateLanguageVersion(string languageVersion)

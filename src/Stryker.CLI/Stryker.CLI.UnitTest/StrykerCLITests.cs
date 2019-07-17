@@ -6,29 +6,14 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Stryker.CLI.UnitTest
 {
 
     public class StrykerCLITests
     {
-        private readonly ITestOutputHelper _output;
-        private string _fileSystemRoot { get; }
-
-        private string _currentDirectory { get; }
-
-        public StrykerCLITests(ITestOutputHelper output)
-        {
-            _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            _fileSystemRoot = Path.GetPathRoot(_currentDirectory);
-            _output = output;
-        }
-
         [Theory]
         [InlineData("--help")]
         [InlineData("-h")]
@@ -137,6 +122,23 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "SomeProjectName.csproj" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestNameFilter == "SomeProjectName.csproj")));
+        }
+
+        [Theory]
+        [InlineData("--test-project-file")]
+        [InlineData("-tp")]
+        public void StrykerCLI_WithTestProjectArgument_ShouldPassTestProjectArgumentsToStryker(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3M);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "TestProjectFolder/SomeTestProjectName.csproj" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == "TestProjectFolder/SomeTestProjectName.csproj")));
         }
 
         [Theory]

@@ -65,6 +65,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
+            actualOptions.DevMode.ShouldBe(true);
             actualOptions.AdditionalTimeoutMS.ShouldBe(9999);
             actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Verbose);
             actualOptions.ProjectUnderTestNameFilter.ShouldBe("ExampleProject.csproj");

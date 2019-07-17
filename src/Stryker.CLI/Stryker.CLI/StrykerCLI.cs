@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Stryker.CLI.NuGet;
 using Stryker.Core;
@@ -44,11 +44,12 @@ namespace Stryker.CLI
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
-            var advancedOptions = CreateOption(app, CLIOptions.AbortOnFailTest);
+            var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
+            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -67,13 +68,14 @@ namespace Stryker.CLI
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
+                    testProjectNameParam,
                     timeoutParam,
                     exludedMutationsParam,
                     logConsoleParam,
                     fileLogParam,
                     devMode,
                     coverageAnalysis,
-                    advancedOptions,
+                    abortTestOnFailParam,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
