@@ -26,6 +26,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
         private readonly ProjectInfo _projectInfo;
+        private readonly Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestConsoleWrapper _vsTestConsole;
         private readonly VsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
@@ -51,13 +52,15 @@ namespace Stryker.Core.TestRunners.VsTest
             IFileSystem fileSystem = null,
             VsTestHelper helper = null,
             ILogger logger = null,
-            IVsTestConsoleWrapper wrapper = null)
+            IVsTestConsoleWrapper wrapper = null,
+            Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> hostBuilder = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
+            _hostBuilder = hostBuilder ?? ((dico, id) => new StrykerVsTestHostLauncher(dico, id));
             SetListOfTests(testCasesDiscovered);
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
@@ -75,6 +78,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {CoverageCollector.ModeEnvironmentVariable, flags.HasFlag(OptimizationFlags.UseEnvVariable) ? CoverageCollector.EnvMode : CoverageCollector.PipeMode}
             };
         }
+
 
         public IEnumerable<int> CoveredMutants { get; private set; }
 
@@ -237,7 +241,7 @@ namespace Stryker.Core.TestRunners.VsTest
             using (var runCompleteSignal = new AutoResetEvent(false))
             {
                 var eventHandler = new RunEventHandler(runCompleteSignal, _logger);
-                var strykerVsTestHostLauncher1 = new StrykerVsTestHostLauncher(null, envVars, _id);
+                var strykerVsTestHostLauncher1 = _hostBuilder(envVars, _id);
                 if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                 {
                     eventHandler.TestsFailed += Handler_TestsFailed;
