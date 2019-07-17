@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Shouldly;
+using Stryker.DataCollector;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -10,9 +11,9 @@ namespace Stryker.Core.UnitTest.TestRunners
     {
         private static bool WaitFor(object lck, Func<bool> predicate, int timeout)
         {
-            var start = new Stopwatch();
-            start.Start();
-            while (start.ElapsedMilliseconds<timeout)
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            while (stopwatch.ElapsedMilliseconds < timeout)
             {
                 lock (lck)
                 {
@@ -20,13 +21,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                     {
                         return true;
                     }
-                    Monitor.Wait(lck, (int)Math.Max(0, timeout - start.ElapsedMilliseconds));
+                    Monitor.Wait(lck, (int)Math.Max(0, timeout - stopwatch.ElapsedMilliseconds));
                 }
             }
 
             return predicate();
         }
-        
+
         [Fact]
         public void CanConnect()
         {
@@ -35,7 +36,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var count = 0;
                 var lck = new object();
                 server.Listen();
-                server.RaiseNewClientEvent += (x, e) => {
+                server.RaiseNewClientEvent += (x, e) =>
+                {
                     lock (lck)
                     {
                         count++;
@@ -44,13 +46,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                 };
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
-                    Assert.True(client.IsConnected);
-                    Assert.True(WaitFor(lck, () =>  count==1, 1000));
+                    client.IsConnected.ShouldBeTrue("First client could not connect to server pipe");
+                    WaitFor(lck, () => count == 1, 1000).ShouldBeTrue("First client connection event was not raised");
                 }
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
-                    Assert.True(client.IsConnected);
-                    Assert.True(WaitFor(lck, () =>  count==2, 1000));
+                    client.IsConnected.ShouldBeTrue("Second client could not connect to server pipe");
+                    WaitFor(lck, () => count == 2, 1000).ShouldBeTrue("First client connection event was not raised");
                 }
             }
         }
@@ -64,34 +66,34 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var message = string.Empty;
                 CommunicationChannel serverSide = null;
                 server.Listen();
-                server.RaiseNewClientEvent += (o, e) => 
+                server.RaiseNewClientEvent += (o, e) =>
                 {
                     lock (lck)
                     {
-                        serverSide = e.Client; 
-                        serverSide.RaiseReceivedMessage+=(o2, msg) =>
-                        {
-                            lock (lck)
-                            {
-                                message = msg;
-                                Monitor.Pulse(lck);
-                            }
-                        };
+                        serverSide = e.Client;
+                        serverSide.RaiseReceivedMessage += (o2, msg) =>
+                          {
+                              lock (lck)
+                              {
+                                  message = msg;
+                                  Monitor.Pulse(lck);
+                              }
+                          };
                         Monitor.Pulse(lck);
                     }
                 };
                 using (var client = CommunicationChannel.Client(server.PipeName))
                 {
-                    Assert.True(client.IsConnected);
-                    Assert.True(WaitFor(lck, () => serverSide!=null, 1000));
+                    client.IsConnected.ShouldBeTrue("Client could not connect to server pipe");
+                    WaitFor(lck, () => serverSide != null, 1000).ShouldBeTrue("Client connection event was not raised");
                     client.Start();
                     client.RaiseReceivedMessage += (o, msg) =>
                     {
                         client.SendText(msg);
                     };
                     serverSide.SendText("it works");
-                    Assert.True(WaitFor(lck, () => !string.IsNullOrEmpty(message), 1000));
-                    Assert.Equal("it works", message);
+                    WaitFor(lck, () => !string.IsNullOrEmpty(message), 1000).ShouldBeTrue("Client message received event was not raised");
+                    message.ShouldBe("it works");
                 }
             }
         }
