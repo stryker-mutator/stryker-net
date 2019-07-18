@@ -70,7 +70,8 @@ namespace Stryker.Core
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner));
+                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
+                    options: options);
 
                 // initial test
                 _input.TimeoutMs = _initialisationProcess.InitialTest(options);

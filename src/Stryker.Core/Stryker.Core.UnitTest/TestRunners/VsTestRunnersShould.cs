@@ -21,6 +21,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
+    /// <summary>
+    /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the test may be hard to read.
+    /// This is sad but expected. Please use caution when changing/creating tests.
+    /// </summary>
     public class VsTestRunnersShould
     {
         private readonly string _testAssemblyPath;
@@ -29,7 +33,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Mutant _mutant;
         private readonly TestCase[] _testCases;
 
-        // initialize the test context
+        // initialize the test context and mock objects
         public VsTestRunnersShould()
         {
             var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -83,26 +87,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             _testCases = new []{firstTest, secondTest};
         }
 
-        [Fact]
-        public void InitializeAndDiscoverTests()
-        {
-            using (var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset))
-            {
-                var options = new StrykerOptions();
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.NoOptimization, 
-                    _targetProject, 
-                    null,
-                    null, 
-                    _fileSystem,
-                    wrapper: mockVsTest.Object, 
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
-                runner.DiscoverNumberOfTests().ShouldBe(2);
-                
-            }
-        }
 
         private Mock<IVsTestConsoleWrapper> BuildVsTestMock(StrykerOptions options)
         {
@@ -116,6 +100,28 @@ namespace Stryker.Core.UnitTest.TestRunners
                 (IEnumerable<string> sources, string discoverySettings, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
                     DiscoverTests(sources, discoverySettings, discoveryEventsHandler, _testCases, false));
             return mockVsTest;
+        }
+
+        [Fact]
+        public void InitializeAndDiscoverTests()
+        {
+            using (var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset))
+            {
+                var options = new StrykerOptions();
+                var mockVsTest = BuildVsTestMock(options);
+
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.NoOptimization, 
+                    _targetProject, 
+                    null,
+                    null, 
+                    _fileSystem,
+                    wrapper: mockVsTest.Object, 
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                // make sure we have discovered first and second tests
+                runner.DiscoverNumberOfTests().ShouldBe(2);
+            }
         }
 
         [Fact]
@@ -145,11 +151,15 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
+                        // generate two successful test results
                         MoqTestRun(testRunEvents, _testCases, true);
                         endProcess.Set();
                     });
+
+
                 var result = runner.RunAll(null, _mutant);
 
+                // tests are successful => run should be successful
                 result.Success.ShouldBe(true);
             }
         }
@@ -179,10 +189,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
+                        // tests are failing
                         MoqTestRun(testRunEvents, _testCases, false);
                         endProcess.Set();
                     });
+
                 var result = runner.RunAll(null, _mutant);
+                // run is failed
                 result.Success.ShouldBe(false);
                 
             }
@@ -213,6 +226,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
+                        // generate in incomplete run
                         Task.Run(() =>
                         {
                             var timer = new Stopwatch();
@@ -236,6 +250,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
                 
+                // timeout is notified via exception
                 Should.Throw<OperationCanceledException>(() => runner.RunAll(null, _mutant));
             }
         }
@@ -268,6 +283,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
+                        // generate failed test results
                         MoqTestRun(testRunEvents, _testCases, false);
                         endProcess.Set();
                     });
@@ -275,12 +291,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var result = runner.RunAll(null, _mutant);
                 // verify Abort has been called
                 Mock.Verify(mockVsTest);
+                // and test run is failed
                 result.Success.ShouldBe(false);
             }
         }
 
         [Fact]
-        public void CaptureCoverageGWhenSkippingUncovered()
+        public void CaptureCoverageWhenSkippingUncovered()
         {
             var options = new StrykerOptions();
 
@@ -308,25 +325,31 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
-                        settings.ShouldContain("DataCollector");
-                        var results = new TestResult[_testCases.Length];
-                        for(var i = 0; i < _testCases.Length; i++)
+                        Task.Run(() =>
                         {
-                            results[i] = new TestResult(_testCases[i])
+                            // ensure coverage capture is properly configured
+                            settings.ShouldContain("DataCollector");
+                            var results = new TestResult[_testCases.Length];
+                            for (var i = 0; i < _testCases.Length; i++)
                             {
-                                Outcome = TestOutcome.Passed, ComputerName = "."
-                            };
-                        }
-                        results[0].SetPropertyValue(coverageProperty, "1;");
-                        MoqTestRun(testRunEvents, results);
-                        endProcess.Set();
+                                results[i] = new TestResult(_testCases[i])
+                                {
+                                    Outcome = TestOutcome.Passed, ComputerName = "."
+                                };
+                            }
+
+                            results[0].SetPropertyValue(coverageProperty, "1;");
+                            MoqTestRun(testRunEvents, results);
+                            endProcess.Set();
+                        });
                     });
 
                 var result = runner.CaptureCoverage();
+
+                // only one mutant is covered
                 runner.CoveredMutants.ShouldHaveSingleItem();
 
-
-                // verify Abort has been called
+                // capture when ok
                 result.Success.ShouldBe(true);
             }
         }
@@ -360,22 +383,29 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
-                        settings.ShouldContain("DataCollector");
-                        var results = new TestResult[_testCases.Length];
-                        for(var i = 0; i < _testCases.Length; i++)
+                        Task.Run(() =>
                         {
-                            results[i] = new TestResult(_testCases[i])
+                            // generate coverage data covering only mutant (1)
+                            settings.ShouldContain("DataCollector");
+                            var results = new TestResult[_testCases.Length];
+                            for (var i = 0; i < _testCases.Length; i++)
                             {
-                                Outcome = TestOutcome.Passed, ComputerName = "."
-                            };
-                            results[i].SetPropertyValue(coverageProperty, "1;");
-                        }
-                        MoqTestRun(testRunEvents, results);
-                        endProcess.Set();
+                                results[i] = new TestResult(_testCases[i])
+                                {
+                                    Outcome = TestOutcome.Passed, ComputerName = "."
+                                };
+                                results[i].SetPropertyValue(coverageProperty, "1;");
+                            }
+
+                            MoqTestRun(testRunEvents, results);
+                            endProcess.Set();
+                        });
                     });
 
                 var result = runner.CaptureCoverage();
+                // one mutant is covered
                 runner.CoveredMutants.ShouldHaveSingleItem();
+                // it is covered by both tests
                 runner.CoverageMutants.GetTests<TestCase>(new Mutant(){Id = 1}).ShouldBe(_testCases);
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
@@ -411,24 +441,31 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
-                        settings.ShouldContain("DataCollector");
-                        var results = new TestResult[_testCases.Length];
-                        for(var i = 0; i < _testCases.Length; i++)
+                        Task.Run(() =>
                         {
-                            results[i] = new TestResult(_testCases[i])
+                            // generate coverage results
+                            settings.ShouldContain("DataCollector");
+                            var results = new TestResult[_testCases.Length];
+                            for (var i = 0; i < _testCases.Length; i++)
                             {
-                                Outcome = TestOutcome.Passed, ComputerName = "."
-                            };
-                        }
-                        results[0].SetPropertyValue(coverageProperty, "1;");
-                        MoqTestRun(testRunEvents, results);
-                        endProcess.Set();
+                                results[i] = new TestResult(_testCases[i])
+                                {
+                                    Outcome = TestOutcome.Passed, ComputerName = "."
+                                };
+                            }
+
+                            // only first test covers one mutant
+                            results[0].SetPropertyValue(coverageProperty, "1;");
+                            MoqTestRun(testRunEvents, results);
+                            endProcess.Set();
+                        });
                     });
 
                 runner.CaptureCoverage();
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
+                        // we expect a run with only one test
                         It.Is<IEnumerable<TestCase>>(t => t.Count()==1),
                         It.IsAny<string>(),
                         It.IsAny<ITestRunEventsHandler>(),
@@ -437,21 +474,19 @@ namespace Stryker.Core.UnitTest.TestRunners
                         ITestHostLauncher host) =>
                     {
                         settings.ShouldNotContain("DataCollector");
-                        var results = new List<TestResult>();
-                        foreach(var test in sources)
-                        {
-                            results.Add( new TestResult(test)
-                            {
-                                Outcome = TestOutcome.Passed, ComputerName = "."
-                            });
-                        }
+                        // setup a normal test run
+                        var results = sources.Select(test => new TestResult(test) {Outcome = TestOutcome.Passed, ComputerName = "."}).ToList();
 
                         results.ShouldHaveSingleItem();
                         MoqTestRun(testRunEvents, results);
                         endProcess.Set();
                     });
+
                 var mutant = new Mutant{Id = 1};
-                mutant.CoveringTest = runner.CoverageMutants.GetTests<TestCase>(mutant).Select( x => x.FullyQualifiedName).ToList();
+                var mutants = new List<Mutant> {mutant};
+                // process coverage information
+                runner.CoverageMutants.UpdateMutants(mutants);
+
                 var result = runner.RunAll(0, mutant);
 
                 // verify Abort has been called
@@ -460,7 +495,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void RunAllTestOnStatic()
+        public void RunAllTestsOnStatic()
         {
             var options = new StrykerOptions();
 
@@ -470,6 +505,87 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var runner = new VsTestRunner(
                     options,
                     OptimizationFlags.CoverageBasedTest,
+                    _targetProject,
+                    null,
+                    null,
+                    _fileSystem,
+                    wrapper: mockVsTest.Object,
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+
+                var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
+                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                        It.Is<string>(settings => settings.Contains("DataCollector")),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        Task.Run(() =>
+                        {
+                            // provides coverage result with static mutant
+                            var results = new TestResult[_testCases.Length];
+                            for (var i = 0; i < _testCases.Length; i++)
+                            {
+                                results[i] = new TestResult(_testCases[i])
+                                {
+                                    Outcome = TestOutcome.Passed, ComputerName = "."
+                                };
+                            }
+
+                            results[0].SetPropertyValue(coverageProperty, "1;1");
+                            MoqTestRun(testRunEvents, results);
+                            endProcess.Set();
+                        });
+                    });
+
+                runner.CaptureCoverage();
+
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.IsAny<IEnumerable<string>>(),
+                        It.Is<string>(settings => !settings.Contains("DataCollector")),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        var results = _testCases.Select(test => new TestResult(test) {Outcome = TestOutcome.Failed, ComputerName = "."}).ToList();
+                        // we expect only one test
+                        results.Count.ShouldBe(2);
+                        MoqTestRun(testRunEvents, results);
+                        endProcess.Set();
+                    });
+                var mutant = new Mutant{Id = 1};
+                var otherMutant = new Mutant{Id = 0};
+                var mutants = new List<Mutant> {mutant, otherMutant};
+                // process coverage info
+                runner.CoverageMutants.UpdateMutants(mutants);
+                // mutant 1 is covered
+                mutant.MustRunAllTests.ShouldBeTrue();
+                var result = runner.RunAll(0, mutant);
+                // mutant is killed
+                result.Success.ShouldBe(false);
+                // mutant 0 is not covered
+                result = runner.RunAll(0, otherMutant);
+                // tests are ok
+                result.Success.ShouldBe(true);
+            }
+        }
+
+        [Fact]
+        public void RunRelevantTestsOnStaticWhenPerTestCoverage()
+        {
+            var options = new StrykerOptions();
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestMock(options);
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.CoverageBasedTest|OptimizationFlags.CaptureCoveragePerTest,
                     _targetProject,
                     null,
                     null,
@@ -497,7 +613,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                                 Outcome = TestOutcome.Passed, ComputerName = "."
                             };
                         }
-                        results[0].SetPropertyValue(coverageProperty, "0;1");
+                        results[0].SetPropertyValue(coverageProperty, "0,1;1");
                         MoqTestRun(testRunEvents, results);
                         endProcess.Set();
                     });
@@ -528,17 +644,17 @@ namespace Stryker.Core.UnitTest.TestRunners
                         endProcess.Set();
                     });
                 var mutant = new Mutant{Id = 1};
-                runner.CoverageMutants.GetTests<TestCase>(mutant).ShouldBeNull();
+                runner.CoverageMutants.GetTests<TestCase>(mutant).ShouldHaveSingleItem();
                 var otherMutant = new Mutant{Id = 0};
                 otherMutant.CoveringTest = runner.CoverageMutants.GetTests<TestCase>(otherMutant).Select(x => x.FullyQualifiedName).ToList();
                 var result = runner.RunAll(0, otherMutant);
 
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
-
             }
         }
 
+        // mock a VsTest run. Generate test results from the provided list of tests that either succed of fail depending on 'pass'
         private void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestCase> testCases, bool pass)
         {
             var results = new TestResult[testCases.Count];
@@ -552,6 +668,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             MoqTestRun(testRunEvents, results);
         }
 
+        // mock a VsTest run. Provides test result one by one at 10 ms intervals
+        // note: a lot of information is still missing (vs real VsTest). You will have to add them if your test requires them
         private void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestResult> testResults)
         {
             Task.Run(() =>
@@ -582,42 +700,43 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
                 ContinueWith((t, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
-            ;
+        }
+
+        // class mocking the VsTest Host Launcher
+        private class MoqHost : IStrykerTestHostLauncher
+        {
+            private WaitHandle handle;
+            private readonly IDictionary<string, string> _dico;
+            private readonly int _id;
+
+            public MoqHost(WaitHandle handle, IDictionary<string, string> dico, int id)
+            {
+                this.handle = handle;
+                _dico = dico;
+                _id = id;
+            }
+
+            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsDebug { get; }
+            public bool WaitProcessExit()
+            {
+                if (handle != null)
+                {
+                    return handle.WaitOne();
+                }
+
+                return true;
+            }
         }
     }
 
-    internal class MoqHost : IStrykerTestHostLauncher
-    {
-        private WaitHandle handle;
-        private readonly IDictionary<string, string> _dico;
-        private readonly int _id;
-
-        public MoqHost(WaitHandle handle, IDictionary<string, string> dico, int id)
-        {
-            this.handle = handle;
-            _dico = dico;
-            _id = id;
-        }
-
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsDebug { get; }
-        public bool WaitProcessExit()
-        {
-           if (handle != null)
-           {
-               return handle.WaitOne();
-           }
-
-           return true;
-        }
-    }
 }

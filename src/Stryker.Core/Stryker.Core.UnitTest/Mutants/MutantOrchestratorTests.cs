@@ -6,6 +6,7 @@ using Stryker.Core.Mutators;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -98,7 +99,8 @@ namespace Stryker.Core.UnitTest.Mutants
             var expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile.Replace("_IN", "_OUT")).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var tree = CSharpSyntaxTree.ParseText(source);
 
-            var target = new MutantOrchestrator();
+            var options = new StrykerOptions(coverageAnalysis: "perTest");
+            var target = new MutantOrchestrator(options: options);
             var actualNode = target.Mutate(tree.GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);

@@ -39,12 +39,13 @@ namespace Stryker.Core.MutationTest
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
-            IFileSystem fileSystem = null)
+            IFileSystem fileSystem = null,
+            StrykerOptions options = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
             _mutationTestExecutor = mutationTestExecutor;
-            _orchestrator = orchestrator ?? new MutantOrchestrator();
+            _orchestrator = orchestrator ?? new MutantOrchestrator(options: options);
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
@@ -177,47 +178,7 @@ namespace Stryker.Core.MutationTest
 
         public void Optimize(TestCoverageInfos coveredMutants)
         {
-            if (coveredMutants == null)
-            {
-                return;
-            }
-            var covered = new HashSet<int>(coveredMutants.CoveredMutants);
-            if (covered.Count == 0)
-            {
-                _logger.LogDebug("No mutant is covered by any test, no optimization done.");
-                return;
-            }
-            _logger.LogDebug("Optimize test runs according to coverage info.");
-            var report = new StringBuilder();
-            var nonTested = _input.ProjectInfo.ProjectContents.Mutants.Where(x =>
-                x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
-            const MutantStatus mutantResultStatus = MutantStatus.Survived;
-            foreach (var mutant in nonTested)
-            {
-                mutant.ResultStatus = mutantResultStatus;
-            }
-
-            foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants)
-            {
-                if (coveredMutants.NeedAllTests(mutant))
-                {
-                    _logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we cannot have reliable coverage info. No optimization done.");
-                }
-                else
-                {
-                    var tests = coveredMutants.GetTests<object>(mutant);
-                    if (tests == null)
-                    {
-                        continue;
-                    }
-                    mutant.CoveringTest = tests.Select(x => x.ToString()).ToList();
-                }
-            }
-
-            report.AppendJoin(',', nonTested.Select(x => x.Id));
-            _logger.LogInformation(nonTested.Count == 0
-                ? "Congratulations, all mutants are covered by tests!"
-                : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {mutantResultStatus}).");
+            coveredMutants.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants);
         }
     }
 }

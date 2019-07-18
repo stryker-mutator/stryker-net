@@ -92,14 +92,26 @@ namespace Stryker.Core.TestRunners.VsTest
                 envVars["ActiveMutation"] = mutant.Id.ToString();
             }
 
-            var testCases = (mutant?.CoveringTest == null || !_flags.HasFlag(OptimizationFlags.CoverageBasedTest)) ? null : _discoveredTests.Where( t =>  mutant.CoveringTest.Contains(t.FullyQualifiedName)).ToList();
-            if (testCases == null)
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTest == null||mutant.CoveringTest.Count==0 ))
             {
-                _logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
+                return new TestRunResult {ResultMessage= "Not covered by any test", Success= true};
             }
-            else
+
+            IEnumerable<TestCase> testCases = null;
+            // if we optimize the number of test to run
+            if (mutant !=null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                _logger.LogDebug($"Runner {_id}: Testing {mutant} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
+                 testCases = (mutant.MustRunAllTests && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                    ? null : _discoveredTests.Where( t =>  mutant.CoveringTest.Contains(t.FullyQualifiedName)).ToList();
+                 if (testCases == null)
+                 {
+                     _logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
+                 }
+                 else
+                 {
+                     _logger.LogDebug($"Runner {_id}: Testing {mutant} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                 }
             }
             return RunVsTest(testCases, timeoutMs, envVars);
         }
@@ -205,16 +217,23 @@ namespace Stryker.Core.TestRunners.VsTest
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        continue;
+                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, new List<int>(), new List<int>());
                     }
-
-                    var parts = propertyPairValue.Split(';');
-                    // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
-                    var coveredMutants = string.IsNullOrEmpty(parts[0]) ? new List<int>() :parts[0].Split(',').Select(int.Parse).ToList();
-                    var staticMutants = string.IsNullOrEmpty(parts[1]) ? new List<int>() : parts[1].Split(',').Select(int.Parse).ToList();
-                    CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants,
-                        staticMutants);
+                    else
+                    {
+                        var parts = propertyPairValue.Split(';');
+                        // we need to refer to the initial testCase instance, otherwise xUnit raises internal errors
+                        var coveredMutants = string.IsNullOrEmpty(parts[0])
+                            ? new List<int>()
+                            : parts[0].Split(',').Select(int.Parse).ToList();
+                        // we identify mutants that are part of static code, unless we performed pertest capture
+                        var staticMutants = (string.IsNullOrEmpty(parts[1])||_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest) )
+                            ? new List<int>()
+                            : parts[1].Split(',').Select(int.Parse).ToList();
+                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
+                    }
                 }
+
             }
         }
 

@@ -15,6 +15,7 @@ namespace Stryker.Core.TestRunners
         private readonly OptimizationFlags _flags;
         private readonly ILogger _logger;
         private readonly string _path;
+        private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
@@ -23,6 +24,7 @@ namespace Stryker.Core.TestRunners
 
             _flags = flags;
             _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
+            _projectFile = path;
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }
@@ -42,7 +44,7 @@ namespace Stryker.Core.TestRunners
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)
         {
             var result = _processExecutor.Start(
-                _path,
+                _projectFile,
                 "dotnet",
                 "test --no-build --no-restore",
                 envVars,
@@ -57,7 +59,7 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult CaptureCoverage()
         {
-            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
                 collector.SetLogger((message) => _logger.LogTrace(message));
@@ -67,7 +69,7 @@ namespace Stryker.Core.TestRunners
 
                 var data = collector.RetrieveCoverData("full");
 
-                CoverageMutants.DeclareCoveredMutants(data.Split(",").Select(int.Parse));
+                CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
                 return result;
             }
             else

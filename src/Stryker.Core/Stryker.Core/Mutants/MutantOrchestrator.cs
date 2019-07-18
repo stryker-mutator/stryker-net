@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
 {
@@ -26,14 +27,20 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutantOrchestrator : IMutantOrchestrator
     {
+        private readonly StrykerOptions _options;
         private ICollection<Mutant> Mutants { get; set; }
         private int MutantCount { get; set; }
-        private IEnumerable<IMutator> Mutators { get; set; }
-        private ILogger Logger { get; set; }
+        private IEnumerable<IMutator> Mutators { get; }
+        private ILogger Logger { get; }
+
+        private bool MustInjectCoverageLogic =>
+            _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
+            !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators = null)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
         {
+            _options = options;
             Mutators = mutators ?? new List<IMutator>()
                 {
                     // the default list of mutators
@@ -91,11 +98,19 @@ namespace Stryker.Core.Mutants
                 // static constructors
                 case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
                     context = new MutationContext {InStaticValue = true};
-                    return MutateStaticConstructor(constructorDeclaration, context);
+                    if (MustInjectCoverageLogic)
+                    {
+                        return MutateStaticConstructor(constructorDeclaration, context);
+                    }
+                    break;
                 // static properties
                 case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
                     context = new MutationContext() {InStaticValue = true};
-                    return MutateStaticAccessor(propertyDeclaration, context);
+                    if (MustInjectCoverageLogic)
+                    {
+                        return MutateStaticAccessor(propertyDeclaration, context);
+                    }
+                    break;
             }
 
             switch (currentNode)
