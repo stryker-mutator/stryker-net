@@ -280,7 +280,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void CaptureCoverage()
+        public void CaptureCoverageGWhenSkippingUncovered()
         {
             var options = new StrykerOptions();
 
@@ -289,7 +289,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mockVsTest = BuildVsTestMock(options);
                 var runner = new VsTestRunner(
                     options,
-                    OptimizationFlags.AbortTestOnKill,
+                    OptimizationFlags.SkipUncoveredMutants,
                     _targetProject,
                     null,
                     null,
@@ -297,6 +297,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     wrapper: mockVsTest.Object,
                     hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
 
+                var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -307,38 +308,188 @@ namespace Stryker.Core.UnitTest.TestRunners
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
                     {
-                        MoqTestRun(testRunEvents, _testCases, false);
+                        settings.ShouldContain("DataCollector");
+                        var results = new TestResult[_testCases.Length];
+                        for(var i = 0; i < _testCases.Length; i++)
+                        {
+                            results[i] = new TestResult(_testCases[i])
+                            {
+                                Outcome = TestOutcome.Passed, ComputerName = "."
+                            };
+                        }
+                        results[0].SetPropertyValue(coverageProperty, "1;");
+                        MoqTestRun(testRunEvents, results);
                         endProcess.Set();
                     });
 
-                var result = runner.RunAll(null, _mutant);
+                var result = runner.CaptureCoverage();
+                runner.CoveredMutants.ShouldHaveSingleItem();
+
+
                 // verify Abort has been called
-                Mock.Verify(mockVsTest);
-                result.Success.ShouldBe(false);
+                result.Success.ShouldBe(true);
+            }
+        }
+
+        [Fact]
+        public void RunOnlyUsefulTest()
+        {
+            var options = new StrykerOptions();
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestMock(options);
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.CoverageBasedTest,
+                    _targetProject,
+                    null,
+                    null,
+                    _fileSystem,
+                    wrapper: mockVsTest.Object,
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+
+                var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
+                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                        It.IsAny<string>(),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        settings.ShouldContain("DataCollector");
+                        var results = new TestResult[_testCases.Length];
+                        for(var i = 0; i < _testCases.Length; i++)
+                        {
+                            results[i] = new TestResult(_testCases[i])
+                            {
+                                Outcome = TestOutcome.Passed, ComputerName = "."
+                            };
+                        }
+                        results[0].SetPropertyValue(coverageProperty, "1;");
+                        MoqTestRun(testRunEvents, results);
+                        endProcess.Set();
+                    });
+
+                runner.CaptureCoverage();
+
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<TestCase>>(t => t.Count()==1),
+                        It.IsAny<string>(),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        settings.ShouldNotContain("DataCollector");
+                        var results = new List<TestResult>();
+                        foreach(var test in sources)
+                        {
+                            results.Add( new TestResult(test)
+                            {
+                                Outcome = TestOutcome.Passed, ComputerName = "."
+                            });
+                        }
+
+                        results.ShouldHaveSingleItem();
+                        MoqTestRun(testRunEvents, results);
+                        endProcess.Set();
+                    });
+                var mutant = new Mutant{Id = 1};
+                mutant.CoveringTest = runner.CoverageMutants.GetTests<TestCase>(mutant).Select( x => x.FullyQualifiedName).ToList();
+                var result = runner.RunAll(0, mutant);
+
+                // verify Abort has been called
+                result.Success.ShouldBe(true);
+            }
+        }
+
+        [Fact]
+        public void IdentifyNonCoveredMutants()
+        {
+            var options = new StrykerOptions();
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestMock(options);
+                var runner = new VsTestRunner(
+                    options,
+                    OptimizationFlags.SkipUncoveredMutants,
+                    _targetProject,
+                    null,
+                    null,
+                    _fileSystem,
+                    wrapper: mockVsTest.Object,
+                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+
+                var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
+                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x =>
+                    x.RunTestsWithCustomTestHost(
+                        It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                        It.IsAny<string>(),
+                        It.IsAny<ITestRunEventsHandler>(),
+                        It.IsAny<ITestHostLauncher>())).Callback(
+                    (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
+                        ITestHostLauncher host) =>
+                    {
+                        settings.ShouldContain("DataCollector");
+                        var results = new TestResult[_testCases.Length];
+                        for(var i = 0; i < _testCases.Length; i++)
+                        {
+                            results[i] = new TestResult(_testCases[i])
+                            {
+                                Outcome = TestOutcome.Passed, ComputerName = "."
+                            };
+                            results[i].SetPropertyValue(coverageProperty, "1;");
+                        }
+                        MoqTestRun(testRunEvents, results);
+                        endProcess.Set();
+                    });
+
+                var result = runner.CaptureCoverage();
+                runner.CoveredMutants.ShouldHaveSingleItem();
+                runner.CoverageMutants.GetTests<TestCase>(new Mutant(){Id = 1}).ShouldBe(_testCases);
+                // verify Abort has been called
+                result.Success.ShouldBe(true);
             }
         }
 
         private void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestCase> testCases, bool pass)
         {
+            var results = new TestResult[testCases.Count];
+            for(var i = 0; i < testCases.Count; i++)
+            {
+                results[i] = new TestResult(testCases[i])
+                {
+                    Outcome = pass ? TestOutcome.Passed : TestOutcome.Failed, ComputerName = "."
+                };
+            }
+            MoqTestRun(testRunEvents, results);
+        }
+
+        private void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestResult> testResults)
+        {
             Task.Run(() =>
             {
                 var timer = new Stopwatch();
                 testRunEvents.HandleTestRunStatsChange(
-                    new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, testCases));
+                    new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, new [] {testResults[0].TestCase}));
 
-                for(var i = 0; i<testCases.Count; i++)
+                for(var i = 0; i<testResults.Count; i++)
                 {
                     Thread.Sleep(10);
-                    var testResult = new TestResult(testCases[i])
-                    {
-                        EndTime = DateTimeOffset.Now, Outcome = pass ? TestOutcome.Passed : TestOutcome.Failed
-                    };
+                    testResults[i].EndTime = DateTimeOffset.Now;
                     testRunEvents.HandleTestRunStatsChange(new TestRunChangedEventArgs(
-                        new TestRunStatistics(i+1, null), new []{testResult}, null));
+                        new TestRunStatistics(i+1, null), new []{testResults[i]}, null));
                 }
                 Thread.Sleep(10);
                 testRunEvents.HandleTestRunComplete(
-                    new TestRunCompleteEventArgs(new TestRunStatistics(testCases.Count, null), false, false, null,
+                    new TestRunCompleteEventArgs(new TestRunStatistics(testResults.Count, null), false, false, null,
                         null, timer.Elapsed),
                     null,
                     null,
