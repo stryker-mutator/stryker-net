@@ -243,7 +243,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var generateRunSettings = GenerateRunSettings(null, true);
             var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
-            ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase == test));
+            ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase.Id == test.Id));
             return coverageForTest;
         }
 
