@@ -28,7 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ProjectInfo _projectInfo;
         private readonly Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestConsoleWrapper _vsTestConsole;
-        private readonly VsTestHelper _vsTestHelper;
+        private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
         private readonly Dictionary<string, string> _coverageEnvironment;
@@ -50,7 +50,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<TestCase> testCasesDiscovered,
             TestCoverageInfos mappingInfos,
             IFileSystem fileSystem = null,
-            VsTestHelper helper = null,
+            IVsTestHelper helper = null,
             ILogger logger = null,
             IVsTestConsoleWrapper wrapper = null,
             Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> hostBuilder = null)

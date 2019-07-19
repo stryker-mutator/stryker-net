@@ -17,6 +17,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners.VsTest;
+using Stryker.Core.ToolHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -131,16 +132,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.NoOptimization,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -164,22 +156,29 @@ namespace Stryker.Core.UnitTest.TestRunners
             }
         }
 
+        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, EventWaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
+        {
+            var mockVsTest = BuildVsTestMock(options);
+            runner = new VsTestRunner(
+                options,
+                optimizationFlags,
+                _targetProject,
+                null,
+                null,
+                _fileSystem,
+                helper: new Mock<IVsTestHelper>().Object,
+                wrapper: mockVsTest.Object,
+                hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+            return mockVsTest;
+        }
+
         [Fact]
         public void DetectTestsErrors()
         {
             var options = new StrykerOptions();
             using (var endProcess = new EventWaitHandle(false, EventResetMode.AutoReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.NoOptimization, 
-                    _targetProject, 
-                    null,
-                    null, 
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
 
                 mockVsTest.Setup(x => 
                     x.RunTestsWithCustomTestHost(It.Is<IEnumerable<string>>(t => t.Any( source => source == _testAssemblyPath)), 
@@ -207,15 +206,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var options = new StrykerOptions();
             using (var endProcess = new EventWaitHandle(false, EventResetMode.AutoReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.NoOptimization, 
-                    _targetProject, 
-                    null,
-                    null, 
-                    _fileSystem,
-                    wrapper: mockVsTest.Object);
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -262,16 +253,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.AbortTestOnKill,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.AbortTestOnKill);
 
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
                 mockVsTest.Setup(x =>
@@ -303,17 +285,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.SkipUncoveredMutants,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
-
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.SkipUncoveredMutants);
                 var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
                 mockVsTest.Setup(x =>
@@ -361,16 +333,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.SkipUncoveredMutants,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.SkipUncoveredMutants);
 
                 var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
@@ -419,16 +382,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.CoverageBasedTest,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.CoverageBasedTest);
 
                 var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
@@ -501,16 +455,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.CoverageBasedTest,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.CoverageBasedTest);
 
                 var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
@@ -582,16 +527,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestMock(options);
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.CoverageBasedTest|OptimizationFlags.CaptureCoveragePerTest,
-                    _targetProject,
-                    null,
-                    null,
-                    _fileSystem,
-                    wrapper: mockVsTest.Object,
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.CoverageBasedTest|OptimizationFlags.CaptureCoveragePerTest);
 
                 var coverageProperty= TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
                 mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
