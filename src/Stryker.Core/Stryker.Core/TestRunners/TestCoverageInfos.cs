@@ -95,8 +95,9 @@ namespace Stryker.Core.TestRunners
             }
         }
 
-        public void UpdateMutants(IEnumerable<Mutant> mutants)
+        public long UpdateMutants(IEnumerable<Mutant> mutants, int testsCount)
         {
+            var avoidedTests = 0L;
             Logger.LogDebug("Optimize test runs according to coverage info.");
             var report = new StringBuilder();
             var nonTested = mutants.Where(x =>
@@ -104,23 +105,34 @@ namespace Stryker.Core.TestRunners
             foreach (var mutant in nonTested)
             {
                 mutant.ResultStatus = MutantStatus.Survived;
+                avoidedTests += testsCount;
             }
 
             foreach (var mutant in mutants)
             {
+                var tests = this.GetTests<object>(mutant);
+                var mutantCoveringTest = tests == null ? new List<string>() : tests.Select(x => x.ToString()).ToList();
+                mutant.CoveringTest = mutantCoveringTest;
                 if (this.NeedAllTests(mutant))
                 {
                     mutant.MustRunAllTests = true;
                     Logger.LogDebug($"Mutant {mutant.DisplayName} is related to a static value and we may not have reliable coverage info. No optimization done.");
                 }
-                var tests = this.GetTests<object>(mutant);
-                mutant.CoveringTest = tests == null ? new List<string>() : tests.Select(x => x.ToString()).ToList();
+                else
+                {
+                    avoidedTests += testsCount - mutantCoveringTest.Count;
+                }
             }
 
             report.AppendJoin(',', nonTested.Select(x => x.Id));
             Logger.LogInformation(nonTested.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
                 : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.Survived}).");
+
+            var theoricalTestCount = (long)(testsCount) * mutants.Count();
+            Logger.LogInformation($"Coverage analysis eliminated {1.0*avoidedTests/theoricalTestCount:P} of tests (i.e. {avoidedTests} tests out of {theoricalTestCount}).");
+
+            return avoidedTests;
         }
 
     }

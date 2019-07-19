@@ -485,7 +485,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mutant = new Mutant{Id = 1};
                 var mutants = new List<Mutant> {mutant};
                 // process coverage information
-                runner.CoverageMutants.UpdateMutants(mutants);
+                runner.CoverageMutants.UpdateMutants(mutants, _testCases.Length);
 
                 var result = runner.RunAll(0, mutant);
 
@@ -562,7 +562,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var otherMutant = new Mutant{Id = 0};
                 var mutants = new List<Mutant> {mutant, otherMutant};
                 // process coverage info
-                runner.CoverageMutants.UpdateMutants(mutants);
+                runner.CoverageMutants.UpdateMutants(mutants, _testCases.Length);
                 // mutant 1 is covered
                 mutant.MustRunAllTests.ShouldBeTrue();
                 var result = runner.RunAll(0, mutant);

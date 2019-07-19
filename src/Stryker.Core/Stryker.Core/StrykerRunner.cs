@@ -74,7 +74,7 @@ namespace Stryker.Core
                     options: options);
 
                 // initial test
-                _input.TimeoutMs = _initialisationProcess.InitialTest(options);
+                _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);
 
                 // mutate
                 _mutationTestProcess.Mutate(options);
@@ -83,7 +83,7 @@ namespace Stryker.Core
                 {
                     // coverage
                     var coverage = _initialisationProcess.GetCoverage(options);
-                    _mutationTestProcess.Optimize(coverage);
+                    coverage.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants, nbTests);
                 }
 
                 // test mutations and return results

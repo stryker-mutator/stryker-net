@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
@@ -21,7 +20,6 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate(StrykerOptions options);
         StrykerRunResult Test(StrykerOptions options);
-        void Optimize(TestCoverageInfos coveredMutants);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -174,11 +172,6 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
-        }
-
-        public void Optimize(TestCoverageInfos coveredMutants)
-        {
-            coveredMutants.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants);
         }
     }
 }
