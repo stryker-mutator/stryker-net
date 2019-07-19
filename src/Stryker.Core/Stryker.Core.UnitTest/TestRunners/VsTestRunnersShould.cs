@@ -88,7 +88,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             _testCases = new []{firstTest, secondTest};
         }
 
-
         private Mock<IVsTestConsoleWrapper> BuildVsTestMock(StrykerOptions options)
         {
             var mockVsTest = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
@@ -109,17 +108,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset))
             {
                 var options = new StrykerOptions();
-                var mockVsTest = BuildVsTestMock(options);
-
-                var runner = new VsTestRunner(
-                    options,
-                    OptimizationFlags.NoOptimization, 
-                    _targetProject, 
-                    null,
-                    null, 
-                    _fileSystem,
-                    wrapper: mockVsTest.Object, 
-                    hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 // make sure we have discovered first and second tests
                 runner.DiscoverNumberOfTests().ShouldBe(2);
             }
