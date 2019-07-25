@@ -28,7 +28,7 @@ namespace Stryker.Core.Reporters
         {
         }
 
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
         }
 

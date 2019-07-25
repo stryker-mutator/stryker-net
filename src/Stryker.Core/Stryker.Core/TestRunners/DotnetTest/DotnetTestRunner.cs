@@ -31,6 +31,8 @@ namespace Stryker.Core.TestRunners
 
         public TestCoverageInfos CoverageMutants { get; }
 
+        public IEnumerable<TestDescription> Tests => null;
+
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             Dictionary<string, string> envVars = mutant == null ? null : 

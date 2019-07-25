@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
@@ -47,7 +48,8 @@ namespace Stryker.Core.UnitTest.Reporters
                         {
                             Id = duplicateMutant ? 2 : ++mutantCount,
                             ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
-                            Mutation = mutation
+                            Mutation = mutation,
+                            CoveringTest = new Dictionary<TestDescription, bool>{{new TestDescription(mutantCount.ToString(), $"Test {mutantCount}"), false}}
                         });
                     }
                 }

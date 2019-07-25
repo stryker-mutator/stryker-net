@@ -9,9 +9,9 @@ namespace Stryker.Core.TestRunners
 {
     public class TestCoverageInfos
     {
-        private readonly Dictionary<int, IList<object>> _mutantToTests = new Dictionary<int, IList<object>>();
+        private readonly Dictionary<int, IList<TestDescription>> _mutantToTests = new Dictionary<int, IList<TestDescription>>();
         private readonly HashSet<int> _mutantsInStatic = new HashSet<int>();
-        private readonly IList<object> _testsWithoutCoverageInfos = new List<object>();
+        private readonly IList<TestDescription> _testsWithoutCoverageInfos = new List<TestDescription>();
         private static ILogger Logger { get; }
 
         public IEnumerable<int> CoveredMutants
@@ -35,13 +35,13 @@ namespace Stryker.Core.TestRunners
             return mutant.IsStaticValue || this._mutantsInStatic.Contains(mutant.Id);
         }
 
-        public ICollection<T> GetTests<T>(IReadOnlyMutant mutant)
+        public ICollection<TestDescription> GetTests(IReadOnlyMutant mutant)
         {
             lock (_mutantToTests)
             {
                 if (_mutantToTests.ContainsKey(mutant.Id))
                 {
-                    return _mutantToTests[mutant.Id].Cast<T>().ToList();
+                    return _mutantToTests[mutant.Id].ToList();
                 }
                 
             }
@@ -54,12 +54,12 @@ namespace Stryker.Core.TestRunners
             {
                 foreach (var mutant in list)
                 {
-                    _mutantToTests[mutant] = new List<object>();
+                    _mutantToTests[mutant] = new List<TestDescription>();
                 }
             }
         }
 
-        public void DeclareMappingForATest(object discoveredTest, ICollection<int> captureCoverage, ICollection<int> staticMutants)
+        public void DeclareMappingForATest(TestDescription discoveredTest, ICollection<int> captureCoverage, ICollection<int> staticMutants)
         {
             lock(_mutantToTests)
             { 
@@ -80,7 +80,7 @@ namespace Stryker.Core.TestRunners
                         }
                         else
                         {
-                            _mutantToTests.Add(id, new List<object>{discoveredTest});
+                            _mutantToTests.Add(id, new List<TestDescription>{discoveredTest});
                         }
                     }
                     if (staticMutants.Any())
@@ -110,8 +110,15 @@ namespace Stryker.Core.TestRunners
 
             foreach (var mutant in mutants)
             {
-                var tests = this.GetTests<object>(mutant);
-                var mutantCoveringTest = tests == null ? new List<string>() : tests.Select(x => x.ToString()).ToList();
+                var tests = this.GetTests(mutant);
+                var mutantCoveringTest = new Dictionary<TestDescription, bool>();
+                if (tests != null)
+                { 
+                    foreach (var test in tests)
+                    {
+                        mutantCoveringTest[test] = false;
+                    }
+                }
                 mutant.CoveringTest = mutantCoveringTest;
                 if (this.NeedAllTests(mutant))
                 {

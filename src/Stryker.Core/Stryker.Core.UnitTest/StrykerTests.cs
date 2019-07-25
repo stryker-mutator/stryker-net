@@ -7,6 +7,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest
             });
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
             var coveredMutants = new TestCoverageInfos();
-            coveredMutants.DeclareMappingForATest("1", new []{2,3}, new []{2});
+            coveredMutants.DeclareMappingForATest(new TestDescription("1", "SomeTest"),  new []{2,3}, new []{2});
             var nbTests = 0;
             initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), out nbTests)).Returns(0);
             initialisationMock.Setup(x => x.GetCoverage(It.IsAny<StrykerOptions>())).Returns(coveredMutants);

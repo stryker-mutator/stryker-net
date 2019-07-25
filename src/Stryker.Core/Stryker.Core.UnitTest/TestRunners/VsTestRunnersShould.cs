@@ -358,7 +358,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // one mutant is covered
                 runner.CoveredMutants.ShouldHaveSingleItem();
                 // it is covered by both tests
-                runner.CoverageMutants.GetTests<TestCase>(new Mutant(){Id = 1}).ShouldBe(_testCases);
+                runner.CoverageMutants.GetTests(new Mutant(){Id = 1}).ShouldBe(_testCases.Select(x => (TestDescription) x));
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
             }
@@ -569,9 +569,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                         endProcess.Set();
                     });
                 var mutant = new Mutant{Id = 1};
-                runner.CoverageMutants.GetTests<TestCase>(mutant).ShouldHaveSingleItem();
+                runner.CoverageMutants.GetTests(mutant).ShouldHaveSingleItem();
                 var otherMutant = new Mutant{Id = 0};
-                otherMutant.CoveringTest = runner.CoverageMutants.GetTests<TestCase>(otherMutant).Select(x => x.FullyQualifiedName).ToList();
+                foreach (var testDescription in runner.CoverageMutants.GetTests(otherMutant))
+                {
+                    otherMutant.CoveringTest[testDescription] = false;
+                }
                 var result = runner.RunAll(0, otherMutant);
 
                 // verify Abort has been called

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
@@ -12,5 +13,6 @@ namespace Stryker.Core.TestRunners
 
         TestCoverageInfos CoverageMutants { get; }
 
+        IEnumerable<TestDescription> Tests { get; }
     }
 }

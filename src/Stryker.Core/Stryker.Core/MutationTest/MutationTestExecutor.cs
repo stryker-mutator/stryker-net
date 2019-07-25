@@ -3,6 +3,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.MutationTest
 {
@@ -20,6 +21,8 @@ namespace Stryker.Core.MutationTest
         public ITestRunner TestRunner { get; }
         private ILogger Logger { get; }
 
+        public IEnumerable<TestDescription> Tests => TestRunner?.Tests;
+
         public MutationTestExecutor(ITestRunner testRunner)
         {
             TestRunner = testRunner;
@@ -35,6 +38,13 @@ namespace Stryker.Core.MutationTest
                 Logger.LogTrace($"Testrun for {mutant.DisplayName} with output {result.ResultMessage}");
 
                 mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;
+                if (result.FailingTests != null)
+                {
+                    foreach (var resultFailingTest in result.FailingTests)
+                    {
+                        mutant.CoveringTest[resultFailingTest] = true;
+                    }
+                }
             }
             catch (OperationCanceledException)
             {

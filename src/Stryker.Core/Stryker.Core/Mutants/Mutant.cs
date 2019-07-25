@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
-        IList<string> CoveringTest { get; }
+        IDictionary<TestDescription, bool> CoveringTest { get; }
         bool IsStaticValue { get; }
         bool MustRunAllTests { get; }
     }
@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public IList<string> CoveringTest { get; set; }
+        public IDictionary<TestDescription, bool> CoveringTest { get; set; } = new Dictionary<TestDescription, bool>();
 
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";

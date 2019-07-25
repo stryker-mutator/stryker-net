@@ -79,10 +79,10 @@ namespace Stryker.Core.TestRunners.VsTest
             };
         }
 
-
         public IEnumerable<int> CoveredMutants { get; private set; }
 
         public TestCoverageInfos CoverageMutants { get; }
+        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
@@ -103,7 +103,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
                  testCases = (mutant.MustRunAllTests && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                    ? null : _discoveredTests.Where( t =>  mutant.CoveringTest.Contains(t.FullyQualifiedName)).ToList();
+                    ? null : _discoveredTests.Where( t =>  mutant.CoveringTest.ContainsKey(t)).ToList();
                  if (testCases == null)
                  {
                      _logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
@@ -185,6 +185,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResult = new TestRunResult
             {
                 Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped),
+                FailingTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(x => (TestDescription)x.TestCase).ToList(),
                 ResultMessage = string.Join(
                     Environment.NewLine,
                     resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
