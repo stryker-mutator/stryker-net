@@ -111,12 +111,12 @@ namespace Stryker.Core.TestRunners
             foreach (var mutant in mutants)
             {
                 var tests = this.GetTests(mutant);
-                var mutantCoveringTest = new Dictionary<TestDescription, bool>();
+                var mutantCoveringTest = new Dictionary<string, bool>();
                 if (tests != null)
                 { 
                     foreach (var test in tests)
                     {
-                        mutantCoveringTest[test] = false;
+                        mutantCoveringTest[test.Guid] = false;
                     }
                 }
                 mutant.CoveringTest = mutantCoveringTest;

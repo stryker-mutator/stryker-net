@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
                 {
                     foreach (var resultFailingTest in result.FailingTests)
                     {
-                        mutant.CoveringTest[resultFailingTest] = true;
+                        mutant.CoveringTest[resultFailingTest.Guid] = true;
                     }
                 }
             }

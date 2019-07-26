@@ -3,7 +3,7 @@
 //   Copyright 2019  Cyrille DUPUYDAUBY
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
-namespace Stryker.Core.Reporters.TestStatisticsReporter
+namespace Stryker.Core.Reporters
 {
     public class JsonTest
     {

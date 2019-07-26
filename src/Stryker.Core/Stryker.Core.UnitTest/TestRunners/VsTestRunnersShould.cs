@@ -573,7 +573,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var otherMutant = new Mutant{Id = 0};
                 foreach (var testDescription in runner.CoverageMutants.GetTests(otherMutant))
                 {
-                    otherMutant.CoveringTest[testDescription] = false;
+                    otherMutant.CoveringTest[testDescription.Guid] = false;
                 }
                 var result = runner.RunAll(0, otherMutant);
 

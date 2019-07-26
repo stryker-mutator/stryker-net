@@ -35,8 +35,9 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
+            result.Reporters.ShouldContain(r => r is TestStatisticsReporter);
 
-            result.Reporters.Count().ShouldBe(5);
+            result.Reporters.Count().ShouldBe(6);
         }
 
         [Fact]

@@ -8,29 +8,31 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Testing;
 
-namespace Stryker.Core.Reporters.TestStatisticsReporter
+namespace Stryker.Core.Reporters
 {
     public class TestStatisticsReporter: IReporter
     {
-        private StrykerOptions _options;
-        private IFileSystem _fileSystem;
-        private IChalk _chalk;
+        private readonly StrykerOptions _options;
+        private readonly IFileSystem _fileSystem;
+        private readonly IChalk _chalk;
         private IEnumerable<TestDescription> _tests;
 
-        public TestStatisticsReporter(StrykerOptions options, IFileSystem fileSystem, IChalk chalk = null)
+        public TestStatisticsReporter(StrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
         {
-            this._options = options;
-            this._fileSystem = fileSystem;
-            this._chalk = chalk ?? new Chalk();
+            _options = options;
+            _fileSystem = fileSystem ?? new FileSystem();
+            _chalk = chalk ?? new Chalk();
         }
 
         public static TestStatisticsReport Build(StrykerOptions strykerOptions, IReadOnlyInputComponent folderComponent, IEnumerable<TestDescription> tests)
         {
             var mutants = folderComponent.ReadOnlyMutants.
-                Select(mutant => new JsonMutant {Id = mutant.Id, 
+                Select(mutant => new JsonTestedMutant() {Id = mutant.Id, 
                     Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()), 
                     Status = mutant.ResultStatus.ToString(), 
-                    Replacement = mutant.Mutation.ReplacementNode.ToFullString()}).ToList();
+                    Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
+                    Tests = mutant.CoveringTest 
+                }).ToList();
             var jSonTests = tests.Select(test => new JsonTest {Guid = test.Guid, Name = test.Name}).ToList();
             return new TestStatisticsReport(mutants, jSonTests);
         }
@@ -52,7 +54,7 @@ namespace Stryker.Core.Reporters.TestStatisticsReporter
         {
             var mutationReport = Build(_options, reportComponent, _tests);
 
-            var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.json");
+            var reportPath = Path.Combine(_options.OutputPath, "reports", "test-stats-report.json");
             WriteReportToJsonFile(reportPath, mutationReport.ToJson());
 
             _chalk.Green($"\nYour json report has been generated at: \n " +

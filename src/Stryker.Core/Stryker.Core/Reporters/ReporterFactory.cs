@@ -23,6 +23,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.Progress, CreateProgressReporter() },
                 { Reporter.ClearText, new ConsoleReportReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
+                { Reporter.Stats, new TestStatisticsReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) }
             };
         }
