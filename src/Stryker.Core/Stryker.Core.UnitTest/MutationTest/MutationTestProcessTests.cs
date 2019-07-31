@@ -14,7 +14,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
+using Stryker.Core.MutantFilters;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -103,107 +105,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
-                fileSystem);
+                fileSystem,
+                Enumerable.Empty<IMutantFilter>());
 
             // start mutation process
             target.Mutate(new StrykerOptions(devMode: true, excludedMutations: new string[] { }));
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
-            reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()), Times.Once);
-        }
-
-        [Fact]
-        public void MutationTestProcess_ExcludeFilesToMutate_MutationCalledOnce()
-        {
-            string sourceFile2 = SourceFile.Replace("Recursive.cs", "Recursive2.cs");
-            string sourceFile3 = SourceFile.Replace("Recursive.cs", "Recursive3.cs");
-
-            var input = new MutationTestInput()
-            {
-                ProjectInfo = new ProjectInfo()
-                {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
-                        }
-                    },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
-                        }
-                    },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = Path.Combine(FilesystemRoot, "ExampleProject"),
-                        Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
-                                Name = "Recursive.cs",
-                                SourceCode = SourceFile
-                            },
-                            new FileLeaf() {
-                                Name = "Recursive2.cs",
-                                SourceCode = sourceFile2,
-                                IsExcluded = true
-                            },
-                            new FileLeaf() {
-                                Name = "Recursive3.cs",
-                                SourceCode = sourceFile3
-                            }
-                        }
-                    },
-                },
-                AssemblyReferences = _assemblies
-            };
-
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive2.cs"), new MockFileData(sourceFile2)},
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive3.cs"), new MockFileData(sourceFile3)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
-            });
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
-
-            // create mocks
-            var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
-
-            // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
-            orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
-            orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
-                .Returns(new CompilingProcessResult()
-                {
-                    Success = true
-                });
-
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationTestExecutorMock.Object,
-                orchestratorMock.Object,
-                compilingProcessMock.Object,
-                fileSystem);
-
-            var options = new StrykerOptions(fileSystem: fileSystem);
-            // start mutation process
-            target.Mutate(options);
-
-            // verify the right methods were called
-            orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Exactly(2));
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
@@ -276,7 +185,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
-                fileSystem);
+                fileSystem,
+                Enumerable.Empty<IMutantFilter>());
 
             var options = new StrykerOptions();
             target.Mutate(options);
@@ -401,7 +311,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                mutantFilters: Enumerable.Empty<IMutantFilter>());
             var coverage = new TestCoverageInfos();
             coverage.DeclareMappingForATest("toto", new[] { 2 });
             target.Optimize(coverage);

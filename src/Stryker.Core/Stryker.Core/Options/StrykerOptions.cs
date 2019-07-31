@@ -28,6 +28,7 @@ namespace Stryker.Core.Options
         public string TestProjectNameFilter { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
+        public IEnumerable<string> IgnoredMethods { get; }
         public int ConcurrentTestrunners { get; }
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
@@ -46,6 +47,7 @@ namespace Stryker.Core.Options
             string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
+            string[] ignoredMethods = null,
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
@@ -63,6 +65,7 @@ namespace Stryker.Core.Options
             _fileSystem = fileSystem ?? new FileSystem();
 
             var outputPath = ValidateOutputPath(basePath);
+            IgnoredMethods = ignoredMethods ?? Array.Empty<string>();
             BasePath = basePath;
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);

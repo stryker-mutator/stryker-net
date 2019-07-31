@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
@@ -14,6 +15,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Stryker.Core.MutantFilters;
 
 namespace Stryker.Core.MutationTest
 {
@@ -32,6 +34,7 @@ namespace Stryker.Core.MutationTest
         private readonly IFileSystem _fileSystem;
         private readonly ICompilingProcess _compilingProcess;
         private readonly IMutationTestExecutor _mutationTestExecutor;
+        private readonly IEnumerable<IMutantFilter> _mutantFilters;
         private readonly ILogger _logger;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
@@ -39,15 +42,23 @@ namespace Stryker.Core.MutationTest
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
-            IFileSystem fileSystem = null)
+            IFileSystem fileSystem = null,
+            IEnumerable<IMutantFilter> mutantFilters = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
             _mutationTestExecutor = mutationTestExecutor;
+            _mutantFilters = mutantFilters;
             _orchestrator = orchestrator ?? new MutantOrchestrator();
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+            _mutantFilters = mutantFilters ?? new IMutantFilter[]
+            {
+                new IgnoredFileMutantFilter(),
+                new IgnoredMethodMutantFilter(),
+                new ExcludeMutationMutantFilter(),
+            };
         }
 
         public void Mutate(StrykerOptions options)
@@ -66,24 +77,31 @@ namespace Stryker.Core.MutationTest
                     path: file.FullPath,
                     options: new CSharpParseOptions(options.LanguageVersion));
 
-                if (!file.IsExcluded)
-                {
-                    // Mutate the syntax tree
-                    var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
-                    // Add the mutated syntax tree for compilation
-                    mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-                    // Store the generated mutants in the file
-                    file.Mutants = _orchestrator.GetLatestMutantBatch();
-                }
-                else
-                {
-                    // Add the original syntax tree for future compilation
-                    mutatedSyntaxTrees.Add(syntaxTree);
-                    // There aren't any mutants generated so a new list of mutants is sufficient
-                    file.Mutants = new List<Mutant>();
+                // Mutate the syntax tree
+                var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
+                // Add the mutated syntax tree for compilation
+                mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
 
-                    _logger.LogDebug("Excluded file {0}, no mutants created", file.FullPath);
+                // Filter the mutants
+                var allMutants = _orchestrator.GetLatestMutantBatch();
+                IEnumerable<Mutant> filteredMutants = allMutants;
+
+                foreach (var mutantFilter in _mutantFilters)
+                {
+                    var current = mutantFilter.FilterMutants(filteredMutants, file, options).ToList();
+
+                    // Mark the filtered mutants as skipped
+                    foreach (var skippedMutant in filteredMutants.Except(current))
+                    {
+                        skippedMutant.ResultStatus = MutantStatus.Skipped;
+                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
+                    }
+
+                    filteredMutants = current;
                 }
+
+                // Store the generated mutants in the file
+                file.Mutants = allMutants;
             }
 
             _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
@@ -114,24 +132,18 @@ namespace Stryker.Core.MutationTest
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
                         mutant.ResultStatus = MutantStatus.CompileError;
+                        mutant.ResultStatusReason = "Could not compile";
                     }
                 }
-                int numberOfBuildErrors = compileResult.RollbackResult?.RollbackedIds.Count() ?? 0;
-                if (numberOfBuildErrors > 0)
-                {
-                    _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.CompileError.ToString());
-                }
+            }
 
-                if (options.ExcludedMutations.Count() != 0)
-                {
-                    var mutantsToSkip = _input.ProjectInfo.ProjectContents.Mutants
-                        .Where(x => options.ExcludedMutations.Contains(x.Mutation.Type)).ToList();
-                    foreach (var mutant in mutantsToSkip)
-                    {
-                        mutant.ResultStatus = MutantStatus.Skipped;
-                    }
-                    _logger.LogInformation("{0} mutants got status {1}", mutantsToSkip.Count(), MutantStatus.Skipped.ToString());
-                }
+            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
+                .SelectMany(f => f.Mutants)
+                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => (x.ResultStatus, x.ResultStatusReason)).OrderBy(x => x.Key.ResultStatus);
+
+            foreach (var skippedMutantGroup in skippedMutantGroups)
+            {
+                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
             }
 
             _logger.LogInformation("{0} mutants ready for test", _input.ProjectInfo.ProjectContents.TotalMutants.Count());
