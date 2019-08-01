@@ -8,6 +8,10 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters
 {
+    /// <summary>
+    /// Checks if the mutants are part of ignored method calls.
+    /// </summary>
+    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class IgnoredMethodMutantFilter : IMutantFilter
     {
         /// <inheritdoc />

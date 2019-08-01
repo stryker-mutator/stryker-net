@@ -6,6 +6,10 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters
 {
+    /// <summary>
+    /// Checks if the origin file of a mutant is skipped.
+    /// </summary>
+    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class IgnoredFileMutantFilter : IMutantFilter
     {
         /// <inheritdoc />

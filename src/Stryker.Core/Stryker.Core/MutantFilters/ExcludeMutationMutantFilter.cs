@@ -6,6 +6,10 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters
 {
+    /// <summary>
+    /// Checks if the mutation type of the mutant should be excluded.
+    /// </summary>
+    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class ExcludeMutationMutantFilter : IMutantFilter
     {
         /// <inheritdoc />
