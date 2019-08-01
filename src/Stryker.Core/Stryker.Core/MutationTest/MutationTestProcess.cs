@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
@@ -139,11 +138,11 @@ namespace Stryker.Core.MutationTest
 
             var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
                 .SelectMany(f => f.Mutants)
-                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => (x.ResultStatus, x.ResultStatusReason)).OrderBy(x => x.Key.ResultStatus);
+                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason).OrderBy(x => x.Key);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
             {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
+                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(), skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
             }
 
             _logger.LogInformation("{0} mutants ready for test", _input.ProjectInfo.ProjectContents.TotalMutants.Count());
