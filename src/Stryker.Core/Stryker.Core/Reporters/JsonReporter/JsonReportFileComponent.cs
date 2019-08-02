@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters.Json
             Language = "cs";
             Mutants = new HashSet<JsonMutant>(new UniqueJsonMutantComparer());
 
-            foreach (var mutant in file.Mutants.Where(x => x.ResultStatus != MutantStatus.Skipped))
+            foreach (var mutant in file.Mutants)
             {
                 var jsonMutant = new JsonMutant
                 {
