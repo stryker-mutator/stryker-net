@@ -68,7 +68,13 @@ namespace Stryker.Core.Compiling
             EmitResult emitResult;
             var retryCount = 1;
             (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
-            
+            if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None))
+            {
+                _logger.LogError("Failed to build the mutated assembly due to unrecoverable error :{0}", 
+                    emitResult.Diagnostics.First(diag => diag.Location == Location.None));
+                throw new ApplicationException("General build failure.");
+            }
+
             for (var count = 1; !emitResult.Success && count < 50; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
