@@ -238,6 +238,59 @@ namespace ExampleProject
         }
 
         [Fact]
+        public void CompilingProcessTests_ProperlyFailsWhenSigningKeyIsNotFound()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Subtract(int first, int second)
+        {
+            return first - second;
+        }
+    }
+}");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo()
+                {
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>(),
+                        SignAssembly = true,
+                        AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))
+                    },
+                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                    {
+                        Properties = new Dictionary<string, string>()
+                        {
+                            { "AssemblyTitle", "AssemblyName"},
+                        },
+                        Resources = new List<ResourceDescription>()
+                    }
+                },
+                AssemblyReferences = new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                },
+
+            };
+            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+
+            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+
+            using (var ms = new MemoryStream())
+            {
+                Should.Throw<ApplicationException>(()=> target.Compile(new Collection<SyntaxTree>() {syntaxTree}, ms, false));
+            }
+        }
+
+        [Fact]
         public void CompilingProcessTests_MustIncludeVersionInfo()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
