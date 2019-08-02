@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -29,7 +30,7 @@ namespace Stryker.Core.Reporters.Json
             Language = "cs";
             Mutants = new HashSet<JsonMutant>(new UniqueJsonMutantComparer());
 
-            foreach (var mutant in file.Mutants)
+            foreach (var mutant in file.Mutants.Where(x => x.ResultStatus != MutantStatus.Skipped))
             {
                 var jsonMutant = new JsonMutant
                 {

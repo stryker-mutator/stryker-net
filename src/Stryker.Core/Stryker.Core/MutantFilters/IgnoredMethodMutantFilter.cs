@@ -17,11 +17,10 @@ namespace Stryker.Core.MutantFilters
         /// <inheritdoc />
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            foreach (var mutant in mutants)
-            {
-                if (!IsPartOfIgnoredMethodCall(mutant.Mutation.OriginalNode, options))
-                    yield return mutant;
-            }
+            if (!options.IgnoredMethods.Any())
+                return mutants;
+
+            return mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
         }
 
         /// <inheritdoc />
@@ -33,7 +32,14 @@ namespace Stryker.Core.MutantFilters
             // This will also ignore invokable properties like `Func<bool> MyProp { get;}`
             if (syntaxNode is InvocationExpressionSyntax invocation && invocation.Expression is MemberAccessExpressionSyntax member)
             {
-                return options.IgnoredMethods.Contains(member.Name.ToString());
+                return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
+            }
+
+            // Check if the current node is an object creation syntax (constructor invocation).
+            if (syntaxNode is ObjectCreationExpressionSyntax creation)
+            {
+                var methodName = creation.Type + ".ctor";
+                return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
             }
 
             // Traverse the tree upwards

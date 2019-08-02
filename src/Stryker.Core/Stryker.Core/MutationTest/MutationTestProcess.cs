@@ -130,6 +130,10 @@ namespace Stryker.Core.MutationTest
                     foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
+                        // Ignore compilation errors if the mutation is skipped anyways.
+                        if (mutant.ResultStatus == MutantStatus.Skipped)
+                            continue;
+
                         mutant.ResultStatus = MutantStatus.CompileError;
                         mutant.ResultStatusReason = "Could not compile";
                     }
