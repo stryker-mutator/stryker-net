@@ -6,12 +6,19 @@ using Stryker.Core.Options;
 using System;
 using System.Collections;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI
 {
     public class OptionsBuilder
     {
+        private readonly ILogger _logger;
         private IConfiguration config = null;
+
+        public OptionsBuilder(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public StrykerOptions Build(
             string basePath,
@@ -32,6 +39,7 @@ namespace Stryker.CLI
             CommandOption thresholdLow,
             CommandOption thresholdBreak,
             CommandOption filesToExclude,
+            CommandOption filePatterns,
             CommandOption testRunner,
             CommandOption solutionPath,
             CommandOption languageVersion)
@@ -63,6 +71,7 @@ namespace Stryker.CLI
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
+                filePatterns: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));
@@ -70,30 +79,43 @@ namespace Stryker.CLI
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
+            T value = default;
+            var hasValue = false;
+
             if (cliValue != null && ((option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue == true) || option.ValueType != CommandOptionType.NoValue))
             {
                 // Convert the cliValue string to the desired type
-                return ConvertTo(cliValue, option);
+                value  = ConvertTo(cliValue, option);
+                hasValue = true;
             }
             else if (config != null)
             {
                 // Try to get the value from the config file
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    return config.GetSection(option.JsonKey).Get<T>();
+                    value = config.GetSection(option.JsonKey).Get<T>();
+                    hasValue = true;
                 }
                 else
                 {
                     string configValue = config.GetValue(option.JsonKey, string.Empty).ToString();
                     if (!string.IsNullOrEmpty(configValue))
                     {
-                        return ConvertTo(configValue, option);
+                        value = ConvertTo(configValue, option);
+                        hasValue = true;
                     }
                 }
             }
 
             // Unable to get value from user, return default value
-            return option.DefaultValue;
+            if (!hasValue)
+                return option.DefaultValue;
+
+            // Notify user that they are using a deprecated argument.
+            if(option.Deprecated)
+                _logger.LogWarning($"Argument {option.ArgumentName} is deprecated: {option.DeprecatedMessage}");
+
+            return value;
         }
 
         private T ConvertTo<V, T>(V value, CLIOption<T> option)

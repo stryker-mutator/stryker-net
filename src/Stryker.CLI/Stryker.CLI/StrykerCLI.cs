@@ -56,6 +56,7 @@ namespace Stryker.CLI
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
+            var filePatterns = CreateOption(app, CLIOptions.FilePatterns);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
@@ -65,7 +66,7 @@ namespace Stryker.CLI
             app.OnExecute(() =>
             {
                 // app started
-                var options = new OptionsBuilder().Build(
+                var options = new OptionsBuilder(_logger).Build(
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
@@ -84,6 +85,7 @@ namespace Stryker.CLI
                     thresholdLowParam,
                     thresholdBreakParam,
                     filesToExclude,
+                    filePatterns,
                     testRunner,
                     solutionPathParam,
                     languageVersion);
@@ -156,8 +158,12 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
         /// </summary>
         private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option)
         {
+            var description = option.Deprecated
+                ? $"(deprecated:{option.DeprecatedMessage})" + option.ArgumentDescription
+                : option.ArgumentDescription;
+
             return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
-                option.ArgumentDescription,
+                description,
                 option.ValueType);
         }
     }

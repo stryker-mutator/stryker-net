@@ -178,7 +178,22 @@ namespace Stryker.CLI
             ArgumentShortName = "-fte <files-to-exclude>",
             ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
             DefaultValue = null,
-            JsonKey = "files-to-exclude"
+            JsonKey = "files-to-exclude",
+            Deprecated = true,
+            DeprecatedMessage = "Use 'filePattern' instead."
+        };
+
+        public static readonly CLIOption<string[]> FilePatterns = new CLIOption<string[]>
+        {
+            ArgumentName = "--file-patterns",
+            ArgumentShortName = "-fp <file-patterns>",
+            ArgumentDescription = @"Allows to specify file that should in- or excluded for the mutations.
+    Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+    Use '!' at the start of a pattern to exclude all matched files.
+    Use '{<start>-<length>}' at the end of a pattern to specify spans of text in files to in- or exclude.
+    Example: ['**\*Service.cs','!**\MySpecialService.cs', '**\MyOtherService.cs{1-10}{32-10}']",
+            DefaultValue = null,
+            JsonKey = "file-patterns",
         };
 
         public static readonly CLIOption<string> SolutionPath = new CLIOption<string>

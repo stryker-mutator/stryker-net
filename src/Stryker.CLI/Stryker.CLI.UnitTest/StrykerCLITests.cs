@@ -388,7 +388,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                !o.FilesToExclude.Any())));
+                !o.FilePatterns.Any())));
         }
 
         [Theory]
@@ -413,7 +413,7 @@ namespace Stryker.CLI.UnitTest
             var secondFileToExclude = FilePathUtils.ConvertPathSeparators("./ExampleDirectory/Recursive.cs");
             var thirdFileToExclude = FilePathUtils.ConvertPathSeparators(@".\ExampleDirectory/Recursive2.cs");
 
-            var filesToExclude = actualOptions.FilesToExclude.ToArray();
+            var filesToExclude = actualOptions.FilePatterns.ToArray();
             filesToExclude.Length.ShouldBe(3);
             filesToExclude.ShouldContain(firstFileToExclude);
             filesToExclude.ShouldContain(secondFileToExclude);

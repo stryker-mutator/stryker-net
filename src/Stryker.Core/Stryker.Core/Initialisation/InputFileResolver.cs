@@ -74,9 +74,8 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
+                inputFiles.Add(FindInputFiles(folder));
             }
-            MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
             result.ProjectContents = inputFiles;
 
             ValidateResult(result, options);
@@ -89,7 +88,7 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -101,7 +100,7 @@ namespace Stryker.Core.Initialisation
             };
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, folderComposite.RelativePath));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {

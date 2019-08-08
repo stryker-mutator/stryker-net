@@ -75,8 +75,8 @@ namespace Stryker.CLI.UnitTest
             actualOptions.Thresholds.Break.ShouldBe(20);
             actualOptions.Thresholds.Low.ShouldBe(30);
             actualOptions.Thresholds.High.ShouldBe(40);
-            actualOptions.FilesToExclude.ShouldHaveSingleItem();
-            actualOptions.FilesToExclude.ShouldContain(fileToExclude);
+            actualOptions.FilePatterns.ShouldHaveSingleItem();
+            actualOptions.FilePatterns.ShouldContain(fileToExclude);
             actualOptions.Optimizations.ShouldBe(OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill);
         }
     }
