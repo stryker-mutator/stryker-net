@@ -52,6 +52,7 @@ namespace Stryker.Core.Mutants
                     new CheckedMutator(),
                     new LinqMutator(),
                     new StringMutator(),
+                    new StringEmptyMutator(),
                     new InterpolatedStringMutator(),
                     new NegateConditionMutator(),
                 };

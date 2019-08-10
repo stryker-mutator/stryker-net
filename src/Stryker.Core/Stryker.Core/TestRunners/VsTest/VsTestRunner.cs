@@ -175,7 +175,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
-            // We know the testrun has timed out because we received less test results from the test run than there are test cases in the unit test project.
+            // We know the test run has timed out because we received less test results from the test run than there are test cases in the unit test project.
             var resultAsArray = testResults as TestResult[] ?? testResults.ToArray();
             if (resultAsArray.All(x => x.Outcome != TestOutcome.Failed) && resultAsArray.Count() < (testCases ?? _discoveredTests).Count())
             {
