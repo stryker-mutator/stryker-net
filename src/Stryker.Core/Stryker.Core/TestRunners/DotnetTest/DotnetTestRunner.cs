@@ -35,7 +35,7 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
-            Dictionary<string, string> envVars = mutant == null ? null : 
+            var envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
                 {"ActiveMutation", mutant.Id.ToString() }

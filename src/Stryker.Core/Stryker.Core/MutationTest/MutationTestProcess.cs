@@ -7,7 +7,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -53,9 +52,9 @@ namespace Stryker.Core.MutationTest
         {
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
-            foreach (var helper in CodeInjection.MutantHelpers)
+            foreach (var (filename, code) in CodeInjection.MutantHelpers)
             {
-                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(helper.Value, path: helper.Key, options: new CSharpParseOptions(options.LanguageVersion)));
+                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: filename, options: new CSharpParseOptions(options.LanguageVersion)));
             }
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
@@ -116,7 +115,7 @@ namespace Stryker.Core.MutationTest
                         mutant.ResultStatus = MutantStatus.CompileError;
                     }
                 }
-                int numberOfBuildErrors = compileResult.RollbackResult?.RollbackedIds.Count() ?? 0;
+                var numberOfBuildErrors = compileResult.RollbackResult?.RollbackedIds.Count() ?? 0;
                 if (numberOfBuildErrors > 0)
                 {
                     _logger.LogInformation("{0} mutants could not compile and got status {1}", numberOfBuildErrors, MutantStatus.CompileError.ToString());

@@ -99,7 +99,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var runner = TakeRunner();
                 try
                 {
-                    runner.CoverageForTest(testCase);
+                    runner.CoverageForOneTest(testCase);
                 }
                 catch (Exception e)
                 {

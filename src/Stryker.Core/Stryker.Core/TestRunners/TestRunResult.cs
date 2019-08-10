@@ -5,7 +5,7 @@ namespace Stryker.Core.TestRunners
 {
     public class TestRunResult
     {
-        public IList<TestDescription> FailingTests { get; set; }
+        public TestListDescription FailingTests { get; set; } = TestListDescription.EveryTest();
         public bool Success { get; set; }
         public string ResultMessage { get; set; }
     }

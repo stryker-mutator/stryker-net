@@ -20,10 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs">
-	</EmbeddedResource>
-	<EmbeddedResource Include="InjectedHelpers\MutantControl.cs">
-	</EmbeddedResource>
+	<EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs"/>
+	<EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
 	<EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
 	<EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
   </ItemGroup>

@@ -1,15 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.Mutants
 {
-    public class TestDescription
+    public sealed class TestDescription
     {
-        protected bool Equals(TestDescription other)
+        private static readonly TestDescription AllTestDescription;
+        private const string AllTestsGuid = "-1";
+
+        public TestDescription(string guid, string name)
         {
-            return string.Equals(Guid, other.Guid);
+            Guid = guid;
+            Name = name;
+        }
+
+        static TestDescription()
+        {
+            AllTestDescription = new TestDescription(AllTestsGuid, "All Tests");
+        }
+
+        /// <summary>
+        /// Returns an 'all tests' description for test runners that does not support test selection.
+        /// </summary>
+        public static TestDescription AllTest()
+        {
+            return AllTestDescription;
+        }
+
+        public string Guid { get; }
+
+        public string Name { get; }
+
+        public bool IsAllTests => Guid == AllTestsGuid;
+
+        private bool Equals(TestDescription other)
+        {
+            return string.Equals(Guid, other.Guid) || IsAllTests || other.IsAllTests;
         }
 
         public static implicit operator TestDescription(TestCase test)
@@ -21,23 +48,54 @@ namespace Stryker.Core.Mutants
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((TestDescription) obj);
+            return obj.GetType() == this.GetType() && Equals((TestDescription) obj);
         }
 
         public override int GetHashCode()
         {
             return (Guid != null ? Guid.GetHashCode() : 0);
         }
+    }
 
-        public TestDescription(string guid, string name)
+    public class TestListDescription
+    {
+        private List<TestDescription> _tests;
+
+        private static readonly TestListDescription EveryTests;
+
+        static TestListDescription()
         {
-            Guid = guid;
-            Name = name;
+            EveryTests = new TestListDescription(new []{TestDescription.AllTest()});
         }
 
-        public string Guid { get; set; }
+        public TestListDescription(IEnumerable<TestDescription> testDescriptions)
+        {
+            _tests = testDescriptions.ToList();
+        }
 
-        public string Name { get; set; }
+        public bool IsEveryTest => _tests.Count == 1 && _tests[0].IsAllTests;
+
+        public void Add(TestDescription test)
+        {
+            if (IsEveryTest)
+            {
+                return;
+            }
+            if (test.IsAllTests)
+            {
+                _tests = new List<TestDescription>(1);
+            }
+            _tests.Add(test);
+        }
+
+        public static TestListDescription EveryTest()
+        {
+            return EveryTests;
+        }
+
+        public IReadOnlyList<TestDescription> GetList()
+        {
+            return _tests;
+        }
     }
 }

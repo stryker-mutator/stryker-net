@@ -24,9 +24,9 @@ namespace Stryker.Core.Mutants
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
         public IDictionary<string, bool> CoveringTest { get; set; } = new Dictionary<string, bool>();
-
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
+        public bool IsTestedBy(string testId) => CoveringTest.ContainsKey(testId);
     }
 }

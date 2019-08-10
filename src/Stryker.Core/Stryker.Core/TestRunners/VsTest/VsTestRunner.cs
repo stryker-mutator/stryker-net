@@ -79,9 +79,8 @@ namespace Stryker.Core.TestRunners.VsTest
             };
         }
 
-        public IEnumerable<int> CoveredMutants { get; private set; }
-
         public TestCoverageInfos CoverageMutants { get; }
+
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
@@ -92,12 +91,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 envVars["ActiveMutation"] = mutant.Id.ToString();
             }
 
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTest == null||mutant.CoveringTest.Count==0 ))
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTest == null|| mutant.CoveringTest.Count==0 ))
             {
                 return new TestRunResult {ResultMessage= "Not covered by any test", Success= true};
             }
 
-            IEnumerable<TestCase> testCases = null;
+            ICollection<TestCase> testCases = null;
             // if we optimize the number of test to run
             if (mutant !=null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
@@ -147,6 +146,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 _discoveredTests = handler.DiscoveredTestCases;
                 DetectTestFramework(handler.DiscoveredTestCases);
+                var tests = new TestListDescription(_discoveredTests.Select(x => (TestDescription)x));
+
+                CoverageMutants.DeclareAllTests(tests);
             }
 
             return _discoveredTests;
@@ -170,7 +172,7 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         private TestRunResult RunVsTest(IEnumerable<TestCase> testCases, int? timeoutMs,
-            Dictionary<string, string> envVars)
+            IDictionary<string, string> envVars)
         {
             var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
 
@@ -185,7 +187,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResult = new TestRunResult
             {
                 Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped),
-                FailingTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(x => (TestDescription)x.TestCase).ToList(),
+                FailingTests = new TestListDescription(resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(x => (TestDescription)x.TestCase)),
                 ResultMessage = string.Join(
                     Environment.NewLine,
                     resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -200,7 +202,6 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
             ParseResultsForCoverage(testResults);
-            CoveredMutants = CoverageMutants.CoveredMutants;
             return new TestRunResult { Success = true };
         }
 
@@ -234,11 +235,10 @@ namespace Stryker.Core.TestRunners.VsTest
                         CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
                     }
                 }
-
             }
         }
 
-        public IEnumerable<TestResult> CoverageForTest(TestCase test)
+        public IEnumerable<TestResult> CoverageForOneTest(TestCase test)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings(null, true);
@@ -255,7 +255,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole.AbortTestRun();
         }
 
-        private IEnumerable<TestResult> RunAllTests(IEnumerable<TestCase> testCases, Dictionary<string, string> envVars,
+        private IEnumerable<TestResult> RunAllTests(IEnumerable<TestCase> testCases, IDictionary<string, string> envVars,
             string runSettings, bool forCoverage)
         {
             using (var runCompleteSignal = new AutoResetEvent(false))

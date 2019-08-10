@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -9,9 +10,9 @@ namespace Stryker.Core.TestRunners
 {
     public class TestCoverageInfos
     {
-        private readonly Dictionary<int, IList<TestDescription>> _mutantToTests = new Dictionary<int, IList<TestDescription>>();
-        private readonly HashSet<int> _mutantsInStatic = new HashSet<int>();
+        private readonly Dictionary<int, TestListDescription> _mutantToTests = new Dictionary<int, TestListDescription>();
         private readonly IList<TestDescription> _testsWithoutCoverageInfos = new List<TestDescription>();
+        private TestListDescription _everyTests = TestListDescription.EveryTest();
         private static ILogger Logger { get; }
 
         public IEnumerable<int> CoveredMutants
@@ -32,20 +33,33 @@ namespace Stryker.Core.TestRunners
 
         public bool NeedAllTests(IReadOnlyMutant mutant)
         {
-            return mutant.IsStaticValue || this._mutantsInStatic.Contains(mutant.Id);
+            if (mutant.IsStaticValue)
+            {
+                return true;
+            }
+
+            lock (_mutantToTests)
+            {
+                return _mutantToTests.TryGetValue(mutant.Id, out var tests) && tests == _everyTests;
+            }
         }
 
-        public ICollection<TestDescription> GetTests(IReadOnlyMutant mutant)
+        public IReadOnlyList<TestDescription> GetTests(IReadOnlyMutant mutant)
         {
             lock (_mutantToTests)
             {
                 if (_mutantToTests.ContainsKey(mutant.Id))
                 {
-                    return _mutantToTests[mutant.Id].ToList();
+                    return _mutantToTests[mutant.Id].GetList();
                 }
                 
             }
             return null;
+        }
+
+        public void DeclareAllTests(TestListDescription tests)
+        {
+            _everyTests = tests;
         }
 
         public void DeclareCoveredMutants(IEnumerable<int> list)
@@ -54,7 +68,7 @@ namespace Stryker.Core.TestRunners
             {
                 foreach (var mutant in list)
                 {
-                    _mutantToTests[mutant] = new List<TestDescription>();
+                    _mutantToTests[mutant] = _everyTests;
                 }
             }
         }
@@ -74,22 +88,24 @@ namespace Stryker.Core.TestRunners
                     Logger.LogDebug($"Covered mutants for {discoveredTest} are: {string.Join(", ", captureCoverage)}.");
                     foreach (var id in captureCoverage)
                     {
-                        if (_mutantToTests.ContainsKey(id))
+                        if (!_mutantToTests.ContainsKey(id))
                         {
-                            _mutantToTests[id].Add(discoveredTest);
+                            _mutantToTests[id] = new TestListDescription(new []{discoveredTest});
                         }
                         else
                         {
-                            _mutantToTests.Add(id, new List<TestDescription>{discoveredTest});
+                            _mutantToTests[id].Add(discoveredTest);
                         }
                     }
-                    if (staticMutants.Any())
+
+                    if (!staticMutants.Any())
                     {
-                        Logger.LogDebug($"Those are being executed in a static constructor context: {string.Join(", ", staticMutants)}.");
-                        foreach (var staticMutant in staticMutants)
-                        {
-                            _mutantsInStatic.Add(staticMutant);
-                        }
+                        return;
+                    }
+                    Logger.LogDebug($"Those are being executed in a static constructor context: {string.Join(", ", staticMutants)}.");
+                    foreach (var staticMutant in staticMutants)
+                    {
+                        _mutantToTests[staticMutant] = _everyTests;
                     }
                 }
             }
