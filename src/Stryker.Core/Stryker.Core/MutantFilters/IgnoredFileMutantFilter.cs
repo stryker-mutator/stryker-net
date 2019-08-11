@@ -7,7 +7,7 @@ using Stryker.Core.ProjectComponents;
 namespace Stryker.Core.MutantFilters
 {
     /// <summary>
-    /// Checks if the origin file of a mutant is skipped.
+    /// Checks if the origin file of a mutant should be skipped.
     /// </summary>
     /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class IgnoredFileMutantFilter : IMutantFilter
@@ -19,7 +19,9 @@ namespace Stryker.Core.MutantFilters
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             if (file.IsExcluded)
+            {
                 return Enumerable.Empty<Mutant>();
+            }
 
             return mutants;
         }

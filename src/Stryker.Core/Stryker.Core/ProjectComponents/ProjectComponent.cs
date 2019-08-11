@@ -7,18 +7,18 @@ namespace Stryker.Core.ProjectComponents
 {
     public abstract class ProjectComponent : IReadOnlyInputComponent
     {
-        public string Name { get; set; }
-
         public string FullPath { get; set; }
 
         public string RelativePath { get; set; }
 
         public abstract IEnumerable<Mutant> Mutants { get; set; }
+        public string Name { get; set; }
 
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
 
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
-            ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Skipped);
+            ReadOnlyMutants.Where(m =>
+                m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Skipped);
 
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(
             m =>
@@ -44,10 +44,15 @@ namespace Stryker.Core.ProjectComponents
         {
             var totalCount = TotalMutants.Count();
             var killedCount = DetectedMutants.Count();
-            if (totalCount > 0)
-                return killedCount / (decimal)totalCount * 100;
 
-            return null;
+            if (totalCount > 0)
+            {
+                return killedCount / (decimal) totalCount * 100;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public Health CheckHealth(Threshold threshold)

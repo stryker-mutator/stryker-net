@@ -11,8 +11,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
-using Stryker.Core.MutantFilters;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core
 {

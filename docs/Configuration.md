@@ -175,7 +175,7 @@ When you want to exclude a large set of files, it is advised to use the stryker 
 Default: `[]`
 
 ## Ignore methods
-If you would like to ignore some mutations that are passed as method paramter you can do so specifying which methods to ignore:
+If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
 
 ```
 dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor']"
