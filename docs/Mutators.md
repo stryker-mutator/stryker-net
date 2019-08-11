@@ -102,10 +102,11 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Sum()`               | `Count()`             |
 | `Count()`             | `Sum()`               |
 
-## String Literals
+## String Literals and Constants
 | Original | Mutated |
 | ------------- | ------------- | 
 | `"foo"` | `""` |
-|  `""` | `"Stryker was here!"` |
+| `""` | `"Stryker was here!"` |
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
+| `string.Empty` | `"Stryker was here!"` |
