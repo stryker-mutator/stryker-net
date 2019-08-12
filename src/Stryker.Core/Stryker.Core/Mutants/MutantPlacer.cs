@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutants
 
         public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf };
 
-        public static BlockSyntax PlaceContextMarker(BlockSyntax block)
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block)
         {
             return SyntaxFactory.Block( 
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
@@ -65,16 +65,6 @@ namespace Stryker.Core.Mutants
                         whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
-        }
-
-        public static ExpressionSyntax FindOriginalNonMutatedNode(ExpressionSyntax node)
-        {
-            while (node.GetAnnotations(MutationConditional).Any())
-            {
-                var block = (ConditionalExpressionSyntax)((ParenthesizedExpressionSyntax) node).Expression;
-                node = block.WhenFalse;
-            }
-            return node;
         }
 
         private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized)

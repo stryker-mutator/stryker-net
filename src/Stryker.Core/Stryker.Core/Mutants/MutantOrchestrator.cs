@@ -137,7 +137,7 @@ namespace Stryker.Core.Mutants
             var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
             var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
 
-            var markedBlock = MutantPlacer.PlaceContextMarker(mutatedBlock);
+            var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
 
             return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
         }
@@ -154,7 +154,7 @@ namespace Stryker.Core.Mutants
                 }
                 else if (accessor.Body != null)
                 {
-                    var markedBlock = MutantPlacer.PlaceContextMarker((BlockSyntax) Mutate(accessor.Body, context));
+                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(accessor.Body, context));
                     trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
                 }
             }
