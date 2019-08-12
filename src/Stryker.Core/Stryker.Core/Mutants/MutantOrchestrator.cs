@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        IEnumerable<Mutant> GetLatestMutantBatch();
+        IReadOnlyCollection<Mutant> GetLatestMutantBatch();
     }
 
     /// <summary>
@@ -64,11 +64,11 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        public IEnumerable<Mutant> GetLatestMutantBatch()
+        public IReadOnlyCollection<Mutant> GetLatestMutantBatch()
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();
-            return tempMutants;
+            return (IReadOnlyCollection<Mutant>) tempMutants;
         }
 
         /// <summary>

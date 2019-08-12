@@ -14,7 +14,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
+using Stryker.Core.MutantFilters;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -37,6 +39,12 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
         {
+            var inputFile = new FileLeaf()
+            {
+                Name = "Recursive.cs",
+                SourceCode = SourceFile
+            };
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -63,10 +71,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         Name = Path.Combine(FilesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
-                                Name = "Recursive.cs",
-                                SourceCode = SourceFile
-                            }
+                            inputFile,
                         }
                     },
                 },
@@ -79,7 +84,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
                 { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
             });
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
+
+            var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
+            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped };
 
             // create mocks
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
@@ -97,16 +104,20 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     Success = true
                 });
+            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
+
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
-                fileSystem);
+                fileSystem,
+                options,
+                Enumerable.Empty<IMutantFilter>());
 
             // start mutation process
-            target.Mutate(new StrykerOptions(devMode: true, excludedMutations: new string[] { }));
+            target.Mutate();
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
@@ -114,10 +125,13 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ExcludeFilesToMutate_MutationCalledOnce()
+        public void MutationTestProcess_MutateShouldCallMutantFilters()
         {
-            string sourceFile2 = SourceFile.Replace("Recursive.cs", "Recursive2.cs");
-            string sourceFile3 = SourceFile.Replace("Recursive.cs", "Recursive3.cs");
+            var inputFile = new FileLeaf()
+            {
+                Name = "Recursive.cs",
+                SourceCode = SourceFile
+            };
 
             var input = new MutationTestInput()
             {
@@ -145,19 +159,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         Name = Path.Combine(FilesystemRoot, "ExampleProject"),
                         Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
-                                Name = "Recursive.cs",
-                                SourceCode = SourceFile
-                            },
-                            new FileLeaf() {
-                                Name = "Recursive2.cs",
-                                SourceCode = sourceFile2,
-                                IsExcluded = true
-                            },
-                            new FileLeaf() {
-                                Name = "Recursive3.cs",
-                                SourceCode = sourceFile3
-                            }
+                            inputFile,
                         }
                     },
                 },
@@ -167,44 +169,52 @@ namespace Stryker.Core.UnitTest.MutationTest
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive2.cs"), new MockFileData(sourceFile2)},
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive3.cs"), new MockFileData(sourceFile3)},
                 { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
                 { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
             });
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
+
+            var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
+            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped };
 
             // create mocks
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
+            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
 
             // setup mocks
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), true))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
                 });
+            mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
+            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<FileLeaf>(), It.IsAny<StrykerOptions>()))
+                .Returns((IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions o) => mutants.Take(1));
+
+
+            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
-                fileSystem);
+                fileSystem,
+                options,
+                new[] { mutantFilterMock.Object });
 
-            var options = new StrykerOptions(fileSystem: fileSystem);
             // start mutation process
-            target.Mutate(options);
+            target.Mutate();
 
-            // verify the right methods were called
-            orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Exactly(2));
-            reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()), Times.Once);
+            // verify that filtered mutants are skipped
+            inputFile.Mutants.ShouldContain(mutantToBeSkipped);
+            mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Skipped);
         }
 
         [Fact]
@@ -271,15 +281,17 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
+            var options = new StrykerOptions();
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
-                fileSystem);
+                fileSystem,
+                options,
+                Enumerable.Empty<IMutantFilter>());
 
-            var options = new StrykerOptions();
-            target.Mutate(options);
+            target.Mutate();
 
             // Verify the created assembly is written to disk on the right location
             string expectedPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll");
@@ -401,7 +413,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                mutantFilters: Enumerable.Empty<IMutantFilter>());
             var coverage = new TestCoverageInfos();
             coverage.DeclareMappingForATest(new TestDescription("1", "toto"), new[] { 2 }, new int[0]);
 

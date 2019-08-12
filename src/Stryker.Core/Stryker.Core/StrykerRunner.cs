@@ -77,7 +77,7 @@ namespace Stryker.Core
                 _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);
 
                 // mutate
-                _mutationTestProcess.Mutate(options);
+                _mutationTestProcess.Mutate();
 
                 if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
