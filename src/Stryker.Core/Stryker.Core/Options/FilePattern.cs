@@ -8,8 +8,8 @@ namespace Stryker.Core.Options
 {
     public class FilePattern
     {
-        private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)-(\\d+)\\})+$");
-        private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)-(\\d+)\\}");
+        private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
+        private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
 
         public Glob Glob { get; set; }
 
@@ -39,7 +39,7 @@ namespace Stryker.Core.Options
                 // If we have one ore more spans we parse them.
                 var textSpansMatches = _textSpanRegex.Matches(textSpanGroupMatch.Value);
                 textSpans = textSpansMatches
-                    .Select(x => new TextSpan(int.Parse(x.Groups[0].Value), int.Parse(x.Groups[1].Value))).ToList();
+                    .Select(x => TextSpan.FromBounds(int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value))).ToList();
 
                 pattern = pattern.Substring(0, pattern.Length - textSpanGroupMatch.Length);
             }

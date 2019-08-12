@@ -71,7 +71,7 @@ namespace Stryker.CLI
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
-                filePatterns: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
+                filePatterns: GetOption(filePatterns.Value(), CLIOptions.FilePatterns),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));

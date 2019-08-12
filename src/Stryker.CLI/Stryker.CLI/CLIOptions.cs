@@ -190,8 +190,8 @@ namespace Stryker.CLI
             ArgumentDescription = @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
     Use '!' at the start of a pattern to exclude all matched files.
-    Use '{<start>-<length>}' at the end of a pattern to specify spans of text in files to in- or exclude.
-    Example: ['**\*Service.cs','!**\MySpecialService.cs', '**\MyOtherService.cs{1-10}{32-10}']",
+    Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
+    Example: ['**\*Service.cs','!**\MySpecialService.cs', '**\MyOtherService.cs{1..10}{32..45}']",
             DefaultValue = null,
             JsonKey = "file-patterns",
         };

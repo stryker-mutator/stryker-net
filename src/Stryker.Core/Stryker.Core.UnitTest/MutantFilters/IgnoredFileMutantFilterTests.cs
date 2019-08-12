@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var mutant = new Mutant();
 
-            var sut = new IgnoredFileMutantFilter();
+            var sut = new FilePatternMutantFilter();
 
             // Act
             var filteredMutants = sut.FilterMutants(new[] { mutant }, new FileLeaf { IsExcluded = fileExcluded }, null);
