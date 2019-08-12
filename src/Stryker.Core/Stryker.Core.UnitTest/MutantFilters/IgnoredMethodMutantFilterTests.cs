@@ -56,9 +56,13 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             // Assert
             if (shouldSkipMutant)
+            {
                 filteredMutants.ShouldNotContain(mutant);
+            }
             else
+            {
                 filteredMutants.ShouldContain(mutant);
+            }
         }
 
         [Theory]
@@ -102,9 +106,13 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             // Assert
             if (shouldSkipMutant)
+            {
                 filteredMutants.ShouldNotContain(mutant);
+            }
             else
+            {
                 filteredMutants.ShouldContain(mutant);
+            }
         }
 
         [Fact]

@@ -23,9 +23,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             if (fileExcluded)
+            {
                 filteredMutants.ShouldNotContain(mutant);
+            }
             else
+            {
                 filteredMutants.ShouldContain(mutant);
+            }
         }
     }
 }

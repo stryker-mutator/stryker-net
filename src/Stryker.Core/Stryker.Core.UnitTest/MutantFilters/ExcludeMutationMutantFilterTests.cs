@@ -33,9 +33,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             if (skipped)
+            {
                 filteredMutants.ShouldNotContain(mutant);
+            }
             else
+            {
                 filteredMutants.ShouldContain(mutant);
+            }
         }
     }
 }

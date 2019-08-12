@@ -64,8 +64,10 @@ namespace Stryker.Core.MutationTest
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
             foreach (var helper in CodeInjection.MutantHelpers)
+            {
                 mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(helper.Value, path: helper.Key,
                     options: new CSharpParseOptions(options.LanguageVersion)));
+            }
 
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
@@ -148,8 +150,10 @@ namespace Stryker.Core.MutationTest
                 .OrderBy(x => x.Key);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
+            {
                 _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
                     skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+            }
 
             _logger.LogInformation("{0} mutants ready for test",
                 _input.ProjectInfo.ProjectContents.TotalMutants.Count());
@@ -213,7 +217,10 @@ namespace Stryker.Core.MutationTest
             var nonTested = _input.ProjectInfo.ProjectContents.Mutants.Where(x =>
                 x.ResultStatus == MutantStatus.NotRun && !covered.Contains(x.Id)).ToList();
             const MutantStatus mutantResultStatus = MutantStatus.Survived;
-            foreach (var mutant in nonTested) mutant.ResultStatus = mutantResultStatus;
+            foreach (var mutant in nonTested)
+            {
+                mutant.ResultStatus = mutantResultStatus;
+            }
 
             foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants)
             {
