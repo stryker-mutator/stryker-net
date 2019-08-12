@@ -80,6 +80,14 @@ namespace Stryker.CLI
             JsonKey = "excluded-mutations"
         };
 
+        public static readonly CLIOption<string[]> IgnoreMethods = new CLIOption<string[]>
+        {
+            ArgumentName = "--ignore-methods",
+            ArgumentShortName = "-im <methodNames>",
+            ArgumentDescription = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']",
+            JsonKey = "ignore-methods"
+        };
+
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
         {
             ArgumentName = "--project-file",

@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        IEnumerable<Mutant> GetLatestMutantBatch();
+        IReadOnlyCollection<Mutant> GetLatestMutantBatch();
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutantOrchestrator : IMutantOrchestrator
     {
-        private ICollection<Mutant> _mutants { get; set; }
+        private Collection<Mutant> _mutants { get; set; }
         private int _mutantCount { get; set; } = 0;
         private IEnumerable<IMutator> _mutators { get; set; }
         private ILogger _logger { get; set; }
@@ -60,7 +60,7 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        public IEnumerable<Mutant> GetLatestMutantBatch()
+        public IReadOnlyCollection<Mutant> GetLatestMutantBatch()
         {
             var tempMutants = _mutants;
             _mutants = new Collection<Mutant>();
