@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
@@ -28,6 +29,7 @@ namespace Stryker.Core.Options
         public string TestProjectNameFilter { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
+        public IEnumerable<Regex> IgnoredMethods { get; }
         public int ConcurrentTestrunners { get; }
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
@@ -48,6 +50,7 @@ namespace Stryker.Core.Options
             string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
+            string[] ignoredMethods = null,
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
@@ -65,13 +68,14 @@ namespace Stryker.Core.Options
             _fileSystem = fileSystem ?? new FileSystem();
 
             var outputPath = ValidateOutputPath(basePath);
+            IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             TestProjectNameFilter = ValidateTestProjectFilter(basePath, testProjectNameFilter);
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = ValidateExludedMutations(excludedMutations);
+            ExcludedMutations = ValidateExcludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
@@ -82,6 +86,14 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
+        }
+
+        private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
+        {
+            foreach (var methodPattern in methodPatterns.Where(x => !string.IsNullOrEmpty(x)))
+            {
+                yield return new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase);
+            }
         }
 
         private OptimizationFlags ValidateMode(string mode)
@@ -150,7 +162,7 @@ namespace Stryker.Core.Options
             yield break;
         }
 
-        private IEnumerable<Mutator> ValidateExludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExcludedMutations(IEnumerable<string> excludedMutations)
         {
             if (excludedMutations == null)
             {

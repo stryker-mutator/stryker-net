@@ -11,6 +11,7 @@ The full list of Stryker.NET configuration options are:
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files](#excluding-files)
+- [Ignore methods](#ignore-methods)
 - [Custom tresholds](#unary-operators)
 - [Coverage analysis](#coverage-analysis)
 - [Abort testrun on test failure](#abort-test-on-fail)
@@ -170,6 +171,36 @@ dotnet stryker -fte "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirec
 We recommend to use relative paths. Relative paths are automatically resolved. Absolute paths break easily on different devices. However it is also possible to use absolute paths.
 
 When you want to exclude a large set of files, it is advised to use the stryker configuration file because it is easier to handle multiple files.
+
+Default: `[]`
+
+## Ignore methods
+If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
+
+```
+dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor']"
+dotnet stryker -im "['ToString', 'ConfigureAwait', '*Exception.ctor']"
+```
+
+Ignore methods will only affect mutations in directly passed parameters.
+
+``` csharp
+// This mutation will be skipped;
+ConfigureAwait(true); 
+
+// This mutation won't
+var t = true;
+ConfigureAwait(t); 
+```
+
+You can also ignore constructors by specifying the type and adding the `.ctor` suffix.
+
+`dotnet stryker -im "['NotImplementedException.ctor']"`
+
+Both, method names and constructor names, support wildcards.
+
+`dotnet stryker -im "['*Log']" // Ignores all methods ending with log`
+`dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors`
 
 Default: `[]`
 

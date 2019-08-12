@@ -116,6 +116,8 @@ namespace Stryker.Core.TestRunners
             var avoidedTests = 0L;
             Logger.LogDebug("Optimize test runs according to coverage info.");
             var report = new StringBuilder();
+            var mutantsToTest = mutants.Where(m => m.ResultStatus == MutantStatus.NotRun);
+            var initialCount = mutantsToTest.Count();
             var nonTested = mutants.Where(x =>
                 x.ResultStatus == MutantStatus.NotRun && !CoveredMutants.Contains(x.Id)).ToList();
             foreach (var mutant in nonTested)
@@ -124,7 +126,7 @@ namespace Stryker.Core.TestRunners
                 avoidedTests += testsCount;
             }
 
-            foreach (var mutant in mutants)
+            foreach (var mutant in mutantsToTest)
             {
                 var tests = this.GetTests(mutant);
                 var mutantCoveringTest = new Dictionary<string, bool>();
@@ -152,7 +154,7 @@ namespace Stryker.Core.TestRunners
                 ? "Congratulations, all mutants are covered by tests!"
                 : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.Survived}).");
 
-            var theoricalTestCount = (long)(testsCount) * mutants.Count();
+            var theoricalTestCount = (long)(testsCount) * initialCount;
             Logger.LogInformation($"Coverage analysis eliminated {1.0*avoidedTests/theoricalTestCount:P} of tests (i.e. {avoidedTests} tests out of {theoricalTestCount}).");
 
             return avoidedTests;

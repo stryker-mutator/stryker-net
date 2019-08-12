@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        IEnumerable<Mutant> GetLatestMutantBatch();
+        IReadOnlyCollection<Mutant> GetLatestMutantBatch();
     }
 
     /// <summary>
@@ -52,6 +52,7 @@ namespace Stryker.Core.Mutants
                     new CheckedMutator(),
                     new LinqMutator(),
                     new StringMutator(),
+                    new StringEmptyMutator(),
                     new InterpolatedStringMutator(),
                     new NegateConditionMutator(),
                 };
@@ -63,11 +64,11 @@ namespace Stryker.Core.Mutants
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
         /// <returns>Mutants</returns>
-        public IEnumerable<Mutant> GetLatestMutantBatch()
+        public IReadOnlyCollection<Mutant> GetLatestMutantBatch()
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();
-            return tempMutants;
+            return (IReadOnlyCollection<Mutant>) tempMutants;
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Stryker.Core.Mutants
             var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
             var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
 
-            var markedBlock = MutantPlacer.PlaceContextMarker(mutatedBlock);
+            var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
 
             return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
         }
@@ -153,7 +154,7 @@ namespace Stryker.Core.Mutants
                 }
                 else if (accessor.Body != null)
                 {
-                    var markedBlock = MutantPlacer.PlaceContextMarker((BlockSyntax) Mutate(accessor.Body, context));
+                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(accessor.Body, context));
                     trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
                 }
             }
