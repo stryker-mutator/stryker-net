@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Stryker
 {
-    public sealed class StaticContext: IDisposable
+    public sealed class MutantContext: IDisposable
     {
         [ThreadStatic] private static int depth;
 
-        public StaticContext()
+        public MutantContext()
         {
             depth++;
         }

@@ -11,11 +11,11 @@ namespace Stryker.Core.UnitTest.Mutants.TestResources
         private static bool NoWorries => (StrykerNamespace.MutantControl.IsActive(1)?true:false);
         private static bool NoWorriesGetter
         {
-            get {using(new StrykerNamespace.StaticContext()){ return (StrykerNamespace.MutantControl.IsActive(2)?true:false); }
+            get {using(new StrykerNamespace.MutantContext()){ return (StrykerNamespace.MutantControl.IsActive(2)?true:false); }
 }        }
 
 static Mutator_Flag_MutatedStatics()
-{using(new StrykerNamespace.StaticContext())        {
+{using(new StrykerNamespace.MutantContext())        {
             int x = 0;
             var y = (StrykerNamespace.MutantControl.IsActive(3)?x--:x++);
         }

@@ -57,7 +57,7 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Compile Remove="InjectedHelpers\Coverage\StaticContext.cs" />
+    <Compile Remove="InjectedHelpers\Coverage\MutantContext.cs" />
     <Compile Remove="InjectedHelpers\MutantControl.cs" />
   </ItemGroup>
 	
@@ -66,6 +66,6 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <EmbeddedResource Include="InjectedHelpers\Coverage\StaticContext.cs" />
+    <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
   </ItemGroup>
 </Project>

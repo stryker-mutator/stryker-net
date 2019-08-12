@@ -124,7 +124,7 @@ namespace Stryker
                         }
                     }
 
-                    if (StaticContext.InStatic())
+                    if (MutantContext.InStatic())
                     {
                         _staticMutants.Add(id);
                     }
