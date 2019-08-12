@@ -551,43 +551,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InputFileResolver_InitializeShouldMarkFilesAsExcluded()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-                {
-                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive2.cs"), new MockFileData(sourceFile) },
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive3.cs"), new MockFileData(sourceFile) },
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents) },
-                    { Path.Combine(_filesystemRoot, "TestProject", "Debug", "somecsharpfile.cs"), new MockFileData("Bytecode") },
-                    { Path.Combine(_filesystemRoot, "TestProject", "Release", "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") }
-                });
-
-            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
-                });
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>(),
-                    TargetFramework = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
-                });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-
-            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, filesToExclude: new[] { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs") }));
-
-            result.ProjectContents.GetAllFiles().Count(c => c.IsExcluded).ShouldBe(1);
-        }
-
-        [Fact]
         public void InputFileResolver_ShouldThrowExceptionOnNoProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>

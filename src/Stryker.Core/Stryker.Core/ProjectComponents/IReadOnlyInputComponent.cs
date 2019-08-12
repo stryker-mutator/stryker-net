@@ -13,8 +13,6 @@ namespace Stryker.Core.ProjectComponents
         IEnumerable<IReadOnlyMutant> ReadOnlyMutants { get; }
         IEnumerable<IReadOnlyMutant> TotalMutants { get; }
         IEnumerable<IReadOnlyMutant> DetectedMutants { get; }
-        IReadOnlyCollection<FileLeaf> ExcludedFiles { get; }
-        bool IsExcluded { get; }
 
         /// <summary>
         /// The display handlers are an exception to the readonly rule

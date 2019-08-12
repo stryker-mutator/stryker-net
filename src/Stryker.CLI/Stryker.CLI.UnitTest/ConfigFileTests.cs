@@ -5,6 +5,9 @@ using Stryker.Core;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System.IO;
+using System.Linq;
+using DotNet.Globbing;
+using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -49,7 +52,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
-            var fileToExclude = FilePathUtils.ConvertPathSeparators("./Recursive.cs");
+            var filePattern = new FilePattern (Glob.Parse("**/Test.cs"), true, new []{TextSpan.FromBounds(1, 100), TextSpan.FromBounds(200, 300) });
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
 
@@ -75,8 +78,8 @@ namespace Stryker.CLI.UnitTest
             actualOptions.Thresholds.Break.ShouldBe(20);
             actualOptions.Thresholds.Low.ShouldBe(30);
             actualOptions.Thresholds.High.ShouldBe(40);
-            actualOptions.FilePatterns.ShouldHaveSingleItem();
-            actualOptions.FilePatterns.ShouldContain(fileToExclude);
+            actualOptions.FilePatterns.Count().ShouldBe(2);
+            actualOptions.FilePatterns.ShouldContain(filePattern);
             actualOptions.Optimizations.ShouldBe(OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill);
         }
     }

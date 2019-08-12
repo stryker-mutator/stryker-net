@@ -387,8 +387,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                !o.FilePatterns.Any())));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.FilePatterns.Count() == 1)));
         }
 
         [Theory]
@@ -409,15 +408,44 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
 
-            var firstFileToExclude = FilePathUtils.ConvertPathSeparators("./StartUp.cs");
-            var secondFileToExclude = FilePathUtils.ConvertPathSeparators("./ExampleDirectory/Recursive.cs");
-            var thirdFileToExclude = FilePathUtils.ConvertPathSeparators(@".\ExampleDirectory/Recursive2.cs");
+            var firstFileToExclude = FilePattern.Parse("!./StartUp.cs");
+            var secondFileToExclude = FilePattern.Parse("!./ExampleDirectory/Recursive.cs");
+            var thirdFileToExclude = FilePattern.Parse(@"!.\ExampleDirectory/Recursive2.cs");
 
-            var filesToExclude = actualOptions.FilePatterns.ToArray();
-            filesToExclude.Length.ShouldBe(3);
-            filesToExclude.ShouldContain(firstFileToExclude);
-            filesToExclude.ShouldContain(secondFileToExclude);
-            filesToExclude.ShouldContain(thirdFileToExclude);
+            var filePatterns = actualOptions.FilePatterns.ToArray();
+            filePatterns.Count(x => x.IsExclude).ShouldBe(3);
+            filePatterns.ShouldContain(firstFileToExclude);
+            filePatterns.ShouldContain(secondFileToExclude);
+            filePatterns.ShouldContain(thirdFileToExclude);
+        }
+
+        [Theory]
+        [InlineData("--file-patterns")]
+        [InlineData("-fp")]
+        public void StrykerCLI_WithFilePatternSet_ShouldPassFilePatternSetToStryker(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions actualOptions = null;
+            StrykerRunResult runResults = new StrykerRunResult(new StrykerOptions(), 0.1M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
+                .Callback<StrykerOptions>((c) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new[] { argName, @"['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']" });
+
+            var firstFileToExclude = FilePattern.Parse("**/*Service.cs");
+            var secondFileToExclude = FilePattern.Parse("!**/MySpecialService.cs");
+            var thirdFileToExclude = FilePattern.Parse("**/MyOtherService.cs{1..10}{32..45}");
+
+            var filePatterns = actualOptions.FilePatterns.ToArray();
+            filePatterns.Length.ShouldBe(3);
+            filePatterns.ShouldContain(firstFileToExclude);
+            filePatterns.ShouldContain(secondFileToExclude);
+            filePatterns.ShouldContain(thirdFileToExclude);
         }
     }
 }
