@@ -7,8 +7,5 @@
     "test-runner": "vstest",
     "coverage-analysis": "perTest",
     "abort-test-on-fail":  true,
-        "log-level": "trace",
-    "log-file": "true",
-    "max-concurrent-test-runners":  1
   }
 }
