@@ -3,6 +3,8 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.IO;
+using System.Linq;
+using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
@@ -66,6 +68,22 @@ namespace Stryker.Core.UnitTest.Options
             });
 
             ex.Details.ShouldContain($"The test project filter {userSuppliedFilter} is invalid.");
+        }
+
+        [Theory]
+        [InlineData("./MyFolder/MyFile.cs", "MyFolder/MyFile.cs")]
+        [InlineData("./MyFolder", "MyFolder\\*.*")]
+        [InlineData("C:/MyFolder/MyFile.cs", "C:/MyFolder/MyFile.cs")]
+        public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
+        {
+            // Act
+            var result = new StrykerOptions(filesToExclude: new []{fileToExclude});
+
+            // Assert
+            var pattern = result.FilePatterns.Last();
+            pattern.Glob.ToString().ShouldBe(expectedFilePattern);
+            pattern.TextSpans.ShouldContain(TextSpan.FromBounds(0, int.MaxValue));
+            pattern.IsExclude.ShouldBeTrue();
         }
     }
 }
