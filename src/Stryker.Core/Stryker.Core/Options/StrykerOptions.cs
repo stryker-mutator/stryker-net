@@ -11,8 +11,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Build.Logging;
-using Newtonsoft.Json;
 
 namespace Stryker.Core.Options
 {
@@ -86,6 +84,14 @@ namespace Stryker.Core.Options
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
+        }
+
+        private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
+        {
+            foreach (var methodPattern in methodPatterns.Where(x => !string.IsNullOrEmpty(x)))
+            {
+                yield return new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase);
+            }
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

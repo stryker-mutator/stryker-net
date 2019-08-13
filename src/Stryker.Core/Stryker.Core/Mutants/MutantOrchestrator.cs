@@ -33,7 +33,7 @@ namespace Stryker.Core.Mutants
         private ILogger _logger { get; set; }
 
         private static readonly Type[] expressionStatementNeedingIf = { typeof(AssignmentExpressionSyntax), typeof(PostfixUnaryExpressionSyntax), typeof(PrefixUnaryExpressionSyntax)};
-        
+
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators = null)
         {
@@ -48,6 +48,7 @@ namespace Stryker.Core.Mutants
                     new CheckedMutator(),
                     new LinqMutator(),
                     new StringMutator(),
+                    new StringEmptyMutator(),
                     new InterpolatedStringMutator(),
                     new NegateConditionMutator(),
                 };

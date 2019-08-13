@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
-using System.Linq;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Json
 {
