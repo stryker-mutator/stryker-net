@@ -15,13 +15,15 @@ namespace Stryker.CLI
     public class StrykerCLI
     {
         private readonly IStrykerRunner _stryker;
-        private readonly ILogger _logger;
-        public int ExitCode { get; set; }
+        private ILogger _logger;
+        private readonly LogBuffer _logBuffer;
+        public int ExitCode { get; private set; }
 
         public StrykerCLI(IStrykerRunner stryker)
         {
             _stryker = stryker;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            // Create a log buffer to buffer log messages until the logging is configured.
+            _logBuffer = new LogBuffer();
             ExitCode = 0;
         }
 
@@ -46,7 +48,7 @@ namespace Stryker.CLI
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
             var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
-            var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
+            var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
@@ -66,13 +68,13 @@ namespace Stryker.CLI
             app.OnExecute(() =>
             {
                 // app started
-                var options = new OptionsBuilder(_logger).Build(
+                var options = new OptionsBuilder(_logBuffer).Build(
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
                     testProjectNameParam,
                     timeoutParam,
-                    exludedMutationsParam,
+                    excludedMutationsParam,
                     ignoreMethodsParam,
                     logConsoleParam,
                     fileLogParam,
@@ -100,6 +102,11 @@ namespace Stryker.CLI
         {
             PrintStykerASCIIName();
             _ = PrintStrykerVersionInformationAsync();
+
+            // Configure logging
+            ApplicationLogging.ConfigureLogger(options.LogOptions);
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            _logBuffer.WriteToLog(_logger);
 
             StrykerRunResult results = _stryker.RunMutationTest(options);
             if (!results.IsScoreAboveThresholdBreak())

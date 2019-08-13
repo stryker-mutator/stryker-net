@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
@@ -68,12 +70,52 @@ namespace Stryker.Core.Options
                     .Select(x => TextSpan.FromBounds(int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)))
                     .ToList();
 
+                textSpans = Reduce(textSpans);
+
                 pattern = pattern.Substring(0, pattern.Length - textSpanGroupMatch.Length);
             }
 
             var glob = Glob.Parse(pattern);
 
             return new FilePattern(glob, exclude, textSpans);
+        }
+
+        /// <summary>
+        /// Reduces a set of text spans to the smallest set of text spans possible.
+        /// Two <see cref="TextSpan"/> can be combined if they intersect.
+        /// </summary>
+        /// <param name="textSpans">The set of <see cref="TextSpan"/>s to reduce.</param>
+        /// <returns>The reduced set.</returns>
+        private static IReadOnlyCollection<TextSpan> Reduce(IEnumerable<TextSpan> textSpans)
+        {
+            var spans = new List<TextSpan>(textSpans);
+            var shouldContinue = true;
+
+            while (shouldContinue)
+            {
+                shouldContinue = false;
+
+                foreach (var current in spans)
+                {
+                    // Check if any of the other spans intersects with the current one
+                    var other = spans.FirstOrDefault(s => s != current && s.IntersectsWith(current));
+                    if (other != default)
+                    {
+                        // Remove the original spans
+                        spans.Remove(current);
+                        spans.Remove(other);
+
+                        // Add the newly combined span.
+                        spans.Add(TextSpan.FromBounds(Math.Min(current.Start, other.Start), Math.Max(current.End, other.End)));
+
+                        // We changed the list, so we have to restart the foreach.
+                        shouldContinue = true;
+                        break;
+                    }
+                }
+            }
+
+            return spans;
         }
 
         /// <summary>

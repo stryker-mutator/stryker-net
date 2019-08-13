@@ -11,8 +11,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
-using Stryker.Core.MutantFilters;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core
 {
@@ -56,7 +54,6 @@ namespace Stryker.Core
             }
 
             // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions);
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
 
             logger.LogDebug("Stryker started with options: {0}",
@@ -64,7 +61,7 @@ namespace Stryker.Core
 
             try
             {
-                // initialize 
+                // initialize
                 _reporter = ReporterFactory.Create(options);
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);

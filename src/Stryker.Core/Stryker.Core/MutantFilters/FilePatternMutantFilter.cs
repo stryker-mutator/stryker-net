@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis.Text;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -27,13 +26,25 @@ namespace Stryker.Core.MutantFilters
             bool IsMutantIncluded(Mutant mutant)
             {
                 // Check if the the mutant is included.
-                if (!includePattern.Any(ip => ip.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span)))
+                if (!includePattern.Any(MatchesPattern))
                 {
                     return false;
                 }
 
                 // Check if the mutant is excluded.
-                return !excludePattern.Any(ep => ep.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span));
+                if (excludePattern.Any(MatchesPattern))
+                {
+                    return false;
+                }
+
+                return true;
+
+                bool MatchesPattern(FilePattern pattern)
+                {
+                    // We check both the full and the relative path to allow for relative paths.
+                    return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
+                           pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);
+                }
             }
         }
     }

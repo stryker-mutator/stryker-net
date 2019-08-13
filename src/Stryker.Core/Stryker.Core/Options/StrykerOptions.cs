@@ -11,6 +11,8 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Build.Logging;
+using Newtonsoft.Json;
 
 namespace Stryker.Core.Options
 {
@@ -175,11 +177,11 @@ namespace Stryker.Core.Options
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.FirstOrDefault(
-                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()))
-                    .Key is var foundMutator)
+                var mutatorDescriptor = typeDescriptions.FirstOrDefault(
+                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()));
+                if (mutatorDescriptor.Value != null)
                 {
-                    yield return foundMutator;
+                    yield return mutatorDescriptor.Key;
                 }
                 else
                 {
@@ -253,8 +255,6 @@ namespace Stryker.Core.Options
 
         private IEnumerable<FilePattern> ValidateFilePatterns(string[] filePatterns, string[] filesToExclude)
         {
-            // We also handle the the deprecated filesToExclude option here
-
             var filesToInclude = new List<FilePattern>();
 
             filePatterns = filePatterns ?? Array.Empty<string>();
@@ -268,7 +268,23 @@ namespace Stryker.Core.Options
 
             foreach (var fileToExclude in filesToExclude)
             {
-                filesToInclude.Add(FilePattern.Parse("!" + fileToExclude));
+                // To support the legacy filesToExclude argument we add an exclude rule for each file exclude.
+                // The files-to-exclude allowed to specify folders and relative paths.
+                var path = fileToExclude;
+
+                if (!Path.HasExtension(path))
+                {
+                    // Folder exclude
+                    path = Path.Combine(path, "*.*");
+                }
+
+                // Remove relative path anchors
+                if (path.StartsWith(".\\") || path.StartsWith("./"))
+                {
+                    path = path.Remove(0, 2);
+                }
+
+                filesToInclude.Add(FilePattern.Parse("!" + path));
             }
 
             foreach (var includePattern in filePatterns)

@@ -180,7 +180,7 @@ namespace Stryker.CLI
             DefaultValue = null,
             JsonKey = "files-to-exclude",
             Deprecated = true,
-            DeprecatedMessage = "Use 'filePattern' instead."
+            DeprecatedMessage = "Use '--file-pattern' instead."
         };
 
         public static readonly CLIOption<string[]> FilePatterns = new CLIOption<string[]>

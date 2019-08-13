@@ -13,7 +13,7 @@ namespace Stryker.CLI
     public class OptionsBuilder
     {
         private readonly ILogger _logger;
-        private IConfiguration config = null;
+        private IConfiguration _config;
 
         public OptionsBuilder(ILogger logger)
         {
@@ -47,7 +47,7 @@ namespace Stryker.CLI
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
             {
-                config = new ConfigurationBuilder()
+                _config = new ConfigurationBuilder()
                         .SetBasePath(basePath)
                         .AddJsonFile(fileLocation)
                         .Build().GetSection("stryker-config");
@@ -88,17 +88,17 @@ namespace Stryker.CLI
                 value  = ConvertTo(cliValue, option);
                 hasValue = true;
             }
-            else if (config != null)
+            else if (_config != null)
             {
                 // Try to get the value from the config file
                 if (typeof(IEnumerable).IsAssignableFrom(typeof(T)) && typeof(T) != typeof(string))
                 {
-                    value = config.GetSection(option.JsonKey).Get<T>();
+                    value = _config.GetSection(option.JsonKey).Get<T>();
                     hasValue = true;
                 }
                 else
                 {
-                    string configValue = config.GetValue(option.JsonKey, string.Empty).ToString();
+                    string configValue = _config.GetValue(option.JsonKey, string.Empty).ToString();
                     if (!string.IsNullOrEmpty(configValue))
                     {
                         value = ConvertTo(configValue, option);
