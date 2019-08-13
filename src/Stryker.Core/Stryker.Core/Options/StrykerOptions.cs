@@ -94,14 +94,6 @@ namespace Stryker.Core.Options
             }
         }
 
-        private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
-        {
-            foreach (var methodPattern in methodPatterns.Where(x => !string.IsNullOrEmpty(x)))
-            {
-                yield return new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase);
-            }
-        }
-
         private OptimizationFlags ValidateMode(string mode)
         {
             switch (mode)
