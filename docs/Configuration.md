@@ -221,7 +221,7 @@ dotnet stryker -fp "['MyFolder/MyService.cs{10..100}']"
 ```
 
 ## Ignore methods
-If you would like to ignore some mutations that are passed as method paramter you can do so specifying which methods to ignore:
+If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
 
 ```
 dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor']"
