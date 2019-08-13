@@ -99,7 +99,7 @@ namespace Stryker.Core.Options
                 {
                     // Check if any of the other spans intersects with the current one
                     var other = spans.FirstOrDefault(s => s != current && s.IntersectsWith(current));
-                    if (other != default)
+                    if (other != default(TextSpan))
                     {
                         // Remove the original spans
                         spans.Remove(current);

@@ -79,7 +79,7 @@ namespace Stryker.CLI
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            T value = default;
+            T value = default(T);
             var hasValue = false;
 
             if (cliValue != null && ((option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue == true) || option.ValueType != CommandOptionType.NoValue))
