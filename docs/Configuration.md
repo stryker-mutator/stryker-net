@@ -11,7 +11,7 @@ The full list of Stryker.NET configuration options are:
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files (deprecated)](#excluding-files)
-- [File patterns](#file-patterns)
+- [Mutate](#mutate)
 - [Ignore methods](#ignore-methods)
 - [Custom tresholds](#unary-operators)
 - [Coverage analysis](#coverage-analysis)
@@ -162,7 +162,7 @@ dotnet stryker -em "['string', 'logical']"
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too exited, skipping mutations doesn't improve your mutation score ;)
 
 ## Excluding files
-> ⚠ This parameter is deprecated. Use [File patterns](#file-patterns) instead.
+> ⚠ This parameter is deprecated. Use [Mutate](#mutate) instead.
 
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
@@ -177,26 +177,26 @@ When you want to exclude a large set of files, it is advised to use the stryker 
 
 Default: `[]`
 
-## File patterns
+## Mutate
 To specify which files should be mutated you can use file pattern to in- or excluded files or even only parts of a files. By default all files are included.
 
 ```
-dotnet stryker --file-patterns "['C:/Repos/MyProject/MyFile.cs']"
-dotnet stryker -fp "['C:/Repos/MyProject/MyFile.cs']"
+dotnet stryker --mutate "['C:/Repos/MyProject/MyFile.cs']"
+dotnet stryker -m "['C:/Repos/MyProject/MyFile.cs']"
 ```
 
 The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) to allow wildcards.
 
 ```
-dotnet stryker --file-patterns "['**/*Services.cs']"
-dotnet stryker -fp "['**/*Services.cs']"
+dotnet stryker --mutate "['**/*Services.cs']"
+dotnet stryker -m "['**/*Services.cs']"
 ```
 
 You can add an `!` in front of the pattern to exclude all files that match the pattern.
 
 ```
-dotnet stryker --file-patterns "['!**/*Factory.cs']"
-dotnet stryker -fp "['!**/*Factory.cs']"
+dotnet stryker --mutate "['!**/*Factory.cs']"
+dotnet stryker -m "['!**/*Factory.cs']"
 ```
 When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both, include and exclude patterns, are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
 
@@ -216,8 +216,8 @@ When only exclude patterns are provided, all files will be included that do not 
 To allow more fine grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
 
 ```
-dotnet stryker --file-patterns "['MyFolder/MyService.cs{10..100}']"
-dotnet stryker -fp "['MyFolder/MyService.cs{10..100}']"
+dotnet stryker --mutate "['MyFolder/MyService.cs{10..100}']"
+dotnet stryker -m "['MyFolder/MyService.cs{10..100}']"
 ```
 
 ## Ignore methods

@@ -14,7 +14,7 @@
     "threshold-high": 40,
     "threshold-low": 30,
     "threshold-break": 20,
-    "file-patterns": [
+    "mutate": [
       "!**/Test.cs{1..100}{200..300}"
     ] 
   }

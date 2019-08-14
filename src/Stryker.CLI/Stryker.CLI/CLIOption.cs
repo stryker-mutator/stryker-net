@@ -9,7 +9,7 @@ namespace Stryker.CLI
         public string ArgumentDescription { get; set; }
         public T DefaultValue { get; set; }
         public string JsonKey { get; set; }
-        public bool Deprecated { get; set; }
+        public bool IsDeprecated { get; set; }
         public string DeprecatedMessage { get; set; }
         public CommandOptionType ValueType { get; set; } = CommandOptionType.SingleValue;
     }

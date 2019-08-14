@@ -408,9 +408,9 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
 
-            var firstFileToExclude = FilePattern.Parse("!./StartUp.cs");
-            var secondFileToExclude = FilePattern.Parse("!./ExampleDirectory/Recursive.cs");
-            var thirdFileToExclude = FilePattern.Parse(@"!.\ExampleDirectory/Recursive2.cs");
+            var firstFileToExclude = FilePattern.Parse("!StartUp.cs");
+            var secondFileToExclude = FilePattern.Parse("!ExampleDirectory/Recursive.cs");
+            var thirdFileToExclude = FilePattern.Parse("!ExampleDirectory/Recursive2.cs");
 
             var filePatterns = actualOptions.FilePatterns.ToArray();
             filePatterns.Count(x => x.IsExclude).ShouldBe(3);
@@ -420,8 +420,8 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--file-patterns")]
-        [InlineData("-fp")]
+        [InlineData("--mutate")]
+        [InlineData("-m")]
         public void StrykerCLI_WithFilePatternSet_ShouldPassFilePatternSetToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);

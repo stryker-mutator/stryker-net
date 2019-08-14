@@ -59,7 +59,7 @@ namespace Stryker.Core.Options
             int thresholdLow = 60,
             int thresholdBreak = 0,
             string[] filesToExclude = null,
-            string[] filePatterns = null,
+            string[] mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
             string languageVersion = "latest")
@@ -80,7 +80,7 @@ namespace Stryker.Core.Options
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
-            FilePatterns = ValidateFilePatterns(filePatterns, filesToExclude);
+            FilePatterns = ValidateFilePatterns(mutate, filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);

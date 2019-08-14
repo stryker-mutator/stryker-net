@@ -1,12 +1,12 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using System;
+using System.Collections;
+using System.IO;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
-using System.Collections;
-using System.IO;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.CLI
 {
@@ -48,9 +48,10 @@ namespace Stryker.CLI
             if (File.Exists(fileLocation))
             {
                 _config = new ConfigurationBuilder()
-                        .SetBasePath(basePath)
-                        .AddJsonFile(fileLocation)
-                        .Build().GetSection("stryker-config");
+                    .SetBasePath(basePath)
+                    .AddJsonFile(fileLocation)
+                    .Build()
+                    .GetSection("stryker-config");
             }
 
             return new StrykerOptions(
@@ -71,7 +72,7 @@ namespace Stryker.CLI
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
                 filesToExclude: GetOption(filesToExclude.Value(), CLIOptions.FilesToExclude),
-                filePatterns: GetOption(filePatterns.Value(), CLIOptions.FilePatterns),
+                mutate: GetOption(filePatterns.Value(), CLIOptions.Mutate),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));
@@ -79,13 +80,15 @@ namespace Stryker.CLI
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
         {
-            T value = default(T);
+            T value = default;
             var hasValue = false;
 
-            if (cliValue != null && ((option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue == true) || option.ValueType != CommandOptionType.NoValue))
+            if (cliValue != null &&
+                (option.ValueType == CommandOptionType.NoValue && cliValue is bool boolValue && boolValue ||
+                 option.ValueType != CommandOptionType.NoValue))
             {
                 // Convert the cliValue string to the desired type
-                value  = ConvertTo(cliValue, option);
+                value = ConvertTo(cliValue, option);
                 hasValue = true;
             }
             else if (_config != null)
@@ -98,7 +101,7 @@ namespace Stryker.CLI
                 }
                 else
                 {
-                    string configValue = _config.GetValue(option.JsonKey, string.Empty).ToString();
+                    var configValue = _config.GetValue(option.JsonKey, string.Empty);
                     if (!string.IsNullOrEmpty(configValue))
                     {
                         value = ConvertTo(configValue, option);
@@ -109,11 +112,15 @@ namespace Stryker.CLI
 
             // Unable to get value from user, return default value
             if (!hasValue)
+            {
                 return option.DefaultValue;
+            }
 
             // Notify user that they are using a deprecated argument.
-            if(option.Deprecated)
+            if (option.IsDeprecated)
+            {
                 _logger.LogWarning($"Argument {option.ArgumentName} is deprecated: {option.DeprecatedMessage}");
+            }
 
             return value;
         }
@@ -128,19 +135,18 @@ namespace Stryker.CLI
                     var list = JsonConvert.DeserializeObject<T>(value as string);
                     return list;
                 }
-                else
-                {
-                    // Convert value to desired type
-                    return (T)Convert.ChangeType(value, typeof(T));
-                }
+
+                // Convert value to desired type
+                return (T)Convert.ChangeType(value, typeof(T));
             }
             catch (Exception ex)
             {
-                throw new StrykerInputException("A value passed to an option was not valid.", $@"The option {option.ArgumentName} with value {value} is not valid.
+                throw new StrykerInputException(
+                    "A value passed to an option was not valid.",
+                    $@"The option {option.ArgumentName} with value {value} is not valid.
 Hint:
 {ex.Message}");
             }
-
         }
     }
 }
