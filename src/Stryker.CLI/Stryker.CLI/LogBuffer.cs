@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
-namespace Stryker.Core.Logging
+namespace Stryker.CLI
 {
     /// <summary>
     /// Allows to buffer log message and write them to an <see cref="ILogger" />.
