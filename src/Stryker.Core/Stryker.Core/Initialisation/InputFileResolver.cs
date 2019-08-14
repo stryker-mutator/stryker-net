@@ -74,7 +74,7 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder));
+                inputFiles.Add(FindInputFiles(folder, projectUnderTestDir));
             }
             result.ProjectContents = inputFiles;
 
@@ -86,7 +86,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderComposite FindInputFiles(string path, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -94,11 +94,12 @@ namespace Stryker.Core.Initialisation
             {
                 Name = lastPathComponent,
                 FullPath = Path.GetFullPath(path),
-                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
+                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent),
+                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
@@ -112,7 +113,8 @@ namespace Stryker.Core.Initialisation
                         SourceCode = _fileSystem.File.ReadAllText(file),
                         Name = _fileSystem.Path.GetFileName(file),
                         RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                        FullPath = file
+                        FullPath = file,
+                        RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
                     });
                 }
             }

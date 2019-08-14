@@ -79,7 +79,7 @@ namespace Stryker.Core.Reporters
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent is FileLeaf file && file.IsFileExcluded(_options.FilePatterns))
+            if (inputComponent is ProjectComponent projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _chalk.DarkGray($"(Excluded)");
             }

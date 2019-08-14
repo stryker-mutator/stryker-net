@@ -17,7 +17,7 @@ namespace Stryker.Core.ProjectComponents
         /// <param name="projectComponent">The file to check.</param>
         /// <param name="filePatterns">The file patters to check with.</param>
         /// <returns>If any parts of the file are included <c>false</c>; otherwise <c>true</c>.</returns>
-        public static bool IsFileExcluded(this ProjectComponent projectComponent, IEnumerable<FilePattern> filePatterns)
+        public static bool IsComponentExcluded(this ProjectComponent projectComponent, IEnumerable<FilePattern> filePatterns)
         {
             var includePattern = filePatterns.Where(x => !x.IsExclude).ToList();
             var excludePattern = filePatterns.Where(x => x.IsExclude).ToList();
@@ -27,7 +27,7 @@ namespace Stryker.Core.ProjectComponents
             var excludedSpans = excludePattern.Where(MatchesFilePattern).SelectMany(x => x.TextSpans).Reduce();
 
             // If there are only included spans, the file is not excluded.
-            if (includedSpans.Any() && excludedSpans.Any())
+            if (includedSpans.Any() && !excludedSpans.Any())
             {
                 return false;
             }
@@ -36,7 +36,7 @@ namespace Stryker.Core.ProjectComponents
 
             bool MatchesFilePattern(FilePattern pattern) =>
                 pattern.Glob.IsMatch(projectComponent.FullPath) ||
-                pattern.Glob.IsMatch(projectComponent.RelativePath);
+                pattern.Glob.IsMatch(projectComponent.RelativePathToProjectFile);
         }
 
         /// <summary>

@@ -9,7 +9,16 @@ namespace Stryker.Core.ProjectComponents
     {
         public string FullPath { get; set; }
 
+        /// <summary>
+        /// Gets or sets the path relative to the virtual project root.
+        /// Includes the project folder.
+        /// </summary>
         public string RelativePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path relative to the .csproj file.
+        /// </summary>
+        public string RelativePathToProjectFile { get; set; }
 
         public abstract IEnumerable<Mutant> Mutants { get; set; }
         public string Name { get; set; }
