@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Collections.Generic;
+using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
+using Stryker.Core.Logging;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -21,7 +23,7 @@ namespace Stryker.CLI.UnitTest
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
@@ -37,7 +39,7 @@ namespace Stryker.CLI.UnitTest
             string currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3M);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>())).Returns(runResults).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
@@ -57,8 +59,8 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>()))
-                .Callback<StrykerOptions>((c) => actualOptions = c)
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
 
