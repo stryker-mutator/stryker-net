@@ -1,6 +1,7 @@
 ﻿using Stryker.Core.InjectedHelpers.Coverage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker
 {
@@ -13,6 +14,7 @@ namespace Stryker
         private static string envName;
         private static bool captureCoverage;
         private static CommunicationChannel channel;
+        private static readonly HashSet<int> ActiveMutations = new HashSet<int>();
 
         public const string EnvironmentPipeName = "Coverage";
 
@@ -27,7 +29,11 @@ namespace Stryker
 
         public static void InitCoverage()
         {
-            ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
+            var mutants = (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(';').Select(int.Parse);
+            foreach (var mutant in mutants)
+            {
+                ActiveMutations.Add(mutant);
+            }
             if (channel != null)
             {
                 channel.Dispose();
@@ -130,9 +136,7 @@ namespace Stryker
                     }
                 }
             }
-            return ActiveMutation == id;
+            return ActiveMutations.Contains(id);
         }
-
-        public static int ActiveMutation;
     }
 }

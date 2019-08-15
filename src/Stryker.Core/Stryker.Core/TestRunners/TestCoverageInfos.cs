@@ -137,7 +137,7 @@ namespace Stryker.Core.TestRunners
                         mutantCoveringTest[test.Guid] = false;
                     }
                 }
-                mutant.CoveringTest = mutantCoveringTest;
+                mutant.CoveringTests = mutantCoveringTest;
                 if (this.NeedAllTests(mutant))
                 {
                     mutant.MustRunAllTests = true;

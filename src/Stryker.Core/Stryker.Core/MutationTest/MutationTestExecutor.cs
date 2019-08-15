@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
                 {
                     foreach (var currentMutant in mutantsToTest.Where( x => resultFailingTest.IsAllTests || x.IsTestedBy(resultFailingTest.Guid)))
                     {
-                        currentMutant.CoveringTest[resultFailingTest.Guid] = true;
+                        currentMutant.CoveringTests[resultFailingTest.Guid] = true;
                         mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;
                     }
                 }
