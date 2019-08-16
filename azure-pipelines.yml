@@ -76,18 +76,14 @@ stages:
         custom: 'nuget'
         arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
         workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
+    - task: Delay@1
+      displayName: Wait on MyGet Processing of NuGet Package
+      inputs:
+        delayForMinutes: '2' 
 
 - stage: IntegrationTests 
   dependsOn: DeployIntegrationtestPackage
   jobs:
-  - job: WaitOnMyGetProcessing
-    displayName: Wait on pre-release packages to be processed on MyGet
-    pool: server
-    steps:
-    - task: Delay@1
-      inputs:
-        delayForMinutes: '2' 
-
   - job: WindowsTests
     displayName: Run tests on Windows
     pool:
