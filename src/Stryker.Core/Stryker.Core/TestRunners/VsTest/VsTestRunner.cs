@@ -105,11 +105,11 @@ namespace Stryker.Core.TestRunners.VsTest
                     ? null : _discoveredTests.Where( t =>  mutant.CoveringTests.ContainsKey(t.Id.ToString())).ToList();
                  if (testCases == null)
                  {
-                     _logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
+                     _logger.LogDebug($"Runner {_id}: Testing [{mutant.DisplayName}] against all tests.");
                  }
                  else
                  {
-                     _logger.LogDebug($"Runner {_id}: Testing {mutant} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                     _logger.LogDebug($"Runner {_id}: Testing [{mutant.DisplayName}] against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
                  }
             }
             return RunVsTest(testCases, timeoutMs, envVars);
@@ -260,7 +260,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             using (var runCompleteSignal = new AutoResetEvent(false))
             {
-                var eventHandler = new RunEventHandler(runCompleteSignal, _logger);
+                var eventHandler = new RunEventHandler(runCompleteSignal, _id ,_logger);
                 var strykerVsTestHostLauncher1 = _hostBuilder(envVars, _id);
                 if (_flags.HasFlag(OptimizationFlags.AbortTestOnKill) && !forCoverage)
                 {
@@ -357,7 +357,7 @@ namespace Stryker.Core.TestRunners.VsTest
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
-            _logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
+            _logger.LogDebug("VsTest run settings set to: {0}", runSettings);
 
             return runSettings;
         }
@@ -369,15 +369,15 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
+            var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
 
-            _logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
+            _logger.LogDebug("Logging VsTest output to: {0}", vsTestLogPath);
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
-                LogFilePath = vstestLogPath
+                LogFilePath = vsTestLogPath
             });
         }
 
@@ -390,7 +390,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
-            _sources = new List<string>()
+            _sources = new List<string>
             {
                 FilePathUtils.ConvertPathSeparators(testBinariesPath)
             };

@@ -29,10 +29,9 @@ namespace Stryker
 
         public static void InitCoverage()
         {
-            var mutants = (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(';').Select(int.Parse);
-            foreach (var mutant in mutants)
+            foreach (string entry in (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(';'))
             {
-                ActiveMutations.Add(mutant);
+                ActiveMutations.Add(int.Parse(entry));
             }
             if (channel != null)
             {

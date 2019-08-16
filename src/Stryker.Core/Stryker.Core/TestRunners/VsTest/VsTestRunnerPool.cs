@@ -47,17 +47,15 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var runner = TakeRunner();
-            TestRunResult result;
 
             try
             {
-                result = runner.RunAll(timeoutMs, mutant);
+                return runner.RunAll(timeoutMs, mutant);
             }
             finally
             {
                 ReturnRunner(runner);
             }
-            return result;
         }
 
         public TestRunResult CaptureCoverage()

@@ -44,7 +44,7 @@ namespace Stryker.Core.Initialisation
             // Stop stopwatch immediately after testrun
             stopwatch.Stop();
 
-            _logger.LogDebug("Initial testrun output {0}", testResult.ResultMessage);
+            _logger.LogDebug("Initial testrun output: {0}", testResult.ResultMessage);
             if (!testResult.Success)
             {
                 _logger.LogWarning("Initial test run failed. Mutation score cannot be computed.");

@@ -12,15 +12,17 @@ namespace Stryker.Core.TestRunners.VsTest
     public class RunEventHandler : ITestRunEventsHandler
     {
         private readonly AutoResetEvent _waitHandle;
+        private readonly int _id;
         private readonly ILogger _logger;
         private bool _testFailed;
 
         public event EventHandler TestsFailed;
         public List<TestResult> TestResults { get; }
 
-        public RunEventHandler(AutoResetEvent waitHandle, ILogger logger)
+        public RunEventHandler(AutoResetEvent waitHandle, int id, ILogger logger)
         {
             _waitHandle = waitHandle;
+            _id = id;
             TestResults = new List<TestResult>();
             _logger = logger;
         }
@@ -71,7 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            _logger.LogTrace($"Runner: {rawMessage} [RAW]");
+            _logger.LogTrace($"Runner {_id}: [RAW] {rawMessage}");
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
@@ -83,15 +85,15 @@ namespace Stryker.Core.TestRunners.VsTest
                     levelFinal = LogLevel.Debug;
                     break;
                 case TestMessageLevel.Warning:
-                    levelFinal = LogLevel.Information;
+                    levelFinal = LogLevel.Warning;
                     break;
                 case TestMessageLevel.Error:
-                    levelFinal = LogLevel.Warning;
+                    levelFinal = LogLevel.Error;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
-            _logger.LogTrace($"Runner:[{levelFinal}] {message}");
+            _logger.LogTrace($"Runner {_id}: [{levelFinal}] {message}");
         }
     }
 }

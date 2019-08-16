@@ -11,11 +11,12 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         IDictionary<string, bool> CoveringTests { get; }
+        string DisplayName { get; }
         string ResultStatusReason { get; }
         bool IsStaticValue { get; }
         bool MustRunAllTests { get; }
     }
-    
+
     /// <summary>
     /// Represents a single mutation on domain level
     /// </summary>

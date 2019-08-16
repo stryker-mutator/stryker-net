@@ -196,7 +196,5 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
 
-
-
     }
 }
