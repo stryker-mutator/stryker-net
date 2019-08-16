@@ -20,7 +20,7 @@ namespace Stryker.Core.Reporters.Progress
         {
         }
 
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
             Console.WriteLine();
             _progressBarReporter.ReportInitialState(mutantsToBeTested.Count());

@@ -8,7 +8,7 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerOptions options);
-        int InitialTest(StrykerOptions option);
+        int InitialTest(StrykerOptions option, out int nbTests);
         TestCoverageInfos GetCoverage(StrykerOptions options);
     }
 
@@ -58,11 +58,12 @@ namespace Stryker.Core.Initialisation
             return input;
         }
 
-        public int InitialTest(StrykerOptions options)
+        public int InitialTest(StrykerOptions options, out int nbTests)
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
 
+            nbTests = _initialTestProcess.TotalNumberOfTests;
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
         public TestCoverageInfos GetCoverage(StrykerOptions options)

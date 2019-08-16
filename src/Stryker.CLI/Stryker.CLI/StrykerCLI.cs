@@ -47,6 +47,7 @@ namespace Stryker.CLI
             var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
+            var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
             var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
@@ -71,6 +72,7 @@ namespace Stryker.CLI
                     testProjectNameParam,
                     timeoutParam,
                     exludedMutationsParam,
+                    ignoreMethodsParam,
                     logConsoleParam,
                     fileLogParam,
                     devMode,

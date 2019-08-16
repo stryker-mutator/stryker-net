@@ -4,6 +4,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Mutants\TestResources\Mutator_Basic_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Basic_OUT.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs" />
+    <Compile Remove="Mutants\TestResources\Mutator_Flag_MutatedStatics_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_IN.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_FromActualProject_OUT.cs" />
     <Compile Remove="Mutants\TestResources\Mutator_IfStatementsShouldBe_Nested_OUT.cs" />
@@ -24,6 +30,21 @@
     <None Remove="TestResources\StrongNameKeyFile.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Mutants\TestResources\Mutator_Basic_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_Basic_IN.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_Chained_Mutation_OUT.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_Flag_MutatedStatics_OUT.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Mutants\TestResources\Mutator_Flag_MutatedStatics_IN.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestResources\StrongNameKeyFile.snk">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -76,12 +97,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Mutants\TestResources\Mutator_Chained_Mutation_IN.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="Moq" Version="4.12.0" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="6.0.17" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="6.0.21" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.3.12" />

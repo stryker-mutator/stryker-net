@@ -36,8 +36,8 @@ namespace Stryker.Core.Reporters.Json
 
         public static JsonReport Build(StrykerOptions options, IReadOnlyInputComponent mutationReport)
         {
-            // This should really only happen in unit tests. 
-            // We need this construct because in a unit test 
+            // This should really only happen in unit tests.
+            // We need this construct because in a unit test
             // we want to be able to generate different reports with different settings
             _report = _options == options ? _report : null;
 

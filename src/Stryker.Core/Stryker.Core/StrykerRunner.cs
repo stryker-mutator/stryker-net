@@ -70,18 +70,22 @@ namespace Stryker.Core
                 _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner));
+                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
+                    options: options);
 
                 // initial test
-                _input.TimeoutMs = _initialisationProcess.InitialTest(options);
+                _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);
 
                 // mutate
-                _mutationTestProcess.Mutate(options);
+                _mutationTestProcess.Mutate();
 
-                // coverage
-                var coverage = _initialisationProcess.GetCoverage(options);
-
-                _mutationTestProcess.Optimize(coverage);
+                if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+                {
+                    logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+                    // coverage
+                    var coverage = _initialisationProcess.GetCoverage(options);
+                    coverage.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants, nbTests);
+                }
 
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);

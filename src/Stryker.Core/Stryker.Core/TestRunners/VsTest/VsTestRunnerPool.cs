@@ -8,8 +8,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -18,7 +20,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly OptimizationFlags _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
-        private readonly IEnumerable<TestCase> _discoveredTests;
+        private readonly ICollection<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
@@ -40,14 +42,16 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestCoverageInfos CoverageMutants { get; private set; } = new TestCoverageInfos();
 
-        public TestRunResult RunAll(int? timeoutMs, int? mutationId)
+        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
+
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var runner = TakeRunner();
             TestRunResult result;
 
             try
             {
-                result = runner.RunAll(timeoutMs, mutationId);
+                result = runner.RunAll(timeoutMs, mutant);
             }
             finally
             {
@@ -117,7 +121,6 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 _runnerAvailableHandler.WaitOne();
             }
-
             return runner;
         }
 
