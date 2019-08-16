@@ -19,6 +19,7 @@ stages:
   dependsOn: []
   jobs:
   - job:
+    displayName: Run Sonar Analysis
     pool:
       vmImage: 'windows-latest'
     steps:
