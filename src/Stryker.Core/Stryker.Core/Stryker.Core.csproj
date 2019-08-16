@@ -68,4 +68,8 @@
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="MutantFilters\" />
+  </ItemGroup>
 </Project>
