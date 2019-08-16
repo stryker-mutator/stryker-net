@@ -5,7 +5,7 @@
       "All"
     ],
     "test-runner": "vstest",
-    "log-level": "trace",
-    "log-file": "true"
+    "coverage-analysis": "perTest",
+    "abort-test-on-fail":  true,
   }
 }

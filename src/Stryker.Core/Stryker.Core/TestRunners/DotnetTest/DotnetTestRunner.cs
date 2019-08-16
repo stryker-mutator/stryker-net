@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.DataCollector;
@@ -14,8 +15,8 @@ namespace Stryker.Core.TestRunners
         private readonly OptimizationFlags _flags;
         private readonly ILogger _logger;
         private readonly string _path;
+        private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
-        public TestCoverageInfos CoverageMutants { get; }
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
         {
@@ -23,16 +24,21 @@ namespace Stryker.Core.TestRunners
 
             _flags = flags;
             _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
+            _projectFile = path;
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }
 
-        public TestRunResult RunAll(int? timeoutMs, int? activeMutationId)
+        public TestCoverageInfos CoverageMutants { get; }
+
+        public IEnumerable<TestDescription> Tests => null;
+
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
-            Dictionary<string, string> envVars = activeMutationId == null ? null :
+            Dictionary<string, string> envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
-                {"ActiveMutation", activeMutationId.ToString() }
+                {"ActiveMutation", mutant.Id.ToString() }
             };
             return LaunchTestProcess(timeoutMs, envVars);
         }
@@ -40,7 +46,7 @@ namespace Stryker.Core.TestRunners
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)
         {
             var result = _processExecutor.Start(
-                _path,
+                _projectFile,
                 "dotnet",
                 "test --no-build --no-restore",
                 envVars,
@@ -55,7 +61,7 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult CaptureCoverage()
         {
-            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
                 collector.SetLogger((message) => _logger.LogTrace(message));
@@ -65,7 +71,7 @@ namespace Stryker.Core.TestRunners
 
                 var data = collector.RetrieveCoverData("full");
 
-                CoverageMutants.DeclareCoveredMutants(data.Split(",").Select(int.Parse));
+                CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
                 return result;
             }
             else

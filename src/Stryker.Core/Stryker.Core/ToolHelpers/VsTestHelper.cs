@@ -12,7 +12,14 @@ using System.Runtime.InteropServices;
 
 namespace Stryker.Core.ToolHelpers
 {
-    public class VsTestHelper
+    public interface IVsTestHelper
+    {
+        string GetCurrentPlatformVsTestToolPath();
+        string GetDefaultVsTestExtensionsPath(string vstestToolPath);
+        void Cleanup(int tries = 5);
+    }
+
+    public class VsTestHelper : IVsTestHelper
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;

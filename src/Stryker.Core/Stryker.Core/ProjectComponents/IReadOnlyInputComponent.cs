@@ -25,7 +25,8 @@ namespace Stryker.Core.ProjectComponents
         void Display(int depth);
 
         decimal? GetMutationScore();
-        Health CheckHealth(Threshold theshold);
+
+        Health CheckHealth(Threshold threshold);
     }
 
     public delegate void Display(int depth, IReadOnlyInputComponent current);

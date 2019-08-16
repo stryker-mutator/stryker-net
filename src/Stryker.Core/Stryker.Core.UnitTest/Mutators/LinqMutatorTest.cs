@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Mutators
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        private MemberAccessExpressionSyntax GenerateExpressions(string expression)
+        private InvocationExpressionSyntax GenerateExpressions(string expression)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
 using System;
@@ -36,13 +36,13 @@ namespace TestApplication
         {{
             IEnumerable<string> Test = new[] {{}};
 
-            Test.{expression}();
+            Test.{expression}(_ => _!=null);
         }}
     }}
 }}");
             var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
-                .OfType<MemberAccessExpressionSyntax>()
+                .OfType<InvocationExpressionSyntax>()
                 .Single();
 
             return memberAccessExpression;
@@ -82,8 +82,9 @@ namespace TestApplication
             var result = target.ApplyMutations(expression).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
-            var replacement = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
-            replacement.Name.Identifier.ValueText.ShouldBe(expected.ToString());
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
+            var simpleMember = replacement.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
+            simpleMember.Name.Identifier.ValueText.ShouldBe(expected.ToString());
         }
 
         /// <summary>
