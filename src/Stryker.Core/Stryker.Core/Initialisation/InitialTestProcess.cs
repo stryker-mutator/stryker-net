@@ -10,11 +10,13 @@ namespace Stryker.Core.Initialisation
     {
         int InitialTest(ITestRunner testRunner);
         TestCoverageInfos GetCoverage(ITestRunner testRunner);
+        int TotalNumberOfTests { get; }
     }
 
     public class InitialTestProcess : IInitialTestProcess
     {
         private readonly ILogger _logger;
+        public int TotalNumberOfTests { get; private set; }
 
         public InitialTestProcess()
         {
@@ -28,8 +30,9 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial testrun</returns>
         public int InitialTest(ITestRunner testRunner)
         {
-            var totalNumberOfTests = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
-            _logger.LogInformation("Total number of tests found: {0}", totalNumberOfTests);
+            var message = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
+            TotalNumberOfTests = total;
+            _logger.LogInformation("Total number of tests found: {0}", message);
 
             _logger.LogInformation("Initial testrun started");
 

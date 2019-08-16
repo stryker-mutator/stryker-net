@@ -37,6 +37,8 @@ namespace Stryker.Core.Options
         public LanguageVersion LanguageVersion { get; }
         public OptimizationFlags Optimizations { get; }
 
+        public string OptimizationMode { get; set; }
+
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
 
@@ -84,6 +86,7 @@ namespace Stryker.Core.Options
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
+            OptimizationMode = coverageAnalysis;
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

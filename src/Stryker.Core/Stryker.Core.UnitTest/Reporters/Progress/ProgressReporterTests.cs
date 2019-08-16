@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         {
             var mutants = new Mutant[3] { new Mutant(), new Mutant(), new Mutant() };
 
-            _progressReporter.OnStartMutantTestRun(mutants);
+            _progressReporter.OnStartMutantTestRun(mutants, null);
             _mutantsResultReporter.Verify(x => x.ReportInitialState(), Times.Once);
             _progressBarReporter.Verify(x => x.ReportInitialState(mutants.Length), Times.Once);
         }

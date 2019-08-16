@@ -19,6 +19,20 @@ namespace TestCases
         private string text = "Some" + "Text";
         // const can't me mutated (need to be const at build time)
         private const int x = 1 + 2;
+
+        private bool Move()
+        {
+            return true;
+        }
+
+        private void DummyLoop()
+        {
+            while (this.Move())
+            {
+                int x = 2 + 3;
+            }
+        }
+
         // attributes must be constant at build time => no possible mutation
         [Obsolete("thismustnotbemutated")]
         // default parameter must be constant at build time => no posible mutation

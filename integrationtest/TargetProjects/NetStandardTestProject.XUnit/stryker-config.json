@@ -4,7 +4,7 @@
       "All"
     ],
     "test-runner": "VsTest",
-    "coverage-analysis": "perTest",
+    "coverage-analysis": "perTestInIsolation",
     "log-level": "trace",
     "log-file": "true",
     "project-file": "TargetProject.csproj",

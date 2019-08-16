@@ -59,10 +59,15 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Compile Remove="InjectedHelpers\Coverage\MutantContext.cs" />
     <Compile Remove="InjectedHelpers\MutantControl.cs" />
   </ItemGroup>
 	
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
   </ItemGroup>
 </Project>

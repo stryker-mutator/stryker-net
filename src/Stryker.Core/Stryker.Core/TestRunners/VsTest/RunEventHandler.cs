@@ -36,6 +36,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
+            if (testRunCompleteArgs.Error != null)
+            {
+                _logger.LogWarning(testRunCompleteArgs.Error, "Exception in VsTest");
+            }
+
             _waitHandle.Set();
         }
 

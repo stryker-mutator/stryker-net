@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
-            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error);
+            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error, $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x=> x.Severity == DiagnosticSeverity.Error))}");
         }
     }
 }

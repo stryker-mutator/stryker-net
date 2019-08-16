@@ -11,13 +11,15 @@ namespace IntegrationTests
 {
     public class ValidateStrykerResults
     {
+        private const string MutationReportJson = "mutation-report.json";
+
         [Fact]
         public void NetCore()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
-            var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
@@ -34,7 +36,7 @@ namespace IntegrationTests
             var directory = new DirectoryInfo("../../../../TargetProjects/NetStandardTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
-            var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
@@ -53,7 +55,7 @@ namespace IntegrationTests
                 var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
                 directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
 
-                var latestReport = directory.GetFiles("*.json", SearchOption.AllDirectories)
+                var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                     .OrderByDescending(f => f.LastWriteTime)
                     .First();
 

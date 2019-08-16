@@ -18,7 +18,8 @@ namespace Stryker.Core.Reporters
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> m, IEnumerable<TestDescription> t)
         {
         }
 
