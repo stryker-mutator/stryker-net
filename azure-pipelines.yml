@@ -33,7 +33,7 @@ stages:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
-        projects: '/src/Stryker.CLI/Stryker.CLI.sln'
+        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
       inputs:
