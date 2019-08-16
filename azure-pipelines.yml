@@ -161,7 +161,8 @@ stages:
         command: test
         projects: '**/Validation.csproj'
 
-- stage : Publish Preview Artifact
+- stage : PublishPreviewArtifact
+  displayName: Publish Preview Artifact
   dependsOn: IntegrationTests
   condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
   jobs:
@@ -194,7 +195,8 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/preview'
         ArtifactName: preview
 
-- stage: Publish Release Artifact
+- stage: PublishReleaseArtifact
+  displayName: Publish Release Artifact
   dependsOn: 
     - Analysis
     - IntegrationTests
