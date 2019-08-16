@@ -81,7 +81,6 @@ stages:
   jobs:
   - job: WaitOnMyGetProcessing
     displayName: Wait on pre-release packages to be processed on MyGet
-    dependsOn: PublishIntegrationTestPackage
     pool: server
     steps:
     - task: Delay@1
