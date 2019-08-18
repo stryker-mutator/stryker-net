@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult { Success = true });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult (true ));
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult(false));
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult(false) );
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

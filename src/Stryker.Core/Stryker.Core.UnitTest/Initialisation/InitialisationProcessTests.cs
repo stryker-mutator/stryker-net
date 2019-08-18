@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null))
-                .Returns(new TestRunResult { Success = true }); // testrun is successful
+                .Returns(new TestRunResult(true)); // testrun is successful
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))

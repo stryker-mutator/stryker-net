@@ -109,7 +109,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             });
 
-            return new TestRunResult { Success = true };
+            return new TestRunResult (true);
         }
 
         private VsTestRunner TakeRunner()

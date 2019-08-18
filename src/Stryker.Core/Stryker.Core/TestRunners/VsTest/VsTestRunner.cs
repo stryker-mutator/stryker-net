@@ -93,7 +93,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTests == null|| mutant.CoveringTests.Count==0 ))
             {
-                return new TestRunResult {ResultMessage= "Not covered by any test", Success= true};
+                return new TestRunResult(true) {ResultMessage= "Not covered by any test"};
             }
 
             ICollection<TestCase> testCases = null;
@@ -184,9 +184,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 throw new OperationCanceledException();
             }
 
-            var testResult = new TestRunResult
+            var testResult = new TestRunResult(resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped))
             {
-                Success = resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped),
                 FailingTests = new TestListDescription(resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(x => (TestDescription)x.TestCase)),
                 ResultMessage = string.Join(
                     Environment.NewLine,
@@ -202,7 +201,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
             ParseResultsForCoverage(testResults);
-            return new TestRunResult { Success = true };
+            return new TestRunResult (true );
         }
 
         private void ParseResultsForCoverage(IEnumerable<TestResult> testResults)
