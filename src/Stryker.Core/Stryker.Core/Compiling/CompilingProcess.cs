@@ -29,9 +29,9 @@ namespace Stryker.Core.Compiling
     /// </summary>
     public class CompilingProcess : ICompilingProcess
     {
-        private MutationTestInput _input { get; set; }
-        private IRollbackProcess _rollbackProcess { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly MutationTestInput _input;
+        private readonly IRollbackProcess _rollbackProcess;
+        private readonly ILogger _logger;
 
         public CompilingProcess(MutationTestInput input,
             IRollbackProcess rollbackProcess)

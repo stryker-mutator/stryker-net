@@ -82,6 +82,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public IEnumerable<int> CoveredMutants { get; private set; }
 
         public TestCoverageInfos CoverageMutants { get; }
+
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)

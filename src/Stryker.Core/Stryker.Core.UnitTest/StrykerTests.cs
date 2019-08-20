@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;

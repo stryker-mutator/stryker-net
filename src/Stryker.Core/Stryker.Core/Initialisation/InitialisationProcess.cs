@@ -66,6 +66,7 @@ namespace Stryker.Core.Initialisation
             nbTests = _initialTestProcess.TotalNumberOfTests;
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
+
         public TestCoverageInfos GetCoverage(StrykerOptions options)
         {
             return _initialTestProcess.GetCoverage(_testRunner);
