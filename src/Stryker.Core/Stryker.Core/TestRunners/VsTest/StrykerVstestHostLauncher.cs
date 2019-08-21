@@ -9,14 +9,17 @@ using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class StrykerVsTestHostLauncher : ITestHostLauncher
+    public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
-        private readonly Action _callback;
-        private readonly Dictionary<string, string> _envVars;
+        bool WaitProcessExit();
+    }
+
+    public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
+    {
+        private readonly IDictionary<string, string> _envVars;
         private Process _currentProcess;
         private readonly object _lck = new object();
-        private int _id;
-        public bool Corrupted { get; private set; }
+        private readonly int _id;
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher()
@@ -24,9 +27,8 @@ namespace Stryker.Core.TestRunners.VsTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
         }
 
-        public StrykerVsTestHostLauncher(Action callback, Dictionary<string, string> envVars, int id)
+        public StrykerVsTestHostLauncher(IDictionary<string, string> envVars, int id)
         {
-            _callback = callback;
             _envVars = envVars;
             _id = id;
         }
@@ -70,12 +72,15 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 Monitor.Pulse(_lck);
             }
-
-            _callback?.Invoke();
         }
 
         public bool WaitProcessExit()
         {
+            if (_currentProcess == null)
+            {
+                return false;
+            }
+
             while (!_currentProcess.HasExited)
             {
                 lock (_lck)

@@ -10,7 +10,7 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleDotProgressReporter : IReporter
     {
-        private IChalk _chalk { get; set; }
+        private readonly IChalk _chalk;
 
         public ConsoleDotProgressReporter(IChalk chalk = null)
         {
@@ -18,7 +18,8 @@ namespace Stryker.Core.Reporters
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
-        public void OnStartMutantTestRun(IEnumerable<Mutant> mutantsToBeTested)
+
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> m, IEnumerable<TestDescription> t)
         {
         }
 

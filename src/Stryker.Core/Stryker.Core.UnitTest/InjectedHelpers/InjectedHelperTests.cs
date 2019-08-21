@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using System;
 using System.Collections.Generic;
@@ -11,31 +12,6 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 {
     public class InjectedHelperTests
     {
-        [Fact]
-        public void InjectHelpers_ShouldCompile()
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            // it would be good to be ensure those assemblies are referenced by the build project
-            var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
-            var references = new List<MetadataReference>();
-            var hack = new NamedPipeClientStream("test");
-            foreach (var assembly in assemblies)
-            {
-                if (needed.Any(x => assembly.FullName.Contains(x)))
-                {
-                    references.Add(MetadataReference.CreateFromFile(assembly.Location));
-                }
-            }
-
-            var compilation = CSharpCompilation.Create("dummy.dll",
-                CodeInjection.MutantHelpers,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: references);
-
-            var errors = compilation.GetDiagnostics();
-            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error));
-        }
-
         [Theory]
         [InlineData(LanguageVersion.CSharp2)]
         [InlineData(LanguageVersion.CSharp3)]
@@ -68,9 +44,9 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 
             var syntaxes = new List<SyntaxTree>();
 
-            foreach (var syntax in CodeInjection.MutantHelpers)
+            foreach (var helper in CodeInjection.MutantHelpers)
             {
-                syntaxes.Add(CSharpSyntaxTree.ParseText(syntax.GetText(), new CSharpParseOptions(languageVersion: version)));
+                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: version)));
             }
 
             var compilation = CSharpCompilation.Create("dummy.dll",
@@ -78,8 +54,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
-            var errors = compilation.GetDiagnostics();
-            Assert.False(errors.Any(diag => diag.Severity == DiagnosticSeverity.Error), string.Join("\n", errors.Where(diag => diag.Severity == DiagnosticSeverity.Error).Select(e => e.GetMessage())));
+            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error, $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x=> x.Severity == DiagnosticSeverity.Error))}");
         }
     }
 }

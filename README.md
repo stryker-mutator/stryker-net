@@ -1,7 +1,8 @@
-[![Nuget](https://img.shields.io/nuget/v/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
-[![Nuget](https://img.shields.io/nuget/dt/dotnet-stryker.svg)](https://www.nuget.org/packages/dotnet-stryker/)
-[![Build Status](https://dev.azure.com/stryker-mutator/Stryker/_apis/build/status/stryker-net)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
-[![Gitter](https://badges.gitter.im/stryker-mutator/stryker-net.svg)](https://gitter.im/stryker-mutator/stryker-net?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Nuget](https://img.shields.io/nuget/v/dotnet-stryker.svg?color=blue&label=dotnet-stryker&style=flat-square)](https://www.nuget.org/packages/dotnet-stryker/)
+[![Nuget](https://img.shields.io/nuget/dt/dotnet-stryker.svg?style=flat-square)](https://www.nuget.org/packages/dotnet-stryker/)
+[![Azure DevOps build](https://img.shields.io/azure-devops/build/stryker-mutator/Stryker/4/master.svg?label=Azure%20Pipelines&style=flat-square)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
+[![Azure DevOps tests](https://img.shields.io/azure-devops/tests/stryker-mutator/506a1f46-900e-434e-805f-ff8d36fc81af/4/master.svg?compact_message&style=flat-square)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
+[![Gitter](https://img.shields.io/gitter/room/stryker-mutator/stryker-net.svg?style=flat-square)](https://gitter.im/stryker-mutator/stryker-net?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Stryker.NET
 *Professor X: For someone who hates mutants... you certainly keep some strange company.*

@@ -3,20 +3,19 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
 using System.IO;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string solutionPath, string projectName);
+        void InitialBuild(bool fullFramework, string path, string solutionPath);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
     {
-        private IProcessExecutor _processExecutor { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly IProcessExecutor _processExecutor;
+        private readonly ILogger _logger;
 
         public InitialBuildProcess(IProcessExecutor processExecutor = null)
         {
@@ -24,10 +23,12 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string projectName)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath)
         {
             _logger.LogInformation("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
-            ProcessResult result = null;
+
+            projectPath = Path.GetDirectoryName(projectPath);
+            ProcessResult result;
             if (fullFramework)
             {
                 if (string.IsNullOrEmpty(solutionPath))
@@ -44,7 +45,7 @@ namespace Stryker.Core.Initialisation
             else
             {
                 // Build with dotnet build
-                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{projectName}\"");
+                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{Path.GetFileName(projectPath)}\"");
             }
 
             _logger.LogDebug("Initial build output {0}", result.Output);

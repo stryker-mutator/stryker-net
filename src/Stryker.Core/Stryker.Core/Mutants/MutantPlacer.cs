@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
 using Stryker.Core.InjectedHelpers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -13,7 +13,13 @@ namespace Stryker.Core.Mutants
         private const string MutationConditional = "MutationConditional";
         private const string MutationIf = "MutationIf";
 
-        public static IEnumerable<string> MutationMarkers => new[] {MutationConditional, MutationIf};
+        public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf };
+
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block)
+        {
+            return SyntaxFactory.Block( 
+                SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
+        }
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
         {
@@ -31,12 +37,12 @@ namespace Stryker.Core.Mutants
             // remove the mutated node using its MutantPlacer remove method and update the tree
             if (nodeToRemove is IfStatementSyntax ifStatement)
             {
-                return MutantPlacer.RemoveByIfStatement(ifStatement);
+                return RemoveByIfStatement(ifStatement);
             }
 
             if (nodeToRemove is ParenthesizedExpressionSyntax parenthesizedExpression)
             {
-                return MutantPlacer.RemoveByConditionalExpression(parenthesizedExpression);
+                return RemoveByConditionalExpression(parenthesizedExpression);
             }
             // this is not one of our structure
             return nodeToRemove;
@@ -53,10 +59,10 @@ namespace Stryker.Core.Mutants
         {
             // place the mutated statement inside the if statement
             return SyntaxFactory.ParenthesizedExpression(
-                SyntaxFactory.ConditionalExpression(
-                condition: GetBinaryExpression(mutantId),
-                whenTrue: mutated,
-                whenFalse: original))
+                    SyntaxFactory.ConditionalExpression(
+                        condition: GetBinaryExpression(mutantId),
+                        whenTrue: mutated,
+                        whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
         }

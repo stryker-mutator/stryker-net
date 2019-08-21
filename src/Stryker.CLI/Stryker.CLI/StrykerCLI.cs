@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Stryker.CLI.NuGet;
 using Stryker.Core;
@@ -44,11 +44,13 @@ namespace Stryker.CLI
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
-            var advancedOptions = CreateOption(app, CLIOptions.AbortOnFailTest);
+            var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
+            var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
+            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -56,6 +58,7 @@ namespace Stryker.CLI
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
+            var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
 
             app.HelpOption("--help | -h | -?");
 
@@ -66,13 +69,15 @@ namespace Stryker.CLI
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
+                    testProjectNameParam,
                     timeoutParam,
                     exludedMutationsParam,
+                    ignoreMethodsParam,
                     logConsoleParam,
                     fileLogParam,
                     devMode,
                     coverageAnalysis,
-                    advancedOptions,
+                    abortTestOnFailParam,
                     configFilePathParam,
                     maxConcurrentTestRunnersParam,
                     thresholdHighParam,
@@ -80,7 +85,8 @@ namespace Stryker.CLI
                     thresholdBreakParam,
                     filesToExclude,
                     testRunner,
-                    solutionPathParam);
+                    solutionPathParam,
+                    languageVersion);
 
                 RunStryker(options);
                 return ExitCode;

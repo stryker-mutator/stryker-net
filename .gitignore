@@ -287,3 +287,4 @@ StrykerLogs/
 /src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 *.buildlog
 *.DotSettings
+/src/Stryker.CLI/TestStatisticsAnalyzer/test-stats-report.json

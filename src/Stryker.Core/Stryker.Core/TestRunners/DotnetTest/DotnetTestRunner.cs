@@ -1,52 +1,52 @@
-﻿using Stryker.Core.Parsers;
-using Stryker.Core.Testing;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Testing;
 using Stryker.DataCollector;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.TestRunners
 {
     public class DotnetTestRunner : ITestRunner
     {
-        private readonly ITotalNumberOfTestsParser _totalNumberOfTestsParser;
         private readonly OptimizationFlags _flags;
+        private readonly ILogger _logger;
+        private readonly string _path;
+        private readonly string _projectFile;
+        private readonly IProcessExecutor _processExecutor;
 
-        static DotnetTestRunner()
+        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
-        }
-        private static ILogger Logger { get; }
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, ITotalNumberOfTestsParser totalNumberOfTestsParser, OptimizationFlags flags)
-        {
-            _totalNumberOfTestsParser = totalNumberOfTestsParser;
             _flags = flags;
-            Path = path;
-            ProcessExecutor = processProxy;
+            _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
+            _projectFile = path;
+            _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }
 
-        private string Path { get; }
-        private IProcessExecutor ProcessExecutor { get; }
         public TestCoverageInfos CoverageMutants { get; }
 
-        public TestRunResult RunAll(int? timeoutMs, int? activeMutationId)
+        public IEnumerable<TestDescription> Tests => null;
+
+        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
-            Dictionary<string, string> envVars = activeMutationId == null ? null : 
+            Dictionary<string, string> envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
-                {"ActiveMutation", activeMutationId.ToString() }
+                {"ActiveMutation", mutant.Id.ToString() }
             };
             return LaunchTestProcess(timeoutMs, envVars);
         }
 
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)
         {
-            var result = ProcessExecutor.Start(
-                Path,
+            var result = _processExecutor.Start(
+                _projectFile,
                 "dotnet",
                 "test --no-build --no-restore",
                 envVars,
@@ -55,30 +55,34 @@ namespace Stryker.Core.TestRunners
             return new TestRunResult
             {
                 Success = result.ExitCode == 0,
-                ResultMessage = result.Output,
-                TotalNumberOfTests = _totalNumberOfTestsParser.ParseTotalNumberOfTests(result.Output)
+                ResultMessage = result.Output
             };
         }
 
         public TestRunResult CaptureCoverage()
         {
-            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
-                collector.SetLogger((message) => Logger.LogTrace(message));
+                collector.SetLogger((message) => _logger.LogTrace(message));
                 collector.Init(true);
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);
 
                 var data = collector.RetrieveCoverData("full");
 
-                CoverageMutants.DeclareCoveredMutants(data.Split(",").Select(int.Parse));
+                CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
                 return result;
             }
             else
             {
                 return LaunchTestProcess(null, null);
             }
+        }
+
+        public int DiscoverNumberOfTests()
+        {
+            return -1;
         }
 
         public void Dispose()
