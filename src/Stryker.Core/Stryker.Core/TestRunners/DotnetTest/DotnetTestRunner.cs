@@ -52,9 +52,8 @@ namespace Stryker.Core.TestRunners
                 envVars,
                 timeoutMs ?? 0);
 
-            return new TestRunResult
+            return new TestRunResult(result.ExitCode == 0)
             {
-                Success = result.ExitCode == 0,
                 ResultMessage = result.Output
             };
         }

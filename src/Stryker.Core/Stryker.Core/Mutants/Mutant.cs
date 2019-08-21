@@ -30,6 +30,6 @@ namespace Stryker.Core.Mutants
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
-        public bool IsTestedBy(string testId) => CoveringTests.ContainsKey(testId);
+        public bool IsTestedBy(string testId) => MustRunAllTests || CoveringTests.ContainsKey(testId);
     }
 }
