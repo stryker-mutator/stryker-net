@@ -240,6 +240,63 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         }
 
         [Fact]
+        public void ShouldMutateComplexLinqMethods()
+        {
+            string source = @"private void Linq()
+        {
+            var array = new []{1,2};
+
+            var alt1 = array.Count(x => x % 2 == 0);
+            var alt2 = array.Min();
+        }";
+            string expected = @"private void Linq()
+        {
+            var array = new []{1,2};
+
+            var alt1 = (StrykerNamespace.MutantControl.IsActive(2)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(1)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(0)?x * 2 :x % 2 )== 0)));
+            var alt2 = (StrykerNamespace.MutantControl.IsActive(3)?array.Max():array.Min());
+        }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateReturnStatements()
+        {
+            string source = @"private bool Move()
+        {
+            return true;
+        }";
+            string expected = @"private bool Move()
+        {
+            return (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+        }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateWhileLoop()
+        {
+            string source = @"private void DummyLoop()
+        {
+            while (this.Move())
+            {
+                int x = 2 + 3;
+            }
+        }";
+            string expected = @"private void DummyLoop()
+        {
+            while ((StrykerNamespace.MutantControl.IsActive(0)?!this.Move():this.Move()))
+            {
+                int x = (StrykerNamespace.MutantControl.IsActive(1)?2 - 3:2 + 3);
+            }
+        }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateAssignmentStatementsWithIfStatement()
         {
             string source = @"public void SomeMethod() {
@@ -279,6 +336,64 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         x++;
     }  
 }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateChainedMutations()
+        {
+            string source = @"public void Simple()
+        {
+            object value = null;
+            var flag1 = false;
+            var flag2 = false;
+            if (value != null && !flag1 && !flag2)
+            {
+            }
+        }";
+            string expected = @"public void Simple()
+        {
+            object value = null;
+            var flag1 = (StrykerNamespace.MutantControl.IsActive(0)?true:false);
+            var flag2 = (StrykerNamespace.MutantControl.IsActive(1)?true:false);
+            if ((StrykerNamespace.MutantControl.IsActive(6)?value != null && !flag1 || !flag2:(StrykerNamespace.MutantControl.IsActive(4)?value != null || !flag1 :(StrykerNamespace.MutantControl.IsActive(2)?value == null :value != null )&& (StrykerNamespace.MutantControl.IsActive(3)?flag1 :!flag1 ))&& (StrykerNamespace.MutantControl.IsActive(5)?flag2:!flag2)))
+            {
+            }
+        }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateStatics()
+        {
+            string source = @"private static bool willMutateToFalse = true;
+
+        private static bool NoWorries => false;
+        private static bool NoWorriesGetter
+        {
+            get { return false; }
+        }
+
+static Mutator_Flag_MutatedStatics()
+        {
+            int x = 0;
+            var y = x++;
+        }";
+            string expected = @"private static bool willMutateToFalse = (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+
+        private static bool NoWorries => (StrykerNamespace.MutantControl.IsActive(1)?true:false);
+        private static bool NoWorriesGetter
+        {
+            get { return (StrykerNamespace.MutantControl.IsActive(2)?true:false); }
+        }
+
+static Mutator_Flag_MutatedStatics()
+        {
+            int x = 0;
+            var y = (StrykerNamespace.MutantControl.IsActive(3)?x--:x++);
+        }";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -360,52 +475,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-        }
-
-        [Theory]
-        [InlineData("Mutator_Flag_MutatedStatics_IN.cs")]
-        public void Mutator_ShouldFlagMutatedStatics(string inputFile)
-        {
-            var source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
-            var expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile.Replace("_IN", "_OUT")).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var tree = CSharpSyntaxTree.ParseText(source);
-
-            var options = new StrykerOptions(coverageAnalysis: "perTest");
-            var target = new MutantOrchestrator(options: options);
-            var actualNode = target.Mutate(tree.GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
-            
-            var mutants = target.GetLatestMutantBatch().ToList();
-
-            mutants.Count.ShouldBe(4);
-
-            mutants[0].IsStaticValue.ShouldBe(true);
-            mutants[1].IsStaticValue.ShouldBe(false);
-            mutants[2].IsStaticValue.ShouldBe(true);
-        }
-
-        [Theory]
-        [InlineData("Mutator_FromActualProject_IN.cs", "Mutator_FromActualProject_OUT.cs", 18, 5, 14, 12, 31)]
-        [InlineData("Mutator_KnownComplexCases_IN.cs", "Mutator_KnownComplexCases_OUT.cs", 19, 2, 14, 6, 24)]
-        [InlineData("Mutator_Chained_Mutation_IN.cs", "Mutator_Chained_Mutation_OUT.cs", 7, 2, 13, 3, 13)]
-        public void Mutator_TestResourcesInputShouldBecomeOutputForFullScope(string inputFile, string outputFile,
-            int nbMutants, int mutant1Id, int mutant1Location, int mutant2Id, int mutant2Location)
-        {
-            var source = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + inputFile);
-            var expected = File.ReadAllText(CurrentDirectory + "/Mutants/TestResources/" + outputFile).Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var target = new MutantOrchestrator();
-
-            var actualNode = target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
-
-            var mutants = target.GetLatestMutantBatch().ToList();
-            mutants.Count.ShouldBe(nbMutants);
-            mutants[mutant1Id].Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(mutant1Location, "Location was lost in mutation");
-            mutants[mutant2Id].Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(mutant2Location, "Location was lost in mutation");
         }
     }
 }
