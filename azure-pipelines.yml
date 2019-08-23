@@ -1,5 +1,12 @@
 name: $(PackageVersion).$(VersionBuildNumber)
 
+schedules:
+- cron: "0 1 * * *"
+  displayName: Nightly
+  branches:
+    include: master
+  always: boolean
+
 trigger:
   batch: true
   branches:
