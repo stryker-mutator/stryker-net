@@ -4,7 +4,8 @@ schedules:
 - cron: "0 1 * * *"
   displayName: Nightly
   branches:
-    include: master
+    include: 
+    - master
   always: boolean
 
 trigger:
