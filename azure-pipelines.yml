@@ -16,6 +16,10 @@ trigger:
   tags:
     include:
     - '*'
+pr:
+  branches:
+    include:
+    - '*'
   paths:
     exclude:
     - 'docs/*'
