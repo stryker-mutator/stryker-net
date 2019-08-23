@@ -24,7 +24,7 @@ jobs:
   displayName: Prepare integrationtest package
 
   pool:
-    name: Hosted VS2017
+    vmImage: 'windows-latest'
   
   steps:
   - task: NuGetCommand@2
@@ -70,7 +70,7 @@ jobs:
   condition: succeeded()
 
   pool:
-    name: Hosted VS2017
+    vmImage: 'windows-latest'
   
   steps:
   - task: NuGetToolInstaller@0
@@ -159,7 +159,7 @@ jobs:
   condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
 
   pool:
-    name: Hosted VS2017
+    vmImage: 'windows-latest'
   
   steps:
   - task: NuGetCommand@2
@@ -196,7 +196,7 @@ jobs:
   condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
 
   pool:
-    name: Hosted VS2017
+    vmImage: 'windows-latest'
   
   steps:
   - task: NuGetCommand@2
