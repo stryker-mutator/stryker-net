@@ -1,11 +1,12 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -16,6 +17,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool _testFailed;
 
         public event EventHandler TestsFailed;
+        public event EventHandler VsTestFailed;
         public List<TestResult> TestResults { get; }
 
         public RunEventHandler(AutoResetEvent waitHandle, ILogger logger)
@@ -38,6 +40,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (testRunCompleteArgs.Error != null)
             {
+                if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
+                {
+                    VsTestFailed?.Invoke(this, EventArgs.Empty);
+                }
                 _logger.LogWarning(testRunCompleteArgs.Error, "Exception in VsTest");
             }
 
@@ -91,7 +97,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
-            _logger.LogTrace($"Runner:[{levelFinal}] {message}");
+            _logger.LogTrace($"Runner: [{levelFinal}] {message}");
         }
     }
 }
