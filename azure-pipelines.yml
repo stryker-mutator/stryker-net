@@ -1,15 +1,29 @@
 name: $(PackageVersion).$(VersionBuildNumber)
 
+schedules:
+- cron: "0 1 * * *"
+  displayName: Nightly
+  branches:
+    include: 
+    - master
+  always: true
+
 trigger:
   batch: true
   branches:
     include:
-    - refs/heads/master
-    - refs/tags/*
-
-resources:
-- repo: self
-  clean: true
+    - master
+  tags:
+    include:
+    - '*'
+pr:
+  branches:
+    include:
+    - '*'
+  paths:
+    exclude:
+    - 'docs/*'
+    - '.github/*'
   
 variables:
   PackageVersion: '0.12.0'
@@ -19,203 +33,214 @@ variables:
   IntegrationTestFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   IntegrationTestFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
-jobs:
-- job: PublishIntegrationTestPackage
-  displayName: Prepare integrationtest package
+stages:
+- stage: Analysis
+  dependsOn: []
+  condition: not(variables['System.PullRequest.IsFork'])
+  jobs:
+  - job:
+    displayName: Run Sonar Analysis
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'SonarCloud stryker-net'
+        organization: 'stryker-net'
+        scannerMode: 'MSBuild'
+        projectKey: 'stryker-net'
+        projectName: 'Stryker .NET'
+        projectVersion: '$(PackageVersion).$(VersionBuildNumber)'
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests'
+      inputs:
+        command: test
+        projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
+    - task: SonarCloudAnalyze@1
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '300'
 
-  pool:
-    vmImage: 'windows-latest'
-  
-  steps:
-  - task: NuGetCommand@2
-    displayName: 'Restore vstest binaries for integrationtest'
-    inputs:
-      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-      feedsToUse: config
-      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-      restoreDirectory: ./.vstest/
+- stage: DeployIntegrationtestPackage
+  displayName: Deploy Integrationtest Package
+  dependsOn: []
+  jobs:
+  - job: PublishIntegrationTestPackage
+    displayName: Prepare integrationtest package
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: NuGetCommand@2
+      displayName: 'Restore vstest binaries for integrationtest'
+      inputs:
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        feedsToUse: config
+        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+        restoreDirectory: ./.vstest/
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack integrationtest packages'
+      inputs:
+        command: pack
+        versioningScheme: byEnvVar
+        versionEnvVar: IntegrationTestVersion
+        packagesToPack: $(ProjectsToPack)
+        packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish integrationtest packages'
+      inputs:
+        command: custom
+        custom: 'nuget'
+        arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+        workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
+  - job: WaitOnMyGetProcessing
+    displayName: Wait on pre-release packages to be processed on MyGet
+    pool: server
+    steps:
+    - task: Delay@1
+      inputs:
+        delayForMinutes: '2' 
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack integrationtest packages'
-    inputs:
-      command: pack
-      versioningScheme: byEnvVar
-      versionEnvVar: IntegrationTestVersion
-      packagesToPack: $(ProjectsToPack)
-      packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
+- stage: IntegrationTests 
+  dependsOn: DeployIntegrationtestPackage
+  jobs:
+  - job: WindowsTests
+    displayName: Run tests on Windows
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: NuGetToolInstaller@0
+      displayName: 'Install nuget for stryker full framework'
+    - template: pipeline-templates/prepare-integration-test-steps.yml
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'windows-netstandard'
+        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
+        strykerCommands: '--dev-mode'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'windows-netcore'
+        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        strykerCommands: '--dev-mode -tr vstest'    
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'windows-netframework'
+        workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
+        strykerCommands: '--dev-mode -tr vstest'  
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Publish integrationtest packages'
-    inputs:
-      command: custom
-      custom: 'nuget'
-      arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
-      workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
-      
-- job: WaitOnMyGetProcessing
-  displayName: Wait on pre-release packages to be processed on MyGet
-  dependsOn: PublishIntegrationTestPackage
-  
-  pool: 
-    name: server
-  
-  steps:
-  - task: Delay@1
-    inputs:
-     delayForMinutes: '2' 
+  - job: LinuxTests
+    displayName: Run tests on Linux
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - template: pipeline-templates/prepare-integration-test-steps.yml
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'linux-netstandard'
+        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
+        strykerCommands: '--dev-mode -tr vstest'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'linux-netcore'
+        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        strykerCommands: '--dev-mode'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
 
-- job: WindowsTests
-  displayName: Run tests on Windows
-  dependsOn: WaitOnMyGetProcessing
-  condition: succeeded()
+  - job: MacOsTests
+    displayName: Run tests on Mac OS
+    pool:
+      vmImage: macOS-latest
+    steps:
+    - template: pipeline-templates/prepare-integration-test-steps.yml
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netstandard'
+        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
+        strykerCommands: '--dev-mode'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore'
+        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        strykerCommands: '--dev-mode -tr vstest'  
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
 
-  pool:
-    vmImage: 'windows-latest'
-  
-  steps:
-  - task: NuGetToolInstaller@0
-    displayName: 'Install nuget for stryker full framework'
-
-  - template: pipeline-templates/prepare-integration-test-steps.yml
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'windows-netstandard'
-      workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-      strykerCommands: '--dev-mode'
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'windows-netcore'
-      workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-      strykerCommands: '--dev-mode -tr vstest'    
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'windows-netframework'
-      workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-      strykerCommands: '--dev-mode -tr vstest'  
-  - task: DotNetCoreCLI@2
-    displayName: 'Assert integration test results'
-    inputs:
-      command: test
-      projects: '**/Validation.csproj'
-
-- job: LinuxTests
-  displayName: Run tests on Linux
-  dependsOn: WaitOnMyGetProcessing
-  condition: succeeded()
-  
-  pool:
-    name: Hosted Ubuntu 1604
-  
-  steps:
-  - template: pipeline-templates/prepare-integration-test-steps.yml
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'linux-netstandard'
-      workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-      strykerCommands: '--dev-mode -tr vstest'
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'linux-netcore'
-      workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-      strykerCommands: '--dev-mode'
-  - task: DotNetCoreCLI@2
-    displayName: 'Assert integration test results'
-    inputs:
-      command: test
-      projects: '**/Validation.csproj'
-
-- job: MacOsTests
-  displayName: Run tests on Mac OS
-  dependsOn: WaitOnMyGetProcessing
-  condition: succeeded()
-  
-  pool:
-    name: Hosted macOS
-  
-  steps:
-  - template: pipeline-templates/prepare-integration-test-steps.yml
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'macos-netstandard'
-      workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-      strykerCommands: '--dev-mode'
-  - template: pipeline-templates/run-integration-test-steps.yml
-    parameters:
-      testName: 'macos-netcore'
-      workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-      strykerCommands: '--dev-mode -tr vstest'  
-  - task: DotNetCoreCLI@2
-    displayName: 'Assert integration test results'
-    inputs:
-      command: test
-      projects: '**/Validation.csproj'
-
-- job: PublishPreview
-  displayName: Publish Preview Artifacts
-  dependsOn: 
-  - WindowsTests
-  - LinuxTests
-  - MacOsTests
+- stage : PublishPreviewArtifact
+  displayName: Publish Preview Artifact
+  dependsOn: IntegrationTests
   condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
+  jobs:
+  - job: PublishPreview
+    displayName: Publish Preview Artifacts
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: NuGetCommand@2
+      displayName: 'Restore vstest binaries for preview'
+      inputs:
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        feedsToUse: config
+        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+        restoreDirectory: ./.vstest/
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack preview package'
+      inputs:
+        command: pack
+        versioningScheme: byEnvVar
+        versionEnvVar: PreviewVersion
+        packagesToPack: $(ProjectsToPack)
+        packDirectory: $(Build.ArtifactStagingDirectory)/preview
 
-  pool:
-    vmImage: 'windows-latest'
-  
-  steps:
-  - task: NuGetCommand@2
-    displayName: 'Restore vstest binaries for preview'
-    inputs:
-      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-      feedsToUse: config
-      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-      restoreDirectory: ./.vstest/
+    - script: echo "##vso[build.addbuildtag]preview"
+      displayName: "Tag build as preview build so release gets triggered"
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: preview'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/preview'
+        ArtifactName: preview
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack preview package'
-    inputs:
-      command: pack
-      versioningScheme: byEnvVar
-      versionEnvVar: PreviewVersion
-      packagesToPack: $(ProjectsToPack)
-      packDirectory: $(Build.ArtifactStagingDirectory)/preview
-
-  - script: echo "##vso[build.addbuildtag]preview"
-    displayName: "Tag build as preview build so release gets triggered"
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: preview'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)/preview'
-      ArtifactName: preview
-
-- job: PublishRelease
-  displayName: Publish Release Artifacts
+- stage: PublishReleaseArtifact
+  displayName: Publish Release Artifact
   dependsOn: 
-  - WindowsTests
-  - LinuxTests
-  - MacOsTests
+    - Analysis
+    - IntegrationTests
   condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
-
-  pool:
-    vmImage: 'windows-latest'
-  
-  steps:
-  - task: NuGetCommand@2
-    displayName: 'Restore vstest binaries for release'
-    inputs:
-      restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
-      feedsToUse: config
-      nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-      restoreDirectory: ./.vstest/
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Pack release package'
-    inputs:
-      command: pack
-      packagesToPack: $(ProjectsToPack)
-      packDirectory: $(Build.ArtifactStagingDirectory)/release
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: release'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
-      ArtifactName: release
+  jobs:
+  - job: PublishRelease
+    displayName: Publish Release Artifacts
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: NuGetCommand@2
+      displayName: 'Restore vstest binaries for release'
+      inputs:
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        feedsToUse: config
+        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
+        restoreDirectory: ./.vstest/
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack release package'
+      inputs:
+        command: pack
+        packagesToPack: $(ProjectsToPack)
+        packDirectory: $(Build.ArtifactStagingDirectory)/release
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: release'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
+        ArtifactName: release
