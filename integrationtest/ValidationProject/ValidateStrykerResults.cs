@@ -63,7 +63,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0, nocoverage: 0);
+                CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 0, killed: 2, timeout: 0, nocoverage: 1);
             }
         }
 
