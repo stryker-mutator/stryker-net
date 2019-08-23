@@ -42,9 +42,13 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
+                    _logger.LogDebug(testRunCompleteArgs.Error, "VsTest may have crashed, triggering vstest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
-                _logger.LogWarning(testRunCompleteArgs.Error, "Exception in VsTest");
+                else
+                {
+                    _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
+                }
             }
 
             _waitHandle.Set();

@@ -22,12 +22,13 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
+        private IVsTestConsoleWrapper _vsTestConsole;
+
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
         private readonly ProjectInfo _projectInfo;
         private readonly Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> _hostBuilder;
-        private readonly IVsTestConsoleWrapper _vsTestConsole;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
@@ -295,7 +296,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 if (_vsTestFailed && retries <= 10)
                 {
+                    _vsTestConsole = PrepareVsTestConsole();
                     _vsTestFailed = false;
+
                     return RunAllTests(testCases, envVars, runSettings, forCoverage, ++retries);
                 }
                 return eventHandler.TestResults;
@@ -358,13 +361,13 @@ namespace Stryker.Core.TestRunners.VsTest
                     settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
                 }
             }
-            var timeOutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" : "";
+            var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" : "";
             var runSettings =
                 $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
-  {timeOutSettings}
+  {timeoutSettings}
   {settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
@@ -381,6 +384,17 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
+            if (_vsTestConsole != null)
+            {
+                try
+                {
+                    _vsTestConsole.EndSession();
+                }
+                catch { }
+
+                _vsTestConsole = null;
+            }
+
             var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
