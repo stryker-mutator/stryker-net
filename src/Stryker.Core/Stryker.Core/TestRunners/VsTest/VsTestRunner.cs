@@ -22,6 +22,10 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
+        public IEnumerable<int> CoveredMutants { get; private set; }
+        public TestCoverageInfos CoverageMutants { get; }
+        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
+
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
@@ -79,11 +83,6 @@ namespace Stryker.Core.TestRunners.VsTest
             };
         }
 
-        public IEnumerable<int> CoveredMutants { get; private set; }
-
-        public TestCoverageInfos CoverageMutants { get; }
-        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
-
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var envVars = new Dictionary<string, string>();
@@ -92,14 +91,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 envVars["ActiveMutation"] = mutant.Id.ToString();
             }
 
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTest == null||mutant.CoveringTest.Count==0 ))
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant != null && (mutant.CoveringTest == null || mutant.CoveringTest.Count == 0))
             {
-                return new TestRunResult {ResultMessage= "Not covered by any test", Success= true};
+                return new TestRunResult { ResultMessage = "Not covered by any test", Success = true };
             }
 
             IEnumerable<TestCase> testCases = null;
             // if we optimize the number of test to run
-            if (mutant !=null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (mutant != null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
                  testCases = (mutant.MustRunAllTests && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))

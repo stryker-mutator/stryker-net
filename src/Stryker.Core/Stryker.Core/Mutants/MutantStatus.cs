@@ -7,6 +7,7 @@
         Survived,
         Timeout,
         CompileError,
-        Skipped
+        Skipped,
+        NoCoverage
     }
 }
