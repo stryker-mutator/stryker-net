@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
             // for some reason, nodes can be different while being textually the same
-            if (actual.ToString() == expected.ToString())
+            if (actual.ToFullString() == expected.ToFullString())
             {
                 return;
             }
