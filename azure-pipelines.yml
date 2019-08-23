@@ -1,10 +1,17 @@
 name: $(PackageVersion).$(VersionBuildNumber)
 
 trigger:
+  batch: true
   branches:
     include:
-    - refs/heads/master
-    - refs/tags/*
+    - master
+  tags:
+    include:
+    - '*'
+  paths:
+    exclude:
+    - 'docs/*'
+    - '.github/*'
   
 variables:
   PackageVersion: '0.12.0'
