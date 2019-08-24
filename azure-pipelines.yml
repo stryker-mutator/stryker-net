@@ -81,7 +81,7 @@ stages:
         command: 'restore'
         projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
         feedsToUse: 'select'
-        restoreDirectory: './.vstest/'
+        arguments: '--packages ./.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack integrationtest packages'
       inputs:
@@ -189,7 +189,7 @@ stages:
         command: 'restore'
         projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
         feedsToUse: 'select'
-        restoreDirectory: './.vstest/'
+        arguments: '--packages ./.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -224,7 +224,7 @@ stages:
         command: 'restore'
         projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
         feedsToUse: 'select'
-        restoreDirectory: './.vstest/'
+        arguments: '--packages ./.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
