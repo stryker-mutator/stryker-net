@@ -36,7 +36,7 @@ variables:
 stages:
 - stage: Analysis
   dependsOn: []
-  condition: not(variables['System.PullRequest.IsFork'])
+  condition: eq(variables['System.PullRequest.IsFork'], 'False')
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -50,7 +50,7 @@ stages:
         scannerMode: 'MSBuild'
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
-        projectVersion: '$(PackageVersion).$(VersionBuildNumber)'
+        projectVersion: '$(Build.BuildNumber)'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
@@ -60,6 +60,8 @@ stages:
       inputs:
         command: test
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
+        arguments: '--logger trx --results-directory $(Agent.TempDirectory) --collect "Code coverage"'
+        publishTestResults: false
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:
@@ -124,12 +126,12 @@ stages:
       parameters:
         testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-        strykerCommands: '--dev-mode -tr vstest'    
+        strykerCommands: '--dev-mode'    
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-        strykerCommands: '--dev-mode -tr vstest'  
+        strykerCommands: '--dev-mode'  
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -146,7 +148,7 @@ stages:
       parameters:
         testName: 'linux-netstandard'
         workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-        strykerCommands: '--dev-mode -tr vstest'
+        strykerCommands: '--dev-mode'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
@@ -173,7 +175,7 @@ stages:
       parameters:
         testName: 'macos-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-        strykerCommands: '--dev-mode -tr vstest'  
+        strykerCommands: '--dev-mode'  
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
