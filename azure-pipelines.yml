@@ -121,17 +121,14 @@ stages:
       parameters:
         testName: 'windows-netstandard'
         workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-        strykerCommands: '--dev-mode'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-        strykerCommands: '--dev-mode'    
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-        strykerCommands: '--dev-mode'  
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -148,12 +145,10 @@ stages:
       parameters:
         testName: 'linux-netstandard'
         workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-        strykerCommands: '--dev-mode'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-        strykerCommands: '--dev-mode'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -170,12 +165,10 @@ stages:
       parameters:
         testName: 'macos-netstandard'
         workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-        strykerCommands: '--dev-mode'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-        strykerCommands: '--dev-mode'  
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
