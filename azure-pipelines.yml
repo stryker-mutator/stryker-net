@@ -79,7 +79,7 @@ stages:
     - task: NuGetCommand@2
       displayName: 'Restore vstest binaries for integrationtest'
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
         feedsToUse: config
         nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
         restoreDirectory: ./.vstest/
@@ -193,9 +193,9 @@ stages:
       vmImage: 'windows-latest'
     steps:
     - task: NuGetCommand@2
-      displayName: 'Restore vstest binaries for preview'
+      displayName: 'Restore vstest binaries for previews'
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
         feedsToUse: config
         nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
         restoreDirectory: ./.vstest/
@@ -231,7 +231,7 @@ stages:
     - task: NuGetCommand@2
       displayName: 'Restore vstest binaries for release'
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/packages.vstest.config
+        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
         feedsToUse: config
         nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
         restoreDirectory: ./.vstest/
