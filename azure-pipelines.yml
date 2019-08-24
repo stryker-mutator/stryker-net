@@ -76,13 +76,12 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-    - task: NuGetCommand@2
-      displayName: 'Restore vstest binaries for integrationtest'
+    - task: DotNetCoreCLI@2
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
-        feedsToUse: config
-        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-        restoreDirectory: ./.vstest/
+        command: 'restore'
+        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
+        feedsToUse: 'select'
+        restoreDirectory: './.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack integrationtest packages'
       inputs:
@@ -185,13 +184,12 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-    - task: NuGetCommand@2
-      displayName: 'Restore vstest binaries for previews'
+    - task: DotNetCoreCLI@2
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
-        feedsToUse: config
-        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-        restoreDirectory: ./.vstest/
+        command: 'restore'
+        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
+        feedsToUse: 'select'
+        restoreDirectory: './.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -221,13 +219,12 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-    - task: NuGetCommand@2
-      displayName: 'Restore vstest binaries for release'
+    - task: DotNetCoreCLI@2
       inputs:
-        restoreSolution: src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj
-        feedsToUse: config
-        nugetConfigPath: src/Stryker.Core/Stryker.Core/ToolHelpers/nuget.vstest.config
-        restoreDirectory: ./.vstest/
+        command: 'restore'
+        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
+        feedsToUse: 'select'
+        restoreDirectory: './.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
