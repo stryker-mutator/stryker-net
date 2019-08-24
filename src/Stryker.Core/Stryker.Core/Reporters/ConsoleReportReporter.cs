@@ -57,6 +57,9 @@ namespace Stryker.Core.Reporters
                     mutant.ResultStatus == MutantStatus.Timeout)
                     {
                         _chalk.Green($"[{mutant.ResultStatus}] ");
+                    } else if (mutant.ResultStatus == MutantStatus.NoCoverage)
+                    {
+                        _chalk.Yellow($"[{mutant.ResultStatus}] ");
                     }
                     else
                     {
