@@ -36,7 +36,7 @@ variables:
 stages:
 - stage: Analysis
   dependsOn: []
-  condition: not(variables['System.PullRequest.IsFork'])
+  condition: eq(variables['System.PullRequest.IsFork'], 'False')
   jobs:
   - job:
     displayName: Run Sonar Analysis
