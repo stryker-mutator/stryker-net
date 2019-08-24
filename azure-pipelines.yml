@@ -76,12 +76,14 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
-    - task: DotNetCoreCLI@2
+    - task: NuGetCommand@2
       inputs:
         command: 'restore'
-        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
-        feedsToUse: 'select'
-        arguments: '--packages ./.vstest/'
+        restoreSolution: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
+        noCache: true
+        disableParallelProcessing: true
+        restoreDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/'
+        arguments: '--packages src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack integrationtest packages'
       inputs:
