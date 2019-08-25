@@ -104,11 +104,12 @@ stages:
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
   - job: WaitOnMyGetProcessing
     displayName: Wait on pre-release packages to be processed on MyGet
+    dependsOn: 'PublishIntegrationTestPackage'
     pool: server
     steps:
     - task: Delay@1
       inputs:
-        delayForMinutes: '2' 
+        delayForMinutes: '1' 
 
 - stage: IntegrationTests 
   dependsOn: DeployIntegrationtestPackage
@@ -181,7 +182,9 @@ stages:
 
 - stage : PublishPreviewArtifact
   displayName: Publish Preview Artifact
-  dependsOn: IntegrationTests
+  dependsOn: 
+    - Analysis
+    - IntegrationTests
   condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
   jobs:
   - job: PublishPreview
