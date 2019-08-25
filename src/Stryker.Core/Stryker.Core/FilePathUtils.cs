@@ -1,28 +1,30 @@
 using System.IO;
 
-public static class FilePathUtils
+namespace Stryker.Core
 {
-	public static string ConvertPathSeparators(string filePath)
-	{
-		const char windowsDirectorySeparator = '\\';
-		if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
-		{
-			return filePath;
-		}
-		else
-		{
-			return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
-		}
-	}
-
-
-    public static string ToFullPath(this string path)
+    public static class FilePathUtils
     {
-        if (path == null)
+        public static string ConvertPathSeparators(string filePath)
         {
-            return null;
+            const char windowsDirectorySeparator = '\\';
+            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
+            {
+                return filePath;
+            }
+            else
+            {
+                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
+            }
         }
 
-        return Path.GetFullPath(path);
+        public static string ToFullPath(this string path)
+        {
+            if (path == null)
+            {
+                return null;
+            }
+
+            return Path.GetFullPath(path);
+        }
     }
 }
