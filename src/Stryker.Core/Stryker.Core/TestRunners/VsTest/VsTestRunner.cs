@@ -389,7 +389,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     _vsTestConsole.EndSession();
                 }
-                catch { //Ignore exception. vsTestConsole has been disposed outside of our control }
+                catch { /*Ignore exception. vsTestConsole has been disposed outside of our control*/ }
 
                 _vsTestConsole = null;
             }
