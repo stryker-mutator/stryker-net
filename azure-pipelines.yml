@@ -80,6 +80,7 @@ stages:
       runOnce:
         deploy:
           steps:
+          - checkout: self
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
