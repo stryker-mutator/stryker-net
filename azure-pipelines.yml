@@ -77,6 +77,7 @@ stages:
       vmImage: 'windows-latest'
     steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Restore vstest binaries'
       inputs:
         command: 'custom'
         custom: 'restore'
@@ -185,11 +186,12 @@ stages:
       vmImage: 'windows-latest'
     steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Restore vstest binaries'
       inputs:
-        command: 'restore'
-        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
-        feedsToUse: 'select'
+        command: 'custom'
+        custom: 'restore'
         arguments: '--packages ./.vstest/'
+        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -220,11 +222,12 @@ stages:
       vmImage: 'windows-latest'
     steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Restore vstest binaries'
       inputs:
-        command: 'restore'
-        projects: 'src/Stryker.Core/Stryker.Core/ToolHelpers/vstest.fakeproject.csproj'
-        feedsToUse: 'select'
+        command: 'custom'
+        custom: 'restore'
         arguments: '--packages ./.vstest/'
+        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
