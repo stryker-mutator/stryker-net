@@ -75,7 +75,7 @@ stages:
     displayName: Prepare integrationtest package
     pool:
       vmImage: 'windows-latest'
-    environment: 'myget.stryker-mutator-integrationtest'
+    environment: 'myget'
     strategy:
       runOnce:
         deploy:
