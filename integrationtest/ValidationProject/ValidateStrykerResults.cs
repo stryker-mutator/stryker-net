@@ -27,7 +27,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 25, skipped: 8, survived: 12, killed: 2, timeout: 1);
+            CheckReportMutantCounts(report, total: 25, skipped: 8, survived: 12, killed: 2, timeout: 1, nocoverage: 0);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 25, skipped: 2, survived: 19, killed: 2, timeout: 0);
+            CheckReportMutantCounts(report, total: 25, skipped: 2, survived: 2, killed: 2, timeout: 1, nocoverage: 18);
         }
 
         [Fact]
@@ -63,17 +63,18 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 3, skipped: 0, survived: 1, killed: 2, timeout: 0);
+                CheckReportMutantCounts(report, total: 11, skipped: 0, survived: 1, killed: 3, timeout: 0, nocoverage: 7);
             }
         }
 
-        private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout)
+        private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout, int nocoverage)
         {
             report.Files.Select(f => f.Value.Mutants.Count()).Sum().ShouldBe(total);
             report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Skipped.ToString())).Sum().ShouldBe(skipped);
             report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Survived.ToString())).Sum().ShouldBe(survived);
             report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())).Sum().ShouldBe(killed);
             report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Timeout.ToString())).Sum().ShouldBe(timeout);
+            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())).Sum().ShouldBe(nocoverage);
         }
     }
 }

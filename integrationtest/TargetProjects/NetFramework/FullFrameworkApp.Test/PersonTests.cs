@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FullFrameworkApp.Test
 {
@@ -7,13 +6,14 @@ namespace FullFrameworkApp.Test
     public class PersonTests
     {
         [TestMethod]
-        public void TestMethod1()
+        public void PersonCanAge()
         {
             var person = new Person() { Age = 10 };
+            var olderPerson = new Person() { Age = 11 };
 
-            person.Aged();
+            Person.Aged(person);
 
-            Assert.AreEqual(person.Age, 11);
+            Assert.IsTrue(person.SameAge(olderPerson));
         }
     }
 }

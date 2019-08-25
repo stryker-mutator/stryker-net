@@ -2,9 +2,6 @@
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -12,14 +9,11 @@ namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutantOrchestratorTests
     {
-        private readonly Collection<IMutator> _mutators;
-        private readonly string _currentDirectory;
         private readonly MutantOrchestrator _target;
 
         public MutantOrchestratorTests()
         {
             _target = new MutantOrchestrator();
-            _currentDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
 
         [Fact]

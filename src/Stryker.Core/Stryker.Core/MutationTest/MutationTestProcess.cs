@@ -165,29 +165,40 @@ namespace Stryker.Core.MutationTest
 
         public StrykerRunResult Test(StrykerOptions options)
         {
-            var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants
-                .Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+
             if (!mutantsNotRun.Any())
             {
-                _logger.LogWarning(
-                    _input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped)
-                        ? "It looks like all mutants were excluded, try a re-run with less exclusion."
-                        : "It's a mutant-free world, nothing to test.");
-
-                return new StrykerRunResult(options, null);
+                if (_input.ProjectInfo.ProjectContents.Mutants.All(x => x.ResultStatus == MutantStatus.Skipped))
+                {
+                    _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
+                }
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
+                {
+                    _logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
+                }
+                if (!_input.ProjectInfo.ProjectContents.Mutants.Any())
+                {
+                    _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                    return new StrykerRunResult(options, null);
+                }
             }
 
-            _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
+            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
+            if (mutantsToTest.Any())
+            {
+                _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
 
-            Parallel.ForEach(
-                mutantsNotRun,
-                new ParallelOptions {MaxDegreeOfParallelism = options.ConcurrentTestrunners},
-                mutant =>
-                {
-                    _mutationTestExecutor.Test(mutant, _input.TimeoutMs);
+                Parallel.ForEach(
+                    mutantsNotRun,
+                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
+                    mutant =>
+                    {
+                        _mutationTestExecutor.Test(mutant, _input.TimeoutMs);
 
-                    _reporter.OnMutantTested(mutant);
-                });
+                        _reporter.OnMutantTested(mutant);
+                    });
+            }
 
             _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
 
@@ -195,8 +206,5 @@ namespace Stryker.Core.MutationTest
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
-
-
-
     }
 }
