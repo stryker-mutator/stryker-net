@@ -38,6 +38,7 @@ namespace Stryker.Core.MutationTest
                 Logger.LogTrace($"Testrun for {mutant.DisplayName} with output {result.ResultMessage}");
 
                 mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;
+
                 if (result.FailingTests != null)
                 {
                     foreach (var resultFailingTest in result.FailingTests)

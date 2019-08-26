@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_MutateShouldCallMutantOrchestrator()
+        public void ShouldCallMutantOrchestratorAndReporter()
         {
             var inputFile = new FileLeaf()
             {
@@ -125,7 +125,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_MutateShouldCallMutantFilters()
+        public void MutateShouldCallMutantFilters()
         {
             var inputFile = new FileLeaf()
             {
@@ -218,7 +218,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_MutateShouldWriteToDisk_IfCompilationIsSuccessful()
+        public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
@@ -300,7 +300,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldCallExecutorForEveryMutant()
+        public void ShouldCallExecutorForEveryMutant()
         {
             var mutant = new Mutant { Id = 1 };
             var otherMutant = new Mutant { Id = 2 };
@@ -359,7 +359,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotCallExecutorForNotCoveredMutants()
+        public void ShouldNotCallExecutorForNotCoveredMutants()
         {
             var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Survived };
             var otherMutant = new Mutant { Id = 2, ResultStatus = MutantStatus.NotRun };
@@ -427,7 +427,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenAllMutationsWereSkipped()
+        public void ShouldNotTest_WhenAllMutationsWereSkipped()
         {
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -469,12 +469,12 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(mutant, It.IsAny<int>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoMutationsAtAll()
+        public void ShouldNotTest_WhenThereAreNoMutationsAtAll()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
@@ -519,7 +519,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void MutationTestProcess_ShouldNotTest_WhenThereAreNoTestableMutations()
+        public void ShouldNotTest_WhenThereAreNoTestableMutations()
         {
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
             var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
@@ -561,7 +561,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(It.IsAny<Mutant>(), It.IsAny<int>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBeNull();
         }
     }

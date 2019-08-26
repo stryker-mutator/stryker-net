@@ -7,6 +7,7 @@ namespace Stryker.Core.Testing
         void Red(string text);
         void Yellow(string text);
         void Green(string text);
+        void Blue(string text);
         void DarkGray(string text);
         void Default(string text);
     }
@@ -29,10 +30,18 @@ namespace Stryker.Core.Testing
 
         public void Yellow(string text)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Write(text);
             Console.ResetColor();
         }
+
+        public void Blue(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.Write(text);
+            Console.ResetColor();
+        }
+
         public void DarkGray(string text)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;

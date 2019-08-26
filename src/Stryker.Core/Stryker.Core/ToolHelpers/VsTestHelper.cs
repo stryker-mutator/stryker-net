@@ -39,11 +39,12 @@ namespace Stryker.Core.ToolHelpers
             {
                 if (string.IsNullOrEmpty(_platformVsTestToolPath))
                 {
-                    foreach (var path in GetVsTestToolPaths())
+                    var paths = GetVsTestToolPaths();
+                    foreach (var path in paths)
                     {
                         if (RuntimeInformation.IsOSPlatform(path.Key))
                         {
-                            _logger.LogDebug("Using vstest.console: {0}", path.Value);
+                            _logger.LogDebug("Using vstest.console: {0} for OS {1}", path.Value, path.Key);
                             _platformVsTestToolPath = path.Value;
                             break;
                         }
@@ -51,11 +52,7 @@ namespace Stryker.Core.ToolHelpers
                     if (string.IsNullOrEmpty(_platformVsTestToolPath))
                     {
                         throw new PlatformNotSupportedException(
-                            $"The current OS is not any of the following supported: " +
-                            $"{ OSPlatform.Windows.ToString() }, " +
-                            $"{ OSPlatform.Linux.ToString() } " +
-                            $"or " +
-                            $"{ OSPlatform.OSX.ToString() }");
+                            $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
                     }
                 }
             }
@@ -88,10 +85,12 @@ namespace Stryker.Core.ToolHelpers
                 if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && nugetAssemblies.Count != 0)
                 {
                     Merge(_vstestPaths, nugetAssemblies);
+                    _logger.LogDebug("Using vstest from nuget package folders");
                 }
                 else if (DeployEmbeddedVsTestBinaries() is var deployPath)
                 {
                     Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
+                    _logger.LogDebug("Using vstest from deployed vstest package");
                 }
                 else
                 {
