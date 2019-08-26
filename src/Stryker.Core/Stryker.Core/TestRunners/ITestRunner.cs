@@ -6,7 +6,7 @@ namespace Stryker.Core.TestRunners
 {
     public interface ITestRunner : IDisposable
     {
-        TestRunResult RunAll(int? timeoutMS, IReadOnlyMutant activeMutant);
+        TestRunResult RunAll(int? timeoutMS, Mutant activeMutant);
 
         int DiscoverNumberOfTests();
 

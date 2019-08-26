@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.FileProviders;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.FileProviders;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -19,7 +21,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant, 0);
+            target.Test(new List<Mutant>{mutant}, 0);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
             testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant), Times.Once);
@@ -34,7 +36,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant, 0);
+            target.Test(new List<Mutant>{mutant}, 0);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
             testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant), Times.Once);
@@ -45,13 +47,13 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult(false) );
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Throws<OperationCanceledException>();
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(mutant, 1999);
+            target.Test(new List<Mutant>{mutant}, 1999);
 
-            mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
+            mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
             testRunnerMock.Verify(x => x.RunAll(1999, mutant), Times.Once);
         }
     }

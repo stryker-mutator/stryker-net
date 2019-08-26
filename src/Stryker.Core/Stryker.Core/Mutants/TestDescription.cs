@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
@@ -70,10 +71,11 @@ namespace Stryker.Core.Mutants
 
         public TestListDescription(IEnumerable<TestDescription> testDescriptions)
         {
-            _tests = testDescriptions.ToList();
+            _tests = testDescriptions == null ? new List<TestDescription>() : testDescriptions.ToList();
         }
 
         public bool IsEveryTest => _tests.Count == 1 && _tests[0].IsAllTests;
+        public bool IsEmpty => _tests.Count == 0;
 
         public void Add(TestDescription test)
         {
@@ -96,6 +98,14 @@ namespace Stryker.Core.Mutants
         public IReadOnlyList<TestDescription> GetList()
         {
             return _tests;
+        }
+
+        public void AddTests(TestListDescription otherFailingTests)
+        {
+            foreach (var testDescription in otherFailingTests._tests)
+            {
+                Add(testDescription);
+            }
         }
     }
 }

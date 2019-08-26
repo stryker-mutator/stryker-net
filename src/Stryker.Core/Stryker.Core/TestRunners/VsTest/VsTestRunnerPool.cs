@@ -8,7 +8,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Stryker.Core.Mutants;
@@ -44,7 +43,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
-        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
         {
             var runner = TakeRunner();
 

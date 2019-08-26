@@ -5,7 +5,6 @@ using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.DataCollector;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.TestRunners
@@ -13,18 +12,16 @@ namespace Stryker.Core.TestRunners
     public class DotnetTestRunner : ITestRunner
     {
         private readonly OptimizationFlags _flags;
-        private readonly ILogger _logger;
-        private readonly string _path;
         private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
+        private readonly ILogger _logger;
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
 
             _flags = flags;
-            _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
-            _projectFile = path;
+            _projectFile = FilePathUtils.ConvertPathSeparators(path);
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
         }
@@ -33,7 +30,7 @@ namespace Stryker.Core.TestRunners
 
         public IEnumerable<TestDescription> Tests => null;
 
-        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
         {
             var envVars = mutant == null ? null : 
                 new Dictionary<string, string>
@@ -52,10 +49,7 @@ namespace Stryker.Core.TestRunners
                 envVars,
                 timeoutMs ?? 0);
 
-            return new TestRunResult(result.ExitCode == 0)
-            {
-                ResultMessage = result.Output
-            };
+            return new TestRunResult(result.ExitCode == 0, result.Output);
         }
 
         public TestRunResult CaptureCoverage()

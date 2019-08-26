@@ -39,8 +39,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private static int _count;
         private readonly int _id;
         private TestFramework _testFramework;
-
-
         private readonly ILogger _logger;
 
         public VsTestRunner(
@@ -83,7 +81,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
-        public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
         {
             var envVars = new Dictionary<string, string>();
             if (mutant != null)
@@ -97,7 +95,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             ICollection<TestCase> testCases = null;
-            // if we optimize the number of test to run
+            // if we optimize the number of tests to run
             if (mutant !=null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
@@ -109,7 +107,7 @@ namespace Stryker.Core.TestRunners.VsTest
                  }
                  else
                  {
-                     _logger.LogDebug($"Runner {_id}: Testing [{mutant.DisplayName}] against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                     _logger.LogDebug($"Runner {_id}: Testing [{mutant.DisplayName}] against: {string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
                  }
             }
             return RunVsTest(testCases, timeoutMs, envVars);
@@ -183,15 +181,11 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 throw new OperationCanceledException();
             }
-
-            var testResult = new TestRunResult(resultAsArray.All(tr => tr.Outcome == TestOutcome.Passed || tr.Outcome == TestOutcome.Skipped))
-            {
-                FailingTests = new TestListDescription(resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(x => (TestDescription)x.TestCase)),
-                ResultMessage = string.Join(
-                    Environment.NewLine,
-                    resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
-                        .Select(tr => tr.ErrorMessage))
-            };
+            var ranTests = resultAsArray.Length == DiscoverNumberOfTests()?  TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
+            var failedTests = new TestListDescription(resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(tr => (TestDescription) tr.TestCase));
+            var testResult = new TestRunResult(ranTests, failedTests, string.Join( Environment.NewLine,
+                resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
+                    .Select(tr => tr.ErrorMessage)));
 
             return testResult;
         }

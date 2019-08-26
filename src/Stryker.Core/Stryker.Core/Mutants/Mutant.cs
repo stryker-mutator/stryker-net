@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -31,5 +32,14 @@ namespace Stryker.Core.Mutants
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
         public bool IsTestedBy(string testId) => MustRunAllTests || CoveringTests.ContainsKey(testId);
+
+        public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)
+        {
+            if (failedTests.Any(t => MustRunAllTests || CoveringTests.ContainsKey(t.Guid)))
+            {
+                // a test killed us
+                ResultStatus = MutantStatus.Killed;
+            }
+        }
     }
 }

@@ -251,10 +251,11 @@ Default: `"./stryker-config.json"`
 ## Coverage analysis
 Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
 
-- off: coverage data is not captured (default mode).
-- perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
-- all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
-- perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.
+- **off**: coverage data is not captured (default mode).
+- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+- **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+- **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
+coverage information for some mutants (see below), at the expanse of a longer startup time.
 
 ```
 dotnet stryker --coverage-analysis perTest
@@ -262,6 +263,15 @@ dotnet stryker -ca perTest
 ```
 
 Default: `"off"`
+### Notes on coverage analysis
+* The 'dotnet test' runner only supports `all` mode. This is due to dotnet test limitation
+* Results are not impacted by coverage analysis. If you identify a suspicious survivor, run
+Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
+* when using `perTest` mode, mutants that are executed as part as some static constructor/initializer 
+are run against all tests, as Stryker can not reliably capture coverage for those. This is a consequence of static
+constructors/initialisers being called only once during tests. This heuristic is not needed when using
+`perTestInIsolation` due to test being run one by one.
+
 
 ## Abort test on fail
 Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.
