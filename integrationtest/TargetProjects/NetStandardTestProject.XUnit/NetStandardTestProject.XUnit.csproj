@@ -15,15 +15,4 @@
     <ProjectReference Include="..\TargetProject\TargetProject.csproj" Properties="TargetFramework=netstandard2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="StrykerOutput\2019-08-14.15-22-12\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-29-00\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-30-02\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-33-33\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-38-31\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-55-12\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.16-00-02\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.16-00-39\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.16-02-40\reports\" />
-  </ItemGroup>
 </Project>

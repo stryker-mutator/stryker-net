@@ -117,7 +117,7 @@ namespace Stryker.CLI
             }
 
             // Notify user that they are using a deprecated argument.
-            if (option.IsDeprecated)
+            if (option.IsDeprecated && !Equals(value, option.DefaultValue))
             {
                 _logger.LogWarning($"Argument {option.ArgumentName} is deprecated: {option.DeprecatedMessage}");
             }
