@@ -6,6 +6,11 @@ namespace Stryker.Core
     {
         public static string ConvertPathSeparators(string filePath)
         {
+            if (filePath == null)
+            {
+                return null;
+            }
+
             const char windowsDirectorySeparator = '\\';
             if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
             {
