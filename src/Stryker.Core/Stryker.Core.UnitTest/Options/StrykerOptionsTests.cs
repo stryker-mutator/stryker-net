@@ -57,8 +57,8 @@ namespace Stryker.Core.UnitTest.Options
         public void CustomTestProjectFilter_WithRelativePath_ShouldIncludeBasePath()
         {
             var userSuppliedFilter = "..\\ExampleActualTestProject\\TestProject.csproj";
-            var basePath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
-            var fullPath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
+            var basePath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
+            var fullPath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Options
 
         [Theory]
         [InlineData("./MyFolder/MyFile.cs", "MyFolder/MyFile.cs")]
-        [InlineData("./MyFolder", "MyFolder\\*.*")]
+        [InlineData("./MyFolder", "MyFolder/*.*")]
         [InlineData("C:/MyFolder/MyFile.cs", "C:/MyFolder/MyFile.cs")]
         public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
         {
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.Options
 
             // Assert
             var pattern = result.FilePatterns.Last();
-            pattern.Glob.ToString().ShouldBe(expectedFilePattern);
+            pattern.Glob.ToString().ShouldBe(FilePathUtils.NormalizePathSeparators(expectedFilePattern));
             pattern.TextSpans.ShouldContain(TextSpan.FromBounds(0, int.MaxValue));
             pattern.IsExclude.ShouldBeTrue();
         }

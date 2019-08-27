@@ -4,22 +4,16 @@ namespace Stryker.Core
 {
     public static class FilePathUtils
     {
-        public static string ConvertPathSeparators(string filePath)
+        private static readonly char[] _knownDirectorySeparators = { '\\', '/' };
+
+        public static string NormalizePathSeparators(string filePath)
         {
             if (filePath == null)
             {
                 return null;
             }
 
-            const char windowsDirectorySeparator = '\\';
-            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
-            {
-                return filePath;
-            }
-            else
-            {
-                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
-            }
+            return string.Join(Path.DirectorySeparatorChar, filePath.Split(_knownDirectorySeparators));
         }
 
         public static string ToFullPath(this string path)

@@ -43,7 +43,7 @@ namespace Stryker.Core.Testing
             var info = new ProcessStartInfo(application, arguments)
             {
                 UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path)),
+                WorkingDirectory = Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(path)),
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardError = RedirectOutput
             };
