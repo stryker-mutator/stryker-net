@@ -71,40 +71,46 @@ stages:
   displayName: Deploy Integrationtest Package
   dependsOn: []
   jobs:
-  - job: PublishIntegrationTestPackage
+  - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
     pool:
       vmImage: 'windows-latest'
-    steps:
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2
-      displayName: 'Pack integrationtest packages'
-      inputs:
-        command: pack
-        versioningScheme: byEnvVar
-        versionEnvVar: IntegrationTestVersion
-        packagesToPack: $(ProjectsToPack)
-        packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish integrationtest packages'
-      inputs:
-        command: custom
-        custom: 'nuget'
-        arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
-        workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
+    environment: 'myget'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore vstest binaries'
+            inputs:
+              command: 'custom'
+              custom: 'restore'
+              arguments: '--packages ./.vstest/'
+              workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+          - task: DotNetCoreCLI@2
+            displayName: 'Pack integrationtest packages'
+            inputs:
+              command: pack
+              versioningScheme: byEnvVar
+              versionEnvVar: IntegrationTestVersion
+              packagesToPack: $(ProjectsToPack)
+              packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish integrationtest packages'
+            inputs:
+              command: custom
+              custom: 'nuget'
+              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+              workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
   - job: WaitOnMyGetProcessing
     displayName: Wait on pre-release packages to be processed on MyGet
+    dependsOn: 'PublishIntegrationTestPackage'
     pool: server
     steps:
     - task: Delay@1
       inputs:
-        delayForMinutes: '2' 
+        delayForMinutes: '1' 
 
 - stage: IntegrationTests 
   dependsOn: DeployIntegrationtestPackage
@@ -177,7 +183,9 @@ stages:
 
 - stage : PublishPreviewArtifact
   displayName: Publish Preview Artifact
-  dependsOn: IntegrationTests
+  dependsOn: 
+    - Analysis
+    - IntegrationTests
   condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
   jobs:
   - job: PublishPreview
