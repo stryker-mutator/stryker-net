@@ -14,3 +14,4 @@ steps:
       artifactName: ${{ parameters.testName }}
       targetPath: '${{ parameters.workingDirectory }}/StrykerOutput'
     condition: always()
+    continueOnError: true

@@ -118,11 +118,10 @@ namespace Stryker.Core.TestRunners
             var report = new StringBuilder();
             var mutantsToTest = mutants.Where(m => m.ResultStatus == MutantStatus.NotRun);
             var initialCount = mutantsToTest.Count();
-            var nonTested = mutants.Where(x =>
-                x.ResultStatus == MutantStatus.NotRun && !CoveredMutants.Contains(x.Id)).ToList();
+            var nonTested = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !CoveredMutants.Contains(x.Id)).ToList();
             foreach (var mutant in nonTested)
             {
-                mutant.ResultStatus = MutantStatus.Survived;
+                mutant.ResultStatus = MutantStatus.NoCoverage;
                 avoidedTests += testsCount;
             }
 

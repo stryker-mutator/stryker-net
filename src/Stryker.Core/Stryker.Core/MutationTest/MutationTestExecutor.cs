@@ -47,6 +47,7 @@ namespace Stryker.Core.MutationTest
                 }
 
                 foreach (var resultFailingTest in result.FailingTests.GetList())
+
                 {
                     foreach (var currentMutant in mutantsToTest.Where( x => resultFailingTest.IsAllTests || x.IsTestedBy(resultFailingTest.Guid)))
                     {

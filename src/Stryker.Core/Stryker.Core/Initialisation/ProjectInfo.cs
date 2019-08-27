@@ -102,7 +102,9 @@ namespace Stryker.Core.Initialisation
         private string _assemblyOriginatorKeyFile;
         public string AssemblyOriginatorKeyFile
         {
-            get => _assemblyOriginatorKeyFile ?? _analyzerResult?.Properties?.GetValueOrDefault("AssemblyOriginatorKeyFile").ToFullPath();
+            get => _assemblyOriginatorKeyFile ?? Path.Combine(
+                Path.GetDirectoryName(ProjectFilePath),
+                _analyzerResult?.Properties?.GetValueOrDefault("AssemblyOriginatorKeyFile"));
             set => _assemblyOriginatorKeyFile = value;
         }
 
