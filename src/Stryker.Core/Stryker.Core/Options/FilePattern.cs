@@ -75,7 +75,7 @@ namespace Stryker.Core.Options
                 pattern = pattern.Substring(0, pattern.Length - textSpanGroupMatch.Length);
             }
 
-            var glob = Glob.Parse(FilePathUtils.NormalizePathSeparators(pattern));
+            var glob = Glob.Parse(FilePathUtils.ConvertPathSeparators(pattern));
 
             return new FilePattern(glob, exclude, textSpans);
         }
@@ -89,7 +89,7 @@ namespace Stryker.Core.Options
         public bool IsMatch(string filePath, TextSpan textSpan)
         {
             // Check if the file path is matched.
-            if (!Glob.IsMatch(FilePathUtils.NormalizePathSeparators(filePath)))
+            if (!Glob.IsMatch(FilePathUtils.ConvertPathSeparators(filePath)))
             {
                 return false;
             }

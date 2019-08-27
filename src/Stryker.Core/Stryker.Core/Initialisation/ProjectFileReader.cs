@@ -82,7 +82,7 @@ namespace Stryker.Core.Initialisation
             var sharedProjects = importStatements
                 .SelectMany(importStatement => importStatement.Attributes(
                     XName.Get("Project")))
-                .Select(importFileLocation => FilePathUtils.NormalizePathSeparators(importFileLocation.Value))
+                .Select(importFileLocation => FilePathUtils.ConvertPathSeparators(importFileLocation.Value))
                 .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
             return sharedProjects;
         }
@@ -135,7 +135,7 @@ namespace Stryker.Core.Initialisation
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
                 }
-                return FilePathUtils.NormalizePathSeparators(searchResult.Single());
+                return FilePathUtils.ConvertPathSeparators(searchResult.Single());
             }
         }
 

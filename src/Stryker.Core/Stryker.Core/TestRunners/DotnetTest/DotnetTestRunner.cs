@@ -23,7 +23,7 @@ namespace Stryker.Core.TestRunners
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
 
             _flags = flags;
-            _path = Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(path));
+            _path = Path.GetDirectoryName(FilePathUtils.ConvertPathSeparators(path));
             _projectFile = path;
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();

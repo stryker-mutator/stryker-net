@@ -57,8 +57,8 @@ namespace Stryker.Core.UnitTest.Options
         public void CustomTestProjectFilter_WithRelativePath_ShouldIncludeBasePath()
         {
             var userSuppliedFilter = "..\\ExampleActualTestProject\\TestProject.csproj";
-            var basePath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
-            var fullPath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
+            var basePath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
+            var fullPath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.Options
 
             // Assert
             var pattern = result.FilePatterns.Last();
-            pattern.Glob.ToString().ShouldBe(FilePathUtils.NormalizePathSeparators(expectedFilePattern));
+            Path.GetFullPath(pattern.Glob.ToString()).ShouldBe(Path.GetFullPath(expectedFilePattern));
             pattern.TextSpans.ShouldContain(TextSpan.FromBounds(0, int.MaxValue));
             pattern.IsExclude.ShouldBeTrue();
         }

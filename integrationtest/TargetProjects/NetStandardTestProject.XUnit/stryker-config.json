@@ -9,7 +9,7 @@
     "log-file": "true",
     "project-file": "TargetProject.csproj",
     "mutate": [
-      "!EndlessLoop.cs"
+      "!**/EndlessLoop.cs"
     ]
   }
 }

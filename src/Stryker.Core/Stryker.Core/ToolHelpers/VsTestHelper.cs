@@ -134,23 +134,23 @@ namespace Stryker.Core.ToolHelpers
                         return vsTestPaths;
                     }
 
-                    dllPath = FilePathUtils.NormalizePathSeparators(
+                    dllPath = FilePathUtils.ConvertPathSeparators(
                         Path.Combine(
                             nugetPackageFolder, portablePackageFolder, versionString,
                             "tools", "netcoreapp2.0", "vstest.console.dll"));
-                    exePath = FilePathUtils.NormalizePathSeparators(
+                    exePath = FilePathUtils.ConvertPathSeparators(
                         Path.Combine(
                             nugetPackageFolder, portablePackageFolder, versionString,
                             "tools", "net451", "vstest.console.exe"));
                 }
                 else
                 {
-                    dllPath = FilePathUtils.NormalizePathSeparators(
+                    dllPath = FilePathUtils.ConvertPathSeparators(
                         _fileSystem.Directory.GetFiles(
                             nugetPackageFolder,
                             "vstest.console.dll",
                             SearchOption.AllDirectories).First());
-                    exePath = FilePathUtils.NormalizePathSeparators(
+                    exePath = FilePathUtils.ConvertPathSeparators(
                         _fileSystem.Directory.GetFiles(
                             nugetPackageFolder,
                             "vstest.console.exe",

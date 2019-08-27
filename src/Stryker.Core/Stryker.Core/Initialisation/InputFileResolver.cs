@@ -155,7 +155,7 @@ namespace Stryker.Core.Initialisation
         private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
         {
             // Make sure the filter is relative to the base path otherwise we cannot find it
-            var filter = FilePathUtils.NormalizePathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
+            var filter = FilePathUtils.ConvertPathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
 
             // If the filter starts with directory separator char, remove it
             if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
