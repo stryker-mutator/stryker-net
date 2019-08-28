@@ -1,11 +1,14 @@
 {
   "stryker-config": {
-    "solution-path": "../FullFrameworkApp.sln",
+    "excluded-mutations": [
+      "string"
+    ],
+    "log-file": "true",
+    "log-level": "trace",
+    "project-file": "TargetProject.csproj",
     "reporters": [
       "All"
     ],
-    "test-runner": "vstest",
-    "coverage-analysis": "perTest",
-    "abort-test-on-fail":  true,
+    "solution-path": "../FullFrameworkApp.sln"
   }
 }
