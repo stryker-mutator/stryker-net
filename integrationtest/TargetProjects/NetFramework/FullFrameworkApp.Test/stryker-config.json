@@ -5,7 +5,6 @@
     ],
     "log-file": "true",
     "log-level": "trace",
-    "project-file": "TargetProject.csproj",
     "reporters": [
       "All"
     ],
