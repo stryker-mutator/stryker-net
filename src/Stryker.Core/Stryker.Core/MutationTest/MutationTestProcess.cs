@@ -55,7 +55,8 @@ namespace Stryker.Core.MutationTest
             {
                 new IgnoredFileMutantFilter(),
                 new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter()
+                new ExcludeMutationMutantFilter(),
+                new GitDiffMutantFilter()
             };
         }
 
