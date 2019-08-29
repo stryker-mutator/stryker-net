@@ -409,7 +409,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', '.\\ExampleDirectory/Recursive2.cs']" });
+            target.Run(new[] { argName, @"['./StartUp.cs','./ExampleDirectory/Recursive.cs', './ExampleDirectory/Recursive2.cs']" });
 
             var firstFileToExclude = FilePattern.Parse("!StartUp.cs");
             var secondFileToExclude = FilePattern.Parse("!ExampleDirectory/Recursive.cs");

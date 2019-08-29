@@ -13,11 +13,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = FilePathUtils.NormalizePathSeparators("\\test\\bin\\Debug\\TestApp.dll"),
+                    AssemblyPath = "\\test\\bin\\Debug\\TestApp.dll",
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = FilePathUtils.NormalizePathSeparators("\\app\\bin\\Debug\\AppToTest.dll"),
+                    AssemblyPath = "\\app\\bin\\Debug\\AppToTest.dll",
                 }
             };
 
@@ -32,11 +32,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = FilePathUtils.NormalizePathSeparators("\\test\\bin\\Debug\\TestApp.dll"),
+                    AssemblyPath = "\\test\\bin\\Debug\\TestApp.dll",
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = FilePathUtils.NormalizePathSeparators("\\app\\bin\\Debug\\AppToTest.dll"),
+                    AssemblyPath = "\\app\\bin\\Debug\\AppToTest.dll",
                 }
             };
 
