@@ -43,25 +43,23 @@ namespace Stryker.Core.MutationTest
                 foreach (var mutant in mutantsToTest)
                 {
                     mutant.AnalyzeTestRun(failedTests, result.RanTests);
-                    mutant.ResultStatus = failedTests.Any(t => t.IsAllTests || mutant.IsTestedBy(t.Guid)) ? MutantStatus.Killed : MutantStatus.Survived;
-                }
-
-                foreach (var resultFailingTest in result.FailingTests.GetList())
-
-                {
-                    foreach (var currentMutant in mutantsToTest.Where( x => resultFailingTest.IsAllTests || x.IsTestedBy(resultFailingTest.Guid)))
-                    {
-                        currentMutant.CoveringTests[resultFailingTest.Guid] = true;
-                    }
+//                    mutant.ResultStatus = failedTests.Any(t => t.IsAllTests || mutant.IsTestedBy(t.Guid)) ? MutantStatus.Killed : MutantStatus.Survived;
                 }
             }
             catch (OperationCanceledException)
             {
-                // TODO: when multiple mutants are tested at once, we need to test them in isolation on time out.
                 Logger.LogTrace("Testrun aborted due to timeout");
                 if (mutantsToTest.Count == 1)
                 {
                     mutantsToTest[0].ResultStatus = MutantStatus.Timeout;
+                }
+                else
+                {
+                    // we run each mutant in isolation to identify which one(s) times out
+                    foreach (var mutant in mutantsToTest)
+                    {
+                        Test(new List<Mutant>{mutant}, timeoutMs);
+                    }
                 }
             }
         }

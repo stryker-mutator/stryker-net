@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             
             var report = TestStatisticsReporter.Build(new StrykerOptions(), folderComponent, 
-                folderComponent.DetectedMutants.SelectMany(x => x.CoveringTests.Keys).Select(t => new TestDescription(t, $"test {t}")));
+                folderComponent.DetectedMutants.SelectMany(x => x.CoveringTests.GetList()));
 
             report.Mutants.Count.ShouldBeGreaterThan(10);
         }
@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void ShouldContainAtLeastTenTests()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var allTests = folderComponent.DetectedMutants.SelectMany(x => x.CoveringTests.Keys).Select(t => new TestDescription(t, $"test {t}"));
+            var allTests = folderComponent.DetectedMutants.SelectMany(x => x.CoveringTests.GetList());
             var report = TestStatisticsReporter.Build(new StrykerOptions(), folderComponent, allTests);
             report.Tests.Count.ShouldBeGreaterThan(10);
         }
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new TestStatisticsReporter(options, mockFileSystem);
             var readOnlyInputComponent = JsonReportTestHelper.CreateProjectWith();
-            reporter.OnStartMutantTestRun(readOnlyInputComponent.DetectedMutants, readOnlyInputComponent.DetectedMutants.SelectMany( m => m.CoveringTests.Keys).Select(t => new TestDescription(t, $"test {t}")));
+            reporter.OnStartMutantTestRun(readOnlyInputComponent.DetectedMutants, readOnlyInputComponent.DetectedMutants.SelectMany( m => m.CoveringTests.GetList()));
             reporter.OnAllMutantsTested(readOnlyInputComponent);
             var reportPath = Path.Combine(options.OutputPath, "reports", "test-stats-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");

@@ -571,10 +571,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mutant = new Mutant{Id = 1};
                 runner.CoverageMutants.GetTests(mutant).Count.ShouldBe(2);
                 var otherMutant = new Mutant{Id = 0};
-                foreach (var testDescription in runner.CoverageMutants.GetTests(otherMutant))
-                {
-                    otherMutant.CoveringTests[testDescription.Guid] = false;
-                }
+                otherMutant.CoveringTests = new TestListDescription(runner.CoverageMutants.GetTests(otherMutant));
                 var result = runner.RunAll(0, otherMutant);
 
                 // verify Abort has been called

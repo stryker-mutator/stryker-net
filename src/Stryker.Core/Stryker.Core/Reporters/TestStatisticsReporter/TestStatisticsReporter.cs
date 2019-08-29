@@ -31,7 +31,7 @@ namespace Stryker.Core.Reporters
                     Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()), 
                     Status = mutant.ResultStatus.ToString(), 
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
-                    Tests = mutant.CoveringTests 
+                    //Tests = mutant.CoveringTests 
                 }).ToList();
             var jSonTests = tests.Select(test => new JsonTest {Guid = test.Guid, Name = test.Name}).ToList();
             return new TestStatisticsReport(mutants, jSonTests);

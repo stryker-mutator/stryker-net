@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Reporters
                             Id = duplicateMutant ? 2 : ++mutantCount,
                             ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
                             Mutation = mutation,
-                            CoveringTests = new Dictionary<string, bool>{{mutantCount.ToString(), false}}
+                            CoveringTests = TestListDescription.EveryTest()
                         });
                     }
                 }

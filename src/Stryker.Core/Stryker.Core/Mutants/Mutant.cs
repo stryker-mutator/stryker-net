@@ -11,11 +11,10 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
-        IDictionary<string, bool> CoveringTests { get; }
+        TestListDescription CoveringTests { get; }
         string DisplayName { get; }
         string ResultStatusReason { get; }
         bool IsStaticValue { get; }
-        bool MustRunAllTests { get; }
     }
 
     /// <summary>
@@ -26,19 +25,23 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public IDictionary<string, bool> CoveringTests { get; set; } = new Dictionary<string, bool>();
+        public TestListDescription CoveringTests { get; set; } = TestListDescription.EveryTest();
         public string ResultStatusReason { get; set; }
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
-        public bool IsTestedBy(string testId) => MustRunAllTests || CoveringTests.ContainsKey(testId);
+        public bool IsTestedBy(string testId) => MustRunAllTests || CoveringTests.Contains(testId);
 
         public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)
         {
-            if (failedTests.Any(t => MustRunAllTests || CoveringTests.ContainsKey(t.Guid)))
+            if (failedTests.Any(t => MustRunAllTests ||  CoveringTests.Contains(t.Guid)))
             {
                 // a test killed us
                 ResultStatus = MutantStatus.Killed;
+            }
+            else if (resultRanTests.GetList().Any(t => CoveringTests.Contains(t.Guid)))
+            {
+                ResultStatus = MutantStatus.Survived;
             }
         }
     }

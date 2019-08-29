@@ -93,7 +93,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 envVars["ActiveMutation"] = mutant.Id.ToString();
             }
 
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTests == null|| mutant.CoveringTests.Count==0 ))
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant !=null && (mutant.CoveringTests == null|| mutant.CoveringTests.IsEmpty ))
             {
                 return new TestRunResult(true) {ResultMessage= "Not covered by any test"};
             }
@@ -104,7 +104,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
                 testCases = (mutant.MustRunAllTests && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                    ? null : _discoveredTests.Where( t =>  mutant.CoveringTests.ContainsKey(t.Id.ToString())).ToList();
+                    ? null : _discoveredTests.Where( t =>  mutant.CoveringTests.Contains(t.Id.ToString())).ToList();
                 if (testCases == null)
                 {
                      _logger.LogDebug($"Runner {_id}: Testing [{mutant.DisplayName}] against all tests.");

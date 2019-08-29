@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processMock.SetupProcessMockToReturn("Testrun successful");
 
-            string path = FilePathUtils.ConvertPathSeparators("c://test");
+            var path = FilePathUtils.ConvertPathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
             var result = target.RunAll(null, null);

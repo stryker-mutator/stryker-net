@@ -61,7 +61,6 @@ namespace Stryker.Core.Mutants
     public class TestListDescription
     {
         private List<TestDescription> _tests;
-
         private static readonly TestListDescription EveryTests;
 
         static TestListDescription()
@@ -88,6 +87,11 @@ namespace Stryker.Core.Mutants
                 _tests = new List<TestDescription>(1);
             }
             _tests.Add(test);
+        }
+
+        public bool Contains(string id)
+        {
+            return IsEveryTest || _tests.Any(t => t.Guid == id);
         }
 
         public static TestListDescription EveryTest()

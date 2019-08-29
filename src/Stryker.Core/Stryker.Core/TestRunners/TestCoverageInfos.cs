@@ -122,21 +122,14 @@ namespace Stryker.Core.TestRunners
             foreach (var mutant in nonTested)
             {
                 mutant.ResultStatus = MutantStatus.NoCoverage;
+                mutant.CoveringTests = new TestListDescription(null);
                 avoidedTests += testsCount;
             }
 
             foreach (var mutant in mutantsToTest)
             {
                 var tests = this.GetTests(mutant);
-                var mutantCoveringTest = new Dictionary<string, bool>();
-                if (tests != null)
-                { 
-                    foreach (var test in tests)
-                    {
-                        mutantCoveringTest[test.Guid] = false;
-                    }
-                }
-                mutant.CoveringTests = mutantCoveringTest;
+                mutant.CoveringTests = new TestListDescription(tests);
                 if (this.NeedAllTests(mutant))
                 {
                     mutant.MustRunAllTests = true;
@@ -144,7 +137,7 @@ namespace Stryker.Core.TestRunners
                 }
                 else
                 {
-                    avoidedTests += testsCount - mutantCoveringTest.Count;
+                    avoidedTests += testsCount - tests.Count;
                 }
             }
 

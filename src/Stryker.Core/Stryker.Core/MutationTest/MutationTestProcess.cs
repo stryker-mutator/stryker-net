@@ -189,14 +189,19 @@ namespace Stryker.Core.MutationTest
             {
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
 
-                Parallel.ForEach(
-                    mutantsNotRun,
-                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
-                    mutant =>
-                    {
-                    _mutationTestExecutor.Test(new List<Mutant>{mutant }, _input.TimeoutMs);
+                var mutantGroups = mutantsNotRun.Select(x => new List<Mutant>{x});
 
-                        _reporter.OnMutantTested(mutant);
+                Parallel.ForEach(
+                    mutantGroups,
+                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
+                    mutants =>
+                    {
+                        _mutationTestExecutor.Test(mutants, _input.TimeoutMs);
+
+                        foreach (var mutant in mutants)
+                        {
+                            _reporter.OnMutantTested(mutant);
+                        }
                     });
             }
 
