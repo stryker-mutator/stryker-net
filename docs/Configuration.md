@@ -297,7 +297,7 @@ Default: `"./stryker-config.json"`
 ## Coverage analysis
 Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
 
-- **off**: coverage data is not captured (default mode).
+- **off**: coverage data is not captured.
 - **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
 - **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
@@ -308,7 +308,7 @@ dotnet stryker --coverage-analysis perTest
 dotnet stryker -ca perTest
 ```
 
-Default: `"off"`
+Default: `"perTest"`
 ### Notes on coverage analysis
 * The 'dotnet test' runner only supports `all` mode. This is due to dotnet test limitation
 * Results are not impacted by coverage analysis. If you identify a suspicious survivor, run
@@ -327,4 +327,4 @@ dotnet stryker --abort-test-on-fail
 dotnet stryker -atof
 ```
 
-Default: `"off"`
+Default: `"on"`
