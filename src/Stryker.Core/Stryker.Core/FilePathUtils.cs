@@ -4,21 +4,21 @@ namespace Stryker.Core
 {
     public static class FilePathUtils
     {
-        public static string ConvertPathSeparators(string filePath)
+        public static string NormalizePathSeparators(string filePath)
         {
             if (filePath == null)
             {
                 return null;
             }
 
-            const char windowsDirectorySeparator = '\\';
-            if (Path.DirectorySeparatorChar == windowsDirectorySeparator)
+            if (Path.DirectorySeparatorChar != Path.AltDirectorySeparatorChar)
             {
-                return filePath;
+                return filePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
             else
             {
-                return filePath.Replace(windowsDirectorySeparator, Path.DirectorySeparatorChar);
+                // Of the directory separator char and its alternative are the same, every valid path is already normalized.
+                return filePath;
             }
         }
 

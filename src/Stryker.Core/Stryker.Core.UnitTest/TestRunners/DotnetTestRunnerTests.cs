@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processMock.SetupProcessMockToReturn("Testrun successful");
 
-            string path = FilePathUtils.ConvertPathSeparators("c://test");
+            string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
             var result = target.RunAll(null, null);
@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processMock.SetupProcessMockToReturn("Testrun failed", 1);
 
-            string path = FilePathUtils.ConvertPathSeparators("c://test");
+            string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
             var result = target.RunAll(null, null);
@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
-            string path = FilePathUtils.ConvertPathSeparators("c://test");
+            string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
             var result = target.RunAll(null, null);
@@ -62,7 +62,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
-            string path = FilePathUtils.ConvertPathSeparators("c://test");
+            string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
             var result = target.RunAll(null, new Mutant(){Id =  1});

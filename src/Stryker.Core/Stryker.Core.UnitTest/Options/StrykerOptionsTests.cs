@@ -57,8 +57,8 @@ namespace Stryker.Core.UnitTest.Options
         public void CustomTestProjectFilter_WithRelativePath_ShouldIncludeBasePath()
         {
             var userSuppliedFilter = "..\\ExampleActualTestProject\\TestProject.csproj";
-            var basePath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
-            var fullPath = FilePathUtils.ConvertPathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
+            var basePath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
+            var fullPath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {

@@ -125,7 +125,7 @@ namespace Stryker.Core.Options
             }
 
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            _fileSystem.Directory.CreateDirectory(FilePathUtils.ConvertPathSeparators(outputPath));
+            _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             return outputPath;
         }
@@ -321,7 +321,7 @@ namespace Stryker.Core.Options
                 return null;
             }
 
-            solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
+            solutionPath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
         }
@@ -331,17 +331,17 @@ namespace Stryker.Core.Options
             string filter;
             if (userSuppliedFilter.Contains(".."))
             {
-                filter = FilePathUtils.ConvertPathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
+                filter = FilePathUtils.NormalizePathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
             }
             else
             {
-                filter = FilePathUtils.ConvertPathSeparators(userSuppliedFilter);
+                filter = FilePathUtils.NormalizePathSeparators(userSuppliedFilter);
             }
 
             if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.ConvertPathSeparators(basePath)} so this is not allowed.");
+                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.NormalizePathSeparators(basePath)} so this is not allowed.");
             }
             return filter;
         }
