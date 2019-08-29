@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.Options
             var result = FilePattern.Parse(spanPattern);
 
             // Assert
-            result.Glob.ToString().ShouldBe(glob);
+            result.Glob.ToString().ShouldBe(FilePathUtils.NormalizePathSeparators(glob));
             result.IsExclude.ShouldBe(isExclude);
             result.TextSpans.SequenceEqual(textSpans).ShouldBe(true);
         }

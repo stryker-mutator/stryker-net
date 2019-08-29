@@ -54,7 +54,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-cp")]
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
-            var filePattern = new FilePattern (Glob.Parse("**/Test.cs"), true, new []{TextSpan.FromBounds(1, 100), TextSpan.FromBounds(200, 300) });
+            var filePattern = new FilePattern (Glob.Parse(FilePathUtils.NormalizePathSeparators("**/Test.cs")), true, new []{TextSpan.FromBounds(1, 100), TextSpan.FromBounds(200, 300) });
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
 

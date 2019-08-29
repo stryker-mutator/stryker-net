@@ -141,7 +141,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "TestProjectFolder/SomeTestProjectName.csproj" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == "TestProjectFolder/SomeTestProjectName.csproj"), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == FilePathUtils.NormalizePathSeparators("TestProjectFolder/SomeTestProjectName.csproj")), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
