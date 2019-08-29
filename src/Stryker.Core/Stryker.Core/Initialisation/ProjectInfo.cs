@@ -20,9 +20,7 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath()
         {
-            return Path.Combine(
-                FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(TestProjectAnalyzerResult.AssemblyPath)),
-                FilePathUtils.NormalizePathSeparators(Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath)));
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(TestProjectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
         public string GetTestBinariesPath()
