@@ -46,7 +46,7 @@ namespace Stryker.Core.Initialisation
             get => _assemblyPath ?? FilePathUtils.NormalizePathSeparators(Path.Combine(
                 FilePathUtils.NormalizePathSeparators(_analyzerResult.Properties["TargetDir"]),
                 FilePathUtils.NormalizePathSeparators(_analyzerResult.Properties["TargetFileName"])));
-            set => _assemblyPath = value;
+            set => _assemblyPath = FilePathUtils.NormalizePathSeparators(value);
         }
 
         private IEnumerable<string> _projectReferences;
