@@ -14,9 +14,4 @@
   <ItemGroup>
     <ProjectReference Include="..\TargetProject\TargetProject.csproj" Properties="TargetFramework=netcoreapp2.1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="StrykerOutput\2019-08-14.15-19-20\reports\" />
-    <Folder Include="StrykerOutput\2019-08-14.15-23-31\reports\" />
-  </ItemGroup>
 </Project>
