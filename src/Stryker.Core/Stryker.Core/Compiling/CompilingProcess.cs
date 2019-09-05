@@ -70,11 +70,14 @@ namespace Stryker.Core.Compiling
             (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
 
             // If compiling failed and the diagnostics failure is not a warning, log and throw exception
-            if (!emitResult.Success && !emitResult.Diagnostics.First(diag => diag.Location == Location.None).ToString().StartsWith("warning"))
+            if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None))
             {
-                _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
-                    emitResult.Diagnostics.First(diag => diag.Location == Location.None));
-                throw new ApplicationException("General Build Failure detected.");
+                if (!emitResult.Diagnostics.First(diag => diag.Location == Location.None).ToString().StartsWith("warning"))
+                {
+                    _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
+                        emitResult.Diagnostics.First(diag => diag.Location == Location.None));
+                    throw new ApplicationException("General Build Failure detected.");
+                }
             }
 
             for (var count = 1; !emitResult.Success && count < 50; count++)
