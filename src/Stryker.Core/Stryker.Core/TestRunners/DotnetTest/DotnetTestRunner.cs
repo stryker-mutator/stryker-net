@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -23,10 +24,7 @@ namespace Stryker.Core.TestRunners
             _flags = flags;
             _projectFile = FilePathUtils.ConvertPathSeparators(path);
             _processExecutor = processProxy;
-            CoverageMutants = new TestCoverageInfos();
         }
-
-        public TestCoverageInfos CoverageMutants { get; }
 
         public IEnumerable<TestDescription> Tests => null;
 
@@ -52,7 +50,7 @@ namespace Stryker.Core.TestRunners
             return new TestRunResult(result.ExitCode == 0, result.Output);
         }
 
-        public TestRunResult CaptureCoverage()
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
             if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
@@ -63,8 +61,12 @@ namespace Stryker.Core.TestRunners
                 var result = LaunchTestProcess(null, coverageEnvironment);
 
                 var data = collector.RetrieveCoverData("full");
+                var testedMutant = data.Split(";")[0].Split(",").Select(int.Parse).ToList();
+                foreach (var mutant in mutants)
+                {
+                    mutant.CoveringTests = testedMutant.Contains(mutant.Id) ? TestListDescription.EveryTest() : new TestListDescription(null);
+                }
 
-                CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
                 return result;
             }
             else

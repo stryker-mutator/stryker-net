@@ -10,9 +10,7 @@ namespace Stryker.Core.TestRunners
 
         int DiscoverNumberOfTests();
 
-        TestRunResult CaptureCoverage();
-
-        TestCoverageInfos CoverageMutants { get; }
+        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants);
 
         IEnumerable<TestDescription> Tests { get; }
     }

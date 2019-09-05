@@ -25,12 +25,11 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public TestListDescription CoveringTests { get; set; } = TestListDescription.EveryTest();
+        public TestListDescription CoveringTests { get; set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
-        public bool IsTestedBy(string testId) => MustRunAllTests || CoveringTests.Contains(testId);
 
         public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)
         {

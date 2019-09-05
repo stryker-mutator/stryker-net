@@ -83,8 +83,7 @@ namespace Stryker.Core
                 {
                     logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
                     // coverage
-                    var coverage = _initialisationProcess.GetCoverage(options);
-                    coverage.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants, nbTests);
+                    _initialisationProcess.GetCoverage(options, _input.ProjectInfo.ProjectContents.Mutants);
                 }
 
                 // test mutations and return results

@@ -68,21 +68,27 @@ namespace Stryker.Core.Mutants
             EveryTests = new TestListDescription(new []{TestDescription.AllTest()});
         }
 
+        public TestListDescription()
+        {
+            _tests = null;
+        }
+
         public TestListDescription(IEnumerable<TestDescription> testDescriptions)
         {
             _tests = testDescriptions == null ? new List<TestDescription>() : testDescriptions.ToList();
         }
 
-        public bool IsEveryTest => _tests.Count == 1 && _tests[0].IsAllTests;
-        public bool IsEmpty => _tests.Count == 0;
+        public bool IsEveryTest => _tests == null || (_tests.Count == 1 && _tests[0].IsAllTests);
+
+        public bool IsEmpty => _tests!=null && _tests.Count == 0;
 
         public void Add(TestDescription test)
         {
-            if (IsEveryTest)
+            if (_tests!=null && IsEveryTest)
             {
                 return;
             }
-            if (test.IsAllTests)
+            if (_tests == null || test.IsAllTests)
             {
                 _tests = new List<TestDescription>(1);
             }

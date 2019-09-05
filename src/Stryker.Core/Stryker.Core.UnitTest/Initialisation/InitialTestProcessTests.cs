@@ -1,6 +1,9 @@
-﻿using Moq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -20,7 +23,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult(false) );
-            testRunnerMock.Setup(x => x.CaptureCoverage())
+            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 
@@ -32,7 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult(true));
-            testRunnerMock.Setup(x => x.CaptureCoverage())
+            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 

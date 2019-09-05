@@ -24,8 +24,6 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private IVsTestConsoleWrapper _vsTestConsole;
 
-        public IEnumerable<int> CoveredMutants { get; private set; }
-        public TestCoverageInfos CoverageMutants { get; }
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
 
         private readonly IFileSystem _fileSystem;
@@ -53,7 +51,6 @@ namespace Stryker.Core.TestRunners.VsTest
             OptimizationFlags flags,
             ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
-            TestCoverageInfos mappingInfos,
             IFileSystem fileSystem = null,
             IVsTestHelper helper = null,
             ILogger logger = null,
@@ -69,7 +66,6 @@ namespace Stryker.Core.TestRunners.VsTest
             SetListOfTests(testCasesDiscovered);
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
-            CoverageMutants = mappingInfos ?? new TestCoverageInfos();
             _vsTestConsole = wrapper ?? PrepareVsTestConsole();
             _id = _count++;
             if (testCasesDiscovered != null)
@@ -125,7 +121,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int DiscoverNumberOfTests()
         {
-            return DiscoverTests().Count();
+            return DiscoverTests().Count;
         }
 
         public ICollection<TestCase> DiscoverTests(string runSettings = null)
@@ -150,7 +146,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 DetectTestFramework(handler.DiscoveredTestCases);
                 var tests = new TestListDescription(_discoveredTests.Select(x => (TestDescription)x));
 
-                CoverageMutants.DeclareAllTests(tests);
             }
 
             return _discoveredTests;
@@ -194,15 +189,15 @@ namespace Stryker.Core.TestRunners.VsTest
             return testResult;
         }
 
-        public TestRunResult CaptureCoverage()
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
-            ParseResultsForCoverage(testResults);
+            ParseResultsForCoverage(testResults, mutants);
             return new TestRunResult (true );
         }
 
-        private void ParseResultsForCoverage(IEnumerable<TestResult> testResults)
+        private void ParseResultsForCoverage(IEnumerable<TestResult> testResults, IEnumerable<Mutant> mutants)
         {
             foreach (var testResult in testResults)
             {
@@ -216,7 +211,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, new List<int>(), new List<int>());
+                        //
                     }
                     else
                     {
@@ -229,19 +224,31 @@ namespace Stryker.Core.TestRunners.VsTest
                         var staticMutants = (string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
                             ? new List<int>()
                             : parts[1].Split(',').Select(int.Parse).ToList();
-                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
+                        foreach (var mutant in mutants)
+                        {
+                            if (coveredMutants.Contains(mutant.Id))
+                            {
+                                mutant.CoveringTests.Add(testResult.TestCase);
+                            }
+                            if (staticMutants.Contains(mutant.Id))
+                            {
+                                mutant.MustRunAllTests = true;
+                            }
+                        }
+
+                        //CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
                     }
                 }
             }
         }
 
-        public IEnumerable<TestResult> CoverageForOneTest(TestCase test)
+        public IEnumerable<TestResult> CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings(null, true);
             var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
-            ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase.Id == test.Id));
+            ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase.Id == test.Id), mutants);
             return coverageForTest;
         }
 

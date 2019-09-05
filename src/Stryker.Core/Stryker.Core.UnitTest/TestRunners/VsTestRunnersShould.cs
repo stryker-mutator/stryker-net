@@ -16,6 +16,7 @@ using Shouldly;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
 using Xunit;
@@ -33,6 +34,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly MockFileSystem _fileSystem;
         private readonly Mutant _mutant;
         private readonly TestCase[] _testCases;
+        private Mutant _otherMutant;
 
         // initialize the test context and mock objects
         public VsTestRunnersShould()
@@ -61,6 +63,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             _testAssemblyPath = Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll");
             var firstTest = new TestCase("myFirsTest", new Uri("exec://nunit"), _testAssemblyPath);
             var secondTest = new TestCase("myOtherTest", new Uri("exec://nunit"), _testAssemblyPath);
+
+            var content = new FolderComposite();
+            _mutant = new Mutant{Id = 1};
+            _otherMutant = new Mutant{Id = 0};
+            content.Add(new FileLeaf{Mutants = new []{_otherMutant, _mutant}});
             _targetProject = new ProjectInfo()
             {
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -72,7 +79,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 {
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
                     TargetFramework = "toto"
-                }
+                },
+                ProjectContents = content
             };
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
@@ -84,7 +92,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                 { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
 
-            _mutant = new Mutant {Id = 1};
             _testCases = new []{firstTest, secondTest};
         }
 
@@ -152,7 +159,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                 options,
                 optimizationFlags,
                 _targetProject,
-                null,
                 null,
                 _fileSystem,
                 helper: new Mock<IVsTestHelper>().Object,
@@ -285,7 +291,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         It.IsAny<ITestHostLauncher>())).Callback(
                     (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                         ITestHostLauncher host) =>
-                    {
+                    {   
                         Task.Run(() =>
                         {
                             // ensure coverage capture is properly configured
@@ -305,10 +311,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                var result = runner.CaptureCoverage();
-
-                // only one mutant is covered
-                runner.CoverageMutants.CoveredMutants.ShouldHaveSingleItem();
+                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                _mutant.CoveringTests.IsEmpty.ShouldBe(false);
+                _mutant.CoveringTests.GetList()[0].Name.ShouldBe("myFirsTest");
 
                 // capture when ok
                 result.Success.ShouldBe(true);
@@ -354,11 +359,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                var result = runner.CaptureCoverage();
+                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
                 // one mutant is covered
-                runner.CoverageMutants.CoveredMutants.ShouldHaveSingleItem();
-                // it is covered by both tests
-                runner.CoverageMutants.GetTests(new Mutant(){Id = 1}).ShouldBe(_testCases.Select(x => (TestDescription) x));
+                _mutant.CoveringTests.IsEmpty.ShouldBe(false);
+                _mutant.CoveringTests.GetList()[0].Name.ShouldBe("myFirsTest");
+                _mutant.CoveringTests.GetList()[1].Name.ShouldBe("myOtherTest");
+
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
             }
@@ -404,9 +410,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                runner.CaptureCoverage();
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
-                mockVsTest.Setup(x =>
+                mockVsTest.Setup(x =>   
                     x.RunTestsWithCustomTestHost(
                         // we expect a run with only one test
                         It.Is<IEnumerable<TestCase>>(t => t.Count()==1),
@@ -425,12 +431,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                         endProcess.Set();
                     });
 
-                var mutant = new Mutant{Id = 1};
-                var mutants = new List<Mutant> {mutant};
                 // process coverage information
-                runner.CoverageMutants.UpdateMutants(mutants, _testCases.Length);
 
-                var result = runner.RunAll(0, mutant);
+                var result = runner.RunAll(0, _mutant);
 
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
@@ -475,7 +478,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                runner.CaptureCoverage();
+                _mutant.CoveringTests = new TestListDescription(null);
+                _otherMutant.CoveringTests = new TestListDescription(null);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -492,18 +497,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                         MoqTestRun(testRunEvents, results);
                         endProcess.Set();
                     });
-                var mutant = new Mutant{Id = 1};
-                var otherMutant = new Mutant{Id = 0};
-                var mutants = new List<Mutant> {mutant, otherMutant};
                 // process coverage info
-                runner.CoverageMutants.UpdateMutants(mutants, _testCases.Length);
                 // mutant 1 is covered
-                mutant.MustRunAllTests.ShouldBeTrue();
-                var result = runner.RunAll(0, mutant);
+                _mutant.MustRunAllTests.ShouldBeTrue();
+                var result = runner.RunAll(0, _mutant);
                 // mutant is killed
                 result.Success.ShouldBe(false);
                 // mutant 0 is not covered
-                result = runner.RunAll(0, otherMutant);
+                result = runner.RunAll(0, _otherMutant);
                 // tests are ok
                 result.Success.ShouldBe(true);
             }
@@ -543,7 +544,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         endProcess.Set();
                     });
 
-                runner.CaptureCoverage();
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -568,13 +569,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                         MoqTestRun(testRunEvents, results);
                         endProcess.Set();
                     });
-                var mutant = new Mutant{Id = 1};
-                runner.CoverageMutants.GetTests(mutant).Count.ShouldBe(2);
-                var otherMutant = new Mutant{Id = 0};
-                otherMutant.CoveringTests = new TestListDescription(runner.CoverageMutants.GetTests(otherMutant));
-                var result = runner.RunAll(0, otherMutant);
+                var result = runner.RunAll(0, _otherMutant);
 
-                // verify Abort has been called
                 result.Success.ShouldBe(true);
             }
         }

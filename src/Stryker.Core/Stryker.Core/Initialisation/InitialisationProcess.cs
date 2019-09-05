@@ -1,7 +1,9 @@
-﻿using Stryker.Core.MutationTest;
+﻿using System.Collections.Generic;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using System.Linq;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Initialisation
 {
@@ -9,7 +11,7 @@ namespace Stryker.Core.Initialisation
     {
         MutationTestInput Initialize(StrykerOptions options);
         int InitialTest(StrykerOptions option, out int nbTests);
-        TestCoverageInfos GetCoverage(StrykerOptions options);
+        void GetCoverage(StrykerOptions options, IEnumerable<Mutant> projectContentsMutants);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -67,9 +69,9 @@ namespace Stryker.Core.Initialisation
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
 
-        public TestCoverageInfos GetCoverage(StrykerOptions options)
+        public void GetCoverage(StrykerOptions options, IEnumerable<Mutant> mutants)
         {
-            return _initialTestProcess.GetCoverage(_testRunner);
+            _initialTestProcess.GetCoverage(_testRunner, mutants);
         }
     }
 }

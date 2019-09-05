@@ -415,8 +415,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilters: Enumerable.Empty<IMutantFilter>());
-            var coverage = new TestCoverageInfos();
-            coverage.DeclareMappingForATest(new TestDescription("1", "toto"), new[] { 2 }, new int[0]);
 
             target.Test(options);
 

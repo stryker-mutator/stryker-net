@@ -1,15 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
 using System.Diagnostics;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
         int InitialTest(ITestRunner testRunner);
-        TestCoverageInfos GetCoverage(ITestRunner testRunner);
+        void GetCoverage(ITestRunner testRunner, IEnumerable<Mutant> mutants);
         int TotalNumberOfTests { get; }
     }
 
@@ -58,17 +60,21 @@ namespace Stryker.Core.Initialisation
         /// Capture coverage informaiton
         /// </summary>
         /// <param name="testRunner"></param>
-        /// <returns></returns>
-        public TestCoverageInfos GetCoverage(ITestRunner testRunner)
+        /// <param name="mutants"></param>
+        public void GetCoverage(ITestRunner testRunner, IEnumerable<Mutant> mutants)
         {
-            var testResult = testRunner.CaptureCoverage();
+            // coverage is set to no coverage
+            foreach (var mutant in mutants)
+            {
+                mutant.CoveringTests = new TestListDescription(null);
+            }
+            var testResult = testRunner.CaptureCoverage(mutants);
             if (!testResult.Success)
             {
                 _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
                 throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
             }
 
-            return testRunner.CoverageMutants;
         }
     }
 }
