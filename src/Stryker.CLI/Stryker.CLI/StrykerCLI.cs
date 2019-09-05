@@ -15,13 +15,14 @@ namespace Stryker.CLI
     public class StrykerCLI
     {
         private readonly IStrykerRunner _stryker;
-        private readonly ILogger _logger;
-        public int ExitCode { get; set; }
+        private readonly LogBuffer _logBuffer;
+        public int ExitCode { get; private set; }
 
         public StrykerCLI(IStrykerRunner stryker)
         {
             _stryker = stryker;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            // Create a log buffer to buffer log messages until the logging is configured.
+            _logBuffer = new LogBuffer();
             ExitCode = 0;
         }
 
@@ -46,7 +47,7 @@ namespace Stryker.CLI
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
             var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
-            var exludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
+            var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
@@ -56,6 +57,7 @@ namespace Stryker.CLI
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
             var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
             var filesToExclude = CreateOption(app, CLIOptions.FilesToExclude);
+            var mutateParam = CreateOption(app, CLIOptions.Mutate);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
@@ -65,13 +67,13 @@ namespace Stryker.CLI
             app.OnExecute(() =>
             {
                 // app started
-                var options = new OptionsBuilder().Build(
+                var options = new OptionsBuilder(_logBuffer).Build(
                     Directory.GetCurrentDirectory(),
                     reporterParam,
                     projectNameParam,
                     testProjectNameParam,
                     timeoutParam,
-                    exludedMutationsParam,
+                    excludedMutationsParam,
                     ignoreMethodsParam,
                     logConsoleParam,
                     fileLogParam,
@@ -84,6 +86,7 @@ namespace Stryker.CLI
                     thresholdLowParam,
                     thresholdBreakParam,
                     filesToExclude,
+                    mutateParam,
                     testRunner,
                     solutionPathParam,
                     languageVersion);
@@ -99,7 +102,8 @@ namespace Stryker.CLI
             PrintStykerASCIIName();
             _ = PrintStrykerVersionInformationAsync();
 
-            StrykerRunResult results = _stryker.RunMutationTest(options);
+            StrykerRunResult results = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
+
             if (!results.IsScoreAboveThresholdBreak())
             {
                 HandleBreakingThresholdScore(options, results);
@@ -108,7 +112,7 @@ namespace Stryker.CLI
 
         private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results)
         {
-            _logger.LogError($@"Final mutation score: {results.MutationScore * 100} under breaking threshold value {options.Thresholds.Break}.
+            ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>().LogError($@"Final mutation score: {results.MutationScore * 100} under breaking threshold value {options.Thresholds.Break}.
 Setting exit code to 1 (failure).
 Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
             ExitCode = 1;
@@ -156,8 +160,12 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
         /// </summary>
         private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option)
         {
+            var description = option.IsDeprecated
+                ? $"(deprecated:{option.DeprecatedMessage})" + option.ArgumentDescription
+                : option.ArgumentDescription;
+
             return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
-                option.ArgumentDescription,
+                description,
                 option.ValueType);
         }
     }

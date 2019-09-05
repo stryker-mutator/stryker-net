@@ -81,7 +81,8 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
-            if (inputComponent.IsExcluded)
+
+            if (inputComponent is ProjectComponent projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _chalk.DarkGray($"(Excluded)");
             }

@@ -19,8 +19,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new ProjectFileReader(processMock.Object);
 
-            var result = target.DetermineProjectUnderTest(new List<string>() { @"..\ExampleProject\ExampleProject.csproj" }, null);
-            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+            var result = target.DetermineProjectUnderTest(new List<string>() { "../ExampleProject/ExampleProject.csproj" }, null);
+            result.ShouldBe("../ExampleProject/ExampleProject.csproj");
         }
 
         [Fact]
@@ -41,8 +41,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 new ProjectFileReader().DetermineProjectUnderTest(new List<string>() {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
                 }, null);
             });
 
@@ -59,8 +59,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ProjectFileReader_ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
             var result = new ProjectFileReader().DetermineProjectUnderTest(new List<string>() {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
                 }, shouldMatch);
 
             result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
@@ -76,8 +76,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 new ProjectFileReader().DetermineProjectUnderTest(new List<string>() {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
                 }, shouldMatchMoreThanOne);
             });
 
@@ -94,8 +94,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 new ProjectFileReader().DetermineProjectUnderTest(new List<string>() {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
                 }, shouldMatchNone);
             });
 
