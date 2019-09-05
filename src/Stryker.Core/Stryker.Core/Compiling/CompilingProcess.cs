@@ -69,7 +69,7 @@ namespace Stryker.Core.Compiling
             var retryCount = 1;
             (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
 
-            // If compiling failed and the diagnostics failure is an error, log and throw exception
+            // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error))
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
