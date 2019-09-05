@@ -1,12 +1,13 @@
 using Moq;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
@@ -29,7 +30,8 @@ namespace Stryker.Core.UnitTest
                         Name = "ProjectRoot",
                         Children = new Collection<ProjectComponent>() {
                             new FileLeaf() {
-                                Name = "SomeFile.cs"
+                                Name = "SomeFile.cs",
+                                Mutants = new List<Mutant> { new Mutant { Id = 1 } }
                             }
                         }
                     }
@@ -37,6 +39,7 @@ namespace Stryker.Core.UnitTest
             };
             initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(mutationTestInput);
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
+            coveredMutants.DeclareMappingForATest(new TestDescription("1", "SomeTest"), new[] { 2, 3 }, new[] { 2 });
             var nbTests = 0;
             initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), out nbTests)).Returns(0);
             initialisationMock.Setup(x => x.GetCoverage(It.IsAny<StrykerOptions>(), mutationTestInput.ProjectInfo.ProjectContents.Mutants));
@@ -47,7 +50,7 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
 
-            
+
             target.RunMutationTest(options);
 
             initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);
