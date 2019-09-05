@@ -2,10 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,9 +29,9 @@ namespace Stryker.Core.Compiling
     /// </summary>
     public class CompilingProcess : ICompilingProcess
     {
-        private MutationTestInput _input { get; set; }
-        private IRollbackProcess _rollbackProcess { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly MutationTestInput _input;
+        private readonly IRollbackProcess _rollbackProcess;
+        private readonly ILogger _logger;
 
         public CompilingProcess(MutationTestInput input,
             IRollbackProcess rollbackProcess)
@@ -68,11 +68,13 @@ namespace Stryker.Core.Compiling
             EmitResult emitResult;
             var retryCount = 1;
             (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
-            if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None))
+
+            // If compiling failed and the error has no location, log and throw exception.
+            if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error))
             {
-                _logger.LogError("Failed to build the mutated assembly due to unrecoverable error :{0}", 
-                    emitResult.Diagnostics.First(diag => diag.Location == Location.None));
-                throw new ApplicationException("General build failure.");
+                _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
+                    emitResult.Diagnostics.First(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error));
+                throw new StrykerCompilationException("General Build Failure detected.");
             }
 
             for (var count = 1; !emitResult.Success && count < 50; count++)
@@ -89,7 +91,7 @@ namespace Stryker.Core.Compiling
                 {
                     _logger.LogWarning($"{emitResultDiagnostic}");
                 }
-                throw new ApplicationException("Failed to restore build able state.");
+                throw new StrykerCompilationException("Failed to restore build able state.");
             }
             return new CompilingProcessResult()
             {
