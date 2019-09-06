@@ -116,7 +116,7 @@ namespace Stryker.CLI
 
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
         {
-            ArgumentName = "--get-source",
+            ArgumentName = "--git-source",
             ArgumentShortName = "-gs",
             ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
             DefaultValue = _defaultOptions.GitSource,
