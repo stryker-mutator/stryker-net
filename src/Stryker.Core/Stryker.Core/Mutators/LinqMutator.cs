@@ -54,19 +54,19 @@ namespace Stryker.Core.Mutators
         }
 
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax expr)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
-            var original = expr;
-            if (expr.Parent is ConditionalAccessExpressionSyntax)
+            var original = node;
+            if (node.Parent is ConditionalAccessExpressionSyntax)
             {
                 yield break;
             }
-            while(expr is ConditionalAccessExpressionSyntax conditional)
+            while(node is ConditionalAccessExpressionSyntax conditional)
             {
-                expr = conditional.WhenNotNull;
+                node = conditional.WhenNotNull;
             }
 
-            if (!(expr is InvocationExpressionSyntax invocationExpression))
+            if (!(node is InvocationExpressionSyntax invocationExpression))
             {
                 yield break;
             }

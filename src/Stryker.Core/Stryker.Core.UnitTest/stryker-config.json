@@ -1,17 +1,15 @@
 {
     "stryker-config":
     {
-        "test-runner": "vstest",
         "reporters": [
             "cleartext",
             "progress",
             "html"
         ],
-        "log-level": "info",
-        "timeout-ms": 20000,
-        "files-to-exclude": [
-            "./Testing/"
-        ],
+        "timeout-ms": 10000,
+      "mutate": [
+        "!/Testing/**/*.cs"
+      ],
         "excluded-mutations": [
             "string"
         ]

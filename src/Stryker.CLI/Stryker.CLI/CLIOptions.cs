@@ -105,6 +105,15 @@ namespace Stryker.CLI
             JsonKey = "test-project-file"
         };
 
+        public static readonly CLIOption<string> Diff = new CLIOption<string>
+        {
+            ArgumentName = "--diff",
+            ArgumentShortName = "-diff <testProjectFileName>",
+            ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
+            DefaultValue = _defaultOptions.Diff,
+            JsonKey = "diff"
+        };
+
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
             ArgumentName = "--coverage-analysis",

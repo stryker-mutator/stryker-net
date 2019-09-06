@@ -27,6 +27,7 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public string TestProjectNameFilter { get; }
+        public string Diff { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -64,7 +65,8 @@ namespace Stryker.Core.Options
             string[] mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
-            string languageVersion = "latest")
+            string languageVersion = "latest",
+            string diff = "git")
         {
             _fileSystem = fileSystem ?? new FileSystem();
 

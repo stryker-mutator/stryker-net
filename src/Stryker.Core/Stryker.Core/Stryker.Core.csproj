@@ -64,4 +64,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DiffProviders\" />
+  </ItemGroup>
 </Project>
