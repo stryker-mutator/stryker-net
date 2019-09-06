@@ -56,13 +56,13 @@ namespace Stryker.Core.MutationTest
                 new FilePatternMutantFilter(),
                 new IgnoredMethodMutantFilter(),
                 new ExcludeMutationMutantFilter(),
-                new GitDiffMutantFilter()
+                new GitDiffMutantFilter(options)
             };
         }
 
         public void Mutate()
         {
-            _logger.LogDebug("Injecting helpers into assembly.");
+            _logger.LogDebug("Injecting helpers into assembly. ");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
             var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion);
             foreach (var helper in CodeInjection.MutantHelpers)

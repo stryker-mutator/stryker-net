@@ -1,28 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using LibGit2Sharp;
+﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {
     public class GitDiffMutantFilter : IMutantFilter
     {
-        public string DisplayName => throw new NotImplementedException();
-        private ICollection<string> _changedFiles = new Collection<string>();
+        public string DisplayName => "Git diff mutation filter";
+        private readonly ICollection<string> _changedFiles = new Collection<string>();
+        private readonly ILogger _logger;
 
-        public GitDiffMutantFilter()
+        public GitDiffMutantFilter(StrykerOptions options)
         {
-            using (var repo = new Repository(@"C:\Dev\Repos\stryker-net"))
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+
+            string repoPath = Repository.Discover(options.BasePath)?.Split(".git")[0];
+            if (string.IsNullOrEmpty(repoPath))
             {
-                foreach (var treeChanges in repo.Diff.Compare<TreeChanges>())
+                _logger.LogWarning("Could not locate git repo. Unable to determine git diff to filter mutants.");
+                return;
+            }
+            using (var repo = new Repository(repoPath))
+            {
+                var branchToCheck = repo.Branches["master"];
+                foreach (var treeChanges in repo.Diff.Compare<TreeChanges>(branchToCheck.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                 {
-                    _changedFiles.Add(treeChanges.OldPath);
+                    _changedFiles.Add(FilePathUtils.NormalizePathSeparators(Path.Combine(repoPath, treeChanges.OldPath)));
                 }
             }
         }
@@ -31,9 +42,9 @@ namespace Stryker.Core.MutantFilters
         {
             if (_changedFiles.Contains(file.FullPath))
             {
-                return Enumerable.Empty<Mutant>();
+                return mutants;
             }
-            return mutants;
+            return Enumerable.Empty<Mutant>();
         }
     }
 }
