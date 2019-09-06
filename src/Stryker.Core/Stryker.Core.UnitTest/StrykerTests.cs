@@ -49,7 +49,6 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
 
-
             target.RunMutationTest(options);
 
             initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerOptions>()), Times.Once);

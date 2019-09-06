@@ -43,7 +43,6 @@ namespace Stryker.Core.MutationTest
                 foreach (var mutant in mutantsToTest)
                 {
                     mutant.AnalyzeTestRun(failedTests, result.RanTests);
-//                    mutant.ResultStatus = failedTests.Any(t => t.IsAllTests || mutant.IsTestedBy(t.Guid)) ? MutantStatus.Killed : MutantStatus.Survived;
                 }
             }
             catch (OperationCanceledException)
