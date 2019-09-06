@@ -1,3 +1,33 @@
+# [0.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.12.0...0.13.0) (2019-09-06)
+
+
+### Bug Fixes
+
+* **AbortTestOnFail:** Make Abort test on fail option available from commandline ([#627](https://github.com/stryker-mutator/stryker-net/issues/627)) ([3008e33](https://github.com/stryker-mutator/stryker-net/commit/3008e33))
+* **Signed assemblies:** Accept relative paths in signed assembly key ([#677](https://github.com/stryker-mutator/stryker-net/issues/677)) ([d8f1103](https://github.com/stryker-mutator/stryker-net/commit/d8f1103))
+* **vstest:** Change deployment of vstest package according to package structure change ([#685](https://github.com/stryker-mutator/stryker-net/issues/685)) ([41c759e](https://github.com/stryker-mutator/stryker-net/commit/41c759e))
+* **VsTestRunner NPE:** Use ConcurrentBag with eventhandler instead of queue with monitor ([#629](https://github.com/stryker-mutator/stryker-net/issues/629)) ([1b1d60f](https://github.com/stryker-mutator/stryker-net/commit/1b1d60f))
+* Handle warnings in compilation diagnostics ([#705](https://github.com/stryker-mutator/stryker-net/issues/705)) ([7863669](https://github.com/stryker-mutator/stryker-net/commit/7863669))
+
+
+### Features
+
+* **Default coverage analysis:** Coverage analysis default perTest ([#693](https://github.com/stryker-mutator/stryker-net/issues/693)) ([1b50795](https://github.com/stryker-mutator/stryker-net/commit/1b50795))
+* **html report:** Update html-elements to 1.1.1 ([#679](https://github.com/stryker-mutator/stryker-net/issues/679)) ([8377aad](https://github.com/stryker-mutator/stryker-net/commit/8377aad))
+* **Ignore methods:** Allow users to specify methods that should be ignored when mutating their parameters ([#646](https://github.com/stryker-mutator/stryker-net/issues/646)) ([8b7d1fa](https://github.com/stryker-mutator/stryker-net/commit/8b7d1fa))
+* **language version:** Allow users to set c# language version used.([#568](https://github.com/stryker-mutator/stryker-net/issues/568)) ([a78040e](https://github.com/stryker-mutator/stryker-net/commit/a78040e)), closes [#557](https://github.com/stryker-mutator/stryker-net/issues/557)
+* **MutateArgument:** Allow the user to specify which files to mutate. ([#662](https://github.com/stryker-mutator/stryker-net/issues/662)) ([155945d](https://github.com/stryker-mutator/stryker-net/commit/155945d)), closes [#1](https://github.com/stryker-mutator/stryker-net/issues/1) [#2](https://github.com/stryker-mutator/stryker-net/issues/2)
+* **NoCoverage status:** Add NoCoverage result status to reporting ([#675](https://github.com/stryker-mutator/stryker-net/issues/675)) ([2a01fdd](https://github.com/stryker-mutator/stryker-net/commit/2a01fdd))
+* **Specify test project:** Specify test project at any path relative to the working directory.  ([#588](https://github.com/stryker-mutator/stryker-net/issues/588)) ([5e916d2](https://github.com/stryker-mutator/stryker-net/commit/5e916d2))
+* Fail gracefully when compile diagnostics indicate a general build error ([#649](https://github.com/stryker-mutator/stryker-net/issues/649)) ([8bab554](https://github.com/stryker-mutator/stryker-net/commit/8bab554))
+* **statics coverage analysis:** Identify 'static' mutants to make sure they are properly tested (issue [#623](https://github.com/stryker-mutator/stryker-net/issues/623)) ([#636](https://github.com/stryker-mutator/stryker-net/issues/636)) ([884e81d](https://github.com/stryker-mutator/stryker-net/commit/884e81d))
+* **string mutator:** Mutate string.Empty to string literal "Stryker was here!" ([#653](https://github.com/stryker-mutator/stryker-net/issues/653)) ([d699204](https://github.com/stryker-mutator/stryker-net/commit/d699204))
+* **testcases discovery:** Remove unreliable totalnumberoftestsparser ([#566](https://github.com/stryker-mutator/stryker-net/issues/566)) ([4f54d3f](https://github.com/stryker-mutator/stryker-net/commit/4f54d3f))
+* **testrunner:** Set VsTest as default testrunner ([#617](https://github.com/stryker-mutator/stryker-net/issues/617)) ([c1c90d0](https://github.com/stryker-mutator/stryker-net/commit/c1c90d0))
+* **vstest.console exceptionhandling:** Restart vstest.console and retry testrun on translationlayer exception ([#676](https://github.com/stryker-mutator/stryker-net/issues/676)) ([17b3434](https://github.com/stryker-mutator/stryker-net/commit/17b3434))
+
+
+
 # 0.12.0 (2019-07-01)
 
 
