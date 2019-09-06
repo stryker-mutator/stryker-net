@@ -105,5 +105,39 @@ namespace TestApplication
 
             result.ShouldBeEmpty();
         }
+
+        [Fact]
+        public void ShouldMutateProperlyConditionalExpression()
+        {
+            var tree = CSharpSyntaxTree.ParseText(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+ 
+namespace TestApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            IEnumerable<string> Test = new[] {};
+
+            Test?.First.Second.Third.All(_ => _!=null);
+        }
+    }
+}");
+            var memberAccessExpression = tree.GetRoot()
+                .DescendantNodes()
+                .OfType<ConditionalAccessExpressionSyntax>()
+                .Single();
+            var target = new LinqMutator();
+
+            var result = target.ApplyMutations(memberAccessExpression);
+
+            result.ShouldNotBeEmpty();
+            result.First().OriginalNode.Parent.Parent.ShouldBeOfType<BlockSyntax>();
+        }
     }
 }
