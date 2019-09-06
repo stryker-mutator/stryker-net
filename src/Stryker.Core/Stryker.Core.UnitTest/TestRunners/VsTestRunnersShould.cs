@@ -43,8 +43,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             var filesystemRoot = Path.GetPathRoot(currentDirectory);
 
             var sourceFile = File.ReadAllText(currentDirectory + "/TestResources/ExampleSourceFile.cs");
-            var testProjectPath = FilePathUtils.ConvertPathSeparators(Path.Combine(filesystemRoot, "TestProject", "TestProject.csproj"));
-            var projectUnderTestPath = FilePathUtils.ConvertPathSeparators(Path.Combine(filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
+            var testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "TestProject", "TestProject.csproj"));
+            var projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
             const string defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>

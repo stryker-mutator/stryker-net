@@ -53,9 +53,9 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _mutantFilters = mutantFilters ?? new IMutantFilter[]
             {
-                new IgnoredFileMutantFilter(),
+                new FilePatternMutantFilter(),
                 new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter()
+                new ExcludeMutationMutantFilter(),
             };
         }
 

@@ -74,9 +74,8 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
-                inputFiles.Add(FindInputFiles(folder, options.FilesToExclude.ToList()));
+                inputFiles.Add(FindInputFiles(folder, projectUnderTestDir));
             }
-            MarkInputFilesAsExcluded(inputFiles, options.FilesToExclude.ToList(), projectUnderTestDir);
             result.ProjectContents = inputFiles;
 
             ValidateResult(result, options);
@@ -87,9 +86,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private FolderComposite FindInputFiles(string path, List<string> filesToExclude, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder = null)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -97,11 +94,12 @@ namespace Stryker.Core.Initialisation
             {
                 Name = lastPathComponent,
                 FullPath = Path.GetFullPath(path),
-                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent)
+                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent),
+                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, filesToExclude, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
@@ -115,42 +113,13 @@ namespace Stryker.Core.Initialisation
                         SourceCode = _fileSystem.File.ReadAllText(file),
                         Name = _fileSystem.Path.GetFileName(file),
                         RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                        FullPath = file
+                        FullPath = file,
+                        RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
                     });
                 }
             }
 
             return folderComposite;
-        }
-
-        private void MarkInputFilesAsExcluded(FolderComposite root, List<string> pathsToExclude, string projectUnderTestPath)
-        {
-            var allFiles = root.GetAllFiles().ToList();
-
-            foreach (var path in pathsToExclude)
-            {
-                var fullPath = path.StartsWith(projectUnderTestPath) ? path : Path.GetFullPath(projectUnderTestPath + path);
-                if (!Path.HasExtension(path))
-                {
-                    _logger.LogDebug("Scanning dir {0} for files to exclude.", fullPath);
-                }
-                var filesToExclude = allFiles.Where(x => x.FullPath.StartsWith(fullPath)).ToList();
-                if (filesToExclude.Count() == 0)
-                {
-                    _logger.LogWarning("No file to exclude was found for path {0}. Did you mean to exclude another file?", fullPath);
-                }
-                foreach (var file in filesToExclude)
-                {
-                    _logger.LogDebug("File {0} will be excluded from mutation.", file.FullPath);
-                    file.IsExcluded = true;
-                }
-            }
-
-            var excludedCount = allFiles.Where(x => x.IsExcluded).Count();
-            if (excludedCount > 0)
-            {
-                _logger.LogInformation("Your settings have excluded {0} files from mutation", excludedCount);
-            }
         }
 
         public string FindProjectFile(string basePath, string testProjectNameFilter)
@@ -186,7 +155,7 @@ namespace Stryker.Core.Initialisation
         private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
         {
             // Make sure the filter is relative to the base path otherwise we cannot find it
-            var filter = FilePathUtils.ConvertPathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
+            var filter = FilePathUtils.NormalizePathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
 
             // If the filter starts with directory separator char, remove it
             if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))

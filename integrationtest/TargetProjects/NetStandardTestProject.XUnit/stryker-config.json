@@ -6,8 +6,8 @@
     "log-level": "trace",
     "log-file": "true",
     "project-file": "TargetProject.csproj",
-    "excluded-files": [
-      "./EndlessLoop.cs"
+    "mutate": [
+      "!**/Endlessloop.cs"
     ]
   }
 }

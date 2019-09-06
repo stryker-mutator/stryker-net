@@ -117,6 +117,27 @@ private bool Out(out string test)
         }
 
         [Fact]
+        public void ShouldMutateConditionalExpressionProperly()
+        {
+            string source = @"void TestMethod()
+        {
+            string SomeLocalFunction()
+            {
+                return string.Empty?.All(x => !string.IsEmpty(x));
+            };
+        }";
+            string expected = @"void TestMethod()
+        {
+            string SomeLocalFunction()
+            {
+                return (StrykerNamespace.MutantControl.IsActive(2)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(1)?string.IsEmpty(x):!string.IsEmpty(x))));
+            };
+        }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateProperties()
         {
             string source = @"private string text = ""Some"" + ""Text"";";

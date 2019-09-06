@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -20,9 +19,8 @@ namespace Stryker.Core.TestRunners
         public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
-
             _flags = flags;
-            _projectFile = FilePathUtils.ConvertPathSeparators(path);
+            _projectFile = FilePathUtils.NormalizePathSeparators(path);
             _processExecutor = processProxy;
         }
 

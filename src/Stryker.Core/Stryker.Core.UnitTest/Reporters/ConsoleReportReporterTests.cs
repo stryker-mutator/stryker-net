@@ -27,8 +27,19 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
-            folder.Add(new FileLeaf() { Name = "SomeFile.cs", Mutants = new Collection<Mutant>() { } });
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
+                Mutants = new Collection<Mutant>() { } 
+            });
 
             target.OnAllMutantsTested(folder);
 
@@ -62,10 +73,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
             folder.Add(new FileLeaf()
             {
                 Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() {
                 ResultStatus = MutantStatus.Killed, Mutation = mutation } }
             });
@@ -104,10 +122,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
             folder.Add(new FileLeaf()
             {
                 Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() {
                 ResultStatus = MutantStatus.Survived, Mutation = mutation } }
             });
@@ -148,10 +173,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
             folder.Add(new FileLeaf()
             {
                 Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {
                     new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
@@ -190,10 +222,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
             folder.Add(new FileLeaf()
             {
                 Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {
                     new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
@@ -230,10 +269,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
 
-            var folder = new FolderComposite() { Name = "RootFolder" };
+            var folder = new FolderComposite()
+            {
+                Name = "RootFolder",
+                RelativePath = "RootFolder",
+                FullPath = "C://RootFolder",
+            };
             folder.Add(new FileLeaf()
             {
                 Name = "SomeFile.cs",
+                RelativePath = "RootFolder/SomeFile.cs",
+                FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {
                     new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },

@@ -4,14 +4,13 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>Stryker.CLI</RootNamespace>
     <AssemblyName>Stryker.CLI</AssemblyName>
-    <LangVersion>7.1</LangVersion>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-stryker</ToolCommandName>
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>0.12.0</VersionPrefix>
+    <VersionPrefix>0.13.0</VersionPrefix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>

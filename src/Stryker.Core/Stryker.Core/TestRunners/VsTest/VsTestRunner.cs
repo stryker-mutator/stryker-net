@@ -419,7 +419,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
             _sources = new List<string>
             {
-                FilePathUtils.ConvertPathSeparators(testBinariesPath)
+                FilePathUtils.NormalizePathSeparators(testBinariesPath)
             };
             try
             {
