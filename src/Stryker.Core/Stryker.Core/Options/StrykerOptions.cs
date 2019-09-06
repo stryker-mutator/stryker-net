@@ -33,7 +33,7 @@ namespace Stryker.Core.Options
         public int ConcurrentTestrunners { get; }
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
-        public IEnumerable<string> FilesToExclude { get; }
+        public IEnumerable<FilePattern> FilePatterns { get; }
         public LanguageVersion LanguageVersion { get; }
         public OptimizationFlags Optimizations { get; }
 
@@ -54,13 +54,14 @@ namespace Stryker.Core.Options
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
-            string coverageAnalysis = "",
-            bool abortTestOnFail = false,
+            string coverageAnalysis = "perTest",
+            bool abortTestOnFail = true,
             int maxConcurrentTestRunners = int.MaxValue,
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
             string[] filesToExclude = null,
+            string[] mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
             string languageVersion = "latest")
@@ -81,7 +82,7 @@ namespace Stryker.Core.Options
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
-            FilesToExclude = ValidateFilesToExclude(filesToExclude);
+            FilePatterns = ValidateFilePatterns(mutate, filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
@@ -124,7 +125,7 @@ namespace Stryker.Core.Options
             }
 
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            _fileSystem.Directory.CreateDirectory(FilePathUtils.ConvertPathSeparators(outputPath));
+            _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             return outputPath;
         }
@@ -177,11 +178,11 @@ namespace Stryker.Core.Options
             foreach (string excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
-                if (typeDescriptions.FirstOrDefault(
-                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()))
-                    .Key is var foundMutator)
+                var mutatorDescriptor = typeDescriptions.FirstOrDefault(
+                    x => x.Value.ToString().ToLower().Contains(excludedMutation.ToLower()));
+                if (mutatorDescriptor.Value != null)
                 {
-                    yield return foundMutator;
+                    yield return mutatorDescriptor.Key;
                 }
                 else
                 {
@@ -253,14 +254,52 @@ namespace Stryker.Core.Options
             return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
-        private IEnumerable<string> ValidateFilesToExclude(string[] filesToExclude)
+        private IEnumerable<FilePattern> ValidateFilePatterns(string[] filePatterns, string[] filesToExclude)
         {
-            foreach (var excludedFile in filesToExclude ?? Enumerable.Empty<string>())
+            var filesToInclude = new List<FilePattern>();
+
+            filePatterns = filePatterns ?? Array.Empty<string>();
+            filesToExclude = filesToExclude ?? Array.Empty<string>();
+
+            if (!filePatterns.Any())
             {
-                // The logger is not yet available here. The paths will be validated in the InputFileResolver
-                var platformFilePath = FilePathUtils.ConvertPathSeparators(excludedFile);
-                yield return platformFilePath;
+                // If there are no patterns provided use a pattern that matches every file.
+                filesToInclude.Add(FilePattern.Parse("**/*"));
             }
+
+            foreach (var fileToExclude in filesToExclude)
+            {
+                // To support the legacy filesToExclude argument we add an exclude rule for each file exclude.
+                // The files-to-exclude allowed to specify folders and relative paths.
+                var path = fileToExclude;
+
+                if (!Path.HasExtension(path))
+                {
+                    // Folder exclude
+                    path = Path.Combine(path, "*.*");
+                }
+
+                // Remove relative path anchors
+                if (path.StartsWith(".\\") || path.StartsWith("./"))
+                {
+                    path = path.Remove(0, 2);
+                }
+
+                filesToInclude.Add(FilePattern.Parse("!" + path));
+            }
+
+            foreach (var includePattern in filePatterns)
+            {
+                filesToInclude.Add(FilePattern.Parse(includePattern));
+            }
+
+            if (filesToInclude.All(f => f.IsExclude))
+            {
+                // If there are only exclude patterns, we add a pattern that matches every file.
+                filesToInclude.Add(FilePattern.Parse("**/*"));
+            }
+
+            return filesToInclude;
         }
 
         private TestRunner ValidateTestRunner(string testRunner)
@@ -282,7 +321,7 @@ namespace Stryker.Core.Options
                 return null;
             }
 
-            solutionPath = FilePathUtils.ConvertPathSeparators(Path.Combine(basePath, solutionPath));
+            solutionPath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
         }
@@ -292,17 +331,17 @@ namespace Stryker.Core.Options
             string filter;
             if (userSuppliedFilter.Contains(".."))
             {
-                filter = FilePathUtils.ConvertPathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
+                filter = FilePathUtils.NormalizePathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
             }
             else
             {
-                filter = FilePathUtils.ConvertPathSeparators(userSuppliedFilter);
+                filter = FilePathUtils.NormalizePathSeparators(userSuppliedFilter);
             }
 
             if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.ConvertPathSeparators(basePath)} so this is not allowed.");
+                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.NormalizePathSeparators(basePath)} so this is not allowed.");
             }
             return filter;
         }

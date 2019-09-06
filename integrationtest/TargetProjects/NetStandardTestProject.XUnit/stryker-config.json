@@ -3,13 +3,11 @@
     "reporters": [
       "All"
     ],
-    "test-runner": "VsTest",
-    "coverage-analysis": "perTestInIsolation",
     "log-level": "trace",
     "log-file": "true",
     "project-file": "TargetProject.csproj",
-    "excluded-files": [
-      "./EndlessLoop.cs"
+    "mutate": [
+      "!**/Endlessloop.cs"
     ]
   }
 }

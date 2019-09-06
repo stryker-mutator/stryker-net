@@ -10,7 +10,8 @@ The full list of Stryker.NET configuration options are:
 - [Reporters](#reporters)
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
-- [Excluding files](#excluding-files)
+- [Excluding files (deprecated)](#excluding-files)
+- [Mutate](#mutate)
 - [Ignore methods](#ignore-methods)
 - [Custom tresholds](#unary-operators)
 - [Coverage analysis](#coverage-analysis)
@@ -161,6 +162,8 @@ dotnet stryker -em "['string', 'logical']"
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too exited, skipping mutations doesn't improve your mutation score ;)
 
 ## Excluding files
+> ⚠ This parameter is deprecated. Use [Mutate](#mutate) instead.
+
 If you decide to exclude files for unit testing, you can configure this with the following command:
 
 ```
@@ -173,6 +176,49 @@ We recommend to use relative paths. Relative paths are automatically resolved. A
 When you want to exclude a large set of files, it is advised to use the stryker configuration file because it is easier to handle multiple files.
 
 Default: `[]`
+
+## Mutate
+To specify which files should be mutated you can use file pattern to in- or excluded files or even only parts of a files. By default all files are included.
+
+```
+dotnet stryker --mutate "['C:/Repos/MyProject/MyFile.cs']"
+dotnet stryker -m "['C:/Repos/MyProject/MyFile.cs']"
+```
+
+The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) to allow wildcards.
+
+```
+dotnet stryker --mutate "['**/*Services.cs']"
+dotnet stryker -m "['**/*Services.cs']"
+```
+
+You can add an `!` in front of the pattern to exclude all files that match the pattern.
+
+```
+dotnet stryker --mutate "['!**/*Factory.cs']"
+dotnet stryker -m "['!**/*Factory.cs']"
+```
+When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both, include and exclude patterns, are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
+
+### Example:
+
+| Patterns  | File                      | Will be mutated   |
+| ----------| ------------------------- | ----------------- |
+| []            | MyFolder/MyFactory.cs    | Yes               |
+| []            | MyFolder/MyService.cs | Yes               |
+| ['\*\*/\*.\*']   | MyFolder/MyFactory.cs    | Yes               |
+| ['\*\*/\*.\*']   | MyFolder/MyService.cs | Yes               |
+| ['!\*\*/MyFactory.cs']   | MyFolder/MyFactory.cs    | No        |
+| ['!\*\*/MyFactory.cs']   | MyFolder/MyService.cs | Yes       |
+| ['!\*\*/MyFactory.cs', '\*\*/My\*.cs']   | MyFolder/MyFactory.cs    | No        |
+| ['!\*\*/MyFactory.cs', '\*\*/My\*.cs']   | MyFolder/MyService.cs | Yes       |
+
+To allow more fine grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
+
+```
+dotnet stryker --mutate "['MyFolder/MyService.cs{10..100}']"
+dotnet stryker -m "['MyFolder/MyService.cs{10..100}']"
+```
 
 ## Ignore methods
 If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
@@ -225,11 +271,11 @@ Example config file:
         "threshold-high": 80,
         "threshold-low": 70,
         "threshold-break": 60,
-        "files-to-exclude": [
-            "./ExampleClass.cs",
-            "./ExampleDirectory/",
-            "./ExampleDirectory/ExampleClass2.cs",
-            "C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
+        "file-patterns": [
+            "!ExampleClass.cs",
+            "!ExampleDirectory",
+            "!ExampleDirectory/ExampleClass2.cs",
+            "!C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
         ],
         "excluded-mutations": [
             "string",
@@ -251,7 +297,7 @@ Default: `"./stryker-config.json"`
 ## Coverage analysis
 Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
 
-- **off**: coverage data is not captured (default mode).
+- **off**: coverage data is not captured.
 - **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
 - **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
@@ -262,7 +308,7 @@ dotnet stryker --coverage-analysis perTest
 dotnet stryker -ca perTest
 ```
 
-Default: `"off"`
+Default: `"perTest"`
 ### Notes on coverage analysis
 * The 'dotnet test' runner only supports `all` mode. This is due to dotnet test limitation
 * Results are not impacted by coverage analysis. If you identify a suspicious survivor, run
@@ -281,4 +327,4 @@ dotnet stryker --abort-test-on-fail
 dotnet stryker -atof
 ```
 
-Default: `"off"`
+Default: `"on"`

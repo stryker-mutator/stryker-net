@@ -8,15 +8,17 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 
 namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(StrykerOptions options);
+        StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null);
     }
 
     public class StrykerRunner : IStrykerRunner
@@ -39,7 +41,11 @@ namespace Stryker.Core
         /// </summary>
         /// <exception cref="StrykerInputException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
-        public StrykerRunResult RunMutationTest(StrykerOptions options)
+        /// <param name="initialLogMessages">
+        /// Allows to pass log messages that occured before the mutation test.
+        /// The messages will be written to the logger after it was configured.
+        /// </param>
+        public StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
         {
             // start stopwatch
             var stopwatch = new Stopwatch();
@@ -54,7 +60,7 @@ namespace Stryker.Core
             }
 
             // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions);
+            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
 
             logger.LogDebug("Stryker started with options: {0}",
@@ -62,7 +68,7 @@ namespace Stryker.Core
 
             try
             {
-                // initialize 
+                // initialize
                 _reporter = ReporterFactory.Create(options);
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);

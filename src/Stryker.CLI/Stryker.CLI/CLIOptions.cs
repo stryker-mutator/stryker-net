@@ -109,10 +109,10 @@ namespace Stryker.CLI
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
-            DefaultValue = "off",
+            DefaultValue = "perTest",
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
-    - off: coverage data is not captured (default mode).
-    - perTest: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+    - off: coverage data is not captured.
+    - perTest (Default): capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
     - all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
             JsonKey = "coverage-analysis"
@@ -176,9 +176,24 @@ namespace Stryker.CLI
         {
             ArgumentName = "--files-to-exclude",
             ArgumentShortName = "-fte <files-to-exclude>",
-            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:\\ExampleProject\\Example.cs','C:\\ExampleProject\\Example2.cs']",
+            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:/ExampleProject/Example.cs','C:/ExampleProject/Example2.cs']",
             DefaultValue = null,
-            JsonKey = "files-to-exclude"
+            JsonKey = "files-to-exclude",
+            IsDeprecated = true,
+            DeprecatedMessage = "Use '--mutate' instead."
+        };
+
+        public static readonly CLIOption<string[]> Mutate = new CLIOption<string[]>
+        {
+            ArgumentName = "--mutate",
+            ArgumentShortName = "-m <file-patterns>",
+            ArgumentDescription = @"Allows to specify file that should in- or excluded for the mutations.
+    Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+    Use '!' at the start of a pattern to exclude all matched files.
+    Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
+    Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']",
+            DefaultValue = null,
+            JsonKey = "mutate",
         };
 
         public static readonly CLIOption<string> SolutionPath = new CLIOption<string>
