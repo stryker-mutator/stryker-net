@@ -105,20 +105,29 @@ namespace Stryker.CLI
             JsonKey = "test-project-file"
         };
 
-        public static readonly CLIOption<string> Diff = new CLIOption<string>
+        public static readonly CLIOption<bool> Diff = new CLIOption<bool>
         {
             ArgumentName = "--diff",
-            ArgumentShortName = "-diff <testProjectFileName>",
-            ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
-            DefaultValue = _defaultOptions.Diff,
+            ArgumentShortName = "-diff",
+            ArgumentDescription = @"Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.",
+            ValueType = CommandOptionType.NoValue,
             JsonKey = "diff"
+        };
+
+        public static readonly CLIOption<string> GitSource = new CLIOption<string>
+        {
+            ArgumentName = "--get-source",
+            ArgumentShortName = "-gs",
+            ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
+            DefaultValue = _defaultOptions.GitSource,
+            JsonKey = "git-source"
         };
 
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
-            DefaultValue = "perTest",
+            DefaultValue = _defaultOptions.OptimizationMode,
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
     - perTest (Default): capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.

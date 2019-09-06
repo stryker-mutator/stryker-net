@@ -27,7 +27,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public string TestProjectNameFilter { get; }
-        public string Diff { get; }
+        public bool DiffEnabled { get; }
+        public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -66,7 +67,8 @@ namespace Stryker.Core.Options
             string testRunner = "vstest",
             string solutionPath = null,
             string languageVersion = "latest",
-            string diff = "git")
+            bool diff = false,
+            string gitSource = "master")
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -89,6 +91,17 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
+            DiffEnabled = diff;
+            GitSource = ValidateGitSource(gitSource);
+        }
+
+        private string ValidateGitSource(string gitSource)
+        {
+            if (string.IsNullOrEmpty(gitSource))
+            {
+                throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
+            }
+            return gitSource;
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

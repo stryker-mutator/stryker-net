@@ -75,13 +75,13 @@ namespace Stryker.Core.Mutators
             SyntaxNode toReplace;
             switch (invocationExpression.Expression)
             {
-                case MemberAccessExpressionSyntax node:
-                    toReplace = node.Name;
-                    memberName = node.Name.Identifier.ValueText;
+                case MemberAccessExpressionSyntax memberAccessExpression:
+                    toReplace = memberAccessExpression.Name;
+                    memberName = memberAccessExpression.Name.Identifier.ValueText;
                     break;
-                case MemberBindingExpressionSyntax binding:
-                    toReplace = binding.Name;
-                    memberName = binding.Name.Identifier.ValueText;
+                case MemberBindingExpressionSyntax memberBindingExpression:
+                    toReplace = memberBindingExpression.Name;
+                    memberName = memberBindingExpression.Name.Identifier.ValueText;
                     break;
                 default:
                     yield break;
