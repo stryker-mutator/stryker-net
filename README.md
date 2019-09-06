@@ -38,7 +38,7 @@ Now you can run Stryker.NET from your test project directory by executing:
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
 
 ### Update stryker dotnet tool
-Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update`.
+Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update --global dotnet-stryker`.
 Stryker will notify you when a new version is available on every run.
 
 #### [Deprecated] csproj install
