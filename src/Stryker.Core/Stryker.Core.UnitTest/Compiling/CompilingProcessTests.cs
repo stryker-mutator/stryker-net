@@ -3,9 +3,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -121,7 +121,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<ApplicationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
             rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()),
                 Times.AtLeast(2));
@@ -286,7 +286,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<ApplicationException>(()=> target.Compile(new Collection<SyntaxTree>() {syntaxTree}, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
         }
 
