@@ -3,10 +3,12 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using LibGit2Sharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -51,18 +53,27 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilters = mutantFilters ?? new IMutantFilter[]
+            string repoPath = Repository.Discover(options.BasePath)?.Split(".git")[0];
+            if (string.IsNullOrEmpty(repoPath))
             {
-                new FilePatternMutantFilter(),
-                new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter(),
-                new GitDiffMutantFilter(options)
-            };
+                _logger.LogWarning("Could not locate git repo. Unable to determine git diff to filter mutants.");
+                return;
+            }
+            using (var repo = new Repository(repoPath))
+            {
+                _mutantFilters = mutantFilters ?? new IMutantFilter[]
+                {
+                    new FilePatternMutantFilter(),
+                    new IgnoredMethodMutantFilter(),
+                    new ExcludeMutationMutantFilter(),
+                    new DiffMutantFilter(options, new GitDiffProvider(options, repo, repoPath))
+                };
+            }
         }
 
         public void Mutate()
         {
-            _logger.LogDebug("Injecting helpers into assembly. ");
+            _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
             var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion);
             foreach (var helper in CodeInjection.MutantHelpers)
