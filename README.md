@@ -30,10 +30,16 @@ Then install stryker without the -g flag while executing the following command i
 
 `dotnet tool install dotnet-stryker`
 
-### Update stryker dotnet tool
-Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update`
+Now you can run Stryker.NET from your test project directory by executing:
 
+`dotnet stryker`
+
+### Documentation
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
+
+### Update stryker dotnet tool
+Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update --global dotnet-stryker`.
+Stryker will notify you when a new version is available on every run.
 
 #### [Deprecated] csproj install
 
