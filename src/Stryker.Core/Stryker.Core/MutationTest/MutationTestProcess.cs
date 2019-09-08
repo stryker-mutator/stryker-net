@@ -53,7 +53,13 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilters = mutantFilters ?? GetMutantFilters(options);
+            _mutantFilters = mutantFilters ?? new IMutantFilter[]
+                {
+                    new FilePatternMutantFilter(),
+                    new IgnoredMethodMutantFilter(),
+                    new ExcludeMutationMutantFilter(),
+                    new DiffMutantFilter(_options, new GitDiffProvider(_options))
+                };
         }
 
         public void Mutate()
@@ -202,32 +208,6 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
-        }
-
-        private IMutantFilter[] GetMutantFilters(StrykerOptions options)
-        {
-            var mutantFilters = new IMutantFilter[]
-                {
-                    new FilePatternMutantFilter(),
-                    new IgnoredMethodMutantFilter(),
-                    new ExcludeMutationMutantFilter()
-                };
-
-            string repoPath = Repository.Discover(options.BasePath)?.Split(".git")[0];
-
-            if (string.IsNullOrEmpty(repoPath))
-            {
-                _logger.LogWarning("Could not locate git repo. Unable to determine git diff to filter mutants.");
-            } else if (options.DiffEnabled)
-            {
-                // A git repository has been detected, calculate the diff to filter
-                using (var repo = new Repository(repoPath))
-                {
-                    mutantFilters.Append(new DiffMutantFilter(options, new GitDiffProvider(options, repo, repoPath)));
-                }
-            }
-
-            return mutantFilters;
         }
     }
 }

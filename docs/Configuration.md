@@ -345,8 +345,8 @@ Default: `false`
 Sets the source branch to compare with the current code on file system, used for calculating the difference when --diff is enabled.
 
 ```
-dotnet stryker --git-source
-dotnet stryker -gs
+dotnet stryker --git-source "development"
+dotnet stryker -gs "development"
 ```
 
 Default: `master`
