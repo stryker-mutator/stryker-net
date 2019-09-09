@@ -20,12 +20,11 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunner : ITestRunner
+    public class VsTestRunner : IMultiTestRunner
     {
         private IVsTestConsoleWrapper _vsTestConsole;
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
-
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
@@ -80,7 +79,6 @@ namespace Stryker.Core.TestRunners.VsTest
             };
         }
 
-
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
         {
             var envVars = new Dictionary<string, string>();
@@ -112,6 +110,34 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             return RunVsTest(testCases, timeoutMs, envVars);
         }
+
+        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants)
+        {
+            var envVars = new Dictionary<string, string>
+            {
+                ["ActiveMutation"] = string.Join(',', mutants.Select(m => m.Id.ToString()))
+            };
+
+            ICollection<TestCase> testCases = null;
+            // if we optimize the number of tests to run
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+            {
+                // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
+                var tests = mutants.SelectMany(m => m.CoveringTests.GetList()).ToList();
+                testCases = (mutants.Any(m => m.MustRunAllTests) && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                    ? null : _discoveredTests.Where( t =>  tests.Contains(t)).ToList();
+                if (testCases == null)
+                {
+                    _logger.LogDebug($"Runner {_id}: Testing [{string.Join(',', mutants.Select( m=>m.DisplayName))}] against all tests.");
+                }
+                else
+                {
+                    _logger.LogDebug($"Runner {_id}: Testing [{string.Join(',', mutants.Select( m=>m.DisplayName))}] against: {string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                }
+            }
+            return RunVsTest(testCases, timeoutMs, envVars);
+        }
+
 
         private void SetListOfTests(ICollection<TestCase> tests)
         {

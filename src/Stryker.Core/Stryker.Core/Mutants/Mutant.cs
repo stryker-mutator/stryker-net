@@ -22,12 +22,19 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class Mutant : IReadOnlyMutant
     {
+        private bool _mustRunAllTests;
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
         public TestListDescription CoveringTests { get; set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
-        public bool MustRunAllTests { get; set; }
+
+        public bool MustRunAllTests
+        {
+            get => CoveringTests.IsEveryTest || _mustRunAllTests;
+            set => _mustRunAllTests = value;
+        }
+
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public bool IsStaticValue { get; set; }
 

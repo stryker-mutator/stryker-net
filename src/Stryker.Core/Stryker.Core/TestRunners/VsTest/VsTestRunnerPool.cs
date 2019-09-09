@@ -14,7 +14,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunnerPool : ITestRunner
+    public class VsTestRunnerPool : IMultiTestRunner
     {
         private readonly OptimizationFlags _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
@@ -41,18 +41,23 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
-        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
+        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants)
         {
             var runner = TakeRunner();
 
             try
             {
-                return runner.RunAll(timeoutMs, mutant);
+                return mutants == null ? runner.RunAll(timeoutMs, null) : runner.TestMultipleMutants(timeoutMs, mutants);
             }
             finally
             {
                 ReturnRunner(runner);
             }
+        }
+
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
+        {
+            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant});
         }
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
@@ -68,14 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                if (needCoverage)
-                {
-                    result = runner.CaptureCoverage(mutants);
-                }
-                else
-                {
-                    result = runner.RunAll(null, null);
-                }
+                result = needCoverage ? runner.CaptureCoverage(mutants) : runner.RunAll(null, null);
             }
             finally
             {

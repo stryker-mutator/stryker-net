@@ -81,6 +81,7 @@ namespace Stryker.Core.Mutants
         public bool IsEveryTest => _tests == null || (_tests.Count == 1 && _tests[0].IsAllTests);
 
         public bool IsEmpty => _tests!=null && _tests.Count == 0;
+        public int Count => _tests == null ? 0 : _tests.Count;
 
         public void Add(TestDescription test)
         {
@@ -116,6 +117,11 @@ namespace Stryker.Core.Mutants
             {
                 Add(testDescription);
             }
+        }
+
+        public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)
+        {   
+            return _tests?.Any(usedTests.Contains) ?? false;
         }
     }
 }

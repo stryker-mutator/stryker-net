@@ -189,7 +189,7 @@ namespace Stryker.Core.MutationTest
             {
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
 
-                var mutantGroups = mutantsNotRun.Select(x => new List<Mutant>{x});
+                var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
 
                 Parallel.ForEach(
                     mutantGroups,
@@ -210,6 +210,43 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
+        }
+
+        private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
+        {
+            if (false)
+            {
+                return mutantsNotRun.Select(x => new List<Mutant>{x});
+            }
+            else
+            {
+                var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
+                var mutantsToGroup = mutantsNotRun.ToList();
+                // we deal with mutants needing full testing first
+                blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAllTests).Select(m => new List<Mutant>{m}));
+                mutantsToGroup.RemoveAll(m => m.MustRunAllTests);
+                var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
+                mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
+                for(var i = 0; i<mutantsToGroup.Count; i++)
+                {
+                    var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
+                    var nextBlock = new List<Mutant>{mutantsToGroup[i]};
+                    for (var j = i + 1; j < mutantsToGroup.Count; j++)
+                    {
+                        if ( mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
+                            !mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                        {
+                            continue;
+                        }
+                        nextBlock.Add(mutantsToGroup[j]);
+                        usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
+                        mutantsToGroup.RemoveAt(j--);
+                    }
+                    blocks.Add(nextBlock);
+                }
+                _logger.LogInformation($" {blocks.SelectMany( x=>x).Count()} mutants to run in {blocks.Count} test runs needed, instead of ${mutantsNotRun.Count}.");
+                return blocks;
+            }
         }
     }
 }

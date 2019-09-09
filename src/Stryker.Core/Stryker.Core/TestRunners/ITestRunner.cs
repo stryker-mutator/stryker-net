@@ -14,4 +14,9 @@ namespace Stryker.Core.TestRunners
 
         IEnumerable<TestDescription> Tests { get; }
     }
+
+    public interface IMultiTestRunner : ITestRunner
+    {
+        TestRunResult TestMultipleMutants(int? timeoutMS, IReadOnlyList<Mutant> mutants);
+    }
 }
