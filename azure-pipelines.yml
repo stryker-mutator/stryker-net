@@ -98,11 +98,20 @@ stages:
               packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
+            condition: eq(variables['System.PullRequest.IsFork'], 'True')
             inputs:
               command: custom
               custom: 'nuget'
               arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
+          - task: NuGetCommand@2
+            displayName: 'Publish integrationtest packages'
+            condition: eq(variables['System.PullRequest.IsFork'], 'True')
+            inputs:
+              command: 'push'
+              packagesToPush: '*dotnet-stryker*$(IntegrationTestVersion).nupkg;*dotnet-stryker*$(IntegrationTestVersion).symbols.nupkg'
+              nuGetFeedType: 'internal'
+              publishVstsFeed: '506a1f46-900e-434e-805f-ff8d36fc81af/cc8fa47b-395f-417d-8b3d-72618b95ddb8'
   - job: WaitOnMyGetProcessing
     displayName: Wait on pre-release packages to be processed on MyGet
     dependsOn: 'PublishIntegrationTestPackage'
