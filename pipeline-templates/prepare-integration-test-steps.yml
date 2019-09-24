@@ -12,7 +12,15 @@ steps:
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
+    condition: eq(variables['System.PullRequest.IsFork'], 'True')
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(IntegrationTestFeedUri)
+      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+  - task: DotNetCoreCLI@2
+    displayName: 'Install integrationtest dotnet tool'
+    condition: eq(variables['System.PullRequest.IsFork'], 'False')
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)

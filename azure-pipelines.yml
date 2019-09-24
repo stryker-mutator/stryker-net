@@ -30,8 +30,9 @@ variables:
   VersionBuildNumber: $[counter('0.13.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  IntegrationTestFeed: https://www.myget.org/F/stryker-mutator-integrationtest
-  IntegrationTestFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
+  MygetFeedFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 stages:
 - stage: Analysis
@@ -102,11 +103,11 @@ stages:
             inputs:
               command: custom
               custom: 'nuget'
-              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(MygetFeed) -k $(IntegrationTestFeedKey)'
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
           - task: NuGetCommand@2
             displayName: 'Publish integrationtest packages'
-            condition: eq(variables['System.PullRequest.IsFork'], 'True')
+            condition: eq(variables['System.PullRequest.IsFork'], 'False')
             inputs:
               command: 'push'
               packagesToPush: '*dotnet-stryker*$(IntegrationTestVersion).nupkg;*dotnet-stryker*$(IntegrationTestVersion).symbols.nupkg'
