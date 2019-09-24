@@ -8,7 +8,7 @@ steps:
   - task: DotNetCoreInstaller@0
     displayName: 'Use .NET Core sdk 2.1.300 because dotnet tools..'
     inputs:
-      version: 2.1.300
+      version: 3.0.100
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
