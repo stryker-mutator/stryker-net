@@ -6,9 +6,9 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: UseDotNet@2
-    displayName: 'Reinstall dotnet core sdk..'
+    displayName: 'Install dotnet core sdk for integrationtest'
     inputs:
-      version: 3.x
+      version: 2.x
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
