@@ -5,10 +5,10 @@ steps:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
 
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
     displayName: 'Reinstall dotnet core sdk..'
     inputs:
-      version: 3.0.100
+      version: 3.x
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
