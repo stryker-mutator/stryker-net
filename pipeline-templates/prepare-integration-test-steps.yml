@@ -5,14 +5,22 @@ steps:
       command: test
       projects: 'src/**/*.UnitTest.csproj'
 
-  - task: DotNetCoreInstaller@0
-    displayName: 'Use .NET Core sdk 2.1.300 because dotnet tools..'
+  - task: UseDotNet@2
+    displayName: 'Install dotnet core sdk for integrationtest'
     inputs:
-      version: 2.1.300
+      version: 2.x
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
+    condition: eq(variables['System.PullRequest.IsFork'], 'True')
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(IntegrationTestFeedUri)
+      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+  - task: DotNetCoreCLI@2
+    displayName: 'Install integrationtest dotnet tool'
+    condition: eq(variables['System.PullRequest.IsFork'], 'False')
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
