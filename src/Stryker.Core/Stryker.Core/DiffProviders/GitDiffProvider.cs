@@ -48,6 +48,16 @@ namespace Stryker.Core.DiffProviders
                 }
 
                 // Compare the sourcebranch by commits and open filesystem changes.
+                foreach (var treeChanges in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory, null, null, new CompareOptions() { IndentHeuristic = true }))
+                {
+                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
+                    diffResult.ChangedFiles.Add(diffPath);
+                    if (diffPath.StartsWith(_options.BasePath))
+                    {
+                        diffResult.TestsChanged = true;
+                    }
+                }
+
                 foreach (var treeChanges in repository.Diff.Compare<TreeChanges>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                 {
                     string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
