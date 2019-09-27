@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Serilog;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Stryker.Core.Logging
 {
     public static class ApplicationLogging
     {
         private static ILoggerFactory _factory = null;
-        private static readonly MethodInfo _logMethodInfo = typeof(Microsoft.Extensions.Logging.ILogger).GetMethod("Log");
 
         public static void ConfigureLogger(LogOptions options, IEnumerable<LogMessage> initialLogMessages = null)
         {
@@ -33,11 +30,7 @@ namespace Stryker.Core.Logging
 
                 foreach (var logMessage in initialLogMessages)
                 {
-                    // Create the generic variant of the method to make sure any consumer can use typeof(TState)
-                    _logMethodInfo.MakeGenericMethod(logMessage.StateType)
-                        .Invoke(
-                            logger,
-                            new[] { logMessage.LogLevel, logMessage.EventId, logMessage.State, logMessage.Exception, logMessage.Formatter });
+                    logger.Log(logMessage.LogLevel, logMessage.EventId, logMessage.State, logMessage.Exception, logMessage.Formatter);
                 }
             }
         }
