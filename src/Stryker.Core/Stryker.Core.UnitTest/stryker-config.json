@@ -9,8 +9,8 @@
         ],
         "log-level": "info",
         "timeout-ms": 20000,
-        "files-to-exclude": [
-            "./Testing/"
+        "mutate": [
+            "!/Testing/"
         ],
         "excluded-mutations": [
             "string"
