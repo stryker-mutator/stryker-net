@@ -10,7 +10,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Update Operators](#update-operators)
 - [Checked Statements](#checked-statements)
 - [Linq Methods](#linq-methods)
-- [String Literals](#string-literals)
+- [String Literals and Constants](#string-literals-and-constants)
+- [Bitwise Operators](#bitwise-operators)
 <!-- /TOC -->
 
 ## Arithmetic Operators
@@ -41,6 +42,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ------------- | 
 | `&&` | `\|\|` | 
 | `\|\|` | `&&` |
+| `^` | `==` |
 
 ## Boolean Literals
 | Original | Mutated | 
@@ -110,3 +112,12 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
 | `string.Empty` | `"Stryker was here!"` |
+
+## Bitwise Operators
+| Original | Mutated |
+| ------------- | ------------- | 
+| `<<` | `>>` |
+| `>>` | `<<` |
+| `&` | `|` |
+| `|` | `&` |
+| `a^b` | `~(a^b)` |

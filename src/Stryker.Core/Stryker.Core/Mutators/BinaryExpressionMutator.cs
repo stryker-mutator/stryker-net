@@ -26,6 +26,10 @@ namespace Stryker.Core.Mutators
                 {SyntaxKind.NotEqualsExpression, new List<SyntaxKind> {SyntaxKind.EqualsExpression } },
                 {SyntaxKind.LogicalAndExpression, new List<SyntaxKind> {SyntaxKind.LogicalOrExpression } },
                 {SyntaxKind.LogicalOrExpression, new List<SyntaxKind> {SyntaxKind.LogicalAndExpression } },
+                {SyntaxKind.LeftShiftExpression, new List<SyntaxKind> {SyntaxKind.RightShiftExpression } },
+                {SyntaxKind.RightShiftExpression, new List<SyntaxKind> {SyntaxKind.LeftShiftExpression } },
+                {SyntaxKind.BitwiseOrExpression, new List<SyntaxKind> {SyntaxKind.BitwiseAndExpression } },
+                {SyntaxKind.BitwiseAndExpression, new List<SyntaxKind> {SyntaxKind.BitwiseOrExpression } },
             };
         }
 
@@ -34,11 +38,10 @@ namespace Stryker.Core.Mutators
             if(_kindsToMutate.ContainsKey(node.Kind()))
             {
                 // skip string additions
-                if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
+                if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
                 {
                     yield break;
                 }
-                
                 foreach(var mutationKind in _kindsToMutate[node.Kind()])
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
@@ -62,12 +65,18 @@ namespace Stryker.Core.Mutators
             if (kindString.StartsWith("Logical"))
             {
                 return Mutator.Logical;
-            } else if (kindString.Contains("Equals") 
+            }
+            else if (kindString.Contains("Equals") 
                 || kindString.Contains("Greater") 
                 || kindString.Contains("Less"))
             {
                 return Mutator.Equality;
-            } else
+            }
+            else if (kindString.StartsWith("Bitwise") || kindString.Contains("Shift"))
+            {
+                return Mutator.Bitwise;
+            }
+            else
             {
                 return Mutator.Arithmetic;
             }

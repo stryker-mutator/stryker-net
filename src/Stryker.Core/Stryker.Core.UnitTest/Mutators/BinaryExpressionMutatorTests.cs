@@ -23,6 +23,10 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(Mutator.Equality, SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
         [InlineData(Mutator.Logical, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
         [InlineData(Mutator.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression, SyntaxKind.BitwiseOrExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
         public void MathMutator_ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
         {
             var target = new BinaryExpressionMutator();
