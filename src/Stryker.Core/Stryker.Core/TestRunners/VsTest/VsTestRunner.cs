@@ -170,8 +170,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 _discoveredTests = handler.DiscoveredTestCases;
                 DetectTestFramework(handler.DiscoveredTestCases);
-                var tests = new TestListDescription(_discoveredTests.Select(x => (TestDescription)x));
-
             }
 
             return _discoveredTests;
@@ -206,7 +204,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 throw new OperationCanceledException();
             }
-            var ranTests = resultAsArray.Length == DiscoverNumberOfTests()?  TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
+            var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
             var failedTests = new TestListDescription(resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(tr => (TestDescription) tr.TestCase));
             var testResult = new TestRunResult(ranTests, failedTests, string.Join( Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -261,8 +259,6 @@ namespace Stryker.Core.TestRunners.VsTest
                                 mutant.MustRunAllTests = true;
                             }
                         }
-
-                        //CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
                     }
                 }
             }
