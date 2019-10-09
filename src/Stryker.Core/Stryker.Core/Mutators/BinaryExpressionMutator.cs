@@ -57,6 +57,12 @@ namespace Stryker.Core.Mutators
                     };
                 }
             }
+            else if (node.Kind() == SyntaxKind.ExclusiveOrExpression)
+            {
+                yield return GetLogicalMutation(node);
+                yield return GetIntegralMutation(node);
+            }
+
         }
 
         private Mutator GetMutatorType(SyntaxKind kind)
@@ -80,6 +86,33 @@ namespace Stryker.Core.Mutators
             {
                 return Mutator.Arithmetic;
             }
+        }
+
+        private Mutation GetLogicalMutation(BinaryExpressionSyntax node)
+        {
+            var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left, node.Right);
+            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+
+            return new Mutation
+            {
+                OriginalNode = node,
+                ReplacementNode = replacementNode,
+                DisplayName = "Binary expression mutation",
+                Type = Mutator.Logical
+            };
+        }
+
+        private Mutation GetIntegralMutation(BinaryExpressionSyntax node)
+        {
+            var replacementNode = SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, SyntaxFactory.ParenthesizedExpression(node));
+
+            return new Mutation
+            {
+                OriginalNode = node,
+                ReplacementNode = replacementNode,
+                DisplayName = "Binary expression mutation",
+                Type = Mutator.Bitwise
+            };
         }
     }
 }

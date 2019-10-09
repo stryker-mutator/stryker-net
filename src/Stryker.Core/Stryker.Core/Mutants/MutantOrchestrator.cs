@@ -55,7 +55,6 @@ namespace Stryker.Core.Mutants
                     new StringEmptyMutator(),
                     new InterpolatedStringMutator(),
                     new NegateConditionMutator(),
-                    new ExclusiveOrMutator(),
                 };
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
