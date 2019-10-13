@@ -19,6 +19,10 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs" />

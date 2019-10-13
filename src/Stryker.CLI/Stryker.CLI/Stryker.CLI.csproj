@@ -25,6 +25,10 @@
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.4.2" />

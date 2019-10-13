@@ -33,6 +33,7 @@ variables:
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
   MygetFeedFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
 
 stages:
 - stage: Analysis
@@ -63,6 +64,11 @@ stages:
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--logger trx --results-directory $(Agent.TempDirectory) --collect "Code coverage"'
         publishTestResults: false
+    - task: CacheBeta@0
+      displayName: 'Cache NuGet packages'
+      inputs:
+        key: nuget | **/packages.lock.json
+        path: $(NUGET_PACKAGES)
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:

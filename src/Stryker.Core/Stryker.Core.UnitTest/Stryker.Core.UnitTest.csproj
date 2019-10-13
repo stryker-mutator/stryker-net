@@ -3,6 +3,9 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <PropertyGroup>
+    <RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
   </ItemGroup>
