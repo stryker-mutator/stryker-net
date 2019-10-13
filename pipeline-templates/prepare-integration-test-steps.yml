@@ -17,6 +17,7 @@ steps:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
     condition: eq(variables['System.PullRequest.IsFork'], 'False')
@@ -24,3 +25,9 @@ steps:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+
+  - task: CacheBeta@0
+    displayName: 'Cache NuGet packages'
+    inputs:
+      key: nuget | **/packages.lock.json
+      path: $(NUGET_PACKAGES)

@@ -95,6 +95,11 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+          - task: CacheBeta@0
+            displayName: 'Cache NuGet packages'
+            inputs:
+              key: nuget | **/packages.lock.json
+              path: $(NUGET_PACKAGES)
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -217,6 +222,11 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+    - task: CacheBeta@0
+      displayName: 'Cache NuGet packages'
+      inputs:
+        key: nuget | **/packages.lock.json
+        path: $(NUGET_PACKAGES)
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -253,6 +263,11 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+    - task: CacheBeta@0
+      displayName: 'Cache NuGet packages'
+      inputs:
+        key: nuget | **/packages.lock.json
+        path: $(NUGET_PACKAGES)
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
