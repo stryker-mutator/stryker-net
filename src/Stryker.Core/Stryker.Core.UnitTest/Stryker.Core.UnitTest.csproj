@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <PropertyGroup>
-    <RestoreLockedMode>true</RestoreLockedMode>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />

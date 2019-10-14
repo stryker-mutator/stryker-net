@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RestoreLockedMode>true</RestoreLockedMode>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>
