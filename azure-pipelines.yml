@@ -65,7 +65,7 @@ stages:
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--logger trx --results-directory $(Agent.TempDirectory) --collect "Code coverage"'
         publishTestResults: false
-    - templates: pipeline-templates/populate-cache-steps.yml
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:
@@ -92,7 +92,7 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - templates: pipeline-templates/populate-cache-steps.yml
+          - template: pipeline-templates/populate-cache-steps.yml
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -215,7 +215,7 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - templates: pipeline-templates/populate-cache-steps.yml
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -252,7 +252,7 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - templates: pipeline-templates/populate-cache-steps.yml
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
