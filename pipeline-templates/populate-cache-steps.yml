@@ -1,0 +1,11 @@
+steps:
+  - task: CacheBeta@0
+    displayName: 'Cache NuGet packages'
+    inputs:
+      key: nuget | **/packages.lock.json
+      path: $(NUGET_PACKAGES)
+  - task: CacheBeta@0
+    displayName: 'Cache Library Manager libraries'
+    inputs:
+      key: Reporters/HtmlReporter/Files/mutation-testing-elements.js
+      path: $(LibManCache)
