@@ -7,5 +7,5 @@ steps:
   - task: CacheBeta@0
     displayName: 'Cache Library Manager libraries'
     inputs:
-      key: Reporters/HtmlReporter/Files/mutation-testing-elements.js
+      key: src/Stryker.Core/Stryker.Core/Reporters/HtmlReporter/Files/mutation-testing-elements.js
       path: $(LibManCache)
