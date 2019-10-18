@@ -2,23 +2,21 @@
 
 namespace ExampleProject
 {
-    public class NewCsharpFeatures
+    public class Csharp8
     {
-        public static string RockPaperScissors(string first, string second)
-            => (first, second) switch
+        public static string RockPaperScissors(string first, string second) => (first, second) switch
             {
                 ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
                 (_, _) => "tie"
             };
 
-        public double GetDefaultDoubleValue()
+        public void SwitchExpression()
         {
-            var outcome = ("rock", "paper") switch
+            _ = ("rock", "paper") switch
             {
                 ("rock", "paper") => RockPaperScissors("", ""),
                 (_, _) => "tie"
             };
-            return default;
         }
     }
 
