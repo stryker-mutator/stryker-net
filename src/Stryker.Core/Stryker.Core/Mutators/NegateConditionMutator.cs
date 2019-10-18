@@ -42,7 +42,7 @@ namespace Stryker.Core.Mutators
 
         private static PrefixUnaryExpressionSyntax NegateCondition(ExpressionSyntax expressionSyntax)
         {
-            return SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, expressionSyntax);
+            return SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, SyntaxFactory.ParenthesizedExpression(expressionSyntax));
         }
     }
 }
