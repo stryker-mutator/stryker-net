@@ -5,6 +5,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -48,10 +49,11 @@ namespace Stryker.Core.DiffProviders
                 }
 
                 // Compare the sourcebranch by commits and open filesystem changes.
-                foreach (var treeChanges in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory, null, null, new CompareOptions() { IndentHeuristic = true }))
+                foreach (var patchEntry in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory, null, null, new CompareOptions() { IndentHeuristic = true }))
                 {
-                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
+                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchEntry.Path));
                     diffResult.ChangedFiles.Add(diffPath);
+                    var lines = Regex.Match(patchEntry.Patch, @"@@\s\-(?<oldFrom>\d+),(?<oldLength>\d+)\s\+(?<newFrom>\d+),(?<newLength>\d+).*\s@@");
                     if (diffPath.StartsWith(_options.BasePath))
                     {
                         diffResult.TestsChanged = true;
