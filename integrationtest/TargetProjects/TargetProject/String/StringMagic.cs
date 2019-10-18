@@ -17,6 +17,7 @@
         private bool Demo(out string test)
         {
             test = "toto";
+            test = $"toto";
             return true;
         }
 
