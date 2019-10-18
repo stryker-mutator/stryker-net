@@ -15,7 +15,7 @@ namespace ExampleProject
         {
             var outcome = ("rock", "paper") switch
             {
-                ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
+                ("rock", "paper") => RockPaperScissors("", ""),
                 (_, _) => "tie"
             };
             return default;
