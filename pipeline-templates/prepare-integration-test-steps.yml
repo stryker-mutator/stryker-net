@@ -6,7 +6,7 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: UseDotNet@2
-    displayName: 'Install dotnet core 2.1.x sdk for integrationtest (to run stryker on)
+    displayName: 'Install dotnet core 2.1.x sdk for integrationtest (to run stryker on)'
     inputs:
       version: 2.1.x
 
