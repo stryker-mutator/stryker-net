@@ -302,7 +302,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         }";
             string expected = @"private void DummyLoop()
         {
-            while ((StrykerNamespace.MutantControl.IsActive(0)?!this.Move():this.Move()))
+            while ((StrykerNamespace.MutantControl.IsActive(0)?!(this.Move()):this.Move()))
             {
                 int x = (StrykerNamespace.MutantControl.IsActive(1)?2 - 3:2 + 3);
             }
