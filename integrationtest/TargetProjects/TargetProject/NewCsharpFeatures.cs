@@ -4,8 +4,20 @@ namespace ExampleProject
 {
     public class NewCsharpFeatures
     {
+        public static string RockPaperScissors(string first, string second)
+            => (first, second) switch
+            {
+                ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
+                (_, _) => "tie"
+            };
+
         public double GetDefaultDoubleValue()
         {
+            var outcome = ("rock", "paper") switch
+            {
+                ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
+                (_, _) => "tie"
+            };
             return default;
         }
     }

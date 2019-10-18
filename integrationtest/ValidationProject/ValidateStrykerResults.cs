@@ -31,23 +31,6 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public void NetStandard()
-        {
-            var directory = new DirectoryInfo("../../../../TargetProjects/NetStandardTestProject.XUnit/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
-
-            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
-
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
-
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
-
-            CheckReportMutantCounts(report, total: 26, skipped: 2, survived: 1, killed: 2, timeout: 0, nocoverage: 19);
-        }
-
-        [Fact]
         public void NetFullFramework()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

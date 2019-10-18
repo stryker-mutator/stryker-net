@@ -19,5 +19,14 @@
             test = "toto";
             return true;
         }
+
+        private bool IsNullOrEmpty(string myString)
+        {
+            if ((string.IsNullOrEmpty(myString)))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
