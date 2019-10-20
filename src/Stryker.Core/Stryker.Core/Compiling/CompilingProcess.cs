@@ -59,7 +59,8 @@ namespace Stryker.Core.Compiling
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                                                       allowUnsafe: true,
                                                       cryptoKeyFile: analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null,
-                                                      strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null),
+                                                      strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null,
+                                                      nullableContextOptions: NullableContextOptions.Enable),
                 references: _input.AssemblyReferences);
 
             RollbackProcessResult rollbackProcessResult;
