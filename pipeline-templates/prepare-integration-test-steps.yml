@@ -26,4 +26,4 @@ steps:
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
 
-  - template: pipeline-templates/populate-cache-steps.yml
+  - template: populate-cache-steps.yml
