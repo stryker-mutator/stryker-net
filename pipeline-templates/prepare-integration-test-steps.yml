@@ -26,8 +26,4 @@ steps:
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
 
-  - task: CacheBeta@0
-    displayName: 'Cache NuGet packages'
-    inputs:
-      key: nuget | **/packages.lock.json
-      path: $(NUGET_PACKAGES)
+  - template: pipeline-templates/populate-cache-steps.yml
