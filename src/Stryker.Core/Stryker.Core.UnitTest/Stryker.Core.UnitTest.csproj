@@ -22,7 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
-    <PackageReference Include="Moq" Version="4.13.0" />
+    <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="7.0.5" />
