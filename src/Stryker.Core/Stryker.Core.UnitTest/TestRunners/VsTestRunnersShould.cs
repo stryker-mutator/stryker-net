@@ -193,6 +193,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         // setup a customized partial test runs, using provided test results
         private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess)
         {
+
             mockVsTest.Setup(x =>   
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
@@ -274,6 +275,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockVsTest.Setup(x => x.StartSession());
             mockVsTest.Setup(x => x.InitializeExtensions(It.IsAny<List<string>>()));
+            mockVsTest.Setup(x => x.AbortTestRun());
             mockVsTest.Setup(x =>
                 x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                     It.IsAny<string>(),
@@ -348,7 +350,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockTestRun(mockVsTest, new List<TestResult>{singleTestResult}, endProcess);
                 
                 // timeout is notified via exception
-                Should.Throw<OperationCanceledException>(() => runner.RunAll(null, _mutant));
+               runner.RunAll(null, _mutant);
+               _mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
             }
         }
 
@@ -438,7 +441,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void RunAllTestsOnStatic()
+        public void NotRunTestWhenNotCovered()
         {
             var options = new StrykerOptions();
 
@@ -454,7 +457,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockTestRun(mockVsTest, false, endProcess);
                 // mutant 0 is covered
-                _mutant.MustRunAllTests.ShouldBeTrue();
+                _mutant.IsStaticValue.ShouldBeTrue();
                 var result = runner.RunAll(0, _mutant);
                 // mutant is killed
                 result.Success.ShouldBe(false);
@@ -466,7 +469,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void RunTestsInParallelWhenPossible()
+        public void RunTestsSimultaneouslyWhenPossible()
         {
             var options = new StrykerOptions();
 
@@ -482,12 +485,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var input = new MutationTestInput {ProjectInfo = _targetProject, TestRunner = runner, TimeoutMs = 100};
                 var mockReporter = new Mock<IReporter>();
                 var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions);
-                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;"}, endProcess);
+                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;", ["T1"] = "1;"}, endProcess);
 
                 runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
-                SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["0"]="T0=S"}, endProcess);
-                var result = tester.Test(strykerOptions);
+                SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["1,0,2,3"]="T0=S,T1=F"}, endProcess);
+                tester.Test(strykerOptions);
 
+                _mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
+                _otherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);
             }
         }
 

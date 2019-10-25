@@ -12,9 +12,6 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         TestListDescription CoveringTests { get; }
-        string DisplayName { get; }
-        string ResultStatusReason { get; }
-        bool IsStaticValue { get; }
     }
 
     /// <summary>
@@ -29,7 +26,7 @@ namespace Stryker.Core.Mutants
         public TestListDescription CoveringTests { get; set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
 
-        public bool MustRunAllTests
+        public bool MustRunAgainstAllTests
         {
             get => CoveringTests.IsEveryTest || _mustRunAllTests;
             set => _mustRunAllTests = value;
@@ -40,12 +37,12 @@ namespace Stryker.Core.Mutants
 
         public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)
         {
-            if (failedTests.Any(t => MustRunAllTests ||  CoveringTests.Contains(t.Guid)))
+            if (failedTests.Any(t =>IsStaticValue ||  CoveringTests.Contains(t.Guid)))
             {
                 // a test killed us
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.GetList().Any(t => CoveringTests.Contains(t.Guid)))
+            else if (resultRanTests.IsEveryTest || (!CoveringTests.IsEveryTest && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
             {
                 ResultStatus = MutantStatus.Survived;
             }

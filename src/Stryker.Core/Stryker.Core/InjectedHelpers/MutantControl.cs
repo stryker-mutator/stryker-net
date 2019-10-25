@@ -29,7 +29,7 @@ namespace Stryker
 
         public static void InitCoverage()
         {
-            foreach (string entry in (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(';'))
+            foreach (string entry in (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(','))
             {
                 ActiveMutations.Add(int.Parse(entry));
             }

@@ -5,25 +5,27 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class RunEventHandler : ITestRunEventsHandler
+    public class RunEventHandler : ITestRunEventsHandler, IDisposable
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly int _id;
         private readonly ILogger _logger;
-        private bool _testFailed;
 
         public event EventHandler TestsFailed;
         public event EventHandler VsTestFailed;
+        public event EventHandler ResultsUpdated;
+
         public List<TestResult> TestResults { get; }
 
-        public RunEventHandler(AutoResetEvent waitHandle, int id, ILogger logger)
+        public RunEventHandler(int id, ILogger logger)
         {
-            _waitHandle = waitHandle;
+            _waitHandle = new AutoResetEvent(false);
             _id = id;
             TestResults = new List<TestResult>();
             _logger = logger;
@@ -47,6 +49,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     _logger.LogDebug(testRunCompleteArgs.Error, "VsTest may have crashed, triggering vstest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
+                else if (testRunCompleteArgs.Error.InnerException is IOException sock)
+                {
+                    _logger.LogWarning(sock,"Test session ended unexpectedly.");
+                }
                 else
                 {
                     _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
@@ -60,12 +66,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var testResults = results as TestResult[] ?? results.ToArray();
             TestResults.AddRange(testResults);
-            if (!_testFailed && testResults.Any(result => result.Outcome == TestOutcome.Failed))
-            {
-                // at least one test has failed
-                _testFailed = true;
-                TestsFailed?.Invoke(this, EventArgs.Empty);
-            }
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
@@ -86,6 +87,11 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogTrace($"Runner {_id}: [RAW] {rawMessage}");
         }
 
+        public void WaitEnd()
+        {
+            _waitHandle.WaitOne();
+        }
+
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
             LogLevel levelFinal;
@@ -104,6 +110,11 @@ namespace Stryker.Core.TestRunners.VsTest
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
             _logger.LogTrace($"Runner {_id}: [{levelFinal}] {message}");
+        }
+
+        public void Dispose()
+        {
+            _waitHandle.Dispose();
         }
     }
 }

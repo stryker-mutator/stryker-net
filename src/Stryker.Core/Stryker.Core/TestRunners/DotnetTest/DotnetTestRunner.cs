@@ -6,6 +6,7 @@ using Stryker.Core.Testing;
 using Stryker.DataCollector;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.TestRunners
 {
@@ -33,7 +34,9 @@ namespace Stryker.Core.TestRunners
             {
                 {"ActiveMutation", mutant.Id.ToString() }
             };
-            return LaunchTestProcess(timeoutMs, envVars);
+            var result =  LaunchTestProcess(timeoutMs, envVars);
+            mutant?.AnalyzeTestRun(result.FailingTests.GetList(), result.RanTests);
+            return result;
         }
 
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)

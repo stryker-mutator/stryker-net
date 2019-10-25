@@ -11,6 +11,7 @@ namespace Stryker.Core.Options
         CoverageBasedTest = 2,
         AbortTestOnKill = 4,
         CaptureCoveragePerTest = 8,
-        UseEnvVariable = 16
+        UseEnvVariable = 16,
+        RunMultipleMutants = 32
     }
 }

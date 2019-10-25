@@ -223,8 +223,8 @@ namespace Stryker.Core.MutationTest
                 var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
                 var mutantsToGroup = mutantsNotRun.ToList();
                 // we deal with mutants needing full testing first
-                blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAllTests).Select(m => new List<Mutant>{m}));
-                mutantsToGroup.RemoveAll(m => m.MustRunAllTests);
+                blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant>{m}));
+                mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
                 var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
                 mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
                 for(var i = 0; i<mutantsToGroup.Count; i++)
@@ -234,7 +234,7 @@ namespace Stryker.Core.MutationTest
                     for (var j = i + 1; j < mutantsToGroup.Count; j++)
                     {
                         if ( mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
-                            !mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                            mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
                         {
                             continue;
                         }
@@ -244,7 +244,7 @@ namespace Stryker.Core.MutationTest
                     }
                     blocks.Add(nextBlock);
                 }
-                _logger.LogInformation($" {blocks.SelectMany( x=>x).Count()} mutants to run in {blocks.Count} test runs needed, instead of ${mutantsNotRun.Count}.");
+                _logger.LogInformation($"{blocks.SelectMany(x=>x).Count()} mutants will run in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
                 return blocks;
             }
         }

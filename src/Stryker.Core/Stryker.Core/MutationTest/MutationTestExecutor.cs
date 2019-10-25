@@ -34,10 +34,18 @@ namespace Stryker.Core.MutationTest
             {
                 var result = new TestRunResult(true);
                 Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-                foreach (var mutant in mutantsToTest)
+                if (TestRunner is IMultiTestRunner multi)
                 {
-                    result.Merge(TestRunner.RunAll(timeoutMs, mutant));
+                    result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList());
                 }
+                else
+                {
+                    foreach (var mutant in mutantsToTest)
+                    {
+                        result.Merge(TestRunner.RunAll(timeoutMs, mutant));
+                    }
+                }
+
                 Logger.LogDebug($"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.Success ? "success" : "failed")} with output: {result.ResultMessage}");
                 var failedTests = result.FailingTests.GetList();
                 foreach (var mutant in mutantsToTest)
