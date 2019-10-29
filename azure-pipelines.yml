@@ -98,6 +98,11 @@ stages:
               packagesToPack: $(ProjectsToPack)
               packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
               includesymbols: true
+          - task: PublishPipelineArtifact@0
+            inputs:
+              artifactName: dir
+              targetPath: '$(Pipelines.Workspace)'
+            condition: always()
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
             condition: eq(variables['System.PullRequest.IsFork'], 'True')
