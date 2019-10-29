@@ -26,9 +26,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.13.0, )",
-        "resolved": "4.13.0",
-        "contentHash": "htNcWChBOSLynXM3b4ZZecwbF4Li/sAxpVwmPO96hhP3vssjKHJyMm6KUNKjXcGs1FIZD5gOrBk62s9q8K7AuQ==",
+        "requested": "[4.13.1, )",
+        "resolved": "4.13.1",
+        "contentHash": "ic4m9/b10tz9oRB1Oi5bW7E/FS6Pd2SH5OJFhlmhUJkQhiV5FyrIRxVUEaG5KOpSpcfSPGAVW4rRZt6OzrS5zg==",
         "dependencies": {
           "Castle.Core": "4.4.0",
           "System.Threading.Tasks.Extensions": "4.5.1"
@@ -555,7 +555,7 @@
       "runtime.native.System.IO.Compression": {
         "type": "Transitive",
         "resolved": "4.3.0",
-        "contentHash": "b+V9JC/Ii3sR659flBeaBJww111425tgjcDS1k+hqV4sGh9FALRDBvJnDtQ895gAzpPTUOFDHdqaZ2Et7BpZMg==",
+        "contentHash": "INBPonS5QPEgn7naufQFXJEp3zX6L4bwHgJ/ZH78aBTpeNfQMtf7C6VrAFhlq2xxWBveIOWyFzQjJ8XzHMhdOQ==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
           "Microsoft.NETCore.Targets": "1.1.0"
@@ -637,11 +637,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "2.8.0",
-        "contentHash": "zjuKXW5IQws43IHX7VY9nURsaCiBYh2kyJCWLJRSWrTsx/syBKHV8MibWe2A+QH3Er0AiwA+OJmO3DhFJDY1+A==",
-        "dependencies": {
-          "System.Collections.NonGeneric": "4.3.0"
-        }
+        "resolved": "2.9.0",
+        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
       },
       "Serilog.Extensions.Logging": {
         "type": "Transitive",
@@ -780,7 +777,7 @@
       "System.Collections.NonGeneric": {
         "type": "Transitive",
         "resolved": "4.3.0",
-        "contentHash": "LE/oChpRvkSi3U25u0KnJcI44JeDZ1QJCyN4qFDx2uusEypdqR24w7lKYw21eYe5esuCBuc862wRmpF63Yy1KQ==",
+        "contentHash": "prtjIEMhGUnQq6RnPEYLpFt8AtLbp9yq2zxOSrY7KJJZrw25Fi97IzBqY7iqssbM61Ek5b8f3MG/sG1N2sN5KA==",
         "dependencies": {
           "System.Diagnostics.Debug": "4.3.0",
           "System.Globalization": "4.3.0",
@@ -830,7 +827,7 @@
       "System.ComponentModel.TypeConverter": {
         "type": "Transitive",
         "resolved": "4.3.0",
-        "contentHash": "HZiP0DwTHJ+C+rdFqP47nBYUh5283kcwXIGY2zOVVhsJmVI/2tYiX2zNRdjRQRHsTox58Ydkec6h0pWSh8wAsw==",
+        "contentHash": "16pQ6P+EdhcXzPiEK4kbA953Fu0MNG2ovxTZU81/qsCd1zPRsKc3uif5NgvllCY598k6bI0KUyKW8fanlfaDQg==",
         "dependencies": {
           "System.Collections": "4.3.0",
           "System.Collections.NonGeneric": "4.3.0",
@@ -978,8 +975,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "7.0.5",
-        "contentHash": "lWomFTbkwunZDiFGogoc8jN1x76pKY4Yiei6urswlYWdEPfinMoE2uLqGrC0KKQqDdDk1+c6P+/X7cv6eRlQlg==",
+        "resolved": "7.0.7",
+        "contentHash": "+gz7Gsw67Bop1uSstqueYZUuHkkyVo2csOGnjO/4thRvSfRNTAYEPtATcTp0+z/b8Xs/Psz8XC+w41KJ4eFJXA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.6.0"
         }
@@ -1717,12 +1714,12 @@
           "Microsoft.Web.LibraryManager.Build": "2.0.96",
           "Mono.Cecil": "0.11.0",
           "Newtonsoft.Json": "12.0.2",
-          "Serilog": "2.8.0",
+          "Serilog": "2.9.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "1.1.0",
           "Serilog.Sinks.Console": "3.1.1",
           "Stryker.DataCollector": "1.0.0",
-          "System.IO.Abstractions": "7.0.5"
+          "System.IO.Abstractions": "7.0.7"
         }
       },
       "stryker.datacollector": {

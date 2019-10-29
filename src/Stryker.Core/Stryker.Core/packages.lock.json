@@ -177,9 +177,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[7.0.5, )",
-        "resolved": "7.0.5",
-        "contentHash": "lWomFTbkwunZDiFGogoc8jN1x76pKY4Yiei6urswlYWdEPfinMoE2uLqGrC0KKQqDdDk1+c6P+/X7cv6eRlQlg==",
+        "requested": "[7.0.7, )",
+        "resolved": "7.0.7",
+        "contentHash": "+gz7Gsw67Bop1uSstqueYZUuHkkyVo2csOGnjO/4thRvSfRNTAYEPtATcTp0+z/b8Xs/Psz8XC+w41KJ4eFJXA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.6.0"
         }
@@ -491,7 +491,7 @@
       "runtime.native.System.IO.Compression": {
         "type": "Transitive",
         "resolved": "4.3.0",
-        "contentHash": "b+V9JC/Ii3sR659flBeaBJww111425tgjcDS1k+hqV4sGh9FALRDBvJnDtQ895gAzpPTUOFDHdqaZ2Et7BpZMg==",
+        "contentHash": "INBPonS5QPEgn7naufQFXJEp3zX6L4bwHgJ/ZH78aBTpeNfQMtf7C6VrAFhlq2xxWBveIOWyFzQjJ8XzHMhdOQ==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
           "Microsoft.NETCore.Targets": "1.1.0"
