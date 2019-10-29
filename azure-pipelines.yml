@@ -101,7 +101,7 @@ stages:
           - task: PublishPipelineArtifact@0
             inputs:
               artifactName: dir
-              targetPath: '$(Pipelines.Workspace)'
+              targetPath: $(Pipeline.Workspace)
             condition: always()
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
