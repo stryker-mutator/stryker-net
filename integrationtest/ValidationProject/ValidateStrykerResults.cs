@@ -27,24 +27,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 25, skipped: 8, survived: 2, killed: 2, timeout: 1, nocoverage: 10);
-        }
-
-        [Fact]
-        public void NetStandard()
-        {
-            var directory = new DirectoryInfo("../../../../TargetProjects/NetStandardTestProject.XUnit/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
-
-            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
-
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
-
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
-
-            CheckReportMutantCounts(report, total: 25, skipped: 2, survived: 1, killed: 2, timeout: 0, nocoverage: 18);
+            CheckReportMutantCounts(report, total: 56, skipped: 21, survived: 2, killed: 2, timeout: 1, nocoverage: 28);
         }
 
         [Fact]

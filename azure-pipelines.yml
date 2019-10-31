@@ -139,10 +139,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'windows-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
@@ -163,10 +159,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'linux-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - task: DotNetCoreCLI@2
@@ -181,10 +173,6 @@ stages:
       vmImage: macOS-latest
     steps:
     - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
