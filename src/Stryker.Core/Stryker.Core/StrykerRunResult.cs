@@ -5,7 +5,7 @@ namespace Stryker.Core
     public class StrykerRunResult
     {
         private StrykerOptions _options { get; }
-        public decimal? MutationScore { get; }
+        public decimal? MutationScore { get; private set; }
 
         public StrykerRunResult(StrykerOptions options, decimal? mutationScore)
         {
