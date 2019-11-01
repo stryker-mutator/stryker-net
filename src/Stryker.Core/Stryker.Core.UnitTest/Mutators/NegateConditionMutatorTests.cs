@@ -51,21 +51,7 @@ namespace TestApplication
             var result = target.ApplyMutations(node).ToList();
             
             result.Count.ShouldBe(1);
-            result.First().ReplacementNode.ToString().ShouldBe("!Method()");
-        }
-
-        [Theory]
-        [InlineData("if (Method(node.Parent != null)) => return true;")]
-        [InlineData("while (Method(false)) => return true;")]
-        public void ShouldNotMutateStatementWithArguments(string method)
-        {
-            var target = new NegateConditionMutator();
-
-            var node = GenerateExpressions(method);
-
-            var result = target.ApplyMutations(node).ToList();
-
-            result.Count.ShouldBe(0);
+            result.First().ReplacementNode.ToString().ShouldBe("!(Method())");
         }
     }
 }
