@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput)
         {
-            var target = new AssignmentStatementMutator();
+            var target = new AssignmentExpressionMutator();
             var originalNode = SyntaxFactory.AssignmentExpression(
                 input,
                 SyntaxFactory.IdentifierName("a"),
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateSimpleAssignment()
         {
-            var target = new AssignmentStatementMutator();
+            var target = new AssignmentExpressionMutator();
 
             var originalNode = SyntaxFactory.AssignmentExpression(
                 SyntaxKind.SimpleAssignmentExpression,
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateStringLiteralsLeft()
         {
-            var target = new AssignmentStatementMutator();
+            var target = new AssignmentExpressionMutator();
 
             var originalNode = SyntaxFactory.AssignmentExpression(
                 SyntaxKind.AddAssignmentExpression,
@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateStringLiteralsRight()
         {
-            var target = new AssignmentStatementMutator();
+            var target = new AssignmentExpressionMutator();
 
             var originalNode = SyntaxFactory.AssignmentExpression(
                 SyntaxKind.AddAssignmentExpression,
@@ -84,7 +84,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateStringLiteralsBoth()
         {
-            var target = new AssignmentStatementMutator();
+            var target = new AssignmentExpressionMutator();
 
             var originalNode = SyntaxFactory.AssignmentExpression(
                 SyntaxKind.AddAssignmentExpression,
