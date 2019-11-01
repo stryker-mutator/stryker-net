@@ -32,7 +32,7 @@ variables:
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
-  MygetFeedFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 stages:
 - stage: Analysis
