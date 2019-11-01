@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
+using Stryker.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -29,6 +29,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public StrykerVsTestHostLauncher(IDictionary<string, string> envVars, int id)
         {
+            // https://github.com/stryker-mutator/stryker-net/issues/778
+            // This enables vstest.console.dll to also roll forward on no candidate fx
+            _envVars.Add("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
+
             _envVars = envVars;
             _id = id;
         }
@@ -48,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 processInfo.EnvironmentVariables[key] = value;
             }
-            _currentProcess = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
+            _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
             _currentProcess.Exited += CurrentProcess_Exited;
 
