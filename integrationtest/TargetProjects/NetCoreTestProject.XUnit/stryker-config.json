@@ -8,6 +8,7 @@
     "project-file": "TargetProject.csproj",
     "excluded-mutations": [
       "string"
-    ]
+    ],
+    "language-version": "CSharp8"
   }
 }
