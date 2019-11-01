@@ -30,8 +30,9 @@ variables:
   VersionBuildNumber: $[counter('0.13.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  IntegrationTestFeed: https://www.myget.org/F/stryker-mutator-integrationtest
-  IntegrationTestFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
+  AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
+  MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
 
 stages:
 - stage: Analysis
@@ -96,13 +97,23 @@ stages:
               versionEnvVar: IntegrationTestVersion
               packagesToPack: $(ProjectsToPack)
               packDirectory: $(Build.ArtifactStagingDirectory)/integrationtest
+              includesymbols: true
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
+            condition: eq(variables['System.PullRequest.IsFork'], 'True')
             inputs:
               command: custom
               custom: 'nuget'
-              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(IntegrationTestFeed) -k $(IntegrationTestFeedKey)'
+              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(MygetFeed) -k $(IntegrationTestFeedKey)'
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish integrationtest packages'
+            condition: eq(variables['System.PullRequest.IsFork'], 'False')
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/integrationtest/*$(IntegrationTestVersion).nupkg'
+              nuGetFeedType: 'internal'
+              publishVstsFeed: '506a1f46-900e-434e-805f-ff8d36fc81af/cc8fa47b-395f-417d-8b3d-72618b95ddb8'
   - job: WaitOnMyGetProcessing
     displayName: Wait on pre-release packages to be processed on MyGet
     dependsOn: 'PublishIntegrationTestPackage'
@@ -125,10 +136,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'windows-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
@@ -149,10 +156,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'linux-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - task: DotNetCoreCLI@2
@@ -167,10 +170,6 @@ stages:
       vmImage: macOS-latest
     steps:
     - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'

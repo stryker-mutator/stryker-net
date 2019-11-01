@@ -66,6 +66,7 @@ Right now, Stryker.NET supports the following mutations:
 - Checked Statements
 - Linq Methods
 - String Literals
+- Bitwise Operators
 
 For the full list of all available mutations, see the [mutator docs](/docs/Mutators.md).
 
