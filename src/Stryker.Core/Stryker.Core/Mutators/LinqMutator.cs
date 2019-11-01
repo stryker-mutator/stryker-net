@@ -57,57 +57,75 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax expr)
         {
             var original = expr;
-            if (expr.Parent is ConditionalAccessExpressionSyntax)
+            if (expr.Parent is ConditionalAccessExpressionSyntax || expr.Parent is MemberAccessExpressionSyntax)
             {
                 yield break;
             }
+
+            foreach (var mutation in FindMutableMethodCalls(expr, original))
+            {
+                yield return mutation;
+            }
+        }
+
+        private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax expr, ExpressionSyntax original)
+        {
             while(expr is ConditionalAccessExpressionSyntax conditional)
             {
+                foreach (var subMutants in FindMutableMethodCalls(conditional.Expression, original))
+                {
+                    yield return subMutants;
+                }
                 expr = conditional.WhenNotNull;
             }
 
-            if (!(expr is InvocationExpressionSyntax invocationExpression))
+            for (;;)
             {
-                yield break;
-            }
-
-            string memberName;
-            SyntaxNode toReplace;
-            switch (invocationExpression.Expression)
-            {
-                case MemberAccessExpressionSyntax node:
-                    toReplace = node.Name;
-                    memberName = node.Name.Identifier.ValueText;
-                    break;
-                case MemberBindingExpressionSyntax binding:
-                    toReplace = binding.Name;
-                    memberName = binding.Name.Identifier.ValueText;
-                    break;
-                default:
+                ExpressionSyntax next = null;
+                if (!(expr is InvocationExpressionSyntax invocationExpression))
+                {
                     yield break;
+                }
+
+                string memberName;
+                SyntaxNode toReplace;
+                switch (invocationExpression.Expression)
+                {
+                    case MemberAccessExpressionSyntax node:
+                        toReplace = node.Name;
+                        memberName = node.Name.Identifier.ValueText;
+                        next = node.Expression;
+                        break;
+                    case MemberBindingExpressionSyntax binding:
+                        toReplace = binding.Name;
+                        memberName = binding.Name.Identifier.ValueText;
+                        break;
+                    default:
+                        yield break;
+                }
+
+                if (Enum.TryParse(memberName, out LinqExpression expression) &&
+                    KindsToMutate.TryGetValue(expression, out var replacementExpression))
+                {
+                    if (RequireArguments.Contains(replacementExpression) &&
+                        invocationExpression.ArgumentList.Arguments.Count == 0)
+                    {
+                        yield break;
+                    }
+
+                    yield return new Mutation
+                    {
+                        DisplayName =
+                            $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
+                        OriginalNode = original,
+                        ReplacementNode = original.ReplaceNode(toReplace,
+                            SyntaxFactory.IdentifierName(replacementExpression.ToString())),
+                        Type = Mutator.Linq
+                    };
+                }
+
+                expr = next;
             }
-
-            if (!Enum.TryParse(memberName, out LinqExpression expression) ||
-                !KindsToMutate.TryGetValue(expression, out var replacementExpression))
-            {
-                yield break;
-            }
-
-            var replacement = SyntaxFactory.IdentifierName(replacementExpression.ToString());
-            var displayName = $"Linq method mutation ({memberName}() to {replacement}())";
-
-            if (RequireArguments.Contains(replacementExpression) && invocationExpression.ArgumentList.Arguments.Count==0)
-            {
-                yield break;
-            }
-
-            yield return new Mutation
-            {
-                DisplayName = displayName,
-                OriginalNode = original,
-                ReplacementNode = original.ReplaceNode(toReplace, replacement),
-                Type = Mutator.Linq
-            };
         }
     }
 
