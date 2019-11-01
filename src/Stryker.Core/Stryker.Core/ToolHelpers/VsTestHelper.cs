@@ -82,7 +82,8 @@ namespace Stryker.Core.ToolHelpers
             {
                 var nugetPackageFolders = CollectNugetPackageFolders();
 
-                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies && nugetAssemblies.Count != 0)
+                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
+                    && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
                 {
                     Merge(_vstestPaths, nugetAssemblies);
                     _logger.LogDebug("Using vstest from nuget package folders");
@@ -177,11 +178,15 @@ namespace Stryker.Core.ToolHelpers
         {
             if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
             {
-                yield return Path.Combine(userProfile, ".nuget", "packages");
+                var path = Path.Combine(userProfile, ".nuget", "packages");
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    yield return path;
+                }
             }
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !(string.IsNullOrWhiteSpace(nugetPackagesLocation)))
+            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !string.IsNullOrWhiteSpace(nugetPackagesLocation))
             {
-                yield return Environment.GetEnvironmentVariable(@"NUGET_PACKAGES");
+                yield return nugetPackagesLocation;
             }
         }
 
