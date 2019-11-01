@@ -171,19 +171,22 @@ namespace Stryker.Core.ToolHelpers
             return vsTestPaths;
         }
 
-        private static IEnumerable<string> CollectNugetPackageFolders()
+        private IEnumerable<string> CollectNugetPackageFolders()
         {
             if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
             {
                 var path = Path.Combine(userProfile, ".nuget", "packages");
-                if (!string.IsNullOrWhiteSpace(path))
+                if (!_fileSystem.Directory.Exists(path))
                 {
                     yield return path;
                 }
             }
             if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !string.IsNullOrWhiteSpace(nugetPackagesLocation))
             {
-                yield return nugetPackagesLocation;
+                if (!_fileSystem.Directory.Exists(nugetPackagesLocation))
+                {
+                    yield return nugetPackagesLocation;
+                }
             }
         }
 
