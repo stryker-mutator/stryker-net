@@ -78,25 +78,22 @@ namespace Stryker.Core.ToolHelpers
                 return _vstestPaths;
             }
 
-            if (_vstestPaths.Count == 0)
-            {
-                var nugetPackageFolders = CollectNugetPackageFolders();
+            var nugetPackageFolders = CollectNugetPackageFolders();
 
-                if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
-                    && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
-                {
-                    Merge(_vstestPaths, nugetAssemblies);
-                    _logger.LogDebug("Using vstest from nuget package folders");
-                }
-                else if (DeployEmbeddedVsTestBinaries() is var deployPath)
-                {
-                    Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
-                    _logger.LogDebug("Using vstest from deployed vstest package");
-                }
-                else
-                {
-                    throw new ApplicationException("Could not find or deploy vstest. Exiting.");
-                }
+            if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
+                && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
+            {
+                Merge(_vstestPaths, nugetAssemblies);
+                _logger.LogDebug("Using vstest from nuget package folders");
+            }
+            else if (DeployEmbeddedVsTestBinaries() is var deployPath)
+            {
+                Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
+                _logger.LogDebug("Using vstest from deployed vstest package");
+            }
+            else
+            {
+                throw new ApplicationException("Could not find or deploy vstest. Exiting.");
             }
 
             return _vstestPaths;
