@@ -1,10 +1,9 @@
 <Project>
- <PropertyGroup>
-   <LangVersion>7.3</LangVersion>
+  <PropertyGroup>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
-   <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-   <RestoreLockedMode>true</RestoreLockedMode>
-   <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
- </PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+  </PropertyGroup>
 </Project>
