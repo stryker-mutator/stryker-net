@@ -176,14 +176,14 @@ namespace Stryker.Core.ToolHelpers
             if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
             {
                 var path = Path.Combine(userProfile, ".nuget", "packages");
-                if (!_fileSystem.Directory.Exists(path))
+                if (_fileSystem.Directory.Exists(path))
                 {
                     yield return path;
                 }
             }
             if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !string.IsNullOrWhiteSpace(nugetPackagesLocation))
             {
-                if (!_fileSystem.Directory.Exists(nugetPackagesLocation))
+                if (_fileSystem.Directory.Exists(nugetPackagesLocation))
                 {
                     yield return nugetPackagesLocation;
                 }
