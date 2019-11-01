@@ -181,12 +181,11 @@ namespace Stryker.Core.ToolHelpers
                     yield return path;
                 }
             }
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation && !string.IsNullOrWhiteSpace(nugetPackagesLocation))
+            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation
+                && !string.IsNullOrWhiteSpace(nugetPackagesLocation)
+                && _fileSystem.Directory.Exists(nugetPackagesLocation))
             {
-                if (_fileSystem.Directory.Exists(nugetPackagesLocation))
-                {
-                    yield return nugetPackagesLocation;
-                }
+                yield return nugetPackagesLocation;
             }
         }
 
