@@ -56,6 +56,7 @@ namespace Stryker.Core.InjectedHelpers
 
         private static string GetSourceFromResource(string sourceResourceName)
         {
+            var names = typeof(CodeInjection).Assembly.GetManifestResourceNames();
             string helper;
             using (var stream =
                 typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
