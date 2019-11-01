@@ -138,6 +138,15 @@ private bool Out(out string test)
         }
 
         [Fact]
+        void ShouldMutateConditionalExpressionOnArrayDeclaration()
+        {
+            string source = @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
+            string expected = @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(1)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(0)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateProperties()
         {
             string source = @"private string text = ""Some"" + ""Text"";";
