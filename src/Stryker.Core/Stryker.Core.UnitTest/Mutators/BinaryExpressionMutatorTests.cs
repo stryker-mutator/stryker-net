@@ -23,6 +23,10 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(Mutator.Equality, SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
         [InlineData(Mutator.Logical, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
         [InlineData(Mutator.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression, SyntaxKind.BitwiseOrExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
+        [InlineData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
         public void MathMutator_ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
         {
             var target = new BinaryExpressionMutator();
@@ -48,6 +52,37 @@ namespace Stryker.Core.UnitTest.Mutators
                 mutation.Type.ShouldBe(expectedKind);
                 index++;
             }
+        }
+
+        [Fact]
+        void MathMutator_ShouldMutate_ExclusiveOr()
+        {
+            var kind = SyntaxKind.ExclusiveOrExpression;
+            var target = new BinaryExpressionMutator();
+            var originalNode = SyntaxFactory.BinaryExpression(kind,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(4)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(2)));
+
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.Count.ShouldBe(2, "There should be two mutations");
+            var logicalMutation = result.SingleOrDefault(x => x.Type == Mutator.Logical);
+            logicalMutation.ShouldNotBeNull();
+            logicalMutation.ReplacementNode.ShouldNotBeNull();
+            logicalMutation.ReplacementNode.IsKind(SyntaxKind.EqualsExpression).ShouldBeTrue();
+
+            var integralMutation = result.SingleOrDefault(x => x.Type == Mutator.Bitwise);
+            integralMutation.ShouldNotBeNull();
+            integralMutation.ReplacementNode.ShouldNotBeNull();
+            integralMutation.ReplacementNode.IsKind(SyntaxKind.BitwiseNotExpression).ShouldBeTrue();
+
+            var parenthesizedExpression = integralMutation.ReplacementNode.ChildNodes().SingleOrDefault();
+            parenthesizedExpression.ShouldNotBeNull();
+            parenthesizedExpression.IsKind(SyntaxKind.ParenthesizedExpression).ShouldBeTrue();
+
+            var exclusiveOrExpression = parenthesizedExpression.ChildNodes().SingleOrDefault();
+            exclusiveOrExpression.ShouldNotBeNull();
+            exclusiveOrExpression.IsKind(SyntaxKind.ExclusiveOrExpression).ShouldBeTrue();
         }
     }
 }
