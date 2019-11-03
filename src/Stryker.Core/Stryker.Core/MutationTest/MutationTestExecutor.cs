@@ -33,7 +33,7 @@ namespace Stryker.Core.MutationTest
         {
             try
             {
-                Logger.LogDebug($"Testing {mutant.DisplayName}.");
+                Logger.LogDebug($"Testing {mutant.LongName}.");
                 var result = TestRunner.RunAll(timeoutMs, mutant);
                 Logger.LogTrace($"Testrun for {mutant.DisplayName} with output {result.ResultMessage}");
 

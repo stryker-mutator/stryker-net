@@ -108,11 +108,11 @@ namespace Stryker.Core.TestRunners.VsTest
                    ? null : _discoveredTests.Where(t => mutant.CoveringTest.ContainsKey(t.Id.ToString())).ToList();
                 if (testCases == null)
                 {
-                    _logger.LogDebug($"Runner {_id}: Testing {mutant} against all tests.");
+                    _logger.LogDebug($"Runner {_id}: Testing {mutant.DisplayName} against all tests.");
                 }
                 else
                 {
-                    _logger.LogDebug($"Runner {_id}: Testing {mutant} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
+                    _logger.LogDebug($"Runner {_id}: Testing {mutant.DisplayName} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
                 }
             }
             return RunVsTest(testCases, timeoutMs, envVars);
