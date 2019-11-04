@@ -47,7 +47,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private bool _vsTestFailed = false;
 
-
         private readonly ILogger _logger;
 
         public VsTestRunner(
@@ -86,35 +85,35 @@ namespace Stryker.Core.TestRunners.VsTest
             };
         }
 
+        private string RunnerId => $"Runner {_id}";
+
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
             var envVars = new Dictionary<string, string>();
-            if (mutant != null)
+
+            // if we optimize the number of test to run
+            if (mutant == null)
             {
-                envVars["ActiveMutation"] = mutant.Id.ToString();
+                return RunVsTest(null, timeoutMs, envVars);
             }
 
-            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutant != null && (mutant.CoveringTest == null || mutant.CoveringTest.Count == 0))
+            IEnumerable<TestCase> testCases = null;
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && (mutant.CoveringTest == null || mutant.CoveringTest.Count == 0))
             {
                 return new TestRunResult { ResultMessage = "Not covered by any test", Success = true };
             }
 
-            IEnumerable<TestCase> testCases = null;
-            // if we optimize the number of test to run
-            if (mutant != null && _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+            envVars["ActiveMutation"] = mutant.Id.ToString();
+            if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
                 testCases = (mutant.MustRunAllTests && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                   ? null : _discoveredTests.Where(t => mutant.CoveringTest.ContainsKey(t.Id.ToString())).ToList();
-                if (testCases == null)
-                {
-                    _logger.LogDebug($"Runner {_id}: Testing {mutant.DisplayName} against all tests.");
-                }
-                else
-                {
-                    _logger.LogDebug($"Runner {_id}: Testing {mutant.DisplayName} against:{string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
-                }
+                    ? null : _discoveredTests.Where(t => mutant.CoveringTest.ContainsKey(t.Id.ToString())).ToList();
             }
+
+            _logger.LogDebug(testCases == null
+                ? $"{RunnerId}: Testing {mutant.DisplayName} against all tests."
+                : $"{RunnerId}: Testing {mutant.DisplayName} against: {string.Join(", ", testCases.Select(x => x.FullyQualifiedName))}.");
             return RunVsTest(testCases, timeoutMs, envVars);
         }
 
@@ -144,7 +143,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 waitHandle.WaitOne();
                 if (handler.Aborted)
                 {
-                    _logger.LogError($"Runner {_id}: Test discovery has been aborted!");
+                    _logger.LogError($"{RunnerId}: Test discovery has been aborted!");
                 }
 
                 _discoveredTests = handler.DiscoveredTestCases;
@@ -199,7 +198,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage()
         {
-            _logger.LogDebug($"Runner {_id}: Capturing coverage.");
+            _logger.LogDebug($"{RunnerId}: Capturing coverage.");
             var testResults = RunAllTests(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
             ParseResultsForCoverage(testResults);
             CoveredMutants = CoverageMutants.CoveredMutants;
@@ -213,7 +212,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (key == null)
                 {
-                    _logger.LogWarning($"Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
+                    _logger.LogWarning($"{RunnerId}: Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
                 }
                 else if (value != null)
                 {
@@ -242,7 +241,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestResult> CoverageForTest(TestCase test)
         {
-            _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
+            _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings(null, true);
             var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), _coverageEnvironment, generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
@@ -253,7 +252,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private void Handler_TestsFailed(object sender, EventArgs e)
         {
             // one test has failed, we can stop
-            _logger.LogDebug($"Runner {_id}: At least one test failed, abort current test run.");
+            _logger.LogDebug($"{RunnerId}: At least one test failed, abort current test run.");
             _vsTestConsole.AbortTestRun();
         }
 
@@ -264,7 +263,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             using (var runCompleteSignal = new AutoResetEvent(false))
             {
-                var eventHandler = new RunEventHandler(runCompleteSignal, _logger);
+                var eventHandler = new RunEventHandler(runCompleteSignal, _logger, $"Runner {this._id}");
                 var strykerVsTestHostLauncher = _hostBuilder(envVars, _id);
 
                 eventHandler.VsTestFailed += Handler_VsTestFailed;
@@ -324,7 +323,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
+            _logger.LogDebug($"{RunnerId}: VsTest logging set to {traceLevel}");
             return traceLevel;
         }
 
@@ -371,7 +370,7 @@ namespace Stryker.Core.TestRunners.VsTest
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
-            _logger.LogDebug("VsTest runsettings set to: {0}", runSettings);
+            _logger.LogDebug($"{RunnerId}: VsTest runsettings set to: {runSettings}");
 
             return runSettings;
         }
@@ -397,7 +396,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
 
-            _logger.LogDebug("Logging vstest output to: {0}", vstestLogPath);
+            _logger.LogDebug($"{RunnerId}: Logging vstest output to: {vstestLogPath}");
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {

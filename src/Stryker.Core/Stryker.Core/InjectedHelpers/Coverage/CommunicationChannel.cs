@@ -20,7 +20,13 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         public event MessageReceived RaiseReceivedMessage;
 
-        public bool IsConnected { get { return _pipeStream.IsConnected; } }
+        public bool IsConnected
+        {
+            get
+            {
+                return _pipeStream.IsConnected;
+            }
+        }
 
         public CommunicationChannel(PipeStream stream, string name)
         {
@@ -37,6 +43,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         {
             NamedPipeClientStream pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough);
+
             try
             {
                 pipe.Connect(timeout);

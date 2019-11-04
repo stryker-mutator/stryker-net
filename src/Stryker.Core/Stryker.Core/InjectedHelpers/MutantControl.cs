@@ -18,6 +18,7 @@ namespace Stryker
 
         static MutantControl()
         {
+            Log("Init mutant control.");
             InitCoverage();
             if (usePipe)
             {
@@ -98,12 +99,13 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            Console.WriteLine("["+DateTime.Now.ToString(":HH:mm:ss.fff") + " DBG]"+  message);
+            Console.WriteLine("["+DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] "+  message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
+            Log($"Check IsActive {id}");
             if (captureCoverage)
             {
                 lock (_coveredMutants)

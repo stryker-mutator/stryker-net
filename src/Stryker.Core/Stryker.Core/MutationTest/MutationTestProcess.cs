@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -77,12 +78,12 @@ namespace Stryker.Core.MutationTest
                     path: file.FullPath,
                     options: cSharpParseOptions);
 
-                    _logger.LogDebug($"Mutating {file.Name}");
+                _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
                 var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-
+                _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
                 IEnumerable<Mutant> filteredMutants = allMutants;
