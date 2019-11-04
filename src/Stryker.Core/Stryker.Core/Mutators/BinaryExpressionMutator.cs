@@ -26,6 +26,10 @@ namespace Stryker.Core.Mutators
                 {SyntaxKind.NotEqualsExpression, new List<SyntaxKind> {SyntaxKind.EqualsExpression } },
                 {SyntaxKind.LogicalAndExpression, new List<SyntaxKind> {SyntaxKind.LogicalOrExpression } },
                 {SyntaxKind.LogicalOrExpression, new List<SyntaxKind> {SyntaxKind.LogicalAndExpression } },
+                {SyntaxKind.LeftShiftExpression, new List<SyntaxKind> {SyntaxKind.RightShiftExpression } },
+                {SyntaxKind.RightShiftExpression, new List<SyntaxKind> {SyntaxKind.LeftShiftExpression } },
+                {SyntaxKind.BitwiseOrExpression, new List<SyntaxKind> {SyntaxKind.BitwiseAndExpression } },
+                {SyntaxKind.BitwiseAndExpression, new List<SyntaxKind> {SyntaxKind.BitwiseOrExpression } },
             };
         }
 
@@ -34,26 +38,32 @@ namespace Stryker.Core.Mutators
             if(_kindsToMutate.ContainsKey(node.Kind()))
             {
                 // skip string additions
-                if (node.Kind() == SyntaxKind.AddExpression &&(node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
+                if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
                 {
                     yield break;
                 }
-                
                 foreach(var mutationKind in _kindsToMutate[node.Kind()])
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
                     // make sure the trivia stays in place for displaying
                     replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
-
+                    var mutatorType = GetMutatorType(mutationKind);
                     yield return new Mutation()
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = "Binary expression mutation",
-                        Type = GetMutatorType(mutationKind)
+                        DisplayName = $"{mutatorType} mutation",
+                        Type = mutatorType
                     };
                 }
             }
+            else if (node.Kind() == SyntaxKind.ExclusiveOrExpression)
+            {
+                // Place both a logical and an integral mutation. Only one will compile, the other will be removed. See: https://github.com/stryker-mutator/stryker-net/issues/664
+                yield return GetLogicalMutation(node);
+                yield return GetIntegralMutation(node);
+            }
+
         }
 
         private Mutator GetMutatorType(SyntaxKind kind)
@@ -62,15 +72,48 @@ namespace Stryker.Core.Mutators
             if (kindString.StartsWith("Logical"))
             {
                 return Mutator.Logical;
-            } else if (kindString.Contains("Equals") 
+            }
+            else if (kindString.Contains("Equals") 
                 || kindString.Contains("Greater") 
                 || kindString.Contains("Less"))
             {
                 return Mutator.Equality;
-            } else
+            }
+            else if (kindString.StartsWith("Bitwise") || kindString.Contains("Shift"))
+            {
+                return Mutator.Bitwise;
+            }
+            else
             {
                 return Mutator.Arithmetic;
             }
+        }
+
+        private Mutation GetLogicalMutation(BinaryExpressionSyntax node)
+        {
+            var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left, node.Right);
+            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+
+            return new Mutation
+            {
+                OriginalNode = node,
+                ReplacementNode = replacementNode,
+                DisplayName = "Logical mutation",
+                Type = Mutator.Logical
+            };
+        }
+
+        private Mutation GetIntegralMutation(BinaryExpressionSyntax node)
+        {
+            var replacementNode = SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, SyntaxFactory.ParenthesizedExpression(node));
+
+            return new Mutation
+            {
+                OriginalNode = node,
+                ReplacementNode = replacementNode,
+                DisplayName = "Bitwise mutation",
+                Type = Mutator.Bitwise
+            };
         }
     }
 }

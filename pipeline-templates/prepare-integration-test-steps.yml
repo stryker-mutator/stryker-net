@@ -1,4 +1,9 @@
 steps:
+  - task: DotNetCoreCLI@2
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
   - task: UseDotNet@2
     displayName: 'Install dotnet core 2.1.x sdk for integrationtest (to run stryker on)'
     inputs:
@@ -10,18 +15,14 @@ steps:
       version: 3.0.x
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run unit tests'
-    inputs:
-      command: test
-      projects: 'src/**/*.UnitTest.csproj'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Install integrationtest dotnet tool'
+    displayName: 'Install integrationtest dotnet tool (fork)'
     condition: eq(variables['System.PullRequest.IsFork'], 'True')
     inputs:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+      includeNuGetOrg: false
+      workingDirectory: 'pipeline-templates'
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
@@ -30,5 +31,7 @@ steps:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+      includeNuGetOrg: false
+      workingDirectory: 'pipeline-templates'
 
   - template: populate-cache-steps.yml
