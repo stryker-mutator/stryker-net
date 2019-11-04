@@ -1,9 +1,4 @@
 steps:
-  - task: DotNetCoreCLI@2
-    displayName: 'Run unit tests'
-    inputs:
-      command: test
-      projects: 'src/**/*.UnitTest.csproj'
   - task: UseDotNet@2
     displayName: 'Install dotnet core 2.1.x sdk for integrationtest (to run stryker on)'
     inputs:
@@ -13,6 +8,12 @@ steps:
     displayName: 'Install dotnet core 3.0.x sdk for integrationtest (to compile integration test project)'
     inputs:
       version: 3.0.x
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool (fork)'
