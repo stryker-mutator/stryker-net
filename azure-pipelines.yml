@@ -48,6 +48,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
@@ -67,7 +68,6 @@ stages:
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--logger trx --results-directory $(Agent.TempDirectory) --collect "Code coverage"'
         publishTestResults: false
-    - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:
@@ -87,6 +87,7 @@ stages:
         deploy:
           steps:
           - checkout: self
+          - template: pipeline-templates/populate-cache-steps.yml
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
@@ -94,7 +95,6 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - template: pipeline-templates/populate-cache-steps.yml
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -198,6 +198,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -205,7 +206,6 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Pack preview package'
       inputs:
@@ -214,7 +214,6 @@ stages:
         versionEnvVar: PreviewVersion
         packagesToPack: $(ProjectsToPack)
         packDirectory: $(Build.ArtifactStagingDirectory)/preview
-
     - script: echo "##vso[build.addbuildtag]preview"
       displayName: "Tag build as preview build so release gets triggered"
     - task: PublishBuildArtifacts@1
@@ -235,6 +234,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -242,7 +242,6 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:

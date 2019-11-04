@@ -8,6 +8,7 @@ steps:
     displayName: 'Install dotnet core 3.0.x sdk for integrationtest (to compile integration test project)'
     inputs:
       version: 3.0.x
+  - template: populate-cache-steps.yml
 
   - task: DotNetCoreCLI@2
     displayName: 'Run unit tests'
@@ -34,5 +35,3 @@ steps:
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
       includeNuGetOrg: false
       workingDirectory: 'pipeline-templates'
-
-  - template: populate-cache-steps.yml
