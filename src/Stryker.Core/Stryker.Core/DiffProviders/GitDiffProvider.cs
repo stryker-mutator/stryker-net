@@ -44,18 +44,6 @@ namespace Stryker.Core.DiffProviders
                     throw new StrykerInputException("Git source branch does not exist. Please set another source branch or remove the --git-source option.");
                 }
 
-                // Compare the sourcebranch by commits and open filesystem changes.
-                foreach (var patchEntry in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory, null, null, new CompareOptions() { IndentHeuristic = true }))
-                {
-                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchEntry.Path));
-                    diffResult.ChangedFiles.Add(diffPath);
-                    var lines = Regex.Match(patchEntry.Patch, @"@@\s\-(?<oldFrom>\d+),(?<oldLength>\d+)\s\+(?<newFrom>\d+),(?<newLength>\d+).*\s@@");
-                    if (diffPath.StartsWith(_options.BasePath))
-                    {
-                        diffResult.TestsChanged = true;
-                    }
-                }
-
                 foreach (var treeChanges in repository.Diff.Compare<TreeChanges>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                 {
                     string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
