@@ -12,8 +12,9 @@ namespace Stryker
         private static string pipeName;
         private static string envName;
         private static bool captureCoverage;
+#if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
-
+#endif
         public const string EnvironmentPipeName = "Coverage";
 
         static MutantControl()
@@ -21,19 +22,22 @@ namespace Stryker
             InitCoverage();
             if (usePipe)
             {
+#if !STRYKER_NO_DOMAIN
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+#endif
             }
         }
 
         public static void InitCoverage()
         {
             ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
+            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
+#if !STRYKER_NO_PIPE
             if (channel != null)
             {
                 channel.Dispose();
                 channel = null;
             }
-            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
             if (coverageMode.StartsWith("pipe:"))
             {
                 pipeName = coverageMode.Substring(5);
@@ -44,12 +48,14 @@ namespace Stryker
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
-            else if (coverageMode.StartsWith("env:"))
+#else
+            if (coverageMode.StartsWith("env:"))
             {
                 envName = coverageMode.Substring(4);
                 captureCoverage = true;
                 usePipe = false;
             }
+#endif
             if (captureCoverage)
             {
                 _coveredMutants = new HashSet<int>();
@@ -92,8 +98,9 @@ namespace Stryker
             {
                 report = string.Join(",", state)+";"+string.Join(",", staticMutants);
             }
-
+#if !STRYKER_NO_PIPE
             channel.SendText(report);
+#endif
         }
 
         private static void Log(string message)

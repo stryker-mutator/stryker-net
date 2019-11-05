@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+#if !STRYKER_NO_PIPE
 using System.IO.Pipes;
+#endif
 using System.Text;
 
 namespace Stryker.Core.InjectedHelpers.Coverage
 {
+#if !STRYKER_NO_PIPE
     public delegate void MessageReceived(object sender, string args);
 
     public class CommunicationChannel : IDisposable
@@ -189,4 +192,5 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             _pipeStream.Dispose();
         }
     }
+#endif
 }

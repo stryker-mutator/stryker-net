@@ -1,9 +1,11 @@
-﻿using Buildalyzer;
+﻿using System;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -29,6 +31,14 @@ namespace Stryker.Core.Initialisation
         }
     }
 
+    public enum FrameworkKind
+    {
+        NetClassic,
+        NetCore,
+        NetStandard,
+        Unknown
+    };
+
     public class ProjectAnalyzerResult
     {
         private readonly ILogger _logger;
@@ -41,6 +51,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private string _assemblyPath;
+
         public string AssemblyPath
         {
             get => _assemblyPath ?? FilePathUtils.NormalizePathSeparators(Path.Combine(
@@ -50,6 +61,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IEnumerable<string> _projectReferences;
+
         public IEnumerable<string> ProjectReferences
         {
             get => _projectReferences ?? _analyzerResult.ProjectReferences;
@@ -57,6 +69,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IReadOnlyDictionary<string, string> _properties;
+
         public IReadOnlyDictionary<string, string> Properties
         {
             get => _properties ?? _analyzerResult.Properties;
@@ -64,13 +77,32 @@ namespace Stryker.Core.Initialisation
         }
 
         private string _targetFramework;
+
         public string TargetFramework
         {
-            get => _targetFramework ?? _analyzerResult.TargetFramework;
+            get => _targetFramework ?? _analyzerResult?.TargetFramework;
             set => _targetFramework = value;
         }
 
+        public (FrameworkKind, Version) FrameworkAndVersion
+        {
+            get
+            {
+                var label = new Dictionary<string, FrameworkKind> {["netcoreapp"] = FrameworkKind.NetCore, ["netstandard"] = FrameworkKind.NetStandard, ["net"] = FrameworkKind.NetClassic};
+                var analysis = Regex.Match(TargetFramework ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
+                {
+                    return (label[analysis.Groups["kind"].Value], new Version(analysis.Groups["version"].Value));
+                }
+
+                return (FrameworkKind.Unknown, new Version());
+            }
+        }
+
+        public IList<string> CompilationSymbols => _analyzerResult?.GetProperty("DefineConstants")?.Split(";");
+
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _packageReferences;
+
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PackageReferences
         {
             get => _packageReferences ?? _analyzerResult.PackageReferences;
@@ -109,10 +141,7 @@ namespace Stryker.Core.Initialisation
         private IEnumerable<ResourceDescription> _resources;
         public IEnumerable<ResourceDescription> Resources
         {
-            get
-            {
-                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
-            }
+            get => _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
             set => _resources = value;
         }
     }

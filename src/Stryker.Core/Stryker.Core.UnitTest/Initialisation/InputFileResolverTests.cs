@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System;
+using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -50,6 +51,38 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
+        }
+
+        [Fact]
+        public void ProjectAnalyzerShouldDecodeFramework()
+        {
+            var test = new ProjectAnalyzerResult(null, null)
+            {
+                ProjectReferences = new List<string>() {projectUnderTestPath},
+                TargetFramework = "netcoreapp2.1",
+                ProjectFilePath = alternateTestProjectPath,
+                References = new string[] {""}
+            };
+
+            test.FrameworkAndVersion.ShouldBe((FrameworkKind.NetCore, new Version(2,1)));
+            test = new ProjectAnalyzerResult(null, null)
+            {
+                ProjectReferences = new List<string>() {projectUnderTestPath},
+                TargetFramework = "netstandard1.6",
+                ProjectFilePath = alternateTestProjectPath,
+                References = new string[] {""}
+            };
+
+            test.FrameworkAndVersion.ShouldBe((FrameworkKind.NetStandard, new Version(1,6)));
+            test = new ProjectAnalyzerResult(null, null)
+            {
+                ProjectReferences = new List<string>() {projectUnderTestPath},
+                TargetFramework = "mono4.6",
+                ProjectFilePath = alternateTestProjectPath,
+                References = new string[] {""}
+            };
+
+            test.FrameworkAndVersion.ShouldBe((FrameworkKind.Unknown, new Version()));
         }
 
         [Fact]

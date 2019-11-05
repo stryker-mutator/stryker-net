@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -62,12 +63,35 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
+            var (targetFmwk, fmwkVersion) =_input.ProjectInfo.ProjectUnderTestAnalyzerResult.FrameworkAndVersion;
+            var predefinedSymbols =_input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
+            switch (targetFmwk)
+            {
+                case FrameworkKind.NetCore:
+                    if (fmwkVersion.Major<2)
+                    {
+                        predefinedSymbols.Add("STRYKER_NO_DOMAIN");
+                    }
+                    break;
+                case FrameworkKind.NetStandard:
+                    if (fmwkVersion.Major<2)
+                    {
+                        predefinedSymbols.Add("STRYKER_NO_DOMAIN");
+                        predefinedSymbols.Add("STRYKER_NO_PIPE");
+                    }
+                    break;
+                case FrameworkKind.Unknown:
+                case FrameworkKind.NetClassic:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
-            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion);
-            foreach (var helper in CodeInjection.MutantHelpers)
+            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: predefinedSymbols);
+            foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
-                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(helper.Value, path: helper.Key,
+                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: name,
                     options: cSharpParseOptions));
             }
 
