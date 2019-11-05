@@ -22,10 +22,6 @@ namespace Stryker.Core.DiffProviders
 
         public DiffResult ScanDiff()
         {
-            if (!_options.DiffEnabled)
-            {
-                return null;
-            }
             string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
             if (string.IsNullOrEmpty(repositoryPath))
