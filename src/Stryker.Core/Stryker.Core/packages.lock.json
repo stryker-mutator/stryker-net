@@ -27,6 +27,15 @@
         "resolved": "3.0.5",
         "contentHash": "YyRz7scXLFgGv7KfYDeHvFcJIC+rHdDuB6z5hSf5JcUDD9Mgg/MhnpS4VMtXkYTR7OdAXChnojUFZ1Xef8xWGg=="
       },
+      "LibGit2Sharp": {
+        "type": "Direct",
+        "requested": "[0.26.1, )",
+        "resolved": "0.26.1",
+        "contentHash": "CGEI8n5QjuQ05KsDYY6+utD1Ovcia1IFIbzA2Z3KjZkybVP9JeftSwCnAuRvVKsL9EPsOU0Eew2QiUfdeyhFYg==",
+        "dependencies": {
+          "LibGit2Sharp.NativeBinaries": "[2.0.289]"
+        }
+      },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Direct",
         "requested": "[3.3.1, )",
@@ -191,6 +200,11 @@
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
+      },
+      "LibGit2Sharp.NativeBinaries": {
+        "type": "Transitive",
+        "resolved": "2.0.289",
+        "contentHash": "/bHaWrS2qcviCKnr+98DIKGfPCQByqwU/KzWrOsQnCQaz7DNVs4xMpkrGEhgc2O0aTKCXUb1np8nCl8qrxIuag=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
