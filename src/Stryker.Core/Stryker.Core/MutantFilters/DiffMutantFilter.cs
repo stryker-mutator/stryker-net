@@ -1,14 +1,8 @@
-﻿using LibGit2Sharp;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.Logging;
+﻿using Stryker.Core.DiffProviders;
 using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.MutantFilters
