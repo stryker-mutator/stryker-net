@@ -167,7 +167,7 @@ namespace Stryker.Core.Compiling
                 if (mutationIf == null)
                 {
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
-                    _logger.LogWarning("Stryker.NET encountered an compile error in {0} with message: {1} (Source code: {2})", errorLocation.Path, diagnostic.GetMessage(), brokenMutation);
+                    _logger.LogWarning($"Stryker.NET encountered an compile error in {errorLocation.Path} (at {errorLocation.StartLinePosition.Line}:{errorLocation.StartLinePosition.Character}) with message: {diagnostic.GetMessage()} (Source code: {brokenMutation})");
                     if (devMode)
                     {
                         _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");

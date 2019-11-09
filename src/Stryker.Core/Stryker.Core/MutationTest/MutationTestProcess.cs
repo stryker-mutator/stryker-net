@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
@@ -15,6 +17,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest
 {
@@ -22,6 +25,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate();
         StrykerRunResult Test(StrykerOptions options);
+        TestCoverageInfos GetCoverage();
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -35,6 +39,8 @@ namespace Stryker.Core.MutationTest
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly StrykerOptions _options;
+        private bool compat_noAppDomain;
+        private bool compat_noPipe;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -70,21 +76,31 @@ namespace Stryker.Core.MutationTest
                 case FrameworkKind.NetCore:
                     if (fmwkVersion.Major<2)
                     {
-                        predefinedSymbols.Add("STRYKER_NO_DOMAIN");
+                        compat_noAppDomain = true;
                     }
                     break;
                 case FrameworkKind.NetStandard:
                     if (fmwkVersion.Major<2)
                     {
-                        predefinedSymbols.Add("STRYKER_NO_DOMAIN");
-                        predefinedSymbols.Add("STRYKER_NO_PIPE");
+                        compat_noAppDomain = true;
+                        compat_noPipe = true;
                     }
                     break;
                 case FrameworkKind.Unknown:
                 case FrameworkKind.NetClassic:
+                    compat_noPipe = fmwkVersion < new Version(3, 5);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+
+            if (compat_noAppDomain)
+            {
+                predefinedSymbols.Add("STRYKER_NO_DOMAIN");
+            }
+            if (compat_noPipe)
+            {
+                predefinedSymbols.Add("STRYKER_NO_PIPE");
             }
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
@@ -230,6 +246,18 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
+        }
+
+        public TestCoverageInfos GetCoverage()
+        {
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(compat_noPipe, compat_noAppDomain);
+            if (testResult.Success) 
+            {
+                return _mutationTestExecutor.TestRunner.CoverageMutants;
+            }
+            _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
+            throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
+
         }
     }
 }

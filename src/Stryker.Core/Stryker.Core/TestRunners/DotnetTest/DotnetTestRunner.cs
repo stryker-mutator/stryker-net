@@ -59,13 +59,23 @@ namespace Stryker.Core.TestRunners
             };
         }
 
-        public TestRunResult CaptureCoverage()
+        public TestRunResult CaptureCoverage(bool cantUsePipe, bool cantUseUnloadAppDomain)
         {
+            if (cantUseUnloadAppDomain)
+            {
+                _logger.LogWarning("Can't capture the test coverage as the target framework does not support 'AppDomain'. ");
+                return new TestRunResult(){Success = true};
+            }
+
+            if (cantUsePipe)
+            {
+                _logger.LogDebug("Target framework does not support NamedPipes. Stryker will use environment variables instead.");
+            }
             if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
                 collector.SetLogger((message) => _logger.LogTrace(message));
-                collector.Init(true);
+                collector.Init(!cantUsePipe);
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);
 
@@ -74,10 +84,8 @@ namespace Stryker.Core.TestRunners
                 CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
                 return result;
             }
-            else
-            {
-                return LaunchTestProcess(null, null);
-            }
+
+            return new TestRunResult(){Success = true};
         }
 
         public int DiscoverNumberOfTests()

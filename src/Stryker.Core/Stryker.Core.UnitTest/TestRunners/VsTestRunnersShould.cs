@@ -305,7 +305,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                var result = runner.CaptureCoverage();
+                var result = runner.CaptureCoverage(false, false);
 
                 // only one mutant is covered
                 runner.CoveredMutants.ShouldHaveSingleItem();
@@ -354,7 +354,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                var result = runner.CaptureCoverage();
+                var result = runner.CaptureCoverage(false, false);
                 // one mutant is covered
                 runner.CoveredMutants.ShouldHaveSingleItem();
                 // it is covered by both tests
@@ -404,7 +404,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                runner.CaptureCoverage();
+                runner.CaptureCoverage(false, false);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -475,7 +475,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         });
                     });
 
-                runner.CaptureCoverage();
+                runner.CaptureCoverage(false, false);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
@@ -543,7 +543,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         endProcess.Set();
                     });
 
-                runner.CaptureCoverage();
+                runner.CaptureCoverage(false, false);
 
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(

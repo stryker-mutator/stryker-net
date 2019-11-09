@@ -1,3 +1,11 @@
+# [0.14.0]
+
+### Bug Fixes
+* **Version**: Stryker tries to preserve versionning information
+
+
+
+
 # [0.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.12.0...0.13.0) (2019-09-06)
 
 

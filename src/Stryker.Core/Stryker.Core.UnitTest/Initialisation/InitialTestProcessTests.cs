@@ -1,6 +1,7 @@
 ﻿using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult { Success = false });
-            testRunnerMock.Setup(x => x.CaptureCoverage())
+            testRunnerMock.Setup(x => x.CaptureCoverage(false, false))
                 .Returns(new TestRunResult { Success = false });
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult { Success = true });
-            testRunnerMock.Setup(x => x.CaptureCoverage())
+            testRunnerMock.Setup(x => x.CaptureCoverage(false, false))
                 .Returns(new TestRunResult { Success = true });
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
 

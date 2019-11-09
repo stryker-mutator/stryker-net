@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.TestRunners
 {
@@ -9,7 +10,7 @@ namespace Stryker.Core.TestRunners
         TestRunResult RunAll(int? timeoutMS, IReadOnlyMutant activeMutant);
         int DiscoverNumberOfTests();
 
-        TestRunResult CaptureCoverage();
+        TestRunResult CaptureCoverage(bool cantUsePipe, bool cantUseUnloadAppDomain);
 
         TestCoverageInfos CoverageMutants { get; }
 

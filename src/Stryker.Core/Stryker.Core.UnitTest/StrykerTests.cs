@@ -41,10 +41,10 @@ namespace Stryker.Core.UnitTest
             var coveredMutants = new TestCoverageInfos();
             coveredMutants.DeclareMappingForATest(new TestDescription("1", "SomeTest"), new[] { 2, 3 }, new[] { 2 });
             var nbTests = 0;
-            initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), out nbTests)).Returns(0);
-            initialisationMock.Setup(x => x.GetCoverage(It.IsAny<StrykerOptions>())).Returns(coveredMutants);
+            initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);
 
             mutationTestProcessMock.Setup(x => x.Mutate());
+            mutationTestProcessMock.Setup(x => x.GetCoverage()).Returns(new TestCoverageInfos());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
 

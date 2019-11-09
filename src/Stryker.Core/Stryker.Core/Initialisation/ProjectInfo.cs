@@ -92,7 +92,12 @@ namespace Stryker.Core.Initialisation
                 var analysis = Regex.Match(TargetFramework ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
                 if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
                 {
-                    return (label[analysis.Groups["kind"].Value], new Version(analysis.Groups["version"].Value));
+                    var version = analysis.Groups["version"].Value;
+                    if (version.Length == 2)
+                    {
+                        version = $"{version[0]}.{version[1]}";
+                    }
+                    return (label[analysis.Groups["kind"].Value], new Version(version));
                 }
 
                 return (FrameworkKind.Unknown, new Version());

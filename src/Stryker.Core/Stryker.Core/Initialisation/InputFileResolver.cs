@@ -63,7 +63,8 @@ namespace Stryker.Core.Initialisation
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
             var inputFiles = new FolderComposite();
-            result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
+            var (fwk, _) = result.TestProjectAnalyzerResult.FrameworkAndVersion;
+            result.FullFramework = fwk == FrameworkKind.NetClassic;
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
             foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
             {
@@ -177,7 +178,7 @@ namespace Stryker.Core.Initialisation
             var folders = new List<string>();
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
-            if (!fullFramework)
+           // if (!fullFramework)
             {
                 foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
                 {
