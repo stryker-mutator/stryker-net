@@ -47,6 +47,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool _vsTestFailed = false;
 
         private readonly ILogger _logger;
+        private string _vstestLogPath;
 
         public VsTestRunner(
             StrykerOptions options,
@@ -332,18 +333,17 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
-            var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
-
-            var targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
+            var (targetFramework, version) = _projectInfo.TestProjectAnalyzerResult.FrameworkAndVersion;
+            string targetFrameworkVersion;
             switch (targetFramework)
             {
-                case string s when s.Contains("netcoreapp"):
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                case FrameworkKind.NetCore:
+                    targetFrameworkVersion = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFramework}";
                     break;
-                case string s when s.Contains("netstandard"):
+                case FrameworkKind.NetStandard:
                     throw new ApplicationException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersion = $"Framework40";
+                    targetFrameworkVersion = $"Framework{version.Major}{version.Minor}";
                     break;
             }
 
@@ -396,15 +396,15 @@ namespace Stryker.Core.TestRunners.VsTest
                 _vsTestConsole = null;
             }
 
-            var vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vstestLogPath));
+            _vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(_vstestLogPath));
 
-            _logger.LogDebug($"{RunnerId}: Logging vstest output to: {vstestLogPath}");
+            _logger.LogDebug($"{RunnerId}: Logging vstest output to: {_vstestLogPath}");
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
-                LogFilePath = vstestLogPath
+                LogFilePath = _vstestLogPath
             });
         }
 

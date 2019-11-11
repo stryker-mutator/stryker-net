@@ -66,7 +66,7 @@ namespace Stryker
                 ResetCoverage();
             }
         }
-
+                
         private static void ResetCoverage()
         {
             _coveredMutants = new Dictionary<int, bool>();

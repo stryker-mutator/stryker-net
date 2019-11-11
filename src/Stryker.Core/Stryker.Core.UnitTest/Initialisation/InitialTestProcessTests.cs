@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System;
+using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
@@ -23,9 +24,21 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult { Success = false });
             testRunnerMock.Setup(x => x.CaptureCoverage(false, false))
                 .Returns(new TestRunResult { Success = false });
-            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
+            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
 
             var exception = Assert.Throws<StrykerInputException>(() => _target.InitialTest(testRunnerMock.Object));
+        }
+
+        [Fact]
+        public void InitialTestProcess_ShouldThrowWhenNoTest()
+        {
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.CaptureCoverage(false, false))
+                .Returns(new TestRunResult { Success = false });
+            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => _target.InitialTest(testRunnerMock.Object));
         }
 
         [Fact]
@@ -35,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null)).Returns(new TestRunResult { Success = true });
             testRunnerMock.Setup(x => x.CaptureCoverage(false, false))
                 .Returns(new TestRunResult { Success = true });
-            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(0);
+            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(2);
 
             var result = _target.InitialTest(testRunnerMock.Object);
         }
