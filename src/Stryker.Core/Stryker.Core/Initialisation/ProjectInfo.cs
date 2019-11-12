@@ -93,9 +93,18 @@ namespace Stryker.Core.Initialisation
                 if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
                 {
                     var version = analysis.Groups["version"].Value;
-                    if (version.Length == 2)
+                    if (!version.Contains('.'))
                     {
-                        version = $"{version[0]}.{version[1]}";
+                        if (version.Length == 2)
+                            // we have a aggregated version id
+                        {
+                            version = $"{version[0]}.{version.Substring(1)}";
+                        }
+
+                        if (version.Length == 3)
+                        {
+                            version = $"{version[0]}.{version[1]}.{version[2]}";
+                        }
                     }
                     return (label[analysis.Groups["kind"].Value], new Version(version));
                 }
