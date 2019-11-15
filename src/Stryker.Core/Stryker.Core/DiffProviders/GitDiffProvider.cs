@@ -26,7 +26,7 @@ namespace Stryker.Core.DiffProviders
 
             if (string.IsNullOrEmpty(repositoryPath))
             {
-                _logger.LogWarning("Could not locate git repo. Unable to determine git diff to filter mutants.");
+                throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
             }
             var diffResult = new DiffResult()
             {
