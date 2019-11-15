@@ -3,6 +3,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -331,17 +332,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
-            var (targetFramework, version) = _projectInfo.TestProjectAnalyzerResult.FrameworkAndVersion;
-            string targetFrameworkVersion;
+            var (targetFramework, _) = _projectInfo.TestProjectAnalyzerResult.TargetFrameworkAndVersion;
+
+            string targetFrameworkVersionString;
+
             switch (targetFramework)
             {
-                case FrameworkKind.NetCore:
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFramework}";
+                case Initialisation.Framework.NetCore:
+                    targetFrameworkVersionString = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkString}";
                     break;
-                case FrameworkKind.NetStandard:
-                    throw new ApplicationException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
+                case Initialisation.Framework.NetStandard:
+                    throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersion = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFramework}";
+                    targetFrameworkVersionString = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkString}";
                     break;
             }
 
@@ -365,7 +368,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
-  <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>
+  <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>
   {timeoutSettings}
   {settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}

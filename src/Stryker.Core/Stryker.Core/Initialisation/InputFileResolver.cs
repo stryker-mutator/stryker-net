@@ -63,8 +63,6 @@ namespace Stryker.Core.Initialisation
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
             var inputFiles = new FolderComposite();
-            var (fwk, _) = result.TestProjectAnalyzerResult.FrameworkAndVersion;
-            result.FullFramework = fwk == FrameworkKind.NetClassic;
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
             foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
             {
@@ -226,7 +224,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.FullFramework &&
+            if (projectInfo.TestProjectAnalyzerResult.TargetFramework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
                 (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&

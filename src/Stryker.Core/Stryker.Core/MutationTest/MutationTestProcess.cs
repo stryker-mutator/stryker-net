@@ -68,26 +68,26 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            var (targetFmwk, fmwkVersion) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.FrameworkAndVersion;
-            var predefinedSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
-            switch (targetFmwk)
+            var (framework, version) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFrameworkAndVersion;
+            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
+            switch (framework)
             {
-                case FrameworkKind.NetCore:
-                    if (fmwkVersion.Major < 2)
+                case Framework.NetCore:
+                    if (version.Major < 2)
                     {
                         compat_noAppDomain = true;
                     }
                     break;
-                case FrameworkKind.NetStandard:
-                    if (fmwkVersion.Major < 2)
+                case Framework.NetStandard:
+                    if (version.Major < 2)
                     {
                         compat_noAppDomain = true;
                         compat_noPipe = true;
                     }
                     break;
-                case FrameworkKind.Unknown:
-                case FrameworkKind.NetClassic:
-                    compat_noPipe = fmwkVersion < new Version(3, 5);
+                case Framework.Unknown:
+                case Framework.NetClassic:
+                    compat_noPipe = version < new Version(3, 5);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -95,15 +95,15 @@ namespace Stryker.Core.MutationTest
 
             if (compat_noAppDomain)
             {
-                predefinedSymbols.Add("STRYKER_NO_DOMAIN");
+                preprocessorSymbols.Add("STRYKER_NO_DOMAIN");
             }
             if (compat_noPipe)
             {
-                predefinedSymbols.Add("STRYKER_NO_PIPE");
+                preprocessorSymbols.Add("STRYKER_NO_PIPE");
             }
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
-            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: predefinedSymbols);
+            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
             foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
                 mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: name,

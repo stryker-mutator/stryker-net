@@ -1,8 +1,8 @@
-﻿using System;
-using Buildalyzer;
+﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -13,7 +13,6 @@ namespace Stryker.Core.Initialisation
     {
         public ProjectAnalyzerResult TestProjectAnalyzerResult { get; set; }
         public ProjectAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
-        public bool FullFramework { get; set; }
 
         /// <summary>
         /// The Folder/File structure found in the project under test.
@@ -31,7 +30,7 @@ namespace Stryker.Core.Initialisation
         }
     }
 
-    public enum FrameworkKind
+    public enum Framework
     {
         NetClassic,
         NetCore,
@@ -76,41 +75,27 @@ namespace Stryker.Core.Initialisation
             set => _properties = value;
         }
 
-        private string _targetFramework;
+        private string _targetFrameworkString;
 
-        public string TargetFramework
+        public string TargetFrameworkString
         {
-            get => _targetFramework ?? _analyzerResult?.TargetFramework;
+            get => _targetFrameworkString ?? _analyzerResult?.TargetFramework;
+            set => _targetFrameworkString = value;
+        }
+
+        private Framework _targetFramework = Framework.Unknown;
+        public Framework TargetFramework
+        {
+            get => _targetFramework == Framework.Unknown ? TargetFrameworkAndVersion.Item1 : _targetFramework;
             set => _targetFramework = value;
         }
 
-        public (FrameworkKind, Version) FrameworkAndVersion
+        private Version _targetFrameworkVersion;
+
+        public Version TargetFrameworkVersion
         {
-            get
-            {
-                var label = new Dictionary<string, FrameworkKind> {["netcoreapp"] = FrameworkKind.NetCore, ["netstandard"] = FrameworkKind.NetStandard, ["net"] = FrameworkKind.NetClassic};
-                var analysis = Regex.Match(TargetFramework ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
-                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
-                {
-                    var version = analysis.Groups["version"].Value;
-                    if (!version.Contains('.'))
-                    {
-                        if (version.Length == 2)
-                            // we have a aggregated version id
-                        {
-                            version = $"{version[0]}.{version.Substring(1)}";
-                        }
-
-                        if (version.Length == 3)
-                        {
-                            version = $"{version[0]}.{version[1]}.{version[2]}";
-                        }
-                    }
-                    return (label[analysis.Groups["kind"].Value], new Version(version));
-                }
-
-                return (FrameworkKind.Unknown, new Version());
-            }
+            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.Item2;
+            set => _targetFrameworkVersion = value;
         }
 
         public IList<string> CompilationSymbols => _analyzerResult?.GetProperty("DefineConstants")?.Split(";");
@@ -138,7 +123,8 @@ namespace Stryker.Core.Initialisation
         }
 
         private bool? _signAssembly;
-        public bool SignAssembly {
+        public bool SignAssembly
+        {
             get => _signAssembly ?? bool.Parse(_analyzerResult?.Properties?.GetValueOrDefault("SignAssembly") ?? "false");
             set => _signAssembly = value;
         }
@@ -157,6 +143,40 @@ namespace Stryker.Core.Initialisation
         {
             get => _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
             set => _resources = value;
+        }
+
+        public (Framework, Version) TargetFrameworkAndVersion
+        {
+            get
+            {
+                var label = new Dictionary<string, Framework>
+                {
+                    ["netcoreapp"] = Framework.NetCore,
+                    ["netstandard"] = Framework.NetStandard,
+                    ["net"] = Framework.NetClassic
+                };
+                var analysis = Regex.Match(TargetFrameworkString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
+                {
+                    var version = analysis.Groups["version"].Value;
+                    if (!version.Contains('.'))
+                    {
+                        if (version.Length == 2)
+                        // we have a aggregated version id
+                        {
+                            version = $"{version[0]}.{version.Substring(1)}";
+                        }
+
+                        if (version.Length == 3)
+                        {
+                            version = $"{version[0]}.{version[1]}.{version[2]}";
+                        }
+                    }
+                    return (label[analysis.Groups["kind"].Value], new Version(version));
+                }
+
+                return (Framework.Unknown, new Version());
+            }
         }
     }
 }
