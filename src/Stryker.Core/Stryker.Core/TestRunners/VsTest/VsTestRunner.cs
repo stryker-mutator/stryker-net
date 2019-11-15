@@ -332,7 +332,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
-            var (targetFramework, _) = _projectInfo.TestProjectAnalyzerResult.TargetFrameworkAndVersion;
+            var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
             string targetFrameworkVersionString;
 
