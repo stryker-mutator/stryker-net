@@ -33,6 +33,10 @@ variables:
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
   MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+  LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
+  LibManCacheMacLinux: $(HOME)/.librarymanager/cache
+  RestoreLockedMode: true
   VSTEST_RUNNER_DEBUG: 1
 
 stages:
@@ -45,6 +49,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
@@ -83,6 +88,7 @@ stages:
         deploy:
           steps:
           - checkout: self
+          - template: pipeline-templates/populate-cache-steps.yml
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
@@ -193,6 +199,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -208,7 +215,6 @@ stages:
         versionEnvVar: PreviewVersion
         packagesToPack: $(ProjectsToPack)
         packDirectory: $(Build.ArtifactStagingDirectory)/preview
-
     - script: echo "##vso[build.addbuildtag]preview"
       displayName: "Tag build as preview build so release gets triggered"
     - task: PublishBuildArtifacts@1
@@ -229,6 +235,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
