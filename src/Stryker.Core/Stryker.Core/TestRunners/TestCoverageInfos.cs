@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -101,6 +102,12 @@ namespace Stryker.Core.TestRunners
             Logger.LogDebug("Optimize test runs according to coverage info.");
             var report = new StringBuilder();
             var mutantsToTest = mutants.Where(m => m.ResultStatus == MutantStatus.NotRun);
+
+            if (!mutantsToTest.Any())
+            {
+                return avoidedTests;
+            }
+
             var initialCount = mutantsToTest.Count();
             var nonTested = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !CoveredMutants.Contains(x.Id)).ToList();
             foreach (var mutant in nonTested)
@@ -138,7 +145,9 @@ namespace Stryker.Core.TestRunners
                 : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.Survived}).");
 
             var theoricalTestCount = (long)(testsCount) * initialCount;
-            Logger.LogInformation($"Coverage analysis eliminated {1.0*avoidedTests/theoricalTestCount:P} of tests (i.e. {avoidedTests} tests out of {theoricalTestCount}).");
+            var eliminatedTestPercentage = 1.0 * avoidedTests / theoricalTestCount;
+
+            Logger.LogInformation($"Coverage analysis eliminated {eliminatedTestPercentage:P} of tests (i.e. {avoidedTests} tests out of {theoricalTestCount}).");
 
             return avoidedTests;
         }

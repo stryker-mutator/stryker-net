@@ -450,5 +450,47 @@ namespace Stryker.CLI.UnitTest
             filePatterns.ShouldContain(secondFileToExclude);
             filePatterns.ShouldContain(thirdFileToExclude);
         }
+
+        [Theory]
+        [InlineData("--diff")]
+        [InlineData("-diff")]
+        public void ShouldEnableDiffFeatureWhenPassed(string argName)
+        {
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3M);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.VerifyAll();
+
+            actualOptions.DiffEnabled.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("--git-source")]
+        [InlineData("-gs")]
+        public void ShouldSetGitSourceWhenPassed(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3M);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "development" });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitSource == "development"),
+                It.IsAny<IEnumerable<LogMessage>>()));
+        }
     }
 }

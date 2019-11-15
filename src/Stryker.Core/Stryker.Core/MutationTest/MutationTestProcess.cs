@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
@@ -56,11 +57,12 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _mutantFilters = mutantFilters ?? new IMutantFilter[]
-            {
-                new FilePatternMutantFilter(),
-                new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter(),
-            };
+                {
+                    new FilePatternMutantFilter(),
+                    new IgnoredMethodMutantFilter(),
+                    new ExcludeMutationMutantFilter(),
+                    new DiffMutantFilter(_options, new GitDiffProvider(_options))
+                };
         }
 
         public void Mutate()
