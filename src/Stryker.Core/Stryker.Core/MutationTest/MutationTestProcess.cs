@@ -177,13 +177,13 @@ namespace Stryker.Core.MutationTest
 
             if (!mutantsNotRun.Any())
             {
-                if (_input.ProjectInfo.ProjectContents.Mutants.All(x => x.ResultStatus == MutantStatus.Skipped))
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
                 {
-                    _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
+                    _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
                 }
                 if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    _logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
+                    _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
                 }
                 if (!_input.ProjectInfo.ProjectContents.Mutants.Any())
                 {
