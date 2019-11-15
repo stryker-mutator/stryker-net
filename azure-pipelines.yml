@@ -33,6 +33,7 @@ variables:
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
   MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  VSTEST_RUNNER_DEBUG: 1
 
 stages:
 - stage: Analysis
