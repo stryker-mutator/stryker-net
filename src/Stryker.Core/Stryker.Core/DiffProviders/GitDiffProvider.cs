@@ -1,23 +1,18 @@
 ﻿using LibGit2Sharp;
-using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
         private readonly StrykerOptions _options;
-        private readonly ILogger _logger;
 
         public GitDiffProvider(StrykerOptions options)
         {
             _options = options;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<GitDiffProvider>();
         }
 
         public DiffResult ScanDiff()
