@@ -236,7 +236,6 @@ namespace Stryker.Core.TestRunners.VsTest
                         CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
                     }
                 }
-
             }
         }
 
