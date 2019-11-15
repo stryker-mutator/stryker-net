@@ -110,13 +110,13 @@ namespace Stryker.Core.Initialisation
         {
             var constants = _analyzerResult?.GetProperty("DefineConstants")?.Split(";")?.ToList() ?? new List<string>();
 
-            var (compat_noAppDomain, compat_noPipe) = CompatibilityModes;
+            var (frameworkDoesNotSupportAppDomain, frameworkDoesNotSupportPipes) = CompatibilityModes;
 
-            if (compat_noAppDomain)
+            if (frameworkDoesNotSupportAppDomain)
             {
                 constants.Add("STRYKER_NO_DOMAIN");
             }
-            if (compat_noPipe)
+            if (frameworkDoesNotSupportPipes)
             {
                 constants.Add("STRYKER_NO_PIPE");
             }

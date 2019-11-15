@@ -90,7 +90,10 @@ namespace Stryker.Core.MutationTest
                 var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-                _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                if (_options.DevMode)
+                {
+                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
                 IEnumerable<Mutant> filteredMutants = allMutants;
@@ -217,8 +220,8 @@ namespace Stryker.Core.MutationTest
 
         public TestCoverageInfos GetCoverage()
         {
-            var (compat_noAppDomain, compat_noPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
-            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(compat_noPipe, compat_noAppDomain);
+            var (targetFrameworkDoesNotSupportAppDomain, targetFramewoekDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(targetFramewoekDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
             if (testResult.Success)
             {
                 return _mutationTestExecutor.TestRunner.CoverageMutants;

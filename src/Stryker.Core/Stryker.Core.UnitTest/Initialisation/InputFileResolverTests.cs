@@ -12,6 +12,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -53,36 +54,22 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>";
         }
 
-        [Fact]
-        public void ProjectAnalyzerShouldDecodeFramework()
+        [Theory]
+        [InlineData("netcoreapp2.1", Framework.NetCore, 2, 1)]
+        [InlineData("netstandard1.6", Framework.NetStandard, 1, 6)]
+        [InlineData("mono4.6", Framework.Unknown, 0, 0)]
+        [InlineData("net4.5", Framework.NetClassic, 4, 5)]
+        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor)
         {
             var test = new ProjectAnalyzerResult(null, null)
             {
-                ProjectReferences = new List<string>() { projectUnderTestPath },
-                TargetFrameworkString = "netcoreapp2.1",
+                ProjectReferences = new List<string> { projectUnderTestPath },
+                TargetFrameworkString = version,
                 ProjectFilePath = alternateTestProjectPath,
-                References = new string[] { "" }
+                References = new[] { "" }
             };
 
-            test.TargetFrameworkAndVersion.ShouldBe((Framework.NetCore, new Version(2, 1)));
-            test = new ProjectAnalyzerResult(null, null)
-            {
-                ProjectReferences = new List<string>() { projectUnderTestPath },
-                TargetFrameworkString = "netstandard1.6",
-                ProjectFilePath = alternateTestProjectPath,
-                References = new string[] { "" }
-            };
-
-            test.TargetFrameworkAndVersion.ShouldBe((Framework.NetStandard, new Version(1, 6)));
-            test = new ProjectAnalyzerResult(null, null)
-            {
-                ProjectReferences = new List<string>() { projectUnderTestPath },
-                TargetFrameworkString = "mono4.6",
-                ProjectFilePath = alternateTestProjectPath,
-                References = new string[] { "" }
-            };
-
-            test.TargetFrameworkAndVersion.ShouldBe((Framework.Unknown, new Version()));
+            test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor)));
         }
 
         [Fact]
