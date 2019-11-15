@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
@@ -31,10 +30,7 @@ namespace Stryker.Core.Initialisation
         public int InitialTest(ITestRunner testRunner)
         {
             var message = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
-            if (total == 0)
-            {
-                throw new InvalidOperationException($"No test were found, no need to proceed further. Pleae verify your test project is supported by VsTest.");
-            }            
+
             TotalNumberOfTests = total;
             _logger.LogInformation("Total number of tests found: {0}", message);
 
