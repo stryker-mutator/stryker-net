@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
 {
@@ -11,14 +10,14 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
-        string LongName {get;}
-        string DisplayName {get;}
+        string LongName { get; }
+        string DisplayName { get; }
         IDictionary<string, bool> CoveringTest { get; }
         string ResultStatusReason { get; }
         bool IsStaticValue { get; }
         bool MustRunAllTests { get; }
     }
-    
+
     /// <summary>
     /// Represents a single mutation on domain level
     /// </summary>

@@ -15,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -203,7 +202,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(bool cantUsePipe, bool cantUseUnloadAppDomain)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
-            var testResults = RunAllTests(null, BuildCoverageEnvironment( cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), GenerateRunSettings(null, true), true);
+            var testResults = RunAllTests(null, BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), GenerateRunSettings(null, true), true);
             ParseResultsForCoverage(testResults);
             CoveredMutants = CoverageMutants.CoveredMutants;
             return new TestRunResult { Success = true };
@@ -247,7 +246,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings(null, true);
-            var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), BuildCoverageEnvironment( cantUsePipe|| _flags.HasFlag(OptimizationFlags.UseEnvVariable)), generateRunSettings, true);
+            var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
             ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase.Id == test.Id));
             return coverageForTest;

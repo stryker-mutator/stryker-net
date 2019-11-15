@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
@@ -18,6 +11,12 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
@@ -69,18 +68,18 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            var (targetFmwk, fmwkVersion) =_input.ProjectInfo.ProjectUnderTestAnalyzerResult.FrameworkAndVersion;
-            var predefinedSymbols =_input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
+            var (targetFmwk, fmwkVersion) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.FrameworkAndVersion;
+            var predefinedSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
             switch (targetFmwk)
             {
                 case FrameworkKind.NetCore:
-                    if (fmwkVersion.Major<2)
+                    if (fmwkVersion.Major < 2)
                     {
                         compat_noAppDomain = true;
                     }
                     break;
                 case FrameworkKind.NetStandard:
-                    if (fmwkVersion.Major<2)
+                    if (fmwkVersion.Major < 2)
                     {
                         compat_noAppDomain = true;
                         compat_noPipe = true;
@@ -251,7 +250,7 @@ namespace Stryker.Core.MutationTest
         public TestCoverageInfos GetCoverage()
         {
             var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(compat_noPipe, compat_noAppDomain);
-            if (testResult.Success) 
+            if (testResult.Success)
             {
                 return _mutationTestExecutor.TestRunner.CoverageMutants;
             }

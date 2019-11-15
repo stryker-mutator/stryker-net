@@ -1,7 +1,6 @@
+using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.TestRunners
 {
