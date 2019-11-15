@@ -6,12 +6,6 @@ steps:
   - template: populate-cache-steps.yml
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run unit tests'
-    inputs:
-      command: test
-      projects: 'src/**/*.UnitTest.csproj'
-
-  - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool (fork)'
     condition: eq(variables['System.PullRequest.IsFork'], 'True')
     inputs:
