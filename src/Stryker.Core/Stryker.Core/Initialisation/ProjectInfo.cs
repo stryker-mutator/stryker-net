@@ -146,8 +146,6 @@ namespace Stryker.Core.Initialisation
                     case Framework.NetClassic:
                         compat_noPipe = version < new Version(3, 5);
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
 
                 return (compat_noAppDomain, compat_noPipe);
