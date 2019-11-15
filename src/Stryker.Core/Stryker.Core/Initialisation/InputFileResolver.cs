@@ -66,7 +66,7 @@ namespace Stryker.Core.Initialisation
             var (fwk, _) = result.TestProjectAnalyzerResult.FrameworkAndVersion;
             result.FullFramework = fwk == FrameworkKind.NetClassic;
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
+            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -127,7 +127,7 @@ namespace Stryker.Core.Initialisation
         {
             string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
 
-            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter).Where( name => !Path.GetFileName(name).StartsWith("nCrunchTemp"));
+            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter).Where(name => !Path.GetFileName(name).StartsWith("nCrunchTemp"));
 
             _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
 
@@ -170,7 +170,7 @@ namespace Stryker.Core.Initialisation
             return filter;
         }
 
-        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)
+        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
@@ -178,20 +178,18 @@ namespace Stryker.Core.Initialisation
             var folders = new List<string>();
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
-           // if (!fullFramework)
+
+            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
             {
-                foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+                var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
+
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                 {
-                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
-
-                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
-                    {
-                        throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
-                    }
-
-                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
-                    folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
+                    throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
                 }
+
+                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
+                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
             }
 
             return folders;
