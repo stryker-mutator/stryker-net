@@ -52,12 +52,21 @@ namespace IntegrationTests
 
         private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout, int nocoverage)
         {
-            report.Files.Select(f => f.Value.Mutants.Count()).Sum().ShouldBe(total);
-            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Skipped.ToString())).Sum().ShouldBe(skipped);
-            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Survived.ToString())).Sum().ShouldBe(survived);
-            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())).Sum().ShouldBe(killed);
-            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Timeout.ToString())).Sum().ShouldBe(timeout);
-            report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())).Sum().ShouldBe(nocoverage);
+            var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
+            var actualSkipped = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Skipped.ToString())).Sum();
+            var actualSurvived = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Survived.ToString())).Sum();
+            var actualKilled = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())).Sum();
+            var actualTimeout = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Timeout.ToString())).Sum();
+            var actualNoCoverage = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.NoCoverage.ToString())).Sum();
+
+            report.Files.ShouldSatisfyAllConditions(
+                () => actualTotal.ShouldBe(total),
+                () => actualSkipped.ShouldBe(skipped),
+                () => actualSurvived.ShouldBe(survived),
+                () => actualKilled.ShouldBe(killed),
+                () => actualTimeout.ShouldBe(timeout),
+                () => actualNoCoverage.ShouldBe(nocoverage)
+            );
         }
     }
 }
