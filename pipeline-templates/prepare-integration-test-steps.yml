@@ -11,12 +11,21 @@ steps:
       projects: 'src/**/*.UnitTest.csproj'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install integrationtest dotnet tool'
+    displayName: 'Run unit tests'
+    inputs:
+      command: test
+      projects: 'src/**/*.UnitTest.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Install integrationtest dotnet tool (fork)'
     condition: eq(variables['System.PullRequest.IsFork'], 'True')
     inputs:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+      includeNuGetOrg: false
+      workingDirectory: 'pipeline-templates'
+
   - task: DotNetCoreCLI@2
     displayName: 'Install integrationtest dotnet tool'
     condition: eq(variables['System.PullRequest.IsFork'], 'False')
@@ -24,3 +33,5 @@ steps:
       command: custom
       custom: tool
       arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+      includeNuGetOrg: false
+      workingDirectory: 'pipeline-templates'
