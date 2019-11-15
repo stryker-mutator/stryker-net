@@ -5,6 +5,7 @@ using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
@@ -86,7 +87,7 @@ namespace Stryker.Core.Initialisation
         private Framework _targetFramework = Framework.Unknown;
         public Framework TargetFramework
         {
-            get => _targetFramework == Framework.Unknown ? TargetFrameworkAndVersion.Item1 : _targetFramework;
+            get => _targetFramework == Framework.Unknown ? TargetFrameworkAndVersion.framework : _targetFramework;
             set => _targetFramework = value;
         }
 
@@ -94,11 +95,64 @@ namespace Stryker.Core.Initialisation
 
         public Version TargetFrameworkVersion
         {
-            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.Item2;
+            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.version;
             set => _targetFrameworkVersion = value;
         }
 
-        public IList<string> CompilationSymbols => _analyzerResult?.GetProperty("DefineConstants")?.Split(";");
+        private IList<string> _defineConstants;
+        public IList<string> DefineConstants
+        {
+            get => _defineConstants ?? BuildDefineConstants();
+            set => _defineConstants = value;
+        }
+
+        private IList<string> BuildDefineConstants()
+        {
+            var constants = _analyzerResult?.GetProperty("DefineConstants")?.Split(";")?.ToList() ?? new List<string>();
+
+            var (compat_noAppDomain, compat_noPipe) = CompatibilityModes;
+
+            if (compat_noAppDomain)
+            {
+                constants.Add("STRYKER_NO_DOMAIN");
+            }
+            if (compat_noPipe)
+            {
+                constants.Add("STRYKER_NO_PIPE");
+            }
+
+            return constants;
+        }
+
+        public (bool compat_noAppDomain, bool compat_noPipe) CompatibilityModes
+        {
+            get
+            {
+                var (framework, version) = TargetFrameworkAndVersion;
+
+                bool compat_noAppDomain = false;
+                bool compat_noPipe = false;
+
+                switch (framework)
+                {
+                    case Framework.NetCore when version.Major < 2:
+                        compat_noAppDomain = true;
+                        break;
+                    case Framework.NetStandard when version.Major < 2:
+                        compat_noAppDomain = true;
+                        compat_noPipe = true;
+                        break;
+                    case Framework.Unknown:
+                    case Framework.NetClassic:
+                        compat_noPipe = version < new Version(3, 5);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                return (compat_noAppDomain, compat_noPipe);
+            }
+        }
 
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _packageReferences;
 
@@ -145,7 +199,7 @@ namespace Stryker.Core.Initialisation
             set => _resources = value;
         }
 
-        public (Framework, Version) TargetFrameworkAndVersion
+        public (Framework framework, Version version) TargetFrameworkAndVersion
         {
             get
             {

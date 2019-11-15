@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -38,8 +37,6 @@ namespace Stryker.Core.MutationTest
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly StrykerOptions _options;
-        private bool compat_noAppDomain;
-        private bool compat_noPipe;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -68,39 +65,8 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            var (framework, version) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFrameworkAndVersion;
-            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompilationSymbols?.ToList() ?? new List<string>();
-            switch (framework)
-            {
-                case Framework.NetCore:
-                    if (version.Major < 2)
-                    {
-                        compat_noAppDomain = true;
-                    }
-                    break;
-                case Framework.NetStandard:
-                    if (version.Major < 2)
-                    {
-                        compat_noAppDomain = true;
-                        compat_noPipe = true;
-                    }
-                    break;
-                case Framework.Unknown:
-                case Framework.NetClassic:
-                    compat_noPipe = version < new Version(3, 5);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
 
-            if (compat_noAppDomain)
-            {
-                preprocessorSymbols.Add("STRYKER_NO_DOMAIN");
-            }
-            if (compat_noPipe)
-            {
-                preprocessorSymbols.Add("STRYKER_NO_PIPE");
-            }
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
             var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
@@ -249,6 +215,7 @@ namespace Stryker.Core.MutationTest
 
         public TestCoverageInfos GetCoverage()
         {
+            var (compat_noAppDomain, compat_noPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
             var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(compat_noPipe, compat_noAppDomain);
             if (testResult.Success)
             {
