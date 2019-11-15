@@ -1,10 +1,10 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -58,31 +58,31 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var test = new ProjectAnalyzerResult(null, null)
             {
-                ProjectReferences = new List<string>() {projectUnderTestPath},
+                ProjectReferences = new List<string>() { projectUnderTestPath },
                 TargetFrameworkString = "netcoreapp2.1",
                 ProjectFilePath = alternateTestProjectPath,
-                References = new string[] {""}
+                References = new string[] { "" }
             };
 
-            test.FrameworkAndVersion.ShouldBe((Framework.NetCore, new Version(2,1)));
+            test.TargetFrameworkAndVersion.ShouldBe((Framework.NetCore, new Version(2, 1)));
             test = new ProjectAnalyzerResult(null, null)
             {
-                ProjectReferences = new List<string>() {projectUnderTestPath},
+                ProjectReferences = new List<string>() { projectUnderTestPath },
                 TargetFrameworkString = "netstandard1.6",
                 ProjectFilePath = alternateTestProjectPath,
-                References = new string[] {""}
+                References = new string[] { "" }
             };
 
-            test.FrameworkAndVersion.ShouldBe((Framework.NetStandard, new Version(1,6)));
+            test.TargetFrameworkAndVersion.ShouldBe((Framework.NetStandard, new Version(1, 6)));
             test = new ProjectAnalyzerResult(null, null)
             {
-                ProjectReferences = new List<string>() {projectUnderTestPath},
+                ProjectReferences = new List<string>() { projectUnderTestPath },
                 TargetFrameworkString = "mono4.6",
                 ProjectFilePath = alternateTestProjectPath,
-                References = new string[] {""}
+                References = new string[] { "" }
             };
 
-            test.FrameworkAndVersion.ShouldBe((Framework.Unknown, new Version()));
+            test.TargetFrameworkAndVersion.ShouldBe((Framework.Unknown, new Version()));
         }
 
         [Fact]

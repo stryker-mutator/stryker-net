@@ -1,9 +1,8 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation

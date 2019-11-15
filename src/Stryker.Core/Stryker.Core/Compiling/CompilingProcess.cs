@@ -51,9 +51,10 @@ namespace Stryker.Core.Compiling
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
-            if (!_input.ProjectInfo.FullFramework)
+
+            if (_input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFramework != Framework.NetClassic)
             {
-                // Set assembly and file info
+                // Set assembly and file info for non netclassic frameworks
                 AddVersionInfoSyntaxes(trees, analyzerResult);
             }
 

@@ -40,7 +40,7 @@ namespace Stryker.Core.Initialisation
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
+            _initialBuildProcess.InitialBuild(projectInfo.ProjectUnderTestAnalyzerResult.TargetFramework == Framework.NetClassic, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
 
             if (_testRunner == null)
             {
