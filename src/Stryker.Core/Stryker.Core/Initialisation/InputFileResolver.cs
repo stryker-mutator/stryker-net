@@ -125,7 +125,7 @@ namespace Stryker.Core.Initialisation
         {
             string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
 
-            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter).Where(name => !Path.GetFileName(name).StartsWith("nCrunchTemp"));
+            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
 
             _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
 
