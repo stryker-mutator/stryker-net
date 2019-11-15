@@ -46,7 +46,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool _vsTestFailed = false;
 
         private readonly ILogger _logger;
-        private string _vstestLogPath;
 
         public VsTestRunner(
             StrykerOptions options,
@@ -395,7 +394,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _vsTestConsole = null;
             }
 
-            _vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
+            var _vstestLogPath = Path.Combine(_options.OutputPath, "logs", "vstest-log.txt");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(_vstestLogPath));
 
             _logger.LogDebug($"{RunnerId}: Logging vstest output to: {_vstestLogPath}");
