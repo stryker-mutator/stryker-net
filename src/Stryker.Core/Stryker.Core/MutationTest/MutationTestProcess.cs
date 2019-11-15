@@ -1,18 +1,19 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
@@ -52,11 +53,12 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _mutantFilters = mutantFilters ?? new IMutantFilter[]
-            {
-                new FilePatternMutantFilter(),
-                new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter(),
-            };
+                {
+                    new FilePatternMutantFilter(),
+                    new IgnoredMethodMutantFilter(),
+                    new ExcludeMutationMutantFilter(),
+                    new DiffMutantFilter(_options, new GitDiffProvider(_options))
+                };
         }
 
         public void Mutate()
