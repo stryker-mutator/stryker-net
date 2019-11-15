@@ -1,3 +1,21 @@
+# [0.14.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.13.0...0.14.0) (2019-11-15)
+
+
+### Bug Fixes
+
+* **linq mutator:** mutate linq query containing conditional access operator ([#761](https://github.com/stryker-mutator/stryker-net/issues/761)) ([d018b97](https://github.com/stryker-mutator/stryker-net/commit/d018b97358f0a9df8e879aa2c2296883e45a0da7)), closes [#760](https://github.com/stryker-mutator/stryker-net/issues/760)
+* **stryker-runner logging:** Use non-generic non-reflection ILogger.Log to log startup logging ([#744](https://github.com/stryker-mutator/stryker-net/issues/744)) ([64449c1](https://github.com/stryker-mutator/stryker-net/commit/64449c10adefc34bf43e219b5d3568a3e4502f53))
+
+
+### Features
+
+* **Bitwise mutations:** Add bitwise mutator ([#755](https://github.com/stryker-mutator/stryker-net/issues/755)) ([c684268](https://github.com/stryker-mutator/stryker-net/commit/c684268de4547b98a2d68381d1643ad50392d98c))
+* **Git diff:** Mutate only changed files based on git diff ([#708](https://github.com/stryker-mutator/stryker-net/issues/708)) ([34371c9](https://github.com/stryker-mutator/stryker-net/commit/34371c9bd47121f8c7458625718a229d8dfa0bee))
+* **negate mutator:** Add new negate mutations ([#773](https://github.com/stryker-mutator/stryker-net/issues/773)) ([8879654](https://github.com/stryker-mutator/stryker-net/commit/8879654f9170eaa276719ec3a3cefc6743009f2f))
+* **sharp8.0 nullable:** Compile with c# 8 nullable feature enabled ([#745](https://github.com/stryker-mutator/stryker-net/issues/745)) ([df11a97](https://github.com/stryker-mutator/stryker-net/commit/df11a978751752593c5b36bf4e3838913c59c03e))
+
+
+
 # [0.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.12.0...0.13.0) (2019-09-06)
 
 
