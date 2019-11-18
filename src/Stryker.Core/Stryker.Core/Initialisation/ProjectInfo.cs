@@ -2,8 +2,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -11,7 +14,6 @@ namespace Stryker.Core.Initialisation
     {
         public ProjectAnalyzerResult TestProjectAnalyzerResult { get; set; }
         public ProjectAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
-        public bool FullFramework { get; set; }
 
         /// <summary>
         /// The Folder/File structure found in the project under test.
@@ -29,6 +31,14 @@ namespace Stryker.Core.Initialisation
         }
     }
 
+    public enum Framework
+    {
+        NetClassic,
+        NetCore,
+        NetStandard,
+        Unknown
+    };
+
     public class ProjectAnalyzerResult
     {
         private readonly ILogger _logger;
@@ -41,6 +51,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private string _assemblyPath;
+
         public string AssemblyPath
         {
             get => _assemblyPath ?? FilePathUtils.NormalizePathSeparators(Path.Combine(
@@ -50,6 +61,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IEnumerable<string> _projectReferences;
+
         public IEnumerable<string> ProjectReferences
         {
             get => _projectReferences ?? _analyzerResult.ProjectReferences;
@@ -57,20 +69,91 @@ namespace Stryker.Core.Initialisation
         }
 
         private IReadOnlyDictionary<string, string> _properties;
+
         public IReadOnlyDictionary<string, string> Properties
         {
             get => _properties ?? _analyzerResult.Properties;
             set => _properties = value;
         }
 
-        private string _targetFramework;
-        public string TargetFramework
+        private string _targetFrameworkString;
+
+        public string TargetFrameworkString
         {
-            get => _targetFramework ?? _analyzerResult.TargetFramework;
+            get => _targetFrameworkString ?? _analyzerResult?.TargetFramework;
+            set => _targetFrameworkString = value;
+        }
+
+        private Framework _targetFramework = Framework.Unknown;
+        public Framework TargetFramework
+        {
+            get => _targetFramework == Framework.Unknown ? TargetFrameworkAndVersion.framework : _targetFramework;
             set => _targetFramework = value;
         }
 
+        private Version _targetFrameworkVersion;
+
+        public Version TargetFrameworkVersion
+        {
+            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.version;
+            set => _targetFrameworkVersion = value;
+        }
+
+        private IList<string> _defineConstants;
+        public IList<string> DefineConstants
+        {
+            get => _defineConstants ?? BuildDefineConstants();
+            set => _defineConstants = value;
+        }
+
+        private IList<string> BuildDefineConstants()
+        {
+            var constants = _analyzerResult?.GetProperty("DefineConstants")?.Split(";")?.ToList() ?? new List<string>();
+
+            var (frameworkDoesNotSupportAppDomain, frameworkDoesNotSupportPipes) = CompatibilityModes;
+
+            if (frameworkDoesNotSupportAppDomain)
+            {
+                constants.Add("STRYKER_NO_DOMAIN");
+            }
+            if (frameworkDoesNotSupportPipes)
+            {
+                constants.Add("STRYKER_NO_PIPE");
+            }
+
+            return constants;
+        }
+
+        public (bool compat_noAppDomain, bool compat_noPipe) CompatibilityModes
+        {
+            get
+            {
+                var (framework, version) = TargetFrameworkAndVersion;
+
+                bool compat_noAppDomain = false;
+                bool compat_noPipe = false;
+
+                switch (framework)
+                {
+                    case Framework.NetCore when version.Major < 2:
+                        compat_noAppDomain = true;
+                        break;
+                    case Framework.NetStandard when version.Major < 2:
+                        compat_noAppDomain = true;
+                        compat_noPipe = true;
+                        break;
+                    case Framework.Unknown:
+                    case Framework.NetClassic:
+                        compat_noPipe = version < new Version(3, 5);
+                        break;
+                }
+
+                return (compat_noAppDomain, compat_noPipe);
+            }
+        }
+
         private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _packageReferences;
+
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PackageReferences
         {
             get => _packageReferences ?? _analyzerResult.PackageReferences;
@@ -92,7 +175,8 @@ namespace Stryker.Core.Initialisation
         }
 
         private bool? _signAssembly;
-        public bool SignAssembly {
+        public bool SignAssembly
+        {
             get => _signAssembly ?? bool.Parse(_analyzerResult?.Properties?.GetValueOrDefault("SignAssembly") ?? "false");
             set => _signAssembly = value;
         }
@@ -109,11 +193,42 @@ namespace Stryker.Core.Initialisation
         private IEnumerable<ResourceDescription> _resources;
         public IEnumerable<ResourceDescription> Resources
         {
+            get => _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
+            set => _resources = value;
+        }
+
+        public (Framework framework, Version version) TargetFrameworkAndVersion
+        {
             get
             {
-                return _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
+                var label = new Dictionary<string, Framework>
+                {
+                    ["netcoreapp"] = Framework.NetCore,
+                    ["netstandard"] = Framework.NetStandard,
+                    ["net"] = Framework.NetClassic
+                };
+                var analysis = Regex.Match(TargetFrameworkString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
+                {
+                    var version = analysis.Groups["version"].Value;
+                    if (!version.Contains('.'))
+                    {
+                        if (version.Length == 2)
+                        // we have a aggregated version id
+                        {
+                            version = $"{version[0]}.{version.Substring(1)}";
+                        }
+
+                        if (version.Length == 3)
+                        {
+                            version = $"{version[0]}.{version[1]}.{version[2]}";
+                        }
+                    }
+                    return (label[analysis.Groups["kind"].Value], new Version(version));
+                }
+
+                return (Framework.Unknown, new Version());
             }
-            set => _resources = value;
         }
     }
 }

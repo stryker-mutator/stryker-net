@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
+            var needed = new[] {".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console"};
             var references = new List<MetadataReference>();
             var hack = new NamedPipeClientStream("test");
             foreach (var assembly in assemblies)
@@ -46,7 +46,8 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 
             foreach (var helper in CodeInjection.MutantHelpers)
             {
-                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: version)));
+                syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: version),
+                    helper.Key));
             }
 
             var compilation = CSharpCompilation.Create("dummy.dll",
@@ -54,7 +55,8 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: references);
 
-            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error, $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x=> x.Severity == DiagnosticSeverity.Error))}");
-        }
+            compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error,
+                $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"'{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
+    }
     }
 }

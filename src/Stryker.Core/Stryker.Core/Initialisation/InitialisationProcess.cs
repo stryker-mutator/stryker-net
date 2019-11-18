@@ -9,7 +9,6 @@ namespace Stryker.Core.Initialisation
     {
         MutationTestInput Initialize(StrykerOptions options);
         int InitialTest(StrykerOptions option, out int nbTests);
-        TestCoverageInfos GetCoverage(StrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -41,7 +40,7 @@ namespace Stryker.Core.Initialisation
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.FullFramework, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
+            _initialBuildProcess.InitialBuild(projectInfo.ProjectUnderTestAnalyzerResult.TargetFramework == Framework.NetClassic, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
 
             if (_testRunner == null)
             {
@@ -65,10 +64,6 @@ namespace Stryker.Core.Initialisation
 
             nbTests = _initialTestProcess.TotalNumberOfTests;
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
-        }
-        public TestCoverageInfos GetCoverage(StrykerOptions options)
-        {
-            return _initialTestProcess.GetCoverage(_testRunner);
         }
     }
 }

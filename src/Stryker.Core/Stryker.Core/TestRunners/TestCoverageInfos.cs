@@ -67,12 +67,12 @@ namespace Stryker.Core.TestRunners
                 if (captureCoverage == null)
                 {
                     // no coverage info available, we keep track of it
-                    Logger.LogDebug($"No covered mutants for {discoveredTest}.");
+                    Logger.LogDebug($"No mutant covered by {discoveredTest.Name}.");
                     _testsWithoutCoverageInfos.Add(discoveredTest);
                 }
                 else
                 {
-                    Logger.LogDebug($"Covered mutants for {discoveredTest} are: {string.Join(", ", captureCoverage)}.");
+                    Logger.LogDebug($"Mutants covered by {discoveredTest.Name} are: {string.Join(", ", captureCoverage)}.");
                     foreach (var id in captureCoverage)
                     {
                         if (_mutantToTests.ContainsKey(id))

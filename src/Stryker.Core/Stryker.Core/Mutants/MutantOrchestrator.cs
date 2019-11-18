@@ -106,7 +106,7 @@ namespace Stryker.Core.Mutants
                     break;
                 // static properties
                 case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
-                    context = new MutationContext() {InStaticValue = true};
+                    context = new MutationContext {InStaticValue = true};
                     if (MustInjectCoverageLogic)
                     {
                         return MutateStaticAccessor(propertyDeclaration, context);
