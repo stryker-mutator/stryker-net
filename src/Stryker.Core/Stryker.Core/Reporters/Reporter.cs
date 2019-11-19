@@ -10,7 +10,6 @@
         ClearText,
         ConsoleReport,
         Json,
-        Stats,
         Html
     }
 }
