@@ -65,7 +65,7 @@ namespace Stryker.Core.Reporters
                     {
                         _chalk.Red($"[{mutant.ResultStatus}] ");
                     }
-                    _chalk.Default($"{mutant.Mutation.DisplayName} on line {mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{mutant.Mutation.OriginalNode}' ==> '{mutant.Mutation.ReplacementNode}'{Environment.NewLine}");
+                    _chalk.Default(mutant.LongName+Environment.NewLine);
                 }
             };
 

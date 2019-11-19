@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+#if !STRYKER_NO_PIPE
 using System.IO.Pipes;
+#endif
 using System.Text;
 
 namespace Stryker.Core.InjectedHelpers.Coverage
 {
+#if !STRYKER_NO_PIPE
     public delegate void MessageReceived(object sender, string args);
 
     public class CommunicationChannel : IDisposable
@@ -20,7 +23,13 @@ namespace Stryker.Core.InjectedHelpers.Coverage
 
         public event MessageReceived RaiseReceivedMessage;
 
-        public bool IsConnected { get { return _pipeStream.IsConnected; } }
+        public bool IsConnected
+        {
+            get
+            {
+                return _pipeStream.IsConnected;
+            }
+        }
 
         public CommunicationChannel(PipeStream stream, string name)
         {
@@ -37,6 +46,7 @@ namespace Stryker.Core.InjectedHelpers.Coverage
         {
             NamedPipeClientStream pipe = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough);
+
             try
             {
                 pipe.Connect(timeout);
@@ -182,4 +192,5 @@ namespace Stryker.Core.InjectedHelpers.Coverage
             _pipeStream.Dispose();
         }
     }
+#endif
 }

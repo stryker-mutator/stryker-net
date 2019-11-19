@@ -1,3 +1,12 @@
+# [0.14.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.13.0...0.14.0) (2019-11-15)
+
+
+### Features
+
+* **Git diff:** Mutate only changed files based on git diff ([#708](https://github.com/stryker-mutator/stryker-net/issues/708)) ([34371c9](https://github.com/stryker-mutator/stryker-net/commit/34371c9bd47121f8c7458625718a229d8dfa0bee))
+
+
+
 # [0.13.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.12.0...0.13.0) (2019-09-06)
 
 

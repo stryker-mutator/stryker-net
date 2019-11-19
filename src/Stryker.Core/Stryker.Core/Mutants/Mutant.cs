@@ -12,6 +12,8 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         TestListDescription CoveringTests { get; }
+        string LongName { get; }
+        string DisplayName { get; }
     }
 
     /// <summary>
@@ -33,6 +35,9 @@ namespace Stryker.Core.Mutants
         }
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+
+        public string LongName =>
+            $"{Mutation?.DisplayName} on line {Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
         public bool IsStaticValue { get; set; }
 
         public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)

@@ -1,21 +1,23 @@
 ﻿using Stryker.Core.InjectedHelpers.Coverage;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 
 namespace Stryker
 {
     public class MutantControl
     {
-        private static HashSet<int> _coveredMutants;
-        private static HashSet<int> _staticMutants;
+        private static Dictionary<int, bool> _coveredMutants;
+        private static StringBuilder _mutantsAsString;
+        private static StringBuilder _staticMutantsAsStrings;
         private static bool usePipe;
         private static string pipeName;
         private static string envName;
         private static bool captureCoverage;
+#if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
+#endif
         private static readonly HashSet<int> ActiveMutations = new HashSet<int>();
-
         public const string EnvironmentPipeName = "Coverage";
 
         static MutantControl()
@@ -23,7 +25,9 @@ namespace Stryker
             InitCoverage();
             if (usePipe)
             {
+#if !STRYKER_NO_DOMAIN
                 AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+#endif
             }
         }
 
@@ -33,14 +37,18 @@ namespace Stryker
             {
                 ActiveMutations.Add(int.Parse(entry));
             }
+            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
+#if !STRYKER_NO_PIPE
+
             if (channel != null)
             {
                 channel.Dispose();
                 channel = null;
             }
-            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
+
             if (coverageMode.StartsWith("pipe:"))
             {
+                Log("Use pipe for data transmission");
                 pipeName = coverageMode.Substring(5);
                 usePipe = true;
                 captureCoverage = true;
@@ -49,17 +57,26 @@ namespace Stryker
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
-            else if (coverageMode.StartsWith("env:"))
+#else
+            if (coverageMode.StartsWith("env:"))
             {
+                Log("Use env for data transmission");
                 envName = coverageMode.Substring(4);
                 captureCoverage = true;
                 usePipe = false;
             }
+#endif
             if (captureCoverage)
             {
-                _coveredMutants = new HashSet<int>();
-                _staticMutants = new HashSet<int>();
+                ResetCoverage();
             }
+        }
+                
+        private static void ResetCoverage()
+        {
+            _coveredMutants = new Dictionary<int, bool>();
+            _mutantsAsString = new StringBuilder();
+            _staticMutantsAsStrings = new StringBuilder();
         }
 
         private static void Channel_RaiseReceivedMessage(object sender, string args)
@@ -68,15 +85,14 @@ namespace Stryker
             {
                 return;
             }
-            HashSet<int> temp, tempStatic;
+
+            string temp;
             lock (_coveredMutants)
             {
-                temp = _coveredMutants;
-                tempStatic = _staticMutants;
-                _coveredMutants = new HashSet<int>();
-                _staticMutants = new HashSet<int>();
+                temp = BuildReport();
+                ResetCoverage();
             }
-            DumpState(temp, tempStatic);
+            DumpState(temp);
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -85,25 +101,26 @@ namespace Stryker
             GC.KeepAlive(_coveredMutants);
         }
 
-        public static void DumpState()
+        private static string BuildReport()
         {
-            DumpState(_coveredMutants, _staticMutants);
+            return string.Format("{0};{1}",_mutantsAsString, _staticMutantsAsStrings);
         }
 
-        public static void DumpState(HashSet<int> state, HashSet<int> staticMutants)
+        public static void DumpState()
         {
-            string report;
-            lock (state)
-            {
-                report = string.Join(",", state)+";"+string.Join(",", staticMutants);
-            }
+            DumpState(BuildReport());
+        }
 
+        public static void DumpState(string report)
+        {
+#if !STRYKER_NO_PIPE
             channel.SendText(report);
+#endif
         }
 
         private static void Log(string message)
         {
-            Console.WriteLine("["+DateTime.Now.ToString(":HH:mm:ss.fff") + " DBG]"+  message);
+            Console.WriteLine("["+DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] "+  message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -117,22 +134,39 @@ namespace Stryker
                     {
                         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
                         {
-                            _coveredMutants = new HashSet<int>();
-                            _staticMutants = new HashSet<int>();
-                        }
-                    }
-                    if (_coveredMutants.Add(id))
-                    {
-                        if (!usePipe)
-                        {
-                            Environment.SetEnvironmentVariable(envName, string.Join(",", _coveredMutants));
+                            ResetCoverage();
                         }
                     }
 
-                    if (MutantContext.InStatic())
+                    bool add = false; 
+                    if (!_coveredMutants.ContainsKey(id))
                     {
-                        _staticMutants.Add(id);
+                        _coveredMutants.Add(id, false);
+                        if (_mutantsAsString.Length > 0)
+                        {
+                            _mutantsAsString.Append(',');
+                        }
+                        _mutantsAsString.Append(id.ToString());
+                        add = true;
                     }
+                    if (MutantContext.InStatic() && !_coveredMutants[id])
+                    {
+                        if (_staticMutantsAsStrings.Length > 0)
+                        {
+                            _staticMutantsAsStrings.Append(',');
+                        }
+                        _staticMutantsAsStrings.Append(id.ToString());
+                        add = true;
+                    }
+
+                    if (add)
+                    {
+                        if (!usePipe)
+                        {
+                            Environment.SetEnvironmentVariable(envName, BuildReport());
+                        }
+                    }
+
                 }
             }
             return ActiveMutations.Contains(id);

@@ -63,9 +63,8 @@ namespace Stryker.Core.Initialisation
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
             var inputFiles = new FolderComposite();
-            result.FullFramework = !result.TestProjectAnalyzerResult.TargetFramework.Contains("netcoreapp", StringComparison.InvariantCultureIgnoreCase);
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult, result.FullFramework))
+            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -169,7 +168,7 @@ namespace Stryker.Core.Initialisation
             return filter;
         }
 
-        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult, bool fullFramework)
+        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
@@ -177,20 +176,18 @@ namespace Stryker.Core.Initialisation
             var folders = new List<string>();
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
-            if (!fullFramework)
+
+            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
             {
-                foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+                var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
+
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                 {
-                    var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
-
-                    if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
-                    {
-                        throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
-                    }
-
-                    var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
-                    folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
+                    throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
                 }
+
+                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
+                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
             }
 
             return folders;
@@ -227,7 +224,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.FullFramework &&
+            if (projectInfo.TestProjectAnalyzerResult.TargetFramework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
                 (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&

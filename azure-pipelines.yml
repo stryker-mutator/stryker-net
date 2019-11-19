@@ -26,13 +26,17 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.13.0'
-  VersionBuildNumber: $[counter('0.13.0', 1)]
+  PackageVersion: '0.14.0'
+  VersionBuildNumber: $[counter('0.14.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
-  MygetFeedFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+  LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
+  LibManCacheMacLinux: $(HOME)/.librarymanager/cache
+  RestoreLockedMode: true
 
 stages:
 - stage: Analysis
@@ -44,6 +48,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
@@ -82,6 +87,7 @@ stages:
         deploy:
           steps:
           - checkout: self
+          - template: pipeline-templates/populate-cache-steps.yml
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
@@ -136,10 +142,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'windows-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
@@ -160,10 +162,6 @@ stages:
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'linux-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
     - task: DotNetCoreCLI@2
@@ -178,10 +176,6 @@ stages:
       vmImage: macOS-latest
     steps:
     - template: pipeline-templates/prepare-integration-test-steps.yml
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'macos-netstandard'
-        workingDirectory: 'integrationtest/TargetProjects/NetStandardTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
@@ -204,6 +198,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -219,7 +214,6 @@ stages:
         versionEnvVar: PreviewVersion
         packagesToPack: $(ProjectsToPack)
         packDirectory: $(Build.ArtifactStagingDirectory)/preview
-
     - script: echo "##vso[build.addbuildtag]preview"
       displayName: "Tag build as preview build so release gets triggered"
     - task: PublishBuildArtifacts@1
@@ -240,6 +234,7 @@ stages:
     pool:
       vmImage: 'windows-latest'
     steps:
+    - template: pipeline-templates/populate-cache-steps.yml
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:

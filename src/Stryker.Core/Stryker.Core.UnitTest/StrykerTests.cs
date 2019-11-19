@@ -40,10 +40,10 @@ namespace Stryker.Core.UnitTest
             initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(mutationTestInput);
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
             var nbTests = 0;
-            initialisationMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), out nbTests)).Returns(0);
-            initialisationMock.Setup(x => x.GetCoverage(It.IsAny<StrykerOptions>(), mutationTestInput.ProjectInfo.ProjectContents.Mutants));
+            initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);
 
             mutationTestProcessMock.Setup(x => x.Mutate());
+            mutationTestProcessMock.Setup(x => x.GetCoverage());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
 

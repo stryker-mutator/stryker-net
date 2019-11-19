@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETStandard,Version=v2.0": {
+      "Microsoft.TestPlatform.ObjectModel": {
+        "type": "Direct",
+        "requested": "[16.3.0, )",
+        "resolved": "16.3.0",
+        "contentHash": "F4ZZ1c6J6VqeFhfPPBZNk+jr7VU5qYgxoClWK+VOJMRwGYc5edYY5q9CGtNgT93VcVGQ/ie6Gn8J9HDoST1fAg==",
+        "dependencies": {
+          "NuGet.Frameworks": "5.0.0"
+        }
+      },
+      "NETStandard.Library": {
+        "type": "Direct",
+        "requested": "[2.0.3, )",
+        "resolved": "2.0.3",
+        "contentHash": "st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "Microsoft.NETCore.Platforms": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "LgNd4IyS4Fvp0or2tnS0pq27Bv8YmKCfwTtJ3TF8+Jhh6zsGilz3f+b6Quun5PHCMGOWVEPdCnUKct1zPnH10w=="
+      },
+      "NuGet.Frameworks": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "c5JVjuVAm4f7E9Vj+v09Z9s2ZsqFDjBpcsyS3M9xRo0bEdm/LVZSzLxxNvfvAwRiiE8nwe1h2G4OwiwlzFKXlA=="
+      }
+    }
+  }
+}

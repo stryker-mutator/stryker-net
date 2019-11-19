@@ -60,12 +60,12 @@ namespace Stryker.Core.TestRunners.VsTest
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant});
         }
 
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
             if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
             {
-                return CaptureCoveragePerIsolatedTests(mutants);
+                return CaptureCoveragePerIsolatedTests(mutants, cantUseAppDomain, cantUsePipe);
             }
 
             var runner = TakeRunner();
@@ -73,7 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants) : runner.RunAll(null, null);
+                result = needCoverage ? runner.CaptureCoverage(mutants, cantUseAppDomain, cantUsePipe) : runner.RunAll(null, null);
             }
             finally
             {
@@ -82,7 +82,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
-        private TestRunResult CaptureCoveragePerIsolatedTests(IEnumerable<Mutant> mutants)
+        private TestRunResult CaptureCoveragePerIsolatedTests(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
@@ -91,7 +91,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var runner = TakeRunner();
                 try
                 {
-                    runner.CoverageForOneTest(testCase, mutants);
+                    runner.CoverageForOneTest(testCase, mutants, cantUseAppDomain, cantUseAppDomain);
                 }
                 catch (Exception e)
                 {

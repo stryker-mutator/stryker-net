@@ -1,6 +1,6 @@
+using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
@@ -10,13 +10,13 @@ namespace Stryker.Core.TestRunners
 
         int DiscoverNumberOfTests();
 
-        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants);
+        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool woPipes, bool woAppDomain);
 
         IEnumerable<TestDescription> Tests { get; }
     }
 
     public interface IMultiTestRunner : ITestRunner
     {
-        TestRunResult TestMultipleMutants(int? timeoutMS, IReadOnlyList<Mutant> mutants);
+        TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants);
     }
 }

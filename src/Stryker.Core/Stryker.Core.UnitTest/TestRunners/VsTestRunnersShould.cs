@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
@@ -21,6 +12,15 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -81,12 +81,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     AssemblyPath = _testAssemblyPath,
-                    TargetFramework = "toto"
+                    TargetFrameworkString = "toto"
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
-                    TargetFramework = "toto"
+                    TargetFrameworkString = "toto"
                 },
                 ProjectContents = _mutants
             };
@@ -345,10 +345,11 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 var singleTestResult = new TestResult(_testCases[0])
                 {
-                    EndTime = DateTimeOffset.Now, Outcome = TestOutcome.Passed
+                                EndTime = DateTimeOffset.Now,
+                                Outcome = TestOutcome.Passed
                 };
                 SetupMockTestRun(mockVsTest, new List<TestResult>{singleTestResult}, endProcess);
-                
+
                 // timeout is notified via exception
                runner.RunAll(null, _mutant);
                _mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
@@ -364,7 +365,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.AbortTestOnKill);
 
-                mockVsTest.Setup( x=>x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x => x.AbortTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
 
                 var result = runner.RunAll(null, _mutant);
@@ -386,7 +387,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;", ["T1"] = ";"}, endProcess);
 
-                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
                 _mutant.CoveringTests.GetList()[0].Name.ShouldBe("T0");
 
@@ -406,7 +407,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // test 0 and 1 cover mutant 1
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;", ["T1"] = "0;"}, endProcess);
 
-                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
                 // one mutant is covered by tests 0 and 1
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
                 _mutant.CoveringTests.GetList()[0].Name.ShouldBe("T0");
@@ -428,7 +429,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // only first test covers one mutant
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;", ["T1"] = ";"}, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["0"]="T0=S"}, endProcess);
 
@@ -453,7 +454,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 _mutant.CoveringTests = new TestListDescription(null);
                 _otherMutant.CoveringTests = new TestListDescription(null);
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockTestRun(mockVsTest, false, endProcess);
                 // mutant 0 is covered
@@ -487,7 +488,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions);
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0;", ["T1"] = "1;"}, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["1,0,2,3"]="T0=S,T1=F"}, endProcess);
                 tester.Test(strykerOptions);
 
@@ -508,7 +509,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // only first test covers one mutant
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string>{["T0"] = "0,1;1", ["T1"] = ";"}, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["0"] = "T0=F", ["1"]="T0=S"}, endProcess);
                 var result = runner.RunAll(0, _otherMutant);

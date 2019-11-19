@@ -18,6 +18,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Stryker.Core.Exceptions;
 using Mutant = Stryker.Core.Mutants.Mutant;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -47,6 +48,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private readonly ILogger _logger;
         private bool _aborted;
+        private string RunnerId => $"Runner {_id}";
+
 
         public VsTestRunner(
             StrykerOptions options,
@@ -198,7 +201,6 @@ namespace Stryker.Core.TestRunners.VsTest
             return remainingMutants;
         }
 
-
         private void SetListOfTests(ICollection<TestCase> tests)
         {
             _discoveredTests = tests;
@@ -252,7 +254,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
             var testResults = RunTestSession(null, _coverageEnvironment, GenerateRunSettings(null, true), true);
@@ -313,7 +315,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
+        public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
             var testResults = RunTestSession(new []{test}, _coverageEnvironment, GenerateRunSettings(null, true), true);
@@ -336,7 +338,7 @@ namespace Stryker.Core.TestRunners.VsTest
             int retries = 0)
         {
 
-            using (var eventHandler = new RunEventHandler(_id ,_logger))
+            using (var eventHandler = new RunEventHandler(_logger, RunnerId))
             {
                 void Handler_VsTestFailed(object sender, EventArgs e) =>  _vsTestFailed = true;
                 void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
@@ -401,7 +403,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("VsTest logging set to {0}", traceLevel.ToString());
+            _logger.LogDebug("{1}: VsTest logging set to {0}", traceLevel.ToString(), RunnerId);
             return traceLevel;
         }
 
@@ -409,16 +411,17 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
-            var targetFrameworkVersion = Regex.Replace(targetFramework, @"[^.\d]", "");
+            string targetFrameworkVersionString;
+
             switch (targetFramework)
             {
-                case string s when s.Contains("netcoreapp"):
-                    targetFrameworkVersion = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                case Initialisation.Framework.NetCore:
+                    targetFrameworkVersionString = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkString}";
                     break;
-                case string s when s.Contains("netstandard"):
-                    throw new ApplicationException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
+                case Initialisation.Framework.NetStandard:
+                    throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersion = $"Framework40";
+                    targetFrameworkVersionString = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkString}";
                     break;
             }
 
@@ -442,7 +445,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
-  <TargetFrameworkVersion>{targetFrameworkVersion}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
+  <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
@@ -472,7 +475,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
 
-            _logger.LogDebug("Logging VsTest output to: {0}", vsTestLogPath);
+            _logger.LogDebug("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {

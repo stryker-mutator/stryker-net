@@ -25,7 +25,7 @@ namespace Stryker.CLI
             CommandOption reporter,
             CommandOption projectUnderTestNameFilter,
             CommandOption testProjectNameFilter,
-            CommandOption additionalTimeoutMs,
+            CommandOption additionalTimeoutMS,
             CommandOption excludedMutations,
             CommandOption ignoreMethods,
             CommandOption logLevel,
@@ -33,8 +33,8 @@ namespace Stryker.CLI
             CommandOption devMode,
             CommandOption coverageAnalysis,
             CommandOption abortTestOnFail,
-            CommandOption runMultipleMutants,
             CommandOption configFilePath,
+            CommandOption runMultipleMutants,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
@@ -43,7 +43,9 @@ namespace Stryker.CLI
             CommandOption filePatterns,
             CommandOption testRunner,
             CommandOption solutionPath,
-            CommandOption languageVersion)
+            CommandOption languageVersion,
+            CommandOption diff,
+            CommandOption gitSource)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -60,7 +62,7 @@ namespace Stryker.CLI
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 testProjectNameFilter: GetOption(testProjectNameFilter.Value(), CLIOptions.TestProjectFileName),
-                additionalTimeoutMS: GetOption(additionalTimeoutMs.Value(), CLIOptions.AdditionalTimeoutMS),
+                additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 ignoredMethods: GetOption(ignoreMethods.Value(), CLIOptions.IgnoreMethods),
                 logLevel: GetOption(logLevel.Value(), CLIOptions.LogLevel),
@@ -77,7 +79,9 @@ namespace Stryker.CLI
                 mutate: GetOption(filePatterns.Value(), CLIOptions.Mutate),
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
-                languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption));
+                languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
+                diff: GetOption(diff.HasValue(), CLIOptions.Diff),
+                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)

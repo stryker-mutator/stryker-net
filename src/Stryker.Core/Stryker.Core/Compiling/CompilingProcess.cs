@@ -50,12 +50,16 @@ namespace Stryker.Core.Compiling
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+            var trees = syntaxTrees.ToList();
 
-            // Set assembly and file info
-            AddVersionInfoSyntaxes(syntaxTrees, analyzerResult);
+            if (_input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFramework != Framework.NetClassic)
+            {
+                // Set assembly and file info for non netclassic frameworks
+                AddVersionInfoSyntaxes(trees, analyzerResult);
+            }
 
             var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
-                syntaxTrees: syntaxTrees,
+                syntaxTrees: trees,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                                                       allowUnsafe: true,
                                                       cryptoKeyFile: analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null,
@@ -136,17 +140,25 @@ namespace Stryker.Core.Compiling
             return (rollbackProcessResult, emitResult, ++retryCount);
         }
 
-        private void AddVersionInfoSyntaxes(IEnumerable<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
+        private void AddVersionInfoSyntaxes(IList<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
         {
             // add assembly info
             StringBuilder assInfo = new StringBuilder();
-
             assInfo.AppendLine("using System.Reflection;");
-            assInfo.AppendLine($"[assembly: AssemblyTitle(\"{analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
-            assInfo.AppendLine("[assembly: AssemblyVersion(\"0.0.0\")]");
-            assInfo.AppendLine("[assembly: AssemblyFileVersion(\"0.0.0\")]");
+            assInfo.AppendLine($"[assembly: AssemblyTitle(\"Mutated {analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
+            if (!analyzerResult.Properties.TryGetValue("AssemblyFileVersion", out var versionString))
+            {
+                versionString = "0.0.0";
+            }
+            assInfo.AppendLine($"[assembly: AssemblyFileVersion(\"{versionString}\")]");
+            var refVersion = versionString;
+            if (!analyzerResult.Properties.TryGetValue("AssemblyVersion", out versionString))
+            {
+                versionString = refVersion;
+            }
+            assInfo.AppendLine($"[assembly: AssemblyVersion(\"{versionString}\")]");
 
-            syntaxTrees.ToList().Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
         }
 
         private void LogEmitResult(EmitResult result)

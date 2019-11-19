@@ -1,18 +1,21 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.DiffProviders;
+using Stryker.Core.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
@@ -20,6 +23,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate();
         StrykerRunResult Test(StrykerOptions options);
+        void GetCoverage();
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -52,21 +56,24 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _mutantFilters = mutantFilters ?? new IMutantFilter[]
-            {
-                new FilePatternMutantFilter(),
-                new IgnoredMethodMutantFilter(),
-                new ExcludeMutationMutantFilter(),
-            };
+                {
+                    new FilePatternMutantFilter(),
+                    new IgnoredMethodMutantFilter(),
+                    new ExcludeMutationMutantFilter(),
+                    new DiffMutantFilter(_options, new GitDiffProvider(_options))
+                };
         }
 
         public void Mutate()
         {
+            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
+
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
-            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion);
-            foreach (var (filename, code) in CodeInjection.MutantHelpers)
+            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
+            foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
-                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: filename, 
+                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: name,
                     options: cSharpParseOptions));
             }
 
@@ -77,12 +84,15 @@ namespace Stryker.Core.MutationTest
                     path: file.FullPath,
                     options: cSharpParseOptions);
 
-                    _logger.LogDebug($"Mutating {file.Name}");
+                _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
                 var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
-
+                if (_options.DevMode)
+                {
+                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
                 IEnumerable<Mutant> filteredMutants = allMutants;
@@ -169,13 +179,13 @@ namespace Stryker.Core.MutationTest
 
             if (!mutantsNotRun.Any())
             {
-                if (_input.ProjectInfo.ProjectContents.Mutants.All(x => x.ResultStatus == MutantStatus.Skipped))
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
                 {
-                    _logger.LogWarning("It looks like all mutants were excluded, try a re-run with less exclusion.");
+                    _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
                 }
                 if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                 {
-                    _logger.LogWarning("Not a single mutant is covered by a test. Go add some tests!");
+                    _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
                 }
                 if (!_input.ProjectInfo.ProjectContents.Mutants.Any())
                 {
@@ -247,6 +257,19 @@ namespace Stryker.Core.MutationTest
                 _logger.LogInformation($"{blocks.SelectMany(x=>x).Count()} mutants will run in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
                 return blocks;
             }
+        }
+
+        public void GetCoverage()
+        {
+            var (targetFrameworkDoesNotSupportAppDomain, targetFramewoekDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFramewoekDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
+            if (testResult.Success)
+            {
+                return;
+            }
+            _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
+            throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
         }
     }
 }

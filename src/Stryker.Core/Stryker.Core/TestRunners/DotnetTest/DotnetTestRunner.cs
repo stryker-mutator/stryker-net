@@ -6,7 +6,6 @@ using Stryker.Core.Testing;
 using Stryker.DataCollector;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.TestRunners
 {
@@ -51,13 +50,23 @@ namespace Stryker.Core.TestRunners
             return new TestRunResult(result.ExitCode == 0, result.Output);
         }
 
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseUnloadAppDomain, bool cantUsePipe)
         {
+            if (cantUseUnloadAppDomain)
+            {
+                _logger.LogWarning("Can't capture the test coverage as the target framework does not support 'AppDomain'. ");
+                return new TestRunResult(true);
+            }
+
+            if (cantUsePipe)
+            {
+                _logger.LogDebug("Target framework does not support NamedPipes. Stryker will use environment variables instead.");
+            }
             if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
                 collector.SetLogger((message) => _logger.LogTrace(message));
-                collector.Init(true);
+                collector.Init(!cantUsePipe);
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);
 
@@ -70,10 +79,8 @@ namespace Stryker.Core.TestRunners
 
                 return result;
             }
-            else
-            {
-                return LaunchTestProcess(null, null);
-            }
+
+            return new TestRunResult(true);
         }
 
         public int DiscoverNumberOfTests()
