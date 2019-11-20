@@ -1,3 +1,12 @@
+## [0.14.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.0...0.14.1) (2019-11-20)
+
+
+### Bug Fixes
+
+* **coverage analysis:** The name 'AppDomain' does not exist in the current context ([#789](https://github.com/stryker-mutator/stryker-net/issues/789)) ([d53686c](https://github.com/stryker-mutator/stryker-net/commit/d53686c57b24076630c927d99d72f1e7c7f41e11))
+
+
+
 # [0.14.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.13.0...0.14.0) (2019-11-15)
 
 
