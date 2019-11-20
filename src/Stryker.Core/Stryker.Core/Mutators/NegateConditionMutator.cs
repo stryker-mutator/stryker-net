@@ -6,24 +6,29 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class NegateConditionMutator : MutatorBase<InvocationExpressionSyntax>, IMutator
+    public class NegateConditionMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
-        public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
-            if (node.ArgumentList.Arguments.Any())
+            SyntaxNode replacement = null;
+            if (node is IsPatternExpressionSyntax)
             {
+                // we can't mutate IsPatternExpression without breaking build
                 yield break;
             }
-
-            SyntaxNode replacement = null;
-
             switch (node.Parent)
             {
                 case IfStatementSyntax ifStatementSyntax:
-                    replacement = NegateCondition(ifStatementSyntax?.Condition);
+                    replacement = NegateCondition(ifStatementSyntax.Condition);
                     break;
                 case WhileStatementSyntax whileStatementSyntax:
                     replacement = NegateCondition(whileStatementSyntax.Condition);
+                    break;
+                case ConditionalExpressionSyntax conditionalExpressionSyntax:
+                    if (conditionalExpressionSyntax.Condition == node)
+                    {
+                        replacement = NegateCondition(conditionalExpressionSyntax.Condition);
+                    }
                     break;
             }
 
@@ -41,7 +46,7 @@ namespace Stryker.Core.Mutators
 
         private static PrefixUnaryExpressionSyntax NegateCondition(ExpressionSyntax expressionSyntax)
         {
-            return SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, expressionSyntax);
+            return SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, SyntaxFactory.ParenthesizedExpression(expressionSyntax));
         }
     }
 }

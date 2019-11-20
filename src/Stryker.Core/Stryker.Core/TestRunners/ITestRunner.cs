@@ -13,6 +13,8 @@ namespace Stryker.Core.TestRunners
         TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool woPipes, bool woAppDomain);
 
         IEnumerable<TestDescription> Tests { get; }
+
+        void AbortRun();
     }
 
     public interface IMultiTestRunner : ITestRunner

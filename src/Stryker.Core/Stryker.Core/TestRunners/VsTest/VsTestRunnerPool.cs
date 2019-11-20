@@ -41,6 +41,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
 
+        public void AbortRun()
+        {
+            throw new NotImplementedException();
+        }
+
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants)
         {
             var runner = TakeRunner();

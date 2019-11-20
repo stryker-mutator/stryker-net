@@ -90,6 +90,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant>{ mutant});
         }
 
+        public void AbortRun()
+        {
+            _vsTestConsole.AbortTestRun();
+        }
+
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants)
         {
             var envVars = new Dictionary<string, string>();
@@ -114,7 +119,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             }
 
- 
             var expectedTests = testCases?.Count ?? DiscoverNumberOfTests();
 
             void HandleUpdate(RunEventHandler handler)
@@ -151,34 +155,18 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 var notTested = UpdateMutantStatusAccordingToTestResults(mutants, testResults.ToList());
 
-                if (timeout)
+                if (!timeout && notTested.Count > 0)
                 {
-                    if (notTested.Count == 1)
-                    {
-                        notTested[0].ResultStatus = MutantStatus.Timeout;
-                    }
-                    else
-                    {
-                        // run remaining mutants one by one
-                        foreach (var remainingMutant in notTested)
-                        {
-                            TestMultipleMutants(timeoutMs, new List<Mutant> {remainingMutant});
-                        }
-                    }
-                }
-                else
-                {
-                    if (notTested.Count > 0)
-                    {
-                        _logger.LogError(
-                            $"{mutants.Count} mutants were not fully tested ({string.Join(", ", mutants)}). Please open an issue.");
-                    }
+                    _logger.LogError(
+                        $"{mutants.Count} mutants were not fully tested ({string.Join(", ", mutants)}). Please open an issue.");
                 }
             }
 
-            return new TestRunResult(ranTests, new TestListDescription(failedTests), string.Join( Environment.NewLine,
+            var message = string.Join( Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
-                    .Select(tr => tr.ErrorMessage)));
+                    .Select(tr => tr.ErrorMessage));
+            var failedTestsDescription = new TestListDescription(failedTests);
+            return timeout ? TestRunResult.TimedOut(ranTests, failedTestsDescription, message) : new TestRunResult(ranTests, failedTestsDescription, message);
         }
 
         private List<Mutant> UpdateMutantStatusAccordingToTestResults(IReadOnlyList<Mutant> mutants, List<TestResult> handlerTestResults)
@@ -186,12 +174,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var tests = handlerTestResults.Count == DiscoverNumberOfTests()
                 ? TestListDescription.EveryTest()
                 : new TestListDescription(handlerTestResults.Select(tr => (TestDescription) tr.TestCase));
-            var failed = handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
-                .Select(tr => (TestDescription) tr.TestCase).ToImmutableArray();
             var remainingMutants = new List<Mutant>();
+            var failedTest = new TestListDescription(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
+                .Select(tr => (TestDescription) tr.TestCase));
             foreach (var mutant in mutants)
             {
-                mutant.AnalyzeTestRun(failed, tests);
+                mutant.AnalyzeTestRun(failedTest, tests);
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {
                     remainingMutants.Add(mutant);

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -26,6 +27,11 @@ namespace Stryker.Core.TestRunners
 
         public IEnumerable<TestDescription> Tests => null;
 
+        public void AbortRun()
+        {
+            _processExecutor.Abort();
+        }
+
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
         {
             var envVars = mutant == null ? null : 
@@ -33,9 +39,15 @@ namespace Stryker.Core.TestRunners
             {
                 {"ActiveMutation", mutant.Id.ToString() }
             };
-            var result =  LaunchTestProcess(timeoutMs, envVars);
-            mutant?.AnalyzeTestRun(result.FailingTests.GetList(), result.RanTests);
-            return result;
+            try
+            {
+                return LaunchTestProcess(timeoutMs, envVars);
+            }
+            catch (OperationCanceledException e)
+            {
+                var emptyList = new TestListDescription(null);
+                return TestRunResult.TimedOut(emptyList,  emptyList, "time out");
+            }
         }
 
         private TestRunResult LaunchTestProcess(int? timeoutMs, IDictionary<string, string> envVars)

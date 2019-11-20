@@ -46,7 +46,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Throws<OperationCanceledException>();
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).
+                Returns(TestRunResult.TimedOut(new TestListDescription(null), new TestListDescription(null), ""));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

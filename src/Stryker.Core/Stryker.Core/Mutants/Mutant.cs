@@ -40,9 +40,9 @@ namespace Stryker.Core.Mutants
             $"{Mutation?.DisplayName} on line {Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
         public bool IsStaticValue { get; set; }
 
-        public void AnalyzeTestRun(IReadOnlyList<TestDescription> failedTests, TestListDescription resultRanTests)
+        public void AnalyzeTestRun(TestListDescription failedTests, TestListDescription resultRanTests)
         {
-            if (failedTests.Any(t =>IsStaticValue ||  CoveringTests.Contains(t.Guid)))
+            if (failedTests.GetList().Any(t =>IsStaticValue ||  CoveringTests.Contains(t.Guid)))
             {
                 // a test killed us
                 ResultStatus = MutantStatus.Killed;

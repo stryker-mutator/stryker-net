@@ -21,12 +21,18 @@ namespace Stryker.Core.TestRunners
             Success = failedTests.IsEmpty;
         }
 
+        public static TestRunResult TimedOut(TestListDescription ranTests, TestListDescription failedTest,
+            string message)
+        {
+            return new TestRunResult(ranTests, failedTest, message) { TimeOut = true};
+        }
+
         public TestListDescription FailingTests { get; set; }
 
         public TestListDescription RanTests { get; }
         public bool Success { get; private set; }
+        public bool TimeOut { get; private set; }
         public string ResultMessage { get; set; }
-
         public void Merge(TestRunResult other)
         {
             Success = Success && other.Success;

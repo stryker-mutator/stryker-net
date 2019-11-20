@@ -21,10 +21,15 @@ namespace Stryker.Core.Testing
         /// <param name="environmentVariables">Environment variables (and their values)</param>
         /// <returns>ProcessResult</returns>
         ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
+
+        // Abort the process
+        void Abort();
     }
 
     public class ProcessExecutor : IProcessExecutor
     {
+        private ProcessWrapper _process;
+
         // when redirected, the output from the process will be kept in memory and not displayed to the console directly
         private bool RedirectOutput { get; }
 
@@ -38,7 +43,7 @@ namespace Stryker.Core.Testing
             string application,
             string arguments,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            int timeoutMS = 0)
+            int timeoutMs = 0)
         {
             var info = new ProcessStartInfo(application, arguments)
             {
@@ -48,12 +53,17 @@ namespace Stryker.Core.Testing
                 RedirectStandardError = RedirectOutput
             };
 
-            foreach (var environmentVariable in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
+            foreach (var (key, value) in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
             {
-                info.EnvironmentVariables[environmentVariable.Key] = environmentVariable.Value;
+                info.EnvironmentVariables[key] = value;
             }
 
-            return RunProcess(info, timeoutMS);
+            return RunProcess(info, timeoutMs);
+        }
+
+        public void Abort()
+        {
+            _process?.Kill();
         }
 
         /// <summary>
@@ -66,19 +76,20 @@ namespace Stryker.Core.Testing
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
         {
-            using (var process = new ProcessWrapper(info, RedirectOutput))
+            _process = new ProcessWrapper(info, RedirectOutput);
+            using (_process)
             {
                 var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
-                if (!process.WaitForExit(timeoutValue))
+                if (!_process.WaitForExit(timeoutValue))
                 {
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
 
                 return new ProcessResult()
                 {
-                    ExitCode = process.ExitCode,
-                    Output = process.Output,
-                    Error = process.Error
+                    ExitCode = _process.ExitCode,
+                    Output = _process.Output,
+                    Error = _process.Error
                 };
             }
         }
@@ -97,12 +108,20 @@ namespace Stryker.Core.Testing
             public ProcessWrapper(ProcessStartInfo info, bool redirectOutput)
             {
                 _process = Process.Start(info);
-                if (redirectOutput)
+                if (redirectOutput && _process != null)
                 {
                     _process.OutputDataReceived += Process_OutputDataReceived;
                     _process.ErrorDataReceived += Process_ErrorDataReceived;
                     _process.BeginOutputReadLine();
                     _process.BeginErrorReadLine();
+                }
+            }
+
+            public void Kill()
+            {
+                if (!_process.HasExited)
+                {
+                    _process.Kill();
                 }
             }
 

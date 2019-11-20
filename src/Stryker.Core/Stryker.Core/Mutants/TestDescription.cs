@@ -80,7 +80,8 @@ namespace Stryker.Core.Mutants
 
         public bool IsEveryTest => _tests == null || (_tests.Count == 1 && _tests[0].IsAllTests);
 
-        public bool IsEmpty => _tests!=null && _tests.Count == 0;
+        public bool IsEmpty => _tests != null && _tests.Count == 0;
+
         public int Count => _tests == null ? 0 : _tests.Count;
 
         public void Add(TestDescription test)
@@ -113,6 +114,8 @@ namespace Stryker.Core.Mutants
 
         public void AddTests(TestListDescription otherFailingTests)
         {
+            if (otherFailingTests.IsEmpty)
+                return;
             foreach (var testDescription in otherFailingTests._tests)
             {
                 Add(testDescription);

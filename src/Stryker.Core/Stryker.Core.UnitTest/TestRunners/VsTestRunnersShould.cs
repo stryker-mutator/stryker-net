@@ -351,8 +351,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockTestRun(mockVsTest, new List<TestResult>{singleTestResult}, endProcess);
 
                 // timeout is notified via exception
-               runner.RunAll(null, _mutant);
-               _mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
+               var result = runner.RunAll(null, _mutant);
+               result.TimeOut.ShouldBe(true);
             }
         }
 

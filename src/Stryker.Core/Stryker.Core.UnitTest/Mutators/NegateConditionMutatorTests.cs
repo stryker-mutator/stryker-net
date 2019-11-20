@@ -42,6 +42,7 @@ namespace TestApplication
         [Theory]
         [InlineData("if (Method()) => return true;")]
         [InlineData("while (Method()) => age++;")]
+        [InlineData("(Method()? 1:2);")]
         public void MutatesStatementWithMethodCallWithNoArguments(string method)
         {
             var target = new NegateConditionMutator();
@@ -51,21 +52,21 @@ namespace TestApplication
             var result = target.ApplyMutations(node).ToList();
             
             result.Count.ShouldBe(1);
-            result.First().ReplacementNode.ToString().ShouldBe("!Method()");
+            result.First().ReplacementNode.ToString().ShouldBe("!(Method())");
         }
 
         [Theory]
-        [InlineData("if (Method(node.Parent != null)) => return true;")]
-        [InlineData("while (Method(false)) => return true;")]
-        public void ShouldNotMutateStatementWithArguments(string method)
+        [InlineData("var y = x is object result ? result.ToString() : null;")] // can't mutate inline var declaration
+        public void ShouldNotMutateThis(string method)
         {
             var target = new NegateConditionMutator();
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(method);
 
-            var node = GenerateExpressions(method);
 
-            var result = target.ApplyMutations(node).ToList();
-
-            result.Count.ShouldBe(0);
+            var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
+            var result = target.ApplyMutations(expressionSyntax.Condition).ToList();
+            
+            result.ShouldBeEmpty();
         }
     }
 }

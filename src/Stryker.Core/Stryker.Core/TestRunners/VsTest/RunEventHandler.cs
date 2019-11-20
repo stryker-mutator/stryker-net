@@ -53,7 +53,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     _logger.LogWarning(sock,"Test session ended unexpectedly.");
                 }
-                else
+                else if (!testRunCompleteArgs.IsAborted)
                 {
                     _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
                 }
@@ -66,7 +66,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var testResults = results as TestResult[] ?? results.ToArray();
             TestResults.AddRange(testResults);
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
         }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
