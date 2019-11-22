@@ -265,11 +265,22 @@ namespace Stryker.Core.MutationTest
 
         public void GetCoverage()
         {
-            var (targetFrameworkDoesNotSupportAppDomain, targetFramewoekDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
             var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
-            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFramewoekDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
             if (testResult.Success)
             {
+                // force static mutants to be tested against all tests.
+                if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                {
+                    foreach (var mutant in mutantsToScan)
+                    {
+                        if (mutant.IsStaticValue)
+                        {
+                            mutant.MustRunAgainstAllTests = true;
+                        }
+                    }
+                }
                 return;
             }
             _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");

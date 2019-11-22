@@ -476,7 +476,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, "perTest", abortTestOnFail:false);
+                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, "perTest", abortTestOnFail:false, allowSimultaneousTesting:true);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
                 _mutants.Add(new FileLeaf{Mutants = new []{new Mutant{Id = 2}, new Mutant{Id = 3}}});

@@ -47,7 +47,7 @@ namespace Stryker.Core.Mutants
                 // a test killed us
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (!CoveringTests.IsEveryTest && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
+            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
             {
                 ResultStatus = MutantStatus.Survived;
             }
