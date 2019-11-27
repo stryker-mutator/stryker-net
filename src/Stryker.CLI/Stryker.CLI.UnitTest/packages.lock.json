@@ -285,18 +285,18 @@
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "KECbOpM0EySVbKTQDN9o0swdnZpwpdhuYngnnJGzXdcAc+JR1mv7iF4lOyK00KSH8OZjobO0TUeo3mn7J2rdrA==",
+        "resolved": "3.0.1",
+        "contentHash": "YVnWU71HYeLcKBX58vQKx3aU3Vb9sQl+UGi7DiLwyyKBHHB+vXGQczg+JwPPvMNIu6bCyEzHGuJtkA4wUTraZA==",
         "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "3.0.0"
+          "Microsoft.Extensions.Configuration.Abstractions": "3.0.1"
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "Lge/PbXC53jI1MF2J92X5EZOeKV8Q/rlB1aV3H9I/ZTDyQGOyBcL03IAvnviWpHKj43BDkNy6kU2KKoh8kAS0g==",
+        "resolved": "3.0.1",
+        "contentHash": "R36lhvFgp56wE9YjjRyK2dgo3GHSf6CID2XZee8BLEpNXX8B9kjjKvp0UyDfOM3GWy1//s/fz1RkrG+pl2ycJQ==",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "3.0.0"
+          "Microsoft.Extensions.Primitives": "3.0.1"
         }
       },
       "Microsoft.Extensions.Configuration.Binder": {
@@ -402,8 +402,8 @@
       },
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "6gwewTbmOh+ZVBicVkL1XRp79sx4O7BVY6Yy+7OYZdwn3pyOKe9lOam+3gXJ3TZMjhJZdV0Ub8hxHt2vkrmN5Q==",
+        "resolved": "3.0.1",
+        "contentHash": "9RIADJEXOk3R2rQunxzFxQEazaD3FNOqCNed+yVf/U0HDbbkQcwsWOHrju1YwdQwtewt/0WRUYxRDf3USxezdA==",
         "dependencies": {
           "System.Memory": "4.5.2",
           "System.Runtime.CompilerServices.Unsafe": "4.6.0"
@@ -1708,7 +1708,7 @@
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "2.4.3",
           "Microsoft.Extensions.Configuration.Binder": "3.0.0",
-          "stryker": "0.13.0"
+          "stryker": "0.14.1"
         }
       },
       "stryker": {
@@ -1718,7 +1718,7 @@
           "DotNet.Glob": "3.0.5",
           "LibGit2Sharp": "0.26.1",
           "Microsoft.CodeAnalysis.CSharp": "3.3.1",
-          "Microsoft.Extensions.Configuration": "3.0.0",
+          "Microsoft.Extensions.Configuration": "3.0.1",
           "Microsoft.Extensions.Configuration.Json": "3.0.0",
           "Microsoft.Extensions.Logging": "3.0.0",
           "Microsoft.TestPlatform": "16.3.0",
