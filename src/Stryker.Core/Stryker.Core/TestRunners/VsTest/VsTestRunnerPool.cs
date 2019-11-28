@@ -46,13 +46,13 @@ namespace Stryker.Core.TestRunners.VsTest
             throw new NotImplementedException();
         }
 
-        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants)
+        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var runner = TakeRunner();
 
             try
             {
-                return mutants == null ? runner.RunAll(timeoutMs, null) : runner.TestMultipleMutants(timeoutMs, mutants);
+                return mutants == null ? runner.RunAll(timeoutMs, null, update) : runner.TestMultipleMutants(timeoutMs, mutants, update);
             }
             finally
             {
@@ -60,9 +60,9 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
-            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant});
+            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant}, null);
         }
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
@@ -78,7 +78,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants, cantUseAppDomain, cantUsePipe) : runner.RunAll(null, null);
+                result = needCoverage ? runner.CaptureCoverage(mutants, cantUseAppDomain, cantUsePipe) : runner.RunAll(null, null, null);
             }
             finally
             {

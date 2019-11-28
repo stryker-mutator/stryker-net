@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
-            var result = target.RunAll(null, null);
+            var result = target.RunAll(null, null, null);
 
             Assert.True(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
-            var result = target.RunAll(null, null);
+            var result = target.RunAll(null, null, null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
-            var result = target.RunAll(null, null);
+            var result = target.RunAll(null, null, null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
 
-            var result = target.RunAll(null, new Mutant(){Id =  1});
+            var result = target.RunAll(null, new Mutant(){Id =  1}, null);
 
             Assert.False(result.Success);
             processMock.Verify(m => m.Start(

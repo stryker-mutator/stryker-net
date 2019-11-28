@@ -68,18 +68,18 @@ namespace Stryker.Core.Testing
 
         /// <summary>
         /// Starts a process with the given info. 
-        /// Checks for timeout after <paramref name="timeoutMS"/> milliseconds if the process is still running. 
+        /// Checks for timeout after <paramref name="timeoutMs"/> milliseconds if the process is still running. 
         /// </summary>
         /// <param name="info">The start info for the process</param>
-        /// <param name="timeoutMS">The milliseconds to check for a timeout</param>
+        /// <param name="timeoutMs">The milliseconds to check for a timeout</param>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
-        private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
+        private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMs)
         {
             _process = new ProcessWrapper(info, RedirectOutput);
             using (_process)
             {
-                var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
+                var timeoutValue = timeoutMs == 0 ? -1 : timeoutMs;
                 if (!_process.WaitForExit(timeoutValue))
                 {
                     throw new OperationCanceledException("The process was terminated due to long runtime");
@@ -96,10 +96,11 @@ namespace Stryker.Core.Testing
 
         private sealed class ProcessWrapper : IDisposable
         {
+            private static readonly TimeSpan KillTimeOut = TimeSpan.FromSeconds(60);
+
             private readonly Process _process;
             private readonly StringBuilder _output = new StringBuilder();
             private readonly StringBuilder _error = new StringBuilder();
-            private static readonly TimeSpan KillTimeOut = TimeSpan.FromSeconds(60);
 
             public int ExitCode => _process.ExitCode;
             public string Output => _output.ToString();

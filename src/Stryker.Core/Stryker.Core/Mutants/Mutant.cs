@@ -13,7 +13,6 @@ namespace Stryker.Core.Mutants
         MutantStatus ResultStatus { get; }
         TestListDescription CoveringTests { get; }
         string LongName { get; }
-        string DisplayName { get; }
     }
 
     /// <summary>

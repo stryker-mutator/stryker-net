@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -316,7 +317,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 SetupMockTestRun(mockVsTest, true, endProcess);
-                var result = runner.RunAll(null, _mutant);
+                var result = runner.RunAll(null, _mutant, null);
                 // tests are successful => run should be successful
                 result.Success.ShouldBe(true);
             }
@@ -330,7 +331,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 SetupMockTestRun(mockVsTest, false, endProcess);
-                var result = runner.RunAll(null, _mutant);
+                var result = runner.RunAll(null, _mutant, null);
                 // run is failed
                 result.Success.ShouldBe(false);
             }
@@ -345,13 +346,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 var singleTestResult = new TestResult(_testCases[0])
                 {
-                                EndTime = DateTimeOffset.Now,
-                                Outcome = TestOutcome.Passed
+                    EndTime = DateTimeOffset.Now,
+                    Outcome = TestOutcome.Passed
                 };
                 SetupMockTestRun(mockVsTest, new List<TestResult>{singleTestResult}, endProcess);
 
                 // timeout is notified via exception
-               var result = runner.RunAll(null, _mutant);
+                var result = runner.RunAll(null, _mutant, null);
                result.TimeOut.ShouldBe(true);
             }
         }
@@ -368,7 +369,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 mockVsTest.Setup(x => x.AbortTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
 
-                var result = runner.RunAll(null, _mutant);
+                var result = runner.RunAll(null, _mutant, ((mutants, tests, failedTests) => false));
                 // verify Abort has been called
                 Mock.Verify(mockVsTest);
                 // and test run is failed
@@ -434,7 +435,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["0"]="T0=S"}, endProcess);
 
                 // process coverage information
-                var result = runner.RunAll(0, _mutant);
+                var result = runner.RunAll(0, _mutant, null);
 
                 // verify Abort has been called
                 result.Success.ShouldBe(true);
@@ -459,11 +460,11 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockTestRun(mockVsTest, false, endProcess);
                 // mutant 0 is covered
                 _mutant.IsStaticValue.ShouldBeTrue();
-                var result = runner.RunAll(0, _mutant);
+                var result = runner.RunAll(0, _mutant, null);
                 // mutant is killed
                 result.Success.ShouldBe(false);
                 // mutant 1 is not covered
-                result = runner.RunAll(0, _otherMutant);
+                result = runner.RunAll(0, _otherMutant, null);
                 // tests are ok
                 result.Success.ShouldBe(true);
             }
@@ -512,9 +513,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                 runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string>{["0"] = "T0=F", ["1"]="T0=S"}, endProcess);
-                var result = runner.RunAll(0, _otherMutant);
+                var result = runner.RunAll(0, _otherMutant, null);
                 result.Success.ShouldBe(true);
-                result = runner.RunAll(null, _mutant);
+                result = runner.RunAll(null, _mutant, null);
                 result.Success.ShouldBe(false);
             }
         }

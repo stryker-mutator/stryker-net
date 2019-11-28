@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
 using System.Diagnostics;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Initialisation
 {
@@ -42,7 +40,7 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.RunAll(null, null);
+            var testResult = testRunner.RunAll(null, null, null);
             // Stop stopwatch immediately after testrun
             stopwatch.Stop();
 

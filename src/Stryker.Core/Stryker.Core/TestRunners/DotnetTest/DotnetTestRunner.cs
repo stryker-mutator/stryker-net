@@ -32,7 +32,7 @@ namespace Stryker.Core.TestRunners
             _processExecutor.Abort();
         }
 
-        public TestRunResult RunAll(int? timeoutMs, Mutant mutant)
+        public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             var envVars = mutant == null ? null : 
                 new Dictionary<string, string>
@@ -43,7 +43,7 @@ namespace Stryker.Core.TestRunners
             {
                 return LaunchTestProcess(timeoutMs, envVars);
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 var emptyList = new TestListDescription(null);
                 return TestRunResult.TimedOut(emptyList,  emptyList, "time out");
@@ -74,10 +74,11 @@ namespace Stryker.Core.TestRunners
             {
                 _logger.LogDebug("Target framework does not support NamedPipes. Stryker will use environment variables instead.");
             }
+
             if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var collector = new CoverageCollector();
-                collector.SetLogger((message) => _logger.LogTrace(message));
+                collector.SetLogger(message => _logger.LogTrace(message));
                 collector.Init(!cantUsePipe);
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);

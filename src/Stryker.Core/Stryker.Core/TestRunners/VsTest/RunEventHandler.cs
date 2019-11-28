@@ -17,7 +17,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ILogger _logger;
         private readonly string _runnerId;
 
-        public event EventHandler TestsFailed;
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 

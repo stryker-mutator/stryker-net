@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.FileProviders;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -16,14 +17,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult (true ));
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).Returns(new TestRunResult (true ));
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(new List<Mutant>{mutant}, 0);
+            target.Test(new List<Mutant>{mutant}, 0, null);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-            testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant), Times.Once);
+            testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant, null), Times.Once);
         }
 
         [Fact]
@@ -31,14 +32,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).Returns(new TestRunResult(false));
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).Returns(new TestRunResult(false));
             
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(new List<Mutant>{mutant}, 0);
+            target.Test(new List<Mutant>{mutant}, 0, null);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
-            testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant), Times.Once);
+            testRunnerMock.Verify(x => x.RunAll(It.IsAny<int>(), mutant, null), Times.Once);
         }
 
         [Fact]
@@ -46,15 +47,15 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant)).
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).
                 Returns(TestRunResult.TimedOut(new TestListDescription(null), new TestListDescription(null), ""));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
-            target.Test(new List<Mutant>{mutant}, 1999);
+            target.Test(new List<Mutant>{mutant}, 1999, null);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
-            testRunnerMock.Verify(x => x.RunAll(1999, mutant), Times.Once);
+            testRunnerMock.Verify(x => x.RunAll(1999, mutant, null), Times.Once);
         }
     }
 }

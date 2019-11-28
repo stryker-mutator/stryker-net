@@ -206,7 +206,22 @@ namespace Stryker.Core.MutationTest
                     new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                     mutants =>
                     {
-                        _mutationTestExecutor.Test(mutants, _input.TimeoutMs);
+                        _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
+                            (testedMutants, ranTests, failedTests) => 
+                            {
+                                var mustStop = false;
+                                foreach (var mutant in testedMutants)
+                                {
+                                    mutant.AnalyzeTestRun(failedTests, ranTests);
+                                    if (mutant.ResultStatus == MutantStatus.NotRun)
+                                    {
+                                        mustStop = true;
+                                    }
+                                }
+
+                                return mustStop;
+                            }
+                        );
 
                         foreach (var mutant in mutants)
                         {

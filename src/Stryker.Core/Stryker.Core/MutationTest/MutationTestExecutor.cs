@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
@@ -13,7 +14,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(IList<Mutant> mutant, int timeoutMs);
+        void Test(IList<Mutant> mutant, int timeoutMs, TestUpdateHandler updateHandler);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
@@ -27,19 +28,19 @@ namespace Stryker.Core.MutationTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(IList<Mutant> mutantsToTest, int timeoutMs)
+        public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
         {
             TestRunResult result = null;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
             if (TestRunner is IMultiTestRunner multi)
             {
-                result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList());
+                result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
             }
             else
             {
                 foreach (var mutant in mutantsToTest)
                 {
-                    var testRunResult = TestRunner.RunAll(timeoutMs, mutant);
+                    var testRunResult = TestRunner.RunAll(timeoutMs, mutant, updateHandler);
                     if (result == null)
                     {
                         result = testRunResult;
@@ -76,7 +77,7 @@ namespace Stryker.Core.MutationTest
                     // we will test mutants in isolation.
                     foreach (var remainingMutant in remainingMutants)
                     {
-                        result = TestRunner.RunAll(timeoutMs, remainingMutant);
+                        result = TestRunner.RunAll(timeoutMs, remainingMutant, updateHandler);
                         if (result.TimeOut)
                         {
                             remainingMutant.ResultStatus = MutantStatus.Timeout;
