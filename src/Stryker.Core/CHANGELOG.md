@@ -1,3 +1,12 @@
+## [0.14.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.1...0.14.2) (2019-11-28)
+
+
+### Bug Fixes
+
+* **vstest:** Correctly determine targetframework for vstest configuration ([#822](https://github.com/stryker-mutator/stryker-net/issues/822)) ([cd2c7ff](https://github.com/stryker-mutator/stryker-net/commit/cd2c7ff1e8fde4fd3c3167d0c4332be01927d255))
+
+
+
 ## [0.14.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.0...0.14.1) (2019-11-20)
 
 
