@@ -197,15 +197,17 @@ namespace Stryker.Core.MutationTest
             var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
-                _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
-
+ 
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
+
+                _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
 
                 Parallel.ForEach(
                     mutantGroups,
                     new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
                     mutants =>
                     {
+                        var testMutants = new HashSet<Mutant>();
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
                             (testedMutants, ranTests, failedTests) => 
                             {
@@ -217,16 +219,20 @@ namespace Stryker.Core.MutationTest
                                     {
                                         mustStop = true;
                                     }
+                                    else
+                                    {
+                                        if (!testMutants.Contains(mutant))
+                                        {
+                                            testMutants.Add(mutant);
+                                            _reporter.OnMutantTested(mutant);
+                                        }
+                                    }
+
                                 }
 
                                 return mustStop;
-                            }
-                        );
+                            });
 
-                        foreach (var mutant in mutants)
-                        {
-                            _reporter.OnMutantTested(mutant);
-                        }
                     });
             }
 
@@ -241,6 +247,7 @@ namespace Stryker.Core.MutationTest
         {
             if (_options.Optimizations.HasFlag(OptimizationFlags.RunMultipleMutants))
             {
+                _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
                 var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
                 var mutantsToGroup = mutantsNotRun.ToList();
                 // we deal with mutants needing full testing first
@@ -286,15 +293,13 @@ namespace Stryker.Core.MutationTest
             if (testResult.Success)
             {
                 // force static mutants to be tested against all tests.
-                if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                if (_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
                 {
-                    foreach (var mutant in mutantsToScan)
-                    {
-                        if (mutant.IsStaticValue)
-                        {
-                            mutant.MustRunAgainstAllTests = true;
-                        }
-                    }
+                    return;
+                }
+                foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                {
+                    mutant.MustRunAgainstAllTests = true;
                 }
                 return;
             }

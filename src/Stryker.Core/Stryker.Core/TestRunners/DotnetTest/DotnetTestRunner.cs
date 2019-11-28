@@ -41,11 +41,17 @@ namespace Stryker.Core.TestRunners
             };
             try
             {
-                return LaunchTestProcess(timeoutMs, envVars);
+                var res= LaunchTestProcess(timeoutMs, envVars);
+                mutant?.AnalyzeTestRun(res.FailingTests, res.RanTests);
+                return res;
             }
             catch (OperationCanceledException)
             {
                 var emptyList = new TestListDescription(null);
+                if (mutant != null)
+                {
+                    mutant.ResultStatus = MutantStatus.Timeout;
+                }
                 return TestRunResult.TimedOut(emptyList,  emptyList, "time out");
             }
         }
@@ -75,25 +81,27 @@ namespace Stryker.Core.TestRunners
                 _logger.LogDebug("Target framework does not support NamedPipes. Stryker will use environment variables instead.");
             }
 
-            if (_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (!_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) &&
+                !_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                var collector = new CoverageCollector();
-                collector.SetLogger(message => _logger.LogTrace(message));
-                collector.Init(!cantUsePipe);
-                var coverageEnvironment = collector.GetEnvironmentVariables();
-                var result = LaunchTestProcess(null, coverageEnvironment);
-
-                var data = collector.RetrieveCoverData("full");
-                var testedMutant = data.Split(";")[0].Split(",").Select(int.Parse).ToList();
-                foreach (var mutant in mutants)
-                {
-                    mutant.CoveringTests = testedMutant.Contains(mutant.Id) ? TestListDescription.EveryTest() : new TestListDescription(null);
-                }
-
-                return result;
+                return new TestRunResult(true);
             }
 
-            return new TestRunResult(true);
+            var collector = new CoverageCollector();
+            collector.SetLogger(message => _logger.LogTrace(message));
+            collector.Init(!cantUsePipe);
+            var coverageEnvironment = collector.GetEnvironmentVariables();
+            var result = LaunchTestProcess(null, coverageEnvironment);
+
+            var data = collector.RetrieveCoverData("full");
+            var testedMutant = data.Split(";")[0].Split(",").Select(int.Parse).ToList();
+            foreach (var mutant in mutants)
+            {
+                mutant.CoveringTests = testedMutant.Contains(mutant.Id) ? TestListDescription.EveryTest() : new TestListDescription(null);
+            }
+
+            return result;
+
         }
 
         public int DiscoverNumberOfTests()

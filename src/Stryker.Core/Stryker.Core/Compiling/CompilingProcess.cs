@@ -65,7 +65,7 @@ namespace Stryker.Core.Compiling
                                                       cryptoKeyFile: analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null,
                                                       strongNameProvider: analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null,
                                                       nullableContextOptions: NullableContextOptions.Enable),
-                references: _input.AssemblyReferences);
+                                                      references: _input.AssemblyReferences);
 
             RollbackProcessResult rollbackProcessResult;
 

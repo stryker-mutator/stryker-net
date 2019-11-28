@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
@@ -359,8 +360,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             executorMock.Verify(x => x.Test(new List<Mutant> {mutant}, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
-            reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Once);
-            reporterMock.Verify(x => x.OnMutantTested(otherMutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
@@ -427,7 +426,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
             executorMock.Verify(x => x.Test(new List<Mutant>{otherMutant}, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
-            reporterMock.Verify(x => x.OnMutantTested(otherMutant), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
