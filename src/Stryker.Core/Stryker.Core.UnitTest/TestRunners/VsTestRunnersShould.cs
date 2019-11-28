@@ -66,12 +66,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                 TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     AssemblyPath = _testAssemblyPath,
-                    TargetFrameworkString = "toto"
+                    TargetFrameworkVersionString = "toto"
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
-                    TargetFrameworkString = "toto"
+                    TargetFrameworkVersionString = "toto"
                 }
             };
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>

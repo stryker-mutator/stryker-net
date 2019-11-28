@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var test = new ProjectAnalyzerResult(null, null)
             {
                 ProjectReferences = new List<string> { projectUnderTestPath },
-                TargetFrameworkString = version,
+                TargetFrameworkVersionString = version,
                 ProjectFilePath = alternateTestProjectPath,
                 References = new[] { "" }
             };
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -128,7 +128,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = alternateTestProjectPath,
                     References = new string[] { "" }
                 });
@@ -136,7 +136,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
@@ -144,7 +144,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -201,7 +201,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string>(),
                     References = new string[] { "" }
@@ -210,7 +210,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>()
                 });
@@ -257,7 +257,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string>(),
                     References = new string[] { "" }
@@ -266,7 +266,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>()
                 });
@@ -338,7 +338,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string>(),
                     References = new string[] { "" }
@@ -347,7 +347,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
@@ -396,7 +396,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string>(),
                 });
@@ -404,7 +404,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
@@ -456,7 +456,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
@@ -464,7 +464,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>()
                     {
@@ -522,14 +522,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
                     Properties = new Dictionary<string, string>(),
                 });
@@ -559,7 +559,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
@@ -583,7 +583,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -606,7 +606,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "netcore2.1",
+                    TargetFrameworkVersionString = "netcore2.1",
                     ProjectFilePath = testProjectPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -718,7 +718,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }
                 });
@@ -743,7 +743,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "true" } }),
                     References = new string[] { "" }
@@ -773,7 +773,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "net4.5",
+                    TargetFrameworkVersionString = "net4.5",
                     ProjectFilePath = testProjectPath,
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
                     References = new string[] { "" }
@@ -802,7 +802,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFrameworkString = "net4.5",
+                    TargetFrameworkVersionString = "net4.5",
                     ProjectFilePath = testProjectPath,
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "false" } }),
                     References = new string[0]
@@ -836,7 +836,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
@@ -844,7 +844,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>(),
-                    TargetFrameworkString = "netcoreapp2.1",
+                    TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
