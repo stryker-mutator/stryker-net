@@ -252,8 +252,7 @@ namespace Stryker.Core.Initialisation
                         {
                             version = $"{version[0]}.{version.Substring(1)}";
                         }
-
-                        if (version.Length == 3)
+                        else if (version.Length == 3)
                         {
                             version = $"{version[0]}.{version[1]}.{version[2]}";
                         }
