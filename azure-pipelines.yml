@@ -134,7 +134,7 @@ stages:
 - stage: IntegrationTests 
   dependsOn: 
     - Analysis
-    - IntegrationTests
+    - DeployIntegrationtestPackage
   condition: not(failed())
   jobs:
   - job: WindowsTests
