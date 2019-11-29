@@ -337,8 +337,8 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "F4ZZ1c6J6VqeFhfPPBZNk+jr7VU5qYgxoClWK+VOJMRwGYc5edYY5q9CGtNgT93VcVGQ/ie6Gn8J9HDoST1fAg==",
+        "resolved": "16.4.0",
+        "contentHash": "4geKywSUJHHrfBTr1wJXUVWP0Vx1X03oFQAdZdGa8jK8p5MSwsJ4Vd0/mqN0dB2YXaIXIhDT94ti5WQ1KZ4jdw==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0"
         }
@@ -1446,7 +1446,7 @@
           "Microsoft.Extensions.Configuration.Json": "3.0.1",
           "Microsoft.Extensions.Logging": "3.0.1",
           "Microsoft.TestPlatform": "16.3.0",
-          "Microsoft.TestPlatform.ObjectModel": "16.3.0",
+          "Microsoft.TestPlatform.ObjectModel": "16.4.0",
           "Microsoft.TestPlatform.Portable": "16.3.0",
           "Microsoft.TestPlatform.TranslationLayer": "16.3.0",
           "Microsoft.Web.LibraryManager.Build": "2.0.96",
@@ -1463,7 +1463,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.3.0"
+          "Microsoft.TestPlatform.ObjectModel": "16.4.0"
         }
       }
     }
