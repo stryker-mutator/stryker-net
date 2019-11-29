@@ -450,8 +450,8 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "1YDiy17mD8S/c/IqFX4hVLK8+KyqbWDTR3rVBciFC/QJCG7gBsYb3byGUDdTBSpKdBvUwGlt+lTK8Se++M65vQ=="
+        "resolved": "16.4.0",
+        "contentHash": "hmrMMNZ8DftKOUmTdGxWq4G68ons/0o040Ur7fbk/4xutsm3BtRYtMiftRvLXCaKVzZZ8OwRd8689//sWuYlDg=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
@@ -1725,7 +1725,7 @@
           "Microsoft.Extensions.Configuration": "3.0.1",
           "Microsoft.Extensions.Configuration.Json": "3.0.1",
           "Microsoft.Extensions.Logging": "3.0.1",
-          "Microsoft.TestPlatform": "16.3.0",
+          "Microsoft.TestPlatform": "16.4.0",
           "Microsoft.TestPlatform.ObjectModel": "16.3.0",
           "Microsoft.TestPlatform.Portable": "16.3.0",
           "Microsoft.TestPlatform.TranslationLayer": "16.3.0",
