@@ -46,7 +46,7 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: and(not(failed(), eq(variables['System.PullRequest.IsFork'], 'False'))
+  condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -79,7 +79,7 @@ stages:
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
   dependsOn: UpdatePackageLockFiles
-  condition: and(not(failed())
+  condition: not(failed())
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
