@@ -9,18 +9,8 @@ stages:
     steps:
     - checkout: self
       persistCredentials: true
-    - task: DotNetCoreCLI@2
-      displayName: 'Update stryker cli and stryker core lock files'
-      inputs:
-        command: restore
-        arguments: --force-evaluate
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
-    - task: DotNetCoreCLI@2
-      displayName: 'Update integrationtest lock files'
-      inputs:
-        command: restore
-        arguments: --force-evaluate
-        projects: 'integrationtest/IntegrationTest.sln'
+    - script: dotnet restore --force-evaluate 'src/Stryker.CLI/Stryker.CLI.sln'
+    - script: dotnet restore --force-evaluate 'integrationtest/IntegrationTest.sln'
   - job: CommitAndPush
     steps:
     - script: |
