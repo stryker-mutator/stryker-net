@@ -39,6 +39,8 @@ variables:
   RestoreLockedMode: true
 
 stages:
+- template: pipeline-templates/update-package-lock-files-stage.yml
+
 - stage: Analysis
   dependsOn: []
   condition: eq(variables['System.PullRequest.IsFork'], 'False')
@@ -191,7 +193,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
+  condition: eq(variables['build.sourcebranch'], 'refs/heads/master')
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
