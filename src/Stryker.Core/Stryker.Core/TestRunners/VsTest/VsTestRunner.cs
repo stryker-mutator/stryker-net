@@ -87,11 +87,6 @@ namespace Stryker.Core.TestRunners.VsTest
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant>{ mutant}, update);
         }
 
-        public void AbortRun()
-        {
-            _vsTestConsole.AbortTestRun();
-        }
-
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var envVars = new Dictionary<string, string>();
@@ -133,8 +128,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     .Select(tr => (TestDescription) tr.TestCase));
                 var remainingMutants = update?.Invoke(mutants, failedTest, tests);
                 if (handlerTestResults.Count < expectedTests &&
-                    remainingMutants == false
-                    && _options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill))
+                    remainingMutants == false)
                 {
                     // all mutants status have been resolved, we can stop
                     _logger.LogDebug($"Runner {_id}: each mutant's fate has been established, we can abort.");

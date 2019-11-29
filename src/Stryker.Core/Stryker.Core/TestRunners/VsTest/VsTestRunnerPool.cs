@@ -28,23 +28,19 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
             _flags = flags;
-            using (var runner = new VsTestRunner(options, _flags, projectInfo, null))
+            using (var runner = new VsTestRunner(options, _flags, projectInfo, null, helper: _helper))
             {
                 _discoveredTests = runner.DiscoverTests();
+                _availableRunners.Add(runner);
             }
 
-            Parallel.For(0, options.ConcurrentTestrunners, (i, loopState) =>
+            Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
             {
                 _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, helper: _helper));
             });
         }
 
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
-
-        public void AbortRun()
-        {
-            throw new NotImplementedException();
-        }
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {

@@ -27,11 +27,6 @@ namespace Stryker.Core.TestRunners
 
         public IEnumerable<TestDescription> Tests => null;
 
-        public void AbortRun()
-        {
-            _processExecutor.Abort();
-        }
-
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             var envVars = mutant == null ? null : 
@@ -42,7 +37,7 @@ namespace Stryker.Core.TestRunners
             try
             {
                 var res= LaunchTestProcess(timeoutMs, envVars);
-                mutant?.AnalyzeTestRun(res.FailingTests, res.RanTests);
+                update?.Invoke(new[] {mutant}, res.RanTests, res.FailingTests);
                 return res;
             }
             catch (OperationCanceledException)

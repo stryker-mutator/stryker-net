@@ -19,17 +19,14 @@ namespace Stryker.Core.Testing
         /// <param name="application">example: dotnet</param>
         /// <param name="arguments">example: --no-build</param>
         /// <param name="environmentVariables">Environment variables (and their values)</param>
+        /// <param name="timeoutMs">time allotted to the process for execution (-1 if not limit)</param>
         /// <returns>ProcessResult</returns>
-        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
+        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMs = 0);
 
-        // Abort the process
-        void Abort();
     }
 
     public class ProcessExecutor : IProcessExecutor
     {
-        private ProcessWrapper _process;
-
         // when redirected, the output from the process will be kept in memory and not displayed to the console directly
         private bool RedirectOutput { get; }
 
@@ -61,11 +58,6 @@ namespace Stryker.Core.Testing
             return RunProcess(info, timeoutMs);
         }
 
-        public void Abort()
-        {
-            _process?.Kill();
-        }
-
         /// <summary>
         /// Starts a process with the given info. 
         /// Checks for timeout after <paramref name="timeoutMs"/> milliseconds if the process is still running. 
@@ -76,20 +68,19 @@ namespace Stryker.Core.Testing
         /// <returns></returns>
         private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMs)
         {
-            _process = new ProcessWrapper(info, RedirectOutput);
-            using (_process)
+            var process = new ProcessWrapper(info, RedirectOutput);
+            using (process)
             {
                 var timeoutValue = timeoutMs == 0 ? -1 : timeoutMs;
-                if (!_process.WaitForExit(timeoutValue))
+                if (!process.WaitForExit(timeoutValue))
                 {
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
-
                 return new ProcessResult()
                 {
-                    ExitCode = _process.ExitCode,
-                    Output = _process.Output,
-                    Error = _process.Error
+                    ExitCode = process.ExitCode,
+                    Output = process.Output,
+                    Error = process.Error
                 };
             }
         }
@@ -115,14 +106,6 @@ namespace Stryker.Core.Testing
                     _process.ErrorDataReceived += Process_ErrorDataReceived;
                     _process.BeginOutputReadLine();
                     _process.BeginErrorReadLine();
-                }
-            }
-
-            public void Kill()
-            {
-                if (!_process.HasExited)
-                {
-                    _process.Kill();
                 }
             }
 

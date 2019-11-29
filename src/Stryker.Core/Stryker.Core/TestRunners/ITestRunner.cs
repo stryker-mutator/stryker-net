@@ -18,7 +18,6 @@ namespace Stryker.Core.TestRunners
 
         IEnumerable<TestDescription> Tests { get; }
 
-        void AbortRun();
     }
 
     public interface IMultiTestRunner : ITestRunner

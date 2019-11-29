@@ -18,7 +18,7 @@ namespace Stryker.Core.TestRunners
 
         public ITestRunner Create(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
-            _logger.LogDebug("Factory is creating testrunner for asked type {0}", options.TestRunner);
+            _logger.LogInformation("Initializing test runners ({0})", options.TestRunner);
             ITestRunner testRunner;
 
             switch (options.TestRunner)
@@ -31,7 +31,7 @@ namespace Stryker.Core.TestRunners
                     testRunner = new VsTestRunnerPool(options, flags, projectInfo);
                     break;
             }
-            _logger.LogInformation("Using testrunner {0}", options.TestRunner.ToString());
+            _logger.LogInformation("Test runners are ready", options.TestRunner.ToString());
             return testRunner;
         }
     }

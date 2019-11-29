@@ -211,13 +211,13 @@ namespace Stryker.Core.MutationTest
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
                             (testedMutants, ranTests, failedTests) => 
                             {
-                                var mustStop = false;
+                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
                                     mutant.AnalyzeTestRun(failedTests, ranTests);
                                     if (mutant.ResultStatus == MutantStatus.NotRun)
                                     {
-                                        mustStop = true;
+                                        mustGoOn = true;
                                     }
                                     else
                                     {
@@ -230,7 +230,7 @@ namespace Stryker.Core.MutationTest
 
                                 }
 
-                                return mustStop;
+                                return mustGoOn;
                             });
 
                     });
