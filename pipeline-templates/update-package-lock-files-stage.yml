@@ -12,15 +12,17 @@ stages:
     - task: DotNetCoreCLI@2
       displayName: 'Update stryker cli and stryker core lock files'
       inputs:
-        command: restore
+        command: 'custom'
+        custom: 'restore'
         arguments: --force-evaluate
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+        workingDirectory: 'src/Stryker.CLI/'
     - task: DotNetCoreCLI@2
       displayName: 'Update integrationtest lock files'
       inputs:
-        command: restore
+        command: 'custom'
+        custom: 'restore'
         arguments: --force-evaluate
-        projects: 'integrationtest/IntegrationTest.sln'
+        workingDirectory: 'integrationtest/'
   - job: CommitAndPush
     steps:
     - script: |
