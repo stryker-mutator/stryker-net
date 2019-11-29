@@ -1,6 +1,6 @@
 stages:
 - stage: UpdatePackageLockFiles
-  condition: and(eq(variables['System.PullRequest.IsFork'], 'False'), startsWith(variables['build.sourcebranch'], 'refs/heads/dependabot'))
+  condition: and(eq(variables['System.PullRequest.IsFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
   jobs:
   - job: DisableRestoreLockedMode
     steps:
