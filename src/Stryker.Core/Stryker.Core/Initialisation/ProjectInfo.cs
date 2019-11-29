@@ -12,7 +12,7 @@ namespace Stryker.Core.Initialisation
 {
     public class ProjectInfo
     {
-        public ProjectAnalyzerResult TestProjectAnalyzerResult { get; set; }
+        public IEnumerable<ProjectAnalyzerResult> TestProjectAnalyzerResults { get; set; }
         public ProjectAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
@@ -20,14 +20,14 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
 
-        public string GetInjectionPath()
+        public string GetInjectionPath(ProjectAnalyzerResult projectAnalyzerResult)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(TestProjectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(projectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
-        public string GetTestBinariesPath()
+        public string GetTestBinariesPath(ProjectAnalyzerResult projectAnalyzerResult)
         {
-            return TestProjectAnalyzerResult.AssemblyPath;
+            return projectAnalyzerResult.AssemblyPath;
         }
     }
 

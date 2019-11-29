@@ -38,8 +38,8 @@ namespace Stryker.Core.Options
         public IEnumerable<FilePattern> FilePatterns { get; }
         public LanguageVersion LanguageVersion { get; }
         public OptimizationFlags Optimizations { get; }
-
         public string OptimizationMode { get; set; }
+        public IEnumerable<string> TestProjects { get; set; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -68,7 +68,8 @@ namespace Stryker.Core.Options
             string solutionPath = null,
             string languageVersion = "latest",
             bool diff = false,
-            string gitSource = "master")
+            string gitSource = "master",
+            IEnumerable<string> testProjects = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -93,6 +94,7 @@ namespace Stryker.Core.Options
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
             GitSource = ValidateGitSource(gitSource);
+            TestProjects = ValidateTestProjects(testProjects);
         }
 
         private string ValidateGitSource(string gitSource)
@@ -359,6 +361,14 @@ namespace Stryker.Core.Options
                     $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.NormalizePathSeparators(basePath)} so this is not allowed.");
             }
             return filter;
+        }
+
+        private IEnumerable<string> ValidateTestProjects(IEnumerable<string> paths)
+        {
+            foreach (var path in paths ?? Enumerable.Empty<string>())
+            {
+                yield return FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path));
+            }
         }
 
         private LanguageVersion ValidateLanguageVersion(string languageVersion)

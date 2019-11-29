@@ -63,6 +63,8 @@ namespace Stryker.CLI
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
+            var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
+
 
             app.HelpOption("--help | -h | -?");
 
@@ -93,7 +95,8 @@ namespace Stryker.CLI
                     solutionPath: solutionPathParam,
                     languageVersion: languageVersion,
                     diff: diffParam,
-                    gitSource: gitSourceParam);
+                    gitSource: gitSourceParam,
+                    testProjects: testProjectsParam);
 
                 RunStryker(options);
                 return ExitCode;

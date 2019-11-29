@@ -44,7 +44,8 @@ namespace Stryker.CLI
             CommandOption solutionPath,
             CommandOption languageVersion,
             CommandOption diff,
-            CommandOption gitSource)
+            CommandOption gitSource,
+            CommandOption testProjects)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -79,7 +80,8 @@ namespace Stryker.CLI
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: GetOption(diff.HasValue(), CLIOptions.Diff),
-                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource));
+                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
+                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)

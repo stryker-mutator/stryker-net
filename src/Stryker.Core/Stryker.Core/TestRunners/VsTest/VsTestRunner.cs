@@ -332,19 +332,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forCoverage)
         {
-            var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
-
+            var targetFramework = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFramework;
+            var targetFrameworkVersion = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFrameworkVersion;
             string targetFrameworkVersionString;
 
             switch (targetFramework)
             {
                 case Initialisation.Framework.NetCore:
-                    targetFrameworkVersionString = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETCoreApp,Version = v{targetFrameworkVersion}";
                     break;
                 case Initialisation.Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersionString = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETFramework,Version = v{targetFrameworkVersion}";
                     break;
             }
 
@@ -411,25 +411,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPath = _projectInfo.GetTestBinariesPath();
-            if (!_fileSystem.File.Exists(testBinariesPath))
+            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetTestBinariesPath(testProject)).ToList();
+            var testBinariesLocations = new List<string>();
+            _sources = new List<string>();
+
+            foreach (var path in testBinariesPaths)
             {
-                throw new ApplicationException($"The test project binaries could not be found at {testBinariesPath}, exiting...");
+                if (!_fileSystem.File.Exists(path))
+                {
+                    throw new ApplicationException($"The test project binaries could not be found at {path}, exiting...");
+                }
+                testBinariesLocations.Add(Path.GetDirectoryName(path));
+                _sources.Add(FilePathUtils.NormalizePathSeparators(path));
             }
 
-            var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
-            _sources = new List<string>()
-            {
-                FilePathUtils.NormalizePathSeparators(testBinariesPath)
-            };
+            testBinariesLocations.Add(_vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath()));
+
             try
             {
                 _vsTestConsole.StartSession();
-                _vsTestConsole.InitializeExtensions(new List<string>
-                {
-                    testBinariesLocation,
-                    _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
-                });
+                _vsTestConsole.InitializeExtensions(testBinariesLocations);
             }
             catch (Exception e)
             {

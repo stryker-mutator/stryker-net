@@ -99,7 +99,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> TestProjectFileName = new CLIOption<string>
         {
             ArgumentName = "--test-project-file",
-            ArgumentShortName = "-tp <testProjectFileName>",
+            ArgumentShortName = "-tpf <testProjectFileName>",
             ArgumentDescription = @"Used for specifying the test project if there are multiple projects in the folder. Example: ""ExampleTestProject.csproj""",
             DefaultValue = _defaultOptions.TestProjectNameFilter,
             JsonKey = "test-project-file"
@@ -240,6 +240,15 @@ namespace Stryker.CLI
             ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
             DefaultValue = _defaultOptions.LanguageVersion.ToString(),
             JsonKey = "language-version"
+        };
+
+        public static readonly CLIOption<IEnumerable<string>> TestProjects = new CLIOption<IEnumerable<string>>
+        {
+            ArgumentName = "--test-projects",
+            ArgumentShortName = "-tp",
+            ArgumentDescription = $"Specify what test projects should run on the project under test.",
+            DefaultValue = _defaultOptions.TestProjects,
+            JsonKey = "test-projects"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

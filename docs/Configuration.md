@@ -4,10 +4,12 @@ The full list of Stryker.NET configuration options are:
 
 <!-- TOC -->
 - [Solution path (required .NET Framework)](#solution-path)
-- [Project file (required on some projects)](#project-file)
+- [Project file (required on some projects)](#test-project-file)
+- [Test project file](#project-file)
 - [Test runner](#test-runner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
+- [Test projects](#test-projects)
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files (deprecated)](#excluding-files)
@@ -51,7 +53,7 @@ When Stryker finds two or more project files in the working directory, it needs 
 
 ```
 dotnet stryker --test-project-file ExampleTestProject.csproj
-dotnet stryker -tp ExampleTestProject.csproj
+dotnet stryker -tpf ExampleTestProject.csproj
 ```
 
 ## Specify testrunner
@@ -89,6 +91,18 @@ dotnet stryker -r "['html', 'progress']"
 You can find a list of all available reporters and what output they produce in the [reporter docs](/docs/Reporters.md)
 
 Default: `"['cleartext', 'progress']"`
+
+## Test projects
+Stryker can also be run from the directory containing the project under test. If you pass a list of test projects that reference the project under test, the tests of all projects will be run while testing the mutants.
+
+```
+dotnet stryker --test-projects "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
+dotnet stryker -tp "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
+```
+
+When running from a test project directory this option is not required.
+
+Default: `null`
 
 ## Logging to console
 To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.

@@ -63,10 +63,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             var secondTest = new TestCase("myOtherTest", new Uri("exec://nunit"), _testAssemblyPath);
             _targetProject = new ProjectInfo()
             {
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = _testAssemblyPath,
-                    TargetFrameworkVersionString = "toto"
+                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                    new ProjectAnalyzerResult(null, null)
+                    {
+                        AssemblyPath = _testAssemblyPath,
+                        TargetFrameworkVersionString = "toto"
+                    }
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
