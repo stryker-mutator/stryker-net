@@ -113,9 +113,9 @@
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "H5XAo+MkgyRm38jjXLSTvORV6viDnyEcuO8BJNppq/wxR1oXRqxSFx2i+S5wMNSZTsztU3v4nBwR/2mnGwvOdQ==",
+        "requested": "[16.4.0, )",
+        "resolved": "16.4.0",
+        "contentHash": "9VbtV9iVBw97xs7fCUh6rrmh43LWm0ZvYlZ461LAvLhcTNDQrW2nbr4JCdf4qnqEMqJ5MmjjgWktY0O3cXA80g==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }

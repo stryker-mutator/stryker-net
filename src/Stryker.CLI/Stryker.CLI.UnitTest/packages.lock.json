@@ -469,8 +469,8 @@
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "H5XAo+MkgyRm38jjXLSTvORV6viDnyEcuO8BJNppq/wxR1oXRqxSFx2i+S5wMNSZTsztU3v4nBwR/2mnGwvOdQ==",
+        "resolved": "16.4.0",
+        "contentHash": "9VbtV9iVBw97xs7fCUh6rrmh43LWm0ZvYlZ461LAvLhcTNDQrW2nbr4JCdf4qnqEMqJ5MmjjgWktY0O3cXA80g==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1724,7 +1724,7 @@
           "Microsoft.TestPlatform": "16.3.0",
           "Microsoft.TestPlatform.ObjectModel": "16.3.0",
           "Microsoft.TestPlatform.Portable": "16.3.0",
-          "Microsoft.TestPlatform.TranslationLayer": "16.3.0",
+          "Microsoft.TestPlatform.TranslationLayer": "16.4.0",
           "Microsoft.Web.LibraryManager.Build": "2.0.96",
           "Mono.Cecil": "0.11.1",
           "Newtonsoft.Json": "12.0.3",
