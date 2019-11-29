@@ -45,8 +45,8 @@ stages:
 - template: pipeline-templates/update-package-lock-files-stage.yml
 
 - stage: Analysis
-  dependsOn: []
-  condition: eq(variables['System.PullRequest.IsFork'], 'False')
+  dependsOn: UpdatePackageLockFiles
+  condition: and(not(failed(), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -78,7 +78,8 @@ stages:
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
-  dependsOn: []
+  dependsOn: UpdatePackageLockFiles
+  condition: and(not(failed())
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
