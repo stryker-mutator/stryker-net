@@ -339,12 +339,12 @@ namespace Stryker.Core.TestRunners.VsTest
             switch (targetFramework)
             {
                 case Initialisation.Framework.NetCore:
-                    targetFrameworkVersionString = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETCoreApp,Version=v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
                     break;
                 case Initialisation.Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersionString = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETFramework,Version=v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
                     break;
             }
 
