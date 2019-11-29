@@ -1,0 +1,31 @@
+stages:
+- stage: UpdatePackageLockFiles
+  condition: and(eq(variables['system.pullRequest.isFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
+  jobs:
+  - job: DisableRestoreLockedMode
+    steps:
+    - script: echo "##vso[task.setvariable variable=RestoreLockedMode]false"
+  - job: RestoreAndUpdate
+    steps:
+    - checkout: self
+      persistCredentials: true
+    - task: DotNetCoreCLI@2
+      displayName: 'Update stryker cli and stryker core lock files'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: --locked-mode --force-evaluate
+        workingDirectory: 'src/Stryker.CLI/'
+    - task: DotNetCoreCLI@2
+      displayName: 'Update integrationtest lock files'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: --locked-mode --force-evaluate
+        workingDirectory: 'integrationtest/'
+    - script: |
+        git config --global user.email "support@dependabot.com"
+        git config --global user.name "dependabot"
+        git add -u .
+        git commit -m "Update package lock files"
+        git push origin HEAD:$(system.pullRequest.sourceBranch)
