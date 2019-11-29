@@ -345,8 +345,8 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "qAei4/DXfibz2W9WhBOhlrneJZW5JJYR3T6D3gAyvexViY6uEY13kwtAd4gA803MbjlsdMMoJskganuOdTSDrQ=="
+        "resolved": "16.4.0",
+        "contentHash": "uEXye88w8Go8xVa1LpDWK7+k0KFxuYjqE9m0XOGnIQcTHPVNvqmyh9Ry8DZxd0hqjj1zppJJe8kF9bqvH9AVTw=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Transitive",
@@ -1447,7 +1447,7 @@
           "Microsoft.Extensions.Logging": "3.0.1",
           "Microsoft.TestPlatform": "16.3.0",
           "Microsoft.TestPlatform.ObjectModel": "16.3.0",
-          "Microsoft.TestPlatform.Portable": "16.3.0",
+          "Microsoft.TestPlatform.Portable": "16.4.0",
           "Microsoft.TestPlatform.TranslationLayer": "16.3.0",
           "Microsoft.Web.LibraryManager.Build": "2.0.96",
           "Mono.Cecil": "0.11.1",
