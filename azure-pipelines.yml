@@ -40,6 +40,8 @@ variables:
 
 stages:
 - template: pipeline-templates/update-package-lock-files-stage.yml
+  pool:
+    vmImage: 'windows-latest'
 
 - stage: Analysis
   dependsOn: []

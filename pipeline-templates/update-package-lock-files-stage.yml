@@ -14,16 +14,17 @@ stages:
       inputs:
         command: 'custom'
         custom: 'restore'
-        arguments: --force-evaluate
+        arguments: --locked-mode --force-evaluate
         workingDirectory: 'src/Stryker.CLI/'
     - task: DotNetCoreCLI@2
       displayName: 'Update integrationtest lock files'
       inputs:
         command: 'custom'
         custom: 'restore'
-        arguments: --force-evaluate
+        arguments: --locked-mode --force-evaluate
         workingDirectory: 'integrationtest/'
   - job: CommitAndPush
+    dependsOn: RestoreAndUpdate
     steps:
     - script: |
         git config --global user.email "support@dependabot.com"
