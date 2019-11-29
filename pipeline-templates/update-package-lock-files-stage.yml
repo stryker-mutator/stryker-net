@@ -31,4 +31,6 @@ stages:
         git config --global user.name "dependabot"
         git add -u .
         git commit -m "Update package lock files"
-        git push origin $(system.pullRequest.sourceBranch)
+        git branch --set-upstream-to=$(system.pullRequest.sourceBranch)
+        git fetch
+        git push
