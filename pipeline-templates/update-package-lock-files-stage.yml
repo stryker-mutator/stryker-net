@@ -1,6 +1,6 @@
 stages:
 - stage: UpdatePackageLockFiles
-  condition: and(eq(variables['System.PullRequest.IsFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
+  condition: and(eq(variables['system.pullRequest.isfork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
   jobs:
   - job: DisableRestoreLockedMode
     steps:
@@ -28,4 +28,4 @@ stages:
         git config --global user.name "dependabot"
         git add -u .
         git commit -m "Update package lock files"
-        git push origin variables['build.sourcebranch']
+        git push origin variables['system.pullRequest.sourceBranch']
