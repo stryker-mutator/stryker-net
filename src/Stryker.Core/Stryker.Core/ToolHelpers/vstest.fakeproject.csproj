@@ -8,6 +8,6 @@
   </PropertyGroup> 
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.3.0" />
+		<PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.4.0" />
 	</ItemGroup>
 </Project>
