@@ -132,7 +132,10 @@ stages:
         delayForMinutes: '1' 
 
 - stage: IntegrationTests 
-  dependsOn: DeployIntegrationtestPackage
+  dependsOn: 
+    - Analysis
+    - IntegrationTests
+  condition: not(failed())
   jobs:
   - job: WindowsTests
     displayName: Run tests on Windows
