@@ -4,12 +4,12 @@
     ".NETCoreApp,Version=v2.1": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "Drk/adJoZYuMx3MuhcpEqfXDrAOwv56tjq9SlqeO20+oTlNfGEebw2dmMRTl17EwlUYctdmZv5VzTZVncU1aVw==",
+        "requested": "[16.4.0, )",
+        "resolved": "16.4.0",
+        "contentHash": "gjjqS3rCzg4DrSQq4YwJwUUvc49HtXpXrZkW9fu5VG+K4X+Ztn4+UzolyML7wPnl/EAIufk4hu628bJB4WtpFg==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "16.3.0",
-          "Microsoft.TestPlatform.TestHost": "16.3.0"
+          "Microsoft.CodeCoverage": "16.4.0",
+          "Microsoft.TestPlatform.TestHost": "16.4.0"
         }
       },
       "Microsoft.NETCore.App": {
@@ -242,8 +242,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "CVEzOQp+2Y/VdUEbvtziOd41QJ3tGGvqI14to5blM0Glr4P9uasORK4SaSF4bvlRQaiMeqS2iGoCfVIggdymmw=="
+        "resolved": "16.4.0",
+        "contentHash": "qb7PMVZMAY5iUCvB/kDUEt9xqazWKZoKY/sGpAJO4VtwgN5IcEgipCu3n0i1GPCwGbWVL6k4a8a9F+FqmADJng=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -447,8 +447,8 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "F4ZZ1c6J6VqeFhfPPBZNk+jr7VU5qYgxoClWK+VOJMRwGYc5edYY5q9CGtNgT93VcVGQ/ie6Gn8J9HDoST1fAg==",
+        "resolved": "16.4.0",
+        "contentHash": "4geKywSUJHHrfBTr1wJXUVWP0Vx1X03oFQAdZdGa8jK8p5MSwsJ4Vd0/mqN0dB2YXaIXIhDT94ti5WQ1KZ4jdw==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0"
         }
@@ -460,10 +460,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "N44oK5yrJw70tJh/f5XrDT9ibywsz/t9hm9f59DojtfJphYG55oXf/2ht9h0iNMyzpuh7lFAWPdRcZ9v0Oj82w==",
+        "resolved": "16.4.0",
+        "contentHash": "tMlz3uc7VUZSYYslyVOVXH40KexTptZMAi8gIE+5w+SIt8I0qLPObpqX6QVLWszPr7sxX4WAKTiFgqgBB1MxjA==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.3.0",
+          "Microsoft.TestPlatform.ObjectModel": "16.4.0",
           "Newtonsoft.Json": "9.0.1"
         }
       },
