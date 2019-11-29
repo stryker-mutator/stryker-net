@@ -9,6 +9,9 @@ stages:
     steps:
     - checkout: self
       persistCredentials: true
+    - script: |
+        git fetch
+        git checkout $(system.pullRequest.sourceBranch)
     - task: DotNetCoreCLI@2
       displayName: 'Update stryker cli and stryker core lock files'
       inputs:
@@ -28,4 +31,4 @@ stages:
         git config --global user.name "dependabot"
         git add -u .
         git commit -m "Update package lock files"
-        git push origin HEAD:$(system.pullRequest.sourceBranch)
+        git push
