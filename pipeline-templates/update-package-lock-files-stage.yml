@@ -23,14 +23,9 @@ stages:
         custom: 'restore'
         arguments: --locked-mode --force-evaluate
         workingDirectory: 'integrationtest/'
-  - job: CommitAndPush
-    dependsOn: RestoreAndUpdate
-    steps:
     - script: |
         git config --global user.email "support@dependabot.com"
         git config --global user.name "dependabot"
         git add -u .
         git commit -m "Update package lock files"
-        git branch --set-upstream-to=$(system.pullRequest.sourceBranch)
-        git fetch
-        git push
+        git push origin HEAD:$(system.pullRequest.sourceBranch)
