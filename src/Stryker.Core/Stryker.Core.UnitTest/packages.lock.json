@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v2.1": {
       "Microsoft.CodeCoverage": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "CVEzOQp+2Y/VdUEbvtziOd41QJ3tGGvqI14to5blM0Glr4P9uasORK4SaSF4bvlRQaiMeqS2iGoCfVIggdymmw=="
+        "requested": "[16.4.0, )",
+        "resolved": "16.4.0",
+        "contentHash": "qb7PMVZMAY5iUCvB/kDUEt9xqazWKZoKY/sGpAJO4VtwgN5IcEgipCu3n0i1GPCwGbWVL6k4a8a9F+FqmADJng=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
