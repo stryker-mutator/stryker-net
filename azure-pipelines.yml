@@ -186,42 +186,6 @@ stages:
         command: test
         projects: '**/Validation.csproj'
 
-- stage : PublishPreviewArtifact
-  displayName: Publish Preview Artifact
-  dependsOn: 
-    - Analysis
-    - IntegrationTests
-  condition: and(succeeded(), and(ne('major.minor.patch-[alpha/beta/rc]x', variables['PreviewVersion']), or(contains(variables['PreviewVersion'], '-rc'), contains(variables['PreviewVersion'], '-alpha'), contains(variables['PreviewVersion'], '-beta'))))
-  jobs:
-  - job: PublishPreview
-    displayName: Publish Preview Artifacts
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-    - template: pipeline-templates/populate-cache-steps.yml
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2
-      displayName: 'Pack preview package'
-      inputs:
-        command: pack
-        versioningScheme: byEnvVar
-        versionEnvVar: PreviewVersion
-        packagesToPack: $(ProjectsToPack)
-        packDirectory: $(Build.ArtifactStagingDirectory)/preview
-    - script: echo "##vso[build.addbuildtag]preview"
-      displayName: "Tag build as preview build so release gets triggered"
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: preview'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/preview'
-        ArtifactName: preview
-
 - stage: PublishReleaseArtifact
   displayName: Publish Release Artifact
   dependsOn: 
