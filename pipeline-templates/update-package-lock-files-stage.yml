@@ -1,6 +1,6 @@
 stages:
 - stage: UpdatePackageLockFiles
-  condition: and(eq(variables['system.pullRequest.isfork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
+  condition: and(eq(variables['system.pullRequest.isFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
   jobs:
   - job: DisableRestoreLockedMode
     steps:
@@ -14,13 +14,13 @@ stages:
       inputs:
         command: restore
         arguments: --force-evaluate
-        workingDirectory: src/Stryker.CLI
+        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Update integrationtest lock files'
       inputs:
         command: restore
         arguments: --force-evaluate
-        workingDirectory: integrationtest
+        projects: 'integrationtest/IntegrationTest.sln'
   - job: CommitAndPush
     steps:
     - script: |
@@ -28,4 +28,4 @@ stages:
         git config --global user.name "dependabot"
         git add -u .
         git commit -m "Update package lock files"
-        git push origin variables['system.pullRequest.sourceBranch']
+        git push origin $(system.pullRequest.sourceBranch)
