@@ -198,7 +198,7 @@ namespace Stryker
 
         private static List<int> GetCoveredMutants(string mutantsString)
         {
-            string[] mutants = mutantsString.Split(";")[0].Split(",", StringSplitOptions.RemoveEmptyEntries);
+            string[] mutants = mutantsString.Split(';')[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
             List<int> mutantList = new List<int>();
             foreach (string mutant in mutants)
             {
@@ -209,7 +209,7 @@ namespace Stryker
 
         private static List<int> GetStaticMutants(string mutantsString)
         {
-            string[] mutants = mutantsString.Split(";")[1].Split(",", StringSplitOptions.RemoveEmptyEntries);
+            string[] mutants = mutantsString.Split(';')[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
             List<int> mutantList = new List<int>();
             foreach (string mutant in mutants)
             {
