@@ -285,18 +285,18 @@
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "YVnWU71HYeLcKBX58vQKx3aU3Vb9sQl+UGi7DiLwyyKBHHB+vXGQczg+JwPPvMNIu6bCyEzHGuJtkA4wUTraZA==",
+        "resolved": "3.1.0",
+        "contentHash": "Lu41BWNmwhKr6LgyQvcYBOge0pPvmiaK8R5UHXX4//wBhonJyWcT2OK1mqYfEM5G7pTf31fPrpIHOT6sN7EGOA==",
         "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "3.0.1"
+          "Microsoft.Extensions.Configuration.Abstractions": "3.1.0"
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "R36lhvFgp56wE9YjjRyK2dgo3GHSf6CID2XZee8BLEpNXX8B9kjjKvp0UyDfOM3GWy1//s/fz1RkrG+pl2ycJQ==",
+        "resolved": "3.1.0",
+        "contentHash": "ESz6bVoDQX7sgWdKHF6G9Pq672T8k+19AFb/txDXwdz7MoqaNQj2/in3agm/3qae9V+WvQZH86LLTNVo0it8vQ==",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "3.0.1"
+          "Microsoft.Extensions.Primitives": "3.1.0"
         }
       },
       "Microsoft.Extensions.Configuration.Binder": {
@@ -402,11 +402,11 @@
       },
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "9RIADJEXOk3R2rQunxzFxQEazaD3FNOqCNed+yVf/U0HDbbkQcwsWOHrju1YwdQwtewt/0WRUYxRDf3USxezdA==",
+        "resolved": "3.1.0",
+        "contentHash": "LEKAnX7lhUhSoIc2XraCTK3M4IU/LdVUzCe464Sa4+7F4ZJuXHHRzZli2mDbiT4xzAZhgqXbvfnb5+CNDcQFfg==",
         "dependencies": {
           "System.Memory": "4.5.2",
-          "System.Runtime.CompilerServices.Unsafe": "4.6.0"
+          "System.Runtime.CompilerServices.Unsafe": "4.7.0"
         }
       },
       "Microsoft.NETCore.DotNetAppHost": {
@@ -1274,8 +1274,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "HxozeSlipUK7dAroTYwIcGwKDeOVpQnJlpVaOkBz7CM4TsE5b/tKlQBZecTjh6FzcSbxndYaxxpsBMz+wMJeyw=="
+        "resolved": "4.7.0",
+        "contentHash": "IpU1lcHz8/09yDr9N+Juc7SCgNUz+RohkCQI+KsWKR67XxpFr8Z6c8t1iENCXZuRuNCc4HBwme/MDHNVCwyAKg=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
@@ -1718,7 +1718,7 @@
           "DotNet.Glob": "3.0.5",
           "LibGit2Sharp": "0.26.1",
           "Microsoft.CodeAnalysis.CSharp": "3.3.1",
-          "Microsoft.Extensions.Configuration": "3.0.1",
+          "Microsoft.Extensions.Configuration": "3.1.0",
           "Microsoft.Extensions.Configuration.Json": "3.0.1",
           "Microsoft.Extensions.Logging": "3.0.1",
           "Microsoft.TestPlatform": "16.3.0",
