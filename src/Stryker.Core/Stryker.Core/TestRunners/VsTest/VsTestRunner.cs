@@ -419,7 +419,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (!_fileSystem.File.Exists(path))
                 {
-                    throw new ApplicationException($"The test project binaries could not be found at {path}, exiting...");
+                    throw new GeneralStrykerException($"The test project binaries could not be found at {path}, exiting...");
                 }
                 testBinariesLocations.Add(Path.GetDirectoryName(path));
                 _sources.Add(FilePathUtils.NormalizePathSeparators(path));
@@ -434,7 +434,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
+                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
 
             _discoveredTests = DiscoverTests();
