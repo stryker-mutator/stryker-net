@@ -64,12 +64,12 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[7.0.7, )",
-        "resolved": "7.0.7",
-        "contentHash": "gpX/AUDybX4tWWCY5nhBnW9c4rsB+Bhd4U0AOErHwmbNcCMBml9ufX3QCCCkUXfkSOesAoqOEJw8RsvXrGI6QA==",
+        "requested": "[7.0.15, )",
+        "resolved": "7.0.15",
+        "contentHash": "0W92uvV1T8AzKWW+IQP695Bk+o7ZKQ+qN+Y2XCBOf8cYANZAiVmADam4T3wGL7m7AyBU0/IGp3V/9oIifuuZKQ==",
         "dependencies": {
-          "System.IO.Abstractions": "7.0.7",
-          "System.IO.FileSystem.AccessControl": "4.6.0"
+          "System.IO.Abstractions": "7.0.15",
+          "System.IO.FileSystem.AccessControl": "4.7.0"
         }
       },
       "xunit": {
