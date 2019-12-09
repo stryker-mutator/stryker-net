@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
+using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
@@ -31,20 +33,32 @@ namespace Stryker.DataCollector
 
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
-<Configuration></Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
+<Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
-        public static string GetVsTestSettings()
+        public static string GetVsTestSettings(Dictionary<string, string> coverageEnvironment)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
             var friendlyName = typeof(CoverageCollector).ExtractAttribute<DataCollectorFriendlyNameAttribute>().FriendlyName;
+            // ReSharper disable once PossibleNullReferenceException
             var uri = (typeof(CoverageCollector).GetTypeInfo().GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
                 DataCollectorTypeUriAttribute).TypeUri;
             var line= $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
-            return string.Format(TemplateForConfiguration, line);
+            var configuration = new StringBuilder();
+            if (coverageEnvironment != null)
+            {
+                configuration.Append("<Parameters>");
+                foreach (var pair in coverageEnvironment)
+                {
+                    configuration.AppendFormat("<Environment name=\"{0}\" value=\"{1}\"/>", pair.Key, pair.Value);
+                }
+
+                configuration.Append("</Parameters>");
+            }
+            return string.Format(TemplateForConfiguration, line, configuration);
         }
 
-        static bool WaitOnLck(object lck, Func<bool> predicate, int timeout)
+        private static bool WaitOnLck(object lck, Func<bool> predicate, int timeout)
         {
             var watch = new Stopwatch();
             watch.Start();
@@ -107,7 +121,15 @@ namespace Stryker.DataCollector
         }
 
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
-        {
+        {            
+            var node = new XmlDocument();
+
+            node.LoadXml(testSessionStartArgs.Configuration);
+            var parameters = node.GetElementById("Parameters");
+            foreach (var parametersChildNode in parameters.GetElementsByTagName("Environment").OfType<XmlElement>())
+            {
+            }
+
             var coverageString = Environment.GetEnvironmentVariable(ModeEnvironmentVariable);
             _coverageOn = coverageString != null;
             _usePipe = (coverageString == PipeMode);

@@ -3,6 +3,7 @@ using Stryker.DataCollector;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Xml;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -96,6 +97,29 @@ namespace Stryker.Core.UnitTest.TestRunners
                     message.ShouldBe("it works");
                 }
             }
+        }
+
+        [Fact]
+        public void CanParseConfiguration()
+        {
+            var referenceConf="<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";
+            var node = new XmlDocument();
+
+            node.LoadXml(referenceConf);
+
+            node.ChildNodes.Count.ShouldBe(1);
+            var coolChild = node.GetElementsByTagName("Parameters");
+            coolChild[0].Name.ShouldBe("Parameters");
+            var envVars = node.GetElementsByTagName("Environment");
+
+            envVars.Count.ShouldBe(1);
+
+//            coolChild.ChildNodes.Count.ShouldBe(1);
+//            coolChild = coolChild.ChildNodes[0];
+//            coolChild.Name.ShouldBe("Environment");
+//            coolChild.Attributes.GetNamedItem("name").ShouldNotBeNull();
+//            coolChild.Attributes.GetNamedItem("name").Value.ShouldBe("ActiveMutant");
+
         }
     }
 }

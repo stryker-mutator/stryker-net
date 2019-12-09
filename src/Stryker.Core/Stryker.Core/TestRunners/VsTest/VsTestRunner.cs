@@ -137,7 +137,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             }
 
-            var testResults = RunTestSession(testCases, envVars, GenerateRunSettings(timeoutMs, false), HandleUpdate);
+            var testResults = RunTestSession(testCases, envVars, GenerateRunSettings(timeoutMs, false, null), HandleUpdate);
             var resultAsArray = testResults as TestResult[] ?? testResults.ToArray();
             var timeout = (!_aborted && resultAsArray.Length < expectedTests);
             var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
@@ -170,7 +170,7 @@ namespace Stryker.Core.TestRunners.VsTest
             using (var waitHandle = new AutoResetEvent(false))
             {
                 var handler = new DiscoveryEventHandler(waitHandle, _messages);
-                var generateRunSettings = GenerateRunSettings(null, false);
+                var generateRunSettings = GenerateRunSettings(null, false, null);
                 _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
 
                 waitHandle.WaitOne();
@@ -206,7 +206,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
-            var testResults = RunTestSession(null, _coverageEnvironment, GenerateRunSettings(null, true));
+            var testResults = RunTestSession(null, _coverageEnvironment, GenerateRunSettings(null, true, _coverageEnvironment));
             ParseResultsForCoverage(testResults, mutants);
             return new TestRunResult (true );
         }
@@ -268,9 +268,9 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
-            var testResults = RunTestSession(new []{test}, _coverageEnvironment, GenerateRunSettings(null, true));
+            var testResults = RunTestSession(new []{test}, _coverageEnvironment, GenerateRunSettings(null, true, _coverageEnvironment));
             ParseResultsForCoverage(testResults.Where(x => x.TestCase.Id == test.Id), mutants);
-        }
+        } 
 
         private IEnumerable<TestResult> RunTestSession(IEnumerable<TestCase> testCases, 
             IDictionary<string, string> envVars,
@@ -342,7 +342,8 @@ namespace Stryker.Core.TestRunners.VsTest
             return traceLevel;
         }
 
-        private string GenerateRunSettings(int? timeout, bool forCoverage)
+        private string GenerateRunSettings(int? timeout, bool forCoverage,
+            Dictionary<string, string> coverageEnvironment)
         {
             var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
 
@@ -361,7 +362,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = needCoverage ? CoverageCollector.GetVsTestSettings() : "";
+            var dataCollectorSettings = needCoverage ? CoverageCollector.GetVsTestSettings(coverageEnvironment) : "";
             var settingsForCoverage = string.Empty;
             if (needCoverage)
             {

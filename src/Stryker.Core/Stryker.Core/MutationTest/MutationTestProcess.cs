@@ -66,6 +66,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
+            _logger.LogInformation("Generating mutants.");
             var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
 
             _logger.LogDebug("Injecting helpers into assembly.");
