@@ -65,16 +65,16 @@
       },
       "LibGit2Sharp": {
         "type": "Transitive",
-        "resolved": "0.26.1",
-        "contentHash": "CGEI8n5QjuQ05KsDYY6+utD1Ovcia1IFIbzA2Z3KjZkybVP9JeftSwCnAuRvVKsL9EPsOU0Eew2QiUfdeyhFYg==",
+        "resolved": "0.26.2",
+        "contentHash": "qHLhuI8VEtMf7jiurT/Ypquh37S6ngllCx+aq9uqOY2evok7Fb2AzhJgvNctsXOzHaJwveBs+30sPQJFn/pISg==",
         "dependencies": {
-          "LibGit2Sharp.NativeBinaries": "[2.0.289]"
+          "LibGit2Sharp.NativeBinaries": "[2.0.306]"
         }
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
-        "resolved": "2.0.289",
-        "contentHash": "/bHaWrS2qcviCKnr+98DIKGfPCQByqwU/KzWrOsQnCQaz7DNVs4xMpkrGEhgc2O0aTKCXUb1np8nCl8qrxIuag=="
+        "resolved": "2.0.306",
+        "contentHash": "LY9nyPE2X/eLl69ttuDPFFlKR8b5KXlqYej1YR1YmqmhF8Izo+vPX90q5ouOO5YGCf5d4lDUOC0x2yMWw00P7Q=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -1441,7 +1441,7 @@
         "dependencies": {
           "Buildalyzer": "2.4.0",
           "DotNet.Glob": "3.0.5",
-          "LibGit2Sharp": "0.26.1",
+          "LibGit2Sharp": "0.26.2",
           "Microsoft.CodeAnalysis.CSharp": "3.4.0",
           "Microsoft.Extensions.Configuration": "3.1.0",
           "Microsoft.Extensions.Configuration.Json": "3.1.0",
@@ -1457,7 +1457,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "1.1.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.14.2",
+          "Stryker.DataCollector": "0.14.3",
           "System.IO.Abstractions": "7.0.15"
         }
       },
