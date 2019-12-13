@@ -51,10 +51,10 @@ namespace Stryker.Core.Initialisation
             string projectUnderTest = null;
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                testProjectFiles = options.TestProjects.Select(x => FindProjectFile(x, options.TestProjectNameFilter)).ToList();
+                testProjectFiles = options.TestProjects.Select(FindProjectFile).ToList();
             } else
             {
-                testProjectFiles.Add(FindProjectFile(options.BasePath, options.TestProjectNameFilter));
+                testProjectFiles.Add(FindProjectFile(options.BasePath));
             }
 
             var results = new List<ProjectAnalyzerResult>();
@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
             var reader = new ProjectFileReader();
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                projectUnderTest = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
+                projectUnderTest = FindProjectFile(options.BasePath);
             }
             else
             {
@@ -140,14 +140,17 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        public string FindProjectFile(string basePath, string testProjectNameFilter)
+        public string FindProjectFile(string path)
         {
-            string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
             string[] projectFiles = null;
+            if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
+            {
+                return path;
+            }
 
-            projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
+            projectFiles = _fileSystem.Directory.GetFileSystemEntries(path, "*.csproj");
 
-            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
+            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
 
             if (projectFiles.Count() > 1)
             {
@@ -163,29 +166,12 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {basePath}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
 
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
 
             return projectFiles.Single();
-        }
-
-        private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
-        {
-            // Make sure the filter is relative to the base path otherwise we cannot find it
-            var filter = FilePathUtils.NormalizePathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
-
-            // If the filter starts with directory separator char, remove it
-            if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
-            {
-                filter = filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length);
-            }
-
-            // Make sure filter contains wildcard
-            filter = $"*{filter}";
-
-            return filter;
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)

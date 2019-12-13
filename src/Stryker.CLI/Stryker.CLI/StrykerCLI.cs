@@ -51,7 +51,6 @@ namespace Stryker.CLI
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
-            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -75,7 +74,6 @@ namespace Stryker.CLI
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporterParam,
                     projectUnderTestNameFilter: projectNameParam,
-                    testProjectNameFilter: testProjectNameParam,
                     additionalTimeoutMS: timeoutParam,
                     excludedMutations: excludedMutationsParam,
                     ignoreMethods: ignoreMethodsParam,

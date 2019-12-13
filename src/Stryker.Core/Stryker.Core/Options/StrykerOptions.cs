@@ -26,7 +26,6 @@ namespace Stryker.Core.Options
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
-        public string TestProjectNameFilter { get; }
         public bool DiffEnabled { get; }
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
@@ -49,7 +48,6 @@ namespace Stryker.Core.Options
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
-            string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string[] ignoredMethods = null,
@@ -79,7 +77,6 @@ namespace Stryker.Core.Options
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
-            TestProjectNameFilter = ValidateTestProjectFilter(basePath, testProjectNameFilter);
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExcludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
@@ -341,26 +338,6 @@ namespace Stryker.Core.Options
             solutionPath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, solutionPath));
 
             return solutionPath;
-        }
-
-        private string ValidateTestProjectFilter(string basePath, string userSuppliedFilter)
-        {
-            string filter;
-            if (userSuppliedFilter.Contains(".."))
-            {
-                filter = FilePathUtils.NormalizePathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
-            }
-            else
-            {
-                filter = FilePathUtils.NormalizePathSeparators(userSuppliedFilter);
-            }
-
-            if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
-            {
-                throw new StrykerInputException(ErrorMessage,
-                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.NormalizePathSeparators(basePath)} so this is not allowed.");
-            }
-            return filter;
         }
 
         private IEnumerable<string> ValidateTestProjects(IEnumerable<string> paths)

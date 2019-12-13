@@ -23,7 +23,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string _basePath;
         private readonly string sourceFile;
         private readonly string testProjectPath;
-        private readonly string alternateTestProjectPath;
         private readonly string projectUnderTestPath;
         private readonly string defaultTestProjectFileContents;
 
@@ -35,7 +34,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
             testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
-            alternateTestProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "AlternateTestProject.csproj"));
             projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
             defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
@@ -65,7 +63,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 ProjectReferences = new List<string> { projectUnderTestPath },
                 TargetFrameworkVersionString = version,
-                ProjectFilePath = alternateTestProjectPath,
+                ProjectFilePath = testProjectPath,
                 References = new[] { "" }
             };
 
@@ -104,52 +102,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
-
-            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
-        }
-
-        [Fact]
-        public void InputFileResolver_InitializeShouldFindSpecifiedTestProjectFile()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-                {
-                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                    { alternateTestProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") },
-                    { Path.Combine(_filesystemRoot, "TestProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") },
-                });
-
-            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(alternateTestProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = alternateTestProjectPath,
-                    References = new string[] { "" }
-                });
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
-                });
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>(),
-                    TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
-                });
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-
-            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath, testProjectNameFilter: "AlternateTestProject.csproj"));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -588,7 +540,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj"));
+            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
@@ -619,7 +571,7 @@ $@"Expected exactly one .csproj file, found more than one:
 Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj"));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -635,72 +587,9 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "*.csproj");
+            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
-        }
-
-        [Fact]
-        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
-            });
-            var target = new InputFileResolver(fileSystem, null);
-
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "TestProject.csproj");
-
-            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
-        }
-
-        [Fact]
-        public void InputFileResolver_ShouldThrowExceptionIfGivenTestFileDoesNotExist()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "AlternateProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
-            });
-            var target = new InputFileResolver(fileSystem, null);
-
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), "GivenTestProject.csproj"));
-            exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
-        }
-
-        [Fact]
-        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
-            });
-            var target = new InputFileResolver(fileSystem, null);
-
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"), FilePathUtils.NormalizePathSeparators("SubFolder/TestProject.csproj"));
-
-            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
-        }
-
-        [Fact]
-        public void InputFileResolver_ShouldChooseGivenTestProjectFileIfPossible_AtFullPath()
-        {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
-            });
-            var target = new InputFileResolver(fileSystem, null);
-
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"),
-                FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj")));
-
-            actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
 
         [Fact]
@@ -852,6 +741,30 @@ Please specify a test project name filter that results in one project.
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
+        }
+
+        [Fact]
+        public void ShouldFindAllTestProjects()
+        {
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "myFile.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
+                    { Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: Path.Combine(_filesystemRoot, "ExampleProject"), testProjects: new List<string>
+            {
+                Path.Combine(_filesystemRoot, "/TestProject1", "/ExampleProject.csproj"),
+                Path.Combine(_filesystemRoot, "/TestProject2", "/ExampleProject.csproj")
+            }));
+
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
     }
 }
