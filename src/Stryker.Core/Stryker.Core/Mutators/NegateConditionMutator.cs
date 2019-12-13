@@ -11,7 +11,11 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
             SyntaxNode replacement = null;
-
+            if (node is IsPatternExpressionSyntax)
+            {
+                // we can't mutate IsPatternExpression without breaking build
+                yield break;
+            }
             switch (node.Parent)
             {
                 case IfStatementSyntax ifStatementSyntax:
