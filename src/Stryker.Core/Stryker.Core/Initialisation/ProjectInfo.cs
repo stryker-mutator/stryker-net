@@ -76,15 +76,31 @@ namespace Stryker.Core.Initialisation
             set => _properties = value;
         }
 
-        private string _targetFrameworkString;
+        private string _targetFrameworkVersionString;
 
-        public string TargetFrameworkString
+        /// <summary>
+        /// Reads the TargetFramework MSBuild property which includes the target framework and the target framework version
+        /// </summary>
+        /// <value>
+        /// The TargetFramework MSBuild property including the target framework. Example: netcoreapp3.0
+        /// </value>
+        public string TargetFrameworkVersionString
         {
-            get => _targetFrameworkString ?? _analyzerResult?.TargetFramework;
-            set => _targetFrameworkString = value;
+            get => _targetFrameworkVersionString ?? _analyzerResult?.TargetFramework;
+            set => _targetFrameworkVersionString = value;
         }
 
         private Framework _targetFramework = Framework.Unknown;
+
+        /// <summary>
+        /// Extracts a target <c>Framework</c> from the MSBuild property TargetFramework
+        /// </summary>
+        /// <value>
+        /// The target <c>Framework</c> of the project
+        /// </value>
+        /// <example>
+        /// Framework.NetClassic
+        /// </example>
         public Framework TargetFramework
         {
             get => _targetFramework == Framework.Unknown ? TargetFrameworkAndVersion.framework : _targetFramework;
@@ -93,6 +109,15 @@ namespace Stryker.Core.Initialisation
 
         private Version _targetFrameworkVersion;
 
+        /// <summary>
+        /// Extracts a target <c>Version</c> from the MSBuild property TargetFramework
+        /// </summary>
+        /// <value>
+        /// The <c>Version</c> of the target framework
+        /// </value>
+        /// <example>
+        /// 3.0
+        /// </example>
         public Version TargetFrameworkVersion
         {
             get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.version;
@@ -197,6 +222,15 @@ namespace Stryker.Core.Initialisation
             set => _resources = value;
         }
 
+        /// <summary>
+        /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
+        /// </summary>
+        /// <returns>
+        /// A tuple of <c>Framework</c> and <c>Version</c> which together form the target framework and framework version of the project.
+        /// </returns>
+        /// <example>
+        /// <c>(Framework.NetCore, 3.0)</c>
+        /// </example>
         public (Framework framework, Version version) TargetFrameworkAndVersion
         {
             get
@@ -207,7 +241,7 @@ namespace Stryker.Core.Initialisation
                     ["netstandard"] = Framework.NetStandard,
                     ["net"] = Framework.NetClassic
                 };
-                var analysis = Regex.Match(TargetFrameworkString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
                 if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
                 {
                     var version = analysis.Groups["version"].Value;
@@ -218,8 +252,7 @@ namespace Stryker.Core.Initialisation
                         {
                             version = $"{version[0]}.{version.Substring(1)}";
                         }
-
-                        if (version.Length == 3)
+                        else if (version.Length == 3)
                         {
                             version = $"{version[0]}.{version[1]}.{version[2]}";
                         }

@@ -1,3 +1,31 @@
+## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.2...0.14.3) (2019-12-05)
+
+
+### Bug Fixes
+
+* **compilation:** Compile with AssemblyIdentityComparer compilation option ([#828](https://github.com/stryker-mutator/stryker-net/issues/828)) ([6eb3c16](https://github.com/stryker-mutator/stryker-net/commit/6eb3c163a098299dbe0e052d3d1dd970a298948d))
+* **targetframeworkversion extraction:** Correctly extract aggregated framework versions ([#827](https://github.com/stryker-mutator/stryker-net/issues/827)) ([85bdc99](https://github.com/stryker-mutator/stryker-net/commit/85bdc99b100666442eb46c9cf3db4b3473368db0))
+
+
+
+## [0.14.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.1...0.14.2) (2019-11-28)
+
+
+### Bug Fixes
+
+* **vstest:** Correctly determine targetframework for vstest configuration ([#822](https://github.com/stryker-mutator/stryker-net/issues/822)) ([cd2c7ff](https://github.com/stryker-mutator/stryker-net/commit/cd2c7ff1e8fde4fd3c3167d0c4332be01927d255))
+
+
+
+## [0.14.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.0...0.14.1) (2019-11-20)
+
+
+### Bug Fixes
+
+* **coverage analysis:** The name 'AppDomain' does not exist in the current context ([#789](https://github.com/stryker-mutator/stryker-net/issues/789)) ([d53686c](https://github.com/stryker-mutator/stryker-net/commit/d53686c57b24076630c927d99d72f1e7c7f41e11))
+
+
+
 # [0.14.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.13.0...0.14.0) (2019-11-15)
 
 
