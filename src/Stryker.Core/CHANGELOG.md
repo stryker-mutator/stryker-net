@@ -1,3 +1,13 @@
+## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.2...0.14.3) (2019-12-05)
+
+
+### Bug Fixes
+
+* **compilation:** Compile with AssemblyIdentityComparer compilation option ([#828](https://github.com/stryker-mutator/stryker-net/issues/828)) ([6eb3c16](https://github.com/stryker-mutator/stryker-net/commit/6eb3c163a098299dbe0e052d3d1dd970a298948d))
+* **targetframeworkversion extraction:** Correctly extract aggregated framework versions ([#827](https://github.com/stryker-mutator/stryker-net/issues/827)) ([85bdc99](https://github.com/stryker-mutator/stryker-net/commit/85bdc99b100666442eb46c9cf3db4b3473368db0))
+
+
+
 ## [0.14.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.1...0.14.2) (2019-11-28)
 
 
