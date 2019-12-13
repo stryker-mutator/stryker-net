@@ -109,7 +109,7 @@ namespace Stryker.Core.Compiling
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            if (node.Kind() == SyntaxKind.MethodDeclaration)
+            if (node.Kind() == SyntaxKind.MethodDeclaration || node.Kind() == SyntaxKind.GetAccessorDeclaration || node.Kind() == SyntaxKind.SetAccessorDeclaration)
             {
                 return node;
             }
