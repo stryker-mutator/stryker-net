@@ -29,14 +29,21 @@ Example:
 ## Dashboard reporter
 The dashboard reporter will upload your stryker result as json to the [stryker dashboard](https://dashboard.stryker-mutator.io/). To use this reporter some settings should be configured:
 
+```
+dotnet stryker --reporters "['dashboard']"
+```
+
 ### Api key
-Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). Configure the key using the following option:
+Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). To keep your api key safe, store it in an encrypted variable in your pipeline.
+
+Configure the key using the following option:
 
 ```
 dotnet stryker --api-key <key>
 ```
 
-To keep your api key safe, store it in an encrypted variable in your pipeline.
+or by setting the environment variable `STRYKER_DASHBOARD_API_KEY`.
+
 
 ### Project name
 The name registered with the dashboard. It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we will also support gitlab.com/bitbucket.org, etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
