@@ -29,23 +29,21 @@ namespace Stryker.Core.Reporters
         {
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
-            var reportUrl = PublishReport(mutationReport.ToJsonHtmlSafe()).Result;
+            var reportUrl = PublishReport(mutationReport.ToJson()).Result;
 
             if (reportUrl != null)
             {
-                _chalk.Green($"\nYour stryker report has been uploaded to: \n " +
-                    $"{reportUrl} \n" +
-                    $"You can open it in your browser of choice. \n");
+                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice. \n");
             }
             else
             {
-                _chalk.Red("Uploading to stryker dashboard failed...");
+                _chalk.Red("Uploading to stryker dashboard failed...\n");
             }
         }
 
         private async Task<string> PublishReport(string json)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/{_options.ProjectName}/{_options.ProjectVersion}");
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{_options.ProjectVersion}");
             if (_options.ModuleName != null)
             {
                 url = new Uri(url, $"?module={_options.ModuleName}");
@@ -65,14 +63,13 @@ namespace Stryker.Core.Reporters
                 {
                     var jsonReponse = await response.Content.ReadAsStringAsync();
 
-                    return JsonConvert.DeserializeAnonymousType(json, new { Href = "" }).Href;
+                    return JsonConvert.DeserializeAnonymousType(jsonReponse, new { Href = "" }).Href;
                 }
                 else
                 {
                     var logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
 
-                    logger.LogError("Dashboard upload failed with statuscode and message: ", response.StatusCode.ToString(), response.ReasonPhrase);
-
+                    logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), response.ReasonPhrase);
                     return null;
                 }
 
