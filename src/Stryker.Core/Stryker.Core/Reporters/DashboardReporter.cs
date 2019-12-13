@@ -25,9 +25,9 @@ namespace Stryker.Core.Reporters
             _chalk = chalk ?? new Chalk();
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
+        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
-            var mutationReport = JsonReport.Build(_options, mutationTree);
+            var mutationReport = JsonReport.Build(_options, reportComponent);
 
             var reportUrl = PublishReport(mutationReport.ToJson()).Result;
 
@@ -79,14 +79,17 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
+            // Method to implement the interface
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
+            // Method to implement the interface
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
+            // Method to implement the interface
         }
     }
 }
