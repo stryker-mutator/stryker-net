@@ -1,17 +1,3 @@
-# [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.3...0.15.0) (2019-12-13)
-
-
-### Bug Fixes
-
-* **mutating:** Don't negate IsPatternExpression and properly rollback Accessor methods ([#846](https://github.com/stryker-mutator/stryker-net/issues/846)) ([69d7a71](https://github.com/stryker-mutator/stryker-net/commit/69d7a7106d6f5d54ba6e983ef3c58d30523f9578)), closes [#820](https://github.com/stryker-mutator/stryker-net/issues/820)
-
-
-### Features
-
-* **Dashboard reporter:** Add dashboard reporter ([#849](https://github.com/stryker-mutator/stryker-net/issues/849)) ([7764472](https://github.com/stryker-mutator/stryker-net/commit/7764472fccc14759ee1c12499ba5aeccc0ba450a))
-
-
-
 ## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.2...0.14.3) (2019-12-05)
 
 
