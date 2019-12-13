@@ -27,7 +27,6 @@ namespace Stryker.CLI
             CommandOption reportersProjectName,
             CommandOption reportersModuleName,
             CommandOption reportersProjectVersion,
-
             CommandOption projectUnderTestNameFilter,
             CommandOption testProjectNameFilter,
             CommandOption additionalTimeoutMS,

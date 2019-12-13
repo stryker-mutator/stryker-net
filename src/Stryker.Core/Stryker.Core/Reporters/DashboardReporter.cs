@@ -33,12 +33,13 @@ namespace Stryker.Core.Reporters
 
             if (reportUrl != null)
             {
-                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice. \n");
+                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
             }
             else
             {
-                _chalk.Red("Uploading to stryker dashboard failed...\n");
+                _chalk.Red("Uploading to stryker dashboard failed...");
             }
+            Console.WriteLine(Environment.NewLine);
         }
 
         private async Task<string> PublishReport(string json)
