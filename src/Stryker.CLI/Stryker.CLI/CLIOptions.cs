@@ -245,7 +245,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
         {
             ArgumentName = "--api-key",
-            ArgumentShortName = "-k <api-key>",
+            ArgumentShortName = "-ak <api-key>",
             ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
             DefaultValue = null,
             JsonKey = "api-key"

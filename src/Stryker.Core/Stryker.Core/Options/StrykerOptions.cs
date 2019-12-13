@@ -117,17 +117,20 @@ namespace Stryker.Core.Options
             var errorStrings = new StringBuilder();
             if (string.IsNullOrWhiteSpace(dashboadApiKey))
             {
-                errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
+                var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
+                if (!string.IsNullOrWhiteSpace(environmentApiKey))
+                {
+                    dashboadApiKey = environmentApiKey;
+                }
+                else
+                {
+                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
+                }
             }
 
-            var actualProjectName = "";
             if (string.IsNullOrWhiteSpace(projectName))
             {
                 errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
-            }
-            else
-            {
-                actualProjectName = projectName;
             }
 
             if (errorStrings.Length > 0)
@@ -135,7 +138,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, actualProjectName, moduleName, projectVersion);
+            return (dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
         private string ValidateGitSource(string gitSource)
