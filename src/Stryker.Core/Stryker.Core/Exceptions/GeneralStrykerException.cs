@@ -4,9 +4,7 @@ using System.Text;
 namespace Stryker.Core.Exceptions
 {
     /// <summary>
-    /// Represents errors which are related to user input.
-    /// Everything that the user can fix themselves should be shown to them
-    ///  using this kind of exception.
+    /// Represents errors which are caused by known exceptions in Stryker.
     /// </summary>
     public class GeneralStrykerException : Exception
     {

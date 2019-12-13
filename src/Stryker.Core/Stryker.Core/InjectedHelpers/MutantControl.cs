@@ -15,6 +15,7 @@ namespace Stryker
         private static string envName;
         private static bool captureCoverage;
         private static Object _coverageLock = new Object();
+
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif
@@ -67,7 +68,7 @@ namespace Stryker
                 ResetCoverage();
             }
         }
-                
+
         private static void ResetCoverage()
         {
             _coveredMutants = new List<int>();
@@ -99,7 +100,7 @@ namespace Stryker
 
         private static string BuildReport()
         {
-            return string.Format("{0};{1}",_mutantsAsString, _staticMutantsAsStrings);
+            return string.Format("{0};{1}", _mutantsAsString, _staticMutantsAsStrings);
         }
 
         public static void DumpState()
@@ -116,106 +117,58 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            Console.WriteLine("["+DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] "+  message);
+            Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            MarkAsCovered(id);
-            return ActiveMutation == id;
-        }
-
-        public static int ActiveMutation;
-
-        public static void MarkAsCovered(int id)
-        {
             if (captureCoverage)
             {
                 lock (_coverageLock)
                 {
-                    if (usePipe)
+                    if (!usePipe)
                     {
-                        if (!_coveredMutants.Contains(id))
+                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
                         {
-                            _coveredMutants.Add(id);
-                            if (_mutantsAsString.Length > 0)
-                            {
-                                _mutantsAsString.Append(',');
-                            }
-                            _mutantsAsString.Append(id.ToString());
-                        }
-                        if (MutantContext.InStatic())
-                        {
-                            if (_staticMutantsAsStrings.Length > 0)
-                            {
-                                _staticMutantsAsStrings.Append(',');
-                            }
-                            _staticMutantsAsStrings.Append(id.ToString());
+                            ResetCoverage();
                         }
                     }
-                    else
+
+                    bool add = false;
+                    if (!_coveredMutants.Contains(id))
                     {
-                        string current = Environment.GetEnvironmentVariable(envName);
-                        if (current == null)
+                        _coveredMutants.Add(id);
+                        if (_mutantsAsString.Length > 0)
                         {
-                            current = ";";
-                            Environment.SetEnvironmentVariable(envName, ";");
+                            _mutantsAsString.Append(',');
                         }
-                        IList<int> coveredMutants = GetCoveredMutants(current);
-                        IList<int> staticMutants = GetStaticMutants(current);
-                        bool add = false;
+                        _mutantsAsString.Append(id.ToString());
+                        add = true;
+                    }
+                    if (MutantContext.InStatic() && _coveredMutants.Contains(id))
+                    {
+                        if (_staticMutantsAsStrings.Length > 0)
+                        {
+                            _staticMutantsAsStrings.Append(',');
+                        }
+                        _staticMutantsAsStrings.Append(id.ToString());
+                        add = true;
+                    }
 
-                        if (!coveredMutants.Contains(id))
+                    if (add)
+                    {
+                        if (!usePipe)
                         {
-                            coveredMutants.Add(id);
-                            add = true;
-                        }
-                        if (MutantContext.InStatic())
-                        {
-                            staticMutants.Add(id);
-                            add = true;
-                        }
-
-                        if (add)
-                        {
-                            List<string> covered = new List<string>();
-                            foreach (int coveredMutant in coveredMutants)
-                            {
-                                covered.Add(coveredMutant.ToString());
-                            }
-                            List<string> statics = new List<string>();
-                            foreach (int staticMutant in staticMutants)
-                            {
-                                statics.Add(staticMutant.ToString());
-                            }
-                            Environment.SetEnvironmentVariable(envName, string.Format("{0};{1}", string.Join(",", covered), string.Join(",", statics)));
+                            Environment.SetEnvironmentVariable(envName, BuildReport());
                         }
                     }
+
                 }
             }
+            return ActiveMutation == id;
         }
 
-        private static List<int> GetCoveredMutants(string mutantsString)
-        {
-            string[] mutants = mutantsString.Split(';')[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
-            List<int> mutantList = new List<int>();
-            foreach (string mutant in mutants)
-            {
-                mutantList.Add(int.Parse(mutant));
-            }
-            return mutantList;
-        }
-
-        private static List<int> GetStaticMutants(string mutantsString)
-        {
-            string[] mutants = mutantsString.Split(';')[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
-            List<int> mutantList = new List<int>();
-            foreach (string mutant in mutants)
-            {
-                mutantList.Add(int.Parse(mutant));
-            }
-            return mutantList;
-        }
+        public static int ActiveMutation;
     }
 }

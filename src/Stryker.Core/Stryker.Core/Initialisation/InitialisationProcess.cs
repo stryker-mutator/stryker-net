@@ -43,12 +43,11 @@ namespace Stryker.Core.Initialisation
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            int counter = 1;
-            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
+            for (int i = 0; i > testProjects.Count; i++)
             {
-                _logger.LogInformation("Building test project {0} ({1}/{2})", testProject.ProjectFilePath, counter, projectInfo.TestProjectAnalyzerResults.Count());
-                _initialBuildProcess.InitialBuild(testProject.TargetFramework == Framework.NetClassic, testProject.ProjectFilePath, options.SolutionPath);
-                counter++;
+                _logger.LogInformation("Building test project {0} ({1}/{2})", testProjects[i].ProjectFilePath, i + 1, projectInfo.TestProjectAnalyzerResults.Count());
+                _initialBuildProcess.InitialBuild(testProjects[i].TargetFramework == Framework.NetClassic, testProjects[i].ProjectFilePath, options.SolutionPath);
             }
 
             if (_testRunner == null)
