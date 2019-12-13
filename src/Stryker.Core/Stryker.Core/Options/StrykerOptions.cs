@@ -123,14 +123,7 @@ namespace Stryker.Core.Options
             var actualProjectName = "";
             if (string.IsNullOrWhiteSpace(projectName))
             {
-                if (string.IsNullOrWhiteSpace(ProjectUnderTestNameFilter))
-                {
-                    errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
-                }
-                else
-                {
-                    actualProjectName = ProjectUnderTestNameFilter;
-                }
+                errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
             }
             else
             {
