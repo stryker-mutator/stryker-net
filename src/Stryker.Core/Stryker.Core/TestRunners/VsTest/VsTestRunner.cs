@@ -17,14 +17,15 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunner : ITestRunner
     {
         private IVsTestConsoleWrapper _vsTestConsole;
+        private string RunnerId => $"Runner {_id}";
 
-        public IEnumerable<int> CoveredMutants { get; private set; }
         public TestCoverageInfos CoverageMutants { get; }
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
 
@@ -87,8 +88,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 {CoverageCollector.ModeEnvironmentVariable, useEnv ? CoverageCollector.EnvMode : CoverageCollector.PipeMode}
             };
         }
-
-        private string RunnerId => $"Runner {_id}";
 
         public TestRunResult RunAll(int? timeoutMs, IReadOnlyMutant mutant)
         {
@@ -174,14 +173,14 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         private TestRunResult RunVsTest(IEnumerable<TestCase> testCases, int? timeoutMs,
-            Dictionary<string, string> envVars)
+            IDictionary<string, string> envVars)
         {
-            var testResults = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
+            var (testResults, aborted) = RunAllTests(testCases, envVars, GenerateRunSettings(timeoutMs, false), false);
 
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the test run has timed out because we received less test results from the test run than there are test cases in the unit test project.
             var resultAsArray = testResults as TestResult[] ?? testResults.ToArray();
-            if (resultAsArray.All(x => x.Outcome != TestOutcome.Failed) && resultAsArray.Count() < (testCases ?? _discoveredTests).Count())
+            if (resultAsArray.All(x => x.Outcome != TestOutcome.Failed) && aborted/*resultAsArray.Count() < (testCases ?? _discoveredTests).Count()*/)
             {
                 throw new OperationCanceledException();
             }
@@ -202,23 +201,32 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(bool cantUsePipe, bool cantUseUnloadAppDomain)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
-            var testResults = RunAllTests(null, BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), GenerateRunSettings(null, true), true);
+            var (testResults, coverage) = RunAllTests(null, BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), GenerateRunSettings(null, true), true);
             ParseResultsForCoverage(testResults);
-            CoveredMutants = CoverageMutants.CoveredMutants;
             return new TestRunResult { Success = true };
         }
 
         private void ParseResultsForCoverage(IEnumerable<TestResult> testResults)
         {
+            var seenTestCases = new HashSet<Guid>();
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (key == null)
                 {
-                    _logger.LogWarning($"{RunnerId}: Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
+                    if (seenTestCases.Contains(testResult.TestCase.Id))
+                    {
+                        _logger.LogWarning($"Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
+                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, null, null); 
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"{RunnerId}: Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
+                    }
                 }
                 else if (value != null)
                 {
+                    seenTestCases.Add(testResult.TestCase.Id);
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
@@ -238,7 +246,6 @@ namespace Stryker.Core.TestRunners.VsTest
                         CoverageMutants.DeclareMappingForATest(testResult.TestCase, coveredMutants, staticMutants);
                     }
                 }
-
             }
         }
 
@@ -246,7 +253,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
             var generateRunSettings = GenerateRunSettings(null, true);
-            var testResults = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), generateRunSettings, true);
+            var (testResults, timeOut) = RunAllTests(_discoveredTests.Where(x => x.Id == test.Id).ToArray(), BuildCoverageEnvironment(cantUsePipe || _flags.HasFlag(OptimizationFlags.UseEnvVariable)), generateRunSettings, true);
             var coverageForTest = testResults as TestResult[] ?? testResults.ToArray();
             ParseResultsForCoverage(coverageForTest.Where(x => x.TestCase.Id == test.Id));
             return coverageForTest;
@@ -256,10 +263,11 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // one test has failed, we can stop
             _logger.LogDebug($"{RunnerId}: At least one test failed, abort current test run.");
-            _vsTestConsole.AbortTestRun();
+            // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
+            _vsTestConsole.CancelTestRun();
         }
 
-        private IEnumerable<TestResult> RunAllTests(IEnumerable<TestCase> testCases, Dictionary<string, string> envVars,
+        private (IEnumerable<TestResult>, bool) RunAllTests(IEnumerable<TestCase> testCases, IDictionary<string, string> envVars,
             string runSettings, bool forCoverage, int retries = 0)
         {
             void Handler_VsTestFailed(object sender, EventArgs e) { _vsTestFailed = true; }
@@ -295,14 +303,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 eventHandler.TestsFailed -= Handler_TestsFailed;
                 eventHandler.VsTestFailed -= Handler_VsTestFailed;
 
-                if (_vsTestFailed && retries <= 10)
-                {
-                    _vsTestConsole = PrepareVsTestConsole();
-                    _vsTestFailed = false;
+                if (!_vsTestFailed || retries > 10) return (eventHandler.TestResults, eventHandler.TimeOut);
+                _vsTestConsole = PrepareVsTestConsole();
+                _vsTestFailed = false;
 
-                    return RunAllTests(testCases, envVars, runSettings, forCoverage, ++retries);
-                }
-                return eventHandler.TestResults;
+                return RunAllTests(testCases, envVars, runSettings, forCoverage, ++retries);
             }
         }
 
