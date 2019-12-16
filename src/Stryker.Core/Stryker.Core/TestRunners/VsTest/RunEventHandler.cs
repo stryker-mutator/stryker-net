@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Xml.Xsl;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -20,6 +21,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public event EventHandler TestsFailed;
         public event EventHandler VsTestFailed;
         public List<TestResult> TestResults { get; }
+
+        public bool TimeOut { get; private set; }
 
         public RunEventHandler(AutoResetEvent waitHandle, ILogger logger, string runnerId)
         {
@@ -39,6 +42,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
+
+            TimeOut = testRunCompleteArgs.IsAborted;
 
             if (testRunCompleteArgs.Error != null)
             {
