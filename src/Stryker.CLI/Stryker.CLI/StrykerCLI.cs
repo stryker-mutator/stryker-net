@@ -42,6 +42,10 @@ namespace Stryker.CLI
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
+            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
+            var reportersProjectNameParam = CreateOption(app, CLIOptions.ReportersProjectNameOption);
+            var reportersModuleNameParam = CreateOption(app, CLIOptions.ReportersModuleNameOption);
+            var reportersProjectVersionParam = CreateOption(app, CLIOptions.ReportersProjectVersionOption);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
@@ -73,6 +77,10 @@ namespace Stryker.CLI
                 var options = new OptionsBuilder(_logBuffer).Build(
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporterParam,
+                    dashboardApiKey: dashboardApiKeyParam,
+                    reportersProjectName: reportersProjectNameParam,
+                    reportersModuleName: reportersModuleNameParam,
+                    reportersProjectVersion: reportersProjectVersionParam,
                     projectUnderTestNameFilter: projectNameParam,
                     additionalTimeoutMS: timeoutParam,
                     excludedMutations: excludedMutationsParam,
