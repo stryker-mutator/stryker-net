@@ -37,7 +37,6 @@ variables:
   LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
   LibManCacheMacLinux: $(HOME)/.librarymanager/cache
   RestoreLockedMode: true
-  VSTEST_RUNNER_DEBUG: 1
 
 stages:
 - stage: Analysis
