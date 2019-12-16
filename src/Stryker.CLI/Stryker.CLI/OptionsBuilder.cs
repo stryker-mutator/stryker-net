@@ -23,6 +23,10 @@ namespace Stryker.CLI
         public StrykerOptions Build(
             string basePath,
             CommandOption reporter,
+            CommandOption dashboardApiKey,
+            CommandOption reportersProjectName,
+            CommandOption reportersModuleName,
+            CommandOption reportersProjectVersion,
             CommandOption projectUnderTestNameFilter,
             CommandOption testProjectNameFilter,
             CommandOption additionalTimeoutMS,
@@ -59,6 +63,10 @@ namespace Stryker.CLI
             return new StrykerOptions(
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
+                dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
+                projectName: GetOption(reportersProjectName.Value(), CLIOptions.ReportersProjectNameOption),
+                moduleName: GetOption(reportersModuleName.Value(), CLIOptions.ReportersModuleNameOption),
+                projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.ReportersProjectVersionOption),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 testProjectNameFilter: GetOption(testProjectNameFilter.Value(), CLIOptions.TestProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),

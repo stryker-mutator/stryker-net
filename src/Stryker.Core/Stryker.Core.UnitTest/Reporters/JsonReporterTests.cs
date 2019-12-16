@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 var jsonReportComponent = new JsonReportFileComponent(file);
                 foreach (var mutant in file.Mutants)
                 {
-                    jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id);
+                    jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
                 }
             }
         }
@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 var jsonReportComponent = new JsonReportFileComponent(file, loggerMock);
                 foreach (var mutant in file.Mutants)
                 {
-                    jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id);
+                    jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
                 }
             }
         }
