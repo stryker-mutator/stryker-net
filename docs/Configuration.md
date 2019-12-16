@@ -16,6 +16,8 @@ The full list of Stryker.NET configuration options are:
 - [Custom tresholds](#unary-operators)
 - [Coverage analysis](#coverage-analysis)
 - [Abort testrun on test failure](#abort-test-on-fail)
+- [Diff based file exclusion](#diff)
+- [Git diff source](#git-source)
 <!-- /TOC -->
 
 ## Solution path
@@ -280,6 +282,11 @@ Example config file:
         "excluded-mutations": [
             "string",
             "Logical operators"
+        ],
+        "ignore-methods": [
+            "*Log*",
+            "ToString",
+            "*HashCode*"
         ]
     }
 }
@@ -328,3 +335,23 @@ dotnet stryker -atof
 ```
 
 Default: `"on"`
+
+## Diff
+Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.
+
+```
+dotnet stryker --diff
+dotnet stryker -diff
+```
+
+Default: `false`
+
+## Git source
+Sets the source branch to compare with the current code on file system, used for calculating the difference when --diff is enabled.
+
+```
+dotnet stryker --git-source "development"
+dotnet stryker -gs "development"
+```
+
+Default: `master`

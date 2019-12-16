@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 
 namespace Stryker.Core
 {
@@ -89,7 +88,7 @@ namespace Stryker.Core
                 {
                     logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
                     // coverage
-                    var coverage = _initialisationProcess.GetCoverage(options);
+                    var coverage = _mutationTestProcess.GetCoverage();
                     coverage.UpdateMutants(_input.ProjectInfo.ProjectContents.Mutants, nbTests);
                 }
 

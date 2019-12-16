@@ -10,12 +10,14 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
+        string LongName { get; }
+        string DisplayName { get; }
         IDictionary<string, bool> CoveringTest { get; }
         string ResultStatusReason { get; }
         bool IsStaticValue { get; }
         bool MustRunAllTests { get; }
     }
-    
+
     /// <summary>
     /// Represents a single mutation on domain level
     /// </summary>
@@ -29,6 +31,9 @@ namespace Stryker.Core.Mutants
 
         public bool MustRunAllTests { get; set; }
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+
+        public string LongName =>
+            $"{Mutation?.DisplayName} on line {Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
         public bool IsStaticValue { get; set; }
     }
 }

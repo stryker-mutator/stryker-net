@@ -34,6 +34,7 @@ namespace Stryker.Core.InjectedHelpers
         }
 
         public static string SelectorExpression {get;}
+
         public static string HelperNamespace {get;}
 
         public static string StaticMarker { get; set; }

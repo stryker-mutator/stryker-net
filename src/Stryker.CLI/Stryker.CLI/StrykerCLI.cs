@@ -42,6 +42,10 @@ namespace Stryker.CLI
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
+            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
+            var reportersProjectNameParam = CreateOption(app, CLIOptions.ReportersProjectNameOption);
+            var reportersModuleNameParam = CreateOption(app, CLIOptions.ReportersModuleNameOption);
+            var reportersProjectVersionParam = CreateOption(app, CLIOptions.ReportersProjectVersionOption);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
@@ -61,6 +65,8 @@ namespace Stryker.CLI
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
+            var diffParam = CreateOption(app, CLIOptions.Diff);
+            var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
 
             app.HelpOption("--help | -h | -?");
 
@@ -68,28 +74,34 @@ namespace Stryker.CLI
             {
                 // app started
                 var options = new OptionsBuilder(_logBuffer).Build(
-                    Directory.GetCurrentDirectory(),
-                    reporterParam,
-                    projectNameParam,
-                    testProjectNameParam,
-                    timeoutParam,
-                    excludedMutationsParam,
-                    ignoreMethodsParam,
-                    logConsoleParam,
-                    fileLogParam,
-                    devMode,
-                    coverageAnalysis,
-                    abortTestOnFailParam,
-                    configFilePathParam,
-                    maxConcurrentTestRunnersParam,
-                    thresholdHighParam,
-                    thresholdLowParam,
-                    thresholdBreakParam,
-                    filesToExclude,
-                    mutateParam,
-                    testRunner,
-                    solutionPathParam,
-                    languageVersion);
+                    basePath: Directory.GetCurrentDirectory(),
+                    reporter: reporterParam,
+                    dashboardApiKey: dashboardApiKeyParam,
+                    reportersProjectName: reportersProjectNameParam,
+                    reportersModuleName: reportersModuleNameParam,
+                    reportersProjectVersion: reportersProjectVersionParam,
+                    projectUnderTestNameFilter: projectNameParam,
+                    testProjectNameFilter: testProjectNameParam,
+                    additionalTimeoutMS: timeoutParam,
+                    excludedMutations: excludedMutationsParam,
+                    ignoreMethods: ignoreMethodsParam,
+                    logLevel: logConsoleParam,
+                    logToFile: fileLogParam,
+                    devMode: devMode,
+                    coverageAnalysis: coverageAnalysis,
+                    abortTestOnFail: abortTestOnFailParam,
+                    configFilePath: configFilePathParam,
+                    maxConcurrentTestRunners: maxConcurrentTestRunnersParam,
+                    thresholdHigh: thresholdHighParam,
+                    thresholdLow: thresholdLowParam,
+                    thresholdBreak: thresholdBreakParam,
+                    filesToExclude: filesToExclude,
+                    filePatterns: mutateParam,
+                    testRunner: testRunner,
+                    solutionPath: solutionPathParam,
+                    languageVersion: languageVersion,
+                    diff: diffParam,
+                    gitSource: gitSourceParam);
 
                 RunStryker(options);
                 return ExitCode;

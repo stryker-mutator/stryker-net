@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -34,10 +35,10 @@ namespace Stryker.DataCollector
 
         public static string GetVsTestSettings()
         {
-            var codeBase = typeof(CoverageCollector).Assembly.Location;
+            var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
             var friendlyName = typeof(CoverageCollector).ExtractAttribute<DataCollectorFriendlyNameAttribute>().FriendlyName;
-            var uri = (typeof(CoverageCollector).GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
+            var uri = (typeof(CoverageCollector).GetTypeInfo().GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
                 DataCollectorTypeUriAttribute).TypeUri;
             var line= $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
             return string.Format(TemplateForConfiguration, line);
@@ -115,6 +116,7 @@ namespace Stryker.DataCollector
             {
                 Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
             }
+            Log($"Mode: {(_usePipe ? "pipe" : "env")}");
             Log($"Test Session start with conf {testSessionStartArgs.Configuration}.");
         }
 

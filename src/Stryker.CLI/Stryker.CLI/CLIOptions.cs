@@ -105,11 +105,29 @@ namespace Stryker.CLI
             JsonKey = "test-project-file"
         };
 
+        public static readonly CLIOption<bool> Diff = new CLIOption<bool>
+        {
+            ArgumentName = "--diff",
+            ArgumentShortName = "-diff",
+            ArgumentDescription = @"Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.",
+            ValueType = CommandOptionType.NoValue,
+            JsonKey = "diff"
+        };
+
+        public static readonly CLIOption<string> GitSource = new CLIOption<string>
+        {
+            ArgumentName = "--git-source",
+            ArgumentShortName = "-gs <branchName>",
+            ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
+            DefaultValue = _defaultOptions.GitSource,
+            JsonKey = "git-source"
+        };
+
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
-            DefaultValue = "perTest",
+            DefaultValue = _defaultOptions.OptimizationMode,
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
     - perTest (Default): capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
@@ -209,7 +227,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> TestRunner = new CLIOption<string>
         {
             ArgumentName = "--test-runner",
-            ArgumentShortName = "-tr",
+            ArgumentShortName = "-tr <testRunner>",
             ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
             JsonKey = "test-runner"
@@ -218,10 +236,47 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
         {
             ArgumentName = "--language-version",
-            ArgumentShortName = "-lv",
+            ArgumentShortName = "-lv <csharp-version-name>",
             ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
             DefaultValue = _defaultOptions.LanguageVersion.ToString(),
             JsonKey = "language-version"
+        };
+
+        public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
+        {
+            ArgumentName = "--api-key",
+            ArgumentShortName = "-ak <api-key>",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
+            DefaultValue = null,
+            JsonKey = "api-key"
+        };
+
+        public static readonly CLIOption<string> ReportersProjectNameOption = new CLIOption<string>
+        {
+            ArgumentName = "--project-name",
+            ArgumentShortName = "-project <name>",
+            ArgumentDescription = @"The organizational name for your project. Required when dashboard reporter is turned on.
+For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.",
+            DefaultValue = null,
+            JsonKey = "project-name"
+        };
+
+        public static readonly CLIOption<string> ReportersModuleNameOption = new CLIOption<string>
+        {
+            ArgumentName = "--module-name",
+            ArgumentShortName = "-module <name>",
+            ArgumentDescription = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.",
+            DefaultValue = null,
+            JsonKey = "module-name"
+        };
+
+        public static readonly CLIOption<string> ReportersProjectVersionOption = new CLIOption<string>
+        {
+            ArgumentName = "--project-version",
+            ArgumentShortName = "-version <version>",
+            ArgumentDescription = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
+            DefaultValue = null,
+            JsonKey = "project-version"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

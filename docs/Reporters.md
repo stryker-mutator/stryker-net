@@ -2,6 +2,7 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 
 <!-- TOC -->
 - [Html reporter](#html-reporter)
+- [Dashboard reporter](#dashboard-reporter)
 - [Console reporter](#console-reporter)
 - [Progress reporter](#progress-reporter)
 - [Console dots reporter](#console-dots-reporter)
@@ -24,6 +25,61 @@ dotnet stryker --reporters "['html']"
 Example:
 
 ![html reporter](./images/html-report-net.png)
+
+## Dashboard reporter
+The dashboard reporter will upload your stryker result as json to the [stryker dashboard](https://dashboard.stryker-mutator.io/). To use this reporter some settings should be configured:
+
+```
+dotnet stryker --reporters "['dashboard']"
+```
+
+### Api key
+Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). To keep your api key safe, store it in an encrypted variable in your pipeline.
+
+Configure the key using the following option:
+
+```
+dotnet stryker --api-key <key>
+```
+
+or by setting the environment variable `STRYKER_DASHBOARD_API_KEY`.
+
+
+### Project name
+The name registered with the dashboard. It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we will also support gitlab.com/bitbucket.org, etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
+
+```
+dotnet stryker --project-name <name>
+```
+
+### Project version
+The version of the report. This should be filled with the branch name, git tag or git sha (although no validation is done). You can override a report of a specific version, like docker tags. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
+
+```
+dotnet stryker --project-version <version>
+```
+
+### Project module
+Optional. If you want to store multiple reports for a version, you can use this value to separate them logically. For example, in a mono-repo setup where each package (or project or module) delivers a report.
+
+```
+dotnet stryker --module-name <name>
+```
+
+### Configure using file
+The dashboard can also be configured using the config file. But keep in mind your api-key should not be pushed to version control. 
+```
+{
+  "stryker-config": {
+    "api-key": "xxx",
+    "project-name": "xxx",
+    "project-version": "test",
+    "reporters": [
+      "dashboard"
+    ]
+  }
+}
+```
 
 ## Console reporter
 Stryker.NET default report. It displays all mutations right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system.

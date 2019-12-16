@@ -72,6 +72,7 @@ For the full list of all available mutations, see the [mutator docs](/docs/Mutat
 
 ## Supported Reporters
 - Html reporter
+- Dashboard reporter
 - Console reporter
 - Progress reporter
 - Console dots reporter
