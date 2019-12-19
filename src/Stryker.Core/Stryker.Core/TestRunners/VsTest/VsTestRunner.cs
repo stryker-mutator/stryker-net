@@ -45,7 +45,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly int _id;
         private TestFramework _testFramework;
 
-        private bool _vsTestFailed = false;
+        private bool _vsTestFailed;
 
         private readonly ILogger _logger;
 
@@ -180,7 +180,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // For now we need to throw an OperationCanceledException when a testrun has timed out. 
             // We know the test run has timed out because we received less test results from the test run than there are test cases in the unit test project.
             var resultAsArray = testResults as TestResult[] ?? testResults.ToArray();
-            if (resultAsArray.All(x => x.Outcome != TestOutcome.Failed) && aborted/*resultAsArray.Count() < (testCases ?? _discoveredTests).Count()*/)
+            if (resultAsArray.All(x => x.Outcome != TestOutcome.Failed) && aborted)
             {
                 throw new OperationCanceledException();
             }
@@ -263,6 +263,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // one test has failed, we can stop
             _logger.LogDebug($"{RunnerId}: At least one test failed, abort current test run.");
+            ((RunEventHandler) sender).CancelRequested = true;
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
             _vsTestConsole.CancelTestRun();
         }

@@ -28,12 +28,7 @@ namespace Stryker.Core.TestRunners
         {
             lock (_mutantToTests)
             {
-                if (_mutantToTests.ContainsKey(mutant.Id))
-                {
-                    return _mutantToTests[mutant.Id].Union(_testsWithoutCoverageInfos).ToList();
-                }
-
-                return _testsWithoutCoverageInfos;
+                return _mutantToTests.ContainsKey(mutant.Id) ? _mutantToTests[mutant.Id].Union(_testsWithoutCoverageInfos).ToList() : _testsWithoutCoverageInfos;
             }
         }
 
