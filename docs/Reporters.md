@@ -39,7 +39,7 @@ Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). 
 Configure the key using the following option:
 
 ```
-dotnet stryker --api-key <key>
+dotnet stryker --dashboard-api-key <key>
 ```
 
 or by setting the environment variable `STRYKER_DASHBOARD_API_KEY`.
@@ -49,21 +49,21 @@ or by setting the environment variable `STRYKER_DASHBOARD_API_KEY`.
 The name registered with the dashboard. It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we will also support gitlab.com/bitbucket.org, etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
 
 ```
-dotnet stryker --project-name <name>
+dotnet stryker --dashboard-project <name>
 ```
 
 ### Project version
 The version of the report. This should be filled with the branch name, git tag or git sha (although no validation is done). You can override a report of a specific version, like docker tags. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
 
 ```
-dotnet stryker --project-version <version>
+dotnet stryker --dashboard-version <version>
 ```
 
 ### Project module
 Optional. If you want to store multiple reports for a version, you can use this value to separate them logically. For example, in a mono-repo setup where each package (or project or module) delivers a report.
 
 ```
-dotnet stryker --module-name <name>
+dotnet stryker --dashboard-module <name>
 ```
 
 ### Configure using file
@@ -71,9 +71,10 @@ The dashboard can also be configured using the config file. But keep in mind you
 ```
 {
   "stryker-config": {
-    "api-key": "xxx",
-    "project-name": "xxx",
-    "project-version": "test",
+    "dashboard-api-key": "xxx",
+    "dashboard-project": "xxx",
+    "dashboard-version": "test",
+    "dashboard-module": "sub",
     "reporters": [
       "dashboard"
     ]

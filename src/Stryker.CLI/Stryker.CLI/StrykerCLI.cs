@@ -43,9 +43,9 @@ namespace Stryker.CLI
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
             var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
-            var reportersProjectNameParam = CreateOption(app, CLIOptions.ReportersProjectNameOption);
-            var reportersModuleNameParam = CreateOption(app, CLIOptions.ReportersModuleNameOption);
-            var reportersProjectVersionParam = CreateOption(app, CLIOptions.ReportersProjectVersionOption);
+            var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectNameOption);
+            var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleNameOption);
+            var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersionOption);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
