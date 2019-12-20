@@ -4,6 +4,11 @@ parameters:
   strykerCommands: '--dev-mode'
 
 steps:
+  - task: UseDotNet@2
+    displayName: 'Install dotnet core 3.0.x sdk for integrationtest'
+    inputs:
+      version: 3.0.x
+
   - script: dotnet-stryker ${{ parameters.strykerCommands }} -f -l trace
     workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Run integration test ${{ parameters.testName }}'

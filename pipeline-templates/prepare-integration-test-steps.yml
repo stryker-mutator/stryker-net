@@ -1,8 +1,8 @@
 steps:
   - task: UseDotNet@2
-    displayName: 'Install dotnet core 3.0.x sdk for integrationtest (to compile integration test project)'
+    displayName: 'Install dotnet core 2.1.x sdk for unit tests'
     inputs:
-      version: 3.0.x
+      version: 2.1.x
   - template: populate-cache-steps.yml
 
   - task: DotNetCoreCLI@2
