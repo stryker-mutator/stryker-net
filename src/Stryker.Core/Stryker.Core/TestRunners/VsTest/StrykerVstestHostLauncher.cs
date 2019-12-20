@@ -29,10 +29,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public StrykerVsTestHostLauncher(IDictionary<string, string> envVars, int id)
         {
-            // https://github.com/stryker-mutator/stryker-net/issues/778
-            // This enables vstest.console.dll to also roll forward on no candidate fx
-            envVars["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "2";
-
             _envVars = envVars;
             _id = id;
         }
