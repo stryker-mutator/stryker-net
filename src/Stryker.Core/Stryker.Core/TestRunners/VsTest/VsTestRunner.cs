@@ -217,7 +217,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     if (seenTestCases.Contains(testResult.TestCase.Id))
                     {
                         _logger.LogWarning($"Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
-                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, null, null); 
+                        CoverageMutants.DeclareMappingForATest(testResult.TestCase, null, null);
                     }
                     else
                     {
@@ -263,7 +263,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // one test has failed, we can stop
             _logger.LogDebug($"{RunnerId}: At least one test failed, abort current test run.");
-            ((RunEventHandler) sender).CancelRequested = true;
+            ((RunEventHandler)sender).CancelRequested = true;
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
             _vsTestConsole.CancelTestRun();
         }
@@ -430,6 +430,8 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             try
             {
+                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 _vsTestConsole.StartSession();
                 _vsTestConsole.InitializeExtensions(new List<string>
                 {
