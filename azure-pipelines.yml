@@ -61,6 +61,13 @@ stages:
       inputs:
         command: 'build'
         projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests'
+      inputs:
+        command: test
+        projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
+        arguments: '--logger trx --results-directory $(Agent.TempDirectory) --collect "Code coverage"'
+        publishTestResults: false
     - task: SonarCloudAnalyze@1
     - task: SonarCloudPublish@1
       inputs:
