@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -15,17 +14,6 @@ namespace Stryker.Core.TestRunners
         private readonly IList<TestDescription> _testsWithoutCoverageInfos = new List<TestDescription>();
         private static ILogger Logger { get; }
 
-        public IEnumerable<int> CoveredMutants
-        {
-            get
-            {
-                lock (_mutantToTests)
-                {
-                    return _mutantToTests.Keys;
-                }
-            }
-        }
-
         static TestCoverageInfos()
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<TestCoverageInfos>();
@@ -40,13 +28,8 @@ namespace Stryker.Core.TestRunners
         {
             lock (_mutantToTests)
             {
-                if (_mutantToTests.ContainsKey(mutant.Id))
-                {
-                    return _mutantToTests[mutant.Id].ToList();
-                }
-                
+                return _mutantToTests.ContainsKey(mutant.Id) ? _mutantToTests[mutant.Id].Union(_testsWithoutCoverageInfos).ToList() : _testsWithoutCoverageInfos;
             }
-            return null;
         }
 
         public void DeclareCoveredMutants(IEnumerable<int> list)
@@ -84,6 +67,7 @@ namespace Stryker.Core.TestRunners
                             _mutantToTests.Add(id, new List<TestDescription>{discoveredTest});
                         }
                     }
+
                     if (staticMutants.Any())
                     {
                         Logger.LogDebug($"Those are being executed in a static constructor context: {string.Join(", ", staticMutants)}.");
@@ -94,6 +78,11 @@ namespace Stryker.Core.TestRunners
                     }
                 }
             }
+        }
+
+        public bool IsCovered(int id)
+        {
+            return _testsWithoutCoverageInfos.Count > 0 || _mutantToTests.ContainsKey(id);
         }
 
         public long UpdateMutants(IEnumerable<Mutant> mutants, int testsCount)
@@ -109,7 +98,7 @@ namespace Stryker.Core.TestRunners
             }
 
             var initialCount = mutantsToTest.Count();
-            var nonTested = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !CoveredMutants.Contains(x.Id)).ToList();
+            var nonTested = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun && !IsCovered(x.Id)).ToList();
             foreach (var mutant in nonTested)
             {
                 mutant.ResultStatus = MutantStatus.NoCoverage;
@@ -142,7 +131,7 @@ namespace Stryker.Core.TestRunners
             report.AppendJoin(',', nonTested.Select(x => x.Id));
             Logger.LogInformation(nonTested.Count == 0
                 ? "Congratulations, all mutants are covered by tests!"
-                : $"{nonTested.Count} mutants are not reached by any tests and will survive! (Marked as {MutantStatus.Survived}).");
+                : $"{nonTested.Count} mutant{(nonTested.Count>1 ? "s are" : " is")} not reached by any test and will survive! (Marked as '{MutantStatus.NoCoverage}').");
 
             var theoricalTestCount = (long)(testsCount) * initialCount;
             var eliminatedTestPercentage = 1.0 * avoidedTests / theoricalTestCount;
@@ -151,6 +140,5 @@ namespace Stryker.Core.TestRunners
 
             return avoidedTests;
         }
-
     }
 }
