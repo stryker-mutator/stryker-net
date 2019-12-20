@@ -1,3 +1,17 @@
+# [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.3...dotnet-stryker@0.15.0) (2019-12-20)
+
+
+### Features
+
+* **Dashboard reporter:** Add dashboard reporter ([#849](https://github.com/stryker-mutator/stryker-net/issues/849)) ([7764472](https://github.com/stryker-mutator/stryker-net/commit/7764472fccc14759ee1c12499ba5aeccc0ba450a))
+
+
+### Reverts
+
+* Revert "Publish" ([8e2897f](https://github.com/stryker-mutator/stryker-net/commit/8e2897fb533ada246b56a9b5f50dd1d174c0d5cc))
+
+
+
 ## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.2...0.14.3) (2019-12-05)
 
 
