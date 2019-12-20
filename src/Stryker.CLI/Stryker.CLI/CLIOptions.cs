@@ -117,7 +117,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
         {
             ArgumentName = "--git-source",
-            ArgumentShortName = "-gs",
+            ArgumentShortName = "-gs <branchName>",
             ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
             DefaultValue = _defaultOptions.GitSource,
             JsonKey = "git-source"
@@ -227,7 +227,7 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> TestRunner = new CLIOption<string>
         {
             ArgumentName = "--test-runner",
-            ArgumentShortName = "-tr",
+            ArgumentShortName = "-tr <testRunner>",
             ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
             JsonKey = "test-runner"
@@ -236,10 +236,47 @@ namespace Stryker.CLI
         public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
         {
             ArgumentName = "--language-version",
-            ArgumentShortName = "-lv",
+            ArgumentShortName = "-lv <csharp-version-name>",
             ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
             DefaultValue = _defaultOptions.LanguageVersion.ToString(),
             JsonKey = "language-version"
+        };
+
+        public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-api-key",
+            ArgumentShortName = "-dk <api-key>",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
+            DefaultValue = null,
+            JsonKey = "dashboard-api-key"
+        };
+
+        public static readonly CLIOption<string> DashboardProjectNameOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-project",
+            ArgumentShortName = "-project <name>",
+            ArgumentDescription = @"The organizational name for your project. Required when dashboard reporter is turned on.
+For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.",
+            DefaultValue = null,
+            JsonKey = "dashboard-project"
+        };
+
+        public static readonly CLIOption<string> DashboardModuleNameOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-module",
+            ArgumentShortName = "-module <name>",
+            ArgumentDescription = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.",
+            DefaultValue = null,
+            JsonKey = "dashboard-module"
+        };
+
+        public static readonly CLIOption<string> DashboardProjectVersionOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-version",
+            ArgumentShortName = "-version <version>",
+            ArgumentDescription = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
+            DefaultValue = null,
+            JsonKey = "dashboard-version"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

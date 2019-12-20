@@ -136,7 +136,6 @@ namespace Stryker.Core.Mutants
         {
             var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
             var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
-
             var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
 
             return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
@@ -267,7 +266,7 @@ namespace Stryker.Core.Mutants
                 }
             }
 
-            if (currentNode is ExpressionSyntax expression)
+            if (currentNode is ExpressionSyntax expression && !expression.ContainsDeclarations())
             {
                 childCopy = MutateSubExpressionWithConditional(expression,  (ExpressionSyntax) childCopy, context);
                 mutated = true;
@@ -295,12 +294,7 @@ namespace Stryker.Core.Mutants
 
         private ExpressionSyntax MutateSubExpressionWithConditional(ExpressionSyntax originalNode, ExpressionSyntax currentNode, MutationContext context)
         {
-            var expressionAst = currentNode;
-            foreach (var mutant in FindMutants(originalNode, context))
-            {
-                expressionAst = MutantPlacer.PlaceWithConditionalExpression(expressionAst, ApplyMutant(originalNode, mutant), mutant.Id);
-            }
-            return expressionAst;
+            return FindMutants(originalNode, context).Aggregate(currentNode, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, ApplyMutant(originalNode, mutant), mutant.Id));
         }
 
         /// <summary>

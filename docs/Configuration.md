@@ -282,6 +282,11 @@ Example config file:
         "excluded-mutations": [
             "string",
             "Logical operators"
+        ],
+        "ignore-methods": [
+            "*Log*",
+            "ToString",
+            "*HashCode*"
         ]
     }
 }
