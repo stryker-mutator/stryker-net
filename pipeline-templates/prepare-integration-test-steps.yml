@@ -1,8 +1,4 @@
 steps:
-  - task: UseDotNet@2
-    displayName: 'Install dotnet core 2.1.x sdk for unit tests'
-    inputs:
-      version: 2.1.x
   - template: populate-cache-steps.yml
 
   - task: DotNetCoreCLI@2
