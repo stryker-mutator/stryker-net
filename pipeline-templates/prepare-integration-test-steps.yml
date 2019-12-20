@@ -1,4 +1,8 @@
 steps:
+  - task: UseDotNet@2
+    displayName: 'Install dotnet core 3.0.x because macos is not up to date'
+    inputs:
+      version: 3.0.x
   - template: populate-cache-steps.yml
 
   - task: DotNetCoreCLI@2
