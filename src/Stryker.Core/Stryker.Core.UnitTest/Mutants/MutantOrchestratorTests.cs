@@ -94,6 +94,31 @@ private bool Out(out string test)
         }
 
         [Fact]
+        public void ShouldNotMutateWhenDeclaration()
+        {
+            string source = @"void TestMethod()
+{
+    int i = 0;
+    var result = Out(out ver test) ? test : """";
+}
+private bool Out(out string test)
+{
+    return true;
+}";
+            string expected = @"void TestMethod()
+{
+    int i = 0;
+    var result = Out(out ver test) ? test : (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
+}
+private bool Out(out string test)
+{
+    return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateInsideStringDeclarationInsideLocalFunction()
         {
             string source = @"void TestMethod()

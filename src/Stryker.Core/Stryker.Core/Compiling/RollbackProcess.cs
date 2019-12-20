@@ -109,7 +109,7 @@ namespace Stryker.Core.Compiling
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            if (node.Kind() == SyntaxKind.MethodDeclaration)
+            if (node.Kind() == SyntaxKind.MethodDeclaration || node.Kind() == SyntaxKind.GetAccessorDeclaration || node.Kind() == SyntaxKind.SetAccessorDeclaration)
             {
                 return node;
             }
@@ -167,7 +167,10 @@ namespace Stryker.Core.Compiling
                 if (mutationIf == null)
                 {
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
-                    _logger.LogWarning("Stryker.NET encountered an compile error in {0} with message: {1} (Source code: {2})", errorLocation.Path, diagnostic.GetMessage(), brokenMutation);
+                    _logger.LogWarning(
+                        "Stryker.NET encountered an compile error in {0} (at {1}:{2}) with message: {3} (Source code: {4})",
+                        errorLocation.Path, errorLocation.StartLinePosition.Line,
+                        errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
                     if (devMode)
                     {
                         _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");

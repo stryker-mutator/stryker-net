@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
@@ -27,6 +28,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public string TestProjectNameFilter { get; }
+        public bool DiffEnabled { get; }
+        public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -38,6 +41,12 @@ namespace Stryker.Core.Options
         public OptimizationFlags Optimizations { get; }
 
         public string OptimizationMode { get; set; }
+
+        public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
+        public string DashboardApiKey { get; }
+        public string ProjectName { get; }
+        public string ModuleName { get; }
+        public string ProjectVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -64,7 +73,13 @@ namespace Stryker.Core.Options
             string[] mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
-            string languageVersion = "latest")
+            string languageVersion = "latest",
+            bool diff = false,
+            string gitSource = "master",
+            string dashboadApiKey = null,
+            string projectName = null,
+            string moduleName = null,
+            string projectVersion = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -87,6 +102,52 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
+            DiffEnabled = diff;
+            GitSource = ValidateGitSource(gitSource);
+            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+        }
+
+        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
+        {
+            if (!Reporters.Contains(Reporter.Dashboard))
+            {
+                return (null, null, null, null);
+            }
+
+            var errorStrings = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(dashboadApiKey))
+            {
+                var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
+                if (!string.IsNullOrWhiteSpace(environmentApiKey))
+                {
+                    dashboadApiKey = environmentApiKey;
+                }
+                else
+                {
+                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
+            }
+
+            if (errorStrings.Length > 0)
+            {
+                throw new StrykerInputException(errorStrings.ToString());
+            }
+
+            return (dashboadApiKey, projectName, moduleName, projectVersion);
+        }
+
+        private string ValidateGitSource(string gitSource)
+        {
+            if (string.IsNullOrEmpty(gitSource))
+            {
+                throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
+            }
+            return gitSource;
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

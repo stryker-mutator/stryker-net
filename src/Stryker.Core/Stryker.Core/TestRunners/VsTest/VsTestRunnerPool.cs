@@ -60,12 +60,12 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
-        public TestRunResult CaptureCoverage()
+        public TestRunResult CaptureCoverage(bool cantUsePipe, bool cantUseUnloadAppDomain)
         {
             var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
             if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
             {
-                return CaptureCoveragePerIsolatedTests();
+                return CaptureCoveragePerIsolatedTests(cantUsePipe);
             }
 
             var runner = TakeRunner();
@@ -75,7 +75,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (needCoverage)
                 {
-                    result = runner.CaptureCoverage();
+                    result = runner.CaptureCoverage(cantUsePipe, cantUseUnloadAppDomain);
                     CoverageMutants = runner.CoverageMutants;
                 }
                 else
@@ -90,7 +90,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
-        private TestRunResult CaptureCoveragePerIsolatedTests()
+        private TestRunResult CaptureCoveragePerIsolatedTests(bool cantUsePipe)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
@@ -99,7 +99,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var runner = TakeRunner();
                 try
                 {
-                    runner.CoverageForTest(testCase);
+                    runner.CoverageForTest(testCase, cantUsePipe);
                 }
                 catch (Exception e)
                 {

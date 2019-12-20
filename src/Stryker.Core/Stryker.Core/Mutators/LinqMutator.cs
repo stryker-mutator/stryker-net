@@ -54,35 +54,35 @@ namespace Stryker.Core.Mutators
         }
 
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax expr)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
-            var original = expr;
-            if (expr.Parent is ConditionalAccessExpressionSyntax || expr.Parent is MemberAccessExpressionSyntax)
+            var original = node;
+            if (node.Parent is ConditionalAccessExpressionSyntax || node.Parent is MemberAccessExpressionSyntax)
             {
                 yield break;
             }
 
-            foreach (var mutation in FindMutableMethodCalls(expr, original))
+            foreach (var mutation in FindMutableMethodCalls(node, original))
             {
                 yield return mutation;
             }
         }
 
-        private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax expr, ExpressionSyntax original)
+        private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax node, ExpressionSyntax original)
         {
-            while(expr is ConditionalAccessExpressionSyntax conditional)
+            while(node is ConditionalAccessExpressionSyntax conditional)
             {
                 foreach (var subMutants in FindMutableMethodCalls(conditional.Expression, original))
                 {
                     yield return subMutants;
                 }
-                expr = conditional.WhenNotNull;
+                node = conditional.WhenNotNull;
             }
 
             for (;;)
             {
                 ExpressionSyntax next = null;
-                if (!(expr is InvocationExpressionSyntax invocationExpression))
+                if (!(node is InvocationExpressionSyntax invocationExpression))
                 {
                     yield break;
                 }
@@ -91,14 +91,14 @@ namespace Stryker.Core.Mutators
                 SyntaxNode toReplace;
                 switch (invocationExpression.Expression)
                 {
-                    case MemberAccessExpressionSyntax node:
-                        toReplace = node.Name;
-                        memberName = node.Name.Identifier.ValueText;
-                        next = node.Expression;
+                    case MemberAccessExpressionSyntax memberAccessExpression:
+                        toReplace = memberAccessExpression.Name;
+                        memberName = memberAccessExpression.Name.Identifier.ValueText;
+                        next = memberAccessExpression.Expression;
                         break;
-                    case MemberBindingExpressionSyntax binding:
-                        toReplace = binding.Name;
-                        memberName = binding.Name.Identifier.ValueText;
+                    case MemberBindingExpressionSyntax memberBindingExpression:
+                        toReplace = memberBindingExpression.Name;
+                        memberName = memberBindingExpression.Name.Identifier.ValueText;
                         break;
                     default:
                         yield break;
@@ -124,7 +124,7 @@ namespace Stryker.Core.Mutators
                     };
                 }
 
-                expr = next;
+                node = next;
             }
         }
     }

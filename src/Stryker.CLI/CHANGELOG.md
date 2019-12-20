@@ -1,3 +1,38 @@
+# [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.3...dotnet-stryker@0.15.0) (2019-12-20)
+
+
+### Features
+
+* **Dashboard reporter:** Add dashboard reporter ([#849](https://github.com/stryker-mutator/stryker-net/issues/849)) ([7764472](https://github.com/stryker-mutator/stryker-net/commit/7764472fccc14759ee1c12499ba5aeccc0ba450a))
+
+
+### Reverts
+
+* Revert "Publish" ([8e2897f](https://github.com/stryker-mutator/stryker-net/commit/8e2897fb533ada246b56a9b5f50dd1d174c0d5cc))
+
+
+
+## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.2...0.14.3) (2019-12-05)
+
+
+
+## [0.14.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.1...0.14.2) (2019-11-28)
+
+
+
+## [0.14.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.0...0.14.1) (2019-11-20)
+
+
+
+# [0.14.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.13.0...0.14.0) (2019-11-15)
+
+
+### Features
+
+* **Git diff:** Mutate only changed files based on git diff ([#708](https://github.com/stryker-mutator/stryker-net/issues/708)) ([34371c9](https://github.com/stryker-mutator/stryker-net/commit/34371c9bd47121f8c7458625718a229d8dfa0bee))
+
+
+
 # [0.13.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.12.0...0.13.0) (2019-09-06)
 
 

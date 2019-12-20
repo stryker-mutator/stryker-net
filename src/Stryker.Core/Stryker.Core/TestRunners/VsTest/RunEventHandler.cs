@@ -14,17 +14,23 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
+        private readonly string _runnerId;
         private bool _testFailed;
 
         public event EventHandler TestsFailed;
         public event EventHandler VsTestFailed;
         public List<TestResult> TestResults { get; }
 
-        public RunEventHandler(AutoResetEvent waitHandle, ILogger logger)
+
+        public bool TimeOut { get; private set; }
+        public bool CancelRequested { get; set; }
+
+        public RunEventHandler(AutoResetEvent waitHandle, ILogger logger, string runnerId)
         {
             _waitHandle = waitHandle;
             TestResults = new List<TestResult>();
             _logger = logger;
+            _runnerId = runnerId;
         }
 
         public void HandleTestRunComplete(
@@ -38,6 +44,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
+            TimeOut = testRunCompleteArgs.IsAborted;
+
             if (testRunCompleteArgs.Error != null)
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
@@ -45,7 +53,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _logger.LogDebug(testRunCompleteArgs.Error, "VsTest may have crashed, triggering vstest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
-                else
+                else if (!CancelRequested)
                 {
                     _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
                 }
@@ -81,7 +89,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            _logger.LogTrace($"Runner: {rawMessage} [RAW]");
+            _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
@@ -101,7 +109,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
-            _logger.LogTrace($"Runner: [{levelFinal}] {message}");
+            _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
     }
 }

@@ -347,7 +347,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                options: options);
 
             target.Test(options);
 
@@ -414,7 +415,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 executorMock.Object,
-                mutantFilters: Enumerable.Empty<IMutantFilter>());
+                mutantFilters: Enumerable.Empty<IMutantFilter>(),
+                options: options);
             var coverage = new TestCoverageInfos();
             coverage.DeclareMappingForATest(new TestDescription("1", "toto"), new[] { 2 }, new int[0]);
 
@@ -462,7 +464,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                options: options);
 
             var testResult = target.Test(options);
 
@@ -507,7 +510,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                options: options);
 
             var testResult = target.Test(options);
 
@@ -554,7 +558,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
-                executorMock.Object);
+                executorMock.Object,
+                options: options);
 
             var testResult = target.Test(options);
 
