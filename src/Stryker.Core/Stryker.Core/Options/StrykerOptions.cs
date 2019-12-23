@@ -102,6 +102,7 @@ namespace Stryker.Core.Options
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
             GitSource = ValidateGitSource(gitSource);
+            TestProjects = ValidateTestProjects(testProjects);
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
@@ -137,7 +138,6 @@ namespace Stryker.Core.Options
             }
 
             return (dashboadApiKey, projectName, moduleName, projectVersion);
-            TestProjects = ValidateTestProjects(testProjects);
         }
 
         private string ValidateGitSource(string gitSource)
