@@ -75,7 +75,7 @@ stages:
   - job: RunStryker
     displayName: Run stryker on Stryker.CLI and Stryker.Core
     condition: eq(variables['Build.Reason'], 'Schedule')
-    timeoutInMinutes: 180
+    timeoutInMinutes: 240
     steps:
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
