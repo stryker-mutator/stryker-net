@@ -191,6 +191,7 @@ stages:
   jobs:
   - job: InstallStryker
     displayName: Install Stryker.NET
+    steps:
     - task: DotNetCoreCLI@2
       displayName: 'Install integrationtest dotnet tool (fork)'
       inputs:
@@ -204,19 +205,20 @@ stages:
     - task: DotNetCoreCLI@2
       displayName: Run Stryker.NET
       inputs:
+        workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
         command: 'custom'
         custom: 'stryker'
-        arguments: '--reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli'
-        workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
+        arguments: --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
   - job: StrykerCore
     displayName: Run Stryker.Core
+    steps:
     - task: DotNetCoreCLI@2
       displayName: Run Stryker.NET
       inputs:
+        workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
         command: 'custom'
         custom: 'stryker'
-        arguments: '--reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli'
-        workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
+        arguments: --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
 
 - stage: PublishReleaseArtifact
   displayName: Publish Release Artifact
