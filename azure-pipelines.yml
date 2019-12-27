@@ -188,7 +188,6 @@ stages:
 
 - stage: UpdateStrykerDashboard
   displayName: Update Stryker dashboard and badge
-  condition: eq(variables['Build.Reason'], 'Schedule')
   jobs:
   - job: InstallStryker
     displayName: Install Stryker.NET
