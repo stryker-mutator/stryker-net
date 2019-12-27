@@ -126,7 +126,7 @@ stages:
     steps:
     - task: Delay@1
       inputs:
-        delayForMinutes: '1' 
+        delayForMinutes: '1'
 
 - stage: IntegrationTests 
   dependsOn: 
@@ -185,6 +185,39 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+
+- stage: UpdateStrykerDashboard
+  displayName: Update Stryker dashboard and badge
+  condition: eq(variables['Build.Reason'], 'Schedule')
+  jobs:
+  - job: InstallStryker
+    displayName: Install Stryker.NET
+    - task: DotNetCoreCLI@2
+      displayName: 'Install integrationtest dotnet tool (fork)'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-stryker -g
+        workingDirectory: 'pipeline-templates'
+  - job: StrykerCLI
+    displayName: Run Stryker.CLI
+    steps: 
+    - task: DotNetCoreCLI@2
+      displayName: Run Stryker.NET
+      inputs:
+        command: 'custom'
+        custom: 'stryker'
+        arguments: '--reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli'
+        workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
+  - job: StrykerCore
+    displayName: Run Stryker.Core
+    - task: DotNetCoreCLI@2
+      displayName: Run Stryker.NET
+      inputs:
+        command: 'custom'
+        custom: 'stryker'
+        arguments: '--reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli'
+        workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
 
 - stage: PublishReleaseArtifact
   displayName: Publish Release Artifact
