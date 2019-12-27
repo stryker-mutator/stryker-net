@@ -218,7 +218,7 @@ stages:
         workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
         command: 'custom'
         custom: 'stryker'
-        arguments: --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
+        arguments: --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core
 
 - stage: PublishReleaseArtifact
   displayName: Publish Release Artifact
