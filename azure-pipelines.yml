@@ -82,10 +82,6 @@ stages:
         custom: tool
         arguments: install dotnet-stryker -g
         includeNuGetOrg: true
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: 'Get-ChildItem Env:'
     - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
       condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
