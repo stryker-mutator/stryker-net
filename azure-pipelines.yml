@@ -74,6 +74,7 @@ stages:
         pollingTimeoutSec: '300'
   - job: RunStryker
     displayName: Run stryker on Stryker.CLI and Stryker.Core
+    condition: eq(variables['Build.Reason'], 'Schedule')
     timeoutInMinutes: 180
     steps:
     - task: DotNetCoreCLI@2
