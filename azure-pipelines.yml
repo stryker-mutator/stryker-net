@@ -72,8 +72,8 @@ stages:
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
-  - job: InstallStryker
-    displayName: Install Stryker.NET
+  - job: RunStryker
+    displayName: Run stryker on Stryker.CLI and Stryker.Core
     steps:
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
@@ -82,18 +82,10 @@ stages:
         custom: tool
         arguments: install dotnet-stryker -g
         includeNuGetOrg: true
-  - job: StrykerCLI
-    dependsOn: InstallStryker
-    displayName: Run Stryker.CLI
-    steps: 
     - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
       condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
-  - job: StrykerCore
-    dependsOn: InstallStryker
-    displayName: Run Stryker.Core
-    steps:
     - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
