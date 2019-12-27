@@ -76,12 +76,11 @@ stages:
     displayName: Install Stryker.NET
     steps:
     - task: DotNetCoreCLI@2
-      displayName: 'Install integrationtest dotnet tool (fork)'
+      displayName: 'Install integrationtest dotnet tool'
       inputs:
         command: custom
         custom: tool
         arguments: install dotnet-stryker -g
-        workingDirectory: 'pipeline-templates'
   - job: StrykerCLI
     displayName: Run Stryker.CLI
     steps: 
