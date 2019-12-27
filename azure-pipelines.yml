@@ -74,6 +74,7 @@ stages:
         pollingTimeoutSec: '300'
   - job: RunStryker
     displayName: Run stryker on Stryker.CLI and Stryker.Core
+    timeoutInMinutes: 180
     steps:
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
