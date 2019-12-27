@@ -86,12 +86,14 @@ stages:
     displayName: Run Stryker.CLI
     steps: 
     - script: dotnet-stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli
+      condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
   - job: StrykerCore
     displayName: Run Stryker.Core
     steps:
     - script: dotnet-stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core
+      condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
 
