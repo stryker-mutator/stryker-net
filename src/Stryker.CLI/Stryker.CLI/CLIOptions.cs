@@ -235,39 +235,39 @@ namespace Stryker.CLI
 
         public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
         {
-            ArgumentName = "--api-key",
-            ArgumentShortName = "-ak <api-key>",
+            ArgumentName = "--dashboard-api-key",
+            ArgumentShortName = "-dk <api-key>",
             ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
             DefaultValue = null,
-            JsonKey = "api-key"
+            JsonKey = "dashboard-api-key"
         };
 
-        public static readonly CLIOption<string> ReportersProjectNameOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardProjectNameOption = new CLIOption<string>
         {
-            ArgumentName = "--project-name",
+            ArgumentName = "--dashboard-project",
             ArgumentShortName = "-project <name>",
             ArgumentDescription = @"The organizational name for your project. Required when dashboard reporter is turned on.
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.",
             DefaultValue = null,
-            JsonKey = "project-name"
+            JsonKey = "dashboard-project"
         };
 
-        public static readonly CLIOption<string> ReportersModuleNameOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardModuleNameOption = new CLIOption<string>
         {
-            ArgumentName = "--module-name",
+            ArgumentName = "--dashboard-module",
             ArgumentShortName = "-module <name>",
             ArgumentDescription = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.",
             DefaultValue = null,
-            JsonKey = "module-name"
+            JsonKey = "dashboard-module"
         };
 
-        public static readonly CLIOption<string> ReportersProjectVersionOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardProjectVersionOption = new CLIOption<string>
         {
-            ArgumentName = "--project-version",
+            ArgumentName = "--dashboard-version",
             ArgumentShortName = "-version <version>",
             ArgumentDescription = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
             DefaultValue = null,
-            JsonKey = "project-version"
+            JsonKey = "dashboard-version"
         };
 
         public static readonly CLIOption<IEnumerable<string>> TestProjects = new CLIOption<IEnumerable<string>>

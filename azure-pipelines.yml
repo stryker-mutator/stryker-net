@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.14.3'
-  VersionBuildNumber: $[counter('0.14.3', 1)]
+  PackageVersion: '0.15.0'
+  VersionBuildNumber: $[counter('0.15.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -72,6 +72,26 @@ stages:
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
+  - job: RunStryker
+    displayName: Run stryker on Stryker.CLI and Stryker.Core
+    condition: eq(variables['Build.Reason'], 'Schedule')
+    timeoutInMinutes: 240
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-stryker'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-stryker -g
+        includeNuGetOrg: true
+    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+      condition: succeeded()
+      displayName: Run Stryker on Stryker.CLI
+      workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
+    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+      condition: succeeded()
+      displayName: Run Stryker on Stryker.Core
+      workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
@@ -126,7 +146,7 @@ stages:
     steps:
     - task: Delay@1
       inputs:
-        delayForMinutes: '1' 
+        delayForMinutes: '1'
 
 - stage: IntegrationTests 
   dependsOn: 
