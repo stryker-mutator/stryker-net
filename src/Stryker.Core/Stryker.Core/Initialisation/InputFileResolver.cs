@@ -52,7 +52,8 @@ namespace Stryker.Core.Initialisation
             if (options.TestProjects != null && options.TestProjects.Any())
             {
                 testProjectFiles = options.TestProjects.Select(FindProjectFile).ToList();
-            } else
+            }
+            else
             {
                 testProjectFiles.Add(FindProjectFile(options.BasePath));
             }

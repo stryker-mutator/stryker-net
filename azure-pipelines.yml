@@ -188,6 +188,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+        arguments: --filter FullyQualifiedName~NetCore&FullyQualifiedName~NetFullFramework
 
   - job: LinuxTests
     displayName: Run tests on Linux
@@ -204,6 +205,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+        arguments: --filter FullyQualifiedName~NetCore&FullyQualifiedName~NetFullFramework
 
   - job: MacOsTests
     displayName: Run tests on Mac OS

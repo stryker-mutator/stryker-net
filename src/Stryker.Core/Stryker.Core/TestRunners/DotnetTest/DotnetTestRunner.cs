@@ -6,7 +6,6 @@ using Stryker.Core.Testing;
 using Stryker.DataCollector;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.TestRunners
