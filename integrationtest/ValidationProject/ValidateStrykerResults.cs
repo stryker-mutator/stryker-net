@@ -14,40 +14,7 @@ namespace IntegrationTests
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]
-        public void NetCore()
-        {
-            var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
-
-            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
-
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
-
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
-
-            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
-        }
-
-        [Fact]
-        public void NetCoreWithTwoTestProjects()
-        {
-            var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
-
-            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
-                .OrderByDescending(f => f.LastWriteTime)
-                .First();
-
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
-
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
-
-            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
-        }
-
-        [Fact]
+        [Trait("Category", "SingleTestProject")]
         public void NetFullFramework()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -65,6 +32,42 @@ namespace IntegrationTests
 
                 CheckReportMutantCounts(report, total: 12, skipped: 0, survived: 1, killed: 4, timeout: 0, nocoverage: 7);
             }
+        }
+
+        [Fact]
+        [Trait("Category", "SingleTestProject")]
+        public void NetCore()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
+            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+        }
+
+        [Fact]
+        [Trait("Category", "MultipleTestProjects")]
+        public void NetCoreWithTwoTestProjects()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
+            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout, int nocoverage)
