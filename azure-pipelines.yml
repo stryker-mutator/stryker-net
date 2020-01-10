@@ -222,7 +222,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter FullyQualifiedName~NetCoreWithTwoTestProjects
+        arguments: --filter FullyQualifiedName~NetCore&FullyQualifiedName~NetFullFramework
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
