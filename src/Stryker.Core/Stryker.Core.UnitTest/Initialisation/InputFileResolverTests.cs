@@ -765,6 +765,15 @@ Please specify a test project name filter that results in one project.
                     References = new string[0]
                 });
 
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, It.IsAny<string>()))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { "" },
+                    TargetFrameworkVersionString = "netcore2.1",
+                    ProjectFilePath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"),
+                    References = new string[0]
+                });
+
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var options = new StrykerOptions(fileSystem: fileSystem, basePath: Path.Combine(_filesystemRoot, "ExampleProject"), testProjects: new List<string>
             {
