@@ -3,7 +3,7 @@ using Xunit;
 
 namespace ExampleProject.XUnit
 {
-    public class DummyMathTest
+    public class DummyMathTests
     {
         [Fact]
         public void DummyMathTestAdd()

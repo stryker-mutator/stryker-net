@@ -31,6 +31,23 @@ namespace IntegrationTests
         }
 
         [Fact]
+        public void NetCoreWithTwoTestProjects()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
+            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+        }
+
+        [Fact]
         public void NetFullFramework()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
