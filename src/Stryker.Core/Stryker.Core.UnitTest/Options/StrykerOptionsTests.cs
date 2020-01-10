@@ -6,11 +6,20 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using Stryker.Core.Reporters;
 
 namespace Stryker.Core.UnitTest.Options
 {
     public class StrykerOptionsTests
     {
+        [Fact]
+        public void ShouldContainCorrectDefaults()
+        {
+            var options = new StrykerOptions();
+
+            options.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+        }
+
         [Theory]
         [InlineData("error", LogEventLevel.Error)]
         [InlineData("", LogEventLevel.Information)]
@@ -84,6 +93,29 @@ namespace Stryker.Core.UnitTest.Options
             Path.GetFullPath(pattern.Glob.ToString()).ShouldBe(Path.GetFullPath(expectedFilePattern));
             pattern.TextSpans.ShouldContain(TextSpan.FromBounds(0, int.MaxValue));
             pattern.IsExclude.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldValidateApiKey()
+        {
+            var options = new StrykerOptions();
+
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new StrykerOptions(reporters: new string[] { "Dashboard" });
+            });
+            ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DashboardUrl}");
+            ex.Message.ShouldContain($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
+        }
+
+        [Fact]
+        public void ShouldValidateGitSource()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(gitSource: "");
+            });
+            ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
         }
     }
 }

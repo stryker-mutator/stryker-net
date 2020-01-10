@@ -54,13 +54,15 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            result.ShouldHaveSingleItem();
-            var mutation = result.First();
+            var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.IsKind(SyntaxKind.NumericLiteralExpression).ShouldBeTrue();
+            mutation.DisplayName.ShouldBe($"{original} to un-{original} mutation");
+
             if (original == SyntaxKind.BitwiseNotExpression)
             {
                 mutation.Type.ShouldBe(Mutator.Unary);
-            } else
+            }
+            else
             {
                 mutation.Type.ShouldBe(Mutator.Boolean);
             }

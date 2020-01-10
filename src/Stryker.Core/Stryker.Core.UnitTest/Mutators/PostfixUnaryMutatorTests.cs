@@ -20,10 +20,10 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            result.ShouldHaveSingleItem();
-            var mutation = result.First();
+            var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
             mutation.Type.ShouldBe(Mutator.Update);
+            mutation.DisplayName.ShouldBe($"{original} to {expected} mutation");
         }
     }
 }
