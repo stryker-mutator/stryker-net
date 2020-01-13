@@ -266,7 +266,7 @@ namespace Stryker.Core.Initialisation
                 }
                 catch (ArgumentException exception)
                 {
-                    throw new ApplicationException($"Unable to parse framework version string {TargetFrameworkVersionString}.", exception);
+                    throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
                 }
             }
         }
