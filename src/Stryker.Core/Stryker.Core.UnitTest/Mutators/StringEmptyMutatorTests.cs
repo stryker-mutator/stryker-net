@@ -13,7 +13,6 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldMutateLowercaseString()
         {
-            // Arrange
             var node = SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 SyntaxFactory.PredefinedType(
@@ -21,32 +20,26 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("Empty"));
             var mutator = new StringEmptyMutator();
 
-            // Act
             var result = mutator.ApplyMutations(node).ToList();
 
-            // Assert
-            result.ShouldContain(
-                m => m.ReplacementNode is LiteralExpressionSyntax &&
-                     ((LiteralExpressionSyntax)m.ReplacementNode).Token.ValueText == "Stryker was here!");
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("String mutation");
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            replacement.Token.ValueText.ShouldBe("Stryker was here!");
         }
 
         [Fact]
         public void ShouldNotMutateUppercaseString()
         {
-            // Arrange
             var node = SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 SyntaxFactory.IdentifierName("String"),
                 SyntaxFactory.IdentifierName("Empty"));
             var mutator = new StringEmptyMutator();
 
-            // Act
             var result = mutator.ApplyMutations(node).ToList();
 
-            // Assert
-            result.ShouldNotContain(
-                m => m.ReplacementNode is LiteralExpressionSyntax &&
-                     ((LiteralExpressionSyntax)m.ReplacementNode).Token.ValueText == "Stryker was here!");
+            result.ShouldBeEmpty();
         }
 
     }

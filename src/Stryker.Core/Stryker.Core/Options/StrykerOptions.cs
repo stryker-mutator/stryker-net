@@ -285,7 +285,7 @@ namespace Stryker.Core.Options
             var logicalProcessorCount = Environment.ProcessorCount;
             var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
 
-            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            if (maxConcurrentTestRunners <= usableProcessorCount)
             {
                 usableProcessorCount = maxConcurrentTestRunners;
             }

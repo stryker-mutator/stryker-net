@@ -12,10 +12,9 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class FilePatternMutantFilter : IMutantFilter
     {
-        /// <inheritdoc />
-        public string DisplayName => "file filter";
+        private const string _displayName = "file filter";
+        public string DisplayName => _displayName;
 
-        /// <inheritdoc />
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             var includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
