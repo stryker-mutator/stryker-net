@@ -1719,7 +1719,7 @@
           "DotNet.Glob": "3.0.5",
           "LibGit2Sharp": "0.26.2",
           "Microsoft.CodeAnalysis.CSharp": "3.4.0",
-          "Microsoft.Extensions.Configuration": "3.1.0",
+          "Microsoft.Extensions.Configuration": "3.1.1",
           "Microsoft.Extensions.Configuration.Json": "3.1.0",
           "Microsoft.Extensions.Logging": "3.1.0",
           "Microsoft.TestPlatform": "16.3.0",
