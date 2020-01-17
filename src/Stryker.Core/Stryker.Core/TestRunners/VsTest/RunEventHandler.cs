@@ -46,7 +46,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
             TimeOut = testRunCompleteArgs.IsAborted;
 
-            TimeOut = testRunCompleteArgs.IsAborted;
 
             TimeOut = testRunCompleteArgs.IsAborted;
 
