@@ -46,6 +46,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
             TimeOut = testRunCompleteArgs.IsAborted;
 
+
+
             if (testRunCompleteArgs.Error != null)
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
