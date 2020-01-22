@@ -47,7 +47,6 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
-
             var testProjectFile = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
 
             // Analyze the test project
@@ -56,12 +55,29 @@ namespace Stryker.Core.Initialisation
             // Determine project under test
             var reader = new ProjectFileReader();
             var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
-
             _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
 
             // Analyze project under test
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
+            FolderComposite inputFiles;
+            if (result.ProjectUnderTestAnalyzerResult.SourceFiles!=null && result.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            {
+                inputFiles = FindProjectFilesUsingBuildAlyzer(result);
+            }
+            else
+            {
+                inputFiles = FindProjectFilesScanningProjectFolders(result);
+            }
+            result.ProjectContents = inputFiles;
+
+            ValidateResult(result, options);
+
+            return result;
+        }
+
+        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectInfo result)
+        {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
             foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
@@ -73,13 +89,98 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
+
                 inputFiles.Add(FindInputFiles(folder, projectUnderTestDir));
             }
-            result.ProjectContents = inputFiles;
 
-            ValidateResult(result, options);
+            return inputFiles;
+        }
 
-            return result;
+        private FolderComposite FindProjectFilesUsingBuildAlyzer(ProjectInfo info)
+        {
+            var inputFiles = new FolderComposite();
+            var projectUnderTestDir = Path.GetDirectoryName(info.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+            var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
+            var generatedAssemblyInfo =
+                (_fileSystem.Path.GetFileNameWithoutExtension(info.ProjectUnderTestAnalyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
+            var cache = new Dictionary<string, FolderComposite>();
+            foreach (var sourceFile in info.ProjectUnderTestAnalyzerResult.SourceFiles)
+            {
+                if (sourceFile.EndsWith(".xaml.cs"))
+                {
+                    continue;
+                }
+
+                if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
+                {
+                    continue;
+                }
+
+                var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
+                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir,
+                    projectRoot, inputFiles);
+                var fileName = Path.GetFileName(sourceFile);
+                folderComposite.Add(new FileLeaf()
+                {
+                    SourceCode = _fileSystem.File.ReadAllText(sourceFile),
+                    Name = _fileSystem.Path.GetFileName(sourceFile),
+                    RelativePath = _fileSystem.Path.Combine(folderComposite.RelativePath, fileName),
+                    FullPath = sourceFile,
+                    RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, sourceFile)
+                });
+            }
+
+            return inputFiles;
+        }
+
+        // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
+        private FolderComposite GetOrBuildFolderComposite(Dictionary<string, FolderComposite> cache, string targetFolder, string projectUnderTestDir,
+            string projectRoot, FolderComposite inputFiles)
+        {
+            if (cache.ContainsKey(targetFolder))
+            {
+                return cache[targetFolder];
+            }
+
+            var folder = targetFolder;
+            FolderComposite subDir = null;
+            while (!string.IsNullOrEmpty(folder))
+            {
+                if (!cache.ContainsKey(folder))
+                {
+                    // we have not scanned this folder yet
+                    var sub = Path.GetFileName(folder);
+                    var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, sub);
+                    var newComposite = new FolderComposite
+                    {
+                        Name = sub,
+                        FullPath = fullPath,
+                        RelativePath = Path.GetRelativePath(projectRoot, fullPath),
+                        RelativePathToProjectFile =
+                            Path.GetRelativePath(projectUnderTestDir, fullPath)
+                    };
+                    if (subDir != null)
+                    {
+                        newComposite.Add(subDir);
+                    }
+
+                    cache.Add(folder, newComposite);
+                    subDir = newComposite;
+                    folder = Path.GetDirectoryName(folder);
+                    if (string.IsNullOrEmpty(folder))
+                    {
+                        // we are at root
+                        inputFiles.Add(subDir);
+                    }
+                }
+                else
+                {
+                    cache[folder].Add(subDir);
+                    break;
+                }
+            }
+
+            return cache[targetFolder];
         }
 
         /// <summary>

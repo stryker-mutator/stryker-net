@@ -23,6 +23,7 @@ namespace Stryker.Core.Initialisation
 
     public class ProjectFileReader : IProjectFileReader
     {
+        private string[] _projectSourceFiles;
         private const string ErrorMessage = "Project reference issue.";
         private IProcessExecutor _processExecutor { get; set; }
         private INugetRestoreProcess _nugetRestoreProcess { get; set; }
@@ -34,6 +35,8 @@ namespace Stryker.Core.Initialisation
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
+
+        public string[] SourceFiles => _projectSourceFiles;
 
         public ProjectAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
         {
