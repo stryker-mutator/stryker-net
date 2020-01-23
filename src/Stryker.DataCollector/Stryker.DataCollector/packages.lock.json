@@ -23,7 +23,7 @@
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
         "resolved": "1.1.0",
-        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
+        "contentHash": "LgNd4IyS4Fvp0or2tnS0pq27Bv8YmKCfwTtJ3TF8+Jhh6zsGilz3f+b6Quun5PHCMGOWVEPdCnUKct1zPnH10w=="
       },
       "NuGet.Frameworks": {
         "type": "Transitive",

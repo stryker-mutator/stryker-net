@@ -62,6 +62,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Stryker.Core.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
   </ItemGroup>
 </Project>
