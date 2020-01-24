@@ -1736,7 +1736,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "1.1.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "1.0.0",
+          "Stryker.DataCollector": "0.15.0",
           "System.IO.Abstractions": "8.0.3"
         }
       },
