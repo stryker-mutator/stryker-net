@@ -116,6 +116,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(sourceFile)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
                     { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.1"), new MockFileData("Bytecode") }, // bin should be excluded
@@ -145,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
 
         [Fact]
