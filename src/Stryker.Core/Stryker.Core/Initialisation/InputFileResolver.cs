@@ -153,7 +153,7 @@ namespace Stryker.Core.Initialisation
             {
                 projectFiles = _fileSystem.Directory.GetFileSystemEntries(path, "*.csproj");
             }
-            catch (DirectoryNotFoundException ex)
+            catch (DirectoryNotFoundException)
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
@@ -171,6 +171,10 @@ namespace Stryker.Core.Initialisation
                 sb.AppendLine();
                 sb.AppendLine("Please specify a test project name filter that results in one project.");
                 throw new StrykerInputException(sb.ToString());
+            }
+            else if (!projectFiles.Any())
+            {
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
 

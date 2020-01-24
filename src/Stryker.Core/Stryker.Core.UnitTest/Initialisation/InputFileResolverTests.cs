@@ -12,7 +12,6 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -551,7 +550,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content") }
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
