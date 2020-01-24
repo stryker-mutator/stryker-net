@@ -103,7 +103,16 @@ namespace Stryker.Core.Initialisation
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
             var generatedAssemblyInfo =
                 (_fileSystem.Path.GetFileNameWithoutExtension(info.ProjectUnderTestAnalyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
-            var cache = new Dictionary<string, FolderComposite>();
+            var rootFolderComposite = new FolderComposite()
+            {
+                Name = string.Empty,
+                FullPath = projectRoot,
+                RelativePath = string.Empty,
+                RelativePathToProjectFile =
+                    Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
+            };
+            var cache = new Dictionary<string, FolderComposite> {[string.Empty] = rootFolderComposite};
+            inputFiles.Add(rootFolderComposite);
             foreach (var sourceFile in info.ProjectUnderTestAnalyzerResult.SourceFiles)
             {
                 if (sourceFile.EndsWith(".xaml.cs"))
