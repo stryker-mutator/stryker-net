@@ -949,6 +949,15 @@
           "System.Xml.XPath": "4.3.0",
           "System.Xml.XmlDocument": "4.3.0"
         }
+      },
+      "library": {
+        "type": "Project"
+      },
+      "targetproject": {
+        "type": "Project",
+        "dependencies": {
+          "Library": "1.0.0"
+        }
       }
     }
   }
