@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -241,26 +242,33 @@ namespace Stryker.Core.Initialisation
                     ["netstandard"] = Framework.NetStandard,
                     ["net"] = Framework.NetClassic
                 };
-                var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
-                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
+                try
                 {
-                    var version = analysis.Groups["version"].Value;
-                    if (!version.Contains('.'))
+                    var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                    if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
                     {
-                        if (version.Length == 2)
-                        // we have a aggregated version id
+                        var version = analysis.Groups["version"].Value;
+                        if (!version.Contains('.'))
                         {
-                            version = $"{version[0]}.{version.Substring(1)}";
+                            if (version.Length == 2)
+                            // we have a aggregated version id
+                            {
+                                version = $"{version[0]}.{version.Substring(1)}";
+                            }
+                            else if (version.Length == 3)
+                            {
+                                version = $"{version[0]}.{version[1]}.{version[2]}";
+                            }
                         }
-                        else if (version.Length == 3)
-                        {
-                            version = $"{version[0]}.{version[1]}.{version[2]}";
-                        }
+                        return (label[analysis.Groups["kind"].Value], new Version(version));
                     }
-                    return (label[analysis.Groups["kind"].Value], new Version(version));
-                }
 
-                return (Framework.Unknown, new Version());
+                    return (Framework.Unknown, new Version());
+                }
+                catch (ArgumentException)
+                {
+                    throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
+                }
             }
         }
     }
