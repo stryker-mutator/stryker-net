@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TargetProject", "TargetProj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.XUnit", "TargetProjects\NetCoreTestProject.XUnit\NetCoreTestProject.XUnit.csproj", "{A81EC439-1B29-4CAF-8200-03A72DEB4297}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestProject.NUnit", "NetCoreTestProject.NUnit\NetCoreTestProject.NUnit.csproj", "{E080B4EC-73AF-413D-BA53-3493BCB03A08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestProject.NUnit", "TargetProjects\NetCoreTestProject.NUnit\NetCoreTestProject.NUnit.csproj", "{E080B4EC-73AF-413D-BA53-3493BCB03A08}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
