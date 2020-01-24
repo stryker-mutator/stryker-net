@@ -63,11 +63,11 @@ namespace Stryker.Core.Initialisation
             FolderComposite inputFiles;
             if (result.ProjectUnderTestAnalyzerResult.SourceFiles!=null && result.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildAlyzer(result);
+                inputFiles = FindProjectFilesUsingBuildAlyzer(result.ProjectUnderTestAnalyzerResult);
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(result);
+                inputFiles = FindProjectFilesScanningProjectFolders(result.ProjectUnderTestAnalyzerResult);
             }
             result.ProjectContents = inputFiles;
 
@@ -76,11 +76,11 @@ namespace Stryker.Core.Initialisation
             return result;
         }
 
-        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectInfo result)
+        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult)
         {
             var inputFiles = new FolderComposite();
-            var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
+            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -96,13 +96,13 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesUsingBuildAlyzer(ProjectInfo info)
+        private FolderComposite FindProjectFilesUsingBuildAlyzer(ProjectAnalyzerResult analyzerResult)
         {
             var inputFiles = new FolderComposite();
-            var projectUnderTestDir = Path.GetDirectoryName(info.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
             var generatedAssemblyInfo =
-                (_fileSystem.Path.GetFileNameWithoutExtension(info.ProjectUnderTestAnalyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
+                (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
             var rootFolderComposite = new FolderComposite()
             {
                 Name = string.Empty,
@@ -113,7 +113,7 @@ namespace Stryker.Core.Initialisation
             };
             var cache = new Dictionary<string, FolderComposite> {[string.Empty] = rootFolderComposite};
             inputFiles.Add(rootFolderComposite);
-            foreach (var sourceFile in info.ProjectUnderTestAnalyzerResult.SourceFiles)
+            foreach (var sourceFile in analyzerResult.SourceFiles)
             {
                 if (sourceFile.EndsWith(".xaml.cs"))
                 {
@@ -143,8 +143,8 @@ namespace Stryker.Core.Initialisation
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
-        private FolderComposite GetOrBuildFolderComposite(Dictionary<string, FolderComposite> cache, string targetFolder, string projectUnderTestDir,
-            string projectRoot, FolderComposite inputFiles)
+        private FolderComposite GetOrBuildFolderComposite(IDictionary<string, FolderComposite> cache, string targetFolder, string projectUnderTestDir,
+            string projectRoot, ProjectComponent inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
             {
