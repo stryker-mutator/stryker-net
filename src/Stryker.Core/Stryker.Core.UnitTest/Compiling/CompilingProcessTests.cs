@@ -44,13 +44,15 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> { 
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -96,13 +98,15 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -154,13 +158,15 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -208,13 +214,15 @@ namespace ExampleProject
                         SignAssembly = true,
                         AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -266,13 +274,15 @@ namespace ExampleProject
                         SignAssembly = true,
                         AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -317,13 +327,15 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                        },
-                        Resources = new List<ResourceDescription>()
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "AssemblyTitle", "AssemblyName"},
+                            },
+                            Resources = new List<ResourceDescription>()
+                        }
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {

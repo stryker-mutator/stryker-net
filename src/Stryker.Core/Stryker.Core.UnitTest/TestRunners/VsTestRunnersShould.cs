@@ -63,10 +63,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             var secondTest = new TestCase("myOtherTest", new Uri("exec://nunit"), _testAssemblyPath);
             _targetProject = new ProjectInfo()
             {
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = _testAssemblyPath,
-                    TargetFrameworkVersionString = "toto"
+                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                    new ProjectAnalyzerResult(null, null)
+                    {
+                        AssemblyPath = _testAssemblyPath,
+                        TargetFrameworkVersionString = "toto"
+                    }
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
@@ -222,7 +224,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                             testRunEvents.HandleTestRunStatsChange(new TestRunChangedEventArgs(
                                 new TestRunStatistics(1, null), new[] { testResult }, null));
                             testRunEvents.HandleTestRunComplete(
-                                new TestRunCompleteEventArgs(new TestRunStatistics(1, null), false, false, null,
+                                new TestRunCompleteEventArgs(new TestRunStatistics(1, null), false, true, null,
                                     null, timer.Elapsed),
                                 null,
                                 null,
@@ -245,7 +247,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.AbortTestOnKill);
 
-                mockVsTest.Setup(x => x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
                 mockVsTest.Setup(x =>
                     x.RunTestsWithCustomTestHost(
                         It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -310,7 +312,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var result = runner.CaptureCoverage(false, false);
 
                 // only one mutant is covered
-                runner.CoveredMutants.ShouldHaveSingleItem();
+                runner.CoverageMutants.IsCovered(1).ShouldBeTrue();
 
                 // capture when ok
                 result.Success.ShouldBe(true);
@@ -359,7 +361,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 var result = runner.CaptureCoverage(false, false);
                 // one mutant is covered
-                runner.CoveredMutants.ShouldHaveSingleItem();
+                runner.CoverageMutants.IsCovered(1).ShouldBeTrue();
                 // it is covered by both tests
                 runner.CoverageMutants.GetTests(new Mutant() { Id = 1 }).ShouldBe(_testCases.Select(x => (TestDescription)x));
                 // verify Abort has been called

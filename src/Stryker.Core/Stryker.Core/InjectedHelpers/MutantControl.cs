@@ -7,13 +7,15 @@ namespace Stryker
 {
     public class MutantControl
     {
-        private static Dictionary<int, bool> _coveredMutants;
+        private static List<int> _coveredMutants;
         private static StringBuilder _mutantsAsString;
         private static StringBuilder _staticMutantsAsStrings;
         private static bool usePipe;
         private static string pipeName;
         private static string envName;
         private static bool captureCoverage;
+        private static Object _coverageLock = new Object();
+
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif
@@ -66,10 +68,10 @@ namespace Stryker
                 ResetCoverage();
             }
         }
-                
+
         private static void ResetCoverage()
         {
-            _coveredMutants = new Dictionary<int, bool>();
+            _coveredMutants = new List<int>();
             _mutantsAsString = new StringBuilder();
             _staticMutantsAsStrings = new StringBuilder();
         }
@@ -98,7 +100,7 @@ namespace Stryker
 
         private static string BuildReport()
         {
-            return string.Format("{0};{1}",_mutantsAsString, _staticMutantsAsStrings);
+            return string.Format("{0};{1}", _mutantsAsString, _staticMutantsAsStrings);
         }
 
         public static void DumpState()
@@ -115,7 +117,7 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            Console.WriteLine("["+DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] "+  message);
+            Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -123,7 +125,7 @@ namespace Stryker
         {
             if (captureCoverage)
             {
-                lock (_coveredMutants)
+                lock (_coverageLock)
                 {
                     if (!usePipe)
                     {
@@ -133,10 +135,10 @@ namespace Stryker
                         }
                     }
 
-                    bool add = false; 
-                    if (!_coveredMutants.ContainsKey(id))
+                    bool add = false;
+                    if (!_coveredMutants.Contains(id))
                     {
-                        _coveredMutants.Add(id, false);
+                        _coveredMutants.Add(id);
                         if (_mutantsAsString.Length > 0)
                         {
                             _mutantsAsString.Append(',');
@@ -144,7 +146,7 @@ namespace Stryker
                         _mutantsAsString.Append(id.ToString());
                         add = true;
                     }
-                    if (MutantContext.InStatic() && !_coveredMutants[id])
+                    if (MutantContext.InStatic() && _coveredMutants.Contains(id))
                     {
                         if (_staticMutantsAsStrings.Length > 0)
                         {

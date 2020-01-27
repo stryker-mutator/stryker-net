@@ -2,7 +2,7 @@
 
 namespace ExampleProject.XUnit
 {
-    public class UnsafeCodeTest
+    public class UnsafeCodeTests
     {
         [Fact]
         public void GetIndexOfArray()

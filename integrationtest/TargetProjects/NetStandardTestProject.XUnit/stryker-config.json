@@ -1,7 +1,10 @@
 {
   "stryker-config": {
     "reporters": [
-      "All"
+      "Dots",
+      "ClearText",
+      "Html",
+      "Json"
     ],
     "log-level": "trace",
     "log-file": "true",

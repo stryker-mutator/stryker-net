@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
+using Stryker.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -48,7 +48,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 processInfo.EnvironmentVariables[key] = value;
             }
-            _currentProcess = new Process {StartInfo = processInfo, EnableRaisingEvents = true};
+            _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
             _currentProcess.Exited += CurrentProcess_Exited;
 

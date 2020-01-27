@@ -49,13 +49,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -137,13 +139,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -225,13 +229,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "TestName.dll"),
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "TestName.dll"),
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -369,13 +375,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)

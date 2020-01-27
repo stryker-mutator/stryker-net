@@ -25,9 +25,11 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = mutator.ApplyMutations(node).ToList();
 
-            result.ShouldHaveSingleItem()
-                .ReplacementNode.ShouldBeOfType<InterpolatedStringExpressionSyntax>()
+            var mutation = result.ShouldHaveSingleItem();
+
+            mutation.ReplacementNode.ShouldBeOfType<InterpolatedStringExpressionSyntax>()
                 .Contents.ShouldBeEmpty();
+            mutation.DisplayName.ShouldBe("String mutation");
         }
 
         [Theory]

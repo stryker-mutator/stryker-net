@@ -18,12 +18,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun successful");
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new string[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null);
 
             Assert.True(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest C://test//mytest.dll")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -33,12 +33,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed", 1);
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new string[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null);
 
             Assert.False(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -48,12 +48,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new string[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null);
 
             Assert.False(result.Success);
-            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("test")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
+            processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization);
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new string[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, new Mutant(){Id =  1});
 
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.Verify(m => m.Start(
                 path,
                 "dotnet",
-                It.Is<string>(s => s.Contains("test")),
+                It.Is<string>(s => s.Contains("vstest")),
                 It.Is<IDictionary<string, string>>(x => x.Any(y => y.Value == "1" && y.Key == "ActiveMutation")),
                 It.IsAny<int>()));
         }

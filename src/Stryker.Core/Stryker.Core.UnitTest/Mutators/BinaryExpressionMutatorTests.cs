@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
         [InlineData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
         [InlineData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
-        public void MathMutator_ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
+        public void ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
         {
             var target = new BinaryExpressionMutator();
             var originalNode = SyntaxFactory.BinaryExpression(input,
@@ -50,12 +50,13 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 mutation.ReplacementNode.IsKind(expectedOutput[index]).ShouldBeTrue();
                 mutation.Type.ShouldBe(expectedKind);
+                mutation.DisplayName.ShouldBe($"{mutation.Type} mutation");
                 index++;
             }
         }
 
         [Fact]
-        void MathMutator_ShouldMutate_ExclusiveOr()
+        void ShouldMutate_ExclusiveOr()
         {
             var kind = SyntaxKind.ExclusiveOrExpression;
             var target = new BinaryExpressionMutator();
@@ -70,11 +71,13 @@ namespace Stryker.Core.UnitTest.Mutators
             logicalMutation.ShouldNotBeNull();
             logicalMutation.ReplacementNode.ShouldNotBeNull();
             logicalMutation.ReplacementNode.IsKind(SyntaxKind.EqualsExpression).ShouldBeTrue();
+            logicalMutation.DisplayName.ShouldBe("Logical mutation");
 
             var integralMutation = result.SingleOrDefault(x => x.Type == Mutator.Bitwise);
             integralMutation.ShouldNotBeNull();
             integralMutation.ReplacementNode.ShouldNotBeNull();
             integralMutation.ReplacementNode.IsKind(SyntaxKind.BitwiseNotExpression).ShouldBeTrue();
+            integralMutation.DisplayName.ShouldBe("Bitwise mutation");
 
             var parenthesizedExpression = integralMutation.ReplacementNode.ChildNodes().SingleOrDefault();
             parenthesizedExpression.ShouldNotBeNull();
@@ -83,6 +86,32 @@ namespace Stryker.Core.UnitTest.Mutators
             var exclusiveOrExpression = parenthesizedExpression.ChildNodes().SingleOrDefault();
             exclusiveOrExpression.ShouldNotBeNull();
             exclusiveOrExpression.IsKind(SyntaxKind.ExclusiveOrExpression).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldNotMutate_StringsLeft()
+        {
+            var target = new BinaryExpressionMutator();
+            var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(1)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
+
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutate_StringsRight()
+        {
+            var target = new BinaryExpressionMutator();
+            var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(8)));
+
+            var result = target.ApplyMutations(originalNode).ToList();
+
+            result.ShouldBeEmpty();
         }
     }
 }

@@ -1,3 +1,33 @@
+# [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.3...stryker@0.15.0) (2019-12-20)
+
+
+### Bug Fixes
+
+* **mutating:** Don't negate IsPatternExpression and properly rollback Accessor methods ([#846](https://github.com/stryker-mutator/stryker-net/issues/846)) ([69d7a71](https://github.com/stryker-mutator/stryker-net/commit/69d7a7106d6f5d54ba6e983ef3c58d30523f9578)), closes [#820](https://github.com/stryker-mutator/stryker-net/issues/820)
+
+
+### Features
+
+* **coverage analysis:** Implement defensive heuristics to cover when incorrect number of dynamic test cases are reported by testframework ([#852](https://github.com/stryker-mutator/stryker-net/issues/852)) ([470b08e](https://github.com/stryker-mutator/stryker-net/commit/470b08ee26afe3acbc2b96c91749b4245a6b13f6)), closes [#820](https://github.com/stryker-mutator/stryker-net/issues/820) [#843](https://github.com/stryker-mutator/stryker-net/issues/843) [#843](https://github.com/stryker-mutator/stryker-net/issues/843)
+* **Dashboard reporter:** Add dashboard reporter ([#849](https://github.com/stryker-mutator/stryker-net/issues/849)) ([7764472](https://github.com/stryker-mutator/stryker-net/commit/7764472fccc14759ee1c12499ba5aeccc0ba450a))
+
+
+### Reverts
+
+* Revert "Publish" ([8e2897f](https://github.com/stryker-mutator/stryker-net/commit/8e2897fb533ada246b56a9b5f50dd1d174c0d5cc))
+
+
+
+## [0.14.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.2...0.14.3) (2019-12-05)
+
+
+### Bug Fixes
+
+* **compilation:** Compile with AssemblyIdentityComparer compilation option ([#828](https://github.com/stryker-mutator/stryker-net/issues/828)) ([6eb3c16](https://github.com/stryker-mutator/stryker-net/commit/6eb3c163a098299dbe0e052d3d1dd970a298948d))
+* **targetframeworkversion extraction:** Correctly extract aggregated framework versions ([#827](https://github.com/stryker-mutator/stryker-net/issues/827)) ([85bdc99](https://github.com/stryker-mutator/stryker-net/commit/85bdc99b100666442eb46c9cf3db4b3473368db0))
+
+
+
 ## [0.14.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.1...0.14.2) (2019-11-28)
 
 
