@@ -27,7 +27,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
+        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
@@ -47,15 +47,35 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
+            var testProjectFiles = new List<string>();
+            string projectUnderTest = null;
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                testProjectFiles = options.TestProjects.Select(FindProjectFile).ToList();
+            }
+            else
+            {
+                testProjectFiles.Add(FindProjectFile(options.BasePath));
+            }
 
-            var testProjectFile = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
-
-            // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
+            var results = new List<ProjectAnalyzerResult>();
+            foreach (var testProjectFile in testProjectFiles)
+            {
+                // Analyze the test project
+                results.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
+            }
+            result.TestProjectAnalyzerResults = results;
 
             // Determine project under test
             var reader = new ProjectFileReader();
-            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                projectUnderTest = FindProjectFile(options.BasePath);
+            }
+            else
+            {
+                projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
+            }
 
             _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
 
@@ -121,13 +141,24 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        public string FindProjectFile(string basePath, string testProjectNameFilter)
+        public string FindProjectFile(string path)
         {
-            string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
+            string[] projectFiles = null;
+            if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
+            {
+                return path;
+            }
 
-            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
+            try
+            {
+                projectFiles = _fileSystem.Directory.GetFileSystemEntries(path, "*.csproj");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
+            }
 
-            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
+            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
 
             if (projectFiles.Count() > 1)
             {
@@ -143,29 +174,11 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {basePath}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
-
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
 
             return projectFiles.Single();
-        }
-
-        private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
-        {
-            // Make sure the filter is relative to the base path otherwise we cannot find it
-            var filter = FilePathUtils.NormalizePathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
-
-            // If the filter starts with directory separator char, remove it
-            if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
-            {
-                filter = filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length);
-            }
-
-            // Make sure filter contains wildcard
-            filter = $"*{filter}";
-
-            return filter;
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
@@ -216,19 +229,19 @@ namespace Stryker.Core.Initialisation
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
-            if (projectInfo.TestProjectAnalyzerResult.References
-                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
+                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
             {
                 throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResult.TargetFramework == Framework.NetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
-                (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
-                (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(projectInfo.TestProjectAnalyzerResult.Properties["IsTestProject"]))))
+                (!testProject.Properties.ContainsKey("IsTestProject") ||
+                (testProject.Properties.ContainsKey("IsTestProject") &&
+                !bool.Parse(testProject.Properties["IsTestProject"])))))
             {
                 _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
                 options.TestRunner = TestRunner.VsTest;

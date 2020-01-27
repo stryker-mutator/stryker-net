@@ -1,5 +1,7 @@
 ﻿using Shouldly;
 using Stryker.Core.Initialisation;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -11,9 +13,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                    new ProjectAnalyzerResult(null, null)
+                    {
+                        AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                    }
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
@@ -22,7 +26,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
 
             string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
-            target.GetInjectionPath().ShouldBe(expectedPath);
+            target.GetInjectionPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
         }
 
         [Fact]
@@ -30,18 +34,20 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = "/test/bin/Debug/TestApp.dll",
+                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                    new ProjectAnalyzerResult(null, null)
+                    {
+                        AssemblyPath = "/test/bin/Debug/TestApp.UnitTest.dll",
+                    }
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
-                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
+                    AssemblyPath = "/app/bin/Debug/TestApp.dll",
                 }
             };
 
             string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestApp.dll");
-            target.GetTestBinariesPath().ShouldBe(expectedPath);
+            target.GetInjectionPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
         }
     }
 }

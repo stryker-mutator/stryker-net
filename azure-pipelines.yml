@@ -47,6 +47,7 @@ stages:
   jobs:
   - job:
     displayName: Run Sonar Analysis
+    dependsOn: []
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
@@ -72,9 +73,10 @@ stages:
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
-  - job: RunStryker
-    displayName: Run stryker on Stryker.CLI and Stryker.Core
+  - job: RunStrykerCLI
+    displayName: Run stryker on Stryker.CLI
     condition: eq(variables['Build.Reason'], 'Schedule')
+    dependsOn: []
     timeoutInMinutes: 240
     steps:
     - task: DotNetCoreCLI@2
@@ -88,6 +90,19 @@ stages:
       condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
+  - job: RunStrykerCore
+    displayName: Run stryker on Stryker.Core
+    condition: eq(variables['Build.Reason'], 'Schedule')
+    dependsOn: []
+    timeoutInMinutes: 240
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-stryker'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-stryker -g
+        includeNuGetOrg: true
     - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
@@ -173,6 +188,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+        arguments: --filter Traits=SingleTestProject
 
   - job: LinuxTests
     displayName: Run tests on Linux
@@ -189,6 +205,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+        arguments: --filter Traits=SingleTestProject
 
   - job: MacOsTests
     displayName: Run tests on Mac OS
@@ -205,6 +222,18 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
+        arguments: --filter Traits=SingleTestProject
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-netcore'
+        workingDirectory: 'integrationtest/TargetProjects/TargetProject'
+        strykerCommands: --test-projects "['../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj', '../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj']"
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter Traits=MultipleTestProjects
 
 - stage: PublishReleaseArtifact
   displayName: Publish Release Artifact

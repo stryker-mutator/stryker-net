@@ -123,21 +123,24 @@ namespace Stryker.Core.MutationTest
                 // compile the mutated syntax trees
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, _options.DevMode);
 
-                var injectionPath = _input.ProjectInfo.GetInjectionPath();
-                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
-                    !_fileSystem.File.Exists(injectionPath))
+                foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
                 {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
-                }
+                    var injectionPath = _input.ProjectInfo.GetInjectionPath(testProject);
+                    if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
+                        !_fileSystem.File.Exists(injectionPath))
+                    {
+                        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
+                    }
 
-                // inject the mutated Assembly into the test project
-                using (var fs = _fileSystem.File.Create(injectionPath))
-                {
-                    ms.Position = 0;
-                    ms.CopyTo(fs);
-                }
+                    // inject the mutated Assembly into the test project
+                    using (var fs = _fileSystem.File.Create(injectionPath))
+                    {
+                        ms.Position = 0;
+                        ms.CopyTo(fs);
+                    }
 
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                    _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                }
 
                 // if a rollback took place, mark the rollbacked mutants as status:BuildError
                 if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)

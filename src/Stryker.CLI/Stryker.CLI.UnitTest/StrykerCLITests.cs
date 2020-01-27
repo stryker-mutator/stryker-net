@@ -128,9 +128,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--test-project-file")]
+        [InlineData("--test-projects")]
         [InlineData("-tp")]
-        public void StrykerCLI_WithTestProjectArgument_ShouldPassTestProjectArgumentsToStryker(string argName)
+        public void StrykerCLI_WithTestProjectsArgument_ShouldPassTestProjectArgumentsToStryker(string argName)
         {
             StrykerOptions options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3M);
@@ -139,9 +139,9 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, "TestProjectFolder/SomeTestProjectName.csproj" });
+            target.Run(new string[] { argName, "['TestProjectFolder/SomeTestProjectName.csproj']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjectNameFilter == FilePathUtils.NormalizePathSeparators("TestProjectFolder/SomeTestProjectName.csproj")), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjects.Count() ==1), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]

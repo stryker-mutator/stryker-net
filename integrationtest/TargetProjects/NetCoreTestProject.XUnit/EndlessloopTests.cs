@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
+﻿using Xunit;
 
 namespace ExampleProject.XUnit
 {
-    public class EndlessLoopTest
+    public class EndlessLoopTests
     {
         [Fact]
         public void Loop()

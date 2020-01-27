@@ -161,7 +161,7 @@ namespace Stryker.DataCollector
                 _client.SendText($"DUMP {testCaseDisplayName}");
             }
 
-            var coverData = RetrieveCoverData(testCaseDisplayName);
+            var coverData = RetrieveCoverData();
             // null means we failed to retrieve data
             if (coverData != null)
             {
@@ -178,7 +178,7 @@ namespace Stryker.DataCollector
             }
         }
 
-        public string RetrieveCoverData(string testCase)
+        public string RetrieveCoverData()
         {
             string coverData;
             if (_usePipe)

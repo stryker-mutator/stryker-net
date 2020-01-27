@@ -55,7 +55,6 @@ namespace Stryker.CLI
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
-            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -67,6 +66,8 @@ namespace Stryker.CLI
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
+            var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
+
 
             app.HelpOption("--help | -h | -?");
 
@@ -81,7 +82,6 @@ namespace Stryker.CLI
                     reportersModuleName: reportersModuleNameParam,
                     reportersProjectVersion: reportersProjectVersionParam,
                     projectUnderTestNameFilter: projectNameParam,
-                    testProjectNameFilter: testProjectNameParam,
                     additionalTimeoutMS: timeoutParam,
                     excludedMutations: excludedMutationsParam,
                     ignoreMethods: ignoreMethodsParam,
@@ -101,7 +101,8 @@ namespace Stryker.CLI
                     solutionPath: solutionPathParam,
                     languageVersion: languageVersion,
                     diff: diffParam,
-                    gitSource: gitSourceParam);
+                    gitSource: gitSourceParam,
+                    testProjects: testProjectsParam);
 
                 RunStryker(options);
                 return ExitCode;

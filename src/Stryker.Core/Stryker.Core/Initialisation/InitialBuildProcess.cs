@@ -25,7 +25,7 @@ namespace Stryker.Core.Initialisation
 
         public void InitialBuild(bool fullFramework, string projectPath, string solutionPath)
         {
-            _logger.LogInformation("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
+            _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
 
             projectPath = Path.GetDirectoryName(projectPath);
             ProcessResult result;
@@ -54,7 +54,7 @@ namespace Stryker.Core.Initialisation
                 // Initial build failed
                 throw new StrykerInputException(result.Output, "Initial build of targeted project failed. Please make targeted project buildable. See above message for build output.");
             }
-            _logger.LogInformation("Initial build successful");
+            _logger.LogDebug("Initial build successful");
         }
     }
 }

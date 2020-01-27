@@ -64,23 +64,6 @@ namespace Stryker.Core.UnitTest.Options
             ex.Details.ShouldNotBeNullOrEmpty();
         }
 
-        [Fact]
-        public void CustomTestProjectFilter_WithRelativePath_ShouldIncludeBasePath()
-        {
-            var userSuppliedFilter = "..\\ExampleActualTestProject\\TestProject.csproj";
-            var basePath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "TestProject"));
-            var fullPath = FilePathUtils.NormalizePathSeparators(Path.Combine("C:", "ExampleProject", "ExampleActualTestProject", "TestProject.csproj"));
-
-            var ex = Assert.Throws<StrykerInputException>(() =>
-            {
-                new StrykerOptions(
-                    basePath: basePath,
-                    testProjectNameFilter: userSuppliedFilter);
-            });
-
-            ex.Details.ShouldContain($"The test project filter {userSuppliedFilter} is invalid.");
-        }
-
         [Theory]
         [InlineData("./MyFolder/MyFile.cs", "MyFolder/MyFile.cs")]
         [InlineData("./MyFolder", "MyFolder/*.*")]
