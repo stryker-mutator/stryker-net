@@ -4,8 +4,7 @@ The full list of Stryker.NET configuration options are:
 
 <!-- TOC -->
 - [Solution path (required .NET Framework)](#solution-path)
-- [Project file (required on some projects)](#test-project-file)
-- [Test project file](#project-file)
+- [Project file (required on some projects)](#project-file)
 - [Test runner](#test-runner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
@@ -46,14 +45,6 @@ When Stryker finds two or more project references inside your test project, it n
 ```
 dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
-```
-
-## Test Project file
-When Stryker finds two or more project files in the working directory, it needs to which is your test project. Pass the name of this project using:
-
-```
-dotnet stryker --test-project-file ExampleTestProject.csproj
-dotnet stryker -tpf ExampleTestProject.csproj
 ```
 
 ## Specify testrunner
