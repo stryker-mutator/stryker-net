@@ -69,6 +69,14 @@ namespace Stryker.Core.Initialisation
             set => _projectReferences = value;
         }
 
+        private IEnumerable<string> _sourceFiles;
+
+        public IEnumerable<string> SourceFiles
+        {
+            get => _sourceFiles ?? _analyzerResult?.SourceFiles;
+            set => _sourceFiles = value;
+        }
+
         private IReadOnlyDictionary<string, string> _properties;
 
         public IReadOnlyDictionary<string, string> Properties
@@ -126,6 +134,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IList<string> _defineConstants;
+
         public IList<string> DefineConstants
         {
             get => _defineConstants ?? BuildDefineConstants();

@@ -107,6 +107,46 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
+        public void InitializeShouldUseBuildAlyzerResult()
+        {
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.1"), new MockFileData("Bytecode") }, // bin should be excluded
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Debug", "netcoreapp2.1", "ExampleProject.AssemblyInfo.cs"), new MockFileData("Bytecode") }, // obj should be excluded
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Release", "netcoreapp2.1"), new MockFileData("Bytecode") }, // obj should be excluded
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
+                });
+
+            var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>() { projectUnderTestPath },
+                    TargetFrameworkVersionString = "netcoreapp2.1",
+                    ProjectFilePath = testProjectPath,
+                    References = new string[] { "" }
+                });
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectReferences = new List<string>(),
+                    TargetFrameworkVersionString = "netcoreapp2.1",
+                    ProjectFilePath = projectUnderTestPath,
+                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))
+                });
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
+            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
+
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
+        }
+
+        [Fact]
         public void InitializeShouldFindSpecifiedTestProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
