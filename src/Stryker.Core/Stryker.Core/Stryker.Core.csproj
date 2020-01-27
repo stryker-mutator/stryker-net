@@ -38,10 +38,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.1" />
-    <PackageReference Include="Microsoft.TestPlatform" Version="16.3.0" />
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.3.0" />
-    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.3.0" />
-    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.3.0" />
+    <PackageReference Include="Microsoft.TestPlatform" Version="16.5.0-preview-20200116-01" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.5.0-preview-20200116-01" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.5.0-preview-20200116-01" />
+    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.5.0-preview-20200116-01" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.0.96" />
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
