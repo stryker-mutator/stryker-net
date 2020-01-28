@@ -12,7 +12,7 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 The default reporters are:
 
 ```
-dotnet stryker --reporters "['cleartext', 'progress']"
+dotnet stryker --reporters "['html', 'progress']"
 ```
 
 ## Html reporter
