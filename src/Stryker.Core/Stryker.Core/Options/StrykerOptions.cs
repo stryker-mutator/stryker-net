@@ -281,7 +281,7 @@ namespace Stryker.Core.Options
         {
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
-            if (maxConcurrentTestRunners.HasValue)
+            if (!maxConcurrentTestRunners.HasValue)
             {
                 return safeProcessorCount;
             }
