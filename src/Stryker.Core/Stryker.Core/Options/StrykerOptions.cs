@@ -300,7 +300,7 @@ namespace Stryker.Core.Options
 
             if (maxConcurrentTestRunners == 1)
             {
-                _logger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", maxConcurrentTestRunners, safeProcessorCount);
+                _logger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.");
             }
 
             return maxConcurrentTestRunners.GetValueOrDefault();
