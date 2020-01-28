@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
@@ -49,8 +50,10 @@ namespace Stryker.Core.Options
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger _bufferLogger;
 
         public StrykerOptions(
+            ILogger buggerLogger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
             string[] reporters = null,
@@ -63,7 +66,7 @@ namespace Stryker.Core.Options
             bool devMode = false,
             string coverageAnalysis = "perTest",
             bool abortTestOnFail = true,
-            int maxConcurrentTestRunners = int.MaxValue,
+            int? maxConcurrentTestRunners = null,
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
@@ -80,6 +83,7 @@ namespace Stryker.Core.Options
             string projectVersion = null,
             IEnumerable<string> testProjects = null)
         {
+            _bufferLogger = buggerLogger;
             _fileSystem = fileSystem ?? new FileSystem();
 
             var outputPath = ValidateOutputPath(basePath);
@@ -273,8 +277,15 @@ namespace Stryker.Core.Options
             }
         }
 
-        private int ValidateConcurrentTestrunners(int maxConcurrentTestRunners)
+        private int ValidateConcurrentTestrunners(int? maxConcurrentTestRunners)
         {
+            var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
+
+            if (maxConcurrentTestRunners.HasValue)
+            {
+                return safeProcessorCount;
+            }
+
             if (maxConcurrentTestRunners < 1)
             {
                 throw new StrykerInputException(
@@ -282,15 +293,17 @@ namespace Stryker.Core.Options
                     "Amount of maximum concurrent testrunners must be greater than zero.");
             }
 
-            var logicalProcessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
-
-            if (maxConcurrentTestRunners <= usableProcessorCount)
+            if (maxConcurrentTestRunners > safeProcessorCount)
             {
-                usableProcessorCount = maxConcurrentTestRunners;
+                _bufferLogger?.LogWarning("Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
-            return usableProcessorCount;
+            if (maxConcurrentTestRunners == 1)
+            {
+                _bufferLogger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", maxConcurrentTestRunners, safeProcessorCount);
+            }
+
+            return maxConcurrentTestRunners.GetValueOrDefault();
         }
 
         private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
