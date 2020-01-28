@@ -50,10 +50,10 @@ namespace Stryker.Core.Options
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _bufferLogger;
+        private readonly ILogger _logger;
 
         public StrykerOptions(
-            ILogger buggerLogger = null,
+            ILogger logger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
             string[] reporters = null,
@@ -83,7 +83,7 @@ namespace Stryker.Core.Options
             string projectVersion = null,
             IEnumerable<string> testProjects = null)
         {
-            _bufferLogger = buggerLogger;
+            _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
 
             var outputPath = ValidateOutputPath(basePath);
@@ -295,12 +295,12 @@ namespace Stryker.Core.Options
 
             if (maxConcurrentTestRunners > safeProcessorCount)
             {
-                _bufferLogger?.LogWarning("Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
+                _logger?.LogWarning("Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
             if (maxConcurrentTestRunners == 1)
             {
-                _bufferLogger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", maxConcurrentTestRunners, safeProcessorCount);
+                _logger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
             return maxConcurrentTestRunners.GetValueOrDefault();

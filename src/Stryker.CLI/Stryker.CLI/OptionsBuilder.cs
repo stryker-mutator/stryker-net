@@ -61,7 +61,7 @@ namespace Stryker.CLI
             }
 
             return new StrykerOptions(
-                buggerLogger: _logger,
+                logger: _logger,
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
