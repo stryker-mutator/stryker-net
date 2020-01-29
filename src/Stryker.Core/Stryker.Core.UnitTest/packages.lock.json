@@ -64,11 +64,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[8.0.4, )",
-        "resolved": "8.0.4",
-        "contentHash": "eJrO47QbossB+kKNzG/XXTg8vT9P1JHL/i3RvnlVK80BdxYOeUsaOFbusWNpiS64orSWoKV94TxikE2/4BmPYg==",
+        "requested": "[8.0.5, )",
+        "resolved": "8.0.5",
+        "contentHash": "eu1YpIN1aS8L+8dLpBOC9O2sEVJCKU1Z6/Y31ZhihjjeYXO3fUYb2UYO1+HwhXCefNDLFD5XA34l0GtSSxElBg==",
         "dependencies": {
-          "System.IO.Abstractions": "8.0.4"
+          "System.IO.Abstractions": "8.0.5"
         }
       },
       "xunit": {
@@ -986,8 +986,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.0.4",
-        "contentHash": "PHb43uE/K66bkFL29VH0RFBkgodGMiIY11dtUZ2fP//L47XrvsJH/1/Ko6A+HMdTw9+VUojJ2iqTDGmgy8NmPg==",
+        "resolved": "8.0.5",
+        "contentHash": "SRg8sYT/htUp+WvPO1defBiNvSg6E2OYIJDIVRSFdQp/wsdmSSeOlAKAqhsXMTMsFQOMv2fU7BpxlUlt79P64g==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
