@@ -1,14 +1,14 @@
-﻿using Serilog.Events;
+﻿using Microsoft.CodeAnalysis.Text;
+using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
+using System;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis.Text;
 using Xunit;
-using Stryker.Core.Reporters;
-using System;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest.Options
 {
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.Options
         public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
         {
             // Act
-            var result = new StrykerOptions(filesToExclude: new []{fileToExclude});
+            var result = new StrykerOptions(filesToExclude: new[] { fileToExclude });
 
             // Assert
             var pattern = result.FilePatterns.Last();
@@ -134,33 +134,6 @@ namespace Stryker.Core.UnitTest.Options
                 new StrykerOptions(coverageAnalysis: "gibberish");
             });
             ex.Details.ShouldBe($"Incorrect coverageAnalysis option gibberish. The options are [off, all, perTest or perTestInIsolation].");
-        }
-
-        [Fact]
-        public void ShouldValidateZeroConcurrentTestrunners()
-        {
-            var ex = Assert.Throws<StrykerInputException>(() =>
-            {
-                var options = new StrykerOptions(maxConcurrentTestRunners: 0);
-            });
-            ex.Details.ShouldBe("Amount of maximum concurrent testrunners must be greater than zero.");
-        }
-
-        [Theory]
-        [InlineData(1, 1)]
-        [InlineData(2, 2)]
-        [InlineData(4, 4)]
-        [InlineData(8, 8)]
-        [InlineData(16, 16)]
-        public void ShouldValidateConcurrentTestrunners(int given, int expected)
-        {
-            if(expected > Environment.ProcessorCount / 2)
-            {
-                // the expected concurrent testrunners should not be higher than the processor count
-                expected = Environment.ProcessorCount / 2;
-            }
-            var options = new StrykerOptions(maxConcurrentTestRunners: given);
-            options.ConcurrentTestrunners.ShouldBe(expected);
         }
 
         [Theory]
