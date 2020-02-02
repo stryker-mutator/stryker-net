@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.IO;
-using McMaster.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using System;
+using System.Collections;
+using System.IO;
 
 namespace Stryker.CLI
 {
@@ -61,6 +61,7 @@ namespace Stryker.CLI
             }
 
             return new StrykerOptions(
+                logger: _logger,
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
