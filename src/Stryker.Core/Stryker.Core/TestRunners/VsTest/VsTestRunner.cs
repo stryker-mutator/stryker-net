@@ -18,6 +18,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Stryker.Core.Exceptions;
+using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -132,7 +133,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     // all mutants status have been resolved, we can stop
                     _logger.LogDebug($"Runner {_id}: each mutant's fate has been established, we can abort.");
-                    _vsTestConsole.AbortTestRun();
+                    _vsTestConsole.CancelTestRun();
                     _aborted = true;
                 }
             }
@@ -220,15 +221,17 @@ namespace Stryker.Core.TestRunners.VsTest
                 mutant.CoveringTests = new TestListDescription(null);
             }
 
+            var seenTestCases = new HashSet<Guid>();
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (key == null)
                 {
-                    _logger.LogWarning($"Failed to retrieve coverage info for {testResult.TestCase.FullyQualifiedName}.");
+                    _logger.LogWarning($"Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
                 }
                 else if (value != null)
                 {
+                    seenTestCases.Add(testResult.TestCase.Id);
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
@@ -251,7 +254,6 @@ namespace Stryker.Core.TestRunners.VsTest
                             {
                                 mutant.CoveringTests.Add(testResult.TestCase);
                             }
-
                             if (!staticMutants.Contains(mutant.Id)) continue;
                             // the mutant is used in static initialization context
                             mutant.IsStaticValue = true;
@@ -270,6 +272,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
             var testResults = RunTestSession(new []{test}, _coverageEnvironment, GenerateRunSettings(null, true, _coverageEnvironment));
             ParseResultsForCoverage(testResults.Where(x => x.TestCase.Id == test.Id), mutants);
+            // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
+            _vsTestConsole.CancelTestRun();
         } 
 
         private IEnumerable<TestResult> RunTestSession(IEnumerable<TestCase> testCases, 
@@ -308,9 +312,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
                 if (!_vsTestFailed || retries > 10) 
-                {
                     return eventHandler.TestResults;
-                }
                 _vsTestConsole = PrepareVsTestConsole();
                 _vsTestFailed = false;
 
@@ -345,19 +347,19 @@ namespace Stryker.Core.TestRunners.VsTest
         private string GenerateRunSettings(int? timeout, bool forCoverage,
             Dictionary<string, string> coverageEnvironment)
         {
-            var targetFramework = _projectInfo.TestProjectAnalyzerResult.TargetFramework;
-
+            var targetFramework = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFramework;
+            var targetFrameworkVersion = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFrameworkVersion;
             string targetFrameworkVersionString;
 
             switch (targetFramework)
             {
                 case Initialisation.Framework.NetCore:
-                    targetFrameworkVersionString = $".NETCoreApp,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETCoreApp,Version = v{targetFrameworkVersion}";
                     break;
                 case Initialisation.Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersionString = $".NETFramework,Version = v{_projectInfo.TestProjectAnalyzerResult.TargetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETFramework,Version = v{targetFrameworkVersion}";
                     break;
             }
 
@@ -421,29 +423,32 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPath = _projectInfo.GetTestBinariesPath();
-            if (!_fileSystem.File.Exists(testBinariesPath))
+            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetTestBinariesPath(testProject)).ToList();
+            var testBinariesLocations = new List<string>();
+            _sources = new List<string>();
+
+            foreach (var path in testBinariesPaths)
             {
-                throw new ApplicationException($"The test project binaries could not be found at {testBinariesPath}, exiting...");
+                if (!_fileSystem.File.Exists(path))
+                {
+                    throw new GeneralStrykerException($"The test project binaries could not be found at {path}, exiting...");
+                }
+                testBinariesLocations.Add(Path.GetDirectoryName(path));
+                _sources.Add(FilePathUtils.NormalizePathSeparators(path));
             }
 
-            var testBinariesLocation = Path.GetDirectoryName(testBinariesPath);
-            _sources = new List<string>
-            {
-                FilePathUtils.NormalizePathSeparators(testBinariesPath)
-            };
+            testBinariesLocations.Add(_vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath()));
+
             try
             {
+                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 _vsTestConsole.StartSession();
-                _vsTestConsole.InitializeExtensions(new List<string>
-                {
-                    testBinariesLocation,
-                    _vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath())
-                });
+                _vsTestConsole.InitializeExtensions(testBinariesLocations);
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Stryker failed to connect to vstest.console", e);
+                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
 
             _discoveredTests = DiscoverTests();

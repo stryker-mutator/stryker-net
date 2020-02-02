@@ -23,8 +23,11 @@ namespace Stryker.CLI
         public StrykerOptions Build(
             string basePath,
             CommandOption reporter,
+            CommandOption dashboardApiKey,
+            CommandOption reportersProjectName,
+            CommandOption reportersModuleName,
+            CommandOption reportersProjectVersion,
             CommandOption projectUnderTestNameFilter,
-            CommandOption testProjectNameFilter,
             CommandOption additionalTimeoutMS,
             CommandOption excludedMutations,
             CommandOption ignoreMethods,
@@ -45,7 +48,8 @@ namespace Stryker.CLI
             CommandOption solutionPath,
             CommandOption languageVersion,
             CommandOption diff,
-            CommandOption gitSource)
+            CommandOption gitSource,
+            CommandOption testProjects)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -60,8 +64,11 @@ namespace Stryker.CLI
             return new StrykerOptions(
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
+                dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
+                projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
+                moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
+                projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
-                testProjectNameFilter: GetOption(testProjectNameFilter.Value(), CLIOptions.TestProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
                 ignoredMethods: GetOption(ignoreMethods.Value(), CLIOptions.IgnoreMethods),
@@ -81,7 +88,8 @@ namespace Stryker.CLI
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: GetOption(diff.HasValue(), CLIOptions.Diff),
-                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource));
+                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
+                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)

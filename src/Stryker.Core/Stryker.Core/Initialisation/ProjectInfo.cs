@@ -7,12 +7,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Initialisation
 {
     public class ProjectInfo
     {
-        public ProjectAnalyzerResult TestProjectAnalyzerResult { get; set; }
+        public IEnumerable<ProjectAnalyzerResult> TestProjectAnalyzerResults { get; set; }
         public ProjectAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
@@ -20,14 +21,14 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
 
-        public string GetInjectionPath()
+        public string GetInjectionPath(ProjectAnalyzerResult projectAnalyzerResult)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(TestProjectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(projectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
-        public string GetTestBinariesPath()
+        public string GetTestBinariesPath(ProjectAnalyzerResult projectAnalyzerResult)
         {
-            return TestProjectAnalyzerResult.AssemblyPath;
+            return projectAnalyzerResult.AssemblyPath;
         }
     }
 
@@ -66,6 +67,14 @@ namespace Stryker.Core.Initialisation
         {
             get => _projectReferences ?? _analyzerResult.ProjectReferences;
             set => _projectReferences = value;
+        }
+
+        private IEnumerable<string> _sourceFiles;
+
+        public IEnumerable<string> SourceFiles
+        {
+            get => _sourceFiles ?? _analyzerResult?.SourceFiles;
+            set => _sourceFiles = value;
         }
 
         private IReadOnlyDictionary<string, string> _properties;
@@ -125,6 +134,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private IList<string> _defineConstants;
+
         public IList<string> DefineConstants
         {
             get => _defineConstants ?? BuildDefineConstants();
@@ -241,26 +251,33 @@ namespace Stryker.Core.Initialisation
                     ["netstandard"] = Framework.NetStandard,
                     ["net"] = Framework.NetClassic
                 };
-                var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
-                if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
+                try
                 {
-                    var version = analysis.Groups["version"].Value;
-                    if (!version.Contains('.'))
+                    var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
+                    if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
                     {
-                        if (version.Length == 2)
-                        // we have a aggregated version id
+                        var version = analysis.Groups["version"].Value;
+                        if (!version.Contains('.'))
                         {
-                            version = $"{version[0]}.{version.Substring(1)}";
+                            if (version.Length == 2)
+                            // we have a aggregated version id
+                            {
+                                version = $"{version[0]}.{version.Substring(1)}";
+                            }
+                            else if (version.Length == 3)
+                            {
+                                version = $"{version[0]}.{version[1]}.{version[2]}";
+                            }
                         }
-                        else if (version.Length == 3)
-                        {
-                            version = $"{version[0]}.{version[1]}.{version[2]}";
-                        }
+                        return (label[analysis.Groups["kind"].Value], new Version(version));
                     }
-                    return (label[analysis.Groups["kind"].Value], new Version(version));
-                }
 
-                return (Framework.Unknown, new Version());
+                    return (Framework.Unknown, new Version());
+                }
+                catch (ArgumentException)
+                {
+                    throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
+                }
             }
         }
     }

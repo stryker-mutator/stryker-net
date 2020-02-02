@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners.VsTest;
+using System.Linq;
 
 namespace Stryker.Core.TestRunners
 {
@@ -25,7 +26,7 @@ namespace Stryker.Core.TestRunners
             {
                 case TestRunner.DotnetTest:
                 default:
-                    testRunner = new DotnetTestRunner(projectInfo.TestProjectAnalyzerResult.ProjectFilePath, new ProcessExecutor(), flags);
+                    testRunner = new DotnetTestRunner(projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath, new ProcessExecutor(), flags, projectInfo.TestProjectAnalyzerResults.Select(x => projectInfo.GetTestBinariesPath(x)));
                     break;
                 case TestRunner.VsTest:
                     testRunner = new VsTestRunnerPool(options, flags, projectInfo);

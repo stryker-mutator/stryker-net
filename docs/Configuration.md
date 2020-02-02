@@ -8,6 +8,7 @@ The full list of Stryker.NET configuration options are:
 - [Test runner](#test-runner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
+- [Test projects](#test-projects)
 - [Logging to console](#logging-to-console)
 - [Excluding mutations](#excluding-mutations)
 - [Excluding files (deprecated)](#excluding-files)
@@ -46,14 +47,6 @@ dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
 ```
 
-## Test Project file
-When Stryker finds two or more project files in the working directory, it needs to which is your test project. Pass the name of this project using:
-
-```
-dotnet stryker --test-project-file ExampleTestProject.csproj
-dotnet stryker -tp ExampleTestProject.csproj
-```
-
 ## Specify testrunner
 Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
 VsTest is the default because it offers tight integration with all test frameworks (MsTest, xUnit, NUnit etc).
@@ -89,6 +82,18 @@ dotnet stryker -r "['html', 'progress']"
 You can find a list of all available reporters and what output they produce in the [reporter docs](/docs/Reporters.md)
 
 Default: `"['cleartext', 'progress']"`
+
+## Test projects
+Stryker can also be run from the directory containing the project under test. If you pass a list of test projects that reference the project under test, the tests of all projects will be run while testing the mutants.
+
+```
+dotnet stryker --test-projects "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
+dotnet stryker -tp "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
+```
+
+When running from a test project directory this option is not required.
+
+Default: `null`
 
 ## Logging to console
 To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.
@@ -282,6 +287,11 @@ Example config file:
         "excluded-mutations": [
             "string",
             "Logical operators"
+        ],
+        "ignore-methods": [
+            "*Log*",
+            "ToString",
+            "*HashCode*"
         ]
     }
 }

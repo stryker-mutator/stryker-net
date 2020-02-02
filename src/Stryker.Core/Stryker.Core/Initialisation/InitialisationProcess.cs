@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
@@ -20,8 +21,8 @@ namespace Stryker.Core.Initialisation
         private readonly IInitialTestProcess _initialTestProcess;
         private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
         private ITestRunner _testRunner;
+        private readonly ILogger _logger;
 
-        // these flags control various optimization techniques
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
@@ -34,6 +35,7 @@ namespace Stryker.Core.Initialisation
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
         public MutationTestInput Initialize(StrykerOptions options)
@@ -42,7 +44,12 @@ namespace Stryker.Core.Initialisation
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            _initialBuildProcess.InitialBuild(projectInfo.ProjectUnderTestAnalyzerResult.TargetFramework == Framework.NetClassic, projectInfo.TestProjectAnalyzerResult.ProjectFilePath, options.SolutionPath);
+            var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
+            for (int i = 0; i < testProjects.Count; i++)
+            {
+                _logger.LogInformation("Building test project {0} ({1}/{2})", testProjects[i].ProjectFilePath, i + 1, projectInfo.TestProjectAnalyzerResults.Count());
+                _initialBuildProcess.InitialBuild(testProjects[i].TargetFramework == Framework.NetClassic, testProjects[i].ProjectFilePath, options.SolutionPath);
+            }
 
             if (_testRunner == null)
             {

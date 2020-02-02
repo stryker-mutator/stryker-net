@@ -31,8 +31,10 @@ namespace Stryker.DataCollector
         public const string PipeMode = "pipe";
         private const string EnvName = "CoveredMutants";
 
+        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
+
         private const string TemplateForConfiguration = 
-            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0} >
+            @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
         public static string GetVsTestSettings(Dictionary<string, string> coverageEnvironment)
@@ -47,6 +49,7 @@ namespace Stryker.DataCollector
             var configuration = new StringBuilder();
             if (coverageEnvironment != null)
             {
+                // set options into the vstest config.
                 configuration.Append("<Parameters>");
                 foreach (var pair in coverageEnvironment)
                 {
@@ -123,14 +126,17 @@ namespace Stryker.DataCollector
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {            
             var node = new XmlDocument();
-
             node.LoadXml(testSessionStartArgs.Configuration);
-            var parameters = node.GetElementById("Parameters");
-            foreach (var parametersChildNode in parameters.GetElementsByTagName("Environment").OfType<XmlElement>())
+            var parameters = node.SelectNodes("//Parameters/Environment");
+            for (var i = 0; i < parameters.Count; i++)
             {
+                var current = parameters[i];
+                var name = current.Attributes["name"].Value;
+                var value = current.Attributes["value"].Value;
+                _options.Add(name, value);
             }
 
-            var coverageString = Environment.GetEnvironmentVariable(ModeEnvironmentVariable);
+            var coverageString = _options[ModeEnvironmentVariable];
             _coverageOn = coverageString != null;
             _usePipe = (coverageString == PipeMode);
 
@@ -183,7 +189,7 @@ namespace Stryker.DataCollector
                 _client.SendText($"DUMP {testCaseDisplayName}");
             }
 
-            var coverData = RetrieveCoverData(testCaseDisplayName);
+            var coverData = RetrieveCoverData();
             // null means we failed to retrieve data
             if (coverData != null)
             {
@@ -200,7 +206,7 @@ namespace Stryker.DataCollector
             }
         }
 
-        public string RetrieveCoverData(string testCase)
+        public string RetrieveCoverData()
         {
             string coverData;
             if (_usePipe)

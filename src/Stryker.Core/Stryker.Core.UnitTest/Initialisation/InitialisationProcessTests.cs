@@ -5,6 +5,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
@@ -33,9 +34,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     {
                         References = new string[0]
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                        }
                     },
                     ProjectContents = new FolderComposite
                     {
@@ -85,9 +88,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     {
                         References = new string[0]
                     },
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectFilePath = "C://Example/Dir/ProjectFolder"
+                        }
                     },
                     ProjectContents = new FolderComposite
                     {

@@ -51,8 +51,9 @@ namespace TestApplication
 
             var result = target.ApplyMutations(node).ToList();
             
-            result.Count.ShouldBe(1);
-            result.First().ReplacementNode.ToString().ShouldBe("!(Method())");
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.ReplacementNode.ToString().ShouldBe("!(Method())");
+            mutation.DisplayName.ShouldBe("Negate expression");
         }
 
         [Theory]

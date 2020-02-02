@@ -42,6 +42,10 @@ namespace Stryker.CLI
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
+            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
+            var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectNameOption);
+            var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleNameOption);
+            var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersionOption);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
@@ -52,7 +56,6 @@ namespace Stryker.CLI
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
-            var testProjectNameParam = CreateOption(app, CLIOptions.TestProjectFileName);
             var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
             var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
             var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
@@ -64,6 +67,8 @@ namespace Stryker.CLI
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
+            var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
+
 
             app.HelpOption("--help | -h | -?");
 
@@ -73,8 +78,11 @@ namespace Stryker.CLI
                 var options = new OptionsBuilder(_logBuffer).Build(
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporterParam,
+                    dashboardApiKey: dashboardApiKeyParam,
+                    reportersProjectName: reportersProjectNameParam,
+                    reportersModuleName: reportersModuleNameParam,
+                    reportersProjectVersion: reportersProjectVersionParam,
                     projectUnderTestNameFilter: projectNameParam,
-                    testProjectNameFilter: testProjectNameParam,
                     additionalTimeoutMS: timeoutParam,
                     excludedMutations: excludedMutationsParam,
                     ignoreMethods: ignoreMethodsParam,
@@ -95,7 +103,8 @@ namespace Stryker.CLI
                     solutionPath: solutionPathParam,
                     languageVersion: languageVersion,
                     diff: diffParam,
-                    gitSource: gitSourceParam);
+                    gitSource: gitSourceParam,
+                    testProjects: testProjectsParam);
 
                 RunStryker(options);
                 return ExitCode;

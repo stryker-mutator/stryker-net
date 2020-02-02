@@ -16,13 +16,15 @@ namespace Stryker.Core.TestRunners
         private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
+        private IEnumerable<string> _testBinariesPaths;
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
+        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, IEnumerable<string> testBinariesPaths)
         {
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
             _flags = flags;
             _projectFile = FilePathUtils.NormalizePathSeparators(path);
             _processExecutor = processProxy;
+            _testBinariesPaths = testBinariesPaths;
         }
 
         public IEnumerable<TestDescription> Tests => null;
@@ -32,7 +34,7 @@ namespace Stryker.Core.TestRunners
             var envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
-                {"ActiveMutation", mutant.Id.ToString() }
+                { "ActiveMutation", mutant.Id.ToString() }
             };
             try
             {
@@ -56,7 +58,7 @@ namespace Stryker.Core.TestRunners
             var result = _processExecutor.Start(
                 _projectFile,
                 "dotnet",
-                "test --no-build --no-restore",
+                @"vstest " + string.Join(" ", _testBinariesPaths),
                 envVars,
                 timeoutMs ?? 0);
 
@@ -88,7 +90,7 @@ namespace Stryker.Core.TestRunners
             var coverageEnvironment = collector.GetEnvironmentVariables();
             var result = LaunchTestProcess(null, coverageEnvironment);
 
-            var data = collector.RetrieveCoverData("full");
+            var data = collector.RetrieveCoverData();
             var testedMutant = data.Split(";")[0].Split(",").Select(int.Parse).ToList();
             foreach (var mutant in mutants)
             {

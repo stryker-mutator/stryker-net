@@ -27,7 +27,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules" };
+        private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
@@ -47,25 +47,64 @@ namespace Stryker.Core.Initialisation
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var result = new ProjectInfo();
+            var testProjectFiles = new List<string>();
+            string projectUnderTest = null;
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                testProjectFiles = options.TestProjects.Select(FindProjectFile).ToList();
+            }
+            else
+            {
+                testProjectFiles.Add(FindProjectFile(options.BasePath));
+            }
 
             _logger.LogInformation("Identifying project to mutate.");
-            var testProjectFile = FindProjectFile(options.BasePath, options.TestProjectNameFilter);
-
-            // Analyze the test project
-            result.TestProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath);
+            var results = new List<ProjectAnalyzerResult>();
+            foreach (var testProjectFile in testProjectFiles)
+            {
+                // Analyze the test project
+                results.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
+            }
+            result.TestProjectAnalyzerResults = results;
 
             // Determine project under test
             var reader = new ProjectFileReader();
-            var projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResult.ProjectReferences, options.ProjectUnderTestNameFilter);
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                projectUnderTest = FindProjectFile(options.BasePath);
+            }
+            else
+            {
+                projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
+            }
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
             // Analyze project under test
             result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
+            FolderComposite inputFiles;
+            if (result.ProjectUnderTestAnalyzerResult.SourceFiles!=null && result.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            {
+                inputFiles = FindProjectFilesUsingBuildAlyzer(result.ProjectUnderTestAnalyzerResult);
+            }
+            else
+            {
+                inputFiles = FindProjectFilesScanningProjectFolders(result.ProjectUnderTestAnalyzerResult);
+            }
+            result.ProjectContents = inputFiles;
+
+            ValidateResult(result, options);
+            _logger.LogInformation("Analysis complete.");
+
+            return result;
+        }
+
+        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult)
+        {
             var inputFiles = new FolderComposite();
-            var projectUnderTestDir = Path.GetDirectoryName(result.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(result.ProjectUnderTestAnalyzerResult))
+            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -74,14 +113,107 @@ namespace Stryker.Core.Initialisation
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
+
                 inputFiles.Add(FindInputFiles(folder, projectUnderTestDir));
             }
-            result.ProjectContents = inputFiles;
 
-            ValidateResult(result, options);
+            return inputFiles;
+        }
 
-            _logger.LogInformation("Analysis complete.", projectUnderTest);
-            return result;
+        private FolderComposite FindProjectFilesUsingBuildAlyzer(ProjectAnalyzerResult analyzerResult)
+        {
+            var inputFiles = new FolderComposite();
+            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
+            var generatedAssemblyInfo =
+                (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
+            var rootFolderComposite = new FolderComposite()
+            {
+                Name = string.Empty,
+                FullPath = projectRoot,
+                RelativePath = string.Empty,
+                RelativePathToProjectFile =
+                    Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
+            };
+            var cache = new Dictionary<string, FolderComposite> {[string.Empty] = rootFolderComposite};
+            inputFiles.Add(rootFolderComposite);
+            foreach (var sourceFile in analyzerResult.SourceFiles)
+            {
+                if (sourceFile.EndsWith(".xaml.cs"))
+                {
+                    continue;
+                }
+
+                if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
+                {
+                    continue;
+                }
+
+                var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
+                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir,
+                    projectRoot, inputFiles);
+                var fileName = Path.GetFileName(sourceFile);
+                folderComposite.Add(new FileLeaf()
+                {
+                    SourceCode = _fileSystem.File.ReadAllText(sourceFile),
+                    Name = _fileSystem.Path.GetFileName(sourceFile),
+                    RelativePath = _fileSystem.Path.Combine(folderComposite.RelativePath, fileName),
+                    FullPath = sourceFile,
+                    RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, sourceFile)
+                });
+            }
+
+            return inputFiles;
+        }
+
+        // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
+        private FolderComposite GetOrBuildFolderComposite(IDictionary<string, FolderComposite> cache, string targetFolder, string projectUnderTestDir,
+            string projectRoot, ProjectComponent inputFiles)
+        {
+            if (cache.ContainsKey(targetFolder))
+            {
+                return cache[targetFolder];
+            }
+
+            var folder = targetFolder;
+            FolderComposite subDir = null;
+            while (!string.IsNullOrEmpty(folder))
+            {
+                if (!cache.ContainsKey(folder))
+                {
+                    // we have not scanned this folder yet
+                    var sub = Path.GetFileName(folder);
+                    var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, sub);
+                    var newComposite = new FolderComposite
+                    {
+                        Name = sub,
+                        FullPath = fullPath,
+                        RelativePath = Path.GetRelativePath(projectRoot, fullPath),
+                        RelativePathToProjectFile =
+                            Path.GetRelativePath(projectUnderTestDir, fullPath)
+                    };
+                    if (subDir != null)
+                    {
+                        newComposite.Add(subDir);
+                    }
+
+                    cache.Add(folder, newComposite);
+                    subDir = newComposite;
+                    folder = Path.GetDirectoryName(folder);
+                    if (string.IsNullOrEmpty(folder))
+                    {
+                        // we are at root
+                        inputFiles.Add(subDir);
+                    }
+                }
+                else
+                {
+                    cache[folder].Add(subDir);
+                    break;
+                }
+            }
+
+            return cache[targetFolder];
         }
 
         /// <summary>
@@ -123,13 +255,24 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        public string FindProjectFile(string basePath, string testProjectNameFilter)
+        public string FindProjectFile(string path)
         {
-            string filter = BuildTestProjectFilter(basePath, testProjectNameFilter);
+            string[] projectFiles = null;
+            if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
+            {
+                return path;
+            }
 
-            var projectFiles = _fileSystem.Directory.GetFileSystemEntries(basePath, filter);
+            try
+            {
+                projectFiles = _fileSystem.Directory.GetFileSystemEntries(path, "*.csproj");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
+            }
 
-            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", basePath, filter, projectFiles);
+            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
 
             if (projectFiles.Count() > 1)
             {
@@ -145,29 +288,11 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {basePath}");
+                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
-
             _logger.LogDebug("Using {0} as project file", projectFiles.Single());
 
             return projectFiles.Single();
-        }
-
-        private string BuildTestProjectFilter(string basePath, string testProjectNameFilter)
-        {
-            // Make sure the filter is relative to the base path otherwise we cannot find it
-            var filter = FilePathUtils.NormalizePathSeparators(testProjectNameFilter.Replace(basePath, "", StringComparison.InvariantCultureIgnoreCase));
-
-            // If the filter starts with directory separator char, remove it
-            if (filter.Replace("*", "").StartsWith(Path.DirectorySeparatorChar))
-            {
-                filter = filter.Remove(filter.IndexOf(Path.DirectorySeparatorChar), $"{Path.DirectorySeparatorChar}".Length);
-            }
-
-            // Make sure filter contains wildcard
-            filter = $"*{filter}";
-
-            return filter;
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
@@ -218,19 +343,19 @@ namespace Stryker.Core.Initialisation
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
-            if (projectInfo.TestProjectAnalyzerResult.References
-                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
+                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
             {
                 throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResult.TargetFramework == Framework.NetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
-                (!projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") ||
-                (projectInfo.TestProjectAnalyzerResult.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(projectInfo.TestProjectAnalyzerResult.Properties["IsTestProject"]))))
+                (!testProject.Properties.ContainsKey("IsTestProject") ||
+                (testProject.Properties.ContainsKey("IsTestProject") &&
+                !bool.Parse(testProject.Properties["IsTestProject"])))))
             {
                 _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
                 options.TestRunner = TestRunner.VsTest;

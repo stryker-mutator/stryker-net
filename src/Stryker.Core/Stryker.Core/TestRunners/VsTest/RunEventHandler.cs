@@ -22,6 +22,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public List<TestResult> TestResults { get; }
 
+        public bool TimeOut { get; private set; }
+        public bool CancelRequested { get; set; }
+
         public RunEventHandler(ILogger logger, string runnerId)
         {
             _waitHandle = new AutoResetEvent(false);
@@ -41,6 +44,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
+            TimeOut = testRunCompleteArgs.IsAborted;
+
+
+
             if (testRunCompleteArgs.Error != null)
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
@@ -52,7 +59,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     _logger.LogWarning(sock,"Test session ended unexpectedly.");
                 }
-                else if (!testRunCompleteArgs.IsAborted)
+                else if (!CancelRequested)
                 {
                     _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
                 }

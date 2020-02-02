@@ -85,6 +85,8 @@ namespace TestApplication
             var replacement = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
             var simpleMember = replacement.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
             simpleMember.Name.Identifier.ValueText.ShouldBe(expected.ToString());
+
+            mutation.DisplayName.ShouldBe($"Linq method mutation ({ original }() to { expected }())");
         }
 
         /// <summary>

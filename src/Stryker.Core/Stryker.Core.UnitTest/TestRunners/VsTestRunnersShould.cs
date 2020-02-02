@@ -79,10 +79,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             _mutants.Add(new FileLeaf{Mutants = new []{_otherMutant, _mutant}});
             _targetProject = new ProjectInfo()
             {
-                TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = _testAssemblyPath,
-                    TargetFrameworkVersionString = "toto"
+                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                    new ProjectAnalyzerResult(null, null)
+                    {
+                        AssemblyPath = _testAssemblyPath,
+                        TargetFrameworkVersionString = "toto"
+                    }
                 },
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
@@ -366,7 +368,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.AbortTestOnKill);
 
-                mockVsTest.Setup(x => x.AbortTestRun()).Verifiable();
+                mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
 
                 var result = runner.RunAll(null, _mutant, ((mutants, tests, failedTests) => false));
