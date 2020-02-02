@@ -81,7 +81,7 @@ dotnet stryker -r "['html', 'progress']"
 
 You can find a list of all available reporters and what output they produce in the [reporter docs](/docs/Reporters.md)
 
-Default: `"['cleartext', 'progress']"`
+Default: `"['html', 'progress']"`
 
 ## Test projects
 Stryker can also be run from the directory containing the project under test. If you pass a list of test projects that reference the project under test, the tests of all projects will be run while testing the mutants.
