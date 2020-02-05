@@ -31,8 +31,7 @@ namespace Stryker.Core.Compiling
             _rollbackedIds = new List<int>();
         }
 
-        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt,
-            bool devMode)
+        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
         {
             // match the diagnostics with their syntaxtrees
             var syntaxTreeMapping = new Dictionary<SyntaxTree, ICollection<Diagnostic>>();
@@ -58,7 +57,7 @@ namespace Stryker.Core.Compiling
                 }
 
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
-                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode, lastAttempt);
+                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, lastAttempt, devMode);
 
                 _logger.LogTrace("Rollbacked to {0}", updatedSyntaxTree.ToString());
 
@@ -154,7 +153,8 @@ namespace Stryker.Core.Compiling
             _logger.LogInformation(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo, bool devMode, bool lastAttempt)
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo,
+            bool lastAttempt, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
@@ -189,12 +189,12 @@ namespace Stryker.Core.Compiling
                         throw new StrykerCompilationException("Internal error due to compile error.");
                     }
 
-                    foreach (var entry in scan)
+                    foreach (var (key, value) in scan)
                     {
-                        if (!brokenMutations.Contains(entry.Key))
+                        if (!brokenMutations.Contains(key))
                         {
-                            brokenMutations.Add(entry.Key);
-                            _rollbackedIds.Add(entry.Value);
+                            brokenMutations.Add(key);
+                            _rollbackedIds.Add(value);
                         }
                     }
                 }
