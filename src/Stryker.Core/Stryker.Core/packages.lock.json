@@ -107,9 +107,9 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "qAei4/DXfibz2W9WhBOhlrneJZW5JJYR3T6D3gAyvexViY6uEY13kwtAd4gA803MbjlsdMMoJskganuOdTSDrQ=="
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "dB/OoM6LYrGYRBb2/WFruoQuq0KYcaIf5V9PxiZY1FQHkK+opq+TAuDAtyjeYVyTuEFNqdHfJdgmG6dngJFK6w=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
