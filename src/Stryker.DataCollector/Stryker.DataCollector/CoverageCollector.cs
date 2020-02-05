@@ -37,7 +37,8 @@ namespace Stryker.DataCollector
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
-        public static string GetVsTestSettings(Dictionary<string, string> coverageEnvironment)
+        public static string GetVsTestSettings(bool needCoverage, bool usePipe,
+            Dictionary<int, IList<string>> mutantTestsMap)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -47,17 +48,21 @@ namespace Stryker.DataCollector
                 DataCollectorTypeUriAttribute).TypeUri;
             var line= $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
             var configuration = new StringBuilder();
-            if (coverageEnvironment != null)
+            configuration.Append("<Parameters>");
+            if (needCoverage)
             {
-                // set options into the vstest config.
-                configuration.Append("<Parameters>");
-                foreach (var pair in coverageEnvironment)
-                {
-                    configuration.AppendFormat("<Environment name=\"{0}\" value=\"{1}\"/>", pair.Key, pair.Value);
-                }
-
-                configuration.Append("</Parameters>");
+                configuration.AppendFormat("<Environment name=\"{0}\" value=\"{1}\" />", ModeEnvironmentVariable,
+                usePipe ? PipeMode : EnvMode);
             }
+            if (mutantTestsMap != null)
+            {
+                foreach ( var entry in mutantTestsMap)
+                {
+                    configuration.AppendFormat("<Mutant id={0} tests='{1}'/>", entry.Key, string.Join(",", entry.Value));
+                }
+            }
+            configuration.Append("</Parameters>");
+            
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
@@ -125,8 +130,30 @@ namespace Stryker.DataCollector
 
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {            
+            var configuration = testSessionStartArgs.Configuration;
+            ReadConfiguration(configuration);
+
+            _options.TryGetValue(ModeEnvironmentVariable, out var coverageString);
+            _coverageOn = coverageString != null;
+            if (_coverageOn)
+            {
+                _usePipe = (coverageString == PipeMode);
+
+                foreach (var environmentVariable in GetEnvironmentVariables())
+                {
+                    Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
+                }
+
+                Log($"Mode: {(_usePipe ? "pipe" : "env")}");
+            }
+
+            Log($"Test Session start with conf {configuration}.");
+        }
+
+        private void ReadConfiguration(string configuration)
+        {
             var node = new XmlDocument();
-            node.LoadXml(testSessionStartArgs.Configuration);
+            node.LoadXml(configuration);
             var parameters = node.SelectNodes("//Parameters/Environment");
             for (var i = 0; i < parameters.Count; i++)
             {
@@ -135,17 +162,6 @@ namespace Stryker.DataCollector
                 var value = current.Attributes["value"].Value;
                 _options.Add(name, value);
             }
-
-            var coverageString = _options[ModeEnvironmentVariable];
-            _coverageOn = coverageString != null;
-            _usePipe = (coverageString == PipeMode);
-
-            foreach (var environmentVariable in GetEnvironmentVariables())
-            {
-                Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
-            }
-            Log($"Mode: {(_usePipe ? "pipe" : "env")}");
-            Log($"Test Session start with conf {testSessionStartArgs.Configuration}.");
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)

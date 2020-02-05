@@ -21,7 +21,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -153,7 +152,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
-                    It.Is<string>(settings =>!settings.Contains("DataCollector")),
+                    It.Is<string>(settings =>!settings.Contains("CaptureCoverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -171,7 +170,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
-                    It.Is<string>(settings => settings.Contains("DataCollector")),
+                    It.Is<string>(settings => settings.Contains("CaptureCoverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -200,7 +199,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>   
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
-                    It.Is<string>( s=> !s.Contains("DataCollector")),
+                    It.Is<string>( s=> !s.Contains("CaptureCoverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -240,7 +239,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>   
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<string>>(),
-                    It.Is<string>( s=> !s.Contains("DataCollector")),
+                    It.Is<string>( s=> !s.Contains("CaptureCoverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -479,7 +478,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, "perTest", abortTestOnFail:false, allowSimultaneousTesting:true);
+                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, abortTestOnFail:false, allowSimultaneousTesting:true);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
                 _mutants.Add(new FileLeaf{Mutants = new []{new Mutant{Id = 2}, new Mutant{Id = 3}}});
