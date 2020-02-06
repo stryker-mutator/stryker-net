@@ -34,7 +34,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
-        private readonly Dictionary<string, string> _coverageEnvironment;
         private readonly bool _usePipeForCoverage;
         private ICollection<TestCase> _discoveredTests;
         private ICollection<string> _sources;
@@ -78,7 +77,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 DetectTestFramework(testCasesDiscovered);
             }
             InitializeVsTestConsole();
-            _usePipeForCoverage = flags.HasFlag(OptimizationFlags.UseEnvVariable);
+            _usePipeForCoverage = !flags.HasFlag(OptimizationFlags.UseEnvVariable);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -214,7 +213,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage.");
-            var testResults = RunTestSession(null, _coverageEnvironment, GenerateRunSettings(null, true, _usePipeForCoverage, null));
+            var testResults = RunTestSession(null, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
             ParseResultsForCoverage(testResults, mutants);
             return new TestRunResult (true );
         }
@@ -277,7 +276,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
-            var testResults = RunTestSession(new []{test}, _coverageEnvironment, GenerateRunSettings(null, true, _usePipeForCoverage, null));
+            var testResults = RunTestSession(new []{test}, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
             ParseResultsForCoverage(testResults.Where(x => x.TestCase.Id == test.Id), mutants);
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
             _vsTestConsole.CancelTestRun();
@@ -382,7 +381,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 if (_testFramework.HasFlag(TestFramework.xUnit))
                 {
-                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>+Environment.NewLine";
+                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>"+Environment.NewLine;
                 }
             }
             var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>"+Environment.NewLine : "";

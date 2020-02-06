@@ -44,9 +44,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
-            foreach (var (key, value) in _envVars)
+            if (_envVars != null)
             {
-                processInfo.EnvironmentVariables[key] = value;
+                foreach (var (key, value) in _envVars)
+                {
+                    processInfo.EnvironmentVariables[key] = value;
+                }
             }
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 

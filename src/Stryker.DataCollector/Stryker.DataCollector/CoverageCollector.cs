@@ -58,7 +58,7 @@ namespace Stryker.DataCollector
             {
                 foreach ( var entry in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id={0} tests='{1}'/>", entry.Key, string.Join(",", entry.Value));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key, string.Join(",", entry.Value));
                 }
             }
             configuration.Append("</Parameters>");
