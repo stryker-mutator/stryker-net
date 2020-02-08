@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v2.1": {
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Direct",
-        "requested": "[2.5.0, )",
-        "resolved": "2.5.0",
-        "contentHash": "ipNPLyJysDgnsnU+p/m5s9TFpoM7lD7USe8zBEbJgOiVp/b4xvfJ6MPvBANajcMvNkDikFEb6w/skmWQhzpHYw==",
+        "requested": "[2.5.1, )",
+        "resolved": "2.5.1",
+        "contentHash": "l+mpee+BgNW/22RgXm1Xo2ElWh8jii3F+tavWrggEiX19va/BsGtGY9SG/km/yBG/6Q4kN8uhV77lH48pai1cw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "4.7.0"
         }
