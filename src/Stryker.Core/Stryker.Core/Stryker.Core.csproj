@@ -19,6 +19,11 @@
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
+    <MicrosoftExtensionsConfiguration>3.1.1</MicrosoftExtensionsConfiguration>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs" />
@@ -35,13 +40,13 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
     <PackageReference Include="DotNet.Glob" Version="3.0.5" />
     <PackageReference Include="Buildalyzer" Version="2.5.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.1" />
-    <PackageReference Include="Microsoft.TestPlatform" Version="16.5.0" />
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.5.0" />
-    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="16.5.0" />
-    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="16.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" />
+    <PackageReference Include="Microsoft.TestPlatform" Version="$(MicrosoftTestPlatform)" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" />
+    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.0.96" />
     <PackageReference Include="Mono.Cecil" Version="0.11.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
