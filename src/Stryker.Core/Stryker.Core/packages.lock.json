@@ -92,9 +92,9 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "1YDiy17mD8S/c/IqFX4hVLK8+KyqbWDTR3rVBciFC/QJCG7gBsYb3byGUDdTBSpKdBvUwGlt+lTK8Se++M65vQ=="
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "6cHAcPNDf7itR729Mg+3N3Q3NfxRHgYYfrXTdct9obqUC6yoTiC/W2EdTkbqVC4fyeH7ZT7aoxiJgzi/O8OLvg=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
