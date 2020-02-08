@@ -92,30 +92,30 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "1YDiy17mD8S/c/IqFX4hVLK8+KyqbWDTR3rVBciFC/QJCG7gBsYb3byGUDdTBSpKdBvUwGlt+lTK8Se++M65vQ=="
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "6cHAcPNDf7itR729Mg+3N3Q3NfxRHgYYfrXTdct9obqUC6yoTiC/W2EdTkbqVC4fyeH7ZT7aoxiJgzi/O8OLvg=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "F4ZZ1c6J6VqeFhfPPBZNk+jr7VU5qYgxoClWK+VOJMRwGYc5edYY5q9CGtNgT93VcVGQ/ie6Gn8J9HDoST1fAg==",
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "NnLFxmFBCAS6kye2JFszD5WKgj4Zve5KX/R0mhYwh6BVnSeybI2unRnjEPtLyY3CAVhwrY4bh/8LNFtslAcGZg==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "qAei4/DXfibz2W9WhBOhlrneJZW5JJYR3T6D3gAyvexViY6uEY13kwtAd4gA803MbjlsdMMoJskganuOdTSDrQ=="
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "dB/OoM6LYrGYRBb2/WFruoQuq0KYcaIf5V9PxiZY1FQHkK+opq+TAuDAtyjeYVyTuEFNqdHfJdgmG6dngJFK6w=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "H5XAo+MkgyRm38jjXLSTvORV6viDnyEcuO8BJNppq/wxR1oXRqxSFx2i+S5wMNSZTsztU3v4nBwR/2mnGwvOdQ==",
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "swiVIKahahAp3Otj+0ovphZh2+mAWvnhfYl1J4dG/k1QcKb+PIMjfPE6BOTLfFDi8PyhZP9ChEN7wOYd7w3TrA==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1448,7 +1448,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.3.0"
+          "Microsoft.TestPlatform.ObjectModel": "16.5.0"
         }
       }
     }
