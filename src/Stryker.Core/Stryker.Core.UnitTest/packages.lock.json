@@ -10,12 +10,12 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "Drk/adJoZYuMx3MuhcpEqfXDrAOwv56tjq9SlqeO20+oTlNfGEebw2dmMRTl17EwlUYctdmZv5VzTZVncU1aVw==",
+        "requested": "[16.5.0, )",
+        "resolved": "16.5.0",
+        "contentHash": "yHZOhVSPuGqgHi+KhHiAZqNY08avkQraXKvgKgDU8c/ztmGzw7gmukkv49EaTq6T3xmp4XroWk3gAlbJHMxl8w==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "16.3.0",
-          "Microsoft.TestPlatform.TestHost": "16.3.0"
+          "Microsoft.CodeCoverage": "16.5.0",
+          "Microsoft.TestPlatform.TestHost": "16.5.0"
         }
       },
       "Microsoft.NETCore.App": {
@@ -457,10 +457,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "16.3.0",
-        "contentHash": "N44oK5yrJw70tJh/f5XrDT9ibywsz/t9hm9f59DojtfJphYG55oXf/2ht9h0iNMyzpuh7lFAWPdRcZ9v0Oj82w==",
+        "resolved": "16.5.0",
+        "contentHash": "ytGymboQIvjNX5pLC0yp/Bz9sGDHqSnLQgBRtd4VrqOUgKmmcfxMYZ6p0TBZgAT1oijdC6xqUZ7rl8mbaaXTJw==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.3.0",
+          "Microsoft.TestPlatform.ObjectModel": "16.5.0",
           "Newtonsoft.Json": "9.0.1"
         }
       },
