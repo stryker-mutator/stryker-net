@@ -1702,7 +1702,7 @@
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "2.5.1",
           "Microsoft.Extensions.Configuration.Binder": "3.1.1",
-          "stryker": "0.15.0"
+          "stryker": "0.16.0"
         }
       },
       "stryker": {
@@ -1726,7 +1726,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "1.1.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.15.0",
+          "Stryker.DataCollector": "0.16.0",
           "System.IO.Abstractions": "8.0.5"
         }
       },
