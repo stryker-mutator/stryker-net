@@ -96,7 +96,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             if (mutants != null)
             {
-                envVars["ActiveMutation"] = string.Join(',', mutants.Select(m => m.Id.ToString()));
+                //envVars["ActiveMutation"] = string.Join(',', mutants.Select(m => m.Id.ToString()));
                 // if we optimize the number of tests to run
                 if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {

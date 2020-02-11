@@ -12,6 +12,18 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace Stryker.DataCollector
 {
+    public interface IEnvironmentVariablesHandler
+    {
+        void SetVariable(string name, string value);
+    }
+
+    internal class EnvironmentVariablesHandler : IEnvironmentVariablesHandler
+    {
+        public void SetVariable(string name, string value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+        }
+    }
 
     [DataCollectorFriendlyName("StrykerCoverage")]
     [DataCollectorTypeUri("https://stryker-mutator.io/")]
@@ -25,6 +37,9 @@ namespace Stryker.DataCollector
         private string _lastMessage;
         private bool _coverageOn;
         private Action<string> _logger;
+        private readonly IEnvironmentVariablesHandler _environmentVariablesHandler;
+        private readonly IDictionary<string, string> _mutantTestedBy = new Dictionary<string, string>();
+        private readonly IList<string> _mutantsAllWaysTested = new List<string>();
 
         public const string ModeEnvironmentVariable = "CaptureCoverage";
         public const string EnvMode = "env";
@@ -32,10 +47,17 @@ namespace Stryker.DataCollector
         private const string EnvName = "CoveredMutants";
 
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
-
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
+
+
+        public CoverageCollector(IEnvironmentVariablesHandler environmentVariablesHandler = null)
+        {
+            _environmentVariablesHandler = environmentVariablesHandler ?? new EnvironmentVariablesHandler();
+        }
+
+        public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
 
         public static string GetVsTestSettings(bool needCoverage, bool usePipe,
             Dictionary<int, IList<string>> mutantTestsMap)
@@ -141,7 +163,7 @@ namespace Stryker.DataCollector
 
                 foreach (var environmentVariable in GetEnvironmentVariables())
                 {
-                    Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
+                    _environmentVariablesHandler.SetVariable(environmentVariable.Key, environmentVariable.Value);
                 }
 
                 Log($"Mode: {(_usePipe ? "pipe" : "env")}");
@@ -158,9 +180,36 @@ namespace Stryker.DataCollector
             for (var i = 0; i < parameters.Count; i++)
             {
                 var current = parameters[i];
+                if (current.Attributes == null)
+                {
+                    Log("Invalid environment entry in configuration.");
+                    continue;
+                }
                 var name = current.Attributes["name"].Value;
                 var value = current.Attributes["value"].Value;
                 _options.Add(name, value);
+            }
+
+            var testMapping = node.SelectNodes("//Parameters/Mutant");
+            if (testMapping !=null)
+            {
+                for (var i = 0; i < testMapping.Count; i++)
+                {
+                    var current = testMapping[i];
+                    var id = current.Attributes["id"].Value;
+                    var tests = current.Attributes["tests"].Value;
+                    if (string.IsNullOrEmpty(tests))
+                    {
+                        _mutantsAllWaysTested.Add(id);
+                    }
+                    else
+                    {
+                        foreach (var test in tests.Split(','))
+                        {
+                            _mutantTestedBy[test] = id;
+                        }
+                    }
+                }
             }
         }
 
@@ -186,6 +235,18 @@ namespace Stryker.DataCollector
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
             Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts.");
+            // we need to set the proper mutant
+            var  testId = testCaseStartArgs.TestCase.Id.ToString();
+            string mutantId;
+            if (_mutantTestedBy.ContainsKey(testId))
+            {
+                mutantId = _mutantTestedBy[testId];
+            }
+            else
+            {
+                mutantId = string.Join(",", _mutantsAllWaysTested);
+            }
+            _environmentVariablesHandler.SetVariable("ActiveMutation", mutantId);
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)

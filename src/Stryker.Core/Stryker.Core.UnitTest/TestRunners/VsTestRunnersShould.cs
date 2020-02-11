@@ -21,6 +21,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
+using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -205,18 +208,31 @@ namespace Stryker.Core.UnitTest.TestRunners
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher host) =>
                 {
-                    var mutants = (host as MoqHost).ActiveMutants;
-                    var tests = sources.ToList();
+                    var env = new MockEnvironmentHandler();
+                    var collector = new CoverageCollector(env);
+                    var start = new TestSessionStartArgs
+                    {
+                        Configuration = settings
+                    };
+                    var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+                    collector.Initialize(mock.Object);
+
+                    collector.TestSessionStart(start);
+
+
+                    var mutants = collector.MutantList;
                     if (!results.ContainsKey(mutants))
                     {
                         throw new ArgumentException($"Unexpected mutant run {mutants}");
                     }
 
+                    var tests = sources.ToList();
                     var data = results[mutants].Split(',').Select(e => e.Split('=')).ToList();
                     if (data.Count != tests.Count)
                     {
                         throw new ArgumentException($"Invalid number of tests for mutant run {mutants}: found {tests.Count}, expected {data.Count}");
                     }
+
                     var runResults = new List<TestResult>(data.Count);
                     foreach (var strings in data)
                     {
@@ -233,6 +249,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                     // setup a normal test run
 
                     MoqTestRun(testRunEvents, runResults);
+                    collector.TestSessionEnd(new TestSessionEndArgs());
+
                     endProcess.Set();
                 });
 
@@ -245,7 +263,19 @@ namespace Stryker.Core.UnitTest.TestRunners
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher host) =>
                 {
-                    var mutants = (host as MoqHost).ActiveMutants;
+                    var env = new MockEnvironmentHandler();
+                    var collector = new CoverageCollector(env);
+                    var start = new TestSessionStartArgs
+                    {
+                        Configuration = settings
+                    };
+                    var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+                    collector.Initialize(mock.Object);
+
+                    collector.TestSessionStart(start);
+
+
+                    var mutants = collector.MutantList;
                     var tests = sources.ToList();
                     if (!results.ContainsKey(mutants))
                     {
@@ -291,9 +321,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _targetProject,
                 null,
                 _fileSystem,
-                helper: new Mock<IVsTestHelper>().Object,
+                new Mock<IVsTestHelper>().Object,
                 wrapper: mockVsTest.Object,
-                hostBuilder: ((dictionary, i) => new MoqHost(endProcess, dictionary, i)));
+                hostBuilder: ((dictionary, i) => new MoqHost(endProcess)));
             return mockVsTest;
         }
 
@@ -303,7 +333,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset))
             {
                 var options = new StrykerOptions();
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
+                BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 // make sure we have discovered first and second tests
                 runner.DiscoverNumberOfTests().ShouldBe(_testCases.Count);
             }
@@ -532,23 +562,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         private class MoqHost : IStrykerTestHostLauncher
         {
             private readonly WaitHandle _handle;
-            private readonly IDictionary<string, string> _dico;
-            private readonly int _id;
 
-            public MoqHost(WaitHandle handle, IDictionary<string, string> dico, int id)
+            public MoqHost(WaitHandle handle)
             {
                 _handle = handle;
-                _dico = dico;
-                _id = id;
-            }
-
-            public string ActiveMutants
-            {
-                get
-                {
-                    _dico.TryGetValue("ActiveMutation", out var result);
-                    return result;
-                }
             }
 
             public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
