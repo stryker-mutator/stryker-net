@@ -114,8 +114,8 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
-            rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()))
-                            .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode) =>
+            rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
+                            .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode, bool _) =>
                             new RollbackProcessResult()
                             {
                                 Compilation = compilation
@@ -127,7 +127,7 @@ namespace ExampleProject
             {
                 Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>()),
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
                 Times.AtLeast(2));
         }
 

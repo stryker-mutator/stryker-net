@@ -7,4 +7,8 @@
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <SystemIOAbstractions>8.0.5</SystemIOAbstractions>
+  </PropertyGroup>
 </Project>

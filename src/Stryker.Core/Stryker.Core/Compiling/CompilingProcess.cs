@@ -76,7 +76,7 @@ namespace Stryker.Core.Compiling
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, devMode, retryCount);
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, false, devMode, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error))
@@ -86,10 +86,11 @@ namespace Stryker.Core.Compiling
                 throw new StrykerCompilationException("General Build Failure detected.");
             }
 
-            for (var count = 1; !emitResult.Success && count < 50; count++)
+            var maxAttempt = 50;
+            for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, rollbackProcessResult?.Compilation ?? compilation, emitResult, devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
             }
 
             if (!emitResult.Success)
@@ -113,6 +114,7 @@ namespace Stryker.Core.Compiling
             MemoryStream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
+            bool lastAttempt,
             bool devMode,
             int retryCount)
         {
@@ -121,7 +123,7 @@ namespace Stryker.Core.Compiling
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, devMode);
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, devMode);
                 compilation = rollbackProcessResult.Compilation;
             }
 
