@@ -51,10 +51,13 @@ namespace Stryker.DataCollector
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
-
-        public CoverageCollector(IEnvironmentVariablesHandler environmentVariablesHandler = null)
+        public CoverageCollector() : this(new EnvironmentVariablesHandler())
         {
-            _environmentVariablesHandler = environmentVariablesHandler ?? new EnvironmentVariablesHandler();
+        }
+
+        public CoverageCollector(IEnvironmentVariablesHandler environmentVariablesHandler)
+        {
+            _environmentVariablesHandler = environmentVariablesHandler;
         }
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
@@ -130,6 +133,7 @@ namespace Stryker.DataCollector
 
         public void Log(string message)
         {
+            Console.Error.WriteLine(message);
             _logger?.Invoke(message);
         }
 
