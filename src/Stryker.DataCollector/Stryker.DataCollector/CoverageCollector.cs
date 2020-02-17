@@ -262,9 +262,8 @@ namespace Stryker.DataCollector
                     .Where( assembly => assembly.FullName.Contains("NFluent") && !assembly.FullName.Contains("Tests"));
                 var types = assemblies
                     .SelectMany(x => x.ExportedTypes);
-                Type controller;
 
-                controller = types.FirstOrDefault(t => t.Name == "MutantControl");
+                var controller = types.FirstOrDefault(t => t.Name == "MutantControl");
                 _activeMutantField = controller?.GetField("ActiveMutant");
             }
             

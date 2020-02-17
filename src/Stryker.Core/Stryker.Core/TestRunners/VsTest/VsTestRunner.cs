@@ -265,13 +265,13 @@ namespace Stryker.Core.TestRunners.VsTest
                             {
                                 mutant.CoveringTests.Add(testResult.TestCase);
                             }
-                            if (!staticMutants.Contains(mutant.Id)) continue;
+
+                            if (!staticMutants.Contains(mutant.Id))
+                            {
+                                continue;
+                            }
                             // the mutant is used in static initialization context
                             mutant.IsStaticValue = true;
-                            if (!_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                            {
-                                mutant.MustRunAgainstAllTests = true;
-                            }
                         }
                     }
                 }

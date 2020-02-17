@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutants
 
         public void AnalyzeTestRun(TestListDescription failedTests, TestListDescription resultRanTests)
         {
-            if (failedTests.GetList().Any(t =>IsStaticValue ||  CoveringTests.Contains(t.Guid)))
+            if (failedTests.GetList().Any(t =>MustRunAgainstAllTests ||  CoveringTests.Contains(t.Guid)))
             {
                 // a test killed us
                 ResultStatus = MutantStatus.Killed;

@@ -61,7 +61,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 else if (!CancelRequested)
                 {
-                    _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
+                    _logger.LogDebug(testRunCompleteArgs.Error, "VsTest error:");
                 }
             }
 
