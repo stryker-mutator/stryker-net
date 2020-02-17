@@ -20,6 +20,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private Process _currentProcess;
         private readonly object _lck = new object();
         private readonly int _id;
+
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher()

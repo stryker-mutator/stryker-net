@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Stryker
 {
-    public class MutantControl
+    public static class MutantControl
     {
         private static List<int> _coveredMutants;
         private static StringBuilder _mutantsAsString;
@@ -16,10 +16,11 @@ namespace Stryker
         private static bool captureCoverage;
         private static Object _coverageLock = new Object();
 
+        // this attributs will be set by Stryker Data Collector before eachtest
+        public static int ActiveMutant = -1;
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif
-        private static readonly HashSet<int> ActiveMutations = new HashSet<int>();
         public const string EnvironmentPipeName = "Coverage";
 
         static MutantControl()
@@ -35,10 +36,6 @@ namespace Stryker
 
         public static void InitCoverage()
         {
-            foreach (string entry in (Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1").Split(','))
-            {
-                ActiveMutations.Add(int.Parse(entry));
-            }
             string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
 #if !STRYKER_NO_PIPE
 
@@ -130,48 +127,59 @@ namespace Stryker
         {
             if (captureCoverage)
             {
-                lock (_coverageLock)
+                CaptureCoverage(id);
+                return false;
+            }
+
+            if (ActiveMutant == -1)
+            {
+                ActiveMutant = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation"));
+            }
+
+            return id == ActiveMutant;
+        }
+
+        private static void CaptureCoverage(int id)
+        {
+            lock (_coverageLock)
+            {
+                if (!usePipe)
+                {
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
+                    {
+                        ResetCoverage();
+                    }
+                }
+
+                bool add = false;
+                if (!_coveredMutants.Contains(id))
+                {
+                    _coveredMutants.Add(id);
+                    if (_mutantsAsString.Length > 0)
+                    {
+                        _mutantsAsString.Append(',');
+                    }
+                    _mutantsAsString.Append(id.ToString());
+                    add = true;
+                }
+                if (MutantContext.InStatic() && _coveredMutants.Contains(id))
+                {
+                    if (_staticMutantsAsStrings.Length > 0)
+                    {
+                        _staticMutantsAsStrings.Append(',');
+                    }
+                    _staticMutantsAsStrings.Append(id.ToString());
+                    add = true;
+                }
+
+                if (add)
                 {
                     if (!usePipe)
                     {
-                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
-                        {
-                            ResetCoverage();
-                        }
+                        Environment.SetEnvironmentVariable(envName, BuildReport());
                     }
-
-                    bool add = false;
-                    if (!_coveredMutants.Contains(id))
-                    {
-                        _coveredMutants.Add(id);
-                        if (_mutantsAsString.Length > 0)
-                        {
-                            _mutantsAsString.Append(',');
-                        }
-                        _mutantsAsString.Append(id.ToString());
-                        add = true;
-                    }
-                    if (MutantContext.InStatic() && _coveredMutants.Contains(id))
-                    {
-                        if (_staticMutantsAsStrings.Length > 0)
-                        {
-                            _staticMutantsAsStrings.Append(',');
-                        }
-                        _staticMutantsAsStrings.Append(id.ToString());
-                        add = true;
-                    }
-
-                    if (add)
-                    {
-                        if (!usePipe)
-                        {
-                            Environment.SetEnvironmentVariable(envName, BuildReport());
-                        }
-                    }
-
                 }
             }
-            return ActiveMutations.Contains(id);
         }
     }
 }

@@ -9,6 +9,7 @@
     "log-level": "trace",
     "log-file": "true",
     "project-file": "TargetProject.csproj",
+    "test-multiple-mutants": "true",
     "excluded-mutations": [
       "string"
     ]

@@ -38,8 +38,8 @@ namespace Stryker.DataCollector
         private bool _coverageOn;
         private Action<string> _logger;
         private readonly IEnvironmentVariablesHandler _environmentVariablesHandler;
-        private readonly IDictionary<string, string> _mutantTestedBy = new Dictionary<string, string>();
-        private readonly IList<string> _mutantsAllWaysTested = new List<string>();
+        private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
+        private readonly IList<int> _mutantsAllWaysTested = new List<int>();
 
         public const string ModeEnvironmentVariable = "CaptureCoverage";
         public const string EnvMode = "env";
@@ -51,9 +51,11 @@ namespace Stryker.DataCollector
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
+        private FieldInfo _activeMutantField;
+        private const string ActiveMutantVariable = "ActiveMutation";
+
         public CoverageCollector() : this(new EnvironmentVariablesHandler())
-        {
-        }
+        {}
 
         public CoverageCollector(IEnvironmentVariablesHandler environmentVariablesHandler)
         {
@@ -83,7 +85,7 @@ namespace Stryker.DataCollector
             {
                 foreach ( var entry in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key, string.Join(",", entry.Value));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key,  entry.Value == null ? "" : string.Join(",", entry.Value));
                 }
             }
             configuration.Append("</Parameters>");
@@ -109,7 +111,7 @@ namespace Stryker.DataCollector
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
             this._dataSink = dataCollectionSink;
-            Init(true);
+           // Init(true);
         }
 
         public void Init(bool usePipe)
@@ -163,7 +165,7 @@ namespace Stryker.DataCollector
             _coverageOn = coverageString != null;
             if (_coverageOn)
             {
-                _usePipe = (coverageString == PipeMode);
+                Init(coverageString == PipeMode);
 
                 foreach (var environmentVariable in GetEnvironmentVariables())
                 {
@@ -200,7 +202,7 @@ namespace Stryker.DataCollector
                 for (var i = 0; i < testMapping.Count; i++)
                 {
                     var current = testMapping[i];
-                    var id = current.Attributes["id"].Value;
+                    var id = int.Parse(current.Attributes["id"].Value);
                     var tests = current.Attributes["tests"].Value;
                     if (string.IsNullOrEmpty(tests))
                     {
@@ -238,19 +240,44 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts.");
+            if (_coverageOn)
+            {
+                return;
+            }
             // we need to set the proper mutant
             var  testId = testCaseStartArgs.TestCase.Id.ToString();
-            string mutantId;
+            int mutantId;
             if (_mutantTestedBy.ContainsKey(testId))
             {
                 mutantId = _mutantTestedBy[testId];
             }
             else
             {
-                mutantId = string.Join(",", _mutantsAllWaysTested);
+                mutantId =  _mutantsAllWaysTested[0];
             }
-            _environmentVariablesHandler.SetVariable("ActiveMutation", mutantId);
+
+            if (_activeMutantField == null)
+            {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic)
+                    .Where( assembly => assembly.FullName.Contains("NFluent") && !assembly.FullName.Contains("Tests"));
+                var types = assemblies
+                    .SelectMany(x => x.ExportedTypes);
+                Type controller;
+
+                controller = types.FirstOrDefault(t => t.Name == "MutantControl");
+                _activeMutantField = controller.GetField("ActiveMutant");
+            }
+            
+            if (_activeMutantField == null)
+            {
+                _environmentVariablesHandler.SetVariable(ActiveMutantVariable, mutantId.ToString());
+                Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (env).");
+            }
+            else
+            {
+                _activeMutantField.SetValue(null, mutantId);
+                Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
+            }
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
@@ -260,6 +287,11 @@ namespace Stryker.DataCollector
             {
                 return;
             }
+            PublishCoverageData(testCaseEndArgs);
+        }
+
+        private void PublishCoverageData(TestCaseEndArgs testCaseEndArgs)
+        {
             var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
             if (_usePipe)
             {
@@ -267,6 +299,7 @@ namespace Stryker.DataCollector
                 {
                     throw new InvalidOperationException("connection");
                 }
+
                 _client.SendText($"DUMP {testCaseDisplayName}");
             }
 
@@ -279,11 +312,13 @@ namespace Stryker.DataCollector
                     // test covers no mutant, but empty string is not a valid value
                     coverData = " ";
                 }
+
                 _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
             }
             else
             {
-                Log($"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
+                Log(
+                    $"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
             }
         }
 
@@ -314,6 +349,7 @@ namespace Stryker.DataCollector
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
             Log($"TestSession ends.");
+            if (!_usePipe) return;
             _client?.Dispose();
             _client = null;
             _server.RaiseNewClientEvent -= ConnectionEstablished;

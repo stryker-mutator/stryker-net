@@ -100,14 +100,19 @@ namespace Stryker.Core.TestRunners.VsTest
                 // if we optimize the number of tests to run
                 if (_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
+                    var needAll = false;
                     foreach (var mutant in mutants)
                     {
-                        mutantTestsMap.Add(mutant.Id, mutant.CoveringTests.GetList().Select(t => t.Guid).ToList());
+                        var tests = mutant.CoveringTests.GetList().Select(t => t.Guid).ToList();
+                        if (mutant.IsStaticValue && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                        {
+                            tests = null;
+                            needAll = true;
+                        }
+                        mutantTestsMap.Add(mutant.Id, tests);
                     }
-                    // we must run all tests if the mutants needs it (static) except when coverage has been captured by isolated test
-                    var tests = mutants.SelectMany(m => m.CoveringTests.GetList()).Distinct().ToList();
-                    testCases = (mutants.Any(m => m.IsStaticValue) && !_flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                        ? null : _discoveredTests.Where( t => tests.Contains(t)).ToList();
+
+                    testCases = needAll ? null :  mutants.SelectMany(m => m.CoveringTests.GetList()).Distinct().Select( t => _discoveredTests.First( tc => tc.Id.ToString() == t.Guid)).ToList();
 
                     _logger.LogDebug( $"Runner {_id}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] "+
                                       $"against {(testCases == null ? "all tests." : string.Join(", ", testCases.Select(x => x.FullyQualifiedName)))}.");
@@ -308,7 +313,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler, strykerVsTestHostLauncher);
                 }
 
-                // Test host exited signal comes after the run complete
+                // Test host exited signal comes after the run completed
                 strykerVsTestHostLauncher.WaitProcessExit();
 
                 // At this point, run must have complete. Check signal for true
@@ -346,7 +351,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("{1}: VsTest logging set to {0}", traceLevel.ToString(), RunnerId);
+            _logger.LogDebug("{0}: VsTest logging set to {1}", RunnerId, traceLevel.ToString());
             return traceLevel;
         }
 
@@ -372,7 +377,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings =CoverageCollector.GetVsTestSettings(needCoverage, usePipe, mutantTestsMap);
             var settingsForCoverage = string.Empty;
-            if (needCoverage)
+            //if (needCoverage)
             {
                 if (_testFramework.HasFlag(TestFramework.nUnit))
                 {

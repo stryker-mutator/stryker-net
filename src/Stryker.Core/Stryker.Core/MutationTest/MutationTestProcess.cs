@@ -213,7 +213,7 @@ namespace Stryker.Core.MutationTest
                     {
                         var testMutants = new HashSet<Mutant>();
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
-                            (testedMutants, ranTests, failedTests) => 
+                            (testedMutants, failedTests, ranTests) => 
                             {
                                 var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
                                 foreach (var mutant in testedMutants)
@@ -223,20 +223,22 @@ namespace Stryker.Core.MutationTest
                                     {
                                         mustGoOn = true;
                                     }
-                                    else
+                                    else if (!testMutants.Contains(mutant))
                                     {
-                                        if (!testMutants.Contains(mutant))
-                                        {
-                                            testMutants.Add(mutant);
-                                            _reporter.OnMutantTested(mutant);
-                                        }
+                                        testMutants.Add(mutant);
+                                        _reporter.OnMutantTested(mutant);
                                     }
-
                                 }
 
                                 return mustGoOn;
                             });
-
+                        foreach(var mutant in testMutants)
+                        {
+                            if (mutant.ResultStatus == MutantStatus.NotRun)
+                            {
+                                _logger.LogInformation($"Mutant {mutant.Id} not tested.");
+                            }
+                        }
                     });
             }
 
