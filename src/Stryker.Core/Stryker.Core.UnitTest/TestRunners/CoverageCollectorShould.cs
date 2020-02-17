@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(true, true, mutantMap)
+                Configuration = CoverageCollector.GetVsTestSettings(false, true, mutantMap)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);

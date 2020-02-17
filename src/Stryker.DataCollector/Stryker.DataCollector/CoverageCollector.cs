@@ -265,7 +265,7 @@ namespace Stryker.DataCollector
                 Type controller;
 
                 controller = types.FirstOrDefault(t => t.Name == "MutantControl");
-                _activeMutantField = controller.GetField("ActiveMutant");
+                _activeMutantField = controller?.GetField("ActiveMutant");
             }
             
             if (_activeMutantField == null)
