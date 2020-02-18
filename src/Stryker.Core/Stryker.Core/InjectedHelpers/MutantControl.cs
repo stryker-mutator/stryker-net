@@ -17,7 +17,7 @@ namespace Stryker
         private static Object _coverageLock = new Object();
 
         // this attributs will be set by Stryker Data Collector before eachtest
-        public static int ActiveMutant = -1;
+        public volatile static int ActiveMutant = -1;
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif

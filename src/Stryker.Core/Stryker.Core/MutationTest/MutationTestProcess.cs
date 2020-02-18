@@ -232,11 +232,15 @@ namespace Stryker.Core.MutationTest
 
                                 return mustGoOn;
                             });
-                        foreach(var mutant in testMutants)
+                        foreach(var mutant in mutants)
                         {
                             if (mutant.ResultStatus == MutantStatus.NotRun)
                             {
-                                _logger.LogInformation($"Mutant {mutant.Id} not tested.");
+                                _logger.LogWarning($"Mutant {mutant.Id} not tested.");
+                            }
+                            else if (!testMutants.Contains(mutant))
+                            {
+                                _reporter.OnMutantTested(mutant);
                             }
                         }
                     });
@@ -281,8 +285,9 @@ namespace Stryker.Core.MutationTest
                     blocks.Add(nextBlock);
                 }
 
+                var count = blocks.SelectMany(x => x).Count();
                 _logger.LogInformation(
-                    $"{blocks.SelectMany(x => x).Count()} mutants will run in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+                    $"{count} mutants will run in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
                 return blocks;
             }
             else

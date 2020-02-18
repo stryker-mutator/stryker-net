@@ -140,7 +140,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     .Select(tr => (TestDescription) tr.TestCase));
                 var remainingMutants = update?.Invoke(mutants, failedTest, tests);
                 if (handlerTestResults.Count < expectedTests &&
-                    remainingMutants == false)
+                    remainingMutants == false && !_aborted )
                 {
                     // all mutants status have been resolved, we can stop
                     _logger.LogDebug($"Runner {_id}: each mutant's fate has been established, we can abort.");
@@ -322,8 +322,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 eventHandler.ResultsUpdated -= HandlerUpdate;
                 eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-                if (!_vsTestFailed || retries > 10) 
+                if (!_vsTestFailed || retries > 10)
+                {
                     return eventHandler.TestResults;
+                }
                 _vsTestConsole = PrepareVsTestConsole();
                 _vsTestFailed = false;
 
@@ -351,7 +353,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("{0}: VsTest logging set to {1}", RunnerId, traceLevel.ToString());
+            _logger.LogDebug("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
             return traceLevel;
         }
 
@@ -381,12 +383,12 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (_testFramework.HasFlag(TestFramework.nUnit))
                 {
-                    settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>"+Environment.NewLine;
+                    settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
                 }
 
                 if (_testFramework.HasFlag(TestFramework.xUnit))
                 {
-                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>"+Environment.NewLine;
+                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
                 }
             }
             var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>"+Environment.NewLine : "";
@@ -472,6 +474,7 @@ $@"<RunSettings>
             {
                 return;
             }
+
             if (disposing)
             {
                 try
