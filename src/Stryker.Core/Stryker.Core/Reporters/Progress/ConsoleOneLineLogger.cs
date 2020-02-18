@@ -49,8 +49,15 @@ namespace Stryker.Core.Reporters.Progress
 
             if (_hasConsole)
             {
-                currentCursorLeft = Math.Min(currentCursorLeft, Console.BufferWidth - 1);
-                currentCursorTop = Math.Min(currentCursorTop, Console.BufferHeight - 1);
+                if (Console.BufferWidth > 0)
+                {
+                    currentCursorLeft = Math.Min(currentCursorLeft, Console.BufferWidth - 1);
+                }
+
+                if (Console.BufferHeight > 0)
+                {
+                    currentCursorTop = Math.Min(currentCursorTop, Console.BufferHeight - 1);
+                }
                 Console.SetCursorPosition(currentCursorLeft, currentCursorTop);
             }
         }
