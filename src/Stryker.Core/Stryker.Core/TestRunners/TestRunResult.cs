@@ -7,35 +7,31 @@ namespace Stryker.Core.TestRunners
     {
         public TestRunResult(bool success, string message = null)
         {
-            Success = success;
-            FailingTests = !success ? TestListDescription.EveryTest() : new TestListDescription(ArraySegment<TestDescription>.Empty);
+            FailingTests = !success ? TestListDescription.EveryTest() : TestListDescription.NoTest();
             RanTests = TestListDescription.EveryTest();
             ResultMessage = message;
         }
 
-        public TestRunResult(TestListDescription ranTests, TestListDescription failedTests, string message)
+        public TestRunResult(TestListDescription ranTests, TestListDescription failedTests, TestListDescription timedOutTest, string message)
         {
             RanTests = ranTests;
             FailingTests = failedTests;
+            TimedOutTests = timedOutTest;
             ResultMessage = message;
-            Success = failedTests.IsEmpty;
         }
 
-        public static TestRunResult TimedOut(TestListDescription ranTests, TestListDescription failedTest,
-            string message)
+        public static TestRunResult TimedOut(TestListDescription ranTests, TestListDescription failedTest, TestListDescription timedOutTests, string message)
         {
-            return new TestRunResult(ranTests, failedTest, message) { TimeOut = true};
+            return new TestRunResult(ranTests, failedTest, timedOutTests, message);
         }
 
         public TestListDescription FailingTests { get; set; }
-
         public TestListDescription RanTests { get; }
-        public bool Success { get; private set; }
-        public bool TimeOut { get; private set; }
+        public TestListDescription TimedOutTests { get; }
         public string ResultMessage { get; set; }
+
         public void Merge(TestRunResult other)
         {
-            Success = Success && other.Success;
             ResultMessage += other.ResultMessage;
             FailingTests.AddTests(other.FailingTests);
         }

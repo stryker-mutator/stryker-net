@@ -29,64 +29,59 @@ namespace Stryker.Core.MutationTest
 
         public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
         {
-            TestRunResult result = null;
-            Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (TestRunner is IMultiTestRunner multi)
+            for (;;)
             {
-                result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-            }
-            else
-            {
-                foreach (var mutant in mutantsToTest)
+                TestRunResult result = null;
+                Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
+                if (TestRunner is IMultiTestRunner multi)
                 {
-                    var testRunResult = TestRunner.RunAll(timeoutMs, mutant, updateHandler);
-                    if (result == null)
-                    {
-                        result = testRunResult;
-                    }
-                    else
-                    {
-                        result.Merge(testRunResult);
-                    }
-                }
-            }
-
-            Logger.LogDebug(
-                $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.Success ? "success" : "failed")} with output: {result.ResultMessage}");
-
-            var remainingMutants = new List<Mutant>();
-            foreach (var mutant in mutantsToTest)
-            {
-                mutant.AnalyzeTestRun(result.FailingTests, result.RanTests);
-                if (mutant.ResultStatus == MutantStatus.NotRun)
-                {
-                    // test run is not conclusive
-                    remainingMutants.Add(mutant);
-                }
-            }
-
-            if (result.TimeOut)
-            {
-                if (remainingMutants.Count == 1)
-                {
-                    remainingMutants[0].ResultStatus = MutantStatus.Timeout;
+                    result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
                 }
                 else
                 {
-                    // we will test mutants in isolation.
-                    foreach (var remainingMutant in remainingMutants)
+                    foreach (var mutant in mutantsToTest)
                     {
-                        result = TestRunner.RunAll(timeoutMs, remainingMutant, updateHandler);
-                        if (result.TimeOut)
+                        var testRunResult = TestRunner.RunAll(timeoutMs, mutant, updateHandler);
+                        if (result == null)
                         {
-                            remainingMutant.ResultStatus = MutantStatus.Timeout;
+                            result = testRunResult;
                         }
                         else
                         {
-                            remainingMutant.AnalyzeTestRun(result.FailingTests, result.RanTests);
+                            result.Merge(testRunResult);
                         }
                     }
                 }
+
+                Logger.LogDebug(
+                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
+
+                var remainingMutants = new List<Mutant>();
+                foreach (var mutant in mutantsToTest)
+                {
+                    if (mutant.ResultStatus == MutantStatus.NotRun)
+                    {
+                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
+                    }
+
+                    if (mutant.ResultStatus == MutantStatus.NotRun)
+                    {
+                        // test run is not conclusive
+                        remainingMutants.Add(mutant);
+                    }
+                }
+                if (remainingMutants.Count == 0)
+                {
+                    return;
+                }
+
+                if (remainingMutants.Count == mutantsToTest.Count)
+                {
+                    Logger.LogError($"Stryker failed to test {remainingMutants.Count} mutant(s).");
+                    return;
+                }
+                Logger.LogDebug("Not all mutants were tested.");
+                mutantsToTest = remainingMutants;
             }
         }
     }

@@ -16,7 +16,7 @@ namespace Stryker.Core.TestRunners
         private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
-        private IEnumerable<string> _testBinariesPaths;
+        private readonly IEnumerable<string> _testBinariesPaths;
 
         public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, IEnumerable<string> testBinariesPaths)
         {
@@ -39,7 +39,7 @@ namespace Stryker.Core.TestRunners
             try
             {
                 var res= LaunchTestProcess(timeoutMs, envVars);
-                update?.Invoke(new[] {mutant}, res.RanTests, res.FailingTests);
+                update?.Invoke(new[] {mutant}, res.RanTests, res.FailingTests, res.TimedOutTests);
                 return res;
             }
             catch (OperationCanceledException)
@@ -49,7 +49,7 @@ namespace Stryker.Core.TestRunners
                 {
                     mutant.ResultStatus = MutantStatus.Timeout;
                 }
-                return TestRunResult.TimedOut(emptyList,  emptyList, "time out");
+                return TestRunResult.TimedOut(emptyList,  emptyList, TestListDescription.EveryTest(), "time out");
             }
         }
 

@@ -88,7 +88,6 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
-
             // identify static related structure
             switch (currentNode)
             {

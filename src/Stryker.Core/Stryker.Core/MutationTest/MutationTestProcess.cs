@@ -213,12 +213,12 @@ namespace Stryker.Core.MutationTest
                     {
                         var testMutants = new HashSet<Mutant>();
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
-                            (testedMutants, failedTests, ranTests) => 
+                            (testedMutants, failedTests, ranTests, timedOutTest) => 
                             {
                                 var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
-                                    mutant.AnalyzeTestRun(failedTests, ranTests);
+                                    mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
                                     if (mutant.ResultStatus == MutantStatus.NotRun)
                                     {
                                         mustGoOn = true;
@@ -301,7 +301,7 @@ namespace Stryker.Core.MutationTest
             var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
             var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
             var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
-            if (testResult.Success)
+            if (testResult.FailingTests.Count == 0)
             {
                 // force static mutants to be tested against all tests.
                 if (_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))

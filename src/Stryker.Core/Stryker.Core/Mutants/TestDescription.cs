@@ -62,10 +62,12 @@ namespace Stryker.Core.Mutants
     {
         private List<TestDescription> _tests;
         private static readonly TestListDescription EveryTests;
+        private static readonly TestListDescription NoTestInstance;
 
         static TestListDescription()
         {
             EveryTests = new TestListDescription(new []{TestDescription.AllTest()});
+            NoTestInstance = new TestListDescription(null);
         }
 
         public TestListDescription()
@@ -82,7 +84,7 @@ namespace Stryker.Core.Mutants
 
         public bool IsEmpty => _tests != null && _tests.Count == 0;
 
-        public int Count => _tests == null ? 0 : _tests.Count;
+        public int Count => _tests?.Count ?? 0;
 
         public void Add(TestDescription test)
         {
@@ -102,9 +104,19 @@ namespace Stryker.Core.Mutants
             return IsEveryTest || _tests.Any(t => t.Guid == id);
         }
 
+        public bool Contains(TestDescription test)
+        {
+            return IsEveryTest || _tests.Any(t => t.Equals(test));
+        }
+
         public static TestListDescription EveryTest()
         {
             return EveryTests;
+        }
+
+        public static TestListDescription NoTest()
+        {
+            return NoTestInstance;
         }
 
         public IReadOnlyList<TestDescription> GetList()
@@ -122,9 +134,14 @@ namespace Stryker.Core.Mutants
             }
         }
 
+        public bool ContainsAny(TestListDescription other)
+        {
+            return _tests?.Any(other.Contains) == true;
+        }
+
         public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)
         {   
-            return _tests?.Any(usedTests.Contains) ?? false;
+            return _tests?.Any(usedTests.Contains) == true;
         }
     }
 }

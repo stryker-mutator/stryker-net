@@ -11,16 +11,25 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class RunEventHandler : ITestRunEventsHandler, IDisposable
+    public interface IRunResults
+    {
+        List<TestResult> TestResults { get; }
+        IReadOnlyList<TestCase> TestsInTimeout { get; }
+    }
+
+    public class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
         private readonly string _runnerId;
+        private readonly List<TestCase> _inProgress = new List<TestCase>();
 
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
         public List<TestResult> TestResults { get; }
+
+        public IReadOnlyList<TestCase> TestsInTimeout { get; private set; }
 
         public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
@@ -31,6 +40,37 @@ namespace Stryker.Core.TestRunners.VsTest
             TestResults = new List<TestResult>();
             _logger = logger;
             _runnerId = runnerId;
+        }
+        
+        private void CaptureTestResults(IEnumerable<TestResult> results)
+        {
+            var testResults = results as TestResult[] ?? results.ToArray();
+            foreach (var testResult in testResults)
+            {
+                var index = _inProgress.FindIndex(t => t.Id == testResult.TestCase.Id);
+                if (index<0)
+                {
+                    continue;
+                }
+                _inProgress.RemoveAt(index);
+            }
+            TestResults.AddRange(testResults);
+        }
+
+
+        public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
+        {
+            if (testRunChangedArgs.ActiveTests != null)
+            {
+                _inProgress.AddRange(testRunChangedArgs.ActiveTests);
+            }
+
+            if (testRunChangedArgs.NewTestResults == null)
+            {
+                return;
+            }
+            CaptureTestResults(testRunChangedArgs.NewTestResults);
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void HandleTestRunComplete(
@@ -43,8 +83,17 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
+            if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
+            {
+                TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
+                if (TestsInTimeout.Count>0)
+                {
+                    TimeOut = true;
+                    ResultsUpdated?.Invoke(this, EventArgs.Empty);  
+                }
+            }
 
-            TimeOut = testRunCompleteArgs.IsAborted;
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
 
             if (testRunCompleteArgs.Error != null)
             {
@@ -64,21 +113,6 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             _waitHandle.Set();
-        }
-
-        private void CaptureTestResults(IEnumerable<TestResult> results)
-        {
-            var testResults = results as TestResult[] ?? results.ToArray();
-            TestResults.AddRange(testResults);
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
-        }
-
-        public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
-        {
-            if (testRunChangedArgs?.NewTestResults != null)
-            {
-                CaptureTestResults(testRunChangedArgs.NewTestResults);
-            }
         }
 
         public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)

@@ -37,18 +37,22 @@ namespace Stryker.Core.Mutants
 
         public string LongName =>
             $"{Mutation?.DisplayName} on line {Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
+
         public bool IsStaticValue { get; set; }
 
-        public void AnalyzeTestRun(TestListDescription failedTests, TestListDescription resultRanTests)
+        public void AnalyzeTestRun(TestListDescription failedTests, TestListDescription resultRanTests, TestListDescription timedOutTests)
         {
-            if (failedTests.GetList().Any(t =>MustRunAgainstAllTests ||  CoveringTests.Contains(t.Guid)))
+            if (!failedTests.IsEmpty && MustRunAgainstAllTests || failedTests.ContainsAny(CoveringTests))
             {
-                // a test killed us
                 ResultStatus = MutantStatus.Killed;
             }
             else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
             {
                 ResultStatus = MutantStatus.Survived;
+            }
+            else if (!timedOutTests.IsEmpty && CoveringTests.IsEveryTest || CoveringTests.ContainsAny(timedOutTests))
+            {
+                ResultStatus = MutantStatus.Timeout;
             }
         }
     }
