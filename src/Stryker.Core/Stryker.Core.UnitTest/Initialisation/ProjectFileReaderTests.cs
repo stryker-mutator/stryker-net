@@ -1,8 +1,6 @@
-﻿using Moq;
-using Shouldly;
+﻿using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,8 +13,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ProjectFileReader_HappyFlow()
         {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-
             var target = new ProjectFileReader();
 
             var result = target.DetermineProjectUnderTest(new List<string>() { "../ExampleProject/ExampleProject.csproj" }, null);
@@ -26,7 +22,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ProjectFileReader_ShouldThrowOnNoProjectReference()
         {
-            var ex = Assert.Throws<StrykerInputException>(() => 
+            var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 new ProjectFileReader().DetermineProjectUnderTest(Enumerable.Empty<string>(), null);
             });
@@ -65,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
         }
-        
+
         [Theory]
         [InlineData("Project.csproj")]
         [InlineData("project.csproj")]
