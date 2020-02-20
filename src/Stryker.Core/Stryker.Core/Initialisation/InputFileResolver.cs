@@ -51,11 +51,11 @@ namespace Stryker.Core.Initialisation
             string projectUnderTest = null;
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                testProjectFiles = options.TestProjects.Select(FindTestProjectFile).ToList();
+                testProjectFiles = options.TestProjects.Select(FindTestProject).ToList();
             }
             else
             {
-                testProjectFiles.Add(FindTestProjectFile(options.BasePath));
+                testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
             var results = new List<ProjectAnalyzerResult>();
@@ -70,7 +70,7 @@ namespace Stryker.Core.Initialisation
             var reader = new ProjectFileReader();
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                projectUnderTest = FindProjectUnderTestProjectFile(options.BasePath);
+                projectUnderTest = FindProjectUnderTest(options.BasePath);
             }
             else
             {
@@ -253,18 +253,18 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
-        public string FindTestProjectFile(string path)
+        public string FindTestProject(string path)
         {
             var projectFile = FindProjectFile(path);
-            _logger.LogDebug("Using {0} as test project file", projectFile);
+            _logger.LogDebug("Using {0} as test project", projectFile);
 
             return projectFile;
         }
 
-        public string FindProjectUnderTestProjectFile(string path)
+        public string FindProjectUnderTest(string path)
         {
             var projectFile = FindProjectFile(path);
-            _logger.LogDebug("Using {0} as project under test project file", projectFile);
+            _logger.LogDebug("Using {0} as project under test", projectFile);
 
             return projectFile;
         }
