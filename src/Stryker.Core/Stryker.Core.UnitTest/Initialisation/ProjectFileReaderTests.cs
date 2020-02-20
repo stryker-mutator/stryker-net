@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            var target = new ProjectFileReader(processMock.Object);
+            var target = new ProjectFileReader();
 
             var result = target.DetermineProjectUnderTest(new List<string>() { "../ExampleProject/ExampleProject.csproj" }, null);
             result.ShouldBe("../ExampleProject/ExampleProject.csproj");

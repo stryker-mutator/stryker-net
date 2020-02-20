@@ -3,7 +3,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +21,10 @@ namespace Stryker.Core.Initialisation
     public class ProjectFileReader : IProjectFileReader
     {
         private const string ErrorMessage = "Project reference issue.";
-        private INugetRestoreProcess _nugetRestoreProcess { get; set; }
-        private ILogger _logger { get; set; }
+        private readonly INugetRestoreProcess _nugetRestoreProcess;
+        private readonly ILogger _logger;
 
-        public ProjectFileReader(IProcessExecutor processExecutor = null, INugetRestoreProcess nugetRestoreProcess = null)
+        public ProjectFileReader(INugetRestoreProcess nugetRestoreProcess = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
