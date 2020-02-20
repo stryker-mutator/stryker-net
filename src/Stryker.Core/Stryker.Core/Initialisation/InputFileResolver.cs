@@ -46,16 +46,16 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public ProjectInfo ResolveInput(StrykerOptions options)
         {
-            var result = new ProjectInfo();
+            var projectInfo = new ProjectInfo();
             var testProjectFiles = new List<string>();
             string projectUnderTest = null;
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                testProjectFiles = options.TestProjects.Select(FindProjectFile).ToList();
+                testProjectFiles = options.TestProjects.Select(FindTestProjectFile).ToList();
             }
             else
             {
-                testProjectFiles.Add(FindProjectFile(options.BasePath));
+                testProjectFiles.Add(FindTestProjectFile(options.BasePath));
             }
 
             var results = new List<ProjectAnalyzerResult>();
@@ -64,38 +64,38 @@ namespace Stryker.Core.Initialisation
                 // Analyze the test project
                 results.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
             }
-            result.TestProjectAnalyzerResults = results;
+            projectInfo.TestProjectAnalyzerResults = results;
 
             // Determine project under test
             var reader = new ProjectFileReader();
             if (options.TestProjects != null && options.TestProjects.Any())
             {
-                projectUnderTest = FindProjectFile(options.BasePath);
+                projectUnderTest = FindProjectUnderTestProjectFile(options.BasePath);
             }
             else
             {
-                projectUnderTest = reader.DetermineProjectUnderTest(result.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
+                projectUnderTest = reader.DetermineProjectUnderTest(projectInfo.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
             }
 
             _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
 
             // Analyze project under test
-            result.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
+            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
             FolderComposite inputFiles;
-            if (result.ProjectUnderTestAnalyzerResult.SourceFiles!=null && result.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            if (projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildAlyzer(result.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesUsingBuildAlyzer(projectInfo.ProjectUnderTestAnalyzerResult);
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(result.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult);
             }
-            result.ProjectContents = inputFiles;
+            projectInfo.ProjectContents = inputFiles;
 
-            ValidateResult(result, options);
+            ValidateResult(projectInfo, options);
 
-            return result;
+            return projectInfo;
         }
 
         private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult)
@@ -133,7 +133,7 @@ namespace Stryker.Core.Initialisation
                 RelativePathToProjectFile =
                     Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
             };
-            var cache = new Dictionary<string, FolderComposite> {[string.Empty] = rootFolderComposite};
+            var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
             inputFiles.Add(rootFolderComposite);
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
@@ -253,14 +253,30 @@ namespace Stryker.Core.Initialisation
             return folderComposite;
         }
 
+        public string FindTestProjectFile(string path)
+        {
+            var projectFile = FindProjectFile(path);
+            _logger.LogDebug("Using {0} as test project file", projectFile);
+
+            return projectFile;
+        }
+
+        public string FindProjectUnderTestProjectFile(string path)
+        {
+            var projectFile = FindProjectFile(path);
+            _logger.LogDebug("Using {0} as project under test project file", projectFile);
+
+            return projectFile;
+        }
+
         public string FindProjectFile(string path)
         {
-            string[] projectFiles = null;
             if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
             {
                 return path;
             }
 
+            string[] projectFiles;
             try
             {
                 projectFiles = _fileSystem.Directory.GetFileSystemEntries(path, "*.csproj");
@@ -288,7 +304,7 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
             }
-            _logger.LogDebug("Using {0} as project file", projectFiles.Single());
+            _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
 
             return projectFiles.Single();
         }
