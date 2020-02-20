@@ -719,6 +719,46 @@ Please specify a test project name filter that results in one project.
         }
 
         [Fact]
+        public void ShouldSelectCorrectProjectUnderTest_WhenTestProjectsAreGiven()
+        {
+            // Arrange
+            var basePath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder");
+            var testProjectPath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder", "TestProject.csproj");
+            var projectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
+                { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+            });
+
+            var options = new StrykerOptions(
+                basePath: basePath,
+                fileSystem: fileSystem,
+                projectUnderTestNameFilter: "ExampleProject.csproj",
+                testProjects: new List<string> { testProjectPath }
+            );
+
+            var projectFileReaderMock = Mock.Of<IProjectFileReader>(MockBehavior.Strict);
+            Mock.Get(projectFileReaderMock)
+                .Setup(r => r.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns<string, string>((projectFilePath, _) => new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectFilePath = projectFilePath,
+                    References = new string[0]
+                });
+
+            // Act
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock);
+
+            var actual = target.ResolveInput(options);
+
+            // Assert
+            actual.ProjectUnderTestAnalyzerResult.ProjectFilePath.ShouldBe(projectUnderTestPath);
+        }
+
+        [Fact]
         public void ShouldThrowOnMsTestV1Detected()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
