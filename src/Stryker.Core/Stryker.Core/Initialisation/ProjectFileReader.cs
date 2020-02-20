@@ -44,7 +44,8 @@ namespace Stryker.Core.Initialisation
                 try
                 {
                     manager = new AnalyzerManager(solutionFilePath);
-                } catch (InvalidProjectFileException)
+                }
+                catch (InvalidProjectFileException)
                 {
                     throw new StrykerInputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
                 }
@@ -60,7 +61,8 @@ namespace Stryker.Core.Initialisation
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     _nugetRestoreProcess.RestorePackages(solutionFilePath);
                     analyzerResult = manager.GetProject(projectFilePath).Build().First();
-                } else
+                }
+                else
                 {
                     // buildalyzer failed, but seems to work anyway.
                     _logger.LogWarning("Project analyzer result not successful");
@@ -85,7 +87,7 @@ namespace Stryker.Core.Initialisation
 
         public string DetermineProjectUnderTest(IEnumerable<string> projectReferences, string projectUnderTestNameFilter)
         {
-            var referenceChoise = BuildReferenceChoise(projectReferences);
+            var referenceChoice = BuildReferenceChoice(projectReferences);
 
             var stringBuilder = new StringBuilder();
 
@@ -94,7 +96,7 @@ namespace Stryker.Core.Initialisation
                 if (projectReferences.Count() > 1)
                 {
                     stringBuilder.AppendLine("Test project contains more than one project references. Please add the --project-file=[projectname] argument to specify which project to mutate.");
-                    stringBuilder.Append(referenceChoise);
+                    stringBuilder.Append(referenceChoice);
                     AppendExampleIfPossible(stringBuilder, projectReferences);
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
@@ -116,7 +118,7 @@ namespace Stryker.Core.Initialisation
                 {
                     stringBuilder.Append("No project reference matched your --project-file=");
                     stringBuilder.AppendLine(projectUnderTestNameFilter);
-                    stringBuilder.Append(referenceChoise);
+                    stringBuilder.Append(referenceChoice);
                     AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
@@ -126,7 +128,7 @@ namespace Stryker.Core.Initialisation
                     stringBuilder.Append("More than one project reference matched your --project-file=");
                     stringBuilder.Append(projectUnderTestNameFilter);
                     stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
-                    stringBuilder.Append(referenceChoise);
+                    stringBuilder.Append(referenceChoice);
                     AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
                     throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
@@ -151,7 +153,7 @@ namespace Stryker.Core.Initialisation
             builder.AppendLine($"Example: --project-file={otherProjectReference}");
         }
 
-        private string BuildReferenceChoise(IEnumerable<string> projectReferences)
+        private string BuildReferenceChoice(IEnumerable<string> projectReferences)
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"Choose one of the following references:");
