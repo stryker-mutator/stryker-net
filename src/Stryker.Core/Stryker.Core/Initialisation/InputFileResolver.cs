@@ -67,14 +67,13 @@ namespace Stryker.Core.Initialisation
             projectInfo.TestProjectAnalyzerResults = results;
 
             // Determine project under test
-            var reader = new ProjectFileReader();
             if (options.TestProjects != null && options.TestProjects.Any())
             {
                 projectUnderTest = FindProjectUnderTest(options.BasePath);
             }
             else
             {
-                projectUnderTest = reader.DetermineProjectUnderTest(projectInfo.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
+                projectUnderTest = _projectFileReader.DetermineProjectUnderTest(projectInfo.TestProjectAnalyzerResults.Single().ProjectReferences, options.ProjectUnderTestNameFilter);
             }
 
             _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
