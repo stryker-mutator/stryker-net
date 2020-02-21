@@ -269,26 +269,26 @@
       },
       "Microsoft.Extensions.Configuration": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "LHbdc7ZBzKOqmvGpK1EkEqpFllPa3IOrEI7dIu+BZwr6A10zBpe2XpZHeNh87DGjEfHcAItwvh/Slah8tbnr7Q==",
+        "resolved": "3.1.2",
+        "contentHash": "BxwRSBab309SYMCDCFyB6eSc7FnX5m9kOJQHw2IQIyb5PEtpfslhscTw63Gwhl3dPnaM1VGFXIyI0BVgpiLgOw==",
         "dependencies": {
-          "Microsoft.Extensions.Configuration.Abstractions": "3.1.1"
+          "Microsoft.Extensions.Configuration.Abstractions": "3.1.2"
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "Msu6IzxV486nNmsasJQXB/c44DiVz7FqXCjIBnvmG2M8NGaVDIQra1qff9cEEkhqa+dGH+jf3mdggm8w9eX7BQ==",
+        "resolved": "3.1.2",
+        "contentHash": "xmfdVdazTslWJ8od7uNS9QSPqn1wBC84RLprPrFS20EdAqd3lV0g0IZAitYbCiiICpjktnhzbUb85aLHNZ3RQw==",
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "3.1.1"
+          "Microsoft.Extensions.Primitives": "3.1.2"
         }
       },
       "Microsoft.Extensions.Configuration.Binder": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "4J+01OANCMbFEF0bu9hID3m61emMwU2m13WXYrZDCIoxneMPWdWFzpLmsMqT8kIPgCgb2+SQ/1UAQcGCH/ASIQ==",
+        "resolved": "3.1.2",
+        "contentHash": "IWrc9/voGki2pc5g8bRXIqs+P50tXOjNf47qgFKSu/pL50InRuXxh/nj5AG9Po8YRpvT/bYIUk3XQqHH7yUg5w==",
         "dependencies": {
-          "Microsoft.Extensions.Configuration": "3.1.1"
+          "Microsoft.Extensions.Configuration": "3.1.2"
         }
       },
       "Microsoft.Extensions.Configuration.FileExtensions": {
@@ -387,8 +387,8 @@
       },
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "tC5Eo5DbJA+NgiIw26R5c97N02tFvtfqstUxqb/4qXPLXI2IAIWSMUkh/1c9Gw59TT9hNkLwlmLErSPlHgyJVQ==",
+        "resolved": "3.1.2",
+        "contentHash": "WGtoFWY9yc9HGMG6ObDNQPz9dBP+xz/GqFe2dKjdE/cSdXFEKxCFTyYCzL/e8kxVkc/Bq9qjOsXRWydvn0g9Uw==",
         "dependencies": {
           "System.Memory": "4.5.2",
           "System.Runtime.CompilerServices.Unsafe": "4.7.0"
@@ -1701,7 +1701,7 @@
         "type": "Project",
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "2.5.1",
-          "Microsoft.Extensions.Configuration.Binder": "3.1.1",
+          "Microsoft.Extensions.Configuration.Binder": "3.1.2",
           "stryker": "0.16.0"
         }
       },
