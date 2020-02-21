@@ -439,10 +439,9 @@ namespace Stryker.Core.Initialisation
 
         private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<ProjectAnalyzerResult> testProjects)
         {
-            var projectReferences = testProjects
-                            .GroupBy(t => t.ProjectReferences) // Group by project reference to find duplicates
-                            .Where(g => g.Count() == testProjects.Count()) // Only take references referenced by all test projects
-                            .SelectMany(t => t.Key); // Select the project reference (Key) and flatten to list
+            var amountOfTestProjects = testProjects.Count();
+            var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
+            var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key);
             return projectReferences;
         }
 
