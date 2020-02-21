@@ -296,7 +296,7 @@ namespace Stryker.Core.Initialisation
 
             _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
 
-            if (projectFiles.Count > 1)
+            if (projectFiles.Count() > 1)
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("Expected exactly one .csproj file, found more than one:");
