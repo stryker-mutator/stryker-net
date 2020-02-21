@@ -24,6 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string testProjectPath;
         private readonly string projectUnderTestPath;
         private readonly string defaultTestProjectFileContents;
+        private readonly string defaultProjectUndertestFileContents;
 
         public InputFileResolverTests()
         {
@@ -48,6 +49,13 @@ namespace Stryker.Core.UnitTest.Initialisation
     <ItemGroup>
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
+</Project>";
+            defaultProjectUndertestFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
 </Project>";
         }
 
@@ -158,7 +166,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
@@ -725,6 +732,7 @@ Please specify a test project name filter that results in one project.
             var basePath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder");
             var testProjectPath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder", "TestProject.csproj");
             var projectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
+            var projectUnderTestNameFilter = "ExampleProject.csproj";
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
@@ -736,16 +744,25 @@ Please specify a test project name filter that results in one project.
             var options = new StrykerOptions(
                 basePath: basePath,
                 fileSystem: fileSystem,
-                projectUnderTestNameFilter: "ExampleProject.csproj",
+                projectUnderTestNameFilter: projectUnderTestNameFilter,
                 testProjects: new List<string> { testProjectPath }
             );
 
             var projectFileReaderMock = Mock.Of<IProjectFileReader>(MockBehavior.Strict);
             Mock.Get(projectFileReaderMock)
-                .Setup(r => r.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns<string, string>((projectFilePath, _) => new ProjectAnalyzerResult(null, null)
+                .Setup(r => r.AnalyzeProject(testProjectPath, It.IsAny<string>()))
+                .Returns(new ProjectAnalyzerResult(null, null)
                 {
-                    ProjectFilePath = projectFilePath,
+                    ProjectFilePath = testProjectPath,
+                    ProjectReferences = new string[] { projectUnderTestPath },
+                    References = new string[0]
+                });
+            Mock.Get(projectFileReaderMock)
+                .Setup(r => r.AnalyzeProject(projectUnderTestPath, It.IsAny<string>()))
+                .Returns(new ProjectAnalyzerResult(null, null)
+                {
+                    ProjectFilePath = projectUnderTestPath,
+                    ProjectReferences = new string[0],
                     References = new string[0]
                 });
 
@@ -943,18 +960,17 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
+                    { projectUnderTestPath, new MockFileData(defaultProjectUndertestFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "myFile.cs"), new MockFileData(sourceFile)},
                     { Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
                     { Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
-                    ProjectReferences = new List<string>() { "" },
+                    ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFrameworkVersionString = "netcore2.1",
                     ProjectFilePath = Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
                     References = new string[0]
@@ -979,5 +995,109 @@ Please specify a test project name filter that results in one project.
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
+
+        #region FindProjectUnderTest
+        [Fact]
+        public void HappyFlow()
+        {
+            var target = new InputFileResolver();
+
+            var result = target.FindProjectUnderTest(new List<ProjectAnalyzerResult> { new ProjectAnalyzerResult(null, null) { ProjectReferences = new string[] { "../ExampleProject/ExampleProject.csproj" } } }, null);
+            result.ShouldBe("../ExampleProject/ExampleProject.csproj");
+        }
+
+        [Fact]
+        public void ShouldThrowOnNoProjectReference()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<ProjectAnalyzerResult>(), null);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("no project", Case.Insensitive);
+        }
+
+        [Fact]
+        public void ShouldThrowOnMultipleProjects()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new InputFileResolver().FindProjectUnderTest(
+                    new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectReferences = new string[] {
+                                "../ExampleProject/ExampleProject.csproj",
+                                "../AnotherProject/AnotherProject.csproj"
+                } } }, null);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("--project-file");
+        }
+
+        [Theory]
+        [InlineData("ExampleProject.csproj")]
+        [InlineData("exampleproject.csproj")]
+        [InlineData("ExampleProject")]
+        [InlineData("exampleproject")]
+        [InlineData("Example")]
+        public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
+        {
+            var result = new InputFileResolver().FindProjectUnderTest(new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectReferences = new string[] {
+                                "../ExampleProject/ExampleProject.csproj",
+                                "../AnotherProject/AnotherProject.csproj"
+                } } }, shouldMatch);
+
+            result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
+        }
+
+        [Theory]
+        [InlineData("Project.csproj")]
+        [InlineData("project.csproj")]
+        [InlineData("Project")]
+        [InlineData(".csproj")]
+        public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new InputFileResolver().FindProjectUnderTest(new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectReferences = new string[] {
+                                "../ExampleProject/ExampleProject.csproj",
+                                "../AnotherProject/AnotherProject.csproj"
+                } } }, shouldMatchMoreThanOne);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("more than one", Case.Insensitive);
+        }
+
+        [Theory]
+        [InlineData("SomeProject.csproj")]
+        [InlineData("??")]
+        [InlineData("WrongProject.csproj")]
+        public void ShouldThrowWhenTheNameMatchesNone(string shouldMatchNone)
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new InputFileResolver().FindProjectUnderTest(new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
+                        {
+                            ProjectReferences = new string[] {
+                                "../ExampleProject/ExampleProject.csproj",
+                                "../AnotherProject/AnotherProject.csproj"
+                } } }, shouldMatchNone);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("no project", Case.Insensitive);
+        }
+        #endregion
     }
 }
