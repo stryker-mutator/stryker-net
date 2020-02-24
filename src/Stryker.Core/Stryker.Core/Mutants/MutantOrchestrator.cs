@@ -322,13 +322,11 @@ namespace Stryker.Core.Mutants
         private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
         {
             // add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
-            if (currentNode is MethodDeclarationSyntax methodNode)
+            if (currentNode is MethodDeclarationSyntax methodNode && 
+                methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
             {
-                if (methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
-                {
-                    var some = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
-                    currentNode = currentNode.ReplaceNode(methodNode.Body, some);
-                }
+                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
+                currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
             }
 
             return currentNode;
