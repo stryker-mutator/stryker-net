@@ -500,6 +500,41 @@ static Mutator_Flag_MutatedStatics()
             mutants.ShouldHaveSingleItem().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
         }
 
+        [Fact]
+        public void ShouldAddReturnDefaultToMethods()
+        {
+            string source = @"bool TestMethod()
+{
+    ;
+}";
+            string expected = @"bool TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+}
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
+        {
+            string source = @"void TestMethod()
+{
+    ;
+}";
+            string expected = @"void TestMethod()
+{
+    ;
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+}
+
         private void ShouldMutateSourceToExpected(string original, string expected)
         {
             original = @"using System;
