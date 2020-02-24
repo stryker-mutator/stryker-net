@@ -137,7 +137,6 @@ private bool Out(out string test)
             {
                 var test3 = (StrykerNamespace.MutantControl.IsActive(0)?2 -5:2 + 5);
                 return (StrykerNamespace.MutantControl.IsActive(2)?$"""":$""test{ (StrykerNamespace.MutantControl.IsActive(1) ? 1 - test3 : 1 + test3)}"");
-                return default(string);
             };
         }";
 
