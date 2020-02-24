@@ -88,6 +88,7 @@ private bool Out(out string test)
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(16)?false:true);
+    return default(bool);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -113,6 +114,7 @@ private bool Out(out string test)
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
+    return default(bool);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -135,6 +137,7 @@ private bool Out(out string test)
             {
                 var test3 = (StrykerNamespace.MutantControl.IsActive(0)?2 -5:2 + 5);
                 return (StrykerNamespace.MutantControl.IsActive(2)?$"""":$""test{ (StrykerNamespace.MutantControl.IsActive(1) ? 1 - test3 : 1 + test3)}"");
+                return default(string);
             };
         }";
 
@@ -283,6 +286,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"public int TestLinq(int count){ 
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
+    return default(int);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -319,6 +323,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"private bool Move()
         {
             return (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+            return default(bool);
         }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -474,6 +479,7 @@ static Mutator_Flag_MutatedStatics()
         request.Headers.Add((StrykerNamespace.MutantControl.IsActive(0)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(1)?"""":""application / json; version = 1""));
         request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(2)?"""":""Date""), date);
 }, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(3)?true:false));
+    return default(Task);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
