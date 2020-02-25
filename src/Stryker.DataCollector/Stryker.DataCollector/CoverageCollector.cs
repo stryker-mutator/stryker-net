@@ -52,7 +52,7 @@ namespace Stryker.DataCollector
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
         private FieldInfo _activeMutantField;
-        private const string ActiveMutantVariable = "ActiveMutation";
+        private string _controlClassName;
 
         public CoverageCollector() : this(new EnvironmentVariablesHandler())
         {}
@@ -64,8 +64,7 @@ namespace Stryker.DataCollector
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
 
-        public static string GetVsTestSettings(bool needCoverage, bool usePipe,
-            Dictionary<int, IList<string>> mutantTestsMap)
+        public static string GetVsTestSettings(bool needCoverage, bool usePipe, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -88,6 +87,8 @@ namespace Stryker.DataCollector
                     configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key,  entry.Value == null ? "" : string.Join(",", entry.Value));
                 }
             }
+
+            configuration.Append($"<MutantControl  name='{helpNameSpace}.MutantControl'/>");
             configuration.Append("</Parameters>");
             
             return string.Format(TemplateForConfiguration, line, configuration);
@@ -111,7 +112,6 @@ namespace Stryker.DataCollector
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
             this._dataSink = dataCollectionSink;
-           // Init(true);
         }
 
         public void Init(bool usePipe)
@@ -217,6 +217,12 @@ namespace Stryker.DataCollector
                     }
                 }
             }
+
+            var nameSpaceNode = node.SelectSingleNode("//Parameters/MutantControl");
+            if (nameSpaceNode != null)
+            {
+                this._controlClassName = nameSpaceNode.Attributes["name"].Value;
+            }
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)
@@ -258,25 +264,16 @@ namespace Stryker.DataCollector
 
             if (_activeMutantField == null)
             {
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic)
-                    .Where( assembly => assembly.FullName.Contains("NFluent") && !assembly.FullName.Contains("Tests"));
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
                 var types = assemblies
                     .SelectMany(x => x.ExportedTypes);
 
-                var controller = types.FirstOrDefault(t => t.Name == "MutantControl");
+                var controller = types.FirstOrDefault(t => t.FullName == _controlClassName);
                 _activeMutantField = controller?.GetField("ActiveMutant");
             }
             
-            if (_activeMutantField == null)
-            {
-                _environmentVariablesHandler.SetVariable(ActiveMutantVariable, mutantId.ToString());
-                Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (env).");
-            }
-            else
-            {
-                _activeMutantField.SetValue(null, mutantId);
-                Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
-            }
+            _activeMutantField.SetValue(null, mutantId);
+            Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)

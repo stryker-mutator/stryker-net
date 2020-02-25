@@ -83,13 +83,13 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
+
             if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
             {
                 TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
                 if (TestsInTimeout.Count>0)
                 {
                     TimeOut = true;
-                    ResultsUpdated?.Invoke(this, EventArgs.Empty);  
                 }
             }
 
@@ -99,16 +99,16 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, "VsTest may have crashed, triggering vstest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering vstest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
-                    _logger.LogWarning(sock,"Test session ended unexpectedly.");
+                    _logger.LogWarning(sock,$"{_runnerId}: Test session ended unexpectedly.");
                 }
                 else if (!CancelRequested)
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, "VsTest error:");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
                 }
             }
 

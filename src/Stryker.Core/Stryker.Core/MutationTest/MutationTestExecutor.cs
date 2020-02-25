@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
@@ -29,11 +30,12 @@ namespace Stryker.Core.MutationTest
 
         public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
         {
+            var forceSingle = false;
             for (;;)
             {
                 TestRunResult result = null;
                 Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-                if (TestRunner is IMultiTestRunner multi)
+                if (TestRunner is IMultiTestRunner multi && !forceSingle)
                 {
                     result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
                 }
@@ -74,11 +76,25 @@ namespace Stryker.Core.MutationTest
                 {
                     return;
                 }
-
                 if (remainingMutants.Count == mutantsToTest.Count)
                 {
-                    Logger.LogError($"Stryker failed to test {remainingMutants.Count} mutant(s).");
-                    return;
+                    if (result.SessionTimedOut)
+                    {
+                        // test session's results have been corrupted by the time out
+                        // we retry and run tests one by one, if necessary
+                        if (remainingMutants.Count == 1)
+                        {
+                            remainingMutants[0].ResultStatus = MutantStatus.Timeout;
+                            return;
+                        }
+
+                        forceSingle = true;
+                    }
+                    else
+                    {
+                        Logger.LogError($"Stryker failed to test {remainingMutants.Count} mutant(s).");
+                        return;
+                    }
                 }
                 Logger.LogDebug("Not all mutants were tested.");
                 mutantsToTest = remainingMutants;

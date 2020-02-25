@@ -18,6 +18,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Stryker.Core.Exceptions;
+using Stryker.Core.InjectedHelpers;
 using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -113,7 +114,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                     testCases = needAll ? null :  mutants.SelectMany(m => m.CoveringTests.GetList()).Distinct().Select( t => _discoveredTests.First( tc => tc.Id.ToString() == t.Guid)).ToList();
 
-                    _logger.LogDebug( $"Runner {_id}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] "+
+                    _logger.LogDebug( $"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] "+
                                       $"against {(testCases == null ? "all tests." : string.Join(", ", testCases.Select(x => x.FullyQualifiedName)))}.");
                     if (testCases?.Count == 0)
                     {
@@ -143,7 +144,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     return;
                 }
                 // all mutants status have been resolved, we can stop
-                _logger.LogDebug($"Runner {_id}: each mutant's fate has been established, we can stop.");
+                _logger.LogDebug($"{RunnerId}: Each mutant's fate has been established, we can stop.");
                 _vsTestConsole.CancelTestRun();
                 _aborted = true;
             }
@@ -153,6 +154,11 @@ namespace Stryker.Core.TestRunners.VsTest
             var timeout = (!_aborted && resultAsArray.Length < expectedTests);
             var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(tr => (TestDescription) tr.TestCase).ToImmutableArray();
+            
+            if (ranTests.Count == 0 && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
+            {
+                _logger.LogError($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
+            }
 
             var message = string.Join( Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -188,7 +194,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 waitHandle.WaitOne();
                 if (handler.Aborted)
                 {
-                    _logger.LogError($"Runner {_id}: Test discovery has been aborted!");
+                    _logger.LogError($"{RunnerId}: Test discovery has been aborted!");
                 }
 
                 _discoveredTests = handler.DiscoveredTestCases;
@@ -217,7 +223,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
-            _logger.LogDebug($"Runner {_id}: Capturing coverage.");
+            _logger.LogDebug($"{RunnerId}: Capturing coverage.");
             var testResults = RunTestSession(null, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
             ParseResultsForCoverage(testResults.TestResults, mutants);
             return new TestRunResult (true );
@@ -238,7 +244,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (key == null)
                 {
-                    _logger.LogWarning($"Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
+                    _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
                 }
                 else if (value != null)
                 {
@@ -280,7 +286,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
-            _logger.LogDebug($"Runner {_id}: Capturing coverage for {test.FullyQualifiedName}.");
+            _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
             var testResults = RunTestSession(new []{test}, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test.Id), mutants);
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
@@ -356,8 +362,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return traceLevel;
         }
 
-        private string GenerateRunSettings(int? timeout, bool forCoverage, bool usePipe,
-            Dictionary<int, IList<string>> mutantTestsMap)
+        private string GenerateRunSettings(int? timeout, bool forCoverage, bool usePipe, Dictionary<int, IList<string>> mutantTestsMap)
         {
             var targetFramework = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFramework;
             var targetFrameworkVersion = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFrameworkVersion;
@@ -366,35 +371,34 @@ namespace Stryker.Core.TestRunners.VsTest
             switch (targetFramework)
             {
                 case Initialisation.Framework.NetCore:
-                    targetFrameworkVersionString = $".NETCoreApp,Version = v{targetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETCoreApp,Version=v{targetFrameworkVersion}";
                     break;
                 case Initialisation.Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersionString = $".NETFramework,Version = v{targetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETFramework,Version= v{targetFrameworkVersion}";
                     break;
             }
 
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings =CoverageCollector.GetVsTestSettings(needCoverage, usePipe, mutantTestsMap);
+            var dataCollectorSettings = CoverageCollector.GetVsTestSettings(needCoverage, usePipe, mutantTestsMap, CodeInjection.HelperNamespace);
             var settingsForCoverage = string.Empty;
-            //if (needCoverage)
+            if (_testFramework.HasFlag(TestFramework.nUnit))
             {
-                if (_testFramework.HasFlag(TestFramework.nUnit))
-                {
-                    settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
-                }
-
-                if (_testFramework.HasFlag(TestFramework.xUnit))
-                {
-                    settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
-                }
+                settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
             }
-            var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>"+Environment.NewLine : "";
+
+            if (_testFramework.HasFlag(TestFramework.xUnit))
+            {
+                settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
+            }
+            var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>"+Environment.NewLine : string.Empty;
+            // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
+            var optionsConcurrentTestrunners = (forCoverage || _options.Optimizations.HasFlag(OptimizationFlags.RunMultipleMutants)) ? 1 : _options.ConcurrentTestrunners;
             var runSettings = 
 $@"<RunSettings>
  <RunConfiguration>
-  <MaxCpuCount>{_options.ConcurrentTestrunners}</MaxCpuCount>
+  <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
@@ -419,7 +423,6 @@ $@"<RunSettings>
                     _vsTestConsole.EndSession();
                 }
                 catch { /*Ignore exception. vsTestConsole has been disposed outside of our control*/ }
-
                 _vsTestConsole = null;
             }
 
@@ -482,7 +485,7 @@ $@"<RunSettings>
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError($"Exception when disposing Runner {_id}: {0}", e);
+                    _logger.LogError($"Exception when disposing {RunnerId}: {0}", e);
                 }
                 if (_ownHelper)
                 {

@@ -17,7 +17,8 @@ namespace Stryker
         private static Object _coverageLock = new Object();
 
         // this attributs will be set by Stryker Data Collector before eachtest
-        public volatile static int ActiveMutant = -1;
+        public static int ActiveMutant = -2;
+        public const int ActiveMutantNotInitValue = -2;
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif
@@ -119,7 +120,8 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
+            // enable when you need to debug this component
+            //Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -130,10 +132,17 @@ namespace Stryker
                 CaptureCoverage(id);
                 return false;
             }
-
-            if (ActiveMutant == -1)
+            if (ActiveMutant == ActiveMutantNotInitValue)
             {
-                ActiveMutant = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation"));
+                var environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
+                if (string.IsNullOrEmpty(environmentVariable))
+                {
+                    ActiveMutant = -1;
+                }
+                else
+                {
+                    ActiveMutant = int.Parse(environmentVariable);
+                }
             }
 
             return id == ActiveMutant;

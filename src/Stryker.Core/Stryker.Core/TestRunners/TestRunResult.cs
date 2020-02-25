@@ -1,5 +1,4 @@
-﻿using System;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
@@ -22,12 +21,13 @@ namespace Stryker.Core.TestRunners
 
         public static TestRunResult TimedOut(TestListDescription ranTests, TestListDescription failedTest, TestListDescription timedOutTests, string message)
         {
-            return new TestRunResult(ranTests, failedTest, timedOutTests, message);
+            return new TestRunResult(ranTests, failedTest, timedOutTests, message){SessionTimedOut = true};
         }
 
         public TestListDescription FailingTests { get; set; }
         public TestListDescription RanTests { get; }
         public TestListDescription TimedOutTests { get; }
+        public bool SessionTimedOut { get; private set; }
         public string ResultMessage { get; set; }
 
         public void Merge(TestRunResult other)

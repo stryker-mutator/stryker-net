@@ -10,6 +10,11 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
+    public static class MutantControl
+    {
+        public static int ActiveMutant = -1;
+    }
+
     public class CoverageCollectorShould
     {
         [Fact]
@@ -20,7 +25,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(true, true, null)
+                Configuration = CoverageCollector.GetVsTestSettings(true, true, null, string.Empty)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
@@ -40,7 +45,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(false, true, mutantMap)
+                Configuration = CoverageCollector.GetVsTestSettings(false, true, mutantMap, this.GetType().Namespace)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
@@ -49,8 +54,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
 
-            env.Variables.ShouldContainKey("ActiveMutation");
-            env.Variables["ActiveMutation"].ShouldBe("0");
+            MutantControl.ActiveMutant.ShouldBe(0);
         }
     }
 
