@@ -137,11 +137,19 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
         {
-            var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
-            var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
-            var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
+            var trackedConstructor = constructorDeclaration.TrackNodes((SyntaxNode) constructorDeclaration.Body ?? constructorDeclaration.ExpressionBody);
+            if (constructorDeclaration.ExpressionBody != null)
+            {
+                var markedBlock = Mutate(constructorDeclaration.ExpressionBody, context);
+                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.ExpressionBody), markedBlock);
+            }
+            else if (constructorDeclaration.Body != null)
+            {
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(constructorDeclaration.Body, context));
+                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.Body), markedBlock);
+            }
 
-            return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
+            return trackedConstructor;
         }
 
         private SyntaxNode MutateStaticAccessor(PropertyDeclarationSyntax accessorDeclaration, MutationContext context)
@@ -178,7 +186,7 @@ namespace Stryker.Core.Mutants
             var mutatedIf = ifStatement.Else != null
                 ? ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement, ifStatement.Else)
                 : ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement);
-            
+
             var mutated = false;
 
             if (!ifStatement.Condition.ContainsDeclarations())

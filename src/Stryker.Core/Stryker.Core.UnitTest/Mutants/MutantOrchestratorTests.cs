@@ -3,6 +3,7 @@ using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using System.Linq;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -539,6 +540,29 @@ static Mutator_Flag_MutatedStatics()
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
 }
+
+        [Theory]
+        [InlineData(@"static string Value { get; }
+
+static TestClass() => Value = ""Hello, World!"";",
+            @"static string Value { get; }
+
+static TestClass() => Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");")]
+        [InlineData(@"static string Value { get; }
+
+static TestClass() { Value = ""Hello, World!""; }",
+            @"static string Value { get; }
+
+static TestClass() {using(new StrykerNamespace.MutantContext()){ Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!""); }}")]
+        public void ShouldMutateStaticConstructor(string source, string expected)
+        {
+            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
 
         private void ShouldMutateSourceToExpected(string original, string expected)
         {
