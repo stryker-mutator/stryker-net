@@ -66,7 +66,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
-            _hostBuilder = hostBuilder ?? ((dico, id) => new StrykerVsTestHostLauncher(dico, id));
+            _hostBuilder = hostBuilder ?? ((envVars, id) => new StrykerVsTestHostLauncher(envVars, id));
             SetListOfTests(testCasesDiscovered);
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();

@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.16.0'
-  VersionBuildNumber: $[counter('0.16.0', 1)]
+  PackageVersion: '0.16.1'
+  VersionBuildNumber: $[counter('0.16.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -225,7 +225,7 @@ stages:
         arguments: --filter Traits=SingleTestProject
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'macos-netcore'
+        testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/TargetProject'
         strykerCommands: --test-projects "['../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj', '../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj']"
     - task: DotNetCoreCLI@2

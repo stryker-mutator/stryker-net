@@ -1,3 +1,12 @@
+## [0.16.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.16.0...stryker@0.16.1) (2020-02-21)
+
+
+### Bug Fixes
+
+* **project discovery:** discover the project under test correctly ([#957](https://github.com/stryker-mutator/stryker-net/issues/957)) ([c15880c](https://github.com/stryker-mutator/stryker-net/commit/c15880c967cd0daef73421b1b4c16dfb6cc99342))
+
+
+
 # [0.16.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.15.0...stryker@0.16.0) (2020-02-08)
 
 

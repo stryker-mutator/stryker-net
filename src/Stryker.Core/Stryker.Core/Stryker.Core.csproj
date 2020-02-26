@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.16.0</VersionPrefix>
+    <VersionPrefix>0.16.1</VersionPrefix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
-    <MicrosoftExtensionsConfiguration>3.1.1</MicrosoftExtensionsConfiguration>
+    <MicrosoftExtensionsConfiguration>3.1.2</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,7 +39,7 @@
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
     <PackageReference Include="DotNet.Glob" Version="3.0.5" />
-    <PackageReference Include="Buildalyzer" Version="2.5.0" />
+    <PackageReference Include="Buildalyzer" Version="2.5.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" />
@@ -48,11 +48,11 @@
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.0.96" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.1" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="System.IO.Abstractions" Version="$(SystemIOAbstractions)" /> <!-- From Directory.Build.props -->
   </ItemGroup>
