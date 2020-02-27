@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
@@ -88,6 +89,13 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
+
+            // don't mutate auto generated code
+            if (currentNode.SyntaxTree.IsGenerated())
+            {
+                return currentNode;
+            }
+
             // identify static related structure
             switch (currentNode)
             {
