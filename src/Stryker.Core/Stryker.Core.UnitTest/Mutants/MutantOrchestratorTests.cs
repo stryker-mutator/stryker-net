@@ -279,11 +279,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         [Fact]
         public void ShouldMutateLinqMethods()
         {
-            string source = @"public int TestLinq(int count){ 
+            string source = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return list.Last();
 }";
-            string expected = @"public int TestLinq(int count){ 
+            string expected = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
     return default(int);
@@ -388,7 +388,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
     else
     {
         x++;
-    }  
+    }
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -542,20 +542,18 @@ static Mutator_Flag_MutatedStatics()
 }
 
         [Theory]
-        [InlineData(@"static string Value { get; }
-
-static TestClass() => Value = ""Hello, World!"";",
-            @"static string Value { get; }
-
-static TestClass() => Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");")]
-        [InlineData(@"static string Value { get; }
-
-static TestClass() { Value = ""Hello, World!""; }",
-            @"static string Value { get; }
-
-static TestClass() {using(new StrykerNamespace.MutantContext()){ Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!""); }}")]
-        public void ShouldMutateStaticConstructor(string source, string expected)
+        [InlineData("=> Value = \"Hello, World!\";")]
+        [InlineData("{Value = \"Hello, World!\";}")]
+        public void ShouldMutateStaticConstructor(string source)
         {
+            source = @"static string Value { get; }
+
+static TestClass() " + source;
+
+            var expected = @"static string Value { get; }
+
+static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}";
+
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());

@@ -140,8 +140,17 @@ namespace Stryker.Core.Mutants
             var trackedConstructor = constructorDeclaration.TrackNodes((SyntaxNode) constructorDeclaration.Body ?? constructorDeclaration.ExpressionBody);
             if (constructorDeclaration.ExpressionBody != null)
             {
-                var markedBlock = Mutate(constructorDeclaration.ExpressionBody, context);
-                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.ExpressionBody), markedBlock);
+                var bodyBlock = SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(constructorDeclaration.ExpressionBody.Expression));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(bodyBlock, context));
+                trackedConstructor = trackedConstructor.Update(
+                    trackedConstructor.AttributeLists,
+                    trackedConstructor.Modifiers,
+                    trackedConstructor.Identifier,
+                    trackedConstructor.ParameterList,
+                    trackedConstructor.Initializer,
+                    markedBlock,
+                    null,
+                    SyntaxFactory.Token(SyntaxKind.None));
             }
             else if (constructorDeclaration.Body != null)
             {
@@ -330,7 +339,7 @@ namespace Stryker.Core.Mutants
         private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
         {
             // add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
-            if (currentNode is MethodDeclarationSyntax methodNode && 
+            if (currentNode is MethodDeclarationSyntax methodNode &&
                 methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
             {
                 var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
