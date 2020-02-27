@@ -44,6 +44,11 @@ namespace Stryker.Core.MutantFilters
                 return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
             }
 
+            if (syntaxNode is PropertyDeclarationSyntax property)
+            {
+                return options.IgnoredMethods.Any(r => r.IsMatch(property.Identifier.Text));
+            }
+
             // Traverse the tree upwards
             if (syntaxNode.Parent != null)
             {

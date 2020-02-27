@@ -211,5 +211,67 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             filteredMutants.ShouldContain(mutant);
         }
+        
+        [Fact]
+        public void MutantFilter_ShouldIgnoreProperty()
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_Properties
+{
+    public string Description { get; } = ""some input"";
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf("Description", StringComparison.Ordinal), 1));
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions(ignoredMethods: new[] { "Description" });
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldNotContain(mutant);
+        }
+        
+        [Fact]
+        public void MutantFilter_ShouldIgnoreExplicitImplementedProperty()
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_Properties : IRule
+{
+    string IRule.Description => ""some input"";
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf("IRule.Description", StringComparison.Ordinal), 1));
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions(ignoredMethods: new[] { "Description" });
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldNotContain(mutant);
+        }
     }
 }
