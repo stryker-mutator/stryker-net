@@ -66,7 +66,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <None Remove="Stryker.Core.csproj.DotSettings" />
   </ItemGroup>
 
