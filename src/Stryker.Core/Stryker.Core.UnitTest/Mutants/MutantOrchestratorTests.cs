@@ -88,6 +88,7 @@ private bool Out(out string test)
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(16)?false:true);
+    return default(bool);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -113,6 +114,7 @@ private bool Out(out string test)
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
+    return default(bool);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -283,6 +285,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"public int TestLinq(int count){ 
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
+    return default(int);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -319,6 +322,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"private bool Move()
         {
             return (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+            return default(bool);
         }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -474,6 +478,7 @@ static Mutator_Flag_MutatedStatics()
         request.Headers.Add((StrykerNamespace.MutantControl.IsActive(0)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(1)?"""":""application / json; version = 1""));
         request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(2)?"""":""Date""), date);
 }, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(3)?true:false));
+    return default(Task);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -499,6 +504,41 @@ static Mutator_Flag_MutatedStatics()
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.ShouldHaveSingleItem().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
         }
+
+        [Fact]
+        public void ShouldAddReturnDefaultToMethods()
+        {
+            string source = @"bool TestMethod()
+{
+    ;
+}";
+            string expected = @"bool TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+}
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
+        {
+            string source = @"void TestMethod()
+{
+    ;
+}";
+            string expected = @"void TestMethod()
+{
+    ;
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+}
 
         private void ShouldMutateSourceToExpected(string original, string expected)
         {
