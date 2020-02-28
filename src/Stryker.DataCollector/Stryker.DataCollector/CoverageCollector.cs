@@ -17,27 +17,16 @@ namespace Stryker.DataCollector
     public class CoverageCollector: InProcDataCollection
     {
         private IDataCollectionSink _dataSink;
-        private CommunicationServer _server;
-        private CommunicationChannel _client;
-        private bool _usePipe;
-        private bool _useEnv;
         private bool _coverageOn;
         private bool _firstTestDone;
-        private string _lastMessage;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
         private readonly IList<int> _mutantsAllWaysTested = new List<int>();
 
-        public const string EnvMode = "env";
-        public const string PipeMode = "pipe";
-        public const string VarMode = "var";
-        public const string ModeEnvironmentVariable = "CaptureCoverage";
-        private const string EnvName = "CoveredMutants";
         private FieldInfo _activeMutantField;
         private FieldInfo _coverageControlField;
         private string _controlClassName;
         private Type _controller;
-        private readonly object _lck = new object();
 
         private MethodInfo _getCoverageData;
 
@@ -60,7 +49,7 @@ namespace Stryker.DataCollector
             configuration.Append("<Parameters>");
             if (needCoverage)
             {
-                configuration.Append($"<Coverage mode='{ (useVar ? VarMode : EnvMode)}' />");
+                configuration.Append("<Coverage/>");
             }
             if (mutantTestsMap != null)
             {
@@ -96,46 +85,14 @@ namespace Stryker.DataCollector
             this._dataSink = dataCollectionSink;
         }
 
-        public void Init(bool usePipe)
-        {
-            if (!usePipe)
-            {
-                return;
-            }
-            _server = new CommunicationServer("CoverageCollector");
-            _server.SetLogger(_logger);
-            _server.RaiseNewClientEvent += ConnectionEstablished;
-            _server.Listen();
-            _usePipe = true;
-        }
-
         public void SetLogger(Action<string> logger)
         {
             _logger = logger;
-            _server?.SetLogger(logger);
         }
 
         public void Log(string message)
         {
-            Console.Error.WriteLine(message);
             _logger?.Invoke(message);
-        }
-
-        public IDictionary<string, string> GetEnvironmentVariables()
-        {
-            var result = new Dictionary<string, string>();
-            if (_usePipe)
-            {
-                result["Coverage"]= $"{PipeMode}:{_server.PipeName}";
-                result[ModeEnvironmentVariable] = PipeMode;
-            }
-            else if (_useEnv)
-            {
-                result["Coverage"]= $"{EnvMode}:{EnvName}";  
-                result[ModeEnvironmentVariable] = EnvMode;
-            }
-
-            return result;
         }
 
         // called before any test is run
@@ -205,34 +162,6 @@ namespace Stryker.DataCollector
             if (coverage != null)
             {
                 _coverageOn = true;
-                var val = coverage.Attributes["mode"].Value;
-                if (val == PipeMode)
-                {
-                    _usePipe = true;
-                }
-                else if (val == EnvMode)
-                {
-                    _useEnv = true;
-                }
-            }
-        }
-
-        private void ConnectionEstablished(object s, ConnectionEventArgs e)
-        {
-            lock (_lck)
-            {
-                _client = e.Client;
-                _client.RaiseReceivedMessage += ReceivedMutant;
-                Monitor.Pulse(_lck);
-            }
-        }
-
-        private void ReceivedMutant(object sender, string args)
-        {
-            lock (_lck)
-            {
-                _lastMessage = args;
-                Monitor.Pulse(_lck);
             }
         }
 
@@ -245,8 +174,6 @@ namespace Stryker.DataCollector
                 if (_coverageOn)
                 {
                     _coverageControlField.SetValue(null, true);
-                    Init(_usePipe);
-                    Log($"Mode: {(_usePipe ? "pipe" : "var")}");
                 }
 
                 _firstTestDone = true;
@@ -276,17 +203,6 @@ namespace Stryker.DataCollector
 
         private void PublishCoverageData(TestCaseEndArgs testCaseEndArgs)
         {
-            var testCaseDisplayName = testCaseEndArgs.DataCollectionContext.TestCase.DisplayName;
-            if (_usePipe)
-            {
-                if (!WaitOnLck(_lck, () => _client != null, 500))
-                {
-                    throw new InvalidOperationException("connection");
-                }
-
-                _client.SendText($"DUMP {testCaseDisplayName}");
-            }
-
             var coverData = RetrieveCoverData();
             // null means we failed to retrieve data
             if (coverData != null)
@@ -307,40 +223,14 @@ namespace Stryker.DataCollector
 
         public string RetrieveCoverData()
         {
-            string coverData;
-            if (_usePipe)
-            {
-                if (!WaitOnLck(_lck, () => _lastMessage != null, 5000))
-                {
-                    // Failed to retrieve coverage data for testCase
-                    return null;
-                }
-
-                coverData = _lastMessage;
-                _lastMessage = null;
-            }
-            else if (_useEnv)
-            {
-                // get coverage 
-                coverData = Environment.GetEnvironmentVariable(EnvName);
-                Environment.SetEnvironmentVariable(EnvName, null);
-            }
-            else
-            {
-                var (covered, staticMutants) = ((IList<int>, IList<int>)) _getCoverageData.Invoke(null, new object[]{});
-                coverData = string.Join(",", covered) + ";" + string.Join(",", staticMutants);
-            }
-
+            var covered = (IList<int>[]) _getCoverageData.Invoke(null, new object[]{});
+            var coverData = string.Join(",", covered[0]) + ";" + string.Join(",", covered[1]);
             return coverData;
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
             Log($"TestSession ends.");
-            if (!_usePipe) return;
-            _client?.Dispose();
-            _client = null;
-            _server.RaiseNewClientEvent -= ConnectionEstablished;
         }
     }
 }

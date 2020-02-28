@@ -12,7 +12,6 @@ namespace Stryker
         private static StringBuilder _mutantsAsString;
         private static StringBuilder _staticMutantsAsStrings;
         private static bool usePipe;
-        private static bool useEnv;
         private static string pipeName;
         private static string envName;
         private static Object _coverageLock = new Object();
@@ -59,15 +58,6 @@ namespace Stryker
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
-#else
-            if (coverageMode.StartsWith("env:"))
-            {
-                Log("Use env for data transmission");
-                envName = coverageMode.Substring(4);
-                CaptureCoverage = true;
-                usePipe = false;
-                useEnv = true;
-            }
 #endif
             ResetCoverage();
         }
@@ -80,9 +70,9 @@ namespace Stryker
             _staticMutantsAsStrings = new StringBuilder();
         }
 
-        public static (IList<int>, IList<int>) GetCoverageData()
+        public static IList<int>[] GetCoverageData()
         {
-            var result = (_coveredMutants, _covereStaticdMutants);
+            IList<int>[] result = new IList<int>[]{_coveredMutants, _covereStaticdMutants};
             ResetCoverage();
             return result;
         }
@@ -142,7 +132,7 @@ namespace Stryker
             }
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
-                var environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
+                string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
                 if (string.IsNullOrEmpty(environmentVariable))
                 {
                     ActiveMutant = -1;
@@ -160,14 +150,6 @@ namespace Stryker
         {
             lock (_coverageLock)
             {
-                if (useEnv)
-                {
-                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
-                    {
-                        ResetCoverage();
-                    }
-                }
-
                 bool add = false;
                 if (!_coveredMutants.Contains(id))
                 {
@@ -188,14 +170,6 @@ namespace Stryker
                     }
                     _staticMutantsAsStrings.Append(id.ToString());
                     add = true;
-                }
-
-                if (add)
-                {
-                    if (useEnv)
-                    {
-                        Environment.SetEnvironmentVariable(envName, BuildReport());
-                    }
                 }
             }
         }
