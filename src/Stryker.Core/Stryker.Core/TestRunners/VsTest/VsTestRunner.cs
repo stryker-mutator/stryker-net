@@ -18,7 +18,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Stryker.Core.Exceptions;
-using Stryker.Core.InjectedHelpers;
 using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -35,7 +34,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
-        private readonly bool _usePipeForCoverage;
         private ICollection<TestCase> _discoveredTests;
         private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
@@ -78,7 +76,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 DetectTestFramework(testCasesDiscovered);
             }
             InitializeVsTestConsole();
-            _usePipeForCoverage = !flags.HasFlag(OptimizationFlags.UseEnvVariable);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -394,7 +391,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>"+Environment.NewLine : string.Empty;
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
-            var optionsConcurrentTestrunners = (forCoverage || _options.Optimizations.HasFlag(OptimizationFlags.RunMultipleMutants)) ? 1 : _options.ConcurrentTestrunners;
+            var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
             var runSettings = 
 $@"<RunSettings>
  <RunConfiguration>

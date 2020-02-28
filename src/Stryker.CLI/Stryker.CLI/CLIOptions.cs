@@ -137,14 +137,14 @@ namespace Stryker.CLI
             JsonKey = "abort-test-on-fail"
         };
 
-        public static readonly CLIOption<bool> TestMultipleMutants = new CLIOption<bool>
+        public static readonly CLIOption<bool> DisableTestingMix = new CLIOption<bool>
         {
-            ArgumentName = "--test-multiple-mutants",
+            ArgumentName = "--disable-testing-mix-mutations",
             ArgumentShortName = "-tmm",
-            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.RunMultipleMutants),
-            ArgumentDescription = @"Group mutants and test them in a shared test run.",
+            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.DisableTestMix),
+            ArgumentDescription = @"Test each mutation in an isolated test run.",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "test-multiple-mutants"
+            JsonKey = "disable-testing-mix-mutations"
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>

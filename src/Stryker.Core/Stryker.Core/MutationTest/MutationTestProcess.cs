@@ -255,7 +255,7 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            if (_options.Optimizations.HasFlag(OptimizationFlags.RunMultipleMutants))
+            if (!_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix))
             {
                 _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
                 var blocks = new List<List<Mutant>>(mutantsNotRun.Count);

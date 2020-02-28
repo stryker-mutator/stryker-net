@@ -79,7 +79,7 @@ namespace Stryker.CLI
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
                 abortTestOnFail: GetOption(abortTestOnFail.HasValue(), CLIOptions.AbortTestOnFail),
-                allowSimultaneousTesting: GetOption(runMultipleMutants.HasValue(), CLIOptions.TestMultipleMutants),
+                disableSimultaneousTesting: GetOption(runMultipleMutants.HasValue(), CLIOptions.DisableTestingMix),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),
