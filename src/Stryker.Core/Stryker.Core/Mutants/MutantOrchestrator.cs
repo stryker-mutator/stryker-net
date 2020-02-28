@@ -128,6 +128,9 @@ namespace Stryker.Core.Mutants
                 case ForStatementSyntax forStatement:
                     return MutateForStatement(forStatement, context);
             }
+
+            currentNode = AddReturnDefault(currentNode);
+
             return MutateExpression(currentNode, context);
         }
 
@@ -313,6 +316,19 @@ namespace Stryker.Core.Mutants
                     IsStaticValue = context.InStaticValue
                 };
             }
+        }
+
+        private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
+        {
+            // add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
+            if (currentNode is MethodDeclarationSyntax methodNode && 
+                methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
+            {
+                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
+                currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
+            }
+
+            return currentNode;
         }
 
         private T ApplyMutant<T>(T node, Mutant mutant) where T : SyntaxNode
