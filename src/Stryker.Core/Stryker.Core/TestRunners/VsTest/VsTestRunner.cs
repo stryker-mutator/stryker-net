@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly OptimizationFlags _flags;
         private readonly ProjectInfo _projectInfo;
-        private readonly Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> _hostBuilder;
+        private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
@@ -57,14 +57,14 @@ namespace Stryker.Core.TestRunners.VsTest
             IVsTestHelper helper = null,
             ILogger logger = null,
             IVsTestConsoleWrapper wrapper = null,
-            Func<IDictionary<string, string>, int, IStrykerTestHostLauncher> hostBuilder = null)
+            Func<int, IStrykerTestHostLauncher> hostBuilder = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _flags = flags;
             _projectInfo = projectInfo;
-            _hostBuilder = hostBuilder ?? ((envVars, id) => new StrykerVsTestHostLauncher(envVars, id));
+            _hostBuilder = hostBuilder ?? ((id) => new StrykerVsTestHostLauncher(id));
             SetListOfTests(testCasesDiscovered);
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
@@ -85,7 +85,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
-            var envVars = new Dictionary<string, string>();
             var mutantTestsMap = new Dictionary<int, IList<string>>();
             ICollection<TestCase> testCases = null;
             if (!_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutants.Count>1)
@@ -146,7 +145,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _aborted = true;
             }
 
-            var testResults = RunTestSession(testCases, envVars, GenerateRunSettings(timeoutMs,  mutants != null, false, mutantTestsMap), HandleUpdate);
+            var testResults = RunTestSession(testCases, GenerateRunSettings(timeoutMs,  mutants != null, false, mutantTestsMap), HandleUpdate);
             var resultAsArray = testResults.TestResults.ToArray();
             var timeout = (!_aborted && resultAsArray.Length < expectedTests);
             var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
@@ -221,7 +220,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
-            var testResults = RunTestSession(null, null, GenerateRunSettings(null, false, true, null));
+            var testResults = RunTestSession(null, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults, mutants);
             return new TestRunResult (true );
         }
@@ -284,14 +283,13 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
-            var testResults = RunTestSession(new []{test}, null, GenerateRunSettings(null, false, true, null));
+            var testResults = RunTestSession(new []{test}, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test.Id), mutants);
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
             _vsTestConsole.CancelTestRun();
         } 
 
         private IRunResults RunTestSession(IEnumerable<TestCase> testCases, 
-            IDictionary<string, string> envVars,
             string runSettings,
             Action<RunEventHandler> updateHandler = null, 
             int retries = 0)
@@ -300,7 +298,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 void HandlerVsTestFailed(object sender, EventArgs e) =>  _vsTestFailed = true;
                 void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
-                var strykerVsTestHostLauncher = _hostBuilder(envVars, _id);
+                var strykerVsTestHostLauncher = _hostBuilder(_id);
 
                 eventHandler.VsTestFailed += HandlerVsTestFailed;
                 eventHandler.ResultsUpdated += HandlerUpdate;
@@ -331,7 +329,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _vsTestConsole = PrepareVsTestConsole();
                 _vsTestFailed = false;
 
-                return RunTestSession(testCases, envVars, runSettings, updateHandler, ++retries);
+                return RunTestSession(testCases, runSettings, updateHandler, ++retries);
             }
         }
 

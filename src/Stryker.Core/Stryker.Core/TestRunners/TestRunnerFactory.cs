@@ -32,7 +32,7 @@ namespace Stryker.Core.TestRunners
                     testRunner = new VsTestRunnerPool(options, flags, projectInfo);
                     break;
             }
-            _logger.LogInformation("Test runners are ready", options.TestRunner.ToString());
+            _logger.LogInformation("Test runners are ready");
             return testRunner;
         }
     }

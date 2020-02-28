@@ -9,8 +9,6 @@ namespace Stryker
     {
         private static List<int> _coveredMutants;
         private static List<int> _covereStaticdMutants;
-        private static StringBuilder _mutantsAsString;
-        private static StringBuilder _staticMutantsAsStrings;
         private static bool usePipe;
         private static string pipeName;
         private static string envName;
@@ -55,7 +53,6 @@ namespace Stryker
                 CaptureCoverage = true;
                 channel = CommunicationChannel.Client(pipeName, 100);
                 channel.SetLogger(Log);
-                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
 #endif
@@ -66,8 +63,6 @@ namespace Stryker
         {
             _coveredMutants = new List<int>();
             _covereStaticdMutants = new List<int>();
-            _mutantsAsString = new StringBuilder();
-            _staticMutantsAsStrings = new StringBuilder();
         }
 
         public static IList<int>[] GetCoverageData()
@@ -75,22 +70,6 @@ namespace Stryker
             IList<int>[] result = new IList<int>[]{_coveredMutants, _covereStaticdMutants};
             ResetCoverage();
             return result;
-        }
-
-        private static void Channel_RaiseReceivedMessage(object sender, string args)
-        {
-            if (!args.StartsWith("DUMP"))
-            {
-                return;
-            }
-
-            string temp;
-            lock (_coveredMutants)
-            {
-                temp = BuildReport();
-                ResetCoverage();
-            }
-            DumpState(temp);
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -101,7 +80,7 @@ namespace Stryker
 
         private static string BuildReport()
         {
-            return string.Format("{0};{1}", _mutantsAsString, _staticMutantsAsStrings);
+            return string.Format("{0};{1}", string.Join(",", _coveredMutants), string.Join(",", _covereStaticdMutants));
         }
 
         public static void DumpState()
@@ -118,7 +97,7 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            // enable when you need to debug this component
+            // uncomment when you need to debug this component
             //Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
         }
 
@@ -150,26 +129,13 @@ namespace Stryker
         {
             lock (_coverageLock)
             {
-                bool add = false;
                 if (!_coveredMutants.Contains(id))
                 {
                     _coveredMutants.Add(id);
-                    if (_mutantsAsString.Length > 0)
-                    {
-                        _mutantsAsString.Append(',');
-                    }
-                    _mutantsAsString.Append(id.ToString());
-                    add = true;
                 }
                 if (MutantContext.InStatic() && !_covereStaticdMutants.Contains(id))
                 {
                     _covereStaticdMutants.Add(id);
-                    if (_staticMutantsAsStrings.Length > 0)
-                    {
-                        _staticMutantsAsStrings.Append(',');
-                    }
-                    _staticMutantsAsStrings.Append(id.ToString());
-                    add = true;
                 }
             }
         }

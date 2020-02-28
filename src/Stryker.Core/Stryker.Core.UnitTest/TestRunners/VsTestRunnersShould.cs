@@ -337,7 +337,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockVsTest.Object,
-                hostBuilder: ((dictionary, i) => new MoqHost(endProcess)));
+                hostBuilder: ((i) => new MoqHost(endProcess)));
             return mockVsTest;
         }
 
@@ -519,7 +519,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, abortTestOnFail:false);
+                var strykerOptions = new StrykerOptions(fileSystem:_fileSystem, abortTestOnFail:false, disableSimultaneousTesting:false);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
                 _mutants.Add(new FileLeaf{Mutants = new []{new Mutant{Id = 2}, new Mutant{Id = 3}}});
