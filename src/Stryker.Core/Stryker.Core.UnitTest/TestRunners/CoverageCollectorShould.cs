@@ -12,7 +12,12 @@ namespace Stryker.Core.UnitTest.TestRunners
 {
     public static class MutantControl
     {
+        public static bool CaptureCoverage;
         public static int ActiveMutant = -1;
+        public static (IList<int>, IList<int>) GetCoverageData()
+        {
+            return (new List<int>(), new List<int>());
+        }
     }
 
     public class CoverageCollectorShould
@@ -20,26 +25,24 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void ProperlyCaptureParams()
         {
-            var env = new MockEnvironmentHandler();
-            var collector = new CoverageCollector(env);
+            var collector = new CoverageCollector();
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(true, true, null, string.Empty)
+                Configuration = CoverageCollector.GetVsTestSettings(true, false, null, "Stryker.Core.UnitTest.TestRunners")
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
 
             collector.TestSessionStart(start);
-            env.Variables.ShouldContainKey("CaptureCoverage");
-            env.Variables["CaptureCoverage"].ShouldBe("pipe");
+            collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
+            MutantControl.CaptureCoverage.ShouldBeTrue();
         }
 
         [Fact]
         public void ProperlySelectMutant()
         {
-            var env = new MockEnvironmentHandler();
-            var collector = new CoverageCollector(env);
+            var collector = new CoverageCollector();
 
             var mutantMap = new Dictionary<int, IList<string>>() {[0] = new List<string>()};
 
@@ -55,16 +58,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
 
             MutantControl.ActiveMutant.ShouldBe(0);
-        }
-    }
-
-    internal class MockEnvironmentHandler : IEnvironmentVariablesHandler
-    {
-        public readonly Dictionary<string, string> Variables = new Dictionary<string, string>();
-
-        public void SetVariable(string name, string value)
-        {
-            Variables[name] = value;
         }
     }
 }

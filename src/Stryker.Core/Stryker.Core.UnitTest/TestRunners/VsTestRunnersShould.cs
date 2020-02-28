@@ -93,7 +93,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
                     TargetFrameworkVersionString = "toto"
                 },
-                ProjectContents = _mutants
+                ProjectContents = _mutants,
+                MutantControlNameSpace = "Stryker.Core.UnitTest.TestRunners"
             };
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
@@ -161,7 +162,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
-                    It.Is<string>(settings =>!settings.Contains("CaptureCoverage")),
+                    It.Is<string>(settings =>!settings.Contains("<Coverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -179,7 +180,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
-                    It.Is<string>(settings => settings.Contains("CaptureCoverage")),
+                    It.Is<string>(settings => settings.Contains("<Coverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
@@ -208,14 +209,13 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x =>   
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
-                    It.Is<string>( s=> !s.Contains("CaptureCoverage")),
+                    It.Is<string>( s=> !s.Contains("<Coverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher host) =>
                 {
-                    var env = new MockEnvironmentHandler();
-                    var collector = new CoverageCollector(env);
+                    var collector = new CoverageCollector();
                     var start = new TestSessionStartArgs
                     {
                         Configuration = settings
@@ -269,8 +269,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher host) =>
                 {
-                    var env = new MockEnvironmentHandler();
-                    var collector = new CoverageCollector(env);
+                    var collector = new CoverageCollector();
                     var start = new TestSessionStartArgs
                     {
                         Configuration = settings

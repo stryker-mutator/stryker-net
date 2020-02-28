@@ -12,19 +12,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace Stryker.DataCollector
 {
-    public interface IEnvironmentVariablesHandler
-    {
-        void SetVariable(string name, string value);
-    }
-
-    internal class EnvironmentVariablesHandler : IEnvironmentVariablesHandler
-    {
-        public void SetVariable(string name, string value)
-        {
-            Environment.SetEnvironmentVariable(name, value);
-        }
-    }
-
     [DataCollectorFriendlyName("StrykerCoverage")]
     [DataCollectorTypeUri("https://stryker-mutator.io/")]
     public class CoverageCollector: InProcDataCollection
@@ -33,38 +20,34 @@ namespace Stryker.DataCollector
         private CommunicationServer _server;
         private CommunicationChannel _client;
         private bool _usePipe;
-        private readonly object _lck = new object();
-        private string _lastMessage;
+        private bool _useEnv;
         private bool _coverageOn;
+        private bool _firstTestDone;
+        private string _lastMessage;
         private Action<string> _logger;
-        private readonly IEnvironmentVariablesHandler _environmentVariablesHandler;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
         private readonly IList<int> _mutantsAllWaysTested = new List<int>();
 
-        public const string ModeEnvironmentVariable = "CaptureCoverage";
         public const string EnvMode = "env";
         public const string PipeMode = "pipe";
+        public const string VarMode = "var";
+        public const string ModeEnvironmentVariable = "CaptureCoverage";
         private const string EnvName = "CoveredMutants";
+        private FieldInfo _activeMutantField;
+        private FieldInfo _coverageControlField;
+        private string _controlClassName;
+        private Type _controller;
+        private readonly object _lck = new object();
 
-        private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
+        private MethodInfo _getCoverageData;
+
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
-        private FieldInfo _activeMutantField;
-        private string _controlClassName;
-
-        public CoverageCollector() : this(new EnvironmentVariablesHandler())
-        {}
-
-        public CoverageCollector(IEnvironmentVariablesHandler environmentVariablesHandler)
-        {
-            _environmentVariablesHandler = environmentVariablesHandler;
-        }
-
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
 
-        public static string GetVsTestSettings(bool needCoverage, bool usePipe, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
+        public static string GetVsTestSettings(bool needCoverage, bool useVar, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -77,8 +60,7 @@ namespace Stryker.DataCollector
             configuration.Append("<Parameters>");
             if (needCoverage)
             {
-                configuration.AppendFormat("<Environment name=\"{0}\" value=\"{1}\" />", ModeEnvironmentVariable,
-                usePipe ? PipeMode : EnvMode);
+                configuration.Append($"<Coverage mode='{ (useVar ? VarMode : EnvMode)}' />");
             }
             if (mutantTestsMap != null)
             {
@@ -147,54 +129,49 @@ namespace Stryker.DataCollector
                 result["Coverage"]= $"{PipeMode}:{_server.PipeName}";
                 result[ModeEnvironmentVariable] = PipeMode;
             }
-            else
+            else if (_useEnv)
             {
-                result["Coverage"]= $"{EnvMode}:{EnvName}";
+                result["Coverage"]= $"{EnvMode}:{EnvName}";  
                 result[ModeEnvironmentVariable] = EnvMode;
             }
 
             return result;
         }
 
+        // called before any test is run
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {            
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
 
-            _options.TryGetValue(ModeEnvironmentVariable, out var coverageString);
-            _coverageOn = coverageString != null;
-            if (_coverageOn)
-            {
-                Init(coverageString == PipeMode);
-
-                foreach (var environmentVariable in GetEnvironmentVariables())
-                {
-                    _environmentVariablesHandler.SetVariable(environmentVariable.Key, environmentVariable.Value);
-                }
-
-                Log($"Mode: {(_usePipe ? "pipe" : "env")}");
-            }
-
             Log($"Test Session start with conf {configuration}.");
+        }
+
+        private void GetMutantControlMethods()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
+            var types = assemblies
+                .SelectMany(x => x.ExportedTypes);
+
+            _controller = types.FirstOrDefault(t => t.FullName == _controlClassName);
+            if (_controller == null)
+            {
+                Log($"Failed to find type {_controlClassName}. Scanned these assemblies:");
+                foreach (var assembly in assemblies)
+                {
+                    Log(assembly.FullName);
+                }
+                return;
+            }
+            _activeMutantField = _controller.GetField("ActiveMutant");
+            _coverageControlField = _controller.GetField("CaptureCoverage");
+            _getCoverageData = _controller.GetMethod("GetCoverageData");
         }
 
         private void ReadConfiguration(string configuration)
         {
             var node = new XmlDocument();
             node.LoadXml(configuration);
-            var parameters = node.SelectNodes("//Parameters/Environment");
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                var current = parameters[i];
-                if (current.Attributes == null)
-                {
-                    Log("Invalid environment entry in configuration.");
-                    continue;
-                }
-                var name = current.Attributes["name"].Value;
-                var value = current.Attributes["value"].Value;
-                _options.Add(name, value);
-            }
 
             var testMapping = node.SelectNodes("//Parameters/Mutant");
             if (testMapping !=null)
@@ -223,6 +200,21 @@ namespace Stryker.DataCollector
             {
                 this._controlClassName = nameSpaceNode.Attributes["name"].Value;
             }
+
+            var coverage = node.SelectSingleNode("//Parameters/Coverage");
+            if (coverage != null)
+            {
+                _coverageOn = true;
+                var val = coverage.Attributes["mode"].Value;
+                if (val == PipeMode)
+                {
+                    _usePipe = true;
+                }
+                else if (val == EnvMode)
+                {
+                    _useEnv = true;
+                }
+            }
         }
 
         private void ConnectionEstablished(object s, ConnectionEventArgs e)
@@ -246,32 +238,27 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
+            if (!_firstTestDone)
+            {
+                GetMutantControlMethods();
+
+                if (_coverageOn)
+                {
+                    _coverageControlField.SetValue(null, true);
+                    Init(_usePipe);
+                    Log($"Mode: {(_usePipe ? "pipe" : "var")}");
+                }
+
+                _firstTestDone = true;
+            }
             if (_coverageOn)
             {
                 return;
             }
             // we need to set the proper mutant
             var  testId = testCaseStartArgs.TestCase.Id.ToString();
-            int mutantId;
-            if (_mutantTestedBy.ContainsKey(testId))
-            {
-                mutantId = _mutantTestedBy[testId];
-            }
-            else
-            {
-                mutantId =  _mutantsAllWaysTested[0];
-            }
+            var mutantId = _mutantTestedBy.ContainsKey(testId) ? _mutantTestedBy[testId] : _mutantsAllWaysTested[0];
 
-            if (_activeMutantField == null)
-            {
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
-                var types = assemblies
-                    .SelectMany(x => x.ExportedTypes);
-
-                var controller = types.FirstOrDefault(t => t.FullName == _controlClassName);
-                _activeMutantField = controller?.GetField("ActiveMutant");
-            }
-            
             _activeMutantField.SetValue(null, mutantId);
             Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
         }
@@ -283,6 +270,7 @@ namespace Stryker.DataCollector
             {
                 return;
             }
+
             PublishCoverageData(testCaseEndArgs);
         }
 
@@ -313,8 +301,7 @@ namespace Stryker.DataCollector
             }
             else
             {
-                Log(
-                    $"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
+                Log($"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
             }
         }
 
@@ -332,11 +319,16 @@ namespace Stryker.DataCollector
                 coverData = _lastMessage;
                 _lastMessage = null;
             }
-            else
+            else if (_useEnv)
             {
                 // get coverage 
                 coverData = Environment.GetEnvironmentVariable(EnvName);
                 Environment.SetEnvironmentVariable(EnvName, null);
+            }
+            else
+            {
+                var (covered, staticMutants) = ((IList<int>, IList<int>)) _getCoverageData.Invoke(null, new object[]{});
+                coverData = string.Join(",", covered) + ";" + string.Join(",", staticMutants);
             }
 
             return coverData;

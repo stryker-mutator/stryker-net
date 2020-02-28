@@ -8,15 +8,17 @@ namespace Stryker
     public static class MutantControl
     {
         private static List<int> _coveredMutants;
+        private static List<int> _covereStaticdMutants;
         private static StringBuilder _mutantsAsString;
         private static StringBuilder _staticMutantsAsStrings;
         private static bool usePipe;
+        private static bool useEnv;
         private static string pipeName;
         private static string envName;
-        private static bool captureCoverage;
         private static Object _coverageLock = new Object();
 
         // this attributs will be set by Stryker Data Collector before eachtest
+        public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
 #if !STRYKER_NO_PIPE
@@ -51,7 +53,7 @@ namespace Stryker
                 Log("Use pipe for data transmission");
                 pipeName = coverageMode.Substring(5);
                 usePipe = true;
-                captureCoverage = true;
+                CaptureCoverage = true;
                 channel = CommunicationChannel.Client(pipeName, 100);
                 channel.SetLogger(Log);
                 channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
@@ -62,21 +64,27 @@ namespace Stryker
             {
                 Log("Use env for data transmission");
                 envName = coverageMode.Substring(4);
-                captureCoverage = true;
+                CaptureCoverage = true;
                 usePipe = false;
+                useEnv = true;
             }
 #endif
-            if (captureCoverage)
-            {
-                ResetCoverage();
-            }
+            ResetCoverage();
         }
 
-        private static void ResetCoverage()
+        public static void ResetCoverage()
         {
             _coveredMutants = new List<int>();
+            _covereStaticdMutants = new List<int>();
             _mutantsAsString = new StringBuilder();
             _staticMutantsAsStrings = new StringBuilder();
+        }
+
+        public static (IList<int>, IList<int>) GetCoverageData()
+        {
+            var result = (_coveredMutants, _covereStaticdMutants);
+            ResetCoverage();
+            return result;
         }
 
         private static void Channel_RaiseReceivedMessage(object sender, string args)
@@ -127,9 +135,9 @@ namespace Stryker
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            if (captureCoverage)
+            if (CaptureCoverage)
             {
-                CaptureCoverage(id);
+                RegisterCoverage(id);
                 return false;
             }
             if (ActiveMutant == ActiveMutantNotInitValue)
@@ -148,11 +156,11 @@ namespace Stryker
             return id == ActiveMutant;
         }
 
-        private static void CaptureCoverage(int id)
+        private static void RegisterCoverage(int id)
         {
             lock (_coverageLock)
             {
-                if (!usePipe)
+                if (useEnv)
                 {
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
                     {
@@ -171,8 +179,9 @@ namespace Stryker
                     _mutantsAsString.Append(id.ToString());
                     add = true;
                 }
-                if (MutantContext.InStatic() && _coveredMutants.Contains(id))
+                if (MutantContext.InStatic() && !_covereStaticdMutants.Contains(id))
                 {
+                    _covereStaticdMutants.Add(id);
                     if (_staticMutantsAsStrings.Length > 0)
                     {
                         _staticMutantsAsStrings.Append(',');
@@ -183,7 +192,7 @@ namespace Stryker
 
                 if (add)
                 {
-                    if (!usePipe)
+                    if (useEnv)
                     {
                         Environment.SetEnvironmentVariable(envName, BuildReport());
                     }

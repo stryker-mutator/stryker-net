@@ -83,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
-            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant>{ mutant}, update);
+            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant>{mutant}, update);
         }
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -149,7 +149,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _aborted = true;
             }
 
-            var testResults = RunTestSession(testCases, envVars, GenerateRunSettings(timeoutMs, false, _usePipeForCoverage, mutantTestsMap), HandleUpdate);
+            var testResults = RunTestSession(testCases, envVars, GenerateRunSettings(timeoutMs,  mutants != null, false, mutantTestsMap), HandleUpdate);
             var resultAsArray = testResults.TestResults.ToArray();
             var timeout = (!_aborted && resultAsArray.Length < expectedTests);
             var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
@@ -188,7 +188,7 @@ namespace Stryker.Core.TestRunners.VsTest
             using (var waitHandle = new AutoResetEvent(false))
             {
                 var handler = new DiscoveryEventHandler(waitHandle, _messages);
-                var generateRunSettings = GenerateRunSettings(null, false, _usePipeForCoverage, null);
+                var generateRunSettings = GenerateRunSettings(null, false, false, null);
                 _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
 
                 waitHandle.WaitOne();
@@ -224,7 +224,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
-            var testResults = RunTestSession(null, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
+            var testResults = RunTestSession(null, null, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults, mutants);
             return new TestRunResult (true );
         }
@@ -284,10 +284,10 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
+        public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
-            var testResults = RunTestSession(new []{test}, null, GenerateRunSettings(null, true, _usePipeForCoverage, null));
+            var testResults = RunTestSession(new []{test}, null, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test.Id), mutants);
             // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
             _vsTestConsole.CancelTestRun();
@@ -362,7 +362,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return traceLevel;
         }
 
-        private string GenerateRunSettings(int? timeout, bool forCoverage, bool usePipe, Dictionary<int, IList<string>> mutantTestsMap)
+        private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, IList<string>> mutantTestsMap)
         {
             var targetFramework = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFramework;
             var targetFrameworkVersion = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFrameworkVersion;
@@ -381,7 +381,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = CoverageCollector.GetVsTestSettings(needCoverage, usePipe, mutantTestsMap, CodeInjection.HelperNamespace);
+            var dataCollectorSettings = (forMutantTesting ||forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, true, mutantTestsMap, _projectInfo.MutantControlNameSpace) : "";
             var settingsForCoverage = string.Empty;
             if (_testFramework.HasFlag(TestFramework.nUnit))
             {
