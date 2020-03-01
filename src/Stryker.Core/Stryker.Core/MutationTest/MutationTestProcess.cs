@@ -201,7 +201,6 @@ namespace Stryker.Core.MutationTest
             var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
- 
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
 
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
@@ -232,11 +231,12 @@ namespace Stryker.Core.MutationTest
 
                                 return mustGoOn;
                             });
+
                         foreach(var mutant in mutants)
                         {
                             if (mutant.ResultStatus == MutantStatus.NotRun)
                             {
-                                _logger.LogWarning($"Mutant {mutant.Id} not tested.");
+                                _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
                             }
                             else if (!testMutants.Contains(mutant))
                             {
@@ -259,40 +259,45 @@ namespace Stryker.Core.MutationTest
             {
                 return mutantsNotRun.Select(x => new List<Mutant> {x});
             }
-            else
-            {
-                _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
-                var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
-                var mutantsToGroup = mutantsNotRun.ToList();
-                // we deal with mutants needing full testing first
-                blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> {m}));
-                mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
-                var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
-                mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
-                for (var i = 0; i < mutantsToGroup.Count; i++)
-                {
-                    var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
-                    var nextBlock = new List<Mutant> {mutantsToGroup[i]};
-                    for (var j = i + 1; j < mutantsToGroup.Count; j++)
-                    {
-                        if (mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
-                            mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
-                        {
-                            continue;
-                        }
 
-                        nextBlock.Add(mutantsToGroup[j]);
-                        usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
-                        mutantsToGroup.RemoveAt(j--);
+            _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
+            var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
+            var mutantsToGroup = mutantsNotRun.ToList();
+            // we deal with mutants needing full testing first
+            blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> {m}));
+            mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
+            var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
+            mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
+            for (var i = 0; i < mutantsToGroup.Count; i++)
+            {
+                var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
+                var nextBlock = new List<Mutant> {mutantsToGroup[i]};
+                for (var j = i + 1; j < mutantsToGroup.Count; j++)
+                {
+                    if (mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
+                        mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                    {
+                        continue;
                     }
 
-                    blocks.Add(nextBlock);
+                    nextBlock.Add(mutantsToGroup[j]);
+                    usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
+                    mutantsToGroup.RemoveAt(j--);
                 }
 
-                _logger.LogInformation(
-                    $"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
-                return blocks;
+                blocks.Add(nextBlock);
             }
+
+            if (blocks.Count == mutantsNotRun.Count)
+            {
+                _logger.LogWarning("Unable to test more than one mutation per test run.");
+            }
+            else
+            {
+                _logger.LogInformation(
+                $"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+            }
+            return blocks;
         }
 
         public void GetCoverage()

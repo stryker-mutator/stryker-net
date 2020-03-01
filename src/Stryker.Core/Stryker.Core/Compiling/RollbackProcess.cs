@@ -192,7 +192,7 @@ namespace Stryker.Core.Compiling
 
                     _logger.LogWarning(
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
-                    // backup, remove all mutants in the node
+                    // backup, remove all mutations in the node
 
                     var scan = new Dictionary<SyntaxNode, int>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;

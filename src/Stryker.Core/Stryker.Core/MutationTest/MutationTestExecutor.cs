@@ -37,20 +37,7 @@ namespace Stryker.Core.MutationTest
                 Logger.LogDebug(
                     $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
 
-                var remainingMutants = new List<Mutant>();
-                foreach (var mutant in mutantsToTest)
-                {
-                    if (mutant.ResultStatus == MutantStatus.NotRun)
-                    {
-                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
-                    }
-
-                    if (mutant.ResultStatus == MutantStatus.NotRun)
-                    {
-                        // test run is not conclusive
-                        remainingMutants.Add(mutant);
-                    }
-                }
+                var remainingMutants = mutantsToTest.Where( (m) => m.ResultStatus == MutantStatus.NotRun).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
                 {
                     // the test failed to get any conclusive results
@@ -107,6 +94,14 @@ namespace Stryker.Core.MutationTest
                     {
                         result.Merge(testRunResult);
                     }
+                }
+            }
+
+            if (updateHandler == null)
+            {
+                foreach (var mutant in mutantsToTest)
+                {
+                    mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
                 }
             }
 

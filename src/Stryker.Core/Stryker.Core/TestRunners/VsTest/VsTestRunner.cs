@@ -376,7 +376,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            var needCoverage = forCoverage && NeedCoverage();
+            var needCoverage = forCoverage && NeedCoverage();       
             var dataCollectorSettings = (forMutantTesting ||forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, _projectInfo.MutantControlNameSpace) : "";
             var settingsForCoverage = string.Empty;
             if (_testFramework.HasFlag(TestFramework.nUnit))
