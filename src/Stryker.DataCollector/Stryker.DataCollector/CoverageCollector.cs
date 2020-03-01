@@ -36,7 +36,7 @@ namespace Stryker.DataCollector
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
 
-        public static string GetVsTestSettings(bool needCoverage, bool useVar, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
+        public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;

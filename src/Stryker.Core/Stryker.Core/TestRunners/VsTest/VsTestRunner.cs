@@ -153,7 +153,7 @@ namespace Stryker.Core.TestRunners.VsTest
             
             if (ranTests.Count == 0 && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
-                _logger.LogError($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
+                _logger.LogDebug($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
             }
 
             var message = string.Join( Environment.NewLine,
@@ -359,8 +359,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, IList<string>> mutantTestsMap)
         {
-            var targetFramework = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFramework;
-            var targetFrameworkVersion = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault().TargetFrameworkVersion;
+            var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
+            var targetFramework = projectAnalyzerResult.TargetFramework;
+            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkVersion;
             string targetFrameworkVersionString;
 
             switch (targetFramework)
@@ -376,7 +377,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = (forMutantTesting ||forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, true, mutantTestsMap, _projectInfo.MutantControlNameSpace) : "";
+            var dataCollectorSettings = (forMutantTesting ||forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, _projectInfo.MutantControlNameSpace) : "";
             var settingsForCoverage = string.Empty;
             if (_testFramework.HasFlag(TestFramework.nUnit))
             {

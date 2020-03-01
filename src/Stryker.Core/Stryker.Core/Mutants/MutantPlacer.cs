@@ -12,8 +12,10 @@ namespace Stryker.Core.Mutants
 
         private const string MutationConditional = "MutationConditional";
         private const string MutationIf = "MutationIf";
+        private const string MutationHelper = "Helper";
+        private const string HelperId = "-1";
 
-        public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf };
+        public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf, MutationHelper};
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block)
         {
@@ -44,6 +46,11 @@ namespace Stryker.Core.Mutants
             {
                 return RemoveByConditionalExpression(parenthesizedExpression);
             }
+
+            if (nodeToRemove.GetAnnotatedNodes(MutationHelper).Any())
+            {
+                return SyntaxFactory.EmptyStatement();
+            }
             // this is not one of our structure
             return nodeToRemove;
         }
@@ -65,6 +72,11 @@ namespace Stryker.Core.Mutants
                         whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
+        }
+
+        public static T AnnotateHelper<T>(T node) where T:SyntaxNode
+        {
+            return node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
         }
 
         private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized)

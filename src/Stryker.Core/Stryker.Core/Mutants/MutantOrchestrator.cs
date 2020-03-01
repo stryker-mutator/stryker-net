@@ -324,10 +324,10 @@ namespace Stryker.Core.Mutants
             if (currentNode is MethodDeclarationSyntax methodNode && 
                 methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
             {
-                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
+                var newBody = methodNode.Body.AddStatements(MutantPlacer.AnnotateHelper(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType))));
                 currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
             }
-
+            
             return currentNode;
         }
 

@@ -69,7 +69,7 @@ namespace Stryker.Core.Compiling
             var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: trees,
                 options: compilationOptions,
-                                                      references: _input.AssemblyReferences);
+                references: _input.AssemblyReferences);
 
             RollbackProcessResult rollbackProcessResult;
 
@@ -111,7 +111,7 @@ namespace Stryker.Core.Compiling
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(
-            MemoryStream ms,
+            Stream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,

@@ -107,17 +107,20 @@ namespace Stryker.Core.Compiling
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            if (node.Kind() == SyntaxKind.MethodDeclaration || node.Kind() == SyntaxKind.GetAccessorDeclaration || node.Kind() == SyntaxKind.SetAccessorDeclaration)
+            for(;;)
             {
-                return node;
-            }
+                if (node.Kind() == SyntaxKind.MethodDeclaration || node.Kind() == SyntaxKind.GetAccessorDeclaration || node.Kind() == SyntaxKind.SetAccessorDeclaration)
+                {
+                    return node;
+                }
 
-            if (node.Parent == null)
-            {
-                return null;
-            }
+                if (node.Parent == null)
+                {
+                    return null;
+                }
 
-            return FindEnclosingMember(node.Parent);
+                node = node.Parent;
+            }
         }
 
         private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
@@ -153,7 +156,7 @@ namespace Stryker.Core.Compiling
             _logger.LogInformation(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo,
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo,
             bool lastAttempt, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
@@ -163,7 +166,18 @@ namespace Stryker.Core.Compiling
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
-                if (mutationIf == null)
+                if (mutationIf != null)
+                {
+                    if (!brokenMutations.Contains(mutationIf))
+                    {
+                        brokenMutations.Add(mutationIf);
+                        if (mutantId >= 0)
+                        {
+                            _rollbackedIds.Add(mutantId);
+                        }
+                    }
+                }
+                else
                 {
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
                     _logger.LogWarning(
@@ -175,7 +189,9 @@ namespace Stryker.Core.Compiling
                         _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
                         throw new StrykerCompilationException("Internal error due to compile error.");
                     }
-                    _logger.LogWarning("Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
+
+                    _logger.LogWarning(
+                        "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutants in the node
 
                     var scan = new Dictionary<SyntaxNode, int>();
@@ -185,7 +201,8 @@ namespace Stryker.Core.Compiling
                     if (!scan.Any() && lastAttempt)
                     {
                         // Not able to rollback anything
-                        _logger.LogCritical("Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
+                        _logger.LogCritical(
+                            "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
                         throw new StrykerCompilationException("Internal error due to compile error.");
                     }
 
@@ -196,14 +213,6 @@ namespace Stryker.Core.Compiling
                             brokenMutations.Add(key);
                             _rollbackedIds.Add(value);
                         }
-                    }
-                }
-                else
-                {
-                    if (!brokenMutations.Contains(mutationIf))
-                    {
-                        brokenMutations.Add(mutationIf);
-                        _rollbackedIds.Add(mutantId);
                     }
                 }
             }

@@ -255,7 +255,11 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            if (!_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix))
+            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix))
+            {
+                return mutantsNotRun.Select(x => new List<Mutant> {x});
+            }
+            else
             {
                 _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
                 var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
@@ -285,14 +289,9 @@ namespace Stryker.Core.MutationTest
                     blocks.Add(nextBlock);
                 }
 
-                var count = blocks.SelectMany(x => x).Count();
                 _logger.LogInformation(
-                    $"{count} mutants will run in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+                    $"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
                 return blocks;
-            }
-            else
-            {
-                return mutantsNotRun.Select(x => new List<Mutant> {x});
             }
         }
 

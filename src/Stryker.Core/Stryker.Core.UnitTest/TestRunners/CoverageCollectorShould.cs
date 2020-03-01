@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(true, false, null, "Stryker.Core.UnitTest.TestRunners")
+                Configuration = CoverageCollector.GetVsTestSettings(true, null, "Stryker.Core.UnitTest.TestRunners")
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(false, true, mutantMap, this.GetType().Namespace)
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, this.GetType().Namespace)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
