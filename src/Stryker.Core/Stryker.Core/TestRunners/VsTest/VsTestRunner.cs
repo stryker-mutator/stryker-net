@@ -87,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var mutantTestsMap = new Dictionary<int, IList<string>>();
             ICollection<TestCase> testCases = null;
-            if (!_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutants.Count>1)
+            if (!_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutants?.Count>1)
             {
                 throw new StrykerInputException("Multiple mutant test requires coverage analysis");
             }

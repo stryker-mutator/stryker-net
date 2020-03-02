@@ -308,14 +308,22 @@ namespace Stryker.Core.MutationTest
             if (testResult.FailingTests.Count == 0)
             {
                 // force static mutants to be tested against all tests.
-                if (_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
                 {
-                    return;
+                    foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                    {
+                        mutant.MustRunAgainstAllTests = true;
+                    }
+
                 }
-                foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                foreach (var mutant in mutantsToScan)
                 {
-                    mutant.MustRunAgainstAllTests = true;
+                    if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
+                    {
+                        mutant.ResultStatus = MutantStatus.NoCoverage;
+                    }
                 }
+
                 return;
             }
             _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
