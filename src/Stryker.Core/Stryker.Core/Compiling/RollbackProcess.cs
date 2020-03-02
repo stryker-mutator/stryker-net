@@ -162,23 +162,32 @@ namespace Stryker.Core.Compiling
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
             var brokenMutations = new Collection<SyntaxNode>();
+            var phaseOneFixFound = false;
             foreach (var diagnostic in diagnosticInfo)
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
                 if (mutationIf != null)
                 {
-                    if (!brokenMutations.Contains(mutationIf))
+                    if (brokenMutations.Contains(mutationIf))
                     {
-                        brokenMutations.Add(mutationIf);
-                        if (mutantId >= 0)
-                        {
-                            _rollbackedIds.Add(mutantId);
-                        }
+                        continue;
+                    }
+
+                    brokenMutations.Add(mutationIf);
+                    phaseOneFixFound = true;
+                    if (mutantId >= 0)
+                    {
+                        _rollbackedIds.Add(mutantId);
                     }
                 }
-                else
+            }
+
+            if (!phaseOneFixFound)
+            {
+                foreach (var diagnostic in diagnosticInfo)
                 {
+                    var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
                     _logger.LogWarning(
                         "Stryker.NET encountered an compile error in {0} (at {1}:{2}) with message: {3} (Source code: {4})",
@@ -193,7 +202,6 @@ namespace Stryker.Core.Compiling
                     _logger.LogWarning(
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutations in the node
-
                     var scan = new Dictionary<SyntaxNode, int>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
