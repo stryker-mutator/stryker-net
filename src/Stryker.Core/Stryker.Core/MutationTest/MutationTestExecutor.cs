@@ -47,20 +47,18 @@ namespace Stryker.Core.MutationTest
                         Logger.LogError($"Stryker failed to test {remainingMutants.Count} mutant(s).");
                         return;
                     }
+
+                    // test session's results have been corrupted by the time out
+                    // we retry and run tests one by one, if necessary
+                    if (remainingMutants.Count == 1)
+                    {
+                        // only one mutant was tested, we mark it as timeout.
+                        remainingMutants[0].ResultStatus = MutantStatus.Timeout;
+                        remainingMutants.Clear();
+                    }
                     else
                     {
-                        // test session's results have been corrupted by the time out
-                        // we retry and run tests one by one, if necessary
-                        if (remainingMutants.Count == 1)
-                        {
-                            // only one mutant was tested, we mark it as timeout.
-                            remainingMutants[0].ResultStatus = MutantStatus.Timeout;
-                            remainingMutants.Clear();
-                        }
-                        else
-                        {
-                            forceSingle = true;
-                        }
+                        forceSingle = true;
                     }
                 }
 
