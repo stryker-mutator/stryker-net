@@ -235,12 +235,22 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var seenTestCases = new HashSet<Guid>();
+            var dynamicTestCases = new HashSet<Guid>();
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == "Stryker.Coverage");
                 if (key == null)
                 {
-                    _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
+                    if (seenTestCases.Contains(testResult.TestCase.Id) && !dynamicTestCases.Contains(testResult.TestCase.Id))
+                    {
+                        dynamicTestCases.Add(testResult.TestCase.Id);
+                        // register dynamic testcases
+                        foreach (var mutant in mutants)
+                        {
+                            mutant.CoveringTests.Add(testResult.TestCase);
+                        }                        
+                        _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
+                    }
                 }
                 else if (value != null)
                 {
@@ -278,6 +288,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                 }
             }
+
+
         }
 
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
