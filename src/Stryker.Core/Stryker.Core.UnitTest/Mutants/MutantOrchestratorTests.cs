@@ -524,6 +524,24 @@ static Mutator_Flag_MutatedStatics()
 }
 
         [Fact]
+        public void ShouldAddReturnDefaultToAsyncMethods()
+        {
+            string source = @"Task<bool> TestMethod()
+{
+    ;
+}";
+            string expected = @"Task<bool> TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
         public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
         {
             string source = @"void TestMethod()

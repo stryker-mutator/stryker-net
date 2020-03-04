@@ -325,7 +325,12 @@ namespace Stryker.Core.Mutants
             if (currentNode is MethodDeclarationSyntax methodNode && 
                 methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
             {
-                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(methodNode.ReturnType)));
+                TypeSyntax returnType = methodNode.ReturnType;
+                if (returnType is GenericNameSyntax genericReturn && genericReturn.Identifier.ToString() == "Task")
+                {
+                    returnType = genericReturn.TypeArgumentList.Arguments.First();
+                }
+                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
                 currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
             }
 
