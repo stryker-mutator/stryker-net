@@ -32,6 +32,12 @@
           "NETStandard.Library": "2.0.3"
         }
       },
+      "NuGet.Versioning": {
+        "type": "Direct",
+        "requested": "[5.4.0, )",
+        "resolved": "5.4.0",
+        "contentHash": "aFOhsyeafHctMNwKfKzwD9bJqhsDaQuBBUgZ+8RNlaz8Voq/SEjd6R8KIPzQ+L8P49qTB8aucjqxo9tkH3N4Bg=="
+      },
       "Buildalyzer": {
         "type": "Transitive",
         "resolved": "2.5.1",
@@ -1457,7 +1463,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
+          "Stryker.DataCollector": "0.15.0",
           "System.IO.Abstractions": "9.0.4"
         }
       },
