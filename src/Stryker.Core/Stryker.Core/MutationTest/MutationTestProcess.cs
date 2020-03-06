@@ -101,6 +101,27 @@ namespace Stryker.Core.MutationTest
 
             _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
 
+            CompileMutations();
+
+            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
+                .SelectMany(f => f.Mutants)
+                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
+                .OrderBy(x => x.Key);
+
+            foreach (var skippedMutantGroup in skippedMutantGroups)
+            {
+                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
+                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+            }
+
+            _logger.LogInformation("{0} mutants ready for test",
+                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
+
+            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
+        }
+
+        private void CompileMutations()
+        {
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
@@ -142,22 +163,6 @@ namespace Stryker.Core.MutationTest
                     }
                 }
             }
-
-            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
-                .SelectMany(f => f.Mutants)
-                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
-                .OrderBy(x => x.Key);
-
-            foreach (var skippedMutantGroup in skippedMutantGroups)
-            {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
-                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
-            }
-
-            _logger.LogInformation("{0} mutants ready for test",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
-
-            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
         public StrykerRunResult Test(StrykerOptions options)
