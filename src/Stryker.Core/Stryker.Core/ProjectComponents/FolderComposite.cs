@@ -18,8 +18,8 @@ namespace Stryker.Core.ProjectComponents
 
         public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _syntaxTrees.Add(syntaxTree);
 
-        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _syntaxTrees.Union(Children.SelectMany(c => c.MutationSyntaxTrees));
-        public override IEnumerable<SyntaxTree> MutationSyntaxTrees => Children.SelectMany(c => c.MutationSyntaxTrees);
+        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _syntaxTrees.Union(Children.SelectMany(c => c.MutatedSyntaxTrees));
+        public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
 
         public override IEnumerable<Mutant> Mutants
         {

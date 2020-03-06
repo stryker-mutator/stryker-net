@@ -34,7 +34,7 @@ namespace Stryker.Core.ProjectComponents
                 m.ResultStatus == MutantStatus.Timeout);
 
         public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
-        public abstract IEnumerable<SyntaxTree> MutationSyntaxTrees { get; }
+        public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
