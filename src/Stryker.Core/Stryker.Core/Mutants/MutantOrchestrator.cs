@@ -329,6 +329,7 @@ namespace Stryker.Core.Mutants
             {
                 TypeSyntax returnType = methodNode.ReturnType;
 
+                // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
                 var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
                 if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
                 {
