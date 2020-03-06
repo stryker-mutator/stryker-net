@@ -3,6 +3,7 @@ using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using System.Linq;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -278,11 +279,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         [Fact]
         public void ShouldMutateLinqMethods()
         {
-            string source = @"public int TestLinq(int count){ 
+            string source = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return list.Last();
 }";
-            string expected = @"public int TestLinq(int count){ 
+            string expected = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
     return default(int);
@@ -387,7 +388,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
     else
     {
         x++;
-    }  
+    }
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -591,6 +592,27 @@ static Mutator_Flag_MutatedStatics()
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
 }
+
+        [Theory]
+        [InlineData("=> Value = \"Hello, World!\";")]
+        [InlineData("{Value = \"Hello, World!\";}")]
+        public void ShouldMutateStaticConstructor(string source)
+        {
+            source = @"static string Value { get; }
+
+static TestClass() " + source;
+
+            var expected = @"static string Value { get; }
+
+static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}";
+
+            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
 
         private void ShouldMutateSourceToExpected(string original, string expected)
         {

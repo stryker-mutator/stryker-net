@@ -137,11 +137,28 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
         {
-            var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
-            var mutatedBlock = (BlockSyntax)Mutate(constructorDeclaration.Body, context);
-            var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
+            var trackedConstructor = constructorDeclaration.TrackNodes((SyntaxNode) constructorDeclaration.Body ?? constructorDeclaration.ExpressionBody);
+            if (constructorDeclaration.ExpressionBody != null)
+            {
+                var bodyBlock = SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(constructorDeclaration.ExpressionBody.Expression));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(bodyBlock, context));
+                trackedConstructor = trackedConstructor.Update(
+                    trackedConstructor.AttributeLists,
+                    trackedConstructor.Modifiers,
+                    trackedConstructor.Identifier,
+                    trackedConstructor.ParameterList,
+                    trackedConstructor.Initializer,
+                    markedBlock,
+                    null,
+                    SyntaxFactory.Token(SyntaxKind.None));
+            }
+            else if (constructorDeclaration.Body != null)
+            {
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(constructorDeclaration.Body, context));
+                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.Body), markedBlock);
+            }
 
-            return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
+            return trackedConstructor;
         }
 
         private SyntaxNode MutateStaticAccessor(PropertyDeclarationSyntax accessorDeclaration, MutationContext context)
