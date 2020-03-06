@@ -319,17 +319,30 @@ namespace Stryker.Core.Mutants
             }
         }
 
+        /// <summary>
+        /// Add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
+        /// </summary>
         private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
         {
-            // add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
-            if (currentNode is MethodDeclarationSyntax methodNode && 
-                methodNode.ReturnType.ToString() != "void" && methodNode.Body != null)
+            if (currentNode is MethodDeclarationSyntax methodNode && methodNode.Body != null &&
+                !(methodNode.ReturnType is PredefinedTypeSyntax predefinedType && predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)))
             {
                 TypeSyntax returnType = methodNode.ReturnType;
-                if (returnType is GenericNameSyntax genericReturn && genericReturn.Identifier.ToString() == "Task")
+
+                var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
+                if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
                 {
-                    returnType = genericReturn.TypeArgumentList.Arguments.First();
+                    if (genericReturn != null && genericReturn.Identifier.ToString() == "Task")
+                    {
+                        // if the method is async and returns a generic task, make the return default return the underlying type
+                        returnType = genericReturn.TypeArgumentList.Arguments.First();
+                    } else if (genericReturn == null)
+                    {
+                        // if the method is async but returns a non-generic task, don't add the return default
+                        return currentNode;
+                    }
                 }
+
                 var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
                 currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
             }
