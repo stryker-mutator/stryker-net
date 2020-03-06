@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Mutants;
+﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,16 +9,22 @@ namespace Stryker.Core.ProjectComponents
 {
     public class FolderComposite : ProjectComponent
     {
+        private readonly IList<SyntaxTree> _syntaxTrees;
         public ICollection<ProjectComponent> Children { get; set; }
+        public FolderComposite()
+        {
+            Children = new Collection<ProjectComponent>();
+        }
+
+        public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _syntaxTrees.Add(syntaxTree);
+
+        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _syntaxTrees.Union(Children.SelectMany(c => c.MutationSyntaxTrees));
+        public override IEnumerable<SyntaxTree> MutationSyntaxTrees => Children.SelectMany(c => c.MutationSyntaxTrees);
+
         public override IEnumerable<Mutant> Mutants
         {
             get => Children.SelectMany(x => x.Mutants);
             set => throw new NotImplementedException();
-        }
-
-        public FolderComposite()
-        {
-            Children = new Collection<ProjectComponent>();
         }
 
         public override IEnumerable<FileLeaf> GetAllFiles()

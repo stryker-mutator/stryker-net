@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Mutants;
+﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ namespace Stryker.Core.ProjectComponents
 {
     public abstract class ProjectComponent : IReadOnlyInputComponent
     {
+        public string Name { get; set; }
         public string FullPath { get; set; }
 
         /// <summary>
@@ -21,10 +23,7 @@ namespace Stryker.Core.ProjectComponents
         public string RelativePathToProjectFile { get; set; }
 
         public abstract IEnumerable<Mutant> Mutants { get; set; }
-        public string Name { get; set; }
-
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
-
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
             ReadOnlyMutants.Where(m =>
                 m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
@@ -33,6 +32,9 @@ namespace Stryker.Core.ProjectComponents
             m =>
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
+
+        public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
+        public abstract IEnumerable<SyntaxTree> MutationSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }

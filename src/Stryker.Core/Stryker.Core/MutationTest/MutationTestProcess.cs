@@ -1,10 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -67,30 +65,14 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            _logger.LogInformation("Generating mutants.");
-            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
-
-            _logger.LogDebug("Injecting helpers into assembly.");
-            var mutatedSyntaxTrees = new List<SyntaxTree>();
-            var cSharpParseOptions = new CSharpParseOptions(_options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
-            {
-                mutatedSyntaxTrees.Add(CSharpSyntaxTree.ParseText(code, path: name,
-                    options: cSharpParseOptions));
-            }
-
+            // Mutate source files
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
             {
-                // Get the syntax tree for the source file
-                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
-                    path: file.FullPath,
-                    options: cSharpParseOptions);
-
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
-                var mutatedSyntaxTree = _orchestrator.Mutate(syntaxTree.GetRoot());
+                var mutatedSyntaxTree = _orchestrator.Mutate(file.SyntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
-                mutatedSyntaxTrees.Add(mutatedSyntaxTree.SyntaxTree);
+                file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
                 if (_options.DevMode)
                 {
                     _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
@@ -122,7 +104,7 @@ namespace Stryker.Core.MutationTest
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
-                var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, _options.DevMode);
+                var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, _options.DevMode);
 
                 foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
                 {

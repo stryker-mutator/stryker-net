@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
+using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
@@ -71,7 +75,6 @@ namespace Stryker.Core.Initialisation
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
             // Determine project under test
-
             projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
@@ -82,15 +85,15 @@ namespace Stryker.Core.Initialisation
             FolderComposite inputFiles;
             if (projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildalyzer(projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesUsingBuildalyzer(projectInfo.ProjectUnderTestAnalyzerResult, options);
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult, options);
             }
             projectInfo.ProjectContents = inputFiles;
 
-            ValidateResult(projectInfo, options);
+            ValidateTestProjectsCanBeExecuted(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
@@ -116,50 +119,87 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult)
+        private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
-            var generatedAssemblyInfo =
-                (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
+            var generatedAssemblyInfo = (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
             var rootFolderComposite = new FolderComposite()
             {
                 Name = string.Empty,
                 FullPath = projectRoot,
                 RelativePath = string.Empty,
-                RelativePathToProjectFile =
-                    Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
+                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
             };
             var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
             inputFiles.Add(rootFolderComposite);
+
+            CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
+            InjectMutantHelpers(rootFolderComposite, cSharpParseOptions);
+
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
+                // Skip xamarin UI generated files
                 if (sourceFile.EndsWith(".xaml.cs"))
                 {
                     continue;
                 }
 
+                // Skip assembly info
                 if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
                 {
                     continue;
                 }
 
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
-                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir,
-                    projectRoot, inputFiles);
+                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
-                folderComposite.Add(new FileLeaf()
+
+                var file = new FileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(sourceFile),
                     Name = _fileSystem.Path.GetFileName(sourceFile),
                     RelativePath = _fileSystem.Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = sourceFile,
                     RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, sourceFile)
-                });
+                };
+
+                // Get the syntax tree for the source file
+                var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
+                    path: file.FullPath,
+                    options: cSharpParseOptions);
+
+                // don't mutate auto generated code
+                if (syntaxTree.IsGenerated())
+                {
+                    _logger.LogDebug("Skipping auto-generated code file: {fileName}", file.Name);
+                    folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
+                    continue; // Don't add the file to the folderComposite as we're not reporting on the file
+                }
+
+
+                file.SyntaxTree = syntaxTree;
+                folderComposite.Add(file);
             }
 
             return inputFiles;
+        }
+
+        private void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
+        {
+            foreach (var (name, code) in CodeInjection.MutantHelpers)
+            {
+                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, options: cSharpParseOptions));
+            }
+        }
+
+        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        {
+            var preprocessorSymbols = analyzerResult.DefineConstants;
+
+            var cSharpParseOptions = new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
+            return cSharpParseOptions;
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
@@ -185,8 +225,7 @@ namespace Stryker.Core.Initialisation
                         Name = sub,
                         FullPath = fullPath,
                         RelativePath = Path.GetRelativePath(projectRoot, fullPath),
-                        RelativePathToProjectFile =
-                            Path.GetRelativePath(projectUnderTestDir, fullPath)
+                        RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, fullPath)
                     };
                     if (subDir != null)
                     {
@@ -226,6 +265,7 @@ namespace Stryker.Core.Initialisation
                 RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent),
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
+
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
                 folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
@@ -363,7 +403,7 @@ namespace Stryker.Core.Initialisation
                 });
         }
 
-        private void ValidateResult(ProjectInfo projectInfo, StrykerOptions options)
+        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerOptions options)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
