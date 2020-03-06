@@ -106,7 +106,7 @@ namespace Stryker.Core.MutationTest
                     // Mark the filtered mutants as skipped
                     foreach (var skippedMutant in filteredMutants.Except(current))
                     {
-                        skippedMutant.ResultStatus = MutantStatus.Skipped;
+                        skippedMutant.ResultStatus = MutantStatus.Ignored;
                         skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
                     }
 
@@ -150,7 +150,7 @@ namespace Stryker.Core.MutationTest
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
                         // Ignore compilation errors if the mutation is skipped anyways.
-                        if (mutant.ResultStatus == MutantStatus.Skipped)
+                        if (mutant.ResultStatus == MutantStatus.Ignored)
                         {
                             continue;
                         }
@@ -184,7 +184,7 @@ namespace Stryker.Core.MutationTest
 
             if (!mutantsNotRun.Any())
             {
-                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                 {
                     _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
                 }
@@ -199,7 +199,7 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
+            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
