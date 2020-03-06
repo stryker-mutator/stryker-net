@@ -479,7 +479,6 @@ static Mutator_Flag_MutatedStatics()
         request.Headers.Add((StrykerNamespace.MutantControl.IsActive(0)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(1)?"""":""application / json; version = 1""));
         request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(2)?"""":""Date""), date);
 }, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(3)?true:false));
-    return default(Task);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -523,6 +522,59 @@ static Mutator_Flag_MutatedStatics()
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
 }
+
+        [Fact]
+        public void ShouldAddReturnDefaultToAsyncMethods()
+        {
+            string source = @"public async Task<bool> TestMethod()
+{
+    ;
+}";
+            string expected = @"public async Task<bool> TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldAddReturnDefaultToAsyncWithFullNamespaceMethods()
+        {
+            string source = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+{
+    ;
+}";
+            string expected = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToAsyncTaskMethods()
+        {
+            string source = @"public async Task TestMethod()
+{
+    ;
+}";
+            string expected = @"public async Task TestMethod()
+{
+    ;
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
 
         [Fact]
         public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
