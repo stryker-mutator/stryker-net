@@ -10,7 +10,7 @@ namespace Stryker.CLI.NuGet
     public class StrykerNugetFeedInfo
     {
         [JsonProperty("versions")]
-        private readonly List<string> _versions;
+        private readonly List<string> _versions = default;
 
         public SemanticVersion LatestVersion
         {
