@@ -4,8 +4,8 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.DataCollector;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.TestRunners
@@ -14,19 +14,18 @@ namespace Stryker.Core.TestRunners
     {
         private readonly OptimizationFlags _flags;
         private readonly ILogger _logger;
-        private readonly string _path;
         private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
+        private readonly IEnumerable<string> _testBinariesPaths;
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, ILogger logger = null)
+        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, IEnumerable<string> testBinariesPaths)
         {
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
-
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
             _flags = flags;
-            _path = Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(path));
             _projectFile = path;
             _processExecutor = processProxy;
             CoverageMutants = new TestCoverageInfos();
+            _testBinariesPaths = testBinariesPaths;
         }
 
         public TestCoverageInfos CoverageMutants { get; }
@@ -38,7 +37,7 @@ namespace Stryker.Core.TestRunners
             Dictionary<string, string> envVars = mutant == null ? null : 
                 new Dictionary<string, string>
             {
-                {"ActiveMutation", mutant.Id.ToString() }
+                { "ActiveMutation", mutant.Id.ToString() }
             };
             return LaunchTestProcess(timeoutMs, envVars);
         }
@@ -48,7 +47,7 @@ namespace Stryker.Core.TestRunners
             var result = _processExecutor.Start(
                 _projectFile,
                 "dotnet",
-                "test --no-build --no-restore",
+                @"vstest " + string.Join(" ", _testBinariesPaths),
                 envVars,
                 timeoutMs ?? 0);
 
@@ -64,7 +63,7 @@ namespace Stryker.Core.TestRunners
             if (cantUseUnloadAppDomain)
             {
                 _logger.LogWarning("Can't capture the test coverage as the target framework does not support 'AppDomain'. ");
-                return new TestRunResult(){Success = true};
+                return new TestRunResult() { Success = true };
             }
 
             if (cantUsePipe)
@@ -79,9 +78,10 @@ namespace Stryker.Core.TestRunners
                 var coverageEnvironment = collector.GetEnvironmentVariables();
                 var result = LaunchTestProcess(null, coverageEnvironment);
 
-                var data = collector.RetrieveCoverData("full");
+                var data = collector.RetrieveCoverData();
+                var coveredMutants = data.Split(";")[0].Split(",", StringSplitOptions.RemoveEmptyEntries);
 
-                CoverageMutants.DeclareCoveredMutants(data.Split(";")[0].Split(",").Select(int.Parse));
+                CoverageMutants.DeclareCoveredMutants(coveredMutants.Select(int.Parse));
                 return result;
             }
 

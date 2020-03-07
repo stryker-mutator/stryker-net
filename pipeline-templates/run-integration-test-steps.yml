@@ -1,10 +1,10 @@
 parameters:
   testName: ''
   workingDirectory: ''
-  strykerCommands: '--dev-mode'
+  strykerCommands: ''
 
 steps:
-  - script: dotnet-stryker ${{ parameters.strykerCommands }} -f -l trace
+  - script: dotnet-stryker ${{ parameters.strykerCommands }} --dev-mode -f -l trace
     workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Run integration test ${{ parameters.testName }}'
     failOnStderr: false

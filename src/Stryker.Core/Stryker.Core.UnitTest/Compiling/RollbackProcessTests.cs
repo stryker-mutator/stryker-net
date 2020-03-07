@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Stryker.Core.Exceptions;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -60,7 +61,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
                 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -132,7 +133,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics,false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -225,7 +226,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -323,7 +324,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -426,7 +427,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -522,9 +523,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var compileResult = compiler.Emit(ms);
-
-                Should.Throw<ApplicationException>(() => {target.Start(compiler, compileResult.Diagnostics, true);});
-
+                Should.Throw<StrykerCompilationException>(() => {target.Start(compiler, compileResult.Diagnostics, false,true);});
             }
         }
 
@@ -553,10 +552,10 @@ namespace ExampleProject
         }
     }
 }");
-            var ifStatement = syntaxTree.GetRoot()
+            var ifStatement = syntaxTree
+                .GetRoot()
                 .DescendantNodes()
-                .Where(x => x is IfStatementSyntax)
-                .First();
+                .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
                     ifStatement, 
@@ -578,7 +577,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
                 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -586,6 +585,42 @@ namespace ExampleProject
                 
                 // validate that only one of the compile errors marked the mutation as rollbacked.
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+            }
+        }
+
+        [Fact]
+        public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+using System;
+
+namespace ExampleProject
+{
+    public class MyException: Exception
+    {
+        public MyException(""a""-""b"", new Exception())
+        {
+        }
+    }
+}");
+
+            var compiler = CSharpCompilation.Create("TestCompilation",
+                syntaxTrees: new Collection<SyntaxTree>() { syntaxTree },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+                });
+
+            var target = new RollbackProcess();
+
+            using (var ms = new MemoryStream())
+            {
+                var compileResult = compiler.Emit(ms);
+
+                Should.NotThrow(() => target.Start(compiler, compileResult.Diagnostics, false, false));
+                Should.Throw<StrykerCompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
             }
         }
     }

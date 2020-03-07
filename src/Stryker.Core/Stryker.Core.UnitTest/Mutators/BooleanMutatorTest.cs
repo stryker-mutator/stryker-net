@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
 using Xunit;
@@ -17,9 +18,10 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original)).ToList();
 
-            Assert.Single(result);
+            var mutation = result.ShouldHaveSingleItem();
 
-            Assert.True(result.First().ReplacementNode.IsKind(expected));
+            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.DisplayName.ShouldBe("Boolean mutation");
         }
 
         [Theory]

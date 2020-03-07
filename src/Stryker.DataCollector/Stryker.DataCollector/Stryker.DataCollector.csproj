@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyVersion>0.15.0.0</AssemblyVersion>
+    <FileVersion>0.15.0.0</FileVersion>
+    <Version>0.15.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -9,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.3.0" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.5.0" />
   </ItemGroup>
 
 </Project>

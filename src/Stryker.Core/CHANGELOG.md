@@ -1,3 +1,36 @@
+## [0.16.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.16.0...stryker@0.16.1) (2020-02-21)
+
+
+### Bug Fixes
+
+* **project discovery:** discover the project under test correctly ([#957](https://github.com/stryker-mutator/stryker-net/issues/957)) ([c15880c](https://github.com/stryker-mutator/stryker-net/commit/c15880c967cd0daef73421b1b4c16dfb6cc99342))
+
+
+
+# [0.16.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.15.0...stryker@0.16.0) (2020-02-08)
+
+
+### Bug Fixes
+
+* **rollback:** Only crash out of stryker run after last rollback retry attempt  ([#930](https://github.com/stryker-mutator/stryker-net/issues/930)) ([73a4255](https://github.com/stryker-mutator/stryker-net/commit/73a4255a0b9791b1451b8cf4491525a6fe058cca)), closes [#929](https://github.com/stryker-mutator/stryker-net/issues/929)
+
+
+### Features
+
+* **dotnet platform:** Enable roll-forward on major versions for CLI tool ([#786](https://github.com/stryker-mutator/stryker-net/issues/786)) ([ff78740](https://github.com/stryker-mutator/stryker-net/commit/ff78740df017f2692a22fe2c9fc128a4a272ee93))
+* **initialisation:** Fail gracefully on incorrect targetframework in csproj ([#872](https://github.com/stryker-mutator/stryker-net/issues/872)) ([aeac039](https://github.com/stryker-mutator/stryker-net/commit/aeac03907d1b90184f464803af69bd0aee6e274b)), closes [#681](https://github.com/stryker-mutator/stryker-net/issues/681)
+* **Multiple test projects:** Add more than one test project support ([#830](https://github.com/stryker-mutator/stryker-net/issues/830)) ([54888af](https://github.com/stryker-mutator/stryker-net/commit/54888af2a046ee62f819c9f35769826a38a95f3f))
+* use buildalyzer to identify source files ([#898](https://github.com/stryker-mutator/stryker-net/issues/898)) ([f2f219d](https://github.com/stryker-mutator/stryker-net/commit/f2f219db7165d488ca3cfb8f0a20c676059a66e6))
+* **parallelism:** Allow more parallel testrunners than logical processors despite performance impact ([#906](https://github.com/stryker-mutator/stryker-net/issues/906)) ([c1c6c7b](https://github.com/stryker-mutator/stryker-net/commit/c1c6c7b981186722e4a19a255a85aa5e1ef0bde4))
+* **reporters:** Enable Html reporter by default ([4e966c2](https://github.com/stryker-mutator/stryker-net/commit/4e966c249c6766995ca476f18e7905484d97ab11))
+
+
+### Reverts
+
+* Revert "build(deps): bump Microsoft.TestPlatform.Portable (#918)" ([8cd6141](https://github.com/stryker-mutator/stryker-net/commit/8cd614116189fc3dc3530eb12cd98cabb791acdd)), closes [#918](https://github.com/stryker-mutator/stryker-net/issues/918)
+
+
+
 # [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.14.3...stryker@0.15.0) (2019-12-20)
 
 

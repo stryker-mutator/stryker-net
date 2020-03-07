@@ -22,9 +22,10 @@ namespace Stryker.Core.UnitTest.Mutators
             ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
-            result.ShouldHaveSingleItem();
+            var mutation = result.ShouldHaveSingleItem();
 
-            result.First().ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
+            mutation.DisplayName.ShouldBe("Remove checked expression");
         }
 
         [Theory]

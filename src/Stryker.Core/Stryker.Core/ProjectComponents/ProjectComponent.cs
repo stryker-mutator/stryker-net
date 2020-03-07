@@ -27,7 +27,7 @@ namespace Stryker.Core.ProjectComponents
 
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
             ReadOnlyMutants.Where(m =>
-                m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Skipped);
+                m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
 
         public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(
             m =>

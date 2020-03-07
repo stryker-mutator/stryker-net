@@ -61,7 +61,8 @@ namespace Stryker.Core.MutationTest
                     new FilePatternMutantFilter(),
                     new IgnoredMethodMutantFilter(),
                     new ExcludeMutationMutantFilter(),
-                    new DiffMutantFilter(_options, new GitDiffProvider(_options))
+                    new DiffMutantFilter(_options, new GitDiffProvider(_options)),
+                    new ExcludeFromCodeCoverageFilter()
                 };
         }
 
@@ -105,7 +106,7 @@ namespace Stryker.Core.MutationTest
                     // Mark the filtered mutants as skipped
                     foreach (var skippedMutant in filteredMutants.Except(current))
                     {
-                        skippedMutant.ResultStatus = MutantStatus.Skipped;
+                        skippedMutant.ResultStatus = MutantStatus.Ignored;
                         skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
                     }
 
@@ -123,21 +124,24 @@ namespace Stryker.Core.MutationTest
                 // compile the mutated syntax trees
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, _options.DevMode);
 
-                var injectionPath = _input.ProjectInfo.GetInjectionPath();
-                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
-                    !_fileSystem.File.Exists(injectionPath))
+                foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
                 {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
-                }
+                    var injectionPath = _input.ProjectInfo.GetInjectionPath(testProject);
+                    if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
+                        !_fileSystem.File.Exists(injectionPath))
+                    {
+                        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
+                    }
 
-                // inject the mutated Assembly into the test project
-                using (var fs = _fileSystem.File.Create(injectionPath))
-                {
-                    ms.Position = 0;
-                    ms.CopyTo(fs);
-                }
+                    // inject the mutated Assembly into the test project
+                    using (var fs = _fileSystem.File.Create(injectionPath))
+                    {
+                        ms.Position = 0;
+                        ms.CopyTo(fs);
+                    }
 
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                    _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                }
 
                 // if a rollback took place, mark the rollbacked mutants as status:BuildError
                 if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
@@ -146,7 +150,7 @@ namespace Stryker.Core.MutationTest
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
                         // Ignore compilation errors if the mutation is skipped anyways.
-                        if (mutant.ResultStatus == MutantStatus.Skipped)
+                        if (mutant.ResultStatus == MutantStatus.Ignored)
                         {
                             continue;
                         }
@@ -180,7 +184,7 @@ namespace Stryker.Core.MutationTest
 
             if (!mutantsNotRun.Any())
             {
-                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Skipped))
+                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                 {
                     _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
                 }
@@ -195,7 +199,7 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Skipped && x.ResultStatus != MutantStatus.NoCoverage);
+            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);

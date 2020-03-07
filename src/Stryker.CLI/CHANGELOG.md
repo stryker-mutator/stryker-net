@@ -1,3 +1,18 @@
+## [0.16.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.16.0...dotnet-stryker@0.16.1) (2020-02-21)
+
+
+
+# [0.16.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.15.0...dotnet-stryker@0.16.0) (2020-02-08)
+
+
+### Features
+
+* **dotnet platform:** Enable roll-forward on major versions for CLI tool ([#786](https://github.com/stryker-mutator/stryker-net/issues/786)) ([ff78740](https://github.com/stryker-mutator/stryker-net/commit/ff78740df017f2692a22fe2c9fc128a4a272ee93))
+* **Multiple test projects:** Add more than one test project support ([#830](https://github.com/stryker-mutator/stryker-net/issues/830)) ([54888af](https://github.com/stryker-mutator/stryker-net/commit/54888af2a046ee62f819c9f35769826a38a95f3f))
+* **parallelism:** Allow more parallel testrunners than logical processors despite performance impact ([#906](https://github.com/stryker-mutator/stryker-net/issues/906)) ([c1c6c7b](https://github.com/stryker-mutator/stryker-net/commit/c1c6c7b981186722e4a19a255a85aa5e1ef0bde4))
+
+
+
 # [0.15.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.14.3...dotnet-stryker@0.15.0) (2019-12-20)
 
 

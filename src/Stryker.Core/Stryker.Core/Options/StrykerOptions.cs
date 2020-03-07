@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
@@ -27,7 +28,6 @@ namespace Stryker.Core.Options
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
-        public string TestProjectNameFilter { get; }
         public bool DiffEnabled { get; }
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
@@ -39,8 +39,8 @@ namespace Stryker.Core.Options
         public IEnumerable<FilePattern> FilePatterns { get; }
         public LanguageVersion LanguageVersion { get; }
         public OptimizationFlags Optimizations { get; }
-
         public string OptimizationMode { get; set; }
+        public IEnumerable<string> TestProjects { get; set; }
 
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
@@ -50,13 +50,14 @@ namespace Stryker.Core.Options
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger _logger;
 
         public StrykerOptions(
+            ILogger logger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
             string[] reporters = null,
             string projectUnderTestNameFilter = "",
-            string testProjectNameFilter = "*.csproj",
             int additionalTimeoutMS = 5000,
             string[] excludedMutations = null,
             string[] ignoredMethods = null,
@@ -65,7 +66,7 @@ namespace Stryker.Core.Options
             bool devMode = false,
             string coverageAnalysis = "perTest",
             bool abortTestOnFail = true,
-            int maxConcurrentTestRunners = int.MaxValue,
+            int? maxConcurrentTestRunners = null,
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
@@ -79,8 +80,10 @@ namespace Stryker.Core.Options
             string dashboadApiKey = null,
             string projectName = null,
             string moduleName = null,
-            string projectVersion = null)
+            string projectVersion = null,
+            IEnumerable<string> testProjects = null)
         {
+            _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
 
             var outputPath = ValidateOutputPath(basePath);
@@ -89,7 +92,6 @@ namespace Stryker.Core.Options
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
-            TestProjectNameFilter = ValidateTestProjectFilter(basePath, testProjectNameFilter);
             AdditionalTimeoutMS = additionalTimeoutMS;
             ExcludedMutations = ValidateExcludedMutations(excludedMutations);
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
@@ -104,6 +106,7 @@ namespace Stryker.Core.Options
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
             GitSource = ValidateGitSource(gitSource);
+            TestProjects = ValidateTestProjects(testProjects);
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
@@ -195,7 +198,7 @@ namespace Stryker.Core.Options
         {
             if (reporters == null)
             {
-                foreach (var reporter in new[] { Reporter.Progress, Reporter.ClearText })
+                foreach (var reporter in new[] { Reporter.Progress, Reporter.Html })
                 {
                     yield return reporter;
                 }
@@ -274,8 +277,15 @@ namespace Stryker.Core.Options
             }
         }
 
-        private int ValidateConcurrentTestrunners(int maxConcurrentTestRunners)
+        private int ValidateConcurrentTestrunners(int? maxConcurrentTestRunners)
         {
+            var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
+
+            if (!maxConcurrentTestRunners.HasValue)
+            {
+                return safeProcessorCount;
+            }
+
             if (maxConcurrentTestRunners < 1)
             {
                 throw new StrykerInputException(
@@ -283,15 +293,17 @@ namespace Stryker.Core.Options
                     "Amount of maximum concurrent testrunners must be greater than zero.");
             }
 
-            var logicalProcessorCount = Environment.ProcessorCount;
-            var usableProcessorCount = Math.Max(logicalProcessorCount / 2, 1);
-
-            if (maxConcurrentTestRunners <= logicalProcessorCount)
+            if (maxConcurrentTestRunners > safeProcessorCount)
             {
-                usableProcessorCount = maxConcurrentTestRunners;
+                _logger?.LogWarning("Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
-            return usableProcessorCount;
+            if (maxConcurrentTestRunners == 1)
+            {
+                _logger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.");
+            }
+
+            return maxConcurrentTestRunners.GetValueOrDefault();
         }
 
         private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
@@ -387,24 +399,12 @@ namespace Stryker.Core.Options
             return solutionPath;
         }
 
-        private string ValidateTestProjectFilter(string basePath, string userSuppliedFilter)
+        private IEnumerable<string> ValidateTestProjects(IEnumerable<string> paths)
         {
-            string filter;
-            if (userSuppliedFilter.Contains(".."))
+            foreach (var path in paths ?? Enumerable.Empty<string>())
             {
-                filter = FilePathUtils.NormalizePathSeparators(Path.GetFullPath(Path.Combine(basePath, userSuppliedFilter)));
+                yield return FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path));
             }
-            else
-            {
-                filter = FilePathUtils.NormalizePathSeparators(userSuppliedFilter);
-            }
-
-            if (userSuppliedFilter.Contains("..") && !filter.StartsWith(basePath))
-            {
-                throw new StrykerInputException(ErrorMessage,
-                    $"The test project filter {userSuppliedFilter} is invalid. Test project file according to filter should exist at {filter} but this is not a child of {FilePathUtils.NormalizePathSeparators(basePath)} so this is not allowed.");
-            }
-            return filter;
         }
 
         private LanguageVersion ValidateLanguageVersion(string languageVersion)

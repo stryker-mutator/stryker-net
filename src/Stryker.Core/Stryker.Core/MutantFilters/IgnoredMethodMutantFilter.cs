@@ -14,7 +14,9 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class IgnoredMethodMutantFilter : IMutantFilter
     {
-        /// <inheritdoc />
+        private const string _displayName = "method filter";
+        public string DisplayName => _displayName;
+
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             if (!options.IgnoredMethods.Any())
@@ -24,9 +26,6 @@ namespace Stryker.Core.MutantFilters
 
             return mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
         }
-
-        /// <inheritdoc />
-        public string DisplayName => "method filter";
 
         private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options)
         {

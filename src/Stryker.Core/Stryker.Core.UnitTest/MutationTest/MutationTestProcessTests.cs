@@ -49,13 +49,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -137,13 +139,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -214,7 +218,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // verify that filtered mutants are skipped
             inputFile.Mutants.ShouldContain(mutantToBeSkipped);
-            mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Skipped);
+            mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
         }
 
         [Fact]
@@ -225,13 +229,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "TestName.dll"),
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "TestName.dll"),
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -369,13 +375,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
+                        new ProjectAnalyzerResult(null, null)
                         {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
+                            Properties = new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" }
+                            }
                         }
                     },
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -431,7 +439,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldNotTest_WhenAllMutationsWereSkipped()
         {
-            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
+            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
@@ -525,7 +533,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldNotTest_WhenThereAreNoTestableMutations()
         {
-            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Skipped };
+            var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored };
             var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()

@@ -8,12 +8,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Compiling
 {
     public interface IRollbackProcess
     {
-        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool devMode);
+        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
     
     /// <summary>
@@ -30,8 +31,7 @@ namespace Stryker.Core.Compiling
             _rollbackedIds = new List<int>();
         }
 
-        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
-            bool devMode)
+        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
         {
             // match the diagnostics with their syntaxtrees
             var syntaxTreeMapping = new Dictionary<SyntaxTree, ICollection<Diagnostic>>();
@@ -57,7 +57,7 @@ namespace Stryker.Core.Compiling
                 }
 
                 _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
-                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, devMode);
+                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, lastAttempt, devMode);
 
                 _logger.LogTrace("Rollbacked to {0}", updatedSyntaxTree.ToString());
 
@@ -100,10 +100,8 @@ namespace Stryker.Core.Compiling
                     _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
                     return mutantId;
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
         }
 
@@ -155,7 +153,8 @@ namespace Stryker.Core.Compiling
             _logger.LogInformation(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo, bool devMode)
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, ICollection<Diagnostic> diagnosticInfo,
+            bool lastAttempt, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
@@ -174,7 +173,7 @@ namespace Stryker.Core.Compiling
                     if (devMode)
                     {
                         _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
-                        throw new ApplicationException("Internal error due to compile error.");
+                        throw new StrykerCompilationException("Internal error due to compile error.");
                     }
                     _logger.LogWarning("Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutants in the node
@@ -183,19 +182,19 @@ namespace Stryker.Core.Compiling
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
-                    if (!scan.Any())
+                    if (!scan.Any() && lastAttempt)
                     {
                         // Not able to rollback anything
                         _logger.LogCritical("Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
-                        throw new ApplicationException("Internal error due to compile error.");
+                        throw new StrykerCompilationException("Internal error due to compile error.");
                     }
 
-                    foreach (var entry in scan)
+                    foreach (var (key, value) in scan)
                     {
-                        if (!brokenMutations.Contains(entry.Key))
+                        if (!brokenMutations.Contains(key))
                         {
-                            brokenMutations.Add(entry.Key);
-                            _rollbackedIds.Add(entry.Value);
+                            brokenMutations.Add(key);
+                            _rollbackedIds.Add(value);
                         }
                     }
                 }
