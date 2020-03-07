@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using Stryker.CLI.NuGet;
 using Stryker.Core;
 using Stryker.Core.Logging;
@@ -151,10 +152,10 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
             var chalk = new Chalk();
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
-            var currentVersion = $"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}";
+            var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
 
             Console.Write("Version: ");
-            chalk.Green(currentVersion);
+            chalk.Green($"{currentVersion}");
             Console.WriteLine(" (beta)");
             Console.WriteLine();
 
