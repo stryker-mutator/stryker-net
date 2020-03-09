@@ -3,6 +3,7 @@ using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using System.Linq;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -278,11 +279,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         [Fact]
         public void ShouldMutateLinqMethods()
         {
-            string source = @"public int TestLinq(int count){ 
+            string source = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return list.Last();
 }";
-            string expected = @"public int TestLinq(int count){ 
+            string expected = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
     return default(int);
@@ -387,7 +388,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
     else
     {
         x++;
-    }  
+    }
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -478,7 +479,6 @@ static Mutator_Flag_MutatedStatics()
         request.Headers.Add((StrykerNamespace.MutantControl.IsActive(0)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(1)?"""":""application / json; version = 1""));
         request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(2)?"""":""Date""), date);
 }, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(3)?true:false));
-    return default(Task);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -524,6 +524,59 @@ static Mutator_Flag_MutatedStatics()
 }
 
         [Fact]
+        public void ShouldAddReturnDefaultToAsyncMethods()
+        {
+            string source = @"public async Task<bool> TestMethod()
+{
+    ;
+}";
+            string expected = @"public async Task<bool> TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldAddReturnDefaultToAsyncWithFullNamespaceMethods()
+        {
+            string source = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+{
+    ;
+}";
+            string expected = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+{
+    ;
+    return default(bool);
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToAsyncTaskMethods()
+        {
+            string source = @"public async Task TestMethod()
+{
+    ;
+}";
+            string expected = @"public async Task TestMethod()
+{
+    ;
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
         public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
         {
             string source = @"void TestMethod()
@@ -539,6 +592,27 @@ static Mutator_Flag_MutatedStatics()
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
 }
+
+        [Theory]
+        [InlineData("=> Value = \"Hello, World!\";")]
+        [InlineData("{Value = \"Hello, World!\";}")]
+        public void ShouldMutateStaticConstructor(string source)
+        {
+            source = @"static string Value { get; }
+
+static TestClass() " + source;
+
+            var expected = @"static string Value { get; }
+
+static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}";
+
+            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
 
         private void ShouldMutateSourceToExpected(string original, string expected)
         {

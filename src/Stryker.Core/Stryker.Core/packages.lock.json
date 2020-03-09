@@ -23,9 +23,9 @@
       },
       "DotNet.Glob": {
         "type": "Direct",
-        "requested": "[3.0.5, )",
-        "resolved": "3.0.5",
-        "contentHash": "YyRz7scXLFgGv7KfYDeHvFcJIC+rHdDuB6z5hSf5JcUDD9Mgg/MhnpS4VMtXkYTR7OdAXChnojUFZ1Xef8xWGg=="
+        "requested": "[3.0.9, )",
+        "resolved": "3.0.9",
+        "contentHash": "tfISNzB/4pmCCWFwaloMUaKddzLa0UJ6RxWSfVhY4a69smqhth3DlyM72/fFI2wsbHPbWQUFYan1F3YiOugkoA=="
       },
       "LibGit2Sharp": {
         "type": "Direct",
