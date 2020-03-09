@@ -30,7 +30,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 12, skipped: 0, survived: 1, killed: 4, timeout: 0, nocoverage: 7);
+                CheckReportMutantCounts(report, total: 12, ignored: 0, survived: 1, killed: 4, timeout: 0, nocoverage: 7);
             }
         }
 
@@ -49,7 +49,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+            CheckReportMutantCounts(report, total: 63, ignored: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
         }
 
         [Fact]
@@ -67,13 +67,13 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 63, skipped: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+            CheckReportMutantCounts(report, total: 63, ignored: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
         }
 
-        private void CheckReportMutantCounts(JsonReport report, int total, int skipped, int survived, int killed, int timeout, int nocoverage)
+        private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
         {
             var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
-            var actualSkipped = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Skipped.ToString())).Sum();
+            var actualIgnored = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Ignored.ToString())).Sum();
             var actualSurvived = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Survived.ToString())).Sum();
             var actualKilled = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Killed.ToString())).Sum();
             var actualTimeout = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Timeout.ToString())).Sum();
@@ -81,7 +81,7 @@ namespace IntegrationTests
 
             report.Files.ShouldSatisfyAllConditions(
                 () => actualTotal.ShouldBe(total),
-                () => actualSkipped.ShouldBe(skipped),
+                () => actualIgnored.ShouldBe(ignored),
                 () => actualSurvived.ShouldBe(survived),
                 () => actualKilled.ShouldBe(killed),
                 () => actualTimeout.ShouldBe(timeout),
