@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v3.1": {
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Direct",
-        "requested": "[2.5.1, )",
-        "resolved": "2.5.1",
-        "contentHash": "l+mpee+BgNW/22RgXm1Xo2ElWh8jii3F+tavWrggEiX19va/BsGtGY9SG/km/yBG/6Q4kN8uhV77lH48pai1cw==",
+        "requested": "[2.6.0, )",
+        "resolved": "2.6.0",
+        "contentHash": "paiRzqvqdSFdcWVTXn6SzphajrpjFM5ERiGlgccL5J2lgHbty068D63Maqmj0VTG0G9ciP2m/NSIgGnNv8WOLw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "4.7.0"
         }
@@ -1399,7 +1399,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.15.0",
+          "Stryker.DataCollector": "0.16.1",
           "System.IO.Abstractions": "9.0.4"
         }
       },
