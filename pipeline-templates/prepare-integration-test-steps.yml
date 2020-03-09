@@ -1,8 +1,8 @@
 steps:
   - task: UseDotNet@2
-    displayName: 'Install dotnet core 3.0.x because macos is not up to date'
+    displayName: 'Install dotnet core 3.1.x to make dotnet tool path available in path'
     inputs:
-      version: 3.0.x
+      version: 3.1.x
 
   - task: DotNetCoreCLI@2
     displayName: 'Run unit tests'
