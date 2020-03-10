@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
-            // generate a random namesoace
+            // generate a random namespace
             projectInfo.MutantControlNameSpace = CodeInjection.HelperNamespace;
             // initial build
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();

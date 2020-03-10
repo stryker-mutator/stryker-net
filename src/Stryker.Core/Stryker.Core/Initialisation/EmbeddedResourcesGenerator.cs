@@ -59,9 +59,8 @@ namespace Stryker.Core.Initialisation
 
         private static IEnumerable<ResourceDescription> ReadResourceDescriptionsFromModule(ModuleDefinition module)
         {
-            foreach (var resource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded))
+            foreach (EmbeddedResource moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded))
             {
-                var moduleResource = (EmbeddedResource) resource;
                 var stream = moduleResource.GetResourceStream();
 
                 var bytes = new byte[stream.Length];

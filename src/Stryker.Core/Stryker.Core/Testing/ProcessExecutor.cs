@@ -19,7 +19,7 @@ namespace Stryker.Core.Testing
         /// <param name="application">example: dotnet</param>
         /// <param name="arguments">example: --no-build</param>
         /// <param name="environmentVariables">Environment variables (and their values)</param>
-        /// <param name="timeoutMs">time allotted to the process for execution (-1 if not limit)</param>
+        /// <param name="timeoutMs">time allotted to the process for execution (0 or-1 for no limit)</param>
         /// <returns>ProcessResult</returns>
         ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMs = 0);
 

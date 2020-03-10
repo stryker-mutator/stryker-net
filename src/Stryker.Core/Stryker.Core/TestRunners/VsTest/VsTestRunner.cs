@@ -258,7 +258,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        //
+                        _logger.LogDebug($"${RunnerId}: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
                     }
                     else
                     {

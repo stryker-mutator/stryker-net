@@ -107,20 +107,15 @@ namespace Stryker.Core.Compiling
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            for(;;)
+            for(var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
-                if (node.Kind() == SyntaxKind.MethodDeclaration || node.Kind() == SyntaxKind.GetAccessorDeclaration || node.Kind() == SyntaxKind.SetAccessorDeclaration)
+                if (currentNode.Kind() == SyntaxKind.MethodDeclaration || currentNode.Kind() == SyntaxKind.GetAccessorDeclaration || currentNode.Kind() == SyntaxKind.SetAccessorDeclaration)
                 {
-                    return node;
+                    return currentNode;
                 }
-
-                if (node.Parent == null)
-                {
-                    return null;
-                }
-
-                node = node.Parent;
             }
+
+            return null;
         }
 
         private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)

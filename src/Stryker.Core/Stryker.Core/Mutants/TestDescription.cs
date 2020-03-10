@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
@@ -7,7 +6,7 @@ namespace Stryker.Core.Mutants
 {
     public sealed class TestDescription
     {
-        private static readonly TestDescription AllTestDescription;
+        private static readonly TestDescription AllTestsDescription;
         private const string AllTestsGuid = "-1";
 
         public TestDescription(string guid, string name)
@@ -18,15 +17,15 @@ namespace Stryker.Core.Mutants
 
         static TestDescription()
         {
-            AllTestDescription = new TestDescription(AllTestsGuid, "All Tests");
+            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests");
         }
 
         /// <summary>
         /// Returns an 'all tests' description for test runners that does not support test selection.
         /// </summary>
-        public static TestDescription AllTest()
+        public static TestDescription AllTests()
         {
-            return AllTestDescription;
+            return AllTestsDescription;
         }
 
         public string Guid { get; }
@@ -66,7 +65,7 @@ namespace Stryker.Core.Mutants
 
         static TestListDescription()
         {
-            EveryTests = new TestListDescription(new []{TestDescription.AllTest()});
+            EveryTests = new TestListDescription(new []{TestDescription.AllTests()});
             NoTestInstance = new TestListDescription(null);
         }
 

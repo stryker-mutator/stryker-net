@@ -72,9 +72,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Reporters\TestStatisticsReporter\" />
-    <Folder Include="MutantFilters\" />
-  </ItemGroup>
-	
 </Project>
