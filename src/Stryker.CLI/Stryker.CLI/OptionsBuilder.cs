@@ -37,7 +37,7 @@ namespace Stryker.CLI
             CommandOption coverageAnalysis,
             CommandOption abortTestOnFail,
             CommandOption configFilePath,
-            CommandOption runMultipleMutations,
+            CommandOption disableSimultaneousTesting,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
