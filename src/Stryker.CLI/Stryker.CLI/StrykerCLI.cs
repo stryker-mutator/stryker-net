@@ -93,7 +93,7 @@ namespace Stryker.CLI
                     coverageAnalysis: coverageAnalysis,
                     abortTestOnFail: abortTestOnFailParam,
                     configFilePath: configFilePathParam,
-                    runMultipleMutations: testMultipleMutations,
+                    disableSimultaneousTesting: disableSimultaneousTesting,
                     maxConcurrentTestRunners: maxConcurrentTestRunnersParam,
                     thresholdHigh: thresholdHighParam,
                     thresholdLow: thresholdLowParam,
