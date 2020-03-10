@@ -128,8 +128,8 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Transitive",
-        "resolved": "2.5.1",
-        "contentHash": "l+mpee+BgNW/22RgXm1Xo2ElWh8jii3F+tavWrggEiX19va/BsGtGY9SG/km/yBG/6Q4kN8uhV77lH48pai1cw==",
+        "resolved": "2.6.0",
+        "contentHash": "paiRzqvqdSFdcWVTXn6SzphajrpjFM5ERiGlgccL5J2lgHbty068D63Maqmj0VTG0G9ciP2m/NSIgGnNv8WOLw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "4.7.0"
         }
@@ -525,6 +525,11 @@
         "type": "Transitive",
         "resolved": "5.0.0",
         "contentHash": "c5JVjuVAm4f7E9Vj+v09Z9s2ZsqFDjBpcsyS3M9xRo0bEdm/LVZSzLxxNvfvAwRiiE8nwe1h2G4OwiwlzFKXlA=="
+      },
+      "NuGet.Versioning": {
+        "type": "Transitive",
+        "resolved": "5.4.0",
+        "contentHash": "aFOhsyeafHctMNwKfKzwD9bJqhsDaQuBBUgZ+8RNlaz8Voq/SEjd6R8KIPzQ+L8P49qTB8aucjqxo9tkH3N4Bg=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -1700,8 +1705,9 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "2.5.1",
+          "McMaster.Extensions.CommandLineUtils": "2.6.0",
           "Microsoft.Extensions.Configuration.Binder": "3.1.2",
+          "NuGet.Versioning": "5.4.0",
           "stryker": "0.16.1"
         }
       },

@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v2.1": {
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Direct",
-        "requested": "[2.5.1, )",
-        "resolved": "2.5.1",
-        "contentHash": "l+mpee+BgNW/22RgXm1Xo2ElWh8jii3F+tavWrggEiX19va/BsGtGY9SG/km/yBG/6Q4kN8uhV77lH48pai1cw==",
+        "requested": "[2.6.0, )",
+        "resolved": "2.6.0",
+        "contentHash": "paiRzqvqdSFdcWVTXn6SzphajrpjFM5ERiGlgccL5J2lgHbty068D63Maqmj0VTG0G9ciP2m/NSIgGnNv8WOLw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "4.7.0"
         }
@@ -31,6 +31,12 @@
           "Microsoft.NETCore.Targets": "2.1.0",
           "NETStandard.Library": "2.0.3"
         }
+      },
+      "NuGet.Versioning": {
+        "type": "Direct",
+        "requested": "[5.4.0, )",
+        "resolved": "5.4.0",
+        "contentHash": "aFOhsyeafHctMNwKfKzwD9bJqhsDaQuBBUgZ+8RNlaz8Voq/SEjd6R8KIPzQ+L8P49qTB8aucjqxo9tkH3N4Bg=="
       },
       "Buildalyzer": {
         "type": "Transitive",
