@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -65,21 +63,6 @@ namespace Stryker.DataCollector
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
-        private static bool WaitOnLck(object lck, Func<bool> predicate, int timeout)
-        {
-            var watch = new Stopwatch();
-            watch.Start();
-            lock (lck)
-            {
-                while (!predicate() && watch.ElapsedMilliseconds <= timeout)
-                {
-                    Monitor.Wait(lck, Math.Max(1, (int)(timeout - watch.ElapsedMilliseconds)));
-                }
-            }
-
-            return predicate();
-        }
-
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
             this._dataSink = dataCollectionSink;
@@ -109,10 +92,10 @@ namespace Stryker.DataCollector
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
             var types = assemblies
                 .SelectMany(x => x.ExportedTypes);
-
             _controller = types.FirstOrDefault(t => t.FullName == _controlClassName);
             if (_controller == null)
             {
+                // try other domain
                 Log($"Failed to find type {_controlClassName}. Scanned these assemblies:");
                 foreach (var assembly in assemblies)
                 {

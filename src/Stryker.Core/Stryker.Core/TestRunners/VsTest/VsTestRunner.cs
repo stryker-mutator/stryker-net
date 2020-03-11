@@ -288,8 +288,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                 }
             }
-
-
         }
 
         public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
@@ -406,6 +404,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings = 
 $@"<RunSettings>
  <RunConfiguration>
+{(targetFramework == Initialisation.Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
