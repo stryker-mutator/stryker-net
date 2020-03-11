@@ -384,7 +384,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 case Initialisation.Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
-                    targetFrameworkVersionString = $".NETFramework,Version= v{targetFrameworkVersion}";
+                    targetFrameworkVersionString = $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}";
                     break;
             }
 
