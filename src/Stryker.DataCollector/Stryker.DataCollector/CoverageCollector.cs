@@ -17,14 +17,15 @@ namespace Stryker.DataCollector
         private IDataCollectionSink _dataSink;
         private bool _coverageOn;
         private bool _firstTestDone;
+        private int _activeMutation = -1;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
         private readonly IList<int> _mutantsAllWaysTested = new List<int>();
 
-        private FieldInfo _activeMutantField;
-        private FieldInfo _coverageControlField;
         private string _controlClassName;
         private Type _controller;
+        private FieldInfo _activeMutantField;
+        private FieldInfo _coverageControlField;
 
         private MethodInfo _getCoverageData;
 
@@ -83,29 +84,54 @@ namespace Stryker.DataCollector
         {            
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
+            // scan loaded assembly, just in case the test assembly is already loaded
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
+            foreach (var assembly in assemblies)
+            {
+                FindControlType(assembly);
+            }
+            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
 
             Log($"Test Session start with conf {configuration}.");
         }
 
-        private void GetMutantControlMethods()
+        private void OnAssemblyLoaded(object sender, AssemblyLoadEventArgs args)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
-            var types = assemblies
-                .SelectMany(x => x.ExportedTypes);
-            _controller = types.FirstOrDefault(t => t.FullName == _controlClassName);
-            if (_controller == null)
+            var assembly = args.LoadedAssembly;
+            FindControlType(assembly);
+        }
+
+        private void FindControlType(Assembly assembly)
+        {
+            if (_controller != null)
             {
-                // try other domain
-                Log($"Failed to find type {_controlClassName}. Scanned these assemblies:");
-                foreach (var assembly in assemblies)
-                {
-                    Log(assembly.FullName);
-                }
                 return;
             }
+
+            _controller = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
+            if (_controller == null)
+            {
+                return;
+            }
+
             _activeMutantField = _controller.GetField("ActiveMutant");
             _coverageControlField = _controller.GetField("CaptureCoverage");
             _getCoverageData = _controller.GetMethod("GetCoverageData");
+
+            if (_coverageOn)
+            {
+                _coverageControlField.SetValue(null, true);
+            }
+            _activeMutantField.SetValue(null, _activeMutation);
+        }
+
+        private void SetActiveMutation(int id)
+        {
+            _activeMutation = id;
+            if (_activeMutantField != null)
+            {
+                _activeMutantField.SetValue(null, _activeMutation);
+            }
         }
 
         private void ReadConfiguration(string configuration)
@@ -150,26 +176,17 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            if (!_firstTestDone)
-            {
-                GetMutantControlMethods();
-
-                if (_coverageOn)
-                {
-                    _coverageControlField.SetValue(null, true);
-                }
-
-                _firstTestDone = true;
-            }
             if (_coverageOn)
             {
                 return;
             }
+
             // we need to set the proper mutant
             var  testId = testCaseStartArgs.TestCase.Id.ToString();
             var mutantId = _mutantTestedBy.ContainsKey(testId) ? _mutantTestedBy[testId] : _mutantsAllWaysTested[0];
 
-            _activeMutantField.SetValue(null, mutantId);
+            SetActiveMutation(mutantId);
+
             Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
         }
 

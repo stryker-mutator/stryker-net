@@ -14,9 +14,9 @@ namespace Stryker.Core.UnitTest.TestRunners
     {
         public static bool CaptureCoverage;
         public static int ActiveMutant = -1;
-        public static (IList<int>, IList<int>) GetCoverageData()
+        public static IList<int>[] GetCoverageData()
         {
-            return (new List<int>(), new List<int>());
+            return new List<int>[2];
         }
     }
 
