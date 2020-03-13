@@ -140,7 +140,7 @@ namespace Stryker.Core.Mutants
 
         public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)
         {   
-            return _tests?.Any(usedTests.Contains) == true;
+            return _tests?.Any(usedTests.Contains);
         }
     }
 }
