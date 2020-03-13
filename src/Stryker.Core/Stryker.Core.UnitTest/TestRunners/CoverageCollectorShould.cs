@@ -10,6 +10,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
+    // mock for the actual MutantControl class injected in the mutated assembly.
+    // used for unit test
     public static class MutantControl
     {
         public static bool CaptureCoverage;
