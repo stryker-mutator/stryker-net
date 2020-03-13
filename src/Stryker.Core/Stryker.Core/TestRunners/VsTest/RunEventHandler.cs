@@ -48,7 +48,7 @@ namespace Stryker.Core.TestRunners.VsTest
             foreach (var testResult in testResults)
             {
                 var index = _inProgress.FindIndex(t => t.Id == testResult.TestCase.Id);
-                if (index<0)
+                if (index < 0)
                 {
                     continue;
                 }
@@ -87,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
             if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
             {
                 TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
-                if (TestsInTimeout.Count>0)
+                if (TestsInTimeout.Count > 0)
                 {
                     TimeOut = true;
                 }
