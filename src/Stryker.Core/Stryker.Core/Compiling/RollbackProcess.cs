@@ -157,7 +157,6 @@ namespace Stryker.Core.Compiling
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
             var brokenMutations = new Collection<SyntaxNode>();
-            var rolledBackSomeMutation = false;
             foreach (var diagnostic in diagnosticInfo)
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
@@ -168,14 +167,13 @@ namespace Stryker.Core.Compiling
                 }
 
                 brokenMutations.Add(mutationIf);
-                rolledBackSomeMutation = true;
                 if (mutantId >= 0)
                 {
                     _rollbackedIds.Add(mutantId);
                 }
             }
 
-            if (!rolledBackSomeMutation)
+            if (brokenMutations.Count == 0)
             {
                 foreach (var diagnostic in diagnosticInfo)
                 {

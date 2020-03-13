@@ -289,15 +289,7 @@ namespace Stryker.Core.MutationTest
                 blocks.Add(nextBlock);
             }
 
-            if (blocks.Count == mutantsNotRun.Count)
-            {
-                _logger.LogWarning("Unable to test more than one mutation per test run.");
-            }
-            else
-            {
-                _logger.LogInformation(
-                $"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
-            }
+            _logger.LogInformation($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
             return blocks;
         }
 
