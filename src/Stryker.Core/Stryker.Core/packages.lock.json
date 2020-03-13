@@ -1448,7 +1448,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.5.0"
+          "Microsoft.TestPlatform.ObjectModel": "16.2.0"
         }
       }
     }
