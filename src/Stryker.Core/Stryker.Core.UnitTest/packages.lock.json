@@ -1735,14 +1735,14 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.15.0",
+          "Stryker.DataCollector": "0.16.1",
           "System.IO.Abstractions": "9.0.4"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.2.0"
+          "Microsoft.TestPlatform.ObjectModel": "16.5.0"
         }
       }
     }

@@ -44,6 +44,13 @@ namespace Stryker.Core.UnitTest.TestRunners
             var envVars = node.GetElementsByTagName("Environment");
 
             envVars.Count.ShouldBe(1);
+
+//            coolChild.ChildNodes.Count.ShouldBe(1);
+//            coolChild = coolChild.ChildNodes[0];
+//            coolChild.Name.ShouldBe("Environment");
+//            coolChild.Attributes.GetNamedItem("name").ShouldNotBeNull();
+//            coolChild.Attributes.GetNamedItem("name").Value.ShouldBe("ActiveMutant");
+
         }
     }
 }

@@ -18,7 +18,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using Stryker.Core.Exceptions;
-using Framework = Stryker.Core.Initialisation.Framework;
 using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -77,12 +76,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 DetectTestFramework(testCasesDiscovered);
             }
             InitializeVsTestConsole();
-        }
-
-        private bool CantUseStrykerDataCollector()
-        {
-            return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.NetCore && t.TargetFrameworkAndVersion.version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -227,22 +220,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
-            if (CantUseStrykerDataCollector())
-            {
-                _logger.LogDebug($"{RunnerId}: project does not support StrykerDataCollector. Coverage data is simulated. Upgrade test proj" +
-                                 $"" +
-                                 $" to@                                                                                                                  NetCore 2.0+");
-                // can't capture coverage info
-                foreach (var mutant in mutants)
-                {
-                    mutant.CoveringTests = TestListDescription.EveryTest();
-                }
-            }
-            else
-            {
-                var testResults = RunTestSession(null, GenerateRunSettings(null, false, true, null));
-                ParseResultsForCoverage(testResults.TestResults, mutants);
-            }
+            var testResults = RunTestSession(null, GenerateRunSettings(null, false, true, null));
+            ParseResultsForCoverage(testResults.TestResults, mutants);
             return new TestRunResult (true );
         }
 
