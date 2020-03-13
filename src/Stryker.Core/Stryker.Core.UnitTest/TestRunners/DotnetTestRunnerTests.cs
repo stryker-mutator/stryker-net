@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var result = target.RunAll(null, null, null);
 
-            Assert.Equal(0, result.FailingTests.Count);
+            result.FailingTests.ShouldBeEmpty();
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest C://test//mytest.dll")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
