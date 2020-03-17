@@ -1,13 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
 {
@@ -68,7 +68,7 @@ namespace Stryker.Core.Mutants
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();
-            return (IReadOnlyCollection<Mutant>) tempMutants;
+            return (IReadOnlyCollection<Mutant>)tempMutants;
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace Stryker.Core.Mutants
             {
                 // static fields
                 case FieldDeclarationSyntax fieldDeclaration when fieldDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext {InStaticValue = true};
+                    context = new MutationContext { InStaticValue = true };
                     break;
                 // static constructors
                 case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext {InStaticValue = true};
+                    context = new MutationContext { InStaticValue = true };
                     if (MustInjectCoverageLogic)
                     {
                         return MutateStaticConstructor(constructorDeclaration, context);
@@ -106,7 +106,7 @@ namespace Stryker.Core.Mutants
                     break;
                 // static properties
                 case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
-                    context = new MutationContext {InStaticValue = true};
+                    context = new MutationContext { InStaticValue = true };
                     if (MustInjectCoverageLogic)
                     {
                         return MutateStaticAccessor(propertyDeclaration, context);
@@ -137,16 +137,33 @@ namespace Stryker.Core.Mutants
 
         private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
         {
-            var trackedConstructor = constructorDeclaration.TrackNodes(constructorDeclaration.Body);
-            var mutatedBlock = (BlockSyntax) Mutate(constructorDeclaration.Body, context);
-            var markedBlock = MutantPlacer.PlaceStaticContextMarker(mutatedBlock);
+            var trackedConstructor = constructorDeclaration.TrackNodes((SyntaxNode) constructorDeclaration.Body ?? constructorDeclaration.ExpressionBody);
+            if (constructorDeclaration.ExpressionBody != null)
+            {
+                var bodyBlock = SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(constructorDeclaration.ExpressionBody.Expression));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(bodyBlock, context));
+                trackedConstructor = trackedConstructor.Update(
+                    trackedConstructor.AttributeLists,
+                    trackedConstructor.Modifiers,
+                    trackedConstructor.Identifier,
+                    trackedConstructor.ParameterList,
+                    trackedConstructor.Initializer,
+                    markedBlock,
+                    null,
+                    SyntaxFactory.Token(SyntaxKind.None));
+            }
+            else if (constructorDeclaration.Body != null)
+            {
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(constructorDeclaration.Body, context));
+                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.Body), markedBlock);
+            }
 
-            return trackedConstructor.ReplaceNode(trackedConstructor.Body, markedBlock);
+            return trackedConstructor;
         }
 
         private SyntaxNode MutateStaticAccessor(PropertyDeclarationSyntax accessorDeclaration, MutationContext context)
         {
-            var trackedNode = accessorDeclaration.TrackNodes(accessorDeclaration.AccessorList.Accessors.Select(x => (SyntaxNode) x.Body ?? x.ExpressionBody).Where(x => x != null));
+            var trackedNode = accessorDeclaration.TrackNodes(accessorDeclaration.AccessorList.Accessors.Select(x => (SyntaxNode)x.Body ?? x.ExpressionBody).Where(x => x != null));
             foreach (var accessor in accessorDeclaration.AccessorList.Accessors)
             {
                 if (accessor.ExpressionBody != null)
@@ -156,7 +173,7 @@ namespace Stryker.Core.Mutants
                 }
                 else if (accessor.Body != null)
                 {
-                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(accessor.Body, context));
+                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)Mutate(accessor.Body, context));
                     trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
                 }
             }
@@ -178,7 +195,7 @@ namespace Stryker.Core.Mutants
             var mutatedIf = ifStatement.Else != null
                 ? ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement, ifStatement.Else)
                 : ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement);
-            
+
             var mutated = false;
 
             if (!ifStatement.Condition.ContainsDeclarations())
@@ -271,7 +288,7 @@ namespace Stryker.Core.Mutants
 
             if (currentNode is ExpressionSyntax expression && !expression.ContainsDeclarations())
             {
-                childCopy = MutateSubExpressionWithConditional(expression,  (ExpressionSyntax) childCopy, context);
+                childCopy = MutateSubExpressionWithConditional(expression, (ExpressionSyntax)childCopy, context);
                 mutated = true;
             }
 
@@ -324,29 +341,37 @@ namespace Stryker.Core.Mutants
         /// </summary>
         private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
         {
-            if (currentNode is MethodDeclarationSyntax methodNode && methodNode.Body != null &&
-                !(methodNode.ReturnType is PredefinedTypeSyntax predefinedType && predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)))
+            // If it's not a method or the method has no body skip the node
+            if (!(currentNode is MethodDeclarationSyntax methodNode) || methodNode.Body == null)
             {
-                TypeSyntax returnType = methodNode.ReturnType;
-
-                // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
-                var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
-                if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
-                {
-                    if (genericReturn != null)
-                    {
-                        // if the method is async and returns a generic task, make the return default return the underlying type
-                        returnType = genericReturn.TypeArgumentList.Arguments.First();
-                    } else
-                    {
-                        // if the method is async but returns a non-generic task, don't add the return default
-                        return currentNode;
-                    }
-                }
-
-                var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
-                currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
+                return currentNode;
             }
+
+            // If method return type is void skip the node
+            if (methodNode.ReturnType is PredefinedTypeSyntax predefinedType && predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword))
+            {
+                return currentNode;
+            }
+
+            TypeSyntax returnType = methodNode.ReturnType;
+
+            // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
+            var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
+            if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
+            {
+                if (genericReturn != null)
+                {
+                    // if the method is async and returns a generic task, make the return default return the underlying type
+                    returnType = genericReturn.TypeArgumentList.Arguments.First();
+                } else
+                {
+                    // if the method is async but returns a non-generic task, don't add the return default
+                    return currentNode;
+                }
+            }
+
+            var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
+            currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
 
             return currentNode;
         }
