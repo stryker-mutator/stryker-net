@@ -333,11 +333,11 @@ namespace Stryker.Core.Mutants
                 var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
                 if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
                 {
-                    if (genericReturn != null && genericReturn.Identifier.ToString() == "Task")
+                    if (genericReturn != null)
                     {
                         // if the method is async and returns a generic task, make the return default return the underlying type
                         returnType = genericReturn.TypeArgumentList.Arguments.First();
-                    } else if (genericReturn == null)
+                    } else
                     {
                         // if the method is async but returns a non-generic task, don't add the return default
                         return currentNode;
