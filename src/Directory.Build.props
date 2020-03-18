@@ -9,6 +9,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SystemIOAbstractions>9.0.4</SystemIOAbstractions>
+    <SystemIOAbstractions>9.0.5</SystemIOAbstractions>
   </PropertyGroup>
 </Project>
