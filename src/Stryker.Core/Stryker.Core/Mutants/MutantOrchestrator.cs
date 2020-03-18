@@ -130,9 +130,8 @@ namespace Stryker.Core.Mutants
                     return MutateForStatement(forStatement, context);
             }
 
-            currentNode = AddReturnDefault(currentNode);
-
-            return MutateExpression(currentNode, context);
+            var mutatedNode = MutateExpression(currentNode, context);
+            return AddReturnDefault(mutatedNode);
         }
 
         private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
