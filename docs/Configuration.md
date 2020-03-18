@@ -313,7 +313,7 @@ Use coverage info to speed up execution. Possible values are: off, perTest, all,
 - **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
 - **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
-coverage information for some mutants (see below), at the expanse of a longer startup time.
+coverage information for some mutants (see below), at the expense of a longer startup time.
 
 ```
 dotnet stryker --coverage-analysis perTest
