@@ -491,18 +491,37 @@ static Mutator_Flag_MutatedStatics()
 {
     var test3 = 2 + 5;
 }";
-            string expected = @"void TestMethod()
-{
-    var test3 = (StrykerNamespace.MutantControl.IsActive(0)?2 - 5:2 + 5);
-}";
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.ShouldHaveSingleItem().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
+        }
+
+        [Fact]
+        public void MutationsShouldHaveLinespan2()
+        {
+            string source = @"using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TestApp
+{
+    public static class ExampleExtension
+    {
+        public static bool InvokeIfNotNull(this Action a)
+        {
+            if (a == null) { return false; } else { a.Invoke(); return true; }
+        }
+    }
+}";
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+
+            var mutants = _target.GetLatestMutantBatch().ToList();
+            mutants.Count.ShouldBe(4);
+            foreach(var mutant in mutants)
+            {
+                mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
+            }
         }
 
         [Fact]
