@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutators
 {
     public class StringMutator: MutatorBase<LiteralExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {

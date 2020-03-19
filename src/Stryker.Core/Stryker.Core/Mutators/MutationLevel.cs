@@ -2,9 +2,9 @@
 {
     public enum MutationLevel
     {
-        Beginner,
-        Intermediate,
+        Basic,
+        Standard,
         Advanced,
-        Expert
+        Complete
     }
 }

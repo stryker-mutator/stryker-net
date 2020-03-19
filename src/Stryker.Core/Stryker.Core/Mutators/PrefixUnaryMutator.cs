@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutators
 {
     public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {

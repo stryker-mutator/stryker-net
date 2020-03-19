@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutators
             {SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression},
         };
 
-        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node)
         {

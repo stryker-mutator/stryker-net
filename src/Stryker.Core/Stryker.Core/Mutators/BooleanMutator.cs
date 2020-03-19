@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutators
     {
         private Dictionary<SyntaxKind, SyntaxKind> _kindsToMutate { get; }
 
-        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         public BooleanMutator()
         {
