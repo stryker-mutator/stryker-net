@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutators
     {
         private Dictionary<SyntaxKind, SyntaxKind> _kindsToMutate { get; }
 
+        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+
         public BooleanMutator()
         {
             _kindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>

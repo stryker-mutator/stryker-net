@@ -321,7 +321,7 @@ namespace Stryker.Core.Mutants
         /// </summary>
         private IEnumerable<Mutant> ApplyMutator(SyntaxNode syntaxNode, IMutator mutator, MutationContext context)
         {
-            var mutations = mutator.Mutate(syntaxNode);
+            var mutations = mutator.Mutate(syntaxNode, _options);
             foreach (var mutation in mutations)
             {
                 Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", MutantCount, mutation.OriginalNode, mutation.ReplacementNode, mutator.GetType());

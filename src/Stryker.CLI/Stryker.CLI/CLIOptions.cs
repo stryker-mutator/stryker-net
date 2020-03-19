@@ -279,6 +279,15 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "test-projects"
         };
 
+        public static readonly CLIOption<string> MutationLevel = new CLIOption<string>
+        {
+            ArgumentName = "--mutation-level",
+            ArgumentShortName = "-ml",
+            ArgumentDescription = $"Specify what test projects should run on the project under test.",
+            DefaultValue = _defaultOptions.MutationLevel.ToString(),
+            JsonKey = "mutation-level"
+        };
+
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
         {
             return FormatOptionsString(new List<T> { @default }, options, new List<Y>());

@@ -1,12 +1,11 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Xunit;
 
@@ -19,8 +18,16 @@ namespace Stryker.Core.UnitTest.Mutators
         // Using Moq the ExampleMutator will be mocked to test the functionality in the abstract Mutator class
         internal class ExampleMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
         {
+            public override MutationLevel MutationLevel { get; } = MutationLevel.Expert;
+
+            public ExampleMutator(MutationLevel mutationLevel)
+            {
+                MutationLevel = mutationLevel;
+            }
+
             public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
             {
+                // when this exception is thrown the test knows the method has been called by the BaseMutator
                 throw new NotImplementedException();
             }
         }
@@ -33,16 +40,9 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var mutatorMock = new Mock<ExampleMutator>(MockBehavior.Strict);
-            mutatorMock.Setup(x => x.ApplyMutations(It.IsAny<BinaryExpressionSyntax>()))
-                .Returns(new[] { new Mutation(), new Mutation() });
+            var target = new ExampleMutator(MutationLevel.Beginner);
 
-            var target = mutatorMock.Object;
-
-            var result = target.Mutate(originalNode);
-
-            result.Count().ShouldBe(2);
-            mutatorMock.Verify(x => x.ApplyMutations(It.IsAny<BinaryExpressionSyntax>()), Times.Once);
+            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, new StrykerOptions()));
         }
 
         [Fact]
@@ -51,14 +51,11 @@ namespace Stryker.Core.UnitTest.Mutators
             // the type ReturnStatementSyntax should NOT be mutated
             var originalNode = SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)));
 
-            var mutatorMock = new Mock<ExampleMutator>(MockBehavior.Strict);
+            var target = new ExampleMutator(MutationLevel.Beginner);
 
-            var target = mutatorMock.Object;
-
-            var result = target.Mutate(originalNode);
+            var result = target.Mutate(originalNode, new StrykerOptions());
 
             result.ShouldBeEmpty();
-            mutatorMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -69,16 +66,39 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(100)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(5)));
 
-            var mutatorMock = new Mock<ExampleMutator>(MockBehavior.Strict);
+            var target = new ExampleMutator(MutationLevel.Beginner);
 
-            var target = mutatorMock.Object;
-
-            var result = target.Mutate(originalNode);
+            var result = target.Mutate(originalNode, new StrykerOptions());
 
             result.ShouldBeEmpty();
-            mutatorMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public void ShouldNotMutateIfMutationLevelIsLow()
+        {
+            var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
+
+            // The mutator is of level Expert
+            var target = new ExampleMutator(MutationLevel.Expert);
+
+            // The options level is Beginner
+            target.Mutate(originalNode, new StrykerOptions(mutationLevel: MutationLevel.Intermediate.ToString()));
+
+            // ApplyMutations should not have been called
+        }
+
+        [Fact]
+        public void ShouldMutateIfLevelIsEqual()
+        {
+            var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
+
+            var target = new ExampleMutator(MutationLevel.Expert);
+
+            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, new StrykerOptions(mutationLevel: MutationLevel.Expert.ToString())));
         }
     }
-
-    
 }

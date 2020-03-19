@@ -14,6 +14,8 @@ namespace Stryker.Core.Mutators
     /// </remarks>
     public class StringEmptyMutator : MutatorBase<MemberAccessExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+
         /// <inheritdoc />
         public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
         {

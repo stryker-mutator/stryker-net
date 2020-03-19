@@ -9,16 +9,18 @@ namespace Stryker.Core.Mutators
     {
         private static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
         {
-          {SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression},
-          {SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression},
-          {SyntaxKind.MultiplyAssignmentExpression, SyntaxKind.DivideAssignmentExpression},
-          {SyntaxKind.DivideAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
-          {SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
-          {SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression},
-          {SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression},
-          {SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression},
-          {SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression},
+            {SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression},
+            {SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression},
+            {SyntaxKind.MultiplyAssignmentExpression, SyntaxKind.DivideAssignmentExpression},
+            {SyntaxKind.DivideAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
+            {SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
+            {SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression},
+            {SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression},
+            {SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression},
+            {SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression},
         };
+
+        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
 
         public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node)
         {

@@ -8,6 +8,8 @@ namespace Stryker.Core.Mutators
 {
     public class NegateConditionMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Intermediate;
+
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
             SyntaxNode replacement = null;

@@ -47,6 +47,7 @@ namespace Stryker.Core.Options
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
+        public MutationLevel MutationLevel { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -81,7 +82,8 @@ namespace Stryker.Core.Options
             string projectName = null,
             string moduleName = null,
             string projectVersion = null,
-            IEnumerable<string> testProjects = null)
+            IEnumerable<string> testProjects = null,
+            string mutationLevel = "intermediate")
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -108,6 +110,19 @@ namespace Stryker.Core.Options
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+            MutationLevel = ValidateMutationLevel(mutationLevel);
+        }
+
+        private MutationLevel ValidateMutationLevel(string mutationLevel)
+        {
+            if (Enum.TryParse(mutationLevel, true, out MutationLevel result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage, $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{string.Join(", ", Enum.GetValues(typeof(MutationLevel)))}]");
+            }
         }
 
         private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
