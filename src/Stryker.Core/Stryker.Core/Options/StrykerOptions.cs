@@ -83,7 +83,7 @@ namespace Stryker.Core.Options
             string moduleName = null,
             string projectVersion = null,
             IEnumerable<string> testProjects = null,
-            string mutationLevel = "intermediate")
+            string mutationLevel = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -110,7 +110,7 @@ namespace Stryker.Core.Options
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
-            MutationLevel = ValidateMutationLevel(mutationLevel);
+            MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
         }
 
         private MutationLevel ValidateMutationLevel(string mutationLevel)
