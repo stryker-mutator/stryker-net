@@ -89,7 +89,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult, options);
+                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult);
             }
             projectInfo.ProjectContents = inputFiles;
 
