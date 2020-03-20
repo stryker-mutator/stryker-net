@@ -9,16 +9,12 @@ namespace Stryker.Core.ProjectComponents
 {
     public class FolderComposite : ProjectComponent
     {
-        private readonly IList<SyntaxTree> _syntaxTrees;
-        public ICollection<ProjectComponent> Children { get; set; }
-        public FolderComposite()
-        {
-            Children = new Collection<ProjectComponent>();
-        }
+        private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
+        public ICollection<ProjectComponent> Children { get; set; } = new Collection<ProjectComponent>();
 
-        public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _syntaxTrees.Add(syntaxTree);
+        public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
 
-        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _syntaxTrees.Union(Children.SelectMany(c => c.MutatedSyntaxTrees));
+        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.MutatedSyntaxTrees));
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
 
         public override IEnumerable<Mutant> Mutants
