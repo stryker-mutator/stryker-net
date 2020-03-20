@@ -7,13 +7,7 @@ namespace Stryker.Core.ProjectComponents
     public class FileLeaf : ProjectComponent
     {
         public string SourceCode { get; set; }
-
-        private IEnumerable<Mutant> _mutants;
-        public override IEnumerable<Mutant> Mutants
-        {
-            get => _mutants;
-            set => _mutants = value;
-        }
+        public override IEnumerable<Mutant> Mutants { get; set; }
 
         public override void Display(int depth)
         {
