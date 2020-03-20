@@ -32,6 +32,8 @@ namespace Stryker.DataCollector
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
+        public string MutantList => _singleMutant?.ToString() ?? string.Join(",", _mutantTestedBy.Values.Distinct());
+
         public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
