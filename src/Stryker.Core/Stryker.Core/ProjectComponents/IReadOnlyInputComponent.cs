@@ -22,7 +22,7 @@ namespace Stryker.Core.ProjectComponents
 
         void Display(int depth);
 
-        decimal? GetMutationScore();
+        double GetMutationScore();
 
         Health CheckHealth(Threshold threshold);
     }
