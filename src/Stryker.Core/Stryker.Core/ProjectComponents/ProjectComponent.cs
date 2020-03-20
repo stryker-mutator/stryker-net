@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -44,7 +44,7 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
-        /// <returns>decimal between 0 and 100 or null when no score could be calculated</returns>
+        /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
         public decimal? GetMutationScore()
         {
             var totalCount = TotalMutants.Count();
@@ -52,7 +52,7 @@ namespace Stryker.Core.ProjectComponents
 
             if (totalCount > 0)
             {
-                return killedCount / (decimal) totalCount * 100;
+                return killedCount / (decimal)totalCount;
             }
             else
             {
@@ -62,9 +62,9 @@ namespace Stryker.Core.ProjectComponents
 
         public Health CheckHealth(Threshold threshold)
         {
-            var mutationScore = GetMutationScore();
+            var mutationScorePercentage = GetMutationScore() * 100;
 
-            switch (mutationScore)
+            switch (mutationScorePercentage)
             {
                 case var score when score > threshold.High:
                     return Health.Good;

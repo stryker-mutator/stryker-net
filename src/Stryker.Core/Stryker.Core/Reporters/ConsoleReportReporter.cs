@@ -4,7 +4,6 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -57,7 +56,8 @@ namespace Stryker.Core.Reporters
                     mutant.ResultStatus == MutantStatus.Timeout)
                     {
                         _chalk.Green($"[{mutant.ResultStatus}] ");
-                    } else if (mutant.ResultStatus == MutantStatus.NoCoverage)
+                    }
+                    else if (mutant.ResultStatus == MutantStatus.NoCoverage)
                     {
                         _chalk.Yellow($"[{mutant.ResultStatus}] ");
                     }
@@ -65,7 +65,7 @@ namespace Stryker.Core.Reporters
                     {
                         _chalk.Red($"[{mutant.ResultStatus}] ");
                     }
-                    _chalk.Default(mutant.LongName+Environment.NewLine);
+                    _chalk.Default(mutant.LongName + Environment.NewLine);
                 }
             };
 
@@ -88,12 +88,12 @@ namespace Stryker.Core.Reporters
             }
             else if (!score.HasValue)
             {
-                _chalk.DarkGray($"(- %)");
+                _chalk.DarkGray($"N/A)");
             }
             else
             {
                 // print the score as a percentage
-                string scoreText = $"({ (score.Value / 100).ToString("p", CultureInfo.InvariantCulture)})";
+                string scoreText = string.Format("{0:P2}", score.Value);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
                     _chalk.Green(scoreText);
