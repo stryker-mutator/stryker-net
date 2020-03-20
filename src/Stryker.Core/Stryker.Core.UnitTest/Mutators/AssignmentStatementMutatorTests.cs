@@ -17,7 +17,10 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
         [InlineData(SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression)]
         [InlineData(SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression)]
-        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression)]
+        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression)]
         [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput)
         {
@@ -30,7 +33,6 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            result.ShouldHaveSingleItem();
             result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
             result.ShouldContain(x => x.Type == Mutator.Assignment);
         }
