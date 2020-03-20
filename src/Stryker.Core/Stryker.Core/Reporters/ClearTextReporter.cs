@@ -23,16 +23,22 @@ namespace Stryker.Core.Reporters
             _chalk = chalk ?? new Chalk();
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent inputComponent)
+        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
+            // This reporter does not report during the testrun
+            return;
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> reportComponent)
         {
+            // This reporter does not report during the testrun
+            return;
         }
 
-        public void OnMutantTested(IReadOnlyMutant result)
+        public void OnMutantTested(IReadOnlyMutant _reportComponent)
         {
+            // This reporter does not report during the testrun
+            return;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
