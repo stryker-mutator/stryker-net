@@ -53,11 +53,17 @@ namespace Stryker.CLI
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
             {
-                _config = new ConfigurationBuilder()
-                    .SetBasePath(basePath)
-                    .AddJsonFile(fileLocation)
-                    .Build()
-                    .GetSection("stryker-config");
+                try
+                {
+                    _config = new ConfigurationBuilder()
+                        .SetBasePath(basePath)
+                        .AddJsonFile(fileLocation)
+                        .Build()
+                        .GetSection("stryker-config");
+                } catch (FormatException formatException)
+                {
+                    throw new StrykerInputException("The stryker config file was in an incorrect format.", formatException.InnerException.Message);
+                }
             }
 
             return new StrykerOptions(
