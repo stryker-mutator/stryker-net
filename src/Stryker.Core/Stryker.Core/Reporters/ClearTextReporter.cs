@@ -26,32 +26,29 @@ namespace Stryker.Core.Reporters
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
             // This reporter does not report during the testrun
-            return;
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
             // This reporter does not report during the testrun
-            return;
         }
 
-        public void OnMutantTested(IReadOnlyMutant _reportComponent)
+        public void OnMutantTested(IReadOnlyMutant result)
         {
             // This reporter does not report during the testrun
-            return;
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
+        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             // setup display handlers
-            inputComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
                 _chalk.Default($"{new string('-', depth)} {Path.DirectorySeparatorChar}{Path.GetFileName(current.Name)} ");
                 DisplayComponent(current);
             };
 
-            inputComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
                 _chalk.Default($"{new string('-', depth)} {current.Name} ");
@@ -78,7 +75,7 @@ namespace Stryker.Core.Reporters
             // print empty line for readability
             _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
             // start recursive invocation of handlers
-            inputComponent.Display(1);
+            reportComponent.Display(1);
         }
 
         private void DisplayComponent(IReadOnlyInputComponent inputComponent)
