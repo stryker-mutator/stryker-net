@@ -45,36 +45,33 @@ namespace Stryker.Core.ProjectComponents
         /// Returns the mutation score for this folder / file
         /// </summary>
         /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
-        public decimal? GetMutationScore()
+        public double GetMutationScore()
         {
-            var totalCount = TotalMutants.Count();
-            var killedCount = DetectedMutants.Count();
+            double totalCount = TotalMutants.Count();
+            double killedCount = DetectedMutants.Count();
 
-            if (totalCount > 0)
-            {
-                return killedCount / (decimal)totalCount;
-            }
-            else
-            {
-                return null;
-            }
+            return killedCount / totalCount;
         }
 
         public Health CheckHealth(Threshold threshold)
         {
-            var mutationScorePercentage = GetMutationScore() * 100;
-
-            switch (mutationScorePercentage)
+            if (GetMutationScore() is var mutationScore && !double.IsNaN(mutationScore))
             {
-                case var score when score > threshold.High:
-                    return Health.Good;
-                case var score when score <= threshold.High && score > threshold.Low:
-                    return Health.Warning;
-                case var score when score <= threshold.Low && score > threshold.Break:
-                    return Health.Danger;
-                default:
-                    return Health.Danger;
+                var mutationScorePercentage = mutationScore * 100;
+
+                switch (mutationScorePercentage)
+                {
+                    case var score when score > threshold.High:
+                        return Health.Good;
+                    case var score when score <= threshold.High && score > threshold.Low:
+                        return Health.Warning;
+                    case var score when score <= threshold.Low && score > threshold.Break:
+                        return Health.Danger;
+                }
             }
+
+            // The mutation score is outside of the bounds we can work with so we don't have a health
+            return Health.None;
         }
 
         public abstract void Add(ProjectComponent component);

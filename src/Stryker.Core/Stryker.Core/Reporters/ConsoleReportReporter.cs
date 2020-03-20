@@ -77,7 +77,7 @@ namespace Stryker.Core.Reporters
 
         private void DisplayComponent(IReadOnlyInputComponent inputComponent)
         {
-            var score = inputComponent.GetMutationScore();
+            var mutationScore = inputComponent.GetMutationScore();
             // Convert the threshold integer values to decimal values
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
@@ -86,14 +86,14 @@ namespace Stryker.Core.Reporters
             {
                 _chalk.DarkGray($"(Excluded)");
             }
-            else if (!score.HasValue)
+            else if (double.IsNaN(mutationScore))
             {
                 _chalk.DarkGray($"N/A)");
             }
             else
             {
                 // print the score as a percentage
-                string scoreText = string.Format("{0:P2}", score.Value);
+                string scoreText = string.Format("{0:P2}", mutationScore);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
                     _chalk.Green(scoreText);

@@ -128,7 +128,7 @@ namespace Stryker.CLI
             logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             if (result.ScoreIsLowerThanThresholdBreak())
             {
-                var thresholdBreak = (decimal)options.Thresholds.Break / 100;
+                var thresholdBreak = (double)options.Thresholds.Break / 100;
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
                 new Chalk().Red(string.Format(@"
