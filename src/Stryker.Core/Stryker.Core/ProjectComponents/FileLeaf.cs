@@ -8,7 +8,7 @@ namespace Stryker.Core.ProjectComponents
     {
         public string SourceCode { get; set; }
 
-        private IEnumerable<Mutant> _mutants { get; set; }
+        private IEnumerable<Mutant> _mutants;
         public override IEnumerable<Mutant> Mutants
         {
             get => _mutants;

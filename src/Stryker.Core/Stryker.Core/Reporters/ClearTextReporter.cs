@@ -12,12 +12,12 @@ namespace Stryker.Core.Reporters
     /// <summary>
     /// The default reporter, prints a simple progress and end result.
     /// </summary>
-    public class ConsoleReportReporter : IReporter
+    public class ClearTextReporter : IReporter
     {
         private readonly IChalk _chalk;
         private readonly StrykerOptions _options;
 
-        public ConsoleReportReporter(StrykerOptions strykerOptions, IChalk chalk = null)
+        public ClearTextReporter(StrykerOptions strykerOptions, IChalk chalk = null)
         {
             _options = strykerOptions;
             _chalk = chalk ?? new Chalk();

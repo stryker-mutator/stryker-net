@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
             chalkMock.Setup(x => x.DarkGray(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -71,7 +71,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -120,7 +120,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -171,7 +171,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -220,7 +220,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -267,7 +267,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ConsoleReportReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
