@@ -88,12 +88,12 @@ namespace Stryker.Core.Reporters
             }
             else if (double.IsNaN(mutationScore))
             {
-                _chalk.DarkGray($"N/A)");
+                _chalk.DarkGray($"(N/A)");
             }
             else
             {
                 // print the score as a percentage
-                string scoreText = string.Format("{0:P2}", mutationScore);
+                string scoreText = string.Format("({0:P2})", mutationScore);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
                     _chalk.Green(scoreText);
