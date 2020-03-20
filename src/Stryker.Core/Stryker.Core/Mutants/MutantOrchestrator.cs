@@ -88,7 +88,6 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
-
             // identify static related structure
             switch (currentNode)
             {
@@ -351,7 +350,7 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
-
+            
             TypeSyntax returnType = methodNode.ReturnType;
 
             // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
@@ -369,7 +368,7 @@ namespace Stryker.Core.Mutants
                 }
             }
 
-            var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
+            var newBody = methodNode.Body.AddStatements(MutantPlacer.AnnotateHelper(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType))));
             currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
 
             return currentNode;

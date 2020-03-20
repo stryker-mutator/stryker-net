@@ -51,6 +51,7 @@ namespace Stryker.CLI
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
             var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
+            var disableSimultaneousTesting = CreateOption(app, CLIOptions.DisableTestingMix);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
@@ -92,6 +93,7 @@ namespace Stryker.CLI
                     coverageAnalysis: coverageAnalysis,
                     abortTestOnFail: abortTestOnFailParam,
                     configFilePath: configFilePathParam,
+                    disableSimultaneousTesting: disableSimultaneousTesting,
                     maxConcurrentTestRunners: maxConcurrentTestRunnersParam,
                     thresholdHigh: thresholdHighParam,
                     thresholdLow: thresholdLowParam,

@@ -4,9 +4,22 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker.DataCollector
 {
+    public class ConnectionEventArgs : EventArgs
+    {
+        public CommunicationChannel Client;
+
+        public ConnectionEventArgs(CommunicationChannel client)
+        {
+            this.Client = client;
+        }
+    } 
+
+    public delegate void MessageReceived(object sender, string args);
+
     public delegate void ConnectionEvent(object s, ConnectionEventArgs e);
 
     public sealed class CommunicationServer : IDisposable

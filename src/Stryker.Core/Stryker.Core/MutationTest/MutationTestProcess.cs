@@ -10,7 +10,6 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +23,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate();
         StrykerRunResult Test(StrykerOptions options);
-        TestCoverageInfos GetCoverage();
+        void GetCoverage();
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -68,6 +67,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
+            _logger.LogInformation("Generating mutants.");
             var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
 
             _logger.LogDebug("Injecting helpers into assembly.");
@@ -202,16 +202,48 @@ namespace Stryker.Core.MutationTest
             var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
+                var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
+
                 _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
 
                 Parallel.ForEach(
-                    mutantsNotRun,
+                    mutantGroups,
                     new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
-                    mutant =>
+                    mutants =>
                     {
-                        _mutationTestExecutor.Test(mutant, _input.TimeoutMs);
+                        var testMutants = new HashSet<Mutant>();
+                        _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
+                            (testedMutants, failedTests, ranTests, timedOutTest) => 
+                            {
+                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                                foreach (var mutant in testedMutants)
+                                {
+                                    mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+                                    if (mutant.ResultStatus == MutantStatus.NotRun)
+                                    {
+                                        mustGoOn = true;
+                                    }
+                                    else if (!testMutants.Contains(mutant))
+                                    {
+                                        testMutants.Add(mutant);
+                                        _reporter.OnMutantTested(mutant);
+                                    }
+                                }
 
-                        _reporter.OnMutantTested(mutant);
+                                return mustGoOn;
+                            });
+
+                        foreach(var mutant in mutants)
+                        {
+                            if (mutant.ResultStatus == MutantStatus.NotRun)
+                            {
+                                _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
+                            }
+                            else if (!testMutants.Contains(mutant))
+                            {
+                                _reporter.OnMutantTested(mutant);
+                            }
+                        }
                     });
             }
 
@@ -222,17 +254,80 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
         }
 
-        public TestCoverageInfos GetCoverage()
+        private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            var (targetFrameworkDoesNotSupportAppDomain, targetFramewoekDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
-            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(targetFramewoekDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
-            if (testResult.Success)
+            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                return _mutationTestExecutor.TestRunner.CoverageMutants;
+                return mutantsNotRun.Select(x => new List<Mutant> {x});
+            }
+
+            _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
+            var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
+            var mutantsToGroup = mutantsNotRun.ToList();
+            // we deal with mutants needing full testing first
+            blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> {m}));
+            mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
+            var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
+            mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
+            for (var i = 0; i < mutantsToGroup.Count; i++)
+            {
+                var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
+                var nextBlock = new List<Mutant> {mutantsToGroup[i]};
+                for (var j = i + 1; j < mutantsToGroup.Count; j++)
+                {
+                    if (mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
+                        mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                    {
+                        continue;
+                    }
+
+                    nextBlock.Add(mutantsToGroup[j]);
+                    usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
+                    mutantsToGroup.RemoveAt(j--);
+                }
+
+                blocks.Add(nextBlock);
+            }
+
+            _logger.LogInformation($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+            return blocks;
+        }
+
+        public void GetCoverage()
+        {
+            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            foreach(var mutant in mutantsToScan)
+            {
+                mutant.CoveringTests = new TestListDescription(null);
+            }
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
+            if (testResult.FailingTests.Count == 0)
+            {
+                // force static mutants to be tested against all tests.
+                if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                {
+                    foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                    {
+                        mutant.MustRunAgainstAllTests = true;
+                    }
+                }
+                foreach (var mutant in mutantsToScan)
+                {
+                    if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
+                    {
+                        mutant.ResultStatus = MutantStatus.NoCoverage;
+                    }
+                    else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+                    {
+                        mutant.CoveringTests = TestListDescription.EveryTest();
+                    }
+                }
+
+                return;
             }
             _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
             throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
-
         }
     }
 }
