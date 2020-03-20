@@ -110,8 +110,8 @@
       },
       "DotNet.Glob": {
         "type": "Transitive",
-        "resolved": "3.0.5",
-        "contentHash": "YyRz7scXLFgGv7KfYDeHvFcJIC+rHdDuB6z5hSf5JcUDD9Mgg/MhnpS4VMtXkYTR7OdAXChnojUFZ1Xef8xWGg=="
+        "resolved": "3.0.9",
+        "contentHash": "tfISNzB/4pmCCWFwaloMUaKddzLa0UJ6RxWSfVhY4a69smqhth3DlyM72/fFI2wsbHPbWQUFYan1F3YiOugkoA=="
       },
       "LibGit2Sharp": {
         "type": "Transitive",
@@ -978,8 +978,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.5",
-        "contentHash": "Qn9lF3nTcEDehVilHiqZtF2xxxxfQkFVXFHYQAxOzfxheZf7VxFnCjQ0Za/Lou5FkJE0H2cYAtfH7kireeaWBg==",
+        "resolved": "9.0.6",
+        "contentHash": "FytuUXz0BsK81ChtExUanYIzk9Zh6R9Pdu9b3jPg3R14uvyGmQNiX0mKgqVBBYhHHx7sIyTdLwYOnXbfpEGySA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -1715,7 +1715,7 @@
         "type": "Project",
         "dependencies": {
           "Buildalyzer": "2.5.1",
-          "DotNet.Glob": "3.0.5",
+          "DotNet.Glob": "3.0.9",
           "LibGit2Sharp": "0.26.2",
           "Microsoft.CodeAnalysis.CSharp": "3.5.0",
           "Microsoft.Extensions.Configuration": "3.1.2",
@@ -1732,8 +1732,8 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.15.0",
-          "System.IO.Abstractions": "9.0.5"
+          "Stryker.DataCollector": "0.16.1",
+          "System.IO.Abstractions": "9.0.6"
         }
       },
       "stryker.datacollector": {
