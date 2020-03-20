@@ -311,13 +311,16 @@ namespace Stryker.Core.MutationTest
                     {
                         mutant.MustRunAgainstAllTests = true;
                     }
-
                 }
                 foreach (var mutant in mutantsToScan)
                 {
                     if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
                     {
                         mutant.ResultStatus = MutantStatus.NoCoverage;
+                    }
+                    else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+                    {
+                        mutant.CoveringTests = TestListDescription.EveryTest();
                     }
                 }
 
