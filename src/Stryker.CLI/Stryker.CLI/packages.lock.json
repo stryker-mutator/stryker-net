@@ -34,9 +34,9 @@
       },
       "NuGet.Versioning": {
         "type": "Direct",
-        "requested": "[5.4.0, )",
-        "resolved": "5.4.0",
-        "contentHash": "aFOhsyeafHctMNwKfKzwD9bJqhsDaQuBBUgZ+8RNlaz8Voq/SEjd6R8KIPzQ+L8P49qTB8aucjqxo9tkH3N4Bg=="
+        "requested": "[5.5.0, )",
+        "resolved": "5.5.0",
+        "contentHash": "jH8Q+XRO9REVelfvAUlRnLqrQCNi3NRVLM+MIWY4XW2CMxCD+R/X7cJWVAW7A6rG1FpgO8MbGM8DLwloMgYm0w=="
       },
       "Buildalyzer": {
         "type": "Transitive",
