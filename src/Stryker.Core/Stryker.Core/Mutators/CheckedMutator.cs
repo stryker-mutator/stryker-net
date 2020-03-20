@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutators
 {
     public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+        public override MutationLevel MutationLevel => MutationLevel.Complete;
 
         public override IEnumerable<Mutation> ApplyMutations(CheckedExpressionSyntax node)
         {

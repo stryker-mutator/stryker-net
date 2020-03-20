@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
     /// <summary> Mutator Implementation for LINQ Mutations </summary>
     public class LinqMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+        public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }

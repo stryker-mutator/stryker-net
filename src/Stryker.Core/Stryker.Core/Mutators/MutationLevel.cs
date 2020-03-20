@@ -3,8 +3,8 @@
     public enum MutationLevel
     {
         Basic = 0,
-        Standard = 5,
-        Advanced = 10,
+        Standard = 25,
+        Advanced = 50,
         Complete = 100
     }
 }

@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutators
 {
     public class NegateConditionMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+        public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
