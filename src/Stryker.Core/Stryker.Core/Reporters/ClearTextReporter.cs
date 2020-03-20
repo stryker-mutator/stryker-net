@@ -29,7 +29,7 @@ namespace Stryker.Core.Reporters
             return;
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> reportComponent)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
             // This reporter does not report during the testrun
             return;
