@@ -16,7 +16,7 @@ namespace Stryker.Core
         public bool ScoreIsLowerThanThresholdBreak()
         {
             // If the mutation score is NaN we don't have a result yet
-            return double.IsNaN(MutationScore) ? false : MutationScore < _options.Thresholds.Break;
+            return !double.IsNaN(MutationScore) && MutationScore < _options.Thresholds.Break;
         }
     }
 }
