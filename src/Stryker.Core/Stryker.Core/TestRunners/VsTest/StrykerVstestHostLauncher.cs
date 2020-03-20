@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Stryker.Core.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -16,10 +15,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
-        private readonly IDictionary<string, string> _envVars;
         private Process _currentProcess;
         private readonly object _lck = new object();
         private readonly int _id;
+
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher()
@@ -27,9 +26,8 @@ namespace Stryker.Core.TestRunners.VsTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
         }
 
-        public StrykerVsTestHostLauncher(IDictionary<string, string> envVars, int id)
+        public StrykerVsTestHostLauncher(int id)
         {
-            _envVars = envVars;
             _id = id;
         }
 
@@ -44,10 +42,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
-            foreach (var (key, value) in _envVars)
-            {
-                processInfo.EnvironmentVariables[key] = value;
-            }
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
             _currentProcess.Exited += CurrentProcess_Exited;

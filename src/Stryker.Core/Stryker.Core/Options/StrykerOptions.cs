@@ -66,6 +66,7 @@ namespace Stryker.Core.Options
             bool devMode = false,
             string coverageAnalysis = "perTest",
             bool abortTestOnFail = true,
+            bool disableSimultaneousTesting = false,
             int? maxConcurrentTestRunners = null,
             int thresholdHigh = 80,
             int thresholdLow = 60,
@@ -97,7 +98,7 @@ namespace Stryker.Core.Options
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
-            Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization);
+            Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : 0) | (disableSimultaneousTesting ? OptimizationFlags.DisableTestMix : 0);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilePatterns = ValidateFilePatterns(mutate, filesToExclude);
             TestRunner = ValidateTestRunner(testRunner);

@@ -2,8 +2,8 @@
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.MutationTest
 {
@@ -13,7 +13,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(Mutant mutant, int timeoutMs);
+        void Test(IList<Mutant> mutant, int timeoutMs, TestUpdateHandler updateHandler);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
@@ -21,37 +21,89 @@ namespace Stryker.Core.MutationTest
         public ITestRunner TestRunner { get; }
         private ILogger Logger { get; }
 
-        public IEnumerable<TestDescription> Tests => TestRunner?.Tests;
-
         public MutationTestExecutor(ITestRunner testRunner)
         {
             TestRunner = testRunner;
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(Mutant mutant, int timeoutMs)
+        public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
         {
-            try
+            var forceSingle = false;
+            while(mutantsToTest.Any())
             {
-                Logger.LogDebug($"Testing {mutant.LongName}.");
-                var result = TestRunner.RunAll(timeoutMs, mutant);
-                Logger.LogTrace($"Testrun for {mutant.DisplayName} with output {result.ResultMessage}");
+                var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
-                mutant.ResultStatus = result.Success ? MutantStatus.Survived : MutantStatus.Killed;
+                Logger.LogDebug(
+                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
 
-                if (result.FailingTests != null)
+                var remainingMutants = mutantsToTest.Where( (m) => m.ResultStatus == MutantStatus.NotRun).ToList();
+                if (remainingMutants.Count == mutantsToTest.Count)
                 {
-                    foreach (var resultFailingTest in result.FailingTests)
+                    // the test failed to get any conclusive results
+                    if (!result.SessionTimedOut)
                     {
-                        mutant.CoveringTest[resultFailingTest.Guid] = true;
+                        // something bad happened.
+                        Logger.LogError($"Stryker failed to test {remainingMutants.Count} mutant(s).");
+                        return;
+                    }
+
+                    // test session's results have been corrupted by the time out
+                    // we retry and run tests one by one, if necessary
+                    if (remainingMutants.Count == 1)
+                    {
+                        // only one mutant was tested, we mark it as timeout.
+                        remainingMutants[0].ResultStatus = MutantStatus.Timeout;
+                        remainingMutants.Clear();
+                    }
+                    else
+                    {
+                        forceSingle = true;
+                    }
+                }
+
+                if (remainingMutants.Any())
+                {
+                    Logger.LogDebug("Not all mutants were tested.");
+                }
+                mutantsToTest = remainingMutants;
+            }
+        }
+
+        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler,
+            bool forceSingle)
+        {
+            TestRunResult result = null;
+            Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
+            if (TestRunner is IMultiTestRunner multi && !forceSingle)
+            {
+                result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+            }
+            else
+            {
+                foreach (var mutant in mutantsToTest)
+                {
+                    var testRunResult = TestRunner.RunAll(timeoutMs, mutant, updateHandler);
+                    if (result == null)
+                    {
+                        result = testRunResult;
+                    }
+                    else
+                    {
+                        result.Merge(testRunResult);
                     }
                 }
             }
-            catch (OperationCanceledException)
+
+            if (updateHandler == null)
             {
-                Logger.LogTrace("Testrun aborted due to timeout");
-                mutant.ResultStatus = MutantStatus.Timeout;
+                foreach (var mutant in mutantsToTest)
+                {
+                    mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
+                }
             }
+
+            return result;
         }
     }
 }
