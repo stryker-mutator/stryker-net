@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(null);
+            result.ShouldBe(double.NaN);
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(100M);
+            result.ShouldBe(1);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(50M);
+            result.ShouldBe(0.5);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(50M);
+            result.ShouldBe(0.5);
         }
 
         [Fact]
@@ -68,18 +68,17 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(66.66666666666666666666666667M);
+            result.ShouldBe(0.6666666666666666666666666666666666667);
         }
 
         [Theory]
-        [InlineData(MutantStatus.Killed, 100)]
-        [InlineData(MutantStatus.Timeout, 100)]
+        [InlineData(MutantStatus.Killed, 1)]
+        [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
         [InlineData(MutantStatus.NotRun, 0)]
-        public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, decimal expectedScore)
+        public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
         {
             var target = new FolderComposite() { Name = "RootFolder" };
-            var subFolder = new FolderComposite() { Name = "SubFolder" };
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = status } } });
 
             var result = target.GetMutationScore();
@@ -90,11 +89,10 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         public void ReportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
         {
             var target = new FolderComposite() { Name = "RootFolder" };
-            var subFolder = new FolderComposite() { Name = "SubFolder" };
             target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(null);
+            result.ShouldBe(double.NaN);
         }
     }
 }

@@ -5,32 +5,72 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class RunEventHandler : ITestRunEventsHandler
+    public interface IRunResults
+    {
+        List<TestResult> TestResults { get; }
+        IReadOnlyList<TestCase> TestsInTimeout { get; }
+    }
+
+    public class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
         private readonly string _runnerId;
-        private bool _testFailed;
+        private readonly List<TestCase> _inProgress = new List<TestCase>();
 
-        public event EventHandler TestsFailed;
         public event EventHandler VsTestFailed;
+        public event EventHandler ResultsUpdated;
+
         public List<TestResult> TestResults { get; }
 
+        public IReadOnlyList<TestCase> TestsInTimeout { get; private set; }
 
         public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
 
-        public RunEventHandler(AutoResetEvent waitHandle, ILogger logger, string runnerId)
+        public RunEventHandler(ILogger logger, string runnerId)
         {
-            _waitHandle = waitHandle;
+            _waitHandle = new AutoResetEvent(false);
             TestResults = new List<TestResult>();
             _logger = logger;
             _runnerId = runnerId;
+        }
+        
+        private void CaptureTestResults(IEnumerable<TestResult> results)
+        {
+            var testResults = results as TestResult[] ?? results.ToArray();
+            foreach (var testResult in testResults)
+            {
+                var index = _inProgress.FindIndex(t => t.Id == testResult.TestCase.Id);
+                if (index < 0)
+                {
+                    continue;
+                }
+                _inProgress.RemoveAt(index);
+            }
+            TestResults.AddRange(testResults);
+        }
+
+
+        public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
+        {
+            if (testRunChangedArgs.ActiveTests != null)
+            {
+                _inProgress.AddRange(testRunChangedArgs.ActiveTests);
+            }
+
+            if (testRunChangedArgs.NewTestResults == null)
+            {
+                return;
+            }
+            CaptureTestResults(testRunChangedArgs.NewTestResults);
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }
 
         public void HandleTestRunComplete(
@@ -44,44 +84,35 @@ namespace Stryker.Core.TestRunners.VsTest
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
-            TimeOut = testRunCompleteArgs.IsAborted;
+            if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
+            {
+                TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
+                if (TestsInTimeout.Count > 0)
+                {
+                    TimeOut = true;
+                }
+            }
 
-
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
 
             if (testRunCompleteArgs.Error != null)
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, "VsTest may have crashed, triggering vstest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering vstest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
+                }
+                else if (testRunCompleteArgs.Error.InnerException is IOException sock)
+                {
+                    _logger.LogWarning(sock,$"{_runnerId}: Test session ended unexpectedly.");
                 }
                 else if (!CancelRequested)
                 {
-                    _logger.LogWarning(testRunCompleteArgs.Error, "VsTest error occured. Please report the error at https://github.com/stryker-mutator/stryker-net/issues");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
                 }
             }
 
             _waitHandle.Set();
-        }
-
-        private void CaptureTestResults(IEnumerable<TestResult> results)
-        {
-            var testResults = results as TestResult[] ?? results.ToArray();
-            TestResults.AddRange(testResults);
-            if (!_testFailed && testResults.Any(result => result.Outcome == TestOutcome.Failed))
-            {
-                // at least one test has failed
-                _testFailed = true;
-                TestsFailed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
-        {
-            if (testRunChangedArgs?.NewTestResults != null)
-            {
-                CaptureTestResults(testRunChangedArgs.NewTestResults);
-            }
         }
 
         public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)
@@ -94,6 +125,11 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
         }
 
+        public void WaitEnd()
+        {
+            _waitHandle.WaitOne();
+        }
+
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
             LogLevel levelFinal;
@@ -103,15 +139,20 @@ namespace Stryker.Core.TestRunners.VsTest
                     levelFinal = LogLevel.Debug;
                     break;
                 case TestMessageLevel.Warning:
-                    levelFinal = LogLevel.Information;
+                    levelFinal = LogLevel.Warning;
                     break;
                 case TestMessageLevel.Error:
-                    levelFinal = LogLevel.Warning;
+                    levelFinal = LogLevel.Error;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
+        }
+
+        public void Dispose()
+        {
+            _waitHandle.Dispose();
         }
     }
 }

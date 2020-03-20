@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("Html", typeof(HtmlReporter))]
         [InlineData("Progress", typeof(ProgressReporter))]
         [InlineData("Dots", typeof(ConsoleDotProgressReporter))]
-        [InlineData("ClearText", typeof(ConsoleReportReporter))]
+        [InlineData("ClearText", typeof(ClearTextReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
             BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }));
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is JsonReporter);
             result.Reporters.ShouldContain(r => r is HtmlReporter);
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
-            result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
+            result.Reporters.ShouldContain(r => r is ClearTextReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
             result.Reporters.ShouldContain(r => r is DashboardReporter);
 
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.Reporters
             BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
-            result.Reporters.ShouldContain(r => r is ConsoleReportReporter);
+            result.Reporters.ShouldContain(r => r is ClearTextReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
         }
     }

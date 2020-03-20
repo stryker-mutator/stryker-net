@@ -1,10 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.Compiling;
-using Stryker.Core.UnitTest.MutationTest;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -328,6 +326,11 @@ namespace ExampleProject
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
+                rollbackedResult.Success.ShouldBeFalse();
+                rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+
+                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,false);
+                rollbackedResult = fixedCompilation.Compilation.Emit(ms);
                 rollbackedResult.Success.ShouldBeTrue();
                 // validate that only mutation 8 and 7 were rollbacked
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 ,6});
@@ -430,6 +433,12 @@ namespace ExampleProject
                 var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+                
+                rollbackedResult.Success.ShouldBeFalse();
+                rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+
+                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,false);
+                rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
                 // validate that only mutation 8 and 7 were rollbacked
@@ -523,7 +532,13 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var compileResult = compiler.Emit(ms);
-                Should.Throw<StrykerCompilationException>(() => {target.Start(compiler, compileResult.Diagnostics, false,true);});
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
+
+                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+                
+                rollbackedResult.Success.ShouldBeFalse();
+                rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+                Should.Throw<StrykerCompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
             }
         }
 

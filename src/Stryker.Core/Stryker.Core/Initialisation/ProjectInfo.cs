@@ -21,6 +21,8 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
 
+        public string MutantControlNameSpace { get; set; }
+
         public string GetInjectionPath(ProjectAnalyzerResult projectAnalyzerResult)
         {
             return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(projectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
