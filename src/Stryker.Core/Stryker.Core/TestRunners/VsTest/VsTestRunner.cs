@@ -94,10 +94,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var mutantTestsMap = new Dictionary<int, IList<string>>();
             ICollection<TestCase> testCases = null;
-            if (!_flags.HasFlag(OptimizationFlags.CoverageBasedTest) && mutants?.Count>1)
-            {
-                throw new StrykerInputException("Multiple mutant test requires coverage analysis");
-            }
+
             if (mutants != null)
             {
                 // if we optimize the number of tests to run
@@ -127,6 +124,14 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         return new TestRunResult(TestListDescription.NoTest(), TestListDescription.NoTest(), TestListDescription.NoTest(), "Mutants are not covered by any test!");
                     }
+                }
+                else
+                {
+                    if (mutants.Count>1)
+                    {
+                        throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
+                    }
+                    mutantTestsMap.Add(mutants.FirstOrDefault().Id, new List<string>());
                 }
             }
 
@@ -253,12 +258,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private void ParseResultsForCoverage(IEnumerable<TestResult> testResults, IEnumerable<Mutant> mutants)
         {
             // since we analyze mutant coverage, mutants are assumed as not covered
-            var mutantArray = mutants as Mutant[] ?? mutants.ToArray();
-            foreach(var mutant in mutantArray)
-            {
-                mutant.CoveringTests = new TestListDescription(null);
-            }
-
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
             foreach (var testResult in testResults)
@@ -296,7 +295,7 @@ namespace Stryker.Core.TestRunners.VsTest
                         var staticMutants = (string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
                             ? new List<int>()
                             : parts[1].Split(',').Select(int.Parse).ToList();
-                        foreach (var mutant in mutantArray)
+                        foreach (var mutant in mutants)
                         {
                             if (coveredMutants.Contains(mutant.Id))
                             {

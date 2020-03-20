@@ -16,11 +16,10 @@ namespace Stryker.DataCollector
     {
         private IDataCollectionSink _dataSink;
         private bool _coverageOn;
-        private bool _firstTestDone;
         private int _activeMutation = -1;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
-        private readonly IList<int> _mutantsAllWaysTested = new List<int>();
+        private int? _singleMutant = null;
 
         private string _controlClassName;
         private Type _controller;
@@ -32,8 +31,6 @@ namespace Stryker.DataCollector
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
-
-        public string MutantList => string.Join(",", _mutantTestedBy.Values.Union(_mutantsAllWaysTested));
 
         public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
         {
@@ -149,7 +146,7 @@ namespace Stryker.DataCollector
                     var tests = current.Attributes["tests"].Value;
                     if (string.IsNullOrEmpty(tests))
                     {
-                        _mutantsAllWaysTested.Add(id);
+                        _singleMutant = id;
                     }
                     else
                     {
@@ -182,8 +179,7 @@ namespace Stryker.DataCollector
             }
 
             // we need to set the proper mutant
-            var  testId = testCaseStartArgs.TestCase.Id.ToString();
-            var mutantId = _mutantTestedBy.ContainsKey(testId) ? _mutantTestedBy[testId] : _mutantsAllWaysTested[0];
+            var mutantId = _singleMutant ?? _mutantTestedBy[testCaseStartArgs.TestCase.Id.ToString()];
 
             SetActiveMutation(mutantId);
 

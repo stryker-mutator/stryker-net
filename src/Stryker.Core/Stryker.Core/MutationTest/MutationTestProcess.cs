@@ -256,7 +256,7 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix))
+            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> {x});
             }
@@ -297,6 +297,10 @@ namespace Stryker.Core.MutationTest
         {
             var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
             var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            foreach(var mutant in mutantsToScan)
+            {
+                mutant.CoveringTests = new TestListDescription(null);
+            }
             var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
             if (testResult.FailingTests.Count == 0)
             {
