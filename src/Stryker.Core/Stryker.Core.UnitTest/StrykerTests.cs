@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(new MutationTestInput()
+            var mutationTestInput = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
@@ -36,20 +36,18 @@ namespace Stryker.Core.UnitTest
                         }
                     }
                 },
-            });
+            };
+            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(mutationTestInput);
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
-            var coveredMutants = new TestCoverageInfos();
-            coveredMutants.DeclareMappingForATest(new TestDescription("1", "SomeTest"), new[] { 2, 3 }, new[] { 2 });
             var nbTests = 0;
             initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);
 
             mutationTestProcessMock.Setup(x => x.Mutate());
-            mutationTestProcessMock.Setup(x => x.GetCoverage()).Returns(new TestCoverageInfos());
+            mutationTestProcessMock.Setup(x => x.GetCoverage());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
-                .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<decimal?>()));
+                .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
             var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
-
 
             target.RunMutationTest(options);
 

@@ -63,7 +63,7 @@ namespace Stryker.Core.Initialisation
 
             try
             {
-                var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetPath, nugetRestoreCommand, timeoutMS: 120000);
+                var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetPath, nugetRestoreCommand, timeoutMs: 120000);
                 if (nugetRestoreResult.ExitCode != 0)
                 {
                     throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);

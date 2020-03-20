@@ -19,8 +19,10 @@ namespace Stryker.Core.Testing
         /// <param name="application">example: dotnet</param>
         /// <param name="arguments">example: --no-build</param>
         /// <param name="environmentVariables">Environment variables (and their values)</param>
+        /// <param name="timeoutMs">time allotted to the process for execution (0 or-1 for no limit)</param>
         /// <returns>ProcessResult</returns>
-        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMS = 0);
+        ProcessResult Start(string path, string application, string arguments, IEnumerable<KeyValuePair<string, string>> environmentVariables = null, int timeoutMs = 0);
+
     }
 
     public class ProcessExecutor : IProcessExecutor
@@ -38,7 +40,7 @@ namespace Stryker.Core.Testing
             string application,
             string arguments,
             IEnumerable<KeyValuePair<string, string>> environmentVariables = null,
-            int timeoutMS = 0)
+            int timeoutMs = 0)
         {
             var info = new ProcessStartInfo(application, arguments)
             {
@@ -48,32 +50,32 @@ namespace Stryker.Core.Testing
                 RedirectStandardError = RedirectOutput
             };
 
-            foreach (var environmentVariable in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
+            foreach (var (key, value) in environmentVariables ?? Enumerable.Empty<KeyValuePair<string, string>>())
             {
-                info.EnvironmentVariables[environmentVariable.Key] = environmentVariable.Value;
+                info.EnvironmentVariables[key] = value;
             }
 
-            return RunProcess(info, timeoutMS);
+            return RunProcess(info, timeoutMs);
         }
 
         /// <summary>
         /// Starts a process with the given info. 
-        /// Checks for timeout after <paramref name="timeoutMS"/> milliseconds if the process is still running. 
+        /// Checks for timeout after <paramref name="timeoutMs"/> milliseconds if the process is still running. 
         /// </summary>
         /// <param name="info">The start info for the process</param>
-        /// <param name="timeoutMS">The milliseconds to check for a timeout</param>
+        /// <param name="timeoutMs">The milliseconds to check for a timeout</param>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
-        private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMS)
+        private ProcessResult RunProcess(ProcessStartInfo info, int timeoutMs)
         {
-            using (var process = new ProcessWrapper(info, RedirectOutput))
+            var process = new ProcessWrapper(info, RedirectOutput);
+            using (process)
             {
-                var timeoutValue = timeoutMS == 0 ? -1 : timeoutMS;
+                var timeoutValue = timeoutMs == 0 ? -1 : timeoutMs;
                 if (!process.WaitForExit(timeoutValue))
                 {
                     throw new OperationCanceledException("The process was terminated due to long runtime");
                 }
-
                 return new ProcessResult()
                 {
                     ExitCode = process.ExitCode,
@@ -85,10 +87,11 @@ namespace Stryker.Core.Testing
 
         private sealed class ProcessWrapper : IDisposable
         {
+            private static readonly TimeSpan KillTimeOut = TimeSpan.FromSeconds(60);
+
             private readonly Process _process;
             private readonly StringBuilder _output = new StringBuilder();
             private readonly StringBuilder _error = new StringBuilder();
-            private static readonly TimeSpan KillTimeOut = TimeSpan.FromSeconds(60);
 
             public int ExitCode => _process.ExitCode;
             public string Output => _output.ToString();
@@ -97,7 +100,7 @@ namespace Stryker.Core.Testing
             public ProcessWrapper(ProcessStartInfo info, bool redirectOutput)
             {
                 _process = Process.Start(info);
-                if (redirectOutput)
+                if (redirectOutput && _process != null)
                 {
                     _process.OutputDataReceived += Process_OutputDataReceived;
                     _process.ErrorDataReceived += Process_ErrorDataReceived;

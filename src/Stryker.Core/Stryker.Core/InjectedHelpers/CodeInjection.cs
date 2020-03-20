@@ -46,7 +46,7 @@ namespace Stryker.Core.InjectedHelpers
             var random = new Random();
 
             var chars = new char[15];
-            for (int i = 0; i < 15; i++)
+            for (var i = 0; i < 15; i++)
             {
                 chars[i] = validChars[random.Next(0, validChars.Length)];
             }
@@ -58,8 +58,7 @@ namespace Stryker.Core.InjectedHelpers
         private static string GetSourceFromResource(string sourceResourceName)
         {
             string helper;
-            using (var stream =
-                typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
+            using (var stream = typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
             {
                 using (var reader = new StreamReader(stream))
                 {

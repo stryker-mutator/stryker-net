@@ -40,11 +40,11 @@ namespace Stryker.Core.UnitTest
                 // find the different
                 var actuaLines = actual.ToString().Split(Environment.NewLine);
                 var expectedLines = expected.ToString().Split(Environment.NewLine);
-                for(var i = 0; i < actuaLines.Length; i++)
+                for (var i = 0; i < actuaLines.Length; i++)
                 {
                     if (actuaLines[i] != expectedLines[i])
                     {
-                        issame.ShouldBeTrue($"AST's are not equivalent. Line[{i+1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                        issame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
                     }
                 }
             }
@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest
             string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
         }
-        
+
         public static void ShouldNotContainErrors(this SyntaxNode actual)
         {
             var errors = actual.SyntaxTree.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);

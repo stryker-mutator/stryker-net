@@ -61,6 +61,7 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
+            _logger.LogInformation("Identifying project to mutate.");
             var testProjectAnalyzerResults = new List<ProjectAnalyzerResult>();
             foreach (var testProjectFile in testProjectFiles)
             {
@@ -73,7 +74,7 @@ namespace Stryker.Core.Initialisation
 
             projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
 
-            _logger.LogInformation("The project {0} will be mutated", projectUnderTest);
+            _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
@@ -90,6 +91,7 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectContents = inputFiles;
 
             ValidateResult(projectInfo, options);
+            _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
         }
