@@ -65,7 +65,7 @@ namespace Stryker.Core.ProjectComponents
                         return Health.Good;
                     case var score when score <= threshold.High && score > threshold.Low:
                         return Health.Warning;
-                    case var score when score <= threshold.Low && score > threshold.Break:
+                    case var score when score <= threshold.Low:
                         return Health.Danger;
                 }
             }
