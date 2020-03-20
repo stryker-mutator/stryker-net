@@ -6,6 +6,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
+using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -18,7 +19,6 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
-using Stryker.Core.MutantFilters;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -482,7 +482,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
-            testResult.MutationScore.ShouldBeNull();
+            testResult.MutationScore.ShouldBe(double.NaN);
         }
 
         [Fact]
@@ -528,7 +528,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Never);
-            testResult.MutationScore.ShouldBeNull();
+            testResult.MutationScore.ShouldBe(double.NaN);
         }
 
         [Fact]
@@ -576,7 +576,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
-            testResult.MutationScore.ShouldBeNull();
+            testResult.MutationScore.ShouldBe(double.NaN);
         }
     }
 }
