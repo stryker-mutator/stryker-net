@@ -283,7 +283,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--mutation-level",
             ArgumentShortName = "-ml",
-            ArgumentDescription = $"Specifies what mutations will be placed in your project. Options: [{string.Join(", ", Enum.GetValues(MutationLevel.GetType()))}]",
+            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
             DefaultValue = _defaultOptions.MutationLevel.ToString(),
             JsonKey = "mutation-level"
         };
