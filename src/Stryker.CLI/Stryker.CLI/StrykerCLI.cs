@@ -51,6 +51,7 @@ namespace Stryker.CLI
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
             var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
+            var disableSimultaneousTesting = CreateOption(app, CLIOptions.DisableTestingMix);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
@@ -92,6 +93,7 @@ namespace Stryker.CLI
                     coverageAnalysis: coverageAnalysis,
                     abortTestOnFail: abortTestOnFailParam,
                     configFilePath: configFilePathParam,
+                    disableSimultaneousTesting: disableSimultaneousTesting,
                     maxConcurrentTestRunners: maxConcurrentTestRunnersParam,
                     thresholdHigh: thresholdHighParam,
                     thresholdLow: thresholdLowParam,
@@ -116,20 +118,30 @@ namespace Stryker.CLI
             PrintStykerASCIIName();
             _ = PrintStrykerVersionInformationAsync();
 
-            StrykerRunResult results = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
+            StrykerRunResult result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
 
-            if (!results.IsScoreAboveThresholdBreak())
-            {
-                HandleBreakingThresholdScore(options, results);
-            }
+            HandleStrykerRunResult(options, result);
         }
 
-        private void HandleBreakingThresholdScore(StrykerOptions options, StrykerRunResult results)
+        private void HandleStrykerRunResult(StrykerOptions options, StrykerRunResult result)
         {
-            ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>().LogError($@"Final mutation score: {results.MutationScore} under breaking threshold value {options.Thresholds.Break}.
-Setting exit code to 1 (failure).
-Improve the mutation score or set the `threshold-break` value lower to prevent this error in the future.");
-            ExitCode = 1;
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+
+            logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
+            if (result.ScoreIsLowerThanThresholdBreak())
+            {
+                var thresholdBreak = (double)options.Thresholds.Break / 100;
+                logger.LogWarning("Final mutation score is below threshold break. Crashing...");
+
+                new Chalk().Red(string.Format(@"
+ The mutation score is lower than the configured break threshold of {0:P0}.
+ If you're running in a CI environment, this means your pipeline will now fail.", thresholdBreak));
+
+                Console.WriteLine(Environment.NewLine);
+                new Chalk().Green(" Looks like you've got some work to do :)");
+
+                ExitCode = 1;
+            }
         }
 
         private void PrintStykerASCIIName()
@@ -144,7 +156,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
                    __/ |                                   
                   |___/                                    
 ");
-            Console.WriteLine();
+            Console.WriteLine(Environment.NewLine);
         }
 
         private async Task PrintStrykerVersionInformationAsync()
@@ -154,7 +166,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
 
-            Console.Write("Version: ");
+            Console.Write(" Version: ");
             chalk.Green($"{currentVersion}");
             Console.WriteLine(" (beta)");
             Console.WriteLine();
@@ -164,7 +176,7 @@ Improve the mutation score or set the `threshold-break` value lower to prevent t
 
             if (latestVersion != null && latestVersion != currentVersion)
             {
-                chalk.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker` {Environment.NewLine}");
+                chalk.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker` {Environment.NewLine}");
                 Console.WriteLine();
             }
         }

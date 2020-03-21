@@ -5,17 +5,19 @@ using System.Text;
 
 namespace Stryker
 {
-    public class MutantControl
+    public static class MutantControl
     {
         private static List<int> _coveredMutants;
-        private static StringBuilder _mutantsAsString;
-        private static StringBuilder _staticMutantsAsStrings;
+        private static List<int> _coveredStaticdMutants;
         private static bool usePipe;
         private static string pipeName;
         private static string envName;
-        private static bool captureCoverage;
         private static Object _coverageLock = new Object();
 
+        // this attribute will be set by the Stryker Data Collector before each test
+        public static bool CaptureCoverage;
+        public static int ActiveMutant = -2;
+        public const int ActiveMutantNotInitValue = -2;
 #if !STRYKER_NO_PIPE
         private static CommunicationChannel channel;
 #endif
@@ -34,9 +36,9 @@ namespace Stryker
 
         public static void InitCoverage()
         {
-            ActiveMutation = int.Parse(Environment.GetEnvironmentVariable("ActiveMutation") ?? "-1");
             string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
 #if !STRYKER_NO_PIPE
+
             if (channel != null)
             {
                 channel.Dispose();
@@ -48,48 +50,26 @@ namespace Stryker
                 Log("Use pipe for data transmission");
                 pipeName = coverageMode.Substring(5);
                 usePipe = true;
-                captureCoverage = true;
+                CaptureCoverage = true;
                 channel = CommunicationChannel.Client(pipeName, 100);
                 channel.SetLogger(Log);
-                channel.RaiseReceivedMessage += Channel_RaiseReceivedMessage;
                 channel.Start();
             }
-#else
-            if (coverageMode.StartsWith("env:"))
-            {
-                Log("Use env for data transmission");
-                envName = coverageMode.Substring(4);
-                captureCoverage = true;
-                usePipe = false;
-            }
 #endif
-            if (captureCoverage)
-            {
-                ResetCoverage();
-            }
+            ResetCoverage();
         }
 
-        private static void ResetCoverage()
+        public static void ResetCoverage()
         {
             _coveredMutants = new List<int>();
-            _mutantsAsString = new StringBuilder();
-            _staticMutantsAsStrings = new StringBuilder();
+            _coveredStaticdMutants = new List<int>();
         }
 
-        private static void Channel_RaiseReceivedMessage(object sender, string args)
+        public static IList<int>[] GetCoverageData()
         {
-            if (!args.StartsWith("DUMP"))
-            {
-                return;
-            }
-
-            string temp;
-            lock (_coveredMutants)
-            {
-                temp = BuildReport();
-                ResetCoverage();
-            }
-            DumpState(temp);
+            IList<int>[] result = new IList<int>[]{_coveredMutants, _coveredStaticdMutants};
+            ResetCoverage();
+            return result;
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -100,7 +80,7 @@ namespace Stryker
 
         private static string BuildReport()
         {
-            return string.Format("{0};{1}", _mutantsAsString, _staticMutantsAsStrings);
+            return string.Format("{0};{1}", string.Join(",", _coveredMutants), string.Join(",", _coveredStaticdMutants));
         }
 
         public static void DumpState()
@@ -117,58 +97,47 @@ namespace Stryker
 
         private static void Log(string message)
         {
-            Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
+            // uncomment when you need to debug this component
+            //Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            if (captureCoverage)
+            if (CaptureCoverage)
             {
-                lock (_coverageLock)
+                RegisterCoverage(id);
+                return false;
+            }
+            if (ActiveMutant == ActiveMutantNotInitValue)
+            {
+                string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
+                if (string.IsNullOrEmpty(environmentVariable))
                 {
-                    if (!usePipe)
-                    {
-                        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envName)))
-                        {
-                            ResetCoverage();
-                        }
-                    }
-
-                    bool add = false;
-                    if (!_coveredMutants.Contains(id))
-                    {
-                        _coveredMutants.Add(id);
-                        if (_mutantsAsString.Length > 0)
-                        {
-                            _mutantsAsString.Append(',');
-                        }
-                        _mutantsAsString.Append(id.ToString());
-                        add = true;
-                    }
-                    if (MutantContext.InStatic() && _coveredMutants.Contains(id))
-                    {
-                        if (_staticMutantsAsStrings.Length > 0)
-                        {
-                            _staticMutantsAsStrings.Append(',');
-                        }
-                        _staticMutantsAsStrings.Append(id.ToString());
-                        add = true;
-                    }
-
-                    if (add)
-                    {
-                        if (!usePipe)
-                        {
-                            Environment.SetEnvironmentVariable(envName, BuildReport());
-                        }
-                    }
-
+                    ActiveMutant = -1;
+                }
+                else
+                {
+                    ActiveMutant = int.Parse(environmentVariable);
                 }
             }
-            return ActiveMutation == id;
+
+            return id == ActiveMutant;
         }
 
-        public static int ActiveMutation;
+        private static void RegisterCoverage(int id)
+        {
+            lock (_coverageLock)
+            {
+                if (!_coveredMutants.Contains(id))
+                {
+                    _coveredMutants.Add(id);
+                }
+                if (MutantContext.InStatic() && !_coveredStaticdMutants.Contains(id))
+                {
+                    _coveredStaticdMutants.Add(id);
+                }
+            }
+        }
     }
 }

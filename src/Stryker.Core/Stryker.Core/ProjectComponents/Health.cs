@@ -2,6 +2,7 @@
 {
     public enum Health
     {
+        None,
         Good,
         Warning,
         Danger

@@ -111,7 +111,7 @@ namespace Stryker.Core.Compiling
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(
-            MemoryStream ms,
+            Stream ms,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
