@@ -12,9 +12,13 @@ namespace Stryker.Core.ProjectComponents
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
         public ICollection<ProjectComponent> Children { get; set; } = new Collection<ProjectComponent>();
 
+        /// <summary>
+        /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
+        /// </summary>
+        /// <param name="syntaxTree"></param>
         public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
 
-        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.MutatedSyntaxTrees));
+        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.CompilationSyntaxTrees));
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
 
         public override IEnumerable<Mutant> Mutants

@@ -33,7 +33,13 @@ namespace Stryker.Core.ProjectComponents
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
 
+        /// <summary>
+        /// All syntax trees that should be a part of the compilation
+        /// </summary>
         public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
+        /// <summary>
+        /// Only those syntax trees that were changed by the mutation process
+        /// </summary>
         public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
