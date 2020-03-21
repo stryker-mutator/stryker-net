@@ -39,17 +39,22 @@ namespace Stryker.Core.ProjectComponents
 
         public override void Display(int depth)
         {
-            // do not display root node
-            if (!string.IsNullOrEmpty(Name))
+            // only walk this branch of the tree if there are MutatedSyntaxTrees, otherwise we have nothing to display.
+            if (MutatedSyntaxTrees.Any())
             {
-                DisplayFolder(depth, this);
-                depth += 2;
-            }
-            foreach (var child in Children)
-            {
-                child.DisplayFile = DisplayFile;
-                child.DisplayFolder = DisplayFolder;
-                child.Display(depth);
+                // do not display root node
+                if (!string.IsNullOrEmpty(Name))
+                {
+                    DisplayFolder(depth, this);
+                    depth += 2;
+                }
+
+                foreach (var child in Children)
+                {
+                    child.DisplayFile = DisplayFile;
+                    child.DisplayFolder = DisplayFolder;
+                    child.Display(depth);
+                }
             }
         }
     }
