@@ -42,14 +42,20 @@ namespace Stryker.Core.Initialisation
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
-            // generate a random namespace
-            projectInfo.MutantControlNameSpace = CodeInjection.HelperNamespace;
+
             // initial build
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
-                _logger.LogInformation("Building test project {0} ({1}/{2})", testProjects[i].ProjectFilePath, i + 1, projectInfo.TestProjectAnalyzerResults.Count());
-                _initialBuildProcess.InitialBuild(testProjects[i].TargetFramework == Framework.NetClassic, testProjects[i].ProjectFilePath, options.SolutionPath);
+                _logger.LogInformation(
+                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
+                    testProjects[i].ProjectFilePath, i + 1,
+                    projectInfo.TestProjectAnalyzerResults.Count());
+
+                _initialBuildProcess.InitialBuild(
+                    testProjects[i].TargetFramework == Framework.NetClassic,
+                    testProjects[i].ProjectFilePath,
+                    options.SolutionPath);
             }
 
             if (_testRunner == null)

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
@@ -26,7 +24,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
     public delegate bool UpdateHandler(IReadOnlyList<Mutant> mutants, TestListDescription ranTests,
         TestListDescription failedTests);
-    
+
     public class MutationTestProcessTests
     {
         private string CurrentDirectory { get; }
@@ -48,7 +46,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var inputFile = new FileLeaf()
             {
                 Name = "Recursive.cs",
-                SourceCode = SourceFile
+                SourceCode = SourceFile,
+                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
 
             var input = new MutationTestInput()
@@ -138,7 +137,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var inputFile = new FileLeaf()
             {
                 Name = "Recursive.cs",
-                SourceCode = SourceFile
+                SourceCode = SourceFile,
+                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
 
             var input = new MutationTestInput()
@@ -262,7 +262,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                             new FileLeaf
                             {
                                 Name = "SomeFile.cs",
-                                SourceCode = SourceFile
+                                SourceCode = SourceFile,
+                                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
                             }
                         }
                     }
@@ -364,7 +365,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             target.Test(options);
 
-            executorMock.Verify(x => x.Test(new List<Mutant> {mutant}, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
+            executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
@@ -433,7 +434,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Test(options);
 
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
-            executorMock.Verify(x => x.Test(new List<Mutant>{otherMutant}, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
+            executorMock.Verify(x => x.Test(new List<Mutant> { otherMutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
@@ -478,7 +479,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var testResult = target.Test(options);
 
-            executorMock.Verify(x => x.Test(new List<Mutant>{mutant}, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
+            executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);

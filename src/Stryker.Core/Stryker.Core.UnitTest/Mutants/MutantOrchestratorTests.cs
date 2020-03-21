@@ -2,8 +2,8 @@
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using System.Linq;
 using Stryker.Core.Options;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -518,7 +518,7 @@ namespace TestApp
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(4);
-            foreach(var mutant in mutants)
+            foreach (var mutant in mutants)
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
             }
@@ -540,7 +540,7 @@ namespace TestApp
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Fact]
         public void ShouldAddReturnDefaultToAsyncMethods()
@@ -610,7 +610,7 @@ namespace TestApp
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Theory]
         [InlineData("=> Value = \"Hello, World!\";")]
