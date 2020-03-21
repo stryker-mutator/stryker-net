@@ -89,7 +89,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesScanningProjectFolders(projectInfo.ProjectUnderTestAnalyzerResult, options);
             }
             projectInfo.ProjectContents = inputFiles;
 
@@ -99,7 +99,7 @@ namespace Stryker.Core.Initialisation
             return projectInfo;
         }
 
-        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult)
+        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -113,7 +113,7 @@ namespace Stryker.Core.Initialisation
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
 
-                inputFiles.Add(FindInputFiles(folder, projectUnderTestDir));
+                inputFiles.Add(FindInputFiles(folder, projectUnderTestDir, analyzerResult, options));
             }
 
             return inputFiles;
@@ -254,7 +254,29 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder = null)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        {
+            var rootFolderComposite = new FolderComposite
+            {
+                Name = Path.GetFileName(path),
+                FullPath = Path.GetFullPath(path),
+                RelativePath = Path.GetFileName(path),
+                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
+            };
+
+            CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
+            InjectMutantHelpers(rootFolderComposite, cSharpParseOptions);
+
+            rootFolderComposite.Add(
+                FindInputFiles(path, Path.GetDirectoryName(analyzerResult.ProjectFilePath), rootFolderComposite.RelativePath, cSharpParseOptions)
+            );
+            return rootFolderComposite;
+        }
+
+        /// <summary>
+        /// Recursively scans the given directory for files to mutate
+        /// </summary>
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder, CSharpParseOptions cSharpParseOptions)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -262,13 +284,13 @@ namespace Stryker.Core.Initialisation
             {
                 Name = lastPathComponent,
                 FullPath = Path.GetFullPath(path),
-                RelativePath = parentFolder is null ? lastPathComponent : Path.Combine(parentFolder, lastPathComponent),
+                RelativePath = Path.Combine(parentFolder, lastPathComponent),
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
 
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath, cSharpParseOptions));
             }
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
             {
@@ -277,14 +299,32 @@ namespace Stryker.Core.Initialisation
                 if (!file.EndsWith(".xaml.cs"))
                 {
                     var fileName = Path.GetFileName(file);
-                    folderComposite.Add(new FileLeaf()
+
+                    var fileLeaf = new FileLeaf()
                     {
                         SourceCode = _fileSystem.File.ReadAllText(file),
                         Name = _fileSystem.Path.GetFileName(file),
                         RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                         FullPath = file,
                         RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
-                    });
+                    };
+
+                    // Get the syntax tree for the source file
+                    var syntaxTree = CSharpSyntaxTree.ParseText(fileLeaf.SourceCode,
+                        path: fileLeaf.FullPath,
+                        options: cSharpParseOptions);
+
+                    // don't mutate auto generated code
+                    if (syntaxTree.IsGenerated())
+                    {
+                        _logger.LogDebug("Skipping auto-generated code file: {fileName}", fileLeaf.Name);
+                        folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
+                        continue; // Don't add the file to the folderComposite as we're not reporting on the file
+                    }
+
+                    fileLeaf.SyntaxTree = syntaxTree;
+
+                    folderComposite.Add(fileLeaf);
                 }
             }
 
