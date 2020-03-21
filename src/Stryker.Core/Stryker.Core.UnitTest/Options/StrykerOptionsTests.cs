@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldContainCorrectDefaults()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             options.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Options
         [InlineData("trace", LogEventLevel.Verbose)]
         public void Constructor_WithCorrectLoglevelArgument_ShouldAssignCorrectLogLevel(string argValue, LogEventLevel expectedLogLevel)
         {
-            var options = new StrykerOptions(logLevel: argValue);
+            var options = new StrykerProjectOptions(logLevel: argValue);
 
             options.LogOptions.ShouldNotBeNull();
             options.LogOptions.LogLevel.ShouldBe(expectedLogLevel);
@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new StrykerOptions(logLevel: logLevel);
+                new StrykerProjectOptions(logLevel: logLevel);
             });
 
             ex.Message.ShouldBe("The value for one of your settings is not correct. Try correcting or removing them.");
@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new StrykerOptions(logLevel: logLevel);
+                new StrykerProjectOptions(logLevel: logLevel);
             });
 
             ex.Details.ShouldNotBeNullOrEmpty();
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.Options
         public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
         {
             // Act
-            var result = new StrykerOptions(filesToExclude: new[] { fileToExclude });
+            var result = new StrykerProjectOptions(filesToExclude: new[] { fileToExclude });
 
             // Assert
             var pattern = result.FilePatterns.Last();
@@ -87,12 +87,12 @@ namespace Stryker.Core.UnitTest.Options
             var key = Environment.GetEnvironmentVariable(strykerDashboardApiKey);
             try
             {
-                var options = new StrykerOptions();
+                var options = new StrykerProjectOptions();
                 Environment.SetEnvironmentVariable(strykerDashboardApiKey, string.Empty);
 
                 var ex = Assert.Throws<StrykerInputException>(() =>
                 {
-                    new StrykerOptions(reporters: new string[] { "Dashboard" });
+                    new StrykerProjectOptions(reporters: new string[] { "Dashboard" });
                 });
                 ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DashboardUrl}");
                 ex.Message.ShouldContain($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
@@ -108,7 +108,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(gitSource: "");
+                var options = new StrykerProjectOptions(gitSource: "");
             });
             ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
         }
@@ -116,22 +116,22 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldValidateOptimisationMode()
         {
-            var options = new StrykerOptions(coverageAnalysis: "perTestInIsolation");
+            var options = new StrykerProjectOptions(coverageAnalysis: "perTestInIsolation");
             options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest).ShouldBeTrue();
             options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest).ShouldBeTrue();
 
-            options = new StrykerOptions();
+            options = new StrykerProjectOptions();
             options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest).ShouldBeTrue();
 
-            options = new StrykerOptions(coverageAnalysis: "all");
+            options = new StrykerProjectOptions(coverageAnalysis: "all");
             options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants).ShouldBeTrue();
 
-            options = new StrykerOptions(coverageAnalysis: "off");
+            options = new StrykerProjectOptions(coverageAnalysis: "off");
             options.Optimizations.HasFlag(OptimizationFlags.NoOptimization).ShouldBeTrue();
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new StrykerOptions(coverageAnalysis: "gibberish");
+                new StrykerProjectOptions(coverageAnalysis: "gibberish");
             });
             ex.Details.ShouldBe($"Incorrect coverageAnalysis option gibberish. The options are [off, all, perTest or perTestInIsolation].");
         }
@@ -145,7 +145,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(thresholdHigh: thresholdHigh, thresholdLow: 60, thresholdBreak: 60);
+                var options = new StrykerProjectOptions(thresholdHigh: thresholdHigh, thresholdLow: 60, thresholdBreak: 60);
             });
             ex.Details.ShouldBe(message);
         }
@@ -153,7 +153,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldValidateThresholds()
         {
-            var options = new StrykerOptions(thresholdHigh: 60, thresholdLow: 60, thresholdBreak: 50);
+            var options = new StrykerProjectOptions(thresholdHigh: 60, thresholdLow: 60, thresholdBreak: 50);
             options.Thresholds.High.ShouldBe(60);
             options.Thresholds.Low.ShouldBe(60);
             options.Thresholds.Break.ShouldBe(50);
@@ -164,7 +164,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(testRunner: "gibberish");
+                var options = new StrykerProjectOptions(testRunner: "gibberish");
             });
             ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
         }

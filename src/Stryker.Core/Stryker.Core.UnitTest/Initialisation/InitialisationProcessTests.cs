@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new TestRunResult(true)); // testrun is successful
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()))
                 .Returns(new ProjectInfo
                 {
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -64,11 +64,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
 
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             var result = target.Initialize(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()), Times.Once);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null));
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>())).Returns(
                 new ProjectInfo
                 {
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
@@ -120,12 +120,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             target.Initialize(options);
             Assert.Throws<StrykerInputException>(() => target.InitialTest(options, out var nbTests));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
         }

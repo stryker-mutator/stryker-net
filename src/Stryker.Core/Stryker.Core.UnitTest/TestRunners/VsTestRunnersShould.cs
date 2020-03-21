@@ -316,7 +316,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 });
         }
 
-        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
+        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerProjectOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
         {
             var mockVsTest = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockVsTest.Setup(x => x.StartSession());
@@ -346,7 +346,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using (var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset))
             {
-                var options = new StrykerOptions();
+                var options = new StrykerProjectOptions();
                 BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
                 // make sure we have discovered first and second tests
                 runner.DiscoverNumberOfTests().ShouldBe(_testCases.Count);
@@ -356,7 +356,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunTests()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -371,7 +371,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void DetectTestsErrors()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
             using (var endProcess = new EventWaitHandle(false, EventResetMode.AutoReset))
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.NoOptimization);
@@ -385,7 +385,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void DetectTimeout()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
             using (var endProcess = new EventWaitHandle(false, EventResetMode.AutoReset))
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.CoverageBasedTest);
@@ -404,7 +404,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void AbortOnError()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -424,7 +424,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void CaptureCoverageWhenSkippingUncovered()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -441,7 +441,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void IdentifyNonCoveredMutants()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -463,7 +463,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunOnlyUsefulTest()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -487,7 +487,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void NotRunTestWhenNotCovered()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -515,11 +515,11 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunTestsSimultaneouslyWhenPossible()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
+                var strykerOptions = new StrykerProjectOptions(fileSystem: _fileSystem, abortTestOnFail: false);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
                 _mutants.Add(new FileLeaf{Mutants = new []{new Mutant{Id = 2}, new Mutant{Id = 3}}});
@@ -546,7 +546,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunRelevantTestsOnStaticWhenPerTestCoverage()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {

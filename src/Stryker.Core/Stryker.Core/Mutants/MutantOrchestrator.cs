@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutantOrchestrator : IMutantOrchestrator
     {
-        private readonly StrykerOptions _options;
+        private readonly StrykerProjectOptions _options;
         private ICollection<Mutant> Mutants { get; set; }
         private int MutantCount { get; set; }
         private IEnumerable<IMutator> Mutators { get; }
@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants
             !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerProjectOptions options = null)
         {
             _options = options;
             Mutators = mutators ?? new List<IMutator>()

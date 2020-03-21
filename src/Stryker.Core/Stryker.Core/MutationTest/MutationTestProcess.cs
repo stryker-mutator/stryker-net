@@ -9,6 +9,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
@@ -21,22 +22,23 @@ namespace Stryker.Core.MutationTest
 {
     public interface IMutationTestProcess
     {
+        MutationTestInput Input { get; }
         void Mutate();
-        StrykerRunResult Test(StrykerOptions options);
+        StrykerRunResult Test(StrykerOptions options, IEnumerable<Mutant> mutantsToTest);
         void GetCoverage();
     }
 
     public class MutationTestProcess : IMutationTestProcess
     {
+        public MutationTestInput Input { get; }
         private readonly ICompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
-        private readonly MutationTestInput _input;
         private readonly ILogger _logger;
         private readonly IEnumerable<IMutantFilter> _mutantFilters;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
-        private readonly StrykerOptions _options;
+        private readonly StrykerProjectOptions _options;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -44,10 +46,10 @@ namespace Stryker.Core.MutationTest
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
-            StrykerOptions options = null,
+            StrykerProjectOptions options = null,
             IEnumerable<IMutantFilter> mutantFilters = null)
         {
-            _input = mutationTestInput;
+            Input = mutationTestInput;
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
@@ -68,7 +70,7 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             _logger.LogInformation("Generating mutants.");
-            var preprocessorSymbols = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
+            var preprocessorSymbols = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.DefineConstants;
 
             _logger.LogDebug("Injecting helpers into assembly.");
             var mutatedSyntaxTrees = new List<SyntaxTree>();
@@ -79,7 +81,7 @@ namespace Stryker.Core.MutationTest
                     options: cSharpParseOptions));
             }
 
-            foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
+            foreach (var file in Input.ProjectInfo.ProjectContents.GetAllFiles())
             {
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
@@ -117,16 +119,16 @@ namespace Stryker.Core.MutationTest
                 file.Mutants = allMutants;
             }
 
-            _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
+            _logger.LogDebug("{0} mutants created", Input.ProjectInfo.ProjectContents.Mutants.Count());
 
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
                 var compileResult = _compilingProcess.Compile(mutatedSyntaxTrees, ms, _options.DevMode);
 
-                foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+                foreach (var testProject in Input.ProjectInfo.TestProjectAnalyzerResults)
                 {
-                    var injectionPath = _input.ProjectInfo.GetInjectionPath(testProject);
+                    var injectionPath = Input.ProjectInfo.GetInjectionPath(testProject);
                     if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
                         !_fileSystem.File.Exists(injectionPath))
                     {
@@ -146,7 +148,7 @@ namespace Stryker.Core.MutationTest
                 // if a rollback took place, mark the rollbacked mutants as status:BuildError
                 if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
                 {
-                    foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
+                    foreach (var mutant in Input.ProjectInfo.ProjectContents.Mutants
                         .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                     {
                         // Ignore compilation errors if the mutation is skipped anyways.
@@ -161,7 +163,7 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
+            var skippedMutantGroups = Input.ProjectInfo.ProjectContents.GetAllFiles()
                 .SelectMany(f => f.Mutants)
                 .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
                 .OrderBy(x => x.Key);
@@ -172,39 +174,14 @@ namespace Stryker.Core.MutationTest
                     skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
             }
 
-            _logger.LogInformation("{0} mutants ready for test",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
-
-            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
+            _logger.LogInformation("{0} mutants detected in {1}", Input.ProjectInfo.ProjectContents.TotalMutants.Count(), Input.ProjectInfo.ProjectContents.Name);
         }
 
-        public StrykerRunResult Test(StrykerOptions options)
+        public StrykerRunResult Test(StrykerOptions options, IEnumerable<Mutant> mutantsToTest)
         {
-            var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
-
-            if (!mutantsNotRun.Any())
-            {
-                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
-                {
-                    _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
-                }
-                if (_input.ProjectInfo.ProjectContents.Mutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
-                {
-                    _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
-                }
-                if (!_input.ProjectInfo.ProjectContents.Mutants.Any())
-                {
-                    _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
-                    return new StrykerRunResult(options, double.NaN);
-                }
-            }
-
-            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
             if (mutantsToTest.Any())
             {
-                var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
-
-                _reporter.OnStartMutantTestRun(mutantsNotRun, _mutationTestExecutor.TestRunner.Tests);
+                var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
                 Parallel.ForEach(
                     mutantGroups,
@@ -212,7 +189,7 @@ namespace Stryker.Core.MutationTest
                     mutants =>
                     {
                         var testMutants = new HashSet<Mutant>();
-                        _mutationTestExecutor.Test(mutants, _input.TimeoutMs, 
+                        _mutationTestExecutor.Test(mutants, Input.TimeoutMs, 
                             (testedMutants, failedTests, ranTests, timedOutTest) => 
                             {
                                 var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
@@ -247,11 +224,9 @@ namespace Stryker.Core.MutationTest
                     });
             }
 
-            _reporter.OnAllMutantsTested(_input.ProjectInfo.ProjectContents);
-
             _mutationTestExecutor.TestRunner.Dispose();
 
-            return new StrykerRunResult(options, _input.ProjectInfo.ProjectContents.GetMutationScore());
+            return new StrykerRunResult(options, Input.ProjectInfo.ProjectContents.GetMutationScore());
         }
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
@@ -295,8 +270,8 @@ namespace Stryker.Core.MutationTest
 
         public void GetCoverage()
         {
-            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
-            var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var mutantsToScan = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
             foreach(var mutant in mutantsToScan)
             {
                 mutant.CoveringTests = new TestListDescription(null);

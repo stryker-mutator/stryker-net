@@ -44,10 +44,10 @@ namespace Stryker.Core.Reporters
 
         private async Task<string> PublishReport(string json)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{_options.ProjectVersion}");
-            if (_options.ModuleName != null)
+            var url = new Uri($"{_options.DashboardReporterOptions.DashboardUrl}/api/reports/{_options.DashboardReporterOptions.ProjectName}/{_options.DashboardReporterOptions.ProjectVersion}");
+            if (_options.DashboardReporterOptions.ModuleName != null)
             {
-                url = new Uri(url, $"?module={_options.ModuleName}");
+                url = new Uri(url, $"?module={_options.DashboardReporterOptions.ModuleName}");
             }
 
             using (var httpclient = new HttpClient())
@@ -56,7 +56,7 @@ namespace Stryker.Core.Reporters
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
-                requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+                requestMessage.Headers.Add("X-Api-Key", _options.DashboardReporterOptions.DashboardApiKey);
 
                 var response = await httpclient.SendAsync(requestMessage);
 
@@ -87,7 +87,7 @@ namespace Stryker.Core.Reporters
             // Method to implement the interface
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // Method to implement the interface
         }

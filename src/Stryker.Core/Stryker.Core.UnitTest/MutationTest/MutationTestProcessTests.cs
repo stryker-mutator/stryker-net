@@ -112,7 +112,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     Success = true
                 });
-            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
+            var options = new StrykerProjectOptions(devMode: true, excludedMutations: new string[] { });
 
 
             var target = new MutationTestProcess(input,
@@ -204,11 +204,11 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
             mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
-            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<FileLeaf>(), It.IsAny<StrykerOptions>()))
-                .Returns((IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions o) => mutants.Take(1));
+            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<FileLeaf>(), It.IsAny<StrykerProjectOptions>()))
+                .Returns((IEnumerable<Mutant> mutants, FileLeaf file, StrykerProjectOptions o) => mutants.Take(1));
 
 
-            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
+            var options = new StrykerProjectOptions(devMode: true, excludedMutations: new string[] { });
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -293,7 +293,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     Success = true
                 });
 
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
@@ -355,7 +355,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
-            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+            var options = new StrykerProjectOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -422,7 +422,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
-            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+            var options = new StrykerProjectOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -469,7 +469,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
-            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+            var options = new StrykerProjectOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -515,7 +515,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
-            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+            var options = new StrykerProjectOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -563,7 +563,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
-            var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
+            var options = new StrykerProjectOptions(fileSystem: new MockFileSystem(), basePath: basePath);
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,

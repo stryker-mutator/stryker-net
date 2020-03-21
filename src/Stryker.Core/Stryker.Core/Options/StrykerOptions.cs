@@ -41,12 +41,7 @@ namespace Stryker.Core.Options
         public OptimizationFlags Optimizations { get; }
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
-
-        public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
-        public string DashboardApiKey { get; }
-        public string ProjectName { get; }
-        public string ModuleName { get; }
-        public string ProjectVersion { get; }
+        public DashboardReporterOptions DashboardReporterOptions { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -71,7 +66,7 @@ namespace Stryker.Core.Options
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
-            string[] filesToExclude = null,
+            string[] filePatterns = null,
             string[] mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
@@ -100,7 +95,7 @@ namespace Stryker.Core.Options
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
             Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : 0) | (disableSimultaneousTesting ? OptimizationFlags.DisableTestMix : 0);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
-            FilePatterns = ValidateFilePatterns(mutate, filesToExclude);
+            FilePatterns = ValidateFilePatterns(mutate, filePatterns);
             TestRunner = ValidateTestRunner(testRunner);
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
@@ -108,14 +103,42 @@ namespace Stryker.Core.Options
             DiffEnabled = diff;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
-            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+            DashboardReporterOptions = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
-        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
+        public StrykerProjectOptions ToProjectOptions(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
         {
+            return new StrykerProjectOptions(
+                basePath: basePath,
+                outputPath: OutputPath,
+                reporters: Reporters,
+                dashboardReporterOptions: DashboardReporterOptions,
+                projectUnderTestNameFilter: ProjectUnderTestNameFilter,
+                projectUnderTest: projectUnderTest,
+                additionalTimeoutMS: AdditionalTimeoutMS,
+                excludedMutations: ExcludedMutations,
+                ignoredMethods: IgnoredMethods,
+                devMode: DevMode,
+                logOptions: LogOptions,
+                concurrentTestRunners: ConcurrentTestrunners,
+                optimizationMode: OptimizationMode,
+                optimizations: Optimizations,
+                testRunner: TestRunner,
+                solutionPath: SolutionPath,
+                thresholds: Thresholds,
+                filePatterns: FilePatterns,
+                languageVersion: LanguageVersion,
+                diff: DiffEnabled,
+                gitSource: GitSource,
+                testProjects: testProjects);
+        }
+
+        private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
+        {
+            var defaultOptions = new DashboardReporterOptions(null, null, null, null);
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, null, null, null);
+                return defaultOptions;
             }
 
             var errorStrings = new StringBuilder();
@@ -128,7 +151,7 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
+                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {defaultOptions.DashboardUrl}");
                 }
             }
 
@@ -142,7 +165,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, projectName, moduleName, projectVersion);
+            return new DashboardReporterOptions(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
         private string ValidateGitSource(string gitSource)

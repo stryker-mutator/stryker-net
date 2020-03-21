@@ -17,7 +17,7 @@ namespace Stryker.Core.MutantFilters
         private const string _displayName = "method filter";
         public string DisplayName => _displayName;
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerProjectOptions options)
         {
             if (!options.IgnoredMethods.Any())
             {
@@ -27,7 +27,7 @@ namespace Stryker.Core.MutantFilters
             return mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
         }
 
-        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options)
+        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerProjectOptions options)
         {
             // Check if the current node is an invocation and the expression is a member
             // This will also ignore invokable properties like `Func<bool> MyProp { get;}`

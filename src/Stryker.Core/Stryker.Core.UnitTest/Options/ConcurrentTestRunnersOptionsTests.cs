@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(maxConcurrentTestRunners: 0);
+                var options = new StrykerProjectOptions(maxConcurrentTestRunners: 0);
             });
             ex.Details.ShouldBe("Amount of maximum concurrent testrunners must be greater than zero.");
         }
@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var mockLogger = new MockLogger();
 
-            var options = new StrykerOptions(logger: mockLogger, maxConcurrentTestRunners: given);
+            var options = new StrykerProjectOptions(logger: mockLogger, maxConcurrentTestRunners: given);
             options.ConcurrentTestrunners.ShouldBe(expected);
 
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);

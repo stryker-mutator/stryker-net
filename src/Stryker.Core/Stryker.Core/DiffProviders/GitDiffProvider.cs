@@ -8,9 +8,9 @@ namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
-        private readonly StrykerOptions _options;
+        private readonly StrykerProjectOptions _options;
 
-        public GitDiffProvider(StrykerOptions options)
+        public GitDiffProvider(StrykerProjectOptions options)
         {
             _options = options;
         }

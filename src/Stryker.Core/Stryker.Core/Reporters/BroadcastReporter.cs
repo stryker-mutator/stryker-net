@@ -26,11 +26,11 @@ namespace Stryker.Core.Reporters
             }
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             foreach (var reporter in Reporters)
             {
-                reporter.OnStartMutantTestRun(mutantsToBeTested, testDescriptions);
+                reporter.OnStartMutantTestRun(mutantsToBeTested);
             }
         }
 

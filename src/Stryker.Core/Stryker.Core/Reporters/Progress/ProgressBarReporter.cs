@@ -28,10 +28,10 @@ namespace Stryker.Core.Reporters.Progress
             _stopWatch = stopWatch;
         }
 
-        public void ReportInitialState(int totalNumberOfTests)
+        public void ReportInitialState(int totalNumberOfMutants)
         {
             _stopWatch.Start();
-            _totalNumberOfMutants = totalNumberOfTests;
+            _totalNumberOfMutants = totalNumberOfMutants;
 
             _testsProgressLogger.StartLog(LoggingFormat,
                                         GenerateProgressBar(0),

@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldNotMutateUnchangedFiles()
         {
-            var options = new StrykerOptions(diff: true);
+            var options = new StrykerProjectOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldOnlyMutateChangedFiles()
         {
-            var options = new StrykerOptions(diff: true);
+            var options = new StrykerProjectOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -60,7 +60,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldMutateAllFilesWhenTurnedOff()
         {
-            var options = new StrykerOptions(diff: false);
+            var options = new StrykerProjectOptions(diff: false);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldMutateAllFilesWhenATestHasBeenChanged()
         {
             string testProjectPath = "C:/MyTests";
-            var options = new StrykerOptions(diff: false);
+            var options = new StrykerProjectOptions(diff: false);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             // If a file inside the test project is changed, a test has been changed
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;

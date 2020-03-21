@@ -17,7 +17,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(StrykerOptions options);
+        ProjectInfo ResolveInput(StrykerProjectOptions options);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(StrykerOptions options)
+        public ProjectInfo ResolveInput(StrykerProjectOptions options)
         {
             var projectInfo = new ProjectInfo();
 
@@ -66,13 +66,14 @@ namespace Stryker.Core.Initialisation
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
+                // TODO: the test projects are loaded double here when using solution strategy
                 testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
             }
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
             // Determine project under test
 
-            projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
+            projectUnderTest = options.ProjectUnderTest ?? FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
@@ -363,7 +364,7 @@ namespace Stryker.Core.Initialisation
                 });
         }
 
-        private void ValidateResult(ProjectInfo projectInfo, StrykerOptions options)
+        private void ValidateResult(ProjectInfo projectInfo, StrykerProjectOptions options)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit

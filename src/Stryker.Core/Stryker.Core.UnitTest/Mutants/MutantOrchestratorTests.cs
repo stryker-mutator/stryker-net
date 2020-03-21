@@ -626,7 +626,7 @@ static TestClass() " + source;
 static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}";
 
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new MutantOrchestrator(options: new StrykerProjectOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);

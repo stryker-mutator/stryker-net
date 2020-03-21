@@ -17,7 +17,7 @@ namespace Stryker.Core.TestRunners
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public ITestRunner Create(StrykerProjectOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _logger.LogInformation("Initializing test runners ({0})", options.TestRunner);
             ITestRunner testRunner;

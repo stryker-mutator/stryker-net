@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var filteredMutants = sut.FilterMutants(
                 new[] { mutant },
                 null,
-                new StrykerOptions(excludedMutations: new[] { excludedMutator.ToString() }));
+                new StrykerProjectOptions(excludedMutations: new[] { excludedMutator.ToString() }));
 
             // Assert
             if (skipped)

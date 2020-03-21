@@ -247,7 +247,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardReporterOptions.DashboardUrl}",
             DefaultValue = null,
             JsonKey = "dashboard-api-key"
         };

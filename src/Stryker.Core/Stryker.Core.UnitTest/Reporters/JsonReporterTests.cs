@@ -105,7 +105,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+            var report = JsonReport.Build(new StrykerProjectOptions(), folderComponent);
 
             report.ShouldSatisfyAllConditions(
                 () => report.Thresholds.ShouldContainKey("high"),
@@ -117,7 +117,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+            var report = JsonReport.Build(new StrykerProjectOptions(), folderComponent);
 
             report.Files.Count.ShouldBeGreaterThan(0);
         }
@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReport_BuildReportReturnsSingletonJsonReport()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var options = new StrykerOptions();
+            var options = new StrykerProjectOptions();
 
             var firstReport = JsonReport.Build(options, folderComponent);
             var secondReport = JsonReport.Build(options, folderComponent);
@@ -138,7 +138,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerProjectOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
