@@ -41,7 +41,7 @@ namespace Stryker.Core.InjectedHelpers
 
         private static string GetRandomNamespace()
         {
-            // Create a string of characters, numbers, special characters that allowed in the password  
+            // Create a string of characters and numbers allowed in the namespace  
             const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
 
