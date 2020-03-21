@@ -105,7 +105,7 @@ namespace Stryker.Core.MutationTest
 
             CompileMutations();
 
-            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
+            var skippedMutantGroups = Input.ProjectInfo.ProjectContents.GetAllFiles()
                 .SelectMany(f => f.Mutants)
                 .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
                 .OrderBy(x => x.Key);
@@ -115,11 +115,6 @@ namespace Stryker.Core.MutationTest
                 _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
                     skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
             }
-
-            _logger.LogInformation("{0} mutants ready for test",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
-
-            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
         private void CompileMutations()
@@ -127,7 +122,7 @@ namespace Stryker.Core.MutationTest
             using (var ms = new MemoryStream())
             {
                 // compile the mutated syntax trees
-                var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, _options.DevMode);
+                var compileResult = _compilingProcess.Compile(Input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, _options.DevMode);
 
                 foreach (var testProject in Input.ProjectInfo.TestProjectAnalyzerResults)
                 {
@@ -228,7 +223,6 @@ namespace Stryker.Core.MutationTest
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }
 
-            _logger.LogInformation("Analyze coverage info to test multiple mutants per session.");
             var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // we deal with mutants needing full testing first

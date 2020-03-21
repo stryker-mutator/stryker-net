@@ -101,7 +101,7 @@ namespace Stryker.Core.Initialisation
             return projectInfo;
         }
 
-        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -121,9 +121,9 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
-            var inputFiles = new FolderComposite();
+            var inputFiles = new FolderComposite() { Name = analyzerResult.ProjectFilePath };
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
             var generatedAssemblyInfo = (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
@@ -196,7 +196,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var preprocessorSymbols = analyzerResult.DefineConstants;
 
@@ -256,7 +256,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var rootFolderComposite = new FolderComposite
             {
@@ -443,6 +443,29 @@ namespace Stryker.Core.Initialisation
                     var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
                     throw new StrykerInputException(message);
                 });
+        }
+
+        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerProjectOptions options)
+        {
+            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
+            // we have detected usage of mstest V1 and should exit
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
+                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
+            {
+                throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
+                    @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
+            }
+
+            // if IsTestProject true property not found and project is full framework, force vstest runner
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
+                options.TestRunner != TestRunner.VsTest &&
+                (!testProject.Properties.ContainsKey("IsTestProject") ||
+                (testProject.Properties.ContainsKey("IsTestProject") &&
+                !bool.Parse(testProject.Properties["IsTestProject"])))))
+            {
+                _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
+                options.TestRunner = TestRunner.VsTest;
+            }
         }
 
         private void ValidateResult(ProjectInfo projectInfo, StrykerProjectOptions options)
