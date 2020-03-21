@@ -7,7 +7,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCo
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -96,7 +95,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 },
                 ProjectContents = _mutants
             };
-            CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
+            //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
