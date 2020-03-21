@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutators
             {SyntaxKind.MultiplyAssignmentExpression, new List<SyntaxKind> { SyntaxKind.DivideAssignmentExpression } },
             {SyntaxKind.DivideAssignmentExpression, new List<SyntaxKind> { SyntaxKind.MultiplyAssignmentExpression } },
             {SyntaxKind.ModuloAssignmentExpression, new List<SyntaxKind> { SyntaxKind.MultiplyAssignmentExpression } },
-            {SyntaxKind.AndAssignmentExpression, new List<SyntaxKind> { SyntaxKind.OrAssignmentExpression } },
+            {SyntaxKind.AndAssignmentExpression, new List<SyntaxKind> { SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
             {SyntaxKind.OrAssignmentExpression, new List<SyntaxKind> { SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
             {SyntaxKind.ExclusiveOrAssignmentExpression, new List<SyntaxKind> { SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression } },
             {SyntaxKind.LeftShiftAssignmentExpression, new List<SyntaxKind> { SyntaxKind.RightShiftAssignmentExpression } },
