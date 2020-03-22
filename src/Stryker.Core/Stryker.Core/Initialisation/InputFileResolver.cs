@@ -65,7 +65,6 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            _logger.LogInformation("Identifying project to mutate.");
             var testProjectAnalyzerResults = new List<ProjectAnalyzerResult>();
             foreach (var testProjectFile in testProjectFiles)
             {

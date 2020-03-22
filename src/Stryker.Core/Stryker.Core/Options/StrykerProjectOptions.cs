@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerProjectOptions
+    public class StrykerProjectOptions : IStrykerOptions
     {
         public string BasePath { get; }
         public string SolutionPath { get; }

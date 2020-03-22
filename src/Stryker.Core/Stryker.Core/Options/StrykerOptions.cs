@@ -16,7 +16,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerOptions
+    public class StrykerOptions : IStrykerOptions
     {
         public string BasePath { get; }
         public string SolutionPath { get; }
@@ -106,10 +106,10 @@ namespace Stryker.Core.Options
             DashboardReporterOptions = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
-        public StrykerProjectOptions ToProjectOptions(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
+        public StrykerProjectOptions ToProjectOptions(string basePath = null, string projectUnderTest = null, IEnumerable<string> testProjects = null)
         {
             return new StrykerProjectOptions(
-                basePath: basePath,
+                basePath: basePath ?? BasePath,
                 outputPath: OutputPath,
                 reporters: Reporters,
                 dashboardReporterOptions: DashboardReporterOptions,
@@ -130,7 +130,7 @@ namespace Stryker.Core.Options
                 languageVersion: LanguageVersion,
                 diff: DiffEnabled,
                 gitSource: GitSource,
-                testProjects: testProjects);
+                testProjects: testProjects ?? TestProjects);
         }
 
         private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)

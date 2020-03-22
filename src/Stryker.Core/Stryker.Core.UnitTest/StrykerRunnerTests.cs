@@ -4,7 +4,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
+using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
@@ -12,12 +12,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
-    public class StrykerTests
+    public class StrykerRunnerTests
     {
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
         {
-            var initialisationMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
+            var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
@@ -37,23 +37,27 @@ namespace Stryker.Core.UnitTest
                     }
                 },
             };
-            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerProjectOptions>())).Returns(mutationTestInput);
-            var options = new StrykerProjectOptions(basePath: "c:/test", fileSystem: fileSystemMock);
-            var nbTests = 0;
-            initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);
+            var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
 
+            projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
+                .Returns(new List<IMutationTestProcess>()
+                {
+                    mutationTestProcessMock.Object
+                });
+
+            mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.Mutate());
             mutationTestProcessMock.Setup(x => x.GetCoverage());
-            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerProjectOptions>()))
+            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerProjectOptions>(), It.IsAny<double>()));
 
-            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
+            var target = new StrykerRunner(projectOrchestratorMock.Object, fileSystemMock);
 
             target.RunMutationTest(options);
 
-            initialisationMock.Verify(x => x.Initialize(It.IsAny<StrykerProjectOptions>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(options, It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.Mutate(), Times.Once);
-            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<StrykerProjectOptions>()), Times.Once);
+            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
         }
     }
 }

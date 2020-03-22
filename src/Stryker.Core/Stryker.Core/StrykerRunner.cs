@@ -26,14 +26,16 @@ namespace Stryker.Core
 
     public class StrykerRunner : IStrykerRunner
     {
-        private IReporter _reporter;
-        private ICollection<IMutationTestProcess> _mutationTestProcesses;
+        private IReporter _reporters;
+        private readonly IProjectOrchestrator _projectOrchestrator;
+        private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private readonly IFileSystem _fileSystem;
+        private ILogger _logger;
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, ICollection<IMutationTestProcess> mutationTestProcess = null, IFileSystem fileSystem = null)
+        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IFileSystem fileSystem = null)
         {
-            //_initialisationProcess = initialisationProcess;
-            _mutationTestProcesses = mutationTestProcess ?? new List<IMutationTestProcess>();
+            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
+            _mutationTestProcesses = new List<IMutationTestProcess>();
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
@@ -52,40 +54,20 @@ namespace Stryker.Core
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Create output dir with gitignore
-            _fileSystem.Directory.CreateDirectory(options.OutputPath);
-            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
-            {
-                file.WriteLine("*");
-            }
+            CreateOutputDirWithGitignore(options);
 
             // setup logging
             ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
-            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
 
-            logger.LogDebug("Stryker started with options: {0}",
+            _logger.LogDebug("Stryker started with options: {0}",
                 JsonConvert.SerializeObject(options, new StringEnumConverter()));
 
-            _reporter = ReporterFactory.Create(options);
+            _reporters = ReporterFactory.Create(options);
 
             try
             {
-                if (options.SolutionPath != null)
-                {
-                    var manager = new AnalyzerManager(options.SolutionPath);
-
-                    var projects = manager.Projects.Where(x => !x.Value.ProjectFile.PackageReferences.Any(y => y.Name.ToLower().Contains("test"))).Select(x => x.Value).ToList();
-                    var testProjects = manager.Projects.Select(x => x.Value).Except(projects).Select(x => x.Build().Results.FirstOrDefault()).ToList();
-                    foreach (var project in projects)
-                    {
-                        var relatedTestProjects = testProjects.Where(x => x.ProjectReferences.Any(y => y == project.ProjectFile.Path)).ToList();
-                        if (relatedTestProjects.Any())
-                        {
-                            PrepareProject(options.ToProjectOptions(project.ProjectFile.Path, project.ProjectFile.Path, relatedTestProjects.Select(x => x.ProjectFilePath)));
-                        }
-                    }
-                }
+                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, _reporters).ToList();
 
                 var rootComponent = new FolderComposite();
 
@@ -94,19 +76,18 @@ namespace Stryker.Core
                     rootComponent.Add(project.Input.ProjectInfo.ProjectContents);
                 }
 
-
-                logger.LogInformation("{0} mutants ready for test", rootComponent.TotalMutants.Count());
+                _logger.LogInformation("{0} mutants ready for test", rootComponent.TotalMutants.Count());
 
                 if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
-                    logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
-                    // coverage
+                    _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+
                     foreach (var project in _mutationTestProcesses)
                     {
                         project.GetCoverage();
                     }
                 }
-                _reporter.OnMutantsCreated(rootComponent);
+                _reporters.OnMutantsCreated(rootComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
@@ -115,63 +96,53 @@ namespace Stryker.Core
                 {
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                     {
-                       logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
+                        _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
                     }
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                     {
-                        logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
+                        _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
                     }
                     if (!allMutants.Any())
                     {
-                        logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                        _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                         return new StrykerRunResult(options, double.NaN);
                     }
                 }
 
                 var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
-                _reporter.OnStartMutantTestRun(mutantsNotRun);
+                _reporters.OnStartMutantTestRun(mutantsNotRun);
 
                 foreach (var project in _mutationTestProcesses)
                 {
                     // test mutations
-                    project.Test(options, project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
-                _reporter.OnAllMutantsTested(rootComponent);
+                _reporters.OnAllMutantsTested(rootComponent);
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
             catch (Exception ex) when (!(ex is StrykerInputException))
             {
-                logger.LogError(ex, "An error occurred during the mutation test run ");
+                _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
             finally
             {
                 // log duration
                 stopwatch.Stop();
-                logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+                _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
             }
         }
 
-        private void PrepareProject(StrykerProjectOptions options)
+        private void CreateOutputDirWithGitignore(StrykerOptions options)
         {
-            // initialize
-            var initialisationProcess = new InitialisationProcess();
-            var input = initialisationProcess.Initialize(options);
-
-            var process = new MutationTestProcess(
-                mutationTestInput: input,
-                reporter: _reporter,
-                mutationTestExecutor: new MutationTestExecutor(input.TestRunner),
-                options: options);
-            _mutationTestProcesses.Add(process);
-
-            // initial test
-            input.TimeoutMs = initialisationProcess.InitialTest(options, out var nbTests);
-
-            // mutate
-            process.Mutate();
+            _fileSystem.Directory.CreateDirectory(options.OutputPath);
+            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
+            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
+            {
+                file.WriteLine("*");
+            }
         }
     }
 }

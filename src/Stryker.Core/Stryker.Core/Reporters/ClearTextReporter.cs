@@ -15,9 +15,9 @@ namespace Stryker.Core.Reporters
     public class ClearTextReporter : IReporter
     {
         private readonly IChalk _chalk;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, IChalk chalk = null)
+        public ClearTextReporter(IStrykerOptions strykerOptions, IChalk chalk = null)
         {
             _options = strykerOptions;
             _chalk = chalk ?? new Chalk();

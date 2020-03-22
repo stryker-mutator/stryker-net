@@ -10,11 +10,11 @@ namespace Stryker.Core.Reporters.Json
 {
     public partial class JsonReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly IChalk _chalk;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
+        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();

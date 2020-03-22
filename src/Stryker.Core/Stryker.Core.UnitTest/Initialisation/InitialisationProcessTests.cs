@@ -123,7 +123,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerProjectOptions();
 
             target.Initialize(options);
-            Assert.Throws<StrykerInputException>(() => target.InitialTest(options, out var nbTests));
+            Assert.Throws<StrykerInputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();

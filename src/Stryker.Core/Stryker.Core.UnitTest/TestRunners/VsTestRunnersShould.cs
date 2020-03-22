@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
         private readonly Mutant _otherMutant;
-        private readonly FolderComposite _mutants;
+        private readonly FolderComposite _projectContents;
         private readonly Uri _executorUri;
         private readonly TestProperty _coverageProperty;
 
@@ -77,8 +77,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             _coverageProperty = TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
-            _mutants = content;
-            _mutants.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
+            _projectContents = content;
+            _projectContents.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo()
             {
                 TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
@@ -93,7 +93,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
                     TargetFrameworkVersionString = "toto"
                 },
-                ProjectContents = _mutants
+                ProjectContents = _projectContents
             };
             //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -521,10 +521,10 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerProjectOptions(fileSystem: _fileSystem, abortTestOnFail: false);
+                var strykerOptions = new StrykerOptions(abortTestOnFail: false);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
-                _mutants.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
+                _projectContents.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 
@@ -534,11 +534,11 @@ namespace Stryker.Core.UnitTest.TestRunners
                     mutant.CoveringTests = new TestListDescription(null);
                 }
                 var mockReporter = new Mock<IReporter>();
-                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions);
+                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions.ToProjectOptions());
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
                 tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);
-                tester.Test(strykerOptions);
+                tester.Test(_projectContents.Mutants);
 
                 _mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
                 _otherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);

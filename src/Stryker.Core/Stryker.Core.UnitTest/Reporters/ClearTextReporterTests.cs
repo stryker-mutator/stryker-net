@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
             chalkMock.Setup(x => x.DarkGray(It.IsAny<string>())).Callback((string text) => { output += text; });
             chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
 
-            var target = new ClearTextReporter(new StrykerProjectOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
 
             var folder = new FolderComposite()
             {

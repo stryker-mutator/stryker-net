@@ -7,7 +7,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,7 @@ namespace Stryker.Core.MutationTest
     {
         MutationTestInput Input { get; }
         void Mutate();
-        StrykerRunResult Test(StrykerOptions options, IEnumerable<Mutant> mutantsToTest);
+        StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
         void GetCoverage();
     }
 
@@ -164,7 +163,7 @@ namespace Stryker.Core.MutationTest
             _logger.LogInformation("{0} mutants detected in {1}", Input.ProjectInfo.ProjectContents.TotalMutants.Count(), Input.ProjectInfo.ProjectContents.Name);
         }
 
-        public StrykerRunResult Test(StrykerOptions options, IEnumerable<Mutant> mutantsToTest)
+        public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
             if (mutantsToTest.Any())
             {
@@ -172,14 +171,14 @@ namespace Stryker.Core.MutationTest
 
                 Parallel.ForEach(
                     mutantGroups,
-                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
+                    new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners },
                     mutants =>
                     {
                         var testMutants = new HashSet<Mutant>();
                         _mutationTestExecutor.Test(mutants, Input.TimeoutMs, 
                             (testedMutants, failedTests, ranTests, timedOutTest) => 
                             {
-                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                                var mustGoOn = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
                                     mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -213,7 +212,7 @@ namespace Stryker.Core.MutationTest
 
             _mutationTestExecutor.TestRunner.Dispose();
 
-            return new StrykerRunResult(options, Input.ProjectInfo.ProjectContents.GetMutationScore());
+            return new StrykerRunResult(_options, Input.ProjectInfo.ProjectContents.GetMutationScore());
         }
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
@@ -250,7 +249,7 @@ namespace Stryker.Core.MutationTest
                 blocks.Add(nextBlock);
             }
 
-            _logger.LogInformation($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+            _logger.LogDebug($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
             return blocks;
         }
 

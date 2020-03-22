@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
@@ -47,7 +48,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex(ignoredMethodName) });
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -97,7 +98,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex(ignoredMethodName) });
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -173,7 +174,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new []{ "M.ctor" });
+            var options = new StrykerProjectOptions(ignoredMethods: new []{ new Regex("M.ctor") });
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -201,7 +202,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { "Fact" });
+            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex("Fact") });
 
             var sut = new IgnoredMethodMutantFilter();
 
