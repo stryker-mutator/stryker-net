@@ -61,7 +61,8 @@ namespace Stryker.CLI
                         .AddJsonFile(fileLocation)
                         .Build()
                         .GetSection("stryker-config");
-                } catch (FormatException formatException)
+                }
+                catch (FormatException formatException)
                 {
                     throw new StrykerInputException("The stryker config file was in an incorrect format.", formatException.InnerException.Message);
                 }

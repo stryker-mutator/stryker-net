@@ -528,8 +528,8 @@
       },
       "NuGet.Versioning": {
         "type": "Transitive",
-        "resolved": "5.4.0",
-        "contentHash": "aFOhsyeafHctMNwKfKzwD9bJqhsDaQuBBUgZ+8RNlaz8Voq/SEjd6R8KIPzQ+L8P49qTB8aucjqxo9tkH3N4Bg=="
+        "resolved": "5.5.0",
+        "contentHash": "jH8Q+XRO9REVelfvAUlRnLqrQCNi3NRVLM+MIWY4XW2CMxCD+R/X7cJWVAW7A6rG1FpgO8MbGM8DLwloMgYm0w=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -1707,7 +1707,7 @@
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "2.6.0",
           "Microsoft.Extensions.Configuration.Binder": "3.1.2",
-          "NuGet.Versioning": "5.4.0",
+          "NuGet.Versioning": "5.5.0",
           "stryker": "0.16.1"
         }
       },
