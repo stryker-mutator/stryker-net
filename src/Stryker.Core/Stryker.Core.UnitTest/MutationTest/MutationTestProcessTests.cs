@@ -352,8 +352,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
+            var runnerMock = new Mock<ITestRunner>();
+            runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
@@ -419,8 +421,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
+            var runnerMock = new Mock<ITestRunner>();
+            runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
@@ -466,8 +470,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
+            var runnerMock = new Mock<ITestRunner>();
+            runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);
@@ -560,8 +566,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
+            var runnerMock = new Mock<ITestRunner>();
+            runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
+            executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions(fileSystem: new MockFileSystem(), basePath: basePath);

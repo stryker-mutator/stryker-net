@@ -27,6 +27,8 @@ namespace Stryker.Core.Mutants
         public TestListDescription CoveringTests { get; set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
 
+        public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
+
         public bool MustRunAgainstAllTests
         {
             get => CoveringTests.IsEveryTest || _mustRunAllTests;
