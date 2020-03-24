@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest
         }
 
         [Theory]
-        [InlineData(0.8, 80)]
+        [InlineData(0.79, 80)]
         [InlineData(0.4, 50)]
         [InlineData(0, 1)]
         public void ScoreIsLowerThanThresholdBreak_ShouldReturnTrueWhen(double mutationScore, int thresholdBreak)
