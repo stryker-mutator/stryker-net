@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -8,6 +7,20 @@ using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
+    // For mocking perposes
+    public interface IInitialisationProcessProvider
+    {
+        IInitialisationProcess Provide();
+    }
+
+    public class InitialisationProcessProvider : IInitialisationProcessProvider
+    {
+        public IInitialisationProcess Provide()
+        {
+            return new InitialisationProcess();
+        }
+    }
+
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerProjectOptions options);

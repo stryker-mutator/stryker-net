@@ -17,11 +17,11 @@ namespace Stryker.Core.Initialisation
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
-        private readonly IInitialisationProcess _initialisationProcess;
+        private readonly IInitialisationProcessProvider _initialisationProcessProvider;
 
-        public ProjectOrchestrator(IInitialisationProcess initialisationProcess = null)
+        public ProjectOrchestrator(IInitialisationProcessProvider initialisationProcessProvider = null)
         {
-            _initialisationProcess = initialisationProcess ?? new InitialisationProcess();
+            _initialisationProcessProvider = initialisationProcessProvider ?? new InitialisationProcessProvider();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
@@ -32,7 +32,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Identifying projects to mutate.");
                 var manager = new AnalyzerManager(options.SolutionPath);
 
-                var projects = manager.Projects.Where(x => !x.Value.ProjectFile.PackageReferences.Any(y => y.Name.ToLower().Contains("test"))).Select(x => x.Value).ToList();
+                var projects = manager.Projects.Where(x => !x.Value.ProjectFile.PackageReferences.Any(y => y.Name.ToLower().Contains("microsoft.net.test.sdk"))).Select(x => x.Value).ToList();
                 _logger.LogDebug("Found {0} projects", projects.Count);
 
                 var testProjects = manager.Projects.Select(x => x.Value).Except(projects).Select(x => x.Build().Results.FirstOrDefault()).ToList();
@@ -46,7 +46,7 @@ namespace Stryker.Core.Initialisation
                         _logger.LogDebug("Matched {0} to {1} test projects:", project.ProjectFile.Path, relatedTestProjects.Count);
                         foreach (var relatedTestProject in relatedTestProjects)
                         {
-                            _logger.LogDebug("Matched {0} to {1} test projects", relatedTestProject.ProjectFilePath);
+                            _logger.LogDebug("{0}", relatedTestProject.ProjectFilePath);
                         }
                         var projectOptions = options.ToProjectOptions(project.ProjectFile.Path,
                             project.ProjectFile.Path,
@@ -64,8 +64,10 @@ namespace Stryker.Core.Initialisation
 
         private IMutationTestProcess PrepareProject(StrykerProjectOptions options, IReporter reporters)
         {
+            // get a new instance of InitialisationProcess for each project
+            var initialisationProcess = _initialisationProcessProvider.Provide();
             // initialize
-            var input = _initialisationProcess.Initialize(options);
+            var input = initialisationProcess.Initialize(options);
 
             var process = new MutationTestProcess(
                 mutationTestInput: input,
@@ -74,7 +76,7 @@ namespace Stryker.Core.Initialisation
                 options: options);
 
             // initial test
-            input.TimeoutMs = _initialisationProcess.InitialTest(options);
+            input.TimeoutMs = initialisationProcess.InitialTest(options);
 
             // mutate
             process.Mutate();
