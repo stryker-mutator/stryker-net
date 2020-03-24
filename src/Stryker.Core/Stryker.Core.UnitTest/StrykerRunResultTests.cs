@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest
             var scoreIsLowerThanThresholdBreak = runResult.ScoreIsLowerThanThresholdBreak();
 
             // Assert
-            scoreIsLowerThanThresholdBreak.ShouldBeFalse("because the mutation score is higher than the threshold break");
+            scoreIsLowerThanThresholdBreak.ShouldBeFalse("because the mutation score is higher than or equal to the threshold break");
         }
 
         [Theory]
