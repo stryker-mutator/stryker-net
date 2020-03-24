@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
-    <MicrosoftExtensionsConfiguration>3.1.2</MicrosoftExtensionsConfiguration>
+    <MicrosoftExtensionsConfiguration>3.1.3</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
