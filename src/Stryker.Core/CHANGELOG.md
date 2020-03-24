@@ -1,3 +1,13 @@
+## [0.17.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.17.0...stryker@0.17.1) (2020-03-24)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** Show http response content in error message ([#997](https://github.com/stryker-mutator/stryker-net/issues/997)) ([9ab91b2](https://github.com/stryker-mutator/stryker-net/commit/9ab91b294ccefc0fb685300c7fc6fab50adede62))
+* **threshold break:** Threshold break calculation should use percentage ([#1004](https://github.com/stryker-mutator/stryker-net/issues/1004)) ([facd51a](https://github.com/stryker-mutator/stryker-net/commit/facd51a7f3340b3d8a59004f47b36bf6fce86c08))
+
+
+
 # [0.17.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.16.1...stryker@0.17.0) (2020-03-21)
 
 
