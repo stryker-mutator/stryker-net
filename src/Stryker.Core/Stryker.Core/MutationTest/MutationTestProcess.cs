@@ -196,7 +196,7 @@ namespace Stryker.Core.MutationTest
                 var total = testCount * viableMutantsCount;
                 if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis eliminated {(total-toTest)/(double)total:P1} useless tests.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
                 }
             }
             else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
@@ -205,7 +205,7 @@ namespace Stryker.Core.MutationTest
                 var toTest = mutantsToTest.Count();
                 if (total > 0  && total!= toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis eliminated {(total-toTest)/(double)total:P1} useless tests.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
                 }
             }
             
