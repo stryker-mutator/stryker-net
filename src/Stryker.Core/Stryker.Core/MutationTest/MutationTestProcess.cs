@@ -35,7 +35,7 @@ namespace Stryker.Core.MutationTest
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
-        private readonly StrykerProjectOptions _options;
+        private readonly IStrykerOptions _options;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -43,7 +43,7 @@ namespace Stryker.Core.MutationTest
             IMutantOrchestrator orchestrator = null,
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
-            StrykerProjectOptions options = null,
+            IStrykerOptions options = null,
             IEnumerable<IMutantFilter> mutantFilters = null)
         {
             Input = mutationTestInput;

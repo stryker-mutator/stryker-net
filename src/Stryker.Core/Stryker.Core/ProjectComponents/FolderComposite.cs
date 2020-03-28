@@ -37,6 +37,14 @@ namespace Stryker.Core.ProjectComponents
             Children.Add(component);
         }
 
+        public void AddRange(IEnumerable<ProjectComponent> components)
+        {
+            foreach (var component in components)
+            {
+                Children.Add(component);
+            }
+        }
+
         public override void Display(int depth)
         {
             // only walk this branch of the tree if there are MutatedSyntaxTrees, otherwise we have nothing to display.

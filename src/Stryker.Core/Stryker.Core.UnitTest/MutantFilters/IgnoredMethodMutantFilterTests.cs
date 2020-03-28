@@ -48,7 +48,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex(ignoredMethodName) });
+            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -98,7 +98,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex(ignoredMethodName) });
+            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -139,7 +139,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -174,7 +174,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new []{ new Regex("M.ctor") });
+            var options = new StrykerOptions(ignoredMethods: new []{ "M.ctor" });
 
             var sut = new IgnoredMethodMutantFilter();
 

@@ -21,7 +21,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoArgumentsAndEmptyConfig_ShouldStartStrykerWithDefaultOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerProjectOptions options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
@@ -35,7 +35,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoArgumentsAndNoConfigFile_ShouldStartStrykerWithConfigOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerProjectOptions options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
             string currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3);
@@ -55,12 +55,12 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
             var filePattern = new FilePattern(Glob.Parse(FilePathUtils.NormalizePathSeparators("**/Test.cs")), true, new[] { TextSpan.FromBounds(1, 100), TextSpan.FromBounds(200, 300) });
-            StrykerProjectOptions actualOptions = null;
-            var runResults = new StrykerRunResult(new StrykerProjectOptions(), 0.3);
+            StrykerOptions actualOptions = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
-                .Callback<StrykerProjectOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
 

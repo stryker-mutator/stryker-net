@@ -318,7 +318,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 });
         }
 
-        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerProjectOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
+        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(IStrykerOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
         {
             var mockVsTest = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockVsTest.Setup(x => x.StartSession());
@@ -517,12 +517,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunTestsSimultaneouslyWhenPossible()
         {
-            var options = new StrykerProjectOptions();
-
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(abortTestOnFail: false);
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
+                var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
+                var mockVsTest = BuildVsTestRunner(strykerOptions, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
                 _projectContents.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
@@ -534,7 +532,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     mutant.CoveringTests = new TestListDescription(null);
                 }
                 var mockReporter = new Mock<IReporter>();
-                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions.ToProjectOptions());
+                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions);
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
                 tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);

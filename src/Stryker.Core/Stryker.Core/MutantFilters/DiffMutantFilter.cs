@@ -13,7 +13,7 @@ namespace Stryker.Core.MutantFilters
         private const string _displayName = "git diff file filter";
         public string DisplayName => _displayName;
 
-        public DiffMutantFilter(StrykerProjectOptions options, IDiffProvider diffProvider)
+        public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider)
         {
             if (options.DiffEnabled)
             {
@@ -21,7 +21,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerProjectOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)
         {
             if (options.DiffEnabled && !_diffResult.TestsChanged)
             {

@@ -9,14 +9,19 @@ using System.Linq;
 
 namespace Stryker.Core.Reporters
 {
-    public static class ReporterFactory
+    public interface IReporterFactory
     {
-        public static IReporter Create(StrykerOptions options)
+        IReporter Create(StrykerOptions options);
+    }
+
+    public class ReporterFactory : IReporterFactory
+    {
+        public IReporter Create(StrykerOptions options)
         {
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {

@@ -15,7 +15,7 @@ namespace Stryker.Core.MutantFilters
         private const string _displayName = "file filter";
         public string DisplayName => _displayName;
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerProjectOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)
         {
             var includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
             var excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();

@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldContainCorrectDefaults()
         {
-            var options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
 
             options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
@@ -108,7 +108,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerProjectOptions(gitSource: "");
+                var options = new StrykerOptions(gitSource: "");
             });
             ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
         }

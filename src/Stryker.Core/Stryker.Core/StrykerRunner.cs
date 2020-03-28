@@ -31,12 +31,14 @@ namespace Stryker.Core
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private readonly IFileSystem _fileSystem;
         private ILogger _logger;
+        private IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IFileSystem fileSystem = null)
+        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IFileSystem fileSystem = null, IReporterFactory reporterFactory = null)
         {
             _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
             _mutationTestProcesses = new List<IMutationTestProcess>();
             _fileSystem = fileSystem ?? new FileSystem();
+            _reporterFactory = reporterFactory ?? new ReporterFactory();
         }
 
         /// <summary>
@@ -50,43 +52,26 @@ namespace Stryker.Core
         /// </param>
         public StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
         {
-            // start stopwatch
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             CreateOutputDirWithGitignore(options);
 
-            // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+            _reporters = _reporterFactory.Create(options);
 
-            _logger.LogDebug("Stryker started with options: {0}",
-                JsonConvert.SerializeObject(options, new StringEnumConverter()));
-
-            _reporters = ReporterFactory.Create(options);
+            SetupLogging(options, initialLogMessages);
 
             try
             {
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, _reporters).ToList();
 
                 var rootComponent = new FolderComposite();
-
-                foreach(var project in _mutationTestProcesses)
-                {
-                    rootComponent.Add(project.Input.ProjectInfo.ProjectContents);
-                }
+                rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
 
                 _logger.LogInformation("{0} mutants ready for test", rootComponent.TotalMutants.Count());
+                
+                AnalyseCoverage(options);
 
-                if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
-                {
-                    _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
-
-                    foreach (var project in _mutationTestProcesses)
-                    {
-                        project.GetCoverage();
-                    }
-                }
                 _reporters.OnMutantsCreated(rootComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
@@ -105,11 +90,10 @@ namespace Stryker.Core
                     if (!allMutants.Any())
                     {
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
-                        return new StrykerRunResult(options, double.NaN);
                     }
+                    return new StrykerRunResult(options, double.NaN);
                 }
 
-                var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
                 _reporters.OnStartMutantTestRun(mutantsNotRun);
 
                 foreach (var project in _mutationTestProcesses)
@@ -142,6 +126,29 @@ namespace Stryker.Core
             using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
             {
                 file.WriteLine("*");
+            }
+        }
+
+        private void SetupLogging(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        {
+            // setup logging
+            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+
+            _logger.LogDebug("Stryker started with options: {0}",
+                JsonConvert.SerializeObject(options, new StringEnumConverter()));
+        }
+
+        private void AnalyseCoverage(StrykerOptions options)
+        {
+            if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            {
+                _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.GetCoverage();
+                }
             }
         }
     }
