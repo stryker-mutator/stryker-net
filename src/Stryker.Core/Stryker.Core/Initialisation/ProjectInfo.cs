@@ -40,7 +40,27 @@ namespace Stryker.Core.Initialisation
         Unknown
     };
 
-    public class ProjectAnalyzerResult
+    public interface IProjectAnalyzerResult
+    {
+        string AssemblyOriginatorKeyFile { get; set; }
+        string AssemblyPath { get; set; }
+        (bool compat_noAppDomain, bool compat_noPipe) CompatibilityModes { get; }
+        IList<string> DefineConstants { get; set; }
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PackageReferences { get; set; }
+        string ProjectFilePath { get; set; }
+        IEnumerable<string> ProjectReferences { get; set; }
+        IReadOnlyDictionary<string, string> Properties { get; set; }
+        string[] References { get; set; }
+        IEnumerable<ResourceDescription> Resources { get; set; }
+        bool SignAssembly { get; set; }
+        IEnumerable<string> SourceFiles { get; set; }
+        Framework TargetFramework { get; set; }
+        (Framework framework, Version version) TargetFrameworkAndVersion { get; }
+        Version TargetFrameworkVersion { get; set; }
+        string TargetFrameworkVersionString { get; set; }
+    }
+
+    public class ProjectAnalyzerResult : IProjectAnalyzerResult
     {
         private readonly ILogger _logger;
         private readonly AnalyzerResult _analyzerResult;

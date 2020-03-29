@@ -17,6 +17,22 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
+    public interface IMutationTestProcessProvider
+    {
+        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, IStrykerOptions options);
+    }
+
+    public class MutationTestProcessProvider : IMutationTestProcessProvider
+    {
+        public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
+            IReporter reporter,
+            IMutationTestExecutor mutationTestExecutor,
+            IStrykerOptions options)
+        {
+            return new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
+        }
+    }
+
     public interface IMutationTestProcess
     {
         MutationTestInput Input { get; }
