@@ -207,7 +207,6 @@ namespace Stryker.Core.UnitTest.TestRunners
         // setup a customized partial test runs, using provided test results
         private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess)
         {
-
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
@@ -536,7 +535,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
                 tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);
-                tester.Test(_projectContents.Mutants);
+                tester.Test(_projectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun));
 
                 _mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
                 _otherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);
