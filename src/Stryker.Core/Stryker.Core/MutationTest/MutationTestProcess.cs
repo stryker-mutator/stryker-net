@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
@@ -167,6 +168,7 @@ namespace Stryker.Core.MutationTest
 
         public StrykerRunResult Test(StrykerOptions options)
         {
+            var viableMutantsCount = _input.ProjectInfo.ProjectContents.Mutants.Count(x => x.CountForStats);
             var mutantsNotRun = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
             if (!mutantsNotRun.Any())
@@ -186,7 +188,27 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            var mutantsToTest = mutantsNotRun.Where(x => x.ResultStatus != MutantStatus.Ignored && x.ResultStatus != MutantStatus.NoCoverage);
+            var mutantsToTest = mutantsNotRun;
+            if (_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            {
+                var testCount = _mutationTestExecutor.TestRunner.DiscoverNumberOfTests();
+                var toTest = @mutantsNotRun.Sum(x => x.MustRunAgainstAllTests ? testCount : x.CoveringTests.Count);
+                var total = testCount * viableMutantsCount;
+                if (total > 0 && total != toTest)
+                {
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                }
+            }
+            else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            {
+                var total = viableMutantsCount;
+                var toTest = mutantsToTest.Count();
+                if (total > 0  && total!= toTest)
+                {
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                }
+            }
+            
             if (mutantsToTest.Any())
             {
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
@@ -243,6 +265,7 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
+
             if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
@@ -275,7 +298,7 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-
+            // compute number of tests that will be run
             _logger.LogInformation($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
             return blocks;
         }
