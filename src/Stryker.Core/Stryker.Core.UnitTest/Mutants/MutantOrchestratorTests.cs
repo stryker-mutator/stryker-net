@@ -206,6 +206,15 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(0)?1 - 1:1 + 1), (Str
         }
 
         [Fact]
+        public void ShouldNotMutateEnum()
+        {
+            string source = @"private enum Numbers { One = 1, Two = One + 1 }";
+            string expected = @"private enum Numbers { One = 1, Two = One + 1 }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldNotMutateAttributes()
         {
             string source = @"[Obsolete(""thismustnotbemutated"")]
