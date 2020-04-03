@@ -63,23 +63,21 @@ namespace Stryker.Core.ProjectComponents
 
         public Health CheckHealth(Threshold threshold)
         {
-            if (GetMutationScore() is var mutationScore && !double.IsNaN(mutationScore))
+            var mutationScore = GetMutationScore();
+            if (double.IsNaN(mutationScore))
             {
-                var mutationScorePercentage = mutationScore * 100;
-
-                switch (mutationScorePercentage)
-                {
-                    case var score when score > threshold.High:
-                        return Health.Good;
-                    case var score when score <= threshold.High && score > threshold.Low:
-                        return Health.Warning;
-                    case var score when score <= threshold.Low:
-                        return Health.Danger;
-                }
+                // The mutation score is outside of the bounds we can work with so we don't have a health
+                return Health.None;
             }
 
-            // The mutation score is outside of the bounds we can work with so we don't have a health
-            return Health.None;
+            var mutationScorePercentage = mutationScore * 100;
+
+            return mutationScorePercentage switch
+            {
+                var score when score >= threshold.High => Health.Good,
+                var score when score < threshold.High && score >= threshold.Low => Health.Warning,
+                _ => Health.Danger
+            };
         }
 
         public abstract void Add(ProjectComponent component);
