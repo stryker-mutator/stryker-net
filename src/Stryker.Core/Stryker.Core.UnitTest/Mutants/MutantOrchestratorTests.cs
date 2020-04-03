@@ -205,6 +205,20 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(0)?1 - 1:1 + 1), (Str
             ShouldMutateSourceToExpected(source, expected);
         }
 
+        /// <summary>
+        /// Verifies that <code>EnumMemberDeclarationSyntax</code> nodes are not mutated.
+        /// Mutating would introduce code like <code>StrykerXGJbRBlHxqRdD9O.MutantControl.IsActive(0) ? One + 1 : One - 1</code>
+        /// Since enum members need to be constants, this mutated code would not compile and print a warning.
+        /// </summary>
+        [Fact]
+        public void ShouldNotMutateEnum()
+        {
+            string source = @"private enum Numbers { One = 1, Two = One + 1 }";
+            string expected = @"private enum Numbers { One = 1, Two = One + 1 }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
         [Fact]
         public void ShouldNotMutateAttributes()
         {
