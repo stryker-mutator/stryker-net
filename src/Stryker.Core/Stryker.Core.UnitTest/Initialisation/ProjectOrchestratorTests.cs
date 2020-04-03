@@ -99,7 +99,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     { "1", buildalyzerProjectAnalyzerMock.Object }
                 });
             buildalyzerProjectAnalyzerMock.Setup(x => x.Build()).Returns(projectAnalyzerResultMock.Object);
-            buildalyzerProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(new ProjectFile());
+            //buildalyzerProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(new ProjectFile());
 
             var result = target.MutateProjects(options, reporterMock.Object);
 
