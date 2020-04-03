@@ -24,7 +24,6 @@
 
   <PropertyGroup>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>

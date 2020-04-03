@@ -26,7 +26,6 @@
 
   <PropertyGroup>
     <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

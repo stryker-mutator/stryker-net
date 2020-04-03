@@ -1670,7 +1670,7 @@
           "System.IO.Abstractions": "10.0.4"
         }
       },
-      "Stryker.DataCollector": {
+      "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "16.5.0"

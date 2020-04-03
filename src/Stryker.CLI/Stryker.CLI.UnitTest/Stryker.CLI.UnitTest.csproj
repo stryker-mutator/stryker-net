@@ -7,7 +7,6 @@
 
   <PropertyGroup>
     <xunit>2.4.1</xunit>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
