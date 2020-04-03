@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Progress
 
     public class ConsoleOneLineLogger : IConsoleOneLineLogger
     {
-        private bool _hasConsole;
+        private readonly bool _hasConsole;
         private int _cursorTop;
 
         private readonly ILogger _logger;
@@ -33,8 +33,8 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReplaceLog(string text, params object[] args)
         {
-            int currentCursorTop = 0;
-            int currentCursorLeft = 0;
+            var currentCursorTop = 0;
+            var currentCursorLeft = 0;
             if (_hasConsole)
             {
                 currentCursorTop = Console.CursorTop;
@@ -42,7 +42,6 @@ namespace Stryker.Core.Reporters.Progress
 
                 Console.SetCursorPosition(0, _cursorTop);
                 ClearLine();
-
                 Console.SetCursorPosition(0, _cursorTop);
             }
 
@@ -50,6 +49,15 @@ namespace Stryker.Core.Reporters.Progress
 
             if (_hasConsole)
             {
+                if (Console.BufferWidth > 0)
+                {
+                    currentCursorLeft = Math.Min(currentCursorLeft, Console.BufferWidth - 1);
+                }
+
+                if (Console.BufferHeight > 0)
+                {
+                    currentCursorTop = Math.Min(currentCursorTop, Console.BufferHeight - 1);
+                }
                 Console.SetCursorPosition(currentCursorLeft, currentCursorTop);
             }
         }
@@ -59,7 +67,7 @@ namespace Stryker.Core.Reporters.Progress
             _logger.LogInformation(new string(' ', Console.WindowWidth));
         }
 
-        private bool EnvironmentHasConsole()
+        private static bool EnvironmentHasConsole()
         {
             try
             {

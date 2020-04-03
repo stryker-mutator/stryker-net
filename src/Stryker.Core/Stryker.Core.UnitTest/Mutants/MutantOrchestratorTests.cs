@@ -2,8 +2,8 @@
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using System.Linq;
 using Stryker.Core.Options;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -201,6 +201,20 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(0)?1 - 1:1 + 1), (Str
         {
             string source = @"private const int x = 1 + 2;";
             string expected = @"private const int x = 1 + 2;";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        /// <summary>
+        /// Verifies that <code>EnumMemberDeclarationSyntax</code> nodes are not mutated.
+        /// Mutating would introduce code like <code>StrykerXGJbRBlHxqRdD9O.MutantControl.IsActive(0) ? One + 1 : One - 1</code>
+        /// Since enum members need to be constants, this mutated code would not compile and print a warning.
+        /// </summary>
+        [Fact]
+        public void ShouldNotMutateEnum()
+        {
+            string source = @"private enum Numbers { One = 1, Two = One + 1 }";
+            string expected = @"private enum Numbers { One = 1, Two = One + 1 }";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -491,18 +505,37 @@ static Mutator_Flag_MutatedStatics()
 {
     var test3 = 2 + 5;
 }";
-            string expected = @"void TestMethod()
-{
-    var test3 = (StrykerNamespace.MutantControl.IsActive(0)?2 - 5:2 + 5);
-}";
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.ShouldHaveSingleItem().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
+        }
+
+        [Fact]
+        public void MutationsShouldHaveLinespan2()
+        {
+            string source = @"using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TestApp
+{
+    public static class ExampleExtension
+    {
+        public static bool InvokeIfNotNull(this Action a)
+        {
+            if (a == null) { return false; } else { a.Invoke(); return true; }
+        }
+    }
+}";
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+
+            var mutants = _target.GetLatestMutantBatch().ToList();
+            mutants.Count.ShouldBe(4);
+            foreach (var mutant in mutants)
+            {
+                mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
+            }
         }
 
         [Fact]
@@ -521,7 +554,7 @@ static Mutator_Flag_MutatedStatics()
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Fact]
         public void ShouldAddReturnDefaultToAsyncMethods()
@@ -591,7 +624,7 @@ static Mutator_Flag_MutatedStatics()
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Theory]
         [InlineData("=> Value = \"Hello, World!\";")]

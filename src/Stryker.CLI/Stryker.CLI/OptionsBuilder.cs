@@ -37,6 +37,7 @@ namespace Stryker.CLI
             CommandOption coverageAnalysis,
             CommandOption abortTestOnFail,
             CommandOption configFilePath,
+            CommandOption disableSimultaneousTesting,
             CommandOption maxConcurrentTestRunners,
             CommandOption thresholdHigh,
             CommandOption thresholdLow,
@@ -53,11 +54,18 @@ namespace Stryker.CLI
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
             {
-                _config = new ConfigurationBuilder()
-                    .SetBasePath(basePath)
-                    .AddJsonFile(fileLocation)
-                    .Build()
-                    .GetSection("stryker-config");
+                try
+                {
+                    _config = new ConfigurationBuilder()
+                        .SetBasePath(basePath)
+                        .AddJsonFile(fileLocation)
+                        .Build()
+                        .GetSection("stryker-config");
+                }
+                catch (FormatException formatException)
+                {
+                    throw new StrykerInputException("The stryker config file was in an incorrect format.", formatException.InnerException.Message);
+                }
             }
 
             return new StrykerOptions(
@@ -78,6 +86,7 @@ namespace Stryker.CLI
                 maxConcurrentTestRunners: GetOption(maxConcurrentTestRunners.Value(), CLIOptions.MaxConcurrentTestRunners),
                 coverageAnalysis: GetOption(coverageAnalysis.Value(), CLIOptions.CoverageAnalysis),
                 abortTestOnFail: GetOption(abortTestOnFail.HasValue(), CLIOptions.AbortTestOnFail),
+                disableSimultaneousTesting: GetOption(disableSimultaneousTesting.HasValue(), CLIOptions.DisableTestingMix),
                 thresholdHigh: GetOption(thresholdHigh.Value(), CLIOptions.ThresholdHigh),
                 thresholdLow: GetOption(thresholdLow.Value(), CLIOptions.ThresholdLow),
                 thresholdBreak: GetOption(thresholdBreak.Value(), CLIOptions.ThresholdBreak),

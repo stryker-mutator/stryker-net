@@ -130,9 +130,8 @@ namespace Stryker.Core.Mutants
                     return MutateForStatement(forStatement, context);
             }
 
-            currentNode = AddReturnDefault(currentNode);
-
-            return MutateExpression(currentNode, context);
+            var mutatedNode = MutateExpression(currentNode, context);
+            return AddReturnDefault(mutatedNode);
         }
 
         private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
@@ -352,27 +351,28 @@ namespace Stryker.Core.Mutants
             {
                 return currentNode;
             }
-
+            
             TypeSyntax returnType = methodNode.ReturnType;
 
-            // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes so we need to unwrap the node until we find the GenericNameSyntax
+            // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
             var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
             if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
             {
-                if (genericReturn != null && genericReturn.Identifier.ToString() == "Task")
+                if (genericReturn != null)
                 {
                     // if the method is async and returns a generic task, make the return default return the underlying type
                     returnType = genericReturn.TypeArgumentList.Arguments.First();
-                }
-                else if (genericReturn == null)
+                } else
                 {
                     // if the method is async but returns a non-generic task, don't add the return default
                     return currentNode;
                 }
             }
 
-            var newBody = methodNode.Body.AddStatements(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType)));
-            return currentNode.ReplaceNode(methodNode.Body, newBody);
+            var newBody = methodNode.Body.AddStatements(MutantPlacer.AnnotateHelper(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType))));
+            currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
+
+            return currentNode;
         }
 
         private T ApplyMutant<T>(T node, Mutant mutant) where T : SyntaxNode

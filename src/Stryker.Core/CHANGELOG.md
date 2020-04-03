@@ -1,3 +1,36 @@
+## [0.17.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.17.0...stryker@0.17.1) (2020-03-24)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** Show http response content in error message ([#997](https://github.com/stryker-mutator/stryker-net/issues/997)) ([9ab91b2](https://github.com/stryker-mutator/stryker-net/commit/9ab91b294ccefc0fb685300c7fc6fab50adede62))
+* **threshold break:** Threshold break calculation should use percentage ([#1004](https://github.com/stryker-mutator/stryker-net/issues/1004)) ([facd51a](https://github.com/stryker-mutator/stryker-net/commit/facd51a7f3340b3d8a59004f47b36bf6fce86c08))
+
+
+
+# [0.17.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.16.1...stryker@0.17.0) (2020-03-21)
+
+
+### Bug Fixes
+
+* **assignment expression mutator:** Add ExclusiveOrAssignment mutations to replace incorrect OrAssignment mutation ([#994](https://github.com/stryker-mutator/stryker-net/issues/994)) ([322cb1a](https://github.com/stryker-mutator/stryker-net/commit/322cb1a153c6593b48647577da4873221fed8c4d))
+* **cleartext reporter:** Re-add mutation score after a mutation testrun ([#993](https://github.com/stryker-mutator/stryker-net/issues/993)) ([e0878b1](https://github.com/stryker-mutator/stryker-net/commit/e0878b1a41505c6d62d768114238463121a96175))
+
+
+### Features
+
+* **coverage analysis:** Use coverage analysis to determine mutations that can be active at the same time ([#936](https://github.com/stryker-mutator/stryker-net/issues/936)) ([c0e5f35](https://github.com/stryker-mutator/stryker-net/commit/c0e5f359eae9164e3eeccc939d9ca3779eb73220)), closes [#760](https://github.com/stryker-mutator/stryker-net/issues/760) [#820](https://github.com/stryker-mutator/stryker-net/issues/820)
+* **file resolving:** Skip auto generated code from mutation ([#995](https://github.com/stryker-mutator/stryker-net/issues/995)) ([2798e36](https://github.com/stryker-mutator/stryker-net/commit/2798e36af8edcf5e2542c48a388d34ebe4d6bd81))
+* **html reporter:** Update to mutation testing elements 1.3.0 ([#963](https://github.com/stryker-mutator/stryker-net/issues/963)) ([715c30b](https://github.com/stryker-mutator/stryker-net/commit/715c30b280567a24248e3899c0addce02522cadd))
+* **Mutation exclusion:** Exclude mutants with ExcludeFromCodeCoverage attribute ([#964](https://github.com/stryker-mutator/stryker-net/issues/964)) ([aecc057](https://github.com/stryker-mutator/stryker-net/commit/aecc05735415ea03ad677bc71b9c837175b12e40))
+* **mutation placing:** Add support for mutating static expression bodied constructors ([#960](https://github.com/stryker-mutator/stryker-net/issues/960)) ([56a05e2](https://github.com/stryker-mutator/stryker-net/commit/56a05e291d5a94df8bc0cff237fb914dff8c58e7)), closes [#959](https://github.com/stryker-mutator/stryker-net/issues/959)
+* **mutation placing:** Return default(T) after placing mutation to preserve linespans ([#984](https://github.com/stryker-mutator/stryker-net/issues/984)) ([301c54c](https://github.com/stryker-mutator/stryker-net/commit/301c54cf796fc4ef5f1e24ccaeba9a9bbf4365f5))
+* **mutation placing:** Return default(T) for all async methods ([#980](https://github.com/stryker-mutator/stryker-net/issues/980)) ([c862ca4](https://github.com/stryker-mutator/stryker-net/commit/c862ca481f798954a033063536ea33dcafea1c09))
+* **mutation placing:** Return default(T) for async Task<T> methods ([#965](https://github.com/stryker-mutator/stryker-net/issues/965)) ([7adb9ef](https://github.com/stryker-mutator/stryker-net/commit/7adb9ef95539ea7c2e3c6164e0470ac7f1d63571))
+* **mutation placing:** Return default(T) for non-void methods ([#958](https://github.com/stryker-mutator/stryker-net/issues/958)) ([839d1f8](https://github.com/stryker-mutator/stryker-net/commit/839d1f842d3c1785d20e7de4b475cd752f7f48a0))
+
+
+
 ## [0.16.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.16.0...stryker@0.16.1) (2020-02-21)
 
 

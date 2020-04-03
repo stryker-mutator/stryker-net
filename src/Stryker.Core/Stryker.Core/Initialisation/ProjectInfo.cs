@@ -1,13 +1,13 @@
 ﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Initialisation
 {

@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.16.1</VersionPrefix>
+    <VersionPrefix>0.17.1</VersionPrefix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -26,7 +26,6 @@
 
   <PropertyGroup>
     <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
-    <MicrosoftExtensionsConfiguration>3.1.2</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,12 +40,12 @@
 
   <ItemGroup>
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
     <PackageReference Include="DotNet.Glob" Version="3.0.9" />
     <PackageReference Include="Buildalyzer" Version="2.5.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.TestPlatform" Version="$(MicrosoftTestPlatform)" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" />

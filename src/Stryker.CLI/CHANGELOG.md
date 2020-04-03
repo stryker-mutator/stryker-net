@@ -1,3 +1,24 @@
+## [0.17.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.17.0...dotnet-stryker@0.17.1) (2020-03-24)
+
+
+
+# [0.17.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.16.1...dotnet-stryker@0.17.0) (2020-03-21)
+
+
+### Bug Fixes
+
+* **cleartext reporter:** Re-add mutation score after a mutation testrun ([#993](https://github.com/stryker-mutator/stryker-net/issues/993)) ([e0878b1](https://github.com/stryker-mutator/stryker-net/commit/e0878b1a41505c6d62d768114238463121a96175))
+* **threshold break score:** Diplay the correct mutation score when threshold break is reached ([#985](https://github.com/stryker-mutator/stryker-net/issues/985)) ([a1eec3c](https://github.com/stryker-mutator/stryker-net/commit/a1eec3c9ec5ae69b39a21338992b6acdf6e7ae55))
+* **update check:** Fix detection of latest stryker version ([#969](https://github.com/stryker-mutator/stryker-net/issues/969)) ([be7e328](https://github.com/stryker-mutator/stryker-net/commit/be7e3280c5520cdc739ac1b9ff993bef613449fc))
+
+
+### Features
+
+* **coverage analysis:** Use coverage analysis to determine mutations that can be active at the same time ([#936](https://github.com/stryker-mutator/stryker-net/issues/936)) ([c0e5f35](https://github.com/stryker-mutator/stryker-net/commit/c0e5f359eae9164e3eeccc939d9ca3779eb73220)), closes [#760](https://github.com/stryker-mutator/stryker-net/issues/760) [#820](https://github.com/stryker-mutator/stryker-net/issues/820)
+* **file resolving:** Skip auto generated code from mutation ([#995](https://github.com/stryker-mutator/stryker-net/issues/995)) ([2798e36](https://github.com/stryker-mutator/stryker-net/commit/2798e36af8edcf5e2542c48a388d34ebe4d6bd81))
+
+
+
 ## [0.16.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.16.0...dotnet-stryker@0.16.1) (2020-02-21)
 
 

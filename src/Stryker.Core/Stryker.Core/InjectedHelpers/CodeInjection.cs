@@ -33,20 +33,20 @@ namespace Stryker.Core.InjectedHelpers
             }
         }
 
-        public static string SelectorExpression {get;}
+        public static string SelectorExpression { get; }
 
-        public static string HelperNamespace {get;}
+        public static string HelperNamespace { get; }
 
         public static string StaticMarker { get; set; }
 
         private static string GetRandomNamespace()
         {
-            // Create a string of characters, numbers, special characters that allowed in the password  
+            // Create a string of characters and numbers allowed in the namespace  
             const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
 
             var chars = new char[15];
-            for (int i = 0; i < 15; i++)
+            for (var i = 0; i < 15; i++)
             {
                 chars[i] = validChars[random.Next(0, validChars.Length)];
             }
@@ -58,8 +58,7 @@ namespace Stryker.Core.InjectedHelpers
         private static string GetSourceFromResource(string sourceResourceName)
         {
             string helper;
-            using (var stream =
-                typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
+            using (var stream = typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
             {
                 using (var reader = new StreamReader(stream))
                 {
