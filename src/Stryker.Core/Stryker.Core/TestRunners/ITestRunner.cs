@@ -5,7 +5,10 @@ using System.Collections.Generic;
 namespace Stryker.Core.TestRunners
 {
 
-    public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, TestListDescription ranTests, TestListDescription failedTests, TestListDescription timedOutTests);
+    public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
+        ITestListDescription ranTests,
+        ITestListDescription failedTests,
+        ITestListDescription timedOutTests);
 
     public interface ITestRunner : IDisposable
     {
