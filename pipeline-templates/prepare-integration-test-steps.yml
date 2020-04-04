@@ -1,4 +1,9 @@
 steps:
+  - task: UseDotNet@2
+    displayName: 'Install dotnet core 3.0.x because agents are not up to date'
+    inputs:
+      version: 3.0.x
+
   - task: DotNetCoreCLI@2
     displayName: 'Run unit tests'
     inputs:
