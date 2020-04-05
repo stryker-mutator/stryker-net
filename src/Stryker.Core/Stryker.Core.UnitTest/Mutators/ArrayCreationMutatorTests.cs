@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
-        public void ShouldRemoveValuesFromImplicitArrayCreation()
+        public void ShouldNotRemoveValuesFromImplicitArrayCreation()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new [] { 1, 3 }") as ImplicitArrayCreationExpressionSyntax;
 
@@ -34,11 +34,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(expressionSyntax);
 
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.DisplayName.ShouldBe("Array initializer mutation");
-
-            var replacement = mutation.ReplacementNode.ShouldBeOfType<ImplicitArrayCreationExpressionSyntax>();
-            replacement.Initializer.Expressions.ShouldBeEmpty();
+            result.ShouldBeEmpty();
         }
 
         [Fact]

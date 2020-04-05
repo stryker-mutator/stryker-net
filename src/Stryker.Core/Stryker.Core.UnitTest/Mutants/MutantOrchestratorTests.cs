@@ -206,6 +206,15 @@ returndefault(int[] );}";
         }
 
         [Fact]
+        void ShouldNotMutateImplicitArrayCreation()
+        {
+            string source = @"public int[] Foo() => new [] { 1 };";
+            string expected = @"public int[] Foo() => new [] { 1 };";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateProperties()
         {
             string source = @"private string text = ""Some"" + ""Text"";";
@@ -349,10 +358,10 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         }";
             string expected = @"private void Linq()
         {
-            var array = (StrykerNamespace.MutantControl.IsActive(0)?new []{}:new []{1, 2});
+            var array = new []{1, 2};
 
-            var alt1 = (StrykerNamespace.MutantControl.IsActive(3)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(2)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(1)?x * 2 :x % 2 )== 0)));
-            var alt2 = (StrykerNamespace.MutantControl.IsActive(4)?array.Max():array.Min());
+            var alt1 = (StrykerNamespace.MutantControl.IsActive(2)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(1)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(0)?x * 2 :x % 2 )== 0)));
+            var alt2 = (StrykerNamespace.MutantControl.IsActive(3)?array.Max():array.Min());
         }";
 
             ShouldMutateSourceToExpected(source, expected);

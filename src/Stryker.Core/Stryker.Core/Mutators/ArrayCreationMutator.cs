@@ -19,21 +19,6 @@ namespace Stryker.Core.Mutators
                     DisplayName = "Array initializer mutation",
                     Type = Mutator.Initializer
                 };
-            } else if (node is ImplicitArrayCreationExpressionSyntax implicitArrayCreationNode && implicitArrayCreationNode.Initializer.Expressions.Count > 0)
-            {
-                var kind = implicitArrayCreationNode.Initializer.Expressions.First().Kind();
-                //var type = kind switch
-                //{
-                //    SyntaxKind.NumericLiteralExpression => 
-                //}
-
-                yield return new Mutation()
-                {
-                    OriginalNode = implicitArrayCreationNode,
-                    ReplacementNode = implicitArrayCreationNode.ReplaceNode(implicitArrayCreationNode.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression)),
-                    DisplayName = "Array initializer mutation",
-                    Type = Mutator.Initializer
-                };
             }
         }
     }

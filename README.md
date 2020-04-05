@@ -57,6 +57,7 @@ Right now, Stryker.NET supports the following mutations:
 - Equality Operators
 - Boolean Literals
 - Assignment statements
+- Collection initialization
 - Unary Operators
 - Update Operators
 - Checked Statements
