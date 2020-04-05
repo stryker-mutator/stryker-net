@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
     public abstract class ProjectComponent : IReadOnlyInputComponent
     {
+        public string Name { get; set; }
         public string FullPath { get; set; }
 
         /// <summary>
@@ -21,10 +23,7 @@ namespace Stryker.Core.ProjectComponents
         public string RelativePathToProjectFile { get; set; }
 
         public abstract IEnumerable<Mutant> Mutants { get; set; }
-        public string Name { get; set; }
-
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
-
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
             ReadOnlyMutants.Where(m =>
                 m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
@@ -33,6 +32,15 @@ namespace Stryker.Core.ProjectComponents
             m =>
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
+
+        /// <summary>
+        /// All syntax trees that should be a part of the compilation
+        /// </summary>
+        public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
+        /// <summary>
+        /// Only those syntax trees that were changed by the mutation process
+        /// </summary>
+        public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
@@ -44,37 +52,32 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
-        /// <returns>decimal between 0 and 100 or null when no score could be calculated</returns>
-        public decimal? GetMutationScore()
+        /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
+        public double GetMutationScore()
         {
-            var totalCount = TotalMutants.Count();
-            var killedCount = DetectedMutants.Count();
+            double totalCount = TotalMutants.Count();
+            double killedCount = DetectedMutants.Count();
 
-            if (totalCount > 0)
-            {
-                return killedCount / (decimal) totalCount * 100;
-            }
-            else
-            {
-                return null;
-            }
+            return killedCount / totalCount;
         }
 
         public Health CheckHealth(Threshold threshold)
         {
             var mutationScore = GetMutationScore();
-
-            switch (mutationScore)
+            if (double.IsNaN(mutationScore))
             {
-                case var score when score > threshold.High:
-                    return Health.Good;
-                case var score when score <= threshold.High && score > threshold.Low:
-                    return Health.Warning;
-                case var score when score <= threshold.Low && score > threshold.Break:
-                    return Health.Danger;
-                default:
-                    return Health.Danger;
+                // The mutation score is outside of the bounds we can work with so we don't have a health
+                return Health.None;
             }
+
+            var mutationScorePercentage = mutationScore * 100;
+
+            return mutationScorePercentage switch
+            {
+                var score when score >= threshold.High => Health.Good,
+                var score when score < threshold.High && score >= threshold.Low => Health.Warning,
+                _ => Health.Danger
+            };
         }
 
         public abstract void Add(ProjectComponent component);

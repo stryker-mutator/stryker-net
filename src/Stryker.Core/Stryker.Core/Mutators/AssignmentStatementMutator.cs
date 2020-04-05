@@ -7,17 +7,18 @@ namespace Stryker.Core.Mutators
 {
     public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>, IMutator
     {
-        private static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
+        private static readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>
         {
-            {SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression},
-            {SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression},
-            {SyntaxKind.MultiplyAssignmentExpression, SyntaxKind.DivideAssignmentExpression},
-            {SyntaxKind.DivideAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
-            {SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression},
-            {SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression},
-            {SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression},
-            {SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression},
-            {SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression},
+            {SyntaxKind.AddAssignmentExpression, new List<SyntaxKind> { SyntaxKind.SubtractAssignmentExpression } },
+            {SyntaxKind.SubtractAssignmentExpression, new List<SyntaxKind> { SyntaxKind.AddAssignmentExpression } },
+            {SyntaxKind.MultiplyAssignmentExpression, new List<SyntaxKind> { SyntaxKind.DivideAssignmentExpression } },
+            {SyntaxKind.DivideAssignmentExpression, new List<SyntaxKind> { SyntaxKind.MultiplyAssignmentExpression } },
+            {SyntaxKind.ModuloAssignmentExpression, new List<SyntaxKind> { SyntaxKind.MultiplyAssignmentExpression } },
+            {SyntaxKind.AndAssignmentExpression, new List<SyntaxKind> { SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
+            {SyntaxKind.OrAssignmentExpression, new List<SyntaxKind> { SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression } },
+            {SyntaxKind.ExclusiveOrAssignmentExpression, new List<SyntaxKind> { SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression } },
+            {SyntaxKind.LeftShiftAssignmentExpression, new List<SyntaxKind> { SyntaxKind.RightShiftAssignmentExpression } },
+            {SyntaxKind.RightShiftAssignmentExpression, new List<SyntaxKind> { SyntaxKind.LeftShiftAssignmentExpression } },
         };
 
         public override MutationLevel MutationLevel => MutationLevel.Standard;
@@ -25,21 +26,24 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node)
         {
             var assignmentKind = node.Kind();
-            if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignmentKind))
+            if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignmentKinds))
             {
                 if (node.Kind() == SyntaxKind.AddAssignmentExpression 
                     && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
                 {
                     yield break;
                 }
-                
-                yield return new Mutation
+
+                foreach (var targetAssignmentKind in targetAssignmentKinds)
                 {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right),
-                    DisplayName = $"{assignmentKind} to {targetAssignmentKind} mutation",
-                    Type = Mutator.Assignment
-                };
+                    yield return new Mutation
+                    {
+                        OriginalNode = node,
+                        ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right),
+                        DisplayName = $"{assignmentKind} to {targetAssignmentKind} mutation",
+                        Type = Mutator.Assignment
+                    };
+                }
             }
         }
     }

@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 else
                 {
                     // buildalyzer failed, but seems to work anyway.
-                    _logger.LogWarning("Project analyzer result not successful");
+                    _logger.LogDebug("Project analyzer result not successful");
                 }
             }
 

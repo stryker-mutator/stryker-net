@@ -2,8 +2,9 @@
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using System.Linq;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -14,7 +15,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
         public MutantOrchestratorTests()
         {
-            _target = new MutantOrchestrator(options: new StrykerOptions());
+            _target = new MutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
         }
 
         [Fact]
@@ -201,6 +202,20 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(0)?1 - 1:1 + 1), (Str
         {
             string source = @"private const int x = 1 + 2;";
             string expected = @"private const int x = 1 + 2;";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        /// <summary>
+        /// Verifies that <code>EnumMemberDeclarationSyntax</code> nodes are not mutated.
+        /// Mutating would introduce code like <code>StrykerXGJbRBlHxqRdD9O.MutantControl.IsActive(0) ? One + 1 : One - 1</code>
+        /// Since enum members need to be constants, this mutated code would not compile and print a warning.
+        /// </summary>
+        [Fact]
+        public void ShouldNotMutateEnum()
+        {
+            string source = @"private enum Numbers { One = 1, Two = One + 1 }";
+            string expected = @"private enum Numbers { One = 1, Two = One + 1 }";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -518,7 +533,7 @@ namespace TestApp
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(4);
-            foreach(var mutant in mutants)
+            foreach (var mutant in mutants)
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
             }
@@ -540,7 +555,7 @@ namespace TestApp
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Fact]
         public void ShouldAddReturnDefaultToAsyncMethods()
@@ -610,7 +625,7 @@ namespace TestApp
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
-}
+        }
 
         [Theory]
         [InlineData("=> Value = \"Hello, World!\";")]

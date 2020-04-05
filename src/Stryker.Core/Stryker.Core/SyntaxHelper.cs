@@ -33,6 +33,7 @@ namespace Stryker.Core
                 // don't mutate constant fields
                 case FieldDeclarationSyntax field when field.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword):
                 case RecursivePatternSyntax _:
+                case EnumMemberDeclarationSyntax _:
                     return false;
                 default:
                     return true;

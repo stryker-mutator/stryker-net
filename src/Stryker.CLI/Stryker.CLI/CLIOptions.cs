@@ -121,8 +121,8 @@ namespace Stryker.CLI
             DefaultValue = _defaultOptions.OptimizationMode,
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
-    - perTest (Default): capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
-    - all: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+    - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
+    - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
             JsonKey = "coverage-analysis"
         };
@@ -135,6 +135,16 @@ namespace Stryker.CLI
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
+        };
+
+        public static readonly CLIOption<bool> DisableTestingMix = new CLIOption<bool>
+        {
+            ArgumentName = "--disable-testing-mix-mutations",
+            ArgumentShortName = "-tmm",
+            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.DisableTestMix),
+            ArgumentDescription = @"Test each mutation in an isolated test run.",
+            ValueType = CommandOptionType.NoValue,
+            JsonKey = "disable-testing-mix-mutations"
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>

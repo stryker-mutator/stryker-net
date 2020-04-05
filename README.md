@@ -41,10 +41,6 @@ For the full documentation on how to use Stryker.NET, see our [configuration doc
 Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update --global dotnet-stryker`.
 Stryker will notify you when a new version is available on every run.
 
-#### [Deprecated] csproj install
-
-The old way of installing stryker is deprecated and replaced by the dotnet core tool. For a guide on how to upgrade see our [blog](http://stryker-mutator.io/blog/2019-04-05/announcing-dotnet-framework-support).
-
 #### Compatibility
 Runs on test projects targeting:
  - netcoreapp 1.1+

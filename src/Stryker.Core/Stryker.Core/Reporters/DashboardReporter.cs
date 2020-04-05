@@ -70,7 +70,7 @@ namespace Stryker.Core.Reporters
                 {
                     var logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
 
-                    logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), response.ReasonPhrase);
+                    logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
                     return null;
                 }
 
