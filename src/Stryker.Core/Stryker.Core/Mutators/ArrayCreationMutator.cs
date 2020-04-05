@@ -21,6 +21,12 @@ namespace Stryker.Core.Mutators
                 };
             } else if (node is ImplicitArrayCreationExpressionSyntax implicitArrayCreationNode && implicitArrayCreationNode.Initializer.Expressions.Count > 0)
             {
+                var kind = implicitArrayCreationNode.Initializer.Expressions.First().Kind();
+                //var type = kind switch
+                //{
+                //    SyntaxKind.NumericLiteralExpression => 
+                //}
+
                 yield return new Mutation()
                 {
                     OriginalNode = implicitArrayCreationNode,
