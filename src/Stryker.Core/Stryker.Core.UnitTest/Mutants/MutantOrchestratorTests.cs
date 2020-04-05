@@ -175,6 +175,37 @@ private bool Out(out string test)
         }
 
         [Fact]
+        void ShouldMutateArrayInitializer()
+        {
+            string source = @"public int[] Foo(){
+int[] test = { 1 };
+}";
+            string expected = @"public int[] Foo(){
+int[] test = (StrykerNamespace.MutantControl.IsActive(0)?{}:{ 1 });
+returndefault(int[] );}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        void ShouldMutateArrayDeclaration()
+        {
+            string source = @"public int[] Foo() => new int[] { 1 };";
+            string expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new int[] {}:new int[] { 1 });";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        void ShouldMutateListCreation()
+        {
+            string source = @"public int[] Foo() => new List<int> { 1 };";
+            string expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new List<int> {}:new List<int> { 1 });";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateProperties()
         {
             string source = @"private string text = ""Some"" + ""Text"";";
@@ -311,17 +342,17 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         {
             string source = @"private void Linq()
         {
-            var array = new []{1,2};
+            var array = new []{1, 2};
 
             var alt1 = array.Count(x => x % 2 == 0);
             var alt2 = array.Min();
         }";
             string expected = @"private void Linq()
         {
-            var array = new []{1,2};
+            var array = (StrykerNamespace.MutantControl.IsActive(0)?new []{}:new []{1, 2});
 
-            var alt1 = (StrykerNamespace.MutantControl.IsActive(2)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(1)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(0)?x * 2 :x % 2 )== 0)));
-            var alt2 = (StrykerNamespace.MutantControl.IsActive(3)?array.Max():array.Min());
+            var alt1 = (StrykerNamespace.MutantControl.IsActive(3)?array.Sum(x => x % 2 == 0):array.Count(x => (StrykerNamespace.MutantControl.IsActive(2)?x % 2 != 0:(StrykerNamespace.MutantControl.IsActive(1)?x * 2 :x % 2 )== 0)));
+            var alt2 = (StrykerNamespace.MutantControl.IsActive(4)?array.Max():array.Min());
         }";
 
             ShouldMutateSourceToExpected(source, expected);
