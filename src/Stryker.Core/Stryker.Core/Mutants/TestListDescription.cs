@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutants
     public class TestListDescription : ITestListDescription
     {
 
-        public List<TestDescription> Tests { get => _tests }
+        public List<TestDescription> Tests { get => _tests; }
         private List<TestDescription> _tests;
         private static readonly ITestListDescription EveryTests;
         private static readonly ITestListDescription NoTestInstance;
