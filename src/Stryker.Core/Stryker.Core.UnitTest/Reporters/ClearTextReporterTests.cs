@@ -171,7 +171,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
@@ -220,7 +220,7 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var target = new ClearTextReporter(new StrykerOptions(), chalkMock.Object);
+            var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), chalkMock.Object);
 
             var folder = new FolderComposite()
             {
