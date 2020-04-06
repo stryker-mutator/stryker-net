@@ -30,9 +30,9 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportInitialState()
         {
-            _mutantKilledLogger.StartLog("Killed : {0}", 0);
+            _mutantKilledLogger.StartLog("Killed:   {0}", 0);
             _mutantSurvivedLogger.StartLog("Survived: {0}", 0);
-            _mutantTimeoutLogger.StartLog("Timeout : {0}", 0);
+            _mutantTimeoutLogger.StartLog("Timeout:  {0}", 0);
         }
 
         public void ReportMutantTestResult(IReadOnlyMutant mutantTestResult)
@@ -41,7 +41,7 @@ namespace Stryker.Core.Reporters.Progress
             {
                 case MutantStatus.Killed:
                     _mutantsKilledCount++;
-                    _mutantKilledLogger.ReplaceLog("Killed : {0}", _mutantsKilledCount);
+                    _mutantKilledLogger.ReplaceLog("Killed:   {0}", _mutantsKilledCount);
                     break;
                 case MutantStatus.Survived:
                     _mutantsSurvivedCount++;
@@ -49,7 +49,7 @@ namespace Stryker.Core.Reporters.Progress
                     break;
                 case MutantStatus.Timeout:
                     _mutantsTimeoutCount++;
-                    _mutantTimeoutLogger.ReplaceLog("Timeout : {0}", _mutantsTimeoutCount);
+                    _mutantTimeoutLogger.ReplaceLog("Timeout:  {0}", _mutantsTimeoutCount);
                     break;
             };
         }

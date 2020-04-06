@@ -12,8 +12,7 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class FilePatternMutantFilter : IMutantFilter
     {
-        private const string _displayName = "file filter";
-        public string DisplayName => _displayName;
+        public string DisplayName => "file filter";
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
