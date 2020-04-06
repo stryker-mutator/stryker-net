@@ -41,6 +41,7 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -95,6 +96,7 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -155,6 +157,7 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -206,13 +209,15 @@ namespace ExampleProject
                 {
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
+                        ProjectFilePath = "project.csproj",
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
+                            { "SignAssembly", "true"},
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))}
                         },
                         Resources = new List<ResourceDescription>(),
-                        SignAssembly = true,
-                        AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))
                     },
                     TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
                         new ProjectAnalyzerResult(null, null)
@@ -266,13 +271,15 @@ namespace ExampleProject
                 {
                     ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                     {
+                        ProjectFilePath = "project.csproj",
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
+                            { "SignAssembly", "true"},
+                            {"AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))}
                         },
                         Resources = new List<ResourceDescription>(),
-                        SignAssembly = true,
-                        AssemblyOriginatorKeyFile = Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))
                     },
                     TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
                         new ProjectAnalyzerResult(null, null)
@@ -324,6 +331,7 @@ namespace ExampleProject
                         Properties = new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "AssemblyName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },

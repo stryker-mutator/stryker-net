@@ -82,6 +82,19 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
+            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
+            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
+            {
+                _logger.LogInformation("**** Buildalizer properties. ****");
+                // dump properties
+                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
+                {
+                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
+                }
+
+                _logger.LogInformation("**** Buildalizer properties. ****");
+            }
+
             FolderComposite inputFiles;
             if (projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {

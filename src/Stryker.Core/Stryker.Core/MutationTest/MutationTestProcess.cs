@@ -64,7 +64,8 @@ namespace Stryker.Core.MutationTest
                 };
         }
 
-        public void Mutate()
+        public void 
+            Mutate()
         {
             // Mutate source files
             foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())

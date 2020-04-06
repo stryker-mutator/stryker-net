@@ -58,13 +58,7 @@ namespace Stryker.Core.Compiling
                 AddVersionInfoSyntaxes(trees, analyzerResult);
             }
 
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable)
-                .WithAllowUnsafe(true)
-                .WithCryptoKeyFile(analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null)
-                .WithStrongNameProvider(analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null)
-                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
-                .WithConcurrentBuild(true);
+            var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
                 syntaxTrees: trees,
