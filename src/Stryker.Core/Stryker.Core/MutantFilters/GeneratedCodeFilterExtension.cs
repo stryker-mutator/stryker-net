@@ -7,10 +7,12 @@ namespace Stryker.Core.MutantFilters.Extensions
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO.Abstractions;
     using System.Linq;
     using System.Text.RegularExpressions;
 
+    [ExcludeFromCodeCoverage]
     public static class GeneratedCodeFilterExtension
     {
         /// <summary>
