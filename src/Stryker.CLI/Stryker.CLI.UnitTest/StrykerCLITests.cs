@@ -474,6 +474,29 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--diff-compare-dashboard")]
+        [InlineData("-dc")]
+        public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(string argName)
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.VerifyAll();
+
+            options.DiffCompareToDashboard.ShouldBeTrue();
+        }
+
+        [Theory]
         [InlineData("--git-source")]
         [InlineData("-gs")]
         public void ShouldSetGitSourceWhenPassed(string argName)

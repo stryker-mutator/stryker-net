@@ -48,6 +48,7 @@ namespace Stryker.CLI
             CommandOption solutionPath,
             CommandOption languageVersion,
             CommandOption diff,
+            CommandOption diffCompareToDashboard,
             CommandOption gitSource,
             CommandOption testProjects)
         {
@@ -96,6 +97,7 @@ namespace Stryker.CLI
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: GetOption(diff.HasValue(), CLIOptions.Diff),
+                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }

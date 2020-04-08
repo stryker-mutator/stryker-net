@@ -105,6 +105,16 @@ namespace Stryker.CLI
             JsonKey = "diff"
         };
 
+        public static readonly CLIOption<bool> DiffCompareToDashboard = new CLIOption<bool>
+        {
+            ArgumentName = "--diff-compare-dashboard",
+            ArgumentShortName = "-dc",
+            ArgumentDescription = $@"Enables comparing to resultss stored in Stryker Dashboard. This feature is onlt available in combination with {Diff.ArgumentName}",
+            ValueType = CommandOptionType.NoValue,
+            JsonKey = "diff-compare-dashboard"
+
+        };
+
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
         {
             ArgumentName = "--git-source",

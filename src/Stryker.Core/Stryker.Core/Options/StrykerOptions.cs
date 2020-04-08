@@ -29,6 +29,7 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public bool DiffEnabled { get; }
+        public bool DiffCompareToDashboard { get; }
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
@@ -77,6 +78,7 @@ namespace Stryker.Core.Options
             string solutionPath = null,
             string languageVersion = "latest",
             bool diff = false,
+            bool diffCompareToDashboard = false,
             string gitSource = "master",
             string dashboadApiKey = null,
             string projectName = null,
@@ -106,6 +108,7 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
+            DiffCompareToDashboard = diffCompareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
