@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
@@ -14,17 +15,17 @@ namespace Stryker.Core.Clients
     public interface IDashboardClient
     {
         Task<string> PublishReport(string json, string version);
+        Task<JsonReport> PullReport(string version);
     }
 
     public class DashboardClient : IDashboardClient
     {
         private readonly StrykerOptions _options;
-        private readonly IChalk _chalk;
-
-        public DashboardClient(StrykerOptions options, IChalk chalk)
+        private readonly ILogger<DashboardClient> _logger;
+        public DashboardClient(StrykerOptions options)
         {
             _options = options;
-            _chalk = chalk;
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
         }
 
         public async Task<string> PublishReport(string json, string version)
@@ -54,12 +55,44 @@ namespace Stryker.Core.Clients
                     return JsonConvert.DeserializeAnonymousType(jsonResponse, new { Href = "" }).Href;
                 } else
                 {
-                    var logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
-
-                    logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                    _logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
                     return null;
                 }
             }
+        }
+
+        public async Task<JsonReport> PullReport(string version)
+        {
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
+
+            if (_options.ModuleName != null)
+            {
+                url = new Uri(url, $"module={_options.ModuleName}");
+            }
+
+            using (var httpClient = new HttpClient())
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+                requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+
+                var response = await httpClient.SendAsync(requestMessage);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                    return JsonConvert.DeserializeObject<JsonReport>(jsonResponse);
+                }
+                else
+                {
+                    _logger.LogError("Dashboard download failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                    return null;
+                }
+
+
+            }
+
         }
     }
 }
