@@ -181,6 +181,7 @@ namespace Stryker.Core.Initialisation
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
                     path: file.FullPath,
+                    encoding: Encoding.UTF32,
                     options: cSharpParseOptions);
 
                 // don't mutate auto generated code
@@ -199,20 +200,17 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
+        private static void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
         {
             foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
-                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, options: cSharpParseOptions));
+                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32,  options: cSharpParseOptions));
             }
         }
 
-        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private static CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
-            var preprocessorSymbols = analyzerResult.DefineConstants;
-
-            var cSharpParseOptions = new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
-            return cSharpParseOptions;
+            return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.DefineConstants);
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path

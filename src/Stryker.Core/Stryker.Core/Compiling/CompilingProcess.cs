@@ -20,12 +20,15 @@ namespace Stryker.Core.Compiling
         /// </summary>
         /// <param name="syntaxTrees"></param>
         /// <param name="ms">The memorystream to function as output</param>
+        /// <param name="memoryStream"></param>
         /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode);
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ms,
+            Stream memoryStream,
+            bool devMode);
     }
 
     /// <summary>
-    /// This process is in control of compiling the assembly and rollbacking mutations that cannot compile
+    /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// </summary>
     public class CompilingProcess : ICompilingProcess
     {
@@ -41,13 +44,17 @@ namespace Stryker.Core.Compiling
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CompilingProcess>();
         }
 
+        private string AssemblyName =>
+            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
+
         /// <summary>
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
         /// </summary>
-        /// <param name="syntaxTrees">The syntaxtrees to compile</param>
+        /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ms">The memory stream to store the compilation result onto</param>
+        /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// <param name="devMode"></param>
-        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, MemoryStream ms, bool devMode)
+        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ms, Stream symbolStream, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
@@ -55,28 +62,27 @@ namespace Stryker.Core.Compiling
             if (_input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFramework != Framework.NetClassic)
             {
                 // Set assembly and file info for non netclassic frameworks
-                AddVersionInfoSyntaxes(trees, analyzerResult);
+                AddVersionInfoSyntax(trees, analyzerResult);
             }
 
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
-            var compilation = CSharpCompilation.Create(analyzerResult.Properties.GetValueOrDefault("TargetName"),
-                syntaxTrees: trees,
+            var compilation = CSharpCompilation.Create(AssemblyName,
+                syntaxTrees: trees, 
                 options: compilationOptions,
                 references: _input.AssemblyReferences);
-
             RollbackProcessResult rollbackProcessResult;
 
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, compilation, null, false, devMode, retryCount);
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, symbolStream, compilation, null, false, devMode, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
-            if (!emitResult.Success && emitResult.Diagnostics.Any(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error))
+            if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
-                    emitResult.Diagnostics.First(diag => diag.Location == Location.None && diag.Severity == DiagnosticSeverity.Error));
+                    emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
                 throw new StrykerCompilationException("General Build Failure detected.");
             }
 
@@ -84,7 +90,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
             }
 
             if (!emitResult.Success)
@@ -106,6 +112,7 @@ namespace Stryker.Core.Compiling
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(
             Stream ms,
+            Stream symbolStream,
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
@@ -123,33 +130,34 @@ namespace Stryker.Core.Compiling
 
             // reset the memoryStream
             ms.SetLength(0);
+            symbolStream?.SetLength(0);
 
             _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
 
+            var emitOptions = new EmitOptions(false, DebugInformationFormat.PortablePdb, $"{AssemblyName}.pdb");
             var emitResult = compilation.Emit(
                 ms,
+                symbolStream,
                 manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources,
                 win32Resources: compilation.CreateDefaultWin32Resources(
-                    versionResource: true, // Important!
-                    noManifest: false,
-                    manifestContents: null,
-                    iconInIcoFormat: null));
+                    true, // Important!
+                    false,
+                    null,
+                    null), 
+                options: emitOptions);
 
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, ++retryCount);
         }
 
-        private void AddVersionInfoSyntaxes(IList<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
+        private void AddVersionInfoSyntax(IList<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
         {
             // add assembly info
-            StringBuilder assInfo = new StringBuilder();
+            var assInfo = new StringBuilder();
             assInfo.AppendLine("using System.Reflection;");
-            assInfo.AppendLine($"[assembly: AssemblyTitle(\"Mutated {analyzerResult.Properties.GetValueOrDefault("TargetName")}\")]");
-            if (!analyzerResult.Properties.TryGetValue("AssemblyFileVersion", out var versionString))
-            {
-                versionString = "0.0.0";
-            }
+            assInfo.AppendLine($"[assembly: AssemblyTitle(\"Mutated {AssemblyName}\")]");
+            var versionString = analyzerResult.GetPropertyOrDefault("AssemblyFileVersion", analyzerResult.GetPropertyOrDefault("Version", "0.0.0"));
             assInfo.AppendLine($"[assembly: AssemblyFileVersion(\"{versionString}\")]");
             var refVersion = versionString;
             if (!analyzerResult.Properties.TryGetValue("AssemblyVersion", out versionString))
@@ -169,7 +177,7 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location?.SourceTree?.FilePath ?? "Unknown filepath");
+                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location.SourceTree?.FilePath ?? "Unknown filepath");
                 }
             }
             else
@@ -178,19 +186,15 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private string ReadableNumber(int number)
+        private static string ReadableNumber(int number)
         {
-            switch (number)
+            return number switch
             {
-                case 1:
-                    return "first";
-                case 2:
-                    return "second";
-                case 3:
-                    return "third";
-                default:
-                    return number + "th";
-            }
+                1 => "first",
+                2 => "second",
+                3 => "third",
+                _ => (number + "th")
+            };
         }
     }
 }

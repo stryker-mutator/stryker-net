@@ -40,8 +40,8 @@ namespace ExampleProject
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -50,7 +50,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -66,7 +66,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -95,8 +95,8 @@ namespace ExampleProject
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -105,7 +105,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -127,7 +127,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
             rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
                 Times.AtLeast(2));
@@ -156,8 +156,8 @@ namespace ExampleProject
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -166,7 +166,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -182,7 +182,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
 
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -212,8 +212,8 @@ namespace ExampleProject
                         ProjectFilePath = "project.csproj",
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                             { "SignAssembly", "true"},
                             { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))}
                         },
@@ -224,7 +224,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -241,7 +241,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -274,8 +274,8 @@ namespace ExampleProject
                         ProjectFilePath = "project.csproj",
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                             { "SignAssembly", "true"},
                             {"AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))}
                         },
@@ -286,7 +286,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -303,7 +303,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
         }
 
@@ -330,8 +330,8 @@ namespace ExampleProject
                     {
                         Properties = new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
-                            { "TargetFileName", "AssemblyName.dll"},
+                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         },
                         Resources = new List<ResourceDescription>()
                     },
@@ -340,7 +340,7 @@ namespace ExampleProject
                         {
                             Properties = new Dictionary<string, string>()
                             {
-                                { "AssemblyTitle", "AssemblyName"},
+                                { "AssemblyTitle", "TargetFileName"},
                             },
                             Resources = new List<ResourceDescription>()
                         }
@@ -356,7 +356,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");

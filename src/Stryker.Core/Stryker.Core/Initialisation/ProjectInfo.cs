@@ -1,14 +1,14 @@
-﻿using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.ProjectComponents;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -22,9 +22,9 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
 
-        public string GetInjectionPath(ProjectAnalyzerResult projectAnalyzerResult)
+        public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(projectAnalyzerResult.AssemblyPath)), 
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)), 
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
@@ -47,14 +47,12 @@ namespace Stryker.Core.Initialisation
         private readonly ILogger _logger;
         private readonly AnalyzerResult _analyzerResult;
         private string _assemblyPath;
-        private string _assemblyName;
         private IEnumerable<string> _projectReferences;
         private IEnumerable<string> _sourceFiles;
         private IEnumerable<ResourceDescription> _resources;
         private IReadOnlyDictionary<string, string> _properties;
         private string _targetFrameworkVersionString;
         private Framework _targetFramework = Framework.Unknown;
-        private Version _targetFrameworkVersion;
         private string _projectFilePath;
         private string[] _references;
 
@@ -64,19 +62,19 @@ namespace Stryker.Core.Initialisation
             _analyzerResult = analyzerResult;
         }
 
-        public string AssemblyName
-        {
-            get => _assemblyName ?? GetPropertyOrDefault("TargetFileName");
-            set => _assemblyName = value;
-        }
+        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName+".dll");
+
+        public string AssemblyName =>  GetPropertyOrDefault("AssemblyName");
+
+        public string SymbolFileName => $"{AssemblyName}.pdb";
 
         public string AssemblyPath
         {
-            get => _assemblyPath ?? FilePathUtils.NormalizePathSeparators(Path.Combine(
-                FilePathUtils.NormalizePathSeparators(GetPropertyOrDefault("TargetDir")),
-                FilePathUtils.NormalizePathSeparators(AssemblyName)));
+            get => _assemblyPath ?? Path.Combine(TargetDirectory, TargetFileName);
             set => _assemblyPath = FilePathUtils.NormalizePathSeparators(value);
         }
+
+        public string TargetDirectory => _assemblyPath != null ? Path.GetDirectoryName(_assemblyPath) : FilePathUtils.NormalizePathSeparators(GetPropertyOrDefault("TargetDir"));
 
         public IEnumerable<string> ProjectReferences
         {
@@ -134,8 +132,7 @@ namespace Stryker.Core.Initialisation
         /// </example>
         public Version TargetFrameworkVersion
         {
-            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.version;
-            set => _targetFrameworkVersion = value;
+            get => TargetFrameworkAndVersion.version;
         }
 
         public IList<string> DefineConstants
@@ -296,7 +293,7 @@ namespace Stryker.Core.Initialisation
                 .WithAllowUnsafe(GetPropertyOrDefault("AllowUnsafeBlocks", true))
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)
-                .WithModuleName(AssemblyName)
+                .WithModuleName(TargetFileName)
                 .WithOverflowChecks(GetPropertyOrDefault("CheckForOverflowUnderflow", false))
                 ;
 
