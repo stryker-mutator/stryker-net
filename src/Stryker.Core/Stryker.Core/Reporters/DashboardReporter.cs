@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Stryker.Core.Clients;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -18,18 +19,20 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly IChalk _chalk;
+        private readonly IDashboardClient _dashboardClient;
 
-        public DashboardReporter(StrykerOptions options, IChalk chalk = null)
+        public DashboardReporter(StrykerOptions options, IChalk chalk = null, IDashboardClient dashboardClient = null)
         {
             _options = options;
             _chalk = chalk ?? new Chalk();
+            _dashboardClient = dashboardClient;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-            var reportUrl = PublishReport(mutationReport.ToJson()).Result;
+            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion).Result;
 
             if (reportUrl != null)
             {
@@ -40,41 +43,6 @@ namespace Stryker.Core.Reporters
                 _chalk.Red("Uploading to stryker dashboard failed...");
             }
             Console.WriteLine(Environment.NewLine);
-        }
-
-        private async Task<string> PublishReport(string json)
-        {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{_options.ProjectVersion}");
-            if (_options.ModuleName != null)
-            {
-                url = new Uri(url, $"?module={_options.ModuleName}");
-            }
-
-            using (var httpclient = new HttpClient())
-            {
-                var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json")
-                };
-                requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
-
-                var response = await httpclient.SendAsync(requestMessage);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonReponse = await response.Content.ReadAsStringAsync();
-
-                    return JsonConvert.DeserializeAnonymousType(jsonReponse, new { Href = "" }).Href;
-                }
-                else
-                {
-                    var logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
-
-                    logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
-                    return null;
-                }
-
-            }
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
