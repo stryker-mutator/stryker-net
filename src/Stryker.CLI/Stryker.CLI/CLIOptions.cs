@@ -290,6 +290,15 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-version"
         };
 
+        public static readonly CLIOption<string> DashboardUrlOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-url",
+            ArgumentShortName = "-url <dashboard-url>",
+            ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
+            DefaultValue = _defaultOptions.DashboardUrl,
+            JsonKey = "dashboard-url"
+        };
+
         public static readonly CLIOption<IEnumerable<string>> TestProjects = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--test-projects",

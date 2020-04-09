@@ -44,6 +44,7 @@ namespace Stryker.CLI
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
             var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
+            var dashboardUrlParam = CreateOption(app, CLIOptions.DashboardUrlOption);
             var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectNameOption);
             var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleNameOption);
             var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersionOption);
@@ -81,6 +82,7 @@ namespace Stryker.CLI
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporterParam,
                     dashboardApiKey: dashboardApiKeyParam,
+                    dashboardUrl: dashboardUrlParam,
                     reportersProjectName: reportersProjectNameParam,
                     reportersModuleName: reportersModuleNameParam,
                     reportersProjectVersion: reportersProjectVersionParam,

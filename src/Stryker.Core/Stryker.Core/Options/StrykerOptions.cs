@@ -81,6 +81,7 @@ namespace Stryker.Core.Options
             bool diffCompareToDashboard = false,
             string gitSource = "master",
             string dashboadApiKey = null,
+            string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
             string moduleName = null,
             string projectVersion = null,
@@ -111,6 +112,7 @@ namespace Stryker.Core.Options
             DiffCompareToDashboard = diffCompareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
+            DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
         }
 
