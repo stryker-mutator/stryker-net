@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Initialisation
 {
@@ -159,12 +160,6 @@ namespace Stryker.Core.Initialisation
                     continue;
                 }
 
-                // Skip assembly info
-                if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
-                {
-                    continue;
-                }
-
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
@@ -187,6 +182,12 @@ namespace Stryker.Core.Initialisation
                 // don't mutate auto generated code
                 if (syntaxTree.IsGenerated())
                 {
+                    // we found the generated assemblyinfo file
+                    if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
+                    {
+                        // add the mutated text
+                        syntaxTree = InjectMutationLabel(syntaxTree);
+                    }
                     _logger.LogDebug("Skipping auto-generated code file: {fileName}", file.Name);
                     folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
                     continue; // Don't add the file to the folderComposite as we're not reporting on the file
@@ -198,6 +199,35 @@ namespace Stryker.Core.Initialisation
             }
 
             return inputFiles;
+        }
+
+        private SyntaxTree InjectMutationLabel(SyntaxTree syntaxTree)
+        {
+            var root = syntaxTree.GetRoot();
+
+            var myAttribute = ((CompilationUnitSyntax) root).AttributeLists
+                .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
+                                                                     && ((QualifiedNameSyntax) n.Name).Right
+                                                                     .Kind() == SyntaxKind.IdentifierName
+                                                                     && (string)((IdentifierNameSyntax) ((QualifiedNameSyntax) n.Name).Right)
+                                                                     .Identifier.Value == "AssemblyTitleAttribute");
+            var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
+            var newLabel = string.Empty;
+            if (labelNode != null && labelNode.Kind() == SyntaxKind.StringLiteralExpression)
+            {
+                var literal = (LiteralExpressionSyntax) labelNode;
+                newLabel = $"Mutated {literal.Token.Value}";
+            }
+
+            if (myAttribute != null)
+            {
+                var newAttribute = myAttribute.ReplaceNode(labelNode, 
+                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newLabel)));
+                root = root.ReplaceNode(myAttribute, newAttribute);
+                return root.SyntaxTree;
+            }
+
+            return syntaxTree;
         }
 
         private static void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)

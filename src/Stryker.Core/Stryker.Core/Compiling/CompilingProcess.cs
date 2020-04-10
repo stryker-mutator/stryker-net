@@ -3,13 +3,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Stryker.Core.Compiling
 {
@@ -58,13 +56,6 @@ namespace Stryker.Core.Compiling
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
-
-            if (_input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFramework != Framework.NetClassic)
-            {
-                // Set assembly and file info for non netclassic frameworks
-                AddVersionInfoSyntax(trees, analyzerResult);
-            }
-
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
@@ -149,24 +140,6 @@ namespace Stryker.Core.Compiling
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, ++retryCount);
-        }
-
-        private void AddVersionInfoSyntax(IList<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
-        {
-            // add assembly info
-            var assInfo = new StringBuilder();
-            assInfo.AppendLine("using System.Reflection;");
-            assInfo.AppendLine($"[assembly: AssemblyTitle(\"Mutated {AssemblyName}\")]");
-            var versionString = analyzerResult.GetPropertyOrDefault("AssemblyFileVersion", analyzerResult.GetPropertyOrDefault("Version", "0.0.0"));
-            assInfo.AppendLine($"[assembly: AssemblyFileVersion(\"{versionString}\")]");
-            var refVersion = versionString;
-            if (!analyzerResult.Properties.TryGetValue("AssemblyVersion", out versionString))
-            {
-                versionString = refVersion;
-            }
-            assInfo.AppendLine($"[assembly: AssemblyVersion(\"{versionString}\")]");
-
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText(assInfo.ToString(), encoding: Encoding.Default));
         }
 
         private void LogEmitResult(EmitResult result)

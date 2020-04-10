@@ -13,7 +13,6 @@ namespace Stryker.Core.Initialisation
     public interface IProjectFileReader
     {
         ProjectAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath);
-        IEnumerable<string> FindSharedProjects(XDocument document);
     }
 
     public class ProjectFileReader : IProjectFileReader

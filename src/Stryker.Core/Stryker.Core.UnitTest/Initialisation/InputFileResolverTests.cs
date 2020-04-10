@@ -151,7 +151,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
