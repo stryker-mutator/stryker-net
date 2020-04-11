@@ -130,15 +130,9 @@ namespace Stryker.Core.Initialisation
         /// <example>
         /// 3.0
         /// </example>
-        public Version TargetFrameworkVersion
-        {
-            get => TargetFrameworkAndVersion.version;
-        }
+        public Version TargetFrameworkVersion => TargetFrameworkAndVersion.version;
 
-        public IList<string> DefineConstants
-        {
-            get => BuildDefineConstants();
-        }
+        public IList<string> DefineConstants => BuildDefineConstants();
 
         private IList<string> BuildDefineConstants()
         {
@@ -203,6 +197,11 @@ namespace Stryker.Core.Initialisation
             get => _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
             set => _resources = value;
         }
+
+        public string AssemblyAttributeFileName =>
+            GetPropertyOrDefault("GeneratedAssemblyInfoFile",
+                (Path.GetFileNameWithoutExtension(ProjectFilePath) + ".AssemblyInfo.cs")
+                .ToLowerInvariant());
 
         /// <summary>
         /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
