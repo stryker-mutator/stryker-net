@@ -77,28 +77,28 @@ namespace Stryker.Core.Compiling
                 throw new StrykerCompilationException("General Build Failure detected.");
             }
 
-            var maxAttempt = 50;
+            const int maxAttempt = 50;
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
                 (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
             }
 
-            if (!emitResult.Success)
+            if (emitResult.Success)
             {
-                // compiling failed
-                _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
-                foreach (var emitResultDiagnostic in emitResult.Diagnostics)
+                return new CompilingProcessResult()
                 {
-                    _logger.LogWarning($"{emitResultDiagnostic}");
-                }
-                throw new StrykerCompilationException("Failed to restore build able state.");
+                    Success = emitResult.Success,
+                    RollbackResult = rollbackProcessResult
+                };
             }
-            return new CompilingProcessResult()
+            // compiling failed
+            _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
+            foreach (var emitResultDiagnostic in emitResult.Diagnostics)
             {
-                Success = emitResult.Success,
-                RollbackResult = rollbackProcessResult
-            };
+                _logger.LogWarning($"{emitResultDiagnostic}");
+            }
+            throw new StrykerCompilationException("Failed to restore build able state.");
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(
@@ -125,7 +125,7 @@ namespace Stryker.Core.Compiling
 
             _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
 
-            var emitOptions = new EmitOptions(false, DebugInformationFormat.PortablePdb, $"{AssemblyName}.pdb");
+            var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb, $"{AssemblyName}.pdb");
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,

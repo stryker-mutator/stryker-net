@@ -122,7 +122,7 @@ namespace Stryker.Core.MutationTest
         private void CompileMutations()
         {
             using var ms = new MemoryStream();
-            using var msForSymbols = new MemoryStream();
+            using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
             var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
 
@@ -140,11 +140,16 @@ namespace Stryker.Core.MutationTest
                     ms.Position = 0;
                     ms.CopyTo(fs);
                 }
-                // inject the debug symbols into the test project
-                using (var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName)))
+
+                if (msForSymbols != null)
                 {
-                    msForSymbols.Position = 0;
-                    msForSymbols.CopyTo(fs);
+                    // inject the debug symbols into the test project
+                    using (var fs = _fileSystem.File.Create(Path.Combine(injectionPath,
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName)))
+                    {
+                        msForSymbols.Position = 0;
+                        msForSymbols.CopyTo(fs);
+                    }
                 }
 
                 _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
