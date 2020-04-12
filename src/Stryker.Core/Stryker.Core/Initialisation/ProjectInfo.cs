@@ -280,6 +280,18 @@ namespace Stryker.Core.Initialisation
                 case "Exe":
                     kind = OutputKind.ConsoleApplication;
                     break;
+                case "WinExe":
+                    kind = OutputKind.WindowsApplication;
+                    break;
+                case "Module":
+                    kind = OutputKind.NetModule;
+                    break;
+                case "AppContainerExe":
+                    kind = OutputKind.WindowsRuntimeApplication;
+                    break;
+                case "WinMdobj":
+                    kind = OutputKind.WindowsRuntimeMetadata;
+                    break;
             }
 
            if (!Enum.TryParse(typeof(NullableContextOptions), GetPropertyOrDefault("Nullable", "enable"), true, out var nullableOptions))
