@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SystemIOAbstractions>10.0.6</SystemIOAbstractions>
+    <SystemIOAbstractions>10.0.8</SystemIOAbstractions>
     <MicrosoftExtensionsConfiguration>3.1.3</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 </Project>
