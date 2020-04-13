@@ -18,14 +18,17 @@ namespace Stryker.Core.Clients
         Task<JsonReport> PullReport(string version);
     }
 
-    public class DashboardClient : IDashboardClient
+    public class DashboardClient : IDashboardClient, IDisposable
     {
         private readonly StrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
-        public DashboardClient(StrykerOptions options)
+        private readonly HttpClient _httpClient;
+
+        public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
             _options = options;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
+            _httpClient = httpClient ?? new HttpClient();
         }
 
         public async Task<string> PublishReport(string json, string version)
@@ -37,28 +40,28 @@ namespace Stryker.Core.Clients
                 url = new Uri(url, $"?module={_options.ModuleName}");
             }
 
-            using (var httpClient = new HttpClient())
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
             {
-                var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json")
-                };
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
 
-                requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
 
-                var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
-                if(response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                    return JsonConvert.DeserializeAnonymousType(jsonResponse, new { Href = "" }).Href;
-                } else
-                {
-                    _logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
-                    return null;
-                }
+                return JsonConvert.DeserializeAnonymousType(jsonResponse, new { Href = "" }).Href;
             }
+            else
+            {
+                _logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                return null;
+            }
+
         }
 
         public async Task<JsonReport> PullReport(string version)
@@ -70,29 +73,30 @@ namespace Stryker.Core.Clients
                 url = new Uri(url, $"module={_options.ModuleName}");
             }
 
-            using (var httpClient = new HttpClient())
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode)
             {
-                var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
-
-                var response = await httpClient.SendAsync(requestMessage);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                    return JsonConvert.DeserializeObject<JsonReport>(jsonResponse);
-                }
-                else
-                {
-                    _logger.LogError("Dashboard download failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
-                    return null;
-                }
-
+                return JsonConvert.DeserializeObject<JsonReport>(jsonResponse);
+            }
+            else
+            {
+                _logger.LogError("Dashboard download failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                return null;
 
             }
+        }
 
+
+        public void Dispose()
+        {
+            _httpClient.Dispose();
         }
     }
 }

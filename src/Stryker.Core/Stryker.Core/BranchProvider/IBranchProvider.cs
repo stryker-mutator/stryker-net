@@ -6,6 +6,6 @@ namespace Stryker.Core.BranchProvider
 {
     public interface IBranchProvider
     {
-        void GetBranchSHA();
+        string GetCurrentBranchCanonicalName();
     }
 }

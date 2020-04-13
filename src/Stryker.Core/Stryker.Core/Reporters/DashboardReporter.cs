@@ -25,14 +25,21 @@ namespace Stryker.Core.Reporters
         {
             _options = options;
             _chalk = chalk ?? new Chalk();
-            _dashboardClient = dashboardClient;
+            _dashboardClient = dashboardClient ?? new DashboardClient(options);
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion).Result;
+            var projectVersion = _options.ProjectVersion;
+
+            if (_options.DiffCompareToDashboard && _options.CurrentBranchCanonicalName != string.Empty)
+            {
+                projectVersion = _options.CurrentBranchCanonicalName;
+            }
+
+            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), projectVersion).Result;
 
             if (reportUrl != null)
             {

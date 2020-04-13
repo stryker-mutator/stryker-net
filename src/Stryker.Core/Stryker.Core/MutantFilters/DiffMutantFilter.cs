@@ -17,12 +17,17 @@ namespace Stryker.Core.MutantFilters
         {
             if (options.DiffEnabled)
             {
-                _diffResult = diffProvider.ScanDiff();
+                _diffResult = diffProvider.ScanDiff().Result;
             }
         }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
+            if(options.DiffCompareToDashboard && options.Baseline == null)
+            {
+                return mutants;
+            }
+
             if (options.DiffEnabled && !_diffResult.TestsChanged)
             {
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))

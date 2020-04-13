@@ -99,7 +99,7 @@ namespace Stryker.CLI
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: GetOption(diff.HasValue(), CLIOptions.Diff),
-                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
+                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.Diff),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }

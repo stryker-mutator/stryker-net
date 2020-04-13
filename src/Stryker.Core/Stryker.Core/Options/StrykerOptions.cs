@@ -5,6 +5,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Json;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
@@ -43,11 +44,14 @@ namespace Stryker.Core.Options
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
 
+        public string CurrentBranchCanonicalName { get; set; }
+
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
+        public JsonReport Baseline { get; internal set; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;

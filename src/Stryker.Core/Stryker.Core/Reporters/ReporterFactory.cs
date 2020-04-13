@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
@@ -25,7 +26,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, new Chalk()) }
+                { Reporter.Dashboard, new DashboardReporter(options, new Chalk(), new DashboardClient(options)) }
             };
         }
 

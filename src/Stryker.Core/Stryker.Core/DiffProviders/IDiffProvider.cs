@@ -1,7 +1,9 @@
-﻿namespace Stryker.Core.DiffProviders
+﻿using System.Threading.Tasks;
+
+namespace Stryker.Core.DiffProviders
 {
     public interface IDiffProvider
     {
-        DiffResult ScanDiff();
+        Task<DiffResult> ScanDiff();
     }
 }

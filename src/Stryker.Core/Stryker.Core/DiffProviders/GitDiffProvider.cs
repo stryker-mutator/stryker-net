@@ -1,22 +1,55 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.BranchProvider;
+using Stryker.Core.Clients;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
+        private readonly ILogger<GitDiffProvider> _logger;
         private readonly StrykerOptions _options;
+        private readonly IBranchProvider _branchProvider;
+        private readonly IDashboardClient _dashboardClient;
 
-        public GitDiffProvider(StrykerOptions options)
+        public GitDiffProvider(StrykerOptions options, IBranchProvider branchProvider = null, IDashboardClient dashboardClient = null)
         {
+            _logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger<GitDiffProvider>();
             _options = options;
+            _branchProvider = branchProvider ?? new GitBranchProvider(options);
+            _dashboardClient = dashboardClient ?? new DashboardClient(options);
         }
 
-        public DiffResult ScanDiff()
+        private async Task BaselineExists()
         {
+            var branchName = _branchProvider.GetCurrentBranchCanonicalName();
+
+            _options.CurrentBranchCanonicalName = branchName;
+
+            var report = await _dashboardClient.PullReport(branchName);
+
+            _options.Baseline = report;
+
+            if (report == null)
+            {
+                _logger.LogInformation("We could not locate a baseline for project {0}, running a full test to create initial baseline", _options.ProjectName);
+            } else
+            {
+                _logger.LogInformation("Found report of project {0}", _options.ProjectName);
+            }
+        }
+
+
+        public async Task<DiffResult> ScanDiff()
+        {
+
+            await BaselineExists();
+
             string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -39,15 +72,20 @@ namespace Stryker.Core.DiffProviders
                     throw new StrykerInputException("Git source branch does not exist. Please set another source branch or remove the --git-source option.");
                 }
 
-                foreach (var treeChanges in repository.Diff.Compare<TreeChanges>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+                else
                 {
-                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
-                    diffResult.ChangedFiles.Add(diffPath);
-                    if (diffPath.StartsWith(_options.BasePath))
+                    foreach (var treeChanges in repository.Diff.Compare<TreeChanges>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                     {
-                        diffResult.TestsChanged = true;
+                        string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
+                        diffResult.ChangedFiles.Add(diffPath);
+                        if (diffPath.StartsWith(_options.BasePath))
+                        {
+                            diffResult.TestsChanged = true;
+                        }
                     }
                 }
+
+                
             }
             return diffResult;
         }

@@ -18,7 +18,7 @@ namespace Stryker.Core.BranchProvider
             _chalk = new Chalk();
         }
 
-        public void GetBranchSHA()
+        public string GetCurrentBranchCanonicalName()
         {
             string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
@@ -29,16 +29,16 @@ namespace Stryker.Core.BranchProvider
 
             using (var repo = new Repository(repositoryPath))
             {
-                var currentBranchName = repo.Head.FriendlyName;
-                var currentBranch = repo.Branches[currentBranchName];
-
-                string currentBranchHash;
-                if(currentBranch.IsRemote)
+                foreach(var branch in repo.Branches)
                 {
-                    _chalk.Green(true.ToString());
+                    if (branch.IsCurrentRepositoryHead)
+                    {
+                       return branch.UpstreamBranchCanonicalName;                       
+                    }
                 }
-                
             }
+
+            return String.Empty;
         }
     }
 }

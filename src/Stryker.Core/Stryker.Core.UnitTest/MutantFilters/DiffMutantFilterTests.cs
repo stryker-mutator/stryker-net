@@ -8,6 +8,7 @@ using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -20,10 +21,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            diffProvider.Setup(x => x.ScanDiff()).Returns(Task.FromResult(new DiffResult()
             {
                 ChangedFiles = new Collection<string>()
-            });
+            }));
             var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
@@ -40,13 +41,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            diffProvider.Setup(x => x.ScanDiff()).Returns(Task.FromResult(new DiffResult()
             {
                 ChangedFiles = new Collection<string>()
                 {
                     myFile
                 }
-            });
+            }));
             var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
@@ -63,10 +64,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions(diff: false);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            diffProvider.Setup(x => x.ScanDiff()).Returns(Task.FromResult(new DiffResult()
             {
                 ChangedFiles = new Collection<string>()
-            });
+            }));
             var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
@@ -85,13 +86,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             // If a file inside the test project is changed, a test has been changed
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            diffProvider.Setup(x => x.ScanDiff()).Returns(Task.FromResult(new DiffResult()
             {
                 ChangedFiles = new Collection<string>()
                 {
                     myTest
                 }
-            });
+            }));
             var target = new DiffMutantFilter(options, diffProvider.Object);
 
             // check the diff result for a file not inside the test project
