@@ -11,6 +11,8 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
@@ -110,7 +112,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectFilePath = projectUnderTestPath
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
@@ -301,9 +302,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolveImportedProject()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <PropertyGroup>
                 <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -314,7 +315,7 @@ using System.Reflection;
                 <Compile Include=""$(MSBuildThisFileDirectory)shared.cs"" />
                 </ItemGroup>
                 </Project>";
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -695,6 +696,7 @@ using System.Reflection;
                     ProjectFilePath = testProjectPath,
                     References = new string[] { "" }
                 });
+
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
@@ -902,7 +904,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    References = new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }
+                    References = new[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -931,7 +933,7 @@ Please specify a test project name filter that results in one project.
                     TargetFramework = Framework.NetClassic,
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string> { { "IsTestProject", "false" } },
-                    References = new string[] { "" }
+                    References = new[] { "" }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -959,7 +961,7 @@ Please specify a test project name filter that results in one project.
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "true" } }),
-                    References = new string[] { "" }
+                    References = new[] { "" }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -989,7 +991,7 @@ Please specify a test project name filter that results in one project.
                     TargetFrameworkVersionString = "net4.5",
                     ProjectFilePath = testProjectPath,
                     Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
-                    References = new string[] { "" }
+                    References = new[] { "" }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -1049,7 +1051,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { projectUnderTestPath },
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
+                    References = new[] { "" }
                 });
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(new ProjectAnalyzerResult(null, null)
@@ -1112,7 +1114,7 @@ Please specify a test project name filter that results in one project.
         {
             var target = new InputFileResolver();
 
-            var result = target.FindProjectUnderTest(new List<ProjectAnalyzerResult> { new ProjectAnalyzerResult(null, null) { ProjectReferences = new string[] { "../ExampleProject/ExampleProject.csproj" } } }, null);
+            var result = target.FindProjectUnderTest(new List<ProjectAnalyzerResult> { new ProjectAnalyzerResult(null, null) { ProjectReferences = new[] { "../ExampleProject/ExampleProject.csproj" } } }, null);
             result.ShouldBe("../ExampleProject/ExampleProject.csproj");
         }
 

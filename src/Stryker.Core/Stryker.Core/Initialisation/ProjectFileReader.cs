@@ -3,10 +3,7 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
@@ -65,19 +62,6 @@ namespace Stryker.Core.Initialisation
             }
 
             return new ProjectAnalyzerResult(_logger, analyzerResult);
-        }
-
-        public IEnumerable<string> FindSharedProjects(XDocument document)
-        {
-            var importStatements = document.Elements().Descendants()
-                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
-
-            var sharedProjects = importStatements
-                .SelectMany(importStatement => importStatement.Attributes(
-                    XName.Get("Project")))
-                .Select(importFileLocation => FilePathUtils.NormalizePathSeparators(importFileLocation.Value))
-                .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
-            return sharedProjects;
         }
     }
 }

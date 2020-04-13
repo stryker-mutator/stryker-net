@@ -274,30 +274,20 @@ namespace Stryker.Core.Initialisation
 
         public CSharpCompilationOptions GetCompilationOptions()
         {
-            var kind = OutputKind.DynamicallyLinkedLibrary;
-            switch (GetPropertyOrDefault("OutputType"))
+            var kind = GetPropertyOrDefault("OutputType") switch
             {
-                case "Exe":
-                    kind = OutputKind.ConsoleApplication;
-                    break;
-                case "WinExe":
-                    kind = OutputKind.WindowsApplication;
-                    break;
-                case "Module":
-                    kind = OutputKind.NetModule;
-                    break;
-                case "AppContainerExe":
-                    kind = OutputKind.WindowsRuntimeApplication;
-                    break;
-                case "WinMdobj":
-                    kind = OutputKind.WindowsRuntimeMetadata;
-                    break;
-            }
+                "Exe" => OutputKind.ConsoleApplication,
+                "WinExe" => OutputKind.WindowsApplication,
+                "Module" => OutputKind.NetModule,
+                "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
+                "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
+                _ => OutputKind.DynamicallyLinkedLibrary
+            };
 
-           if (!Enum.TryParse(typeof(NullableContextOptions), GetPropertyOrDefault("Nullable", "enable"), true, out var nullableOptions))
-           {
-               nullableOptions = NullableContextOptions.Enable;
-           }
+            if (!Enum.TryParse(typeof(NullableContextOptions), GetPropertyOrDefault("Nullable", "enable"), true, out var nullableOptions))
+            {
+                nullableOptions = NullableContextOptions.Enable;
+            }
             
             var result = new CSharpCompilationOptions(kind)
                 .WithNullableContextOptions((NullableContextOptions) nullableOptions)
@@ -305,8 +295,7 @@ namespace Stryker.Core.Initialisation
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)
                 .WithModuleName(TargetFileName)
-                .WithOverflowChecks(GetPropertyOrDefault("CheckForOverflowUnderflow", false))
-                ;
+                .WithOverflowChecks(GetPropertyOrDefault("CheckForOverflowUnderflow", false));
 
             if (GetPropertyOrDefault("SignAssembly", false))
             {

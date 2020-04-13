@@ -41,7 +41,7 @@ namespace Stryker.Core.Initialisation
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
             _fileSystem = fileSystem;
-            _projectFileReader = projectFileReader;
+            _projectFileReader = projectFileReader ?? new ProjectFileReader();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
@@ -445,7 +445,7 @@ namespace Stryker.Core.Initialisation
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
 
-            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+            foreach (var sharedProject in FindSharedProjects(xDocument))
             {
                 var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
 
@@ -459,6 +459,19 @@ namespace Stryker.Core.Initialisation
             }
 
             return folders;
+        }
+
+        private IEnumerable<string> FindSharedProjects(XDocument document)
+        {
+            var importStatements = document.Elements().Descendants()
+                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+
+            var sharedProjects = importStatements
+                .SelectMany(importStatement => importStatement.Attributes(
+                    XName.Get("Project")))
+                .Select(importFileLocation => FilePathUtils.NormalizePathSeparators(importFileLocation.Value))
+                .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
+            return sharedProjects;
         }
 
         private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)

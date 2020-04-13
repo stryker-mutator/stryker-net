@@ -135,21 +135,17 @@ namespace Stryker.Core.MutationTest
                 }
 
                 // inject the mutated Assembly into the test project
-                using (var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName)))
-                {
-                    ms.Position = 0;
-                    ms.CopyTo(fs);
-                }
+                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                ms.Position = 0;
+                ms.CopyTo(fs);
 
                 if (msForSymbols != null)
                 {
                     // inject the debug symbols into the test project
-                    using (var fs = _fileSystem.File.Create(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName)))
-                    {
-                        msForSymbols.Position = 0;
-                        msForSymbols.CopyTo(fs);
-                    }
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                    msForSymbols.Position = 0;
+                    msForSymbols.CopyTo(symbolDestination);
                 }
 
                 _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
