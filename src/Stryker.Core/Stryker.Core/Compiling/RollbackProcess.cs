@@ -77,9 +77,9 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode node)
+        private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
-            for (; node != null; node = node.Parent)
+            for (var node = startNode; node != null; node = node.Parent)
             {
                 var id = ExtractMutationIfAndId(node);
                 if (id != null) 

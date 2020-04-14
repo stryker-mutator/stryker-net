@@ -17,10 +17,10 @@ namespace Stryker.Core.Compiling
         /// Compiles the given input onto the memorystream
         /// </summary>
         /// <param name="syntaxTrees"></param>
-        /// <param name="ms">The memorystream to function as output</param>
+        /// <param name="ilStream">The memorystream to function as output</param>
         /// <param name="memoryStream"></param>
         /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ms,
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream,
             Stream memoryStream,
             bool devMode);
     }
@@ -49,10 +49,10 @@ namespace Stryker.Core.Compiling
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
         /// </summary>
         /// <param name="syntaxTrees">The syntax trees to compile</param>
-        /// <param name="ms">The memory stream to store the compilation result onto</param>
+        /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// <param name="devMode"></param>
-        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ms, Stream symbolStream, bool devMode)
+        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
@@ -67,7 +67,7 @@ namespace Stryker.Core.Compiling
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, symbolStream, compilation, null, false, devMode, retryCount);
+            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, devMode, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -81,7 +81,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ms, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
             }
 
             if (emitResult.Success)

@@ -86,14 +86,14 @@ namespace Stryker.Core.Initialisation
             // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
             if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
             {
-                _logger.LogInformation("**** Buildalizer properties. ****");
+                _logger.LogInformation("**** Buildalyzer properties. ****");
                 // dump properties
                 foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
                 {
                     _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
                 }
 
-                _logger.LogInformation("**** Buildalizer properties. ****");
+                _logger.LogInformation("**** Buildalyzer properties. ****");
             }
 
             FolderComposite inputFiles;
