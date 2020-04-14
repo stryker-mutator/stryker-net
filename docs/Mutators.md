@@ -105,7 +105,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `TakeWhile()`        | `SkipWhile()`        |
 | `Min()`               | `Max()`               |
 | `Max()`               | `Min()`               |
-| `Sum()`               | `Max()`               |
+| `Sum()`               | `Max()`*               |
 | `Count()`             | `Sum()`               |
 | `Average()`           | `Min()`               |
 | `Reverse()`           | `AsEnumerable()`     |
