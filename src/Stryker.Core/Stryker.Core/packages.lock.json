@@ -108,9 +108,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.0.96, )",
-        "resolved": "2.0.96",
-        "contentHash": "E6673JBzjfwoe3HlVAAxRchfUYloRsCwO/uWyjHswb0PZeFdRjYUJsLU3v4o3l2RQ596bGrLKv6rCWfbVDy0iQ==",
+        "requested": "[2.1.50, )",
+        "resolved": "2.1.50",
+        "contentHash": "GVakGei4vafhiTNier5z7RP5a88EfIMkZuhbyM72lxX98x11B/yi9cj2wib2CwF8ZxOf/UqDOJZ7CNCpmx6TGA==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
