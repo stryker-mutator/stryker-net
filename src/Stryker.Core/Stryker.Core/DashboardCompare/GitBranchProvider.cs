@@ -6,16 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Stryker.Core.BranchProvider
+namespace Stryker.Core.DashboardCompare
 {
     public class GitBranchProvider : IBranchProvider
     {
         private readonly StrykerOptions _options;
-        private readonly Chalk _chalk;
         public GitBranchProvider(StrykerOptions options)
         {
             _options = options;
-            _chalk = new Chalk();
         }
 
         public string GetCurrentBranchCanonicalName()

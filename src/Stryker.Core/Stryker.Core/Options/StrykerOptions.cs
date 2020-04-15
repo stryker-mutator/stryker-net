@@ -51,7 +51,6 @@ namespace Stryker.Core.Options
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
-        public JsonReport Baseline { get; internal set; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;

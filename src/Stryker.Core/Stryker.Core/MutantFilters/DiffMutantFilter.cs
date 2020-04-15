@@ -1,4 +1,5 @@
-﻿using Stryker.Core.DiffProviders;
+﻿using Stryker.Core.DashboardCompare;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -23,7 +24,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            if(options.DiffCompareToDashboard && options.Baseline == null)
+            if(options.DiffCompareToDashboard && BaselineReport.Instance.Report == null)
             {
                 return mutants;
             }

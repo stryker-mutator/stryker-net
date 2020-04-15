@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Stryker.Core.BranchProvider
+namespace Stryker.Core.DashboardCompare
 {
     public interface IBranchProvider
     {

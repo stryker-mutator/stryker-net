@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Stryker.Core.BranchProvider;
 using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
@@ -33,7 +34,7 @@ namespace Stryker.Core.DiffProviders
 
             var report = await _dashboardClient.PullReport(branchName);
 
-            _options.Baseline = report;
+            BaselineReport.Instance.Report = report;
 
             if (report == null)
             {
