@@ -1,6 +1,5 @@
 ﻿using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.BranchProvider;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;

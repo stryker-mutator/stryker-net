@@ -1,7 +1,5 @@
 ﻿using Stryker.Core.Reporters.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Stryker.Core.DashboardCompare
 {

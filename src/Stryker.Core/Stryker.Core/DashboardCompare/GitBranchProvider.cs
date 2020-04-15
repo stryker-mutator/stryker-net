@@ -1,10 +1,7 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Stryker.Core.DashboardCompare
 {
