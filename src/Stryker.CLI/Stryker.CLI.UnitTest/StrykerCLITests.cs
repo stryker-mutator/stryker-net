@@ -497,6 +497,29 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--diff-compare-dashboard")]
+        [InlineData("-dc")]
+        public void ShouldEnableDiffFeatureWhenDashboardComparePassed(string argName)
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.VerifyAll();
+
+            options.DiffEnabled.ShouldBeTrue();
+        }
+
+        [Theory]
         [InlineData("--dashboard-url https://www.example.com/")]
         [InlineData("-url https://www.example.com/")]
         public void ShouldOverwriteDefaultDashboardUrlWhenPassed(string argName)
