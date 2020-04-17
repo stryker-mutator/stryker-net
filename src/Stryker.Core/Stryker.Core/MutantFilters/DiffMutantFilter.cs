@@ -10,8 +10,7 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-        private const string _displayName = "git diff file filter";
-        public string DisplayName => _displayName;
+        public string DisplayName => "git diff file filter";
 
         public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider)
         {

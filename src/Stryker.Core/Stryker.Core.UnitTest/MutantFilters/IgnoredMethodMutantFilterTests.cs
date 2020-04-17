@@ -12,6 +12,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 {
     public class IgnoredMethodMutantFilterTests
     {
+        [Fact]
+        public static void ShouldHaveName()
+        {
+            var target = new IgnoredMethodMutantFilter() as IMutantFilter;
+            target.DisplayName.ShouldBe("method filter");
+        }
+
         [Theory]
         [InlineData("Where", true)]
         [InlineData("Where*", true)]

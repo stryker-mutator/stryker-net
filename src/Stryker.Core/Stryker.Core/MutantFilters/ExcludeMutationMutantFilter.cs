@@ -12,9 +12,7 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class ExcludeMutationMutantFilter : IMutantFilter
     {
-        private const string _displayName = "mutation type filter";
-
-        public string DisplayName => _displayName;
+        public string DisplayName => "mutation type filter";
 
         /// <inheritdoc />
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)

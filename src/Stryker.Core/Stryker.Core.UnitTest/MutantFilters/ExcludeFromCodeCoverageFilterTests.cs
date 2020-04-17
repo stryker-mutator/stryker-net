@@ -12,6 +12,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public static class ExcludeFromCodeCoverageFilterTests
     {
         [Fact]
+        public static void ShouldHaveName()
+        {
+            var target = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
+            target.DisplayName.ShouldBe("exclude from code coverage filter");
+        }
+
+        [Fact]
         public static void OnMethod()
         {
             // Arrange

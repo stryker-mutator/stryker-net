@@ -1,11 +1,4 @@
 ﻿using Buildalyzer;
-using Buildalyzer.Construction;
-using Microsoft.Build.Construction;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Testing
 {

@@ -13,6 +13,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 {
     public class FilePatternMutantFilterTests
     {
+        [Fact]
+        public static void ShouldHaveName()
+        {
+            var target = new FilePatternMutantFilter() as IMutantFilter;
+            target.DisplayName.ShouldBe("file filter");
+        }
+
         [Theory]
         [InlineData(new[] { "**/*" }, "myFolder/MyFile.cs", 5, 10, true)]
         [InlineData(new[] { "**/*File.cs" }, "myFolder/MyFile.cs", 5, 10, true)]

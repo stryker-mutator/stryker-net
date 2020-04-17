@@ -435,7 +435,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = ";" }, endProcess);
 
-                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
                 _mutant.CoveringTests.GetList()[0].Name.ShouldBe("T0");
             }

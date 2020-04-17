@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
-        TestListDescription CoveringTests { get; }
+        ITestListDescription CoveringTests { get; }
         string LongName { get; }
     }
 
@@ -24,8 +24,10 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public TestListDescription CoveringTests { get; set; } = new TestListDescription();
+        public ITestListDescription CoveringTests { get; set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
+
+        public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
         public bool MustRunAgainstAllTests
         {
@@ -40,7 +42,7 @@ namespace Stryker.Core.Mutants
 
         public bool IsStaticValue { get; set; }
 
-        public void AnalyzeTestRun(TestListDescription failedTests, TestListDescription resultRanTests, TestListDescription timedOutTests)
+        public void AnalyzeTestRun(ITestListDescription failedTests, ITestListDescription resultRanTests, ITestListDescription timedOutTests)
         {
             if (!failedTests.IsEmpty && MustRunAgainstAllTests || failedTests.ContainsAny(CoveringTests))
             {

@@ -11,11 +11,10 @@ namespace Stryker.Core.MutantFilters
     /// <summary>
     /// Checks if the mutants are part of ignored method calls.
     /// </summary>
-    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
+    /// <seealso cref="IMutantFilter" />
     public class IgnoredMethodMutantFilter : IMutantFilter
     {
-        private const string _displayName = "method filter";
-        public string DisplayName => _displayName;
+        public string DisplayName => "method filter";
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)
         {

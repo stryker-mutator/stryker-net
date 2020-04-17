@@ -1,14 +1,12 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 
   <PropertyGroup>
-    <SystemIOAbstractions>9.0.6</SystemIOAbstractions>
+    <SystemIOAbstractions>10.0.8</SystemIOAbstractions>
+    <MicrosoftExtensionsConfiguration>3.1.3</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 </Project>
