@@ -319,8 +319,8 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Transitive",
-        "resolved": "2.0.96",
-        "contentHash": "E6673JBzjfwoe3HlVAAxRchfUYloRsCwO/uWyjHswb0PZeFdRjYUJsLU3v4o3l2RQ596bGrLKv6rCWfbVDy0iQ==",
+        "resolved": "2.1.50",
+        "contentHash": "GVakGei4vafhiTNier5z7RP5a88EfIMkZuhbyM72lxX98x11B/yi9cj2wib2CwF8ZxOf/UqDOJZ7CNCpmx6TGA==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -1392,14 +1392,14 @@
           "Microsoft.TestPlatform.ObjectModel": "16.5.0",
           "Microsoft.TestPlatform.Portable": "16.5.0",
           "Microsoft.TestPlatform.TranslationLayer": "16.5.0",
-          "Microsoft.Web.LibraryManager.Build": "2.0.96",
+          "Microsoft.Web.LibraryManager.Build": "2.1.50",
           "Mono.Cecil": "0.11.2",
           "Newtonsoft.Json": "12.0.3",
           "Serilog": "2.9.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.17.1",
+          "Stryker.DataCollector": "0.16.1",
           "System.IO.Abstractions": "10.0.8"
         }
       },
