@@ -290,6 +290,15 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-version"
         };
 
+        public static readonly CLIOption<string> DashboardFallbackVersionOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-fallback-version",
+            ArgumentShortName = "-fallback-version <version>",
+            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
+            DefaultValue = null,
+            JsonKey = "dashboard-fallback-version"
+        };
+
         public static readonly CLIOption<string> DashboardUrlOption = new CLIOption<string>
         {
             ArgumentName = "--dashboard-url",

@@ -71,7 +71,7 @@ namespace Stryker.CLI
             var diffCompareToDashboard = CreateOption(app, CLIOptions.DiffCompareToDashboard);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
-
+            var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
 
             app.HelpOption("--help | -h | -?");
 
@@ -84,6 +84,7 @@ namespace Stryker.CLI
                     dashboardApiKey: dashboardApiKeyParam,
                     dashboardUrl: dashboardUrlParam,
                     reportersProjectName: reportersProjectNameParam,
+                    fallbackVersion: fallbackVersionParam,
                     reportersModuleName: reportersModuleNameParam,
                     reportersProjectVersion: reportersProjectVersionParam,
                     projectUnderTestNameFilter: projectNameParam,

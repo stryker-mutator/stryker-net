@@ -28,6 +28,7 @@ namespace Stryker.CLI
             CommandOption reportersProjectName,
             CommandOption reportersModuleName,
             CommandOption reportersProjectVersion,
+            CommandOption fallbackVersion,
             CommandOption projectUnderTestNameFilter,
             CommandOption additionalTimeoutMS,
             CommandOption excludedMutations,
@@ -79,6 +80,7 @@ namespace Stryker.CLI
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
                 projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),
+                fallbackVersion: GetOption(fallbackVersion.Value(), CLIOptions.DashboardFallbackVersionOption),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
@@ -98,8 +100,8 @@ namespace Stryker.CLI
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
-                diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) ? false : GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
-                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.Diff),
+                diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) ? true : GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
+                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }

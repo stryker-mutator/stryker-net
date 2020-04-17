@@ -33,17 +33,35 @@ namespace Stryker.Core.DiffProviders
 
             var report = await _dashboardClient.PullReport(branchName);
 
-            BaselineReport.Instance.Report = report;
-
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for project {0}, running a full test to create initial baseline", _options.ProjectName);
+                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version", _options.ProjectName);
+
+                await GetFallbackBaseline();
             } else
             {
-                _logger.LogInformation("Found report of project {0}", _options.ProjectName);
+                BaselineReport.Instance.Report = report;
+
+                _logger.LogInformation("Found report of project {0} using version {1} ", _options.ProjectName, branchName);
             }
         }
 
+
+        public async Task GetFallbackBaseline()
+        {
+            var report = await _dashboardClient.PullReport(_options.FallbackVersion);
+
+            if (report == null)
+            {
+                _logger.LogInformation("We could not locate a baseline for project using fallback version. Now running a complete test to establish a baseline.");
+            }
+            else
+            {
+                BaselineReport.Instance.Report = report;
+
+                _logger.LogInformation("Found report of project {0} using version {1}", _options.ProjectName, _options.FallbackVersion);
+            }
+        }
 
         public async Task<DiffResult> ScanDiff()
         {

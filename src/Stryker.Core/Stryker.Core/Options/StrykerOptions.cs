@@ -52,6 +52,8 @@ namespace Stryker.Core.Options
         public string ModuleName { get; }
         public string ProjectVersion { get; }
 
+        public string FallbackVersion { get; }
+
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
@@ -88,6 +90,7 @@ namespace Stryker.Core.Options
             string projectName = null,
             string moduleName = null,
             string projectVersion = null,
+            string fallbackVersion = null,
             IEnumerable<string> testProjects = null)
         {
             _logger = logger;
@@ -116,14 +119,14 @@ namespace Stryker.Core.Options
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
-            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion, FallbackVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion);
         }
 
-        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
+        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion, string FallbackVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion)
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, null, null, null);
+                return (null, null, null, null, null);
             }
 
             var errorStrings = new StringBuilder();
@@ -150,7 +153,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, projectName, moduleName, projectVersion);
+            return (dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion);
         }
 
         private string ValidateGitSource(string gitSource)
