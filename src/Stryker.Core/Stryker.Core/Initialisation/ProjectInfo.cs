@@ -43,9 +43,9 @@ namespace Stryker.Core.Initialisation
     public class ProjectAnalyzerResult
     {
         private readonly ILogger _logger;
-        private readonly AnalyzerResult _analyzerResult;
+        private readonly IAnalyzerResult _analyzerResult;
 
-        public ProjectAnalyzerResult(ILogger logger, AnalyzerResult analyzerResult)
+        public ProjectAnalyzerResult(ILogger logger, IAnalyzerResult analyzerResult)
         {
             _logger = logger;
             _analyzerResult = analyzerResult;
