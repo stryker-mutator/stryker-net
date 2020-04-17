@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
     public class ProjectAnalyzerResult
     {
         private readonly ILogger _logger;
-        private readonly AnalyzerResult _analyzerResult;
+        private readonly IAnalyzerResult _analyzerResult;
         private string _assemblyPath;
         private IEnumerable<string> _projectReferences;
         private IEnumerable<string> _sourceFiles;
@@ -56,7 +56,7 @@ namespace Stryker.Core.Initialisation
         private string _projectFilePath;
         private string[] _references;
 
-        public ProjectAnalyzerResult(ILogger logger, AnalyzerResult analyzerResult)
+        public ProjectAnalyzerResult(ILogger logger, IAnalyzerResult analyzerResult)
         {
             _logger = logger;
             _analyzerResult = analyzerResult;
