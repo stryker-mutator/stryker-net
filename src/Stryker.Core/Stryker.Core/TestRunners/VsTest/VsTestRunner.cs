@@ -82,8 +82,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private bool CantUseStrykerDataCollector()
         {
-            return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.NetCore && t.TargetFrameworkAndVersion.version.Major < 2);
+            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.TargetFrameworkAndVersion()).Any(t =>
+                t.Framework == Framework.NetCore && t.Version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -395,16 +395,16 @@ namespace Stryker.Core.TestRunners.VsTest
         private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, IList<string>> mutantTestsMap)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
-            var targetFramework = projectAnalyzerResult.TargetFramework;
-            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkVersion;
+            var targetFramework = projectAnalyzerResult.TargetFrameworkAndVersion().Framework;
+            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkAndVersion().Version;
             string targetFrameworkVersionString;
 
             switch (targetFramework)
             {
-                case Initialisation.Framework.NetCore:
+                case Framework.NetCore:
                     targetFrameworkVersionString = $".NETCoreApp,Version=v{targetFrameworkVersion}";
                     break;
-                case Initialisation.Framework.NetStandard:
+                case Framework.NetStandard:
                     throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
                 default:
                     targetFrameworkVersionString = $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}";
@@ -429,7 +429,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
-{(targetFramework == Initialisation.Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
+{(targetFramework == Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
  </RunConfiguration>{dataCollectorSettings}
@@ -469,7 +469,7 @@ $@"<RunSettings>
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetTestBinariesPath(testProject)).ToList();
+            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetAssemblyPath(testProject)).ToList();
             var testBinariesLocations = new List<string>();
             _sources = new List<string>();
 

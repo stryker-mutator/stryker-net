@@ -8,6 +8,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -271,7 +272,7 @@ namespace Stryker.Core.MutationTest
 
         public void GetCoverage()
         {
-            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes();
             var mutantsToScan = Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
             foreach (var mutant in mutantsToScan)
             {

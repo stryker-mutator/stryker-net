@@ -3,6 +3,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.ToolHelpers;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -66,7 +67,7 @@ namespace Stryker.Core.Initialisation
                     projectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetFramework == Framework.NetClassic,
+                    testProjects[i].TargetFrameworkAndVersion().Framework == Framework.NetClassic,
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath);
             }

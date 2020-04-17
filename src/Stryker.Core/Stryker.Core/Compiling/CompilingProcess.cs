@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ToolHelpers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,7 +54,7 @@ namespace Stryker.Core.Compiling
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
 
-            if (_input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFramework != Framework.NetClassic)
+            if (analyzerResult.TargetFrameworkAndVersion().Framework != Framework.NetClassic)
             {
                 // Set assembly and file info for non netclassic frameworks
                 AddVersionInfoSyntaxes(trees, analyzerResult);
@@ -61,8 +63,8 @@ namespace Stryker.Core.Compiling
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable)
                 .WithAllowUnsafe(true)
-                .WithCryptoKeyFile(analyzerResult.SignAssembly ? analyzerResult.AssemblyOriginatorKeyFile : null)
-                .WithStrongNameProvider(analyzerResult.SignAssembly ? new DesktopStrongNameProvider() : null)
+                .WithCryptoKeyFile(analyzerResult.IsSignedAssembly() ? analyzerResult.GetAssemblyOriginatorKeyFile() : null)
+                .WithStrongNameProvider(analyzerResult.IsSignedAssembly() ? new DesktopStrongNameProvider() : null)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true);
 
@@ -134,7 +136,7 @@ namespace Stryker.Core.Compiling
 
             var emitResult = compilation.Emit(
                 ms,
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Resources,
+                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     versionResource: true, // Important!
                     noManifest: false,
@@ -146,7 +148,7 @@ namespace Stryker.Core.Compiling
             return (rollbackProcessResult, emitResult, ++retryCount);
         }
 
-        private void AddVersionInfoSyntaxes(IList<SyntaxTree> syntaxTrees, ProjectAnalyzerResult analyzerResult)
+        private void AddVersionInfoSyntaxes(IList<SyntaxTree> syntaxTrees, IAnalyzerResult analyzerResult)
         {
             // add assembly info
             StringBuilder assInfo = new StringBuilder();

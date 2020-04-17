@@ -11,6 +11,7 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -24,7 +25,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         private Mock<IReporter> reporterMock;
         private MutationTestInput mutationTestInput;
         private Mock<IBuildalyzerProvider> buildalyzerProviderMock;
-        private Mock<IBuildalyzer> buildalyzerMock;
 
         public ProjectOrchestratorTests()
         {
@@ -34,7 +34,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             initialisationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
             reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             buildalyzerProviderMock = new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
-            buildalyzerMock = new Mock<IBuildalyzer>(MockBehavior.Strict);
             initialisationProcessProviderMock.Setup(x => x.Provide())
                 .Returns(initialisationProcessMock.Object);
             mutationTestProcessProviderMock.Setup(x => x.Provide(It.IsAny<MutationTestInput>(),
@@ -81,9 +80,16 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldInitializeEachProjectInSolution()
         {
-            var buildalyzerProjectAnalyzerMock = new Mock<IBuildalyzerProjectAnalyzer>(MockBehavior.Strict);
-            var projectAnalyzerResultMock = new Mock<IProjectAnalyzerResult>(MockBehavior.Strict);
+            var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
+            var projectUnderTestAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
+            var testProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
+            var testProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
+            var projectUnderTestProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
+            var testProjectProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
+            var testProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             var buildalyzerProviderMock = new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
+            var testProjectPackagereferenceMock = new Mock<IPackageReference>();
+
             // when a solutionpath is given and it's inside the current directory (basepath)
             var options = new StrykerOptions(basePath: "C:/MyProject", solutionPath: "C:/MyProject/MyProject.sln");
             var target = new ProjectOrchestrator(initialisationProcessProviderMock.Object, mutationTestProcessProviderMock.Object, buildalyzerProviderMock.Object);
@@ -92,18 +98,28 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(mutationTestInput);
             initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerProjectOptions>()))
                 .Returns(5);
-            buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerMock.Object);
-            buildalyzerMock.Setup(x => x.Projects).Returns(
-                new Dictionary<string, IBuildalyzerProjectAnalyzer>()
-                {
-                    { "1", buildalyzerProjectAnalyzerMock.Object }
-                });
-            buildalyzerProjectAnalyzerMock.Setup(x => x.Build()).Returns(projectAnalyzerResultMock.Object);
-            //buildalyzerProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(new ProjectFile());
+            buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
+            // The analyzer finds two projects
+            buildalyzerAnalyzerManagerMock.Setup(x => x.Projects).Returns(new Dictionary<string, IProjectAnalyzer> { 
+                { "put", projectUnderTestAnalyzerMock.Object }, { "test", testProjectAnalyzerMock.Object } 
+            });
+            testProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(testProjectProjectFileMock.Object);
+            testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultsMock.Object);
+            testProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { testProjectAnalyzerResultMock.Object });
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectUnderTest/" });
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
+            projectUnderTestAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectUnderTestProjectFileMock.Object);
+            projectUnderTestProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
+            projectUnderTestProjectFileMock.Setup(x => x.Path).Returns("C:/projectUnderTest/");
+            // The test project references the microsoft.net.test.sdk
+            testProjectPackagereferenceMock.Setup(x => x.Name).Returns("microsoft.net.test.sdk");
+            testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
+                testProjectPackagereferenceMock.Object 
+            });
 
-            var result = target.MutateProjects(options, reporterMock.Object);
+            var result = target.MutateProjects(options, reporterMock.Object).ToList();
 
-            result.ShouldHaveSingleItem();
+            var mutationTestProcess = result.ShouldHaveSingleItem();
         }
     }
 }

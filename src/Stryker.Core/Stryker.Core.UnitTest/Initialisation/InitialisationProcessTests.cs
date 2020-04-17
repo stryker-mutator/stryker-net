@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -30,15 +31,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()))
                 .Returns(new ProjectInfo
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        References = new string[0]
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
-                        {
-                            ProjectFilePath = "C://Example/Dir/ProjectFolder"
-                        }
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: new string[0]).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
                     ProjectContents = new FolderComposite
                     {
@@ -84,15 +80,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>())).Returns(
                 new ProjectInfo
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        References = new string[0]
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
-                        {
-                            ProjectFilePath = "C://Example/Dir/ProjectFolder"
-                        }
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: new string[0]).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
                     ProjectContents = new FolderComposite
                     {

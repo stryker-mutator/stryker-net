@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -8,6 +9,7 @@ using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            var testProjectAnalyzerResults = new List<ProjectAnalyzerResult>();
+            var testProjectAnalyzerResults = new List<IAnalyzerResult>();
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
@@ -100,7 +102,7 @@ namespace Stryker.Core.Initialisation
             return projectInfo;
         }
 
-        private FolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -120,7 +122,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var inputFiles = new FolderComposite() { Name = analyzerResult.ProjectFilePath };
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -195,9 +197,9 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
-            var preprocessorSymbols = analyzerResult.DefineConstants;
+            var preprocessorSymbols = analyzerResult.GetDefineConstants();
 
             var cSharpParseOptions = new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
             return cSharpParseOptions;
@@ -255,7 +257,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, StrykerProjectOptions options)
         {
             var rootFolderComposite = new FolderComposite
             {
@@ -340,7 +342,7 @@ namespace Stryker.Core.Initialisation
             return projectFile;
         }
 
-        public string FindProjectUnderTest(IEnumerable<ProjectAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        public string FindProjectUnderTest(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter)
         {
             IEnumerable<string> projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
@@ -400,7 +402,7 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
+        private IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
@@ -425,7 +427,7 @@ namespace Stryker.Core.Initialisation
             return folders;
         }
 
-        private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
+        private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
         {
             var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
             var properties = projectAnalyzerResult.Properties;
@@ -456,7 +458,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFrameworkAndVersion().Framework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&
@@ -479,7 +481,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFrameworkAndVersion().Framework == Framework.NetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&
@@ -543,7 +545,7 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<ProjectAnalyzerResult> testProjects)
+        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
             var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);

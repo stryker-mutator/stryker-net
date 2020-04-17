@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
@@ -55,25 +56,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
-                        {
-                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" }
-                            }
-                        }
-                    },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" }
-                        }
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" }
+                        }).Object
                     },
                     ProjectContents = new FolderComposite()
                     {
@@ -145,25 +137,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
-                        {
-                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" }
-                            }
-                        }
-                    },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" }
-                        }
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" }
+                        }).Object
                     },
                     ProjectContents = new FolderComposite()
                     {
@@ -230,30 +213,20 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
-            string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "TestName.dll"),
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                                { "TargetFileName", "TestName.dll" }
-                            }
-                        }
-                    },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"),
-                        Properties = new Dictionary<string, string>()
+                            { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "ProjectUnderTest.dll" }
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "ExampleProject.dll" }
-                        }
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestProject.dll" }
+                        }).Object
                     },
                     ProjectContents = new FolderComposite()
                     {
@@ -281,7 +254,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
             });
-            fileSystem.AddDirectory(Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0"));
+            fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
@@ -307,9 +280,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate();
 
             // Verify the created assembly is written to disk on the right location
-            string expectedPath = Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll");
-            fileSystem.FileExists(expectedPath)
-                .ShouldBeTrue($"The mutated Assembly was not written to disk, or not to the right location ({expectedPath}).");
+            string expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
+            fileSystem.ShouldContainFile(expectedPath);
         }
 
         [Fact]
@@ -322,15 +294,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" }
-                        }
-                    },
+                        }).Object,
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
@@ -378,25 +346,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
-                        {
-                            AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" }
-                            }
-                        }
-                    },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" }
-                        }
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" }
+                        }).Object
                     },
                     ProjectContents = new FolderComposite()
                     {

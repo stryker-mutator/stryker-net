@@ -1,4 +1,5 @@
-﻿using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+﻿using Buildalyzer;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
@@ -81,18 +82,19 @@ namespace Stryker.Core.UnitTest.TestRunners
             _projectContents.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                    new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = _testAssemblyPath,
-                        TargetFrameworkVersionString = "toto"
-                    }
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
+                        { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
+                    },
+                    targetFramework: "toto").Object
                 },
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
-                    TargetFrameworkVersionString = "toto"
-                },
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", Path.Combine(filesystemRoot, "app", "bin", "Debug") },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object,
                 ProjectContents = _projectContents
             };
             //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";

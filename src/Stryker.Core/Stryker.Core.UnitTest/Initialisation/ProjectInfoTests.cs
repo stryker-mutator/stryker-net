@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using Buildalyzer;
+using Shouldly;
 using Stryker.Core.Initialisation;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,16 +14,18 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                    new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/test/bin/Debug/TestApp.dll",
-                    }
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
                 },
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = "/app/bin/Debug/AppToTest.dll",
-                }
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
             };
 
             string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
@@ -34,20 +37,22 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                    new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = "/test/bin/Debug/TestApp.UnitTest.dll",
-                    }
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
                 },
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = "/app/bin/Debug/TestApp.dll",
-                }
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
             };
 
-            string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestApp.dll");
-            target.GetInjectionPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
+            string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestName.dll");
+            target.GetAssemblyPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
         }
     }
 }

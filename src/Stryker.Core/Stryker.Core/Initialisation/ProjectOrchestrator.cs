@@ -35,8 +35,6 @@ namespace Stryker.Core.Initialisation
 
         public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters)
         {
-            var test = Path.GetFullPath(options.BasePath);
-            var tes = Path.GetDirectoryName(options.SolutionPath);
             if (options.SolutionPath != null && Path.GetFullPath(options.BasePath) == Path.GetDirectoryName(options.SolutionPath))
             {
                 // mutate all projects in the solution
@@ -46,22 +44,23 @@ namespace Stryker.Core.Initialisation
                 var projects = manager.Projects.Where(x => !x.Value.ProjectFile.PackageReferences.Any(y => y.Name.ToLower().Contains("microsoft.net.test.sdk"))).Select(x => x.Value).ToList();
                 _logger.LogDebug("Found {0} projects", projects.Count);
 
-                var testProjects = manager.Projects.Select(x => x.Value).Except(projects).Select(x => x.Build()).ToList();
-                _logger.LogDebug("Found {0} test projects", testProjects.Count);
+                var testProjectsAnalyzerResults = manager.Projects.Select(x => x.Value).Except(projects).Select(x => x.Build()).ToList();
+                _logger.LogDebug("Found {0} test projects", testProjectsAnalyzerResults.Count);
 
                 foreach (var project in projects)
                 {
-                    var relatedTestProjects = testProjects.Where(x => x.ProjectReferences.Any(y => y == project.ProjectFile.Path)).ToList();
+                    var relatedTestProjects = testProjectsAnalyzerResults.Where(x => x.Results.FirstOrDefault().ProjectReferences.Any(y => y == project.ProjectFile.Path)).ToList();
                     if (relatedTestProjects.Any())
                     {
                         _logger.LogDebug("Matched {0} to {1} test projects:", project.ProjectFile.Path, relatedTestProjects.Count);
-                        foreach (var relatedTestProject in relatedTestProjects)
+                        foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
                         {
-                            _logger.LogDebug("{0}", relatedTestProject.ProjectFilePath);
+                            _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults.Results.FirstOrDefault().ProjectFilePath);
                         }
-                        var projectOptions = options.ToProjectOptions(project.ProjectFile.Path,
-                            project.ProjectFile.Path,
-                            relatedTestProjects.Select(x => x.ProjectFilePath));
+                        var projectOptions = options.ToProjectOptions(
+                            basePath: project.ProjectFile.Path,
+                            projectUnderTest: project.ProjectFile.Path,
+                            testProjects: relatedTestProjects.Select(x => x.Results.FirstOrDefault().ProjectFilePath));
                         yield return PrepareProject(projectOptions, reporters);
                     }
                 }
