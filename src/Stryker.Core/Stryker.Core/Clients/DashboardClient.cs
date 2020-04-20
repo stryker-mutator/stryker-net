@@ -85,7 +85,6 @@ namespace Stryker.Core.Clients
             }
             else
             {
-                _logger.LogError("Dashboard download failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
                 return null;
 
             }

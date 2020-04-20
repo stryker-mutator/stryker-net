@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -34,7 +35,17 @@ namespace Stryker.Core.Reporters
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-            Task.WaitAll(UploadBaseline(mutationReport), UploadHumanReadableReport(mutationReport));
+           
+            if (_options.DiffCompareToDashboard)
+            {
+                var mergedReports = BaselineReport.Instance.Report.MergeReports(mutationReport);
+                Task.WaitAll(UploadBaseline(mergedReports), UploadHumanReadableReport(mergedReports));
+            } else
+            {
+                Task.WaitAll(UploadHumanReadableReport(mutationReport));
+            }
+
+            
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)

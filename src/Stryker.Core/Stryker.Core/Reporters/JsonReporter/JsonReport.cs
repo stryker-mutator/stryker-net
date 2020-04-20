@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Stryker.Core.Reporters.Json
     {
         public string SchemaVersion { get; } = "1.3";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
+        public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
         private static StrykerOptions _options;
@@ -97,6 +98,36 @@ namespace Stryker.Core.Reporters.Json
         {
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }
+
+        /// <summary>
+        /// Passes a report that has to be merged into this one. Values that overlap with this instance of the report will override the current values
+        /// </summary>
+        /// <param name="report"></param>
+        public JsonReport MergeReports(JsonReport report)
+        {
+            var newFiles = new Dictionary<string, JsonReportFileComponent>();
+            foreach (var file in Files)
+            {
+                var normalizedKey = FilePathUtils.NormalizePathSeparators(file.Key);
+                var reportFile = report.Files[normalizedKey];
+                if (reportFile.Mutants.Any(x => x.Status == "Ignored") || reportFile.Mutants.Count == 0)
+                {
+                    newFiles.Add(file.Key, file.Value);
+
+                }
+                else
+                {
+                    newFiles.Add(file.Key, reportFile);
+                }
+            }
+
+            this.Files = newFiles;
+
+            _report = this;
+
+            return this;
+        }
+
 
         private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
         {
