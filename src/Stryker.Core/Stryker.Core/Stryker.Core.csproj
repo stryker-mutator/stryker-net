@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
+    <MicrosoftTestPlatform>16.6.0</MicrosoftTestPlatform>
   </PropertyGroup>
 
   <ItemGroup>
