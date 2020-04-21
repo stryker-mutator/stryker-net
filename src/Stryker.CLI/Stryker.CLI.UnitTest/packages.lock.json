@@ -2,14 +2,20 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v3.1": {
+      "Microsoft.CodeCoverage": {
+        "type": "Direct",
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "szFiDoQV77PwXCKAZsKUISv+DIJs13Ppcm7XtWvLMrkBwSS0BbYsULK2Fs+b4zcJ8PRX6Zz5kRgXdYAymQQtQQ=="
+      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "yHZOhVSPuGqgHi+KhHiAZqNY08avkQraXKvgKgDU8c/ztmGzw7gmukkv49EaTq6T3xmp4XroWk3gAlbJHMxl8w==",
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "Ovn6x+hUumERZlilJLhf9CieJ+Muq1o4Nl/sqqXsOhg/oVNOB7ky2qHFN1gjkEBu3NNXSdOCp1XNW0a7+goeDw==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "16.5.0",
-          "Microsoft.TestPlatform.TestHost": "16.5.0"
+          "Microsoft.CodeCoverage": "16.6.0",
+          "Microsoft.TestPlatform.TestHost": "16.6.0"
         }
       },
       "Moq": {
@@ -207,11 +213,6 @@
           "Microsoft.CodeAnalysis.Common": "[3.5.0]"
         }
       },
-      "Microsoft.CodeCoverage": {
-        "type": "Transitive",
-        "resolved": "16.5.0",
-        "contentHash": "PM5YLtyN45EyUGePJpaNogndlaQPrMgQQXHKMhMESC6KfSVvt+j7+dxBi8NYC6X6dZVysf7ngwhSW3wwvPJRSQ=="
-      },
       "Microsoft.CSharp": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -399,10 +400,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "16.5.0",
-        "contentHash": "ytGymboQIvjNX5pLC0yp/Bz9sGDHqSnLQgBRtd4VrqOUgKmmcfxMYZ6p0TBZgAT1oijdC6xqUZ7rl8mbaaXTJw==",
+        "resolved": "16.6.0",
+        "contentHash": "dcNPv73TbwIoyl8QfEb7o5EzFvGHwTFThAhE3+KCqqLg7j7tMJSoZlmLy8/NCP0Kt70YBkMBPWm/4Rddfrx6Yg==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.5.0",
+          "Microsoft.TestPlatform.ObjectModel": "16.6.0",
           "Newtonsoft.Json": "9.0.1"
         }
       },
@@ -1668,7 +1669,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.17.1",
+          "Stryker.DataCollector": "0.16.1",
           "System.IO.Abstractions": "10.0.8"
         }
       },
