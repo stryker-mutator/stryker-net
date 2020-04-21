@@ -24,7 +24,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            if(options.DiffCompareToDashboard && BaselineReport.Instance.Report == null)
+            if (options.DiffCompareToDashboard && BaselineReport.Instance.Report == null)
             {
                 return mutants;
             }

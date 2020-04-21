@@ -133,6 +133,10 @@ namespace Stryker.Core.Initialisation
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
             };
             var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
+
+            // Save cache in a singleton so we can use it in other parts of the project
+            FolderCompositeCache.Instance.Cache = cache;
+
             inputFiles.Add(rootFolderComposite);
 
             CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
