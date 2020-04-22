@@ -71,7 +71,6 @@ namespace Stryker.Core.Initialisation
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
-                // TODO: the test projects are loaded double here when using solution strategy
                 testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
             }
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
@@ -97,6 +96,7 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
+            ValidateResult(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
 
             return projectInfo;

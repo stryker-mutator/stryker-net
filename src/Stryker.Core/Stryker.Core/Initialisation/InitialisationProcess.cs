@@ -25,7 +25,7 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(StrykerProjectOptions options);
-        int InitialTest(StrykerProjectOptions option);
+        int InitialTest(StrykerProjectOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
