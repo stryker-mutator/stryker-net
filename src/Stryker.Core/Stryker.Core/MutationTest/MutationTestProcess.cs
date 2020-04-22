@@ -8,6 +8,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
@@ -183,50 +184,50 @@ namespace Stryker.Core.MutationTest
 
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
-            if (mutantsToTest.Any())
+            if (!mutantsToTest.Any())
             {
-                var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
-
-                Parallel.ForEach(
-                    mutantGroups,
-                    new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners },
-                    mutants =>
-                    {
-                        var testMutants = new HashSet<Mutant>();
-                        _mutationTestExecutor.Test(mutants, Input.TimeoutMs, 
-                            (testedMutants, failedTests, ranTests, timedOutTest) => 
-                            {
-                                var mustGoOn = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
-                                foreach (var mutant in testedMutants)
-                                {
-                                    mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
-                                    if (mutant.ResultStatus == MutantStatus.NotRun)
-                                    {
-                                        mustGoOn = true;
-                                    }
-                                    else if (!testMutants.Contains(mutant))
-                                    {
-                                        testMutants.Add(mutant);
-                                        _reporter.OnMutantTested(mutant);
-                                    }
-                                }
-
-                                return mustGoOn;
-                            });
-
-                        foreach (var mutant in mutants)
-                        {
-                            if (mutant.ResultStatus == MutantStatus.NotRun)
-                            {
-                                _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
-                            }
-                            else if (!testMutants.Contains(mutant))
-                            {
-                                _reporter.OnMutantTested(mutant);
-                            }
-                        }
-                    });
+                return new StrykerRunResult(_options, double.NaN);
             }
+            var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
+
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners };
+            Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
+            {
+                var testMutants = new HashSet<Mutant>();
+
+                TestUpdateHandler testUpdateHandler = (testedMutants, failedTests, ranTests, timedOutTest) =>
+                {
+                    var mustGoOn = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                    foreach (var mutant in testedMutants)
+                    {
+                        mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+                        if (mutant.ResultStatus == MutantStatus.NotRun)
+                        {
+                            mustGoOn = true;
+                        }
+                        else if (!testMutants.Contains(mutant))
+                        {
+                            testMutants.Add(mutant);
+                            _reporter.OnMutantTested(mutant);
+                        }
+                    }
+
+                    return mustGoOn;
+                };
+                _mutationTestExecutor.Test(mutants, Input.TimeoutMs, testUpdateHandler);
+                    
+                foreach (var mutant in mutants)
+                {
+                    if (mutant.ResultStatus == MutantStatus.NotRun)
+                    {
+                        _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
+                    }
+                    else if (!testMutants.Contains(mutant))
+                    {
+                        _reporter.OnMutantTested(mutant);
+                    }
+                }
+            });
 
             _mutationTestExecutor.TestRunner.Dispose();
 

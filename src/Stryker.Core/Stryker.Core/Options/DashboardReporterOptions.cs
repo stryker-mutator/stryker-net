@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.Options
+﻿namespace Stryker.Core.Options
 {
     public class DashboardReporterOptions
     {

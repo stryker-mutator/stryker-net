@@ -1,5 +1,4 @@
-﻿using Buildalyzer;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Stryker.Core.Exceptions;
@@ -26,12 +25,11 @@ namespace Stryker.Core
 
     public class StrykerRunner : IStrykerRunner
     {
-        private IReporter _reporters;
         private readonly IProjectOrchestrator _projectOrchestrator;
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private readonly IFileSystem _fileSystem;
         private ILogger _logger;
-        private IReporterFactory _reporterFactory;
+        private readonly IReporterFactory _reporterFactory;
 
         public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IFileSystem fileSystem = null, IReporterFactory reporterFactory = null)
         {
@@ -57,13 +55,13 @@ namespace Stryker.Core
 
             CreateOutputDirWithGitignore(options);
 
-            _reporters = _reporterFactory.Create(options);
+            var reporters = _reporterFactory.Create(options);
 
             SetupLogging(options, initialLogMessages);
 
             try
             {
-                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, _reporters).ToList();
+                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
                 var rootComponent = new FolderComposite();
                 rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
@@ -72,7 +70,7 @@ namespace Stryker.Core
                 
                 AnalyseCoverage(options);
 
-                _reporters.OnMutantsCreated(rootComponent);
+                reporters.OnMutantsCreated(rootComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
@@ -94,7 +92,7 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, double.NaN);
                 }
 
-                _reporters.OnStartMutantTestRun(mutantsNotRun);
+                reporters.OnStartMutantTestRun(mutantsNotRun);
 
                 foreach (var project in _mutationTestProcesses)
                 {
@@ -102,7 +100,7 @@ namespace Stryker.Core
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
-                _reporters.OnAllMutantsTested(rootComponent);
+                reporters.OnAllMutantsTested(rootComponent);
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
