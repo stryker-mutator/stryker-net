@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
@@ -13,7 +12,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
@@ -123,45 +121,50 @@ namespace Stryker.Core.MutationTest
 
         private void CompileMutations()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
+            // compile the mutated syntax trees
+            var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
+
+            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
-                // compile the mutated syntax trees
-                var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, _options.DevMode);
-
-                foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+                var injectionPath = testProject.TargetDirectory;
+                if (!_fileSystem.Directory.Exists(injectionPath))
                 {
-                    var injectionPath = _input.ProjectInfo.GetInjectionPath(testProject);
-                    if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
-                        !_fileSystem.File.Exists(injectionPath))
-                    {
-                        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
-                    }
-
-                    // inject the mutated Assembly into the test project
-                    using (var fs = _fileSystem.File.Create(injectionPath))
-                    {
-                        ms.Position = 0;
-                        ms.CopyTo(fs);
-                    }
-
-                    _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                    _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
-                // if a rollback took place, mark the rollbacked mutants as status:BuildError
-                if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
-                {
-                    foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
-                        .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
-                    {
-                        // Ignore compilation errors if the mutation is skipped anyways.
-                        if (mutant.ResultStatus == MutantStatus.Ignored)
-                        {
-                            continue;
-                        }
+                // inject the mutated Assembly into the test project
+                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                ms.Position = 0;
+                ms.CopyTo(fs);
 
-                        mutant.ResultStatus = MutantStatus.CompileError;
-                        mutant.ResultStatusReason = "Could not compile";
+                if (msForSymbols != null)
+                {
+                    // inject the debug symbols into the test project
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                    msForSymbols.Position = 0;
+                    msForSymbols.CopyTo(symbolDestination);
+                }
+
+                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+            }
+
+            // if a rollback took place, mark the rolled back mutants as status:BuildError
+            if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
+            {
+                foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
+                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
+                {
+                    // Ignore compilation errors if the mutation is skipped anyways.
+                    if (mutant.ResultStatus == MutantStatus.Ignored)
+                    {
+                        continue;
                     }
+
+                    mutant.ResultStatus = MutantStatus.CompileError;
+                    mutant.ResultStatusReason = "Could not compile";
                 }
             }
         }

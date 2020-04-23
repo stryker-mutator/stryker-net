@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             Properties = new Dictionary<string, string>()
                             {
                                 { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" }
+                                { "AssemblyName", "TestName" }
                             }
                         }
                     },
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "AssemblyName", "TestName" }
                         }
                     },
                     ProjectContents = new FolderComposite()
@@ -106,7 +106,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), true))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), true))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
@@ -152,7 +152,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             Properties = new Dictionary<string, string>()
                             {
                                 { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" }
+                                { "AssemblyName", "TestName" },
                             }
                         }
                     },
@@ -162,7 +162,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "AssemblyName", "TestName" },
                         }
                     },
                     ProjectContents = new FolderComposite()
@@ -198,7 +198,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), true))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), true))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true
@@ -242,7 +242,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             Properties = new Dictionary<string, string>()
                             {
                                 { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                                { "TargetFileName", "TestName.dll" }
+                                { "AssemblyName", "TestName" },
                             }
                         }
                     },
@@ -252,7 +252,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         Properties = new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(basePath, "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "ExampleProject.dll" }
+                            { "AssemblyName", "ExampleProject" }
                         }
                     },
                     ProjectContents = new FolderComposite()
@@ -288,7 +288,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
+            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
                 .Returns(new CompilingProcessResult()
                 {
                     Success = true

@@ -103,20 +103,26 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Linq Methods
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
-| `SingleOrDefault()`   | `FirstOrDefault()`    |
-| `FirstOrDefault()`    | `SingleOrDefault()`   |
+| `SingleOrDefault()`  | `FirstOrDefault()`    |
+| `FirstOrDefault()`   | `SingleOrDefault()`   |
 | `First()`             | `Last()`              |
 | `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
 | `Skip()`              | `Take()`              |
 | `Take()`              | `Skip()`              |
-| `SkipWhile()`         | `TakeWhile()`         |
-| `TakeWhile()`         | `SkipWhile()`         |
+| `SkipWhile()`        | `TakeWhile()`        |
+| `TakeWhile()`        | `SkipWhile()`        |
 | `Min()`               | `Max()`               |
 | `Max()`               | `Min()`               |
-| `Sum()`               | `Count()`             |
+| `Sum()`               | `Max()`*               |
 | `Count()`             | `Sum()`               |
+| `Average()`           | `Min()`               |
+| `Reverse()`           | `AsEnumerable()`     |
+| `AsEnumerable()`     | `Reverse()`           |
+
+*
+`Sum()` was mutated to `Count()` in previous versions; this change reduces compilation errors.
 
 ## String Literals and Constants
 | Original | Mutated |

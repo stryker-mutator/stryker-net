@@ -78,39 +78,39 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "6cHAcPNDf7itR729Mg+3N3Q3NfxRHgYYfrXTdct9obqUC6yoTiC/W2EdTkbqVC4fyeH7ZT7aoxiJgzi/O8OLvg=="
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "MkfdLmKJdAItvmL/qZDrWuUfPPdibjI37CSsfOjRFyMkG4UShTTsOecja+InY6/55OCpjmNhwVQZ2oXRTCokaw=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "NnLFxmFBCAS6kye2JFszD5WKgj4Zve5KX/R0mhYwh6BVnSeybI2unRnjEPtLyY3CAVhwrY4bh/8LNFtslAcGZg==",
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "NRp3QGR9VmMiDG5kotgLfnzRHKJAYDHh99m9/khoMhoh1zSiOJHn14pKdbgnYCe/GUHTy/oBVFe3Vo/aQhIR4w==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "dB/OoM6LYrGYRBb2/WFruoQuq0KYcaIf5V9PxiZY1FQHkK+opq+TAuDAtyjeYVyTuEFNqdHfJdgmG6dngJFK6w=="
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "xNwD8+hYzhWBCJH2tG5yb5XaS+3ubam4g/YkCW0AnkykjtM722O1ZKF89MLc2k1N0Xo9VuoktOq0dC/PYlA19A=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[16.5.0, )",
-        "resolved": "16.5.0",
-        "contentHash": "swiVIKahahAp3Otj+0ovphZh2+mAWvnhfYl1J4dG/k1QcKb+PIMjfPE6BOTLfFDi8PyhZP9ChEN7wOYd7w3TrA==",
+        "requested": "[16.6.0, )",
+        "resolved": "16.6.0",
+        "contentHash": "ZThdMYjehTCvgHv+6OQZX4WQ3x1+yzaH5AWO1LxGIP7LeuPmSp+SQXD1wTKbXk/M9A+0Ro0/ay6vj7Rwzb24gQ==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.0.96, )",
-        "resolved": "2.0.96",
-        "contentHash": "E6673JBzjfwoe3HlVAAxRchfUYloRsCwO/uWyjHswb0PZeFdRjYUJsLU3v4o3l2RQ596bGrLKv6rCWfbVDy0iQ==",
+        "requested": "[2.1.76, )",
+        "resolved": "2.1.76",
+        "contentHash": "hrC3MLBsT2i4798p43Ng6Oq9SGaawxofz6WvbPI9vxtdGSSoHQ12PWem5kMyyvB7a12a1UImdgLGhq+0+vkiKw==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -172,9 +172,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "Nb+D5ai5LYV3MAzk4ctwSkgzKeJiesRKTaeL2heXj0a74HPjJWQ+5v5rq91OuKkeT9fAeY+xPYrxG2EZTXatWA==",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "nA/MCPBUc2JpnBHn+PDMiatCjsK6Q7gqnMuY00nHFJP3wj6lakiLfpqXjYJR7I9BnBPsQddC6vF7PvQQ27ljtA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -1379,7 +1379,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.5.0"
+          "Microsoft.TestPlatform.ObjectModel": "16.6.0"
         }
       }
     }
