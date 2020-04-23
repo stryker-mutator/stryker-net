@@ -31,7 +31,7 @@ namespace Stryker.Core.MutationTest
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
         private readonly ILogger _logger;
-        private readonly IEnumerable<IMutantFilter> _mutantFilters;
+        private readonly IMutantFilter _mutantFilter;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
@@ -44,7 +44,7 @@ namespace Stryker.Core.MutationTest
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
-            IEnumerable<IMutantFilter> mutantFilters = null)
+            IMutantFilter mutantFilter = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
@@ -54,14 +54,7 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilters = mutantFilters ?? new IMutantFilter[]
-                {
-                    new FilePatternMutantFilter(),
-                    new IgnoredMethodMutantFilter(),
-                    new ExcludeMutationMutantFilter(),
-                    new DiffMutantFilter(_options, new GitDiffProvider(_options)),
-                    new ExcludeFromCodeCoverageFilter()
-                };
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
         }
 
         public void Mutate()
@@ -82,19 +75,8 @@ namespace Stryker.Core.MutationTest
                 var allMutants = _orchestrator.GetLatestMutantBatch();
                 IEnumerable<Mutant> filteredMutants = allMutants;
 
-                foreach (var mutantFilter in _mutantFilters)
-                {
-                    var current = mutantFilter.FilterMutants(filteredMutants, file, _options).ToList();
+                filteredMutants = _mutantFilter.FilterMutants(filteredMutants, file, _options).ToList();
 
-                    // Mark the filtered mutants as skipped
-                    foreach (var skippedMutant in filteredMutants.Except(current))
-                    {
-                        skippedMutant.ResultStatus = MutantStatus.Ignored;
-                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
-                    }
-
-                    filteredMutants = current;
-                }
 
                 // Store the generated mutants in the file
                 file.Mutants = allMutants;
@@ -196,19 +178,19 @@ namespace Stryker.Core.MutationTest
                 var total = testCount * viableMutantsCount;
                 if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
             else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
             {
                 var total = viableMutantsCount;
                 var toTest = mutantsToTest.Count();
-                if (total > 0  && total!= toTest)
+                if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
-            
+
             if (mutantsToTest.Any())
             {
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);

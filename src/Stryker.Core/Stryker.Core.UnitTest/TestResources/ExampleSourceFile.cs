@@ -25,5 +25,15 @@ namespace ExampleProject
                     Dolor Sit Amet
                     Lorem Dolor Sit";
         }
+
+
+        private void StringSplit()
+        {
+            var testString = "";
+
+            testString.Split("\n");
+
+
+        }
     }
 }

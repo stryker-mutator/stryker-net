@@ -4,6 +4,6 @@ namespace Stryker.Core.DiffProviders
 {
     public interface IDiffProvider
     {
-        Task<DiffResult> ScanDiff();
+        DiffResult ScanDiff();
     }
 }

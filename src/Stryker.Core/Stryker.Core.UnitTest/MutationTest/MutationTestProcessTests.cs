@@ -121,7 +121,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                Enumerable.Empty<IMutantFilter>());
+                new BroadcastMutantFilter(new IMutantFilter[] { }));
 
             // start mutation process
             target.Mutate();
@@ -217,7 +217,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new[] { mutantFilterMock.Object });
+                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }));
 
             // start mutation process
             target.Mutate();
@@ -302,7 +302,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                Enumerable.Empty<IMutantFilter>());
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
 
             target.Mutate();
 
@@ -432,7 +432,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 executorMock.Object,
-                mutantFilters: Enumerable.Empty<IMutantFilter>(),
+                mutantFilter: new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
                 options: options);
 
             target.Test(options);
