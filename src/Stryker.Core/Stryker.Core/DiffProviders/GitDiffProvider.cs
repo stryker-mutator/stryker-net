@@ -1,11 +1,19 @@
 ﻿using LibGit2Sharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.DiffProviders
@@ -25,7 +33,7 @@ namespace Stryker.Core.DiffProviders
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
         }
 
-        private async Task BaselineExists()
+        private async Task<JsonReport> GetBaseline()
         {
             var branchName = _branchProvider.GetCurrentBranchCanonicalName();
 
@@ -37,36 +45,79 @@ namespace Stryker.Core.DiffProviders
             {
                 _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version", _options.ProjectName);
 
-                await GetFallbackBaseline();
-            } else
-            {
-                BaselineReport.Instance.Report = report;
-
-                _logger.LogInformation("Found report of project {0} using version {1} ", _options.ProjectName, branchName);
+                return await GetFallbackBaseline();
             }
+
+            _logger.LogInformation("Found report of project {0} using version {1} ", _options.ProjectName, branchName);
+
+            return report;
         }
 
-
-        public async Task GetFallbackBaseline()
+        public async Task<JsonReport> GetFallbackBaseline()
         {
             var report = await _dashboardClient.PullReport(_options.FallbackVersion);
 
             if (report == null)
             {
                 _logger.LogInformation("We could not locate a baseline for project using fallback version. Now running a complete test to establish a baseline.");
+                return null;
             }
             else
             {
-                BaselineReport.Instance.Report = report;
-
                 _logger.LogInformation("Found report of project {0} using version {1}", _options.ProjectName, _options.FallbackVersion);
+
+                return report;
             }
+        }
+
+
+        public async Task UpdateFolderCompositeCacheWithBaseline()
+        {
+            var baseline = await GetBaseline();
+
+            var cache = FolderCompositeCache.Instance.Cache;
+
+            foreach (var baselineFile in baseline.Files)
+            {
+                var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
+                var fileName = Path.GetFileName(filePath);
+                var directoryName = Path.GetDirectoryName(filePath);
+
+                var cacheFile = cache[directoryName].Children.FirstOrDefault(x => x.Name == fileName);
+
+                foreach (var baselineMutant in baselineFile.Value.Mutants)
+                {
+                    var baselineSourceCode = baselineFile.Value.Source;
+
+                    var mutantSource = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
+                }
+
+            }
+        }
+
+
+        public string GetMutantSourceCode(string source, JsonMutant mutant)
+        {
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
+
+            var beginLinePosition = new LinePosition(mutant.Location.Start.Line - 1, mutant.Location.Start.Column - 1);
+            var endLinePosition = new LinePosition(mutant.Location.End.Line - 1, mutant.Location.End.Column - 1);
+
+            LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
+
+            var textSpan = tree.GetText().Lines.GetTextSpan(span);
+
+            return tree.GetRoot().DescendantNodes(textSpan)
+                .First(n => textSpan.Contains(n.Span)).ToString();
+            
         }
 
         public async Task<DiffResult> ScanDiff()
         {
-
-            await BaselineExists();
+            if (_options.DiffCompareToDashboard)
+            {
+                await UpdateFolderCompositeCacheWithBaseline();
+            }
 
             string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
@@ -103,7 +154,7 @@ namespace Stryker.Core.DiffProviders
                     }
                 }
 
-                
+
             }
             return diffResult;
         }

@@ -1,8 +1,10 @@
 ﻿using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.Json;
 using System.Collections.Generic;
 using System.Linq;
 

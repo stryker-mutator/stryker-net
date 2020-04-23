@@ -18,5 +18,12 @@ namespace ExampleProject
             }
             return 0;
         }
+
+        private string LoremIpsum()
+        {
+            return @"Lorem Ipsum
+                    Dolor Sit Amet
+                    Lorem Dolor Sit";
+        }
     }
 }
