@@ -8,6 +8,7 @@ using Stryker.Core.DiffProviders;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
@@ -27,6 +28,9 @@ namespace Stryker.Core.MutantFilters
         private readonly IBranchProvider _branchProvider;
 
         private readonly StrykerOptions _options;
+
+        private readonly JsonReport _baseline;
+
         private ILogger<DiffMutantFilter> _logger;
         private const string _displayName = "git diff file filter";
         public string DisplayName => _displayName;
@@ -39,23 +43,39 @@ namespace Stryker.Core.MutantFilters
             _branchProvider = branchProvider ?? new GitBranchProvider(options);
             _options = options;
 
+            if (options.DiffCompareToDashboard)
+            {
+                _baseline = GetBaseline().Result;
+            }
+
+
             if (options.DiffEnabled)
             {
                 _diffResult = diffProvider.ScanDiff();
             }
         }
-
+        
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            if (options.DiffCompareToDashboard && BaselineReport.Instance.Report == null)
+            if (options.DiffCompareToDashboard)
             {
-                return mutants;
+                if (_baseline == null)
+                {
+                    return mutants;
+                } else
+                {
+                    UpdateMutantsWithBaseline(mutants, file);
+                }
             }
 
             if (options.DiffEnabled && !_diffResult.TestsChanged)
             {
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))
                 {
+                    foreach(var mutant in mutants)
+                    {
+                        mutant.ResultStatus = MutantStatus.NotRun;
+                    }
                     return mutants;
                 }
                 return Enumerable.Empty<Mutant>();
@@ -100,37 +120,27 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-
-        public async Task UpdateFolderCompositeCacheWithBaseline()
+        private void UpdateMutantsWithBaseline(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            var baseline = await GetBaseline();
-
-            var cache = FolderCompositeCache.Instance.Cache;
-
-            foreach (var baselineFile in baseline.Files)
+            foreach(var baselineFile in _baseline.Files)
             {
                 var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
-                var fileName = Path.GetFileName(filePath);
-                var directoryName = Path.GetDirectoryName(filePath);
 
-                var cacheFile = cache[directoryName].Children.FirstOrDefault(x => x.Name == fileName);
-
-                foreach (var baselineMutant in baselineFile.Value.Mutants)
+                if (filePath == file.RelativePath)
                 {
-
-                    var mutantSource = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
-
-                    foreach (var cacheMutant in cacheFile.Mutants)
+                    foreach (var baselineMutant in baselineFile.Value.Mutants)
                     {
-                        if (mutantSource.Equals(cacheMutant.Mutation.OriginalNode.ToString()))
-                        {
-                            cacheMutant.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                            cacheMutant.ResultStatusReason = "Based on previous run.";
+                        var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
+                        var mutant = mutants.FirstOrDefault(x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode 
+                        && x.Mutation.DisplayName ==  baselineMutant.MutatorName);
+
+                        if (mutant != null)
+                        {
+                            mutant.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
                         }
                     }
                 }
-
             }
         }
 

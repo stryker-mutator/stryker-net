@@ -54,7 +54,7 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
+            _mutantFilter = mutantFilter ?? BroadcastMutantFilterFactory.Create(options);
         }
 
         public void Mutate()
