@@ -1,13 +1,14 @@
-﻿using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.ProjectComponents;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -21,9 +22,10 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public FolderComposite ProjectContents { get; set; }
 
-        public string GetInjectionPath(ProjectAnalyzerResult projectAnalyzerResult)
+        public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(projectAnalyzerResult.AssemblyPath)), Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)), 
+                Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
         public string GetTestBinariesPath(ProjectAnalyzerResult projectAnalyzerResult)
@@ -38,12 +40,21 @@ namespace Stryker.Core.Initialisation
         NetCore,
         NetStandard,
         Unknown
-    };
+    }
 
     public class ProjectAnalyzerResult
     {
         private readonly ILogger _logger;
         private readonly IAnalyzerResult _analyzerResult;
+        private string _assemblyPath;
+        private IEnumerable<string> _projectReferences;
+        private IEnumerable<string> _sourceFiles;
+        private IEnumerable<ResourceDescription> _resources;
+        private IReadOnlyDictionary<string, string> _properties;
+        private string _targetFrameworkVersionString;
+        private Framework _targetFramework = Framework.Unknown;
+        private string _projectFilePath;
+        private string[] _references;
 
         public ProjectAnalyzerResult(ILogger logger, IAnalyzerResult analyzerResult)
         {
@@ -51,17 +62,19 @@ namespace Stryker.Core.Initialisation
             _analyzerResult = analyzerResult;
         }
 
-        private string _assemblyPath;
+        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName+".dll");
+
+        public string AssemblyName =>  GetPropertyOrDefault("AssemblyName");
+
+        public string SymbolFileName => $"{AssemblyName}.pdb";
 
         public string AssemblyPath
         {
-            get => _assemblyPath ?? FilePathUtils.NormalizePathSeparators(Path.Combine(
-                FilePathUtils.NormalizePathSeparators(_analyzerResult.Properties["TargetDir"]),
-                FilePathUtils.NormalizePathSeparators(_analyzerResult.Properties["TargetFileName"])));
+            get => _assemblyPath ?? Path.Combine(TargetDirectory, TargetFileName);
             set => _assemblyPath = FilePathUtils.NormalizePathSeparators(value);
         }
 
-        private IEnumerable<string> _projectReferences;
+        public string TargetDirectory => _assemblyPath != null ? Path.GetDirectoryName(_assemblyPath) : FilePathUtils.NormalizePathSeparators(GetPropertyOrDefault("TargetDir"));
 
         public IEnumerable<string> ProjectReferences
         {
@@ -69,23 +82,17 @@ namespace Stryker.Core.Initialisation
             set => _projectReferences = value;
         }
 
-        private IEnumerable<string> _sourceFiles;
-
         public IEnumerable<string> SourceFiles
         {
             get => _sourceFiles ?? _analyzerResult?.SourceFiles;
             set => _sourceFiles = value;
         }
 
-        private IReadOnlyDictionary<string, string> _properties;
-
         public IReadOnlyDictionary<string, string> Properties
         {
-            get => _properties ?? _analyzerResult.Properties;
+            get => _properties ?? _analyzerResult?.Properties;
             set => _properties = value;
         }
-
-        private string _targetFrameworkVersionString;
 
         /// <summary>
         /// Reads the TargetFramework MSBuild property which includes the target framework and the target framework version
@@ -98,8 +105,6 @@ namespace Stryker.Core.Initialisation
             get => _targetFrameworkVersionString ?? _analyzerResult?.TargetFramework;
             set => _targetFrameworkVersionString = value;
         }
-
-        private Framework _targetFramework = Framework.Unknown;
 
         /// <summary>
         /// Extracts a target <c>Framework</c> from the MSBuild property TargetFramework
@@ -116,8 +121,6 @@ namespace Stryker.Core.Initialisation
             set => _targetFramework = value;
         }
 
-        private Version _targetFrameworkVersion;
-
         /// <summary>
         /// Extracts a target <c>Version</c> from the MSBuild property TargetFramework
         /// </summary>
@@ -127,23 +130,13 @@ namespace Stryker.Core.Initialisation
         /// <example>
         /// 3.0
         /// </example>
-        public Version TargetFrameworkVersion
-        {
-            get => _targetFrameworkVersion ?? TargetFrameworkAndVersion.version;
-            set => _targetFrameworkVersion = value;
-        }
+        public Version TargetFrameworkVersion => TargetFrameworkAndVersion.version;
 
-        private IList<string> _defineConstants;
-
-        public IList<string> DefineConstants
-        {
-            get => _defineConstants ?? BuildDefineConstants();
-            set => _defineConstants = value;
-        }
+        public IList<string> DefineConstants => BuildDefineConstants();
 
         private IList<string> BuildDefineConstants()
         {
-            var constants = _analyzerResult?.GetProperty("DefineConstants")?.Split(";")?.ToList() ?? new List<string>();
+            var constants = GetPropertyOrDefault("DefineConstants", "").Split(";").ToList();
 
             var (frameworkDoesNotSupportAppDomain, frameworkDoesNotSupportPipes) = CompatibilityModes;
 
@@ -165,8 +158,8 @@ namespace Stryker.Core.Initialisation
             {
                 var (framework, version) = TargetFrameworkAndVersion;
 
-                bool compat_noAppDomain = false;
-                bool compat_noPipe = false;
+                var compat_noAppDomain = false;
+                var compat_noPipe = false;
 
                 switch (framework)
                 {
@@ -187,50 +180,28 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> _packageReferences;
-
-        public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PackageReferences
-        {
-            get => _packageReferences ?? _analyzerResult.PackageReferences;
-            set => _packageReferences = value;
-        }
-
-        private string _projectFilePath;
         public string ProjectFilePath
         {
-            get => _projectFilePath ?? _analyzerResult.ProjectFilePath;
+            get => _projectFilePath ?? _analyzerResult?.ProjectFilePath;
             set => _projectFilePath = value;
         }
 
-        private string[] _references;
         public string[] References
         {
             get => _references ?? _analyzerResult.References;
             set => _references = value;
         }
 
-        private bool? _signAssembly;
-        public bool SignAssembly
-        {
-            get => _signAssembly ?? bool.Parse(_analyzerResult?.Properties?.GetValueOrDefault("SignAssembly") ?? "false");
-            set => _signAssembly = value;
-        }
-
-        private string _assemblyOriginatorKeyFile;
-        public string AssemblyOriginatorKeyFile
-        {
-            get => _assemblyOriginatorKeyFile ?? Path.Combine(
-                Path.GetDirectoryName(ProjectFilePath),
-                _analyzerResult?.Properties?.GetValueOrDefault("AssemblyOriginatorKeyFile"));
-            set => _assemblyOriginatorKeyFile = value;
-        }
-
-        private IEnumerable<ResourceDescription> _resources;
         public IEnumerable<ResourceDescription> Resources
         {
             get => _resources ?? EmbeddedResourcesGenerator.GetManifestResources(AssemblyPath, _logger);
             set => _resources = value;
         }
+
+        public string AssemblyAttributeFileName =>
+            GetPropertyOrDefault("GeneratedAssemblyInfoFile",
+                (Path.GetFileNameWithoutExtension(ProjectFilePath) + ".AssemblyInfo.cs")
+                .ToLowerInvariant());
 
         /// <summary>
         /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
@@ -279,6 +250,61 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
                 }
             }
+        }
+
+        public string GetPropertyOrDefault(string name, string defaultValue = null)
+        {
+            if (Properties == null || !Properties.TryGetValue(name, out var result))
+            {
+                result = defaultValue;
+            }
+
+            return result;
+        }
+
+        public bool GetPropertyOrDefault(string name, bool defaultBoolean)
+        {
+            if (Properties != null && Properties.TryGetValue(name, out var result))
+            {
+                return bool.Parse(result);
+            }
+
+            return defaultBoolean;
+        }
+
+        public CSharpCompilationOptions GetCompilationOptions()
+        {
+            var kind = GetPropertyOrDefault("OutputType") switch
+            {
+                "Exe" => OutputKind.ConsoleApplication,
+                "WinExe" => OutputKind.WindowsApplication,
+                "Module" => OutputKind.NetModule,
+                "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
+                "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
+                _ => OutputKind.DynamicallyLinkedLibrary
+            };
+
+            if (!Enum.TryParse(typeof(NullableContextOptions), GetPropertyOrDefault("Nullable", "enable"), true, out var nullableOptions))
+            {
+                nullableOptions = NullableContextOptions.Enable;
+            }
+            
+            var result = new CSharpCompilationOptions(kind)
+                .WithNullableContextOptions((NullableContextOptions) nullableOptions)
+                .WithAllowUnsafe(GetPropertyOrDefault("AllowUnsafeBlocks", true))
+                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
+                .WithConcurrentBuild(true)
+                .WithModuleName(TargetFileName)
+                .WithOverflowChecks(GetPropertyOrDefault("CheckForOverflowUnderflow", false));
+
+            if (GetPropertyOrDefault("SignAssembly", false))
+            {
+                result = result.WithCryptoKeyFile(Path.Combine(
+                        Path.GetDirectoryName(ProjectFilePath),
+                        GetPropertyOrDefault("AssemblyOriginatorKeyFile")))
+                    .WithStrongNameProvider(new DesktopStrongNameProvider());
+            }
+            return result;
         }
     }
 }
