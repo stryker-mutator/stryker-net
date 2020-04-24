@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <DebugType>Full</DebugType>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
@@ -20,7 +20,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrosoftTestPlatform>16.5.0</MicrosoftTestPlatform>
+    <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
+    <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,15 +38,15 @@
     <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
     <PackageReference Include="DotNet.Glob" Version="3.0.9" />
-    <PackageReference Include="Buildalyzer" Version="2.5.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.TestPlatform" Version="$(MicrosoftTestPlatform)" />
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" />
-    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" />
-    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" />
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.0.96" />
+    <PackageReference Include="Buildalyzer" Version="2.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> 	<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> 				<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.TestPlatform" Version="$(MicrosoftTestPlatform)" /> 								<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" /> 					<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" /> 						<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.76" />
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Serilog" Version="2.9.0" />

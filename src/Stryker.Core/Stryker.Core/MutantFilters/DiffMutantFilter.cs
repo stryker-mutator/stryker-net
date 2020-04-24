@@ -23,7 +23,6 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-
         private readonly IDashboardClient _dashboardClient;
         private readonly IBranchProvider _branchProvider;
 
@@ -32,8 +31,8 @@ namespace Stryker.Core.MutantFilters
         private readonly JsonReport _baseline;
 
         private ILogger<DiffMutantFilter> _logger;
-        private const string _displayName = "git diff file filter";
-        public string DisplayName => _displayName;
+
+        public string DisplayName => "git diff file filter";
 
         public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
         {

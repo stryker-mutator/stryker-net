@@ -28,7 +28,9 @@ namespace Stryker.Core.Mutators
         [Description("String literals")]
         String,
         [Description("Bitwise operators")]
-        Bitwise
+        Bitwise,
+        [Description("Array initializer")]
+        Initializer
     }
 
     public static class EnumExtension

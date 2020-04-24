@@ -67,12 +67,15 @@ namespace TestApplication
         [InlineData(LinqExpression.TakeWhile, LinqExpression.SkipWhile)]
         [InlineData(LinqExpression.Min, LinqExpression.Max)]
         [InlineData(LinqExpression.Max, LinqExpression.Min)]
-        [InlineData(LinqExpression.Sum, LinqExpression.Count)]
-        [InlineData(LinqExpression.Count, LinqExpression.Sum)]
+        [InlineData(LinqExpression.Sum, LinqExpression.Max)]
+        [InlineData(LinqExpression.Average, LinqExpression.Min)]
         [InlineData(LinqExpression.OrderBy, LinqExpression.OrderByDescending)]
         [InlineData(LinqExpression.OrderByDescending, LinqExpression.OrderBy)]
         [InlineData(LinqExpression.ThenBy, LinqExpression.ThenByDescending)]
         [InlineData(LinqExpression.ThenByDescending, LinqExpression.ThenBy)]
+        [InlineData(LinqExpression.Average, LinqExpression.Min)]
+        [InlineData(LinqExpression.Reverse, LinqExpression.AsEnumerable)]
+        [InlineData(LinqExpression.AsEnumerable, LinqExpression.Reverse)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();

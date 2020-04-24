@@ -115,6 +115,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             result.ShouldBe("\"\\n\"");
+
+        }
+
+        [Fact]
+        public static void ShouldHaveName()
+        {
+            var target = new DiffMutantFilter(new StrykerOptions(), null) as IMutantFilter;
+            target.DisplayName.ShouldBe("git diff file filter");
         }
 
         [Fact]

@@ -17,13 +17,10 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
         [InlineData(SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression)]
         [InlineData(SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression)]
-        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression)]
-        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
-        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
-        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
-        [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression)]
-        [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
-        public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput)
+        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind? additionalOutput = null)
         {
             var target = new AssignmentExpressionMutator();
             var originalNode = SyntaxFactory.AssignmentExpression(
@@ -34,8 +31,22 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            result.ShouldContain(x => x.ReplacementNode.IsKind(expectedOutput));
-            result.ShouldContain(x => x.Type == Mutator.Assignment);
+            if (additionalOutput.HasValue && additionalOutput.Value is var additionalExpectedOutput)
+            {
+                result.Count.ShouldBe(2);
+                result.First().ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
+                result.Last().ReplacementNode.IsKind(additionalExpectedOutput).ShouldBeTrue();
+            }
+            else
+            {
+                var mutation = result.ShouldHaveSingleItem();
+                mutation.ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
+            }
+            foreach(var mutation in result)
+            {
+                mutation.Type.ShouldBe(Mutator.Assignment);
+                mutation.DisplayName.ShouldBe($"{input} to {mutation.ReplacementNode.Kind()} mutation");
+            }
         }
 
         [Fact]

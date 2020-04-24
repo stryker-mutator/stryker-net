@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 {
     public class ExcludeMutationMutantFilterTests
     {
+        [Fact]
+        public static void ShouldHaveName()
+        {
+            var target = new ExcludeMutationMutantFilter() as IMutantFilter;
+            target.DisplayName.ShouldBe("mutation type filter");
+        }
+
         [Theory]
         [InlineData(Mutator.Arithmetic, true)]
         [InlineData(Mutator.Assignment, false)]

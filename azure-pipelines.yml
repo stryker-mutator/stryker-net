@@ -57,7 +57,7 @@ stages:
         scannerMode: 'MSBuild'
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
-        projectVersion: '$(Build.BuildNumber)'
+        projectVersion: '$(PackageVersion)'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
