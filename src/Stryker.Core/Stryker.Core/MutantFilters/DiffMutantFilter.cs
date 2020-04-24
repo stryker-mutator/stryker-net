@@ -53,7 +53,7 @@ namespace Stryker.Core.MutantFilters
                 _diffResult = diffProvider.ScanDiff();
             }
         }
-        
+
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             if (options.DiffCompareToDashboard)
@@ -61,7 +61,8 @@ namespace Stryker.Core.MutantFilters
                 if (_baseline == null)
                 {
                     return mutants;
-                } else
+                }
+                else
                 {
                     UpdateMutantsWithBaseline(mutants, file);
                 }
@@ -71,11 +72,26 @@ namespace Stryker.Core.MutantFilters
             {
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))
                 {
-                    foreach(var mutant in mutants)
+                    foreach (var mutant in mutants)
                     {
                         mutant.ResultStatus = MutantStatus.NotRun;
+                        mutant.ResultStatusReason = "File changed since last commit.";
                     }
                     return mutants;
+                }
+                
+                else if(_options.DiffCompareToDashboard)
+                {
+                    var uncheckedMutants = new List<Mutant>();
+                    foreach(var mutant in mutants)
+                    {
+                        if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
+                        {
+                            uncheckedMutants.Add(mutant);
+                        }
+                    }
+
+                    return uncheckedMutants;
                 }
                 return Enumerable.Empty<Mutant>();
             }
@@ -121,7 +137,7 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaseline(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            foreach(var baselineFile in _baseline.Files)
+            foreach (var baselineFile in _baseline.Files)
             {
                 var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
 
@@ -131,12 +147,22 @@ namespace Stryker.Core.MutantFilters
                     {
                         var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
-                        var mutant = mutants.FirstOrDefault(x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode 
-                        && x.Mutation.DisplayName ==  baselineMutant.MutatorName);
+                        var matchingMutants = mutants.Where(
+                            x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode
+                        && x.Mutation.DisplayName == baselineMutant.MutatorName
+                        );
 
-                        if (mutant != null)
+                        if (matchingMutants.Count() == 1)
                         {
-                            mutant.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+                            matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+                            matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+                        } else
+                        {
+                            foreach (var matchingMutant in matchingMutants)
+                            {
+                                matchingMutant.ResultStatus = MutantStatus.NotRun;
+                                matchingMutant.ResultStatusReason = "Could not affirm the right mutant status";
+                            }
                         }
                     }
                 }
@@ -144,12 +170,12 @@ namespace Stryker.Core.MutantFilters
         }
 
 
-        public string GetMutantSourceCode(string source, JsonMutant mutant)
+        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
 
-            var beginLinePosition = new LinePosition(mutant.Location.Start.Line - 1, mutant.Location.Start.Column - 1);
-            var endLinePosition = new LinePosition(mutant.Location.End.Line - 1, mutant.Location.End.Column - 1);
+            var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
+            var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);
 
             LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
 

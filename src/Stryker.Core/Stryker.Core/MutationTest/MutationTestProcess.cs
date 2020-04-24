@@ -71,9 +71,8 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
-                IEnumerable<Mutant> filteredMutants = allMutants;
 
-                filteredMutants = _mutantFilter.FilterMutants(filteredMutants, file, _options).ToList();
+                _mutantFilter.FilterMutants(allMutants, file, _options);
 
 
                 // Store the generated mutants in the file
