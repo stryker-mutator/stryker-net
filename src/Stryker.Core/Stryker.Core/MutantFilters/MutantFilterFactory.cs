@@ -10,13 +10,18 @@ namespace Stryker.Core.MutantFilters
     {
         public static IMutantFilter Create(StrykerOptions options)
         {
+            if(options == null)
+            {
+                throw new ArgumentNullException($"{nameof(options)} cannot be null");
+            }
+
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
 
         private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
         {
             var enabledFilters = new List<IMutantFilter> {
-            new FilePatternMutantFilter(),
+                    new FilePatternMutantFilter(),
                     new IgnoredMethodMutantFilter(),
                     new ExcludeMutationMutantFilter(),
                     new ExcludeFromCodeCoverageFilter()
