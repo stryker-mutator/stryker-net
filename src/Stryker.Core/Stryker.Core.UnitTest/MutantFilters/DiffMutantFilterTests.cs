@@ -65,26 +65,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void ShouldMutateAllFilesWhenTurnedOff()
-        {
-            var options = new StrykerOptions(diff: false);
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
-            {
-                ChangedFiles = new Collection<string>()
-            });
-            var target = new DiffMutantFilter(diffProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
-
-            var mutant = new Mutant();
-
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
-
-            filterResult.ShouldContain(mutant);
-        }
-
-        [Fact]
         public void ShouldMutateAllFilesWhenATestHasBeenChanged()
         {
             string testProjectPath = "C:/MyTests";
