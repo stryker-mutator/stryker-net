@@ -32,7 +32,7 @@ namespace Stryker.Core.Initialisation
         {
             foreach (var path in projectReferencePaths)
             {
-                _logger.LogTrace("Resolved depedency {0}", path);
+                _logger.LogTrace("Resolved dependency {0}", path);
                 yield return MetadataReference.CreateFromFile(path);
             }
         }

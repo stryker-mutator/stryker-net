@@ -17,7 +17,6 @@ namespace Stryker.Core.Exceptions
 
         public GeneralStrykerException(string message, Exception innerException) : base(message, innerException)
         {
-
         }
 
         public GeneralStrykerException(string message, string details) : base(message)

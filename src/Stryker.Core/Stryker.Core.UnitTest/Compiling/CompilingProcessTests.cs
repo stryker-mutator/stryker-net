@@ -42,10 +42,11 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "" },
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyTitle", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -59,7 +60,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -89,10 +90,11 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "" },
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyTitle", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -112,7 +114,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
             rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
                 Times.AtLeast(2));
@@ -142,10 +144,11 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "" },
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyTitle", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -159,7 +162,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
 
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -189,6 +192,7 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "" },
                             { "AssemblyTitle", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                         },
@@ -210,7 +214,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -241,12 +245,12 @@ namespace ExampleProject
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
+                            { "TargetFileName", "TargetFileName.dll"},
                             { "AssemblyTitle", "AssemblyName"},
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
-                        projectFilePath: "TestResources").Object,
+                        projectFilePath: "project.csproj").Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyTitle", "AssemblyName"},
@@ -264,7 +268,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false));
+                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
         }
 
@@ -291,13 +295,13 @@ namespace ExampleProject
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
+                            { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyTitle", "AssemblyName"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
+                            { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyTitle", "AssemblyName"},
                         }).Object
                     }
@@ -312,7 +316,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
                 result.Success.ShouldBe(true);
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");

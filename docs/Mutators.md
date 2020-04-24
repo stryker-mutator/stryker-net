@@ -6,6 +6,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Equality Operators](#equality-operators)
 - [Boolean Literals](#boolean-literals)
 - [Assignment statements](#assignment-statements)
+- [Collection initialization](#collection-initialization)
 - [Unary Operators](#unary-operators)
 - [Update Operators](#update-operators)
 - [Checked Statements](#checked-statements)
@@ -70,6 +71,15 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`^= ` | `\|= `|
 |`^= ` | `&= ` |
 
+## Collection initialization
+| Original | Mutated | 
+| ---------------------------------------- | ------------------------------------ |
+|`new int[] { 1, 2 };`                     | `new int[] { };`                     |
+|`int[] numbers = { 1, 2 };`               | `int[] numbers = { };`               |
+|`new List<int> { 1, 2 };`                 | `new List<int> { };`                 |
+|`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
+|`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
+
 ## Unary Operators
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
@@ -93,20 +103,26 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 ## Linq Methods
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
-| `SingleOrDefault()`   | `FirstOrDefault()`    |
-| `FirstOrDefault()`    | `SingleOrDefault()`   |
+| `SingleOrDefault()`  | `FirstOrDefault()`    |
+| `FirstOrDefault()`   | `SingleOrDefault()`   |
 | `First()`             | `Last()`              |
 | `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
 | `Skip()`              | `Take()`              |
 | `Take()`              | `Skip()`              |
-| `SkipWhile()`         | `TakeWhile()`         |
-| `TakeWhile()`         | `SkipWhile()`         |
+| `SkipWhile()`        | `TakeWhile()`        |
+| `TakeWhile()`        | `SkipWhile()`        |
 | `Min()`               | `Max()`               |
 | `Max()`               | `Min()`               |
-| `Sum()`               | `Count()`             |
+| `Sum()`               | `Max()`*               |
 | `Count()`             | `Sum()`               |
+| `Average()`           | `Min()`               |
+| `Reverse()`           | `AsEnumerable()`     |
+| `AsEnumerable()`     | `Reverse()`           |
+
+*
+`Sum()` was mutated to `Count()` in previous versions; this change reduces compilation errors.
 
 ## String Literals and Constants
 | Original | Mutated |

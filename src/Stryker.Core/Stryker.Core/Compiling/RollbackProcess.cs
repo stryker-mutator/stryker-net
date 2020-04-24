@@ -22,23 +22,20 @@ namespace Stryker.Core.Compiling
     /// </summary>
     public class RollbackProcess : IRollbackProcess
     {
-        private List<int> _rollbackedIds { get; set; }
-        private ILogger _logger { get; set; }
+        private List<int> RolledBackIds { get; }
+        private ILogger Logger { get; }
 
         public RollbackProcess()
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
-            _rollbackedIds = new List<int>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
+            RolledBackIds = new List<int>();
         }
 
         public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
         {
-            // match the diagnostics with their syntaxtrees
-            var syntaxTreeMapping = new Dictionary<SyntaxTree, ICollection<Diagnostic>>();
-            foreach (var syntaxTree in compiler.SyntaxTrees)
-            {
-                syntaxTreeMapping.Add(syntaxTree, new Collection<Diagnostic>());
-            }
+            // match the diagnostics with their syntax trees
+            var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
+            
             foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
             {
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
@@ -47,62 +44,65 @@ namespace Stryker.Core.Compiling
             // remove the broken mutations from the syntax trees
             foreach(var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
+                var originalTree = syntaxTreeMap.Key;
                 if (devMode)
                 {
                     DumpBuildErrors(syntaxTreeMap);
                 }
                 else
                 {
-                    _logger.LogTrace($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+                    Logger.LogTrace($"RollBacking mutations from {originalTree.FilePath}.");
                 }
 
-                _logger.LogTrace("source {1}", syntaxTreeMap.Key.ToString());
-                var updatedSyntaxTree = RemoveMutantIfStatements(syntaxTreeMap.Key, syntaxTreeMap.Value, lastAttempt, devMode);
+                Logger.LogTrace("source {1}", originalTree);
+                var updatedSyntaxTree = RemoveMutantIfStatements(originalTree, syntaxTreeMap.Value, devMode);
 
-                _logger.LogTrace("Rollbacked to {0}", updatedSyntaxTree.ToString());
+                if (updatedSyntaxTree == originalTree && (lastAttempt || devMode))
+                {
+                    Logger.LogCritical(
+                        "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
+                    throw new StrykerCompilationException("Internal error due to compile error.");
+                }
 
-                // update the compiler object with the new syntaxtree
-                compiler = compiler.ReplaceSyntaxTree(syntaxTreeMap.Key, updatedSyntaxTree);
+                Logger.LogTrace("RolledBack to {0}", updatedSyntaxTree.ToString());
+
+                // update the compiler object with the new syntax tree
+                compiler = compiler.ReplaceSyntaxTree(originalTree, updatedSyntaxTree);
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
             return new RollbackProcessResult() {
                 Compilation = compiler,
-                RollbackedIds = _rollbackedIds
+                RollbackedIds = RolledBackIds
             };
         }
 
-        private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode node)
+        private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
-            var id = ExtractMutationIfAndId(node);
-            if (id == null)
+            for (var node = startNode; node != null; node = node.Parent)
             {
-                if (node.Parent == null)
+                var id = ExtractMutationIfAndId(node);
+                if (id != null) 
                 {
-                    return (null, 0);
+                    return (node, id.Value);
                 }
-
-                return FindMutationIfAndId(node.Parent);
             }
 
-            return (node, id.Value);
+            return (null, 0);
         }
 
         private int? ExtractMutationIfAndId(SyntaxNode node)
         {
-            var annotation = node.GetAnnotations(MutantPlacer.MutationMarkers);
-            using (var scan= annotation.GetEnumerator())
+            var first = node.GetAnnotations(MutantPlacer.MutationMarkers).FirstOrDefault();
+            if (first == null)
             {
-                if (scan.MoveNext())
-                {
-                    var data = scan.Current.Data;
-                    var mutantId = int.Parse(data);
-                    _logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-                    return mutantId;
-                }
-
                 return null;
             }
+
+            var mutantId = int.Parse(first.Data);
+            Logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
+            return mutantId;
+
         }
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
@@ -134,30 +134,30 @@ namespace Stryker.Core.Compiling
 
         private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
         {
-            _logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+            Logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
             var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
             foreach (var diagnostic in syntaxTreeMap.Value)
             {
                 var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
-                _logger.LogInformation($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan.ToString()}");
+                Logger.LogInformation($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan.ToString()}");
                 for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
                     i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
                     i++)
                 {
-                    _logger.LogInformation($"{i + 1}: {sourceLines[i]}");
+                    Logger.LogInformation($"{i + 1}: {sourceLines[i]}");
                 }
             }
 
-            _logger.LogInformation(Environment.NewLine);
+            Logger.LogInformation(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo,
-            bool lastAttempt, bool devMode)
+        private SyntaxTree RemoveMutantIfStatements(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo, bool devMode)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
             var brokenMutations = new Collection<SyntaxNode>();
-            foreach (var diagnostic in diagnosticInfo)
+            var diagnostics = diagnosticInfo as Diagnostic[] ?? diagnosticInfo.ToArray();
+            foreach (var diagnostic in diagnostics)
             {
                 var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                 var (mutationIf, mutantId) = FindMutationIfAndId(brokenMutation);
@@ -169,51 +169,45 @@ namespace Stryker.Core.Compiling
                 brokenMutations.Add(mutationIf);
                 if (mutantId >= 0)
                 {
-                    _rollbackedIds.Add(mutantId);
+                    RolledBackIds.Add(mutantId);
                 }
             }
 
             if (brokenMutations.Count == 0)
             {
-                foreach (var diagnostic in diagnosticInfo)
+                // we were unable to identify any mutation that could have caused the build issue(s)
+                foreach (var diagnostic in diagnostics)
                 {
                     var brokenMutation = rollbackRoot.FindNode(diagnostic.Location.SourceSpan);
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
-                    _logger.LogWarning(
+                    Logger.LogWarning(
                         "Stryker.NET encountered an compile error in {0} (at {1}:{2}) with message: {3} (Source code: {4})",
                         errorLocation.Path, errorLocation.StartLinePosition.Line,
                         errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
                     if (devMode)
                     {
-                        _logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
-                        throw new StrykerCompilationException("Internal error due to compile error.");
+                        Logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
+                        return originalTree;
                     }
 
-                    _logger.LogWarning(
+                    Logger.LogWarning(
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutations in the node
                     var scan = new Dictionary<SyntaxNode, int>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
-                    if (!scan.Any() && lastAttempt)
-                    {
-                        // Not able to rollback anything
-                        _logger.LogCritical(
-                            "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
-                        throw new StrykerCompilationException("Internal error due to compile error.");
-                    }
-
                     foreach (var (key, value) in scan)
                     {
                         if (!brokenMutations.Contains(key))
                         {
                             brokenMutations.Add(key);
-                            _rollbackedIds.Add(value);
+                            RolledBackIds.Add(value);
                         }
                     }
                 }
             }
+
             // mark the broken mutation nodes to track
             var trackedTree = rollbackRoot.TrackNodes(brokenMutations);
             foreach (var brokenMutation in brokenMutations)

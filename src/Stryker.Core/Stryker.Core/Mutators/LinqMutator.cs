@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -33,23 +34,25 @@ namespace Stryker.Core.Mutators
                 { LinqExpression.TakeWhile, LinqExpression.SkipWhile },
                 { LinqExpression.Min, LinqExpression.Max },
                 { LinqExpression.Max, LinqExpression.Min },
-                { LinqExpression.Sum, LinqExpression.Count },
+                { LinqExpression.Sum, LinqExpression.Max },
                 { LinqExpression.Count, LinqExpression.Sum },
+                { LinqExpression.Average, LinqExpression.Min },
                 { LinqExpression.OrderBy, LinqExpression.OrderByDescending },
                 { LinqExpression.OrderByDescending, LinqExpression.OrderBy },
                 { LinqExpression.ThenBy, LinqExpression.ThenByDescending },
-                { LinqExpression.ThenByDescending, LinqExpression.ThenBy }
+                { LinqExpression.ThenByDescending, LinqExpression.ThenBy },
+                { LinqExpression.Reverse, LinqExpression.AsEnumerable },
+                { LinqExpression.AsEnumerable, LinqExpression.Reverse }
             };
             RequireArguments = new HashSet<LinqExpression>
             {
                 LinqExpression.All,
                 LinqExpression.SkipWhile,
                 LinqExpression.TakeWhile,
-                LinqExpression.Sum,
                 LinqExpression.OrderBy,
                 LinqExpression.OrderByDescending,
                 LinqExpression.ThenBy,
-                LinqExpression.ThenByDescending
+                LinqExpression.ThenByDescending,
             };
         }
 
@@ -135,6 +138,8 @@ namespace Stryker.Core.Mutators
         None,
         Distinct,
         Reverse,
+        Average,
+        AsEnumerable,
         OrderBy,
         OrderByDescending,
         FirstOrDefault,
