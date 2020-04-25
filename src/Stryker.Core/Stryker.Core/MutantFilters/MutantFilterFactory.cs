@@ -14,7 +14,7 @@ namespace Stryker.Core.MutantFilters
         {
             if(options == null)
             {
-                throw new ArgumentNullException($"{nameof(options)} cannot be null");
+                throw new ArgumentNullException(nameof(options));
             }
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
