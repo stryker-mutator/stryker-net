@@ -2,7 +2,6 @@
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Stryker.Core.MutantFilters
 {
