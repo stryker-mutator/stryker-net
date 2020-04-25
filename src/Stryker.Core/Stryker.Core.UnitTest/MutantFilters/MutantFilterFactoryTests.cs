@@ -6,6 +6,8 @@ using System.Text;
 using Xunit;
 using Shouldly;
 using System.Linq;
+using Moq;
+using Stryker.Core.DiffProviders;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -45,6 +47,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             var strykerOptions = new StrykerOptions(diff: true);
+
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+            MutantFilterFactory.SetDiffProvider(diffProviderMock.Object);
 
             // Act
             var result = MutantFilterFactory.Create(strykerOptions);

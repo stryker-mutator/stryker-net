@@ -8,6 +8,8 @@ namespace Stryker.Core.MutantFilters
 {
     public static class MutantFilterFactory
     {
+        public static IDiffProvider DiffProvider { get; private set; }
+
         public static IMutantFilter Create(StrykerOptions options)
         {
             if(options == null)
@@ -29,13 +31,18 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(new GitDiffProvider(options)));
+                enabledFilters.Add(new DiffMutantFilter(DiffProvider ?? new GitDiffProvider(options)));
             }
             
 
             return enabledFilters;
 
            
+        }
+
+        public static void SetDiffProvider(IDiffProvider diffProvider)
+        {
+            DiffProvider = diffProvider;
         }
     }
 }
