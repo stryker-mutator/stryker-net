@@ -4,9 +4,9 @@
     ".NETStandard,Version=v2.0": {
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[16.6.0, )",
-        "resolved": "16.6.0",
-        "contentHash": "NRp3QGR9VmMiDG5kotgLfnzRHKJAYDHh99m9/khoMhoh1zSiOJHn14pKdbgnYCe/GUHTy/oBVFe3Vo/aQhIR4w==",
+        "requested": "[16.6.1, )",
+        "resolved": "16.6.1",
+        "contentHash": "QFD1oT7Rn8Pv6z8L95gDXHsgRSsQmvMrIIhSrUqsEuKwsKg4HAqlOhWRwR0/UEkFMl9NdWt2w+OH01ttcDTtkg==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0"
         }
