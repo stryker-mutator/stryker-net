@@ -70,9 +70,9 @@
       },
       "Xunit.SkippableFact": {
         "type": "Direct",
-        "requested": "[1.3.12, )",
-        "resolved": "1.3.12",
-        "contentHash": "CQETcfKyEq6Uki9pExNZI5sEHeKqdt9Fc4pdLHu1mgaboQp0aI4W45M+UUnG6Zc2hxWTDmbD2AFVKA1wjU19YA==",
+        "requested": "[1.4.8, )",
+        "resolved": "1.4.8",
+        "contentHash": "1gHizZoATBkCZxxnza6YqejAaJZUv5TFaibnjXGVHSHaij3Y97C0FyAfpfNCh+sofUWIRJaLYKgTLNYsEC0GbA==",
         "dependencies": {
           "Validation": "2.4.18",
           "xunit.extensibility.execution": "2.4.0"
@@ -1666,7 +1666,7 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
+          "Stryker.DataCollector": "0.17.1",
           "System.IO.Abstractions": "10.0.10"
         }
       },
