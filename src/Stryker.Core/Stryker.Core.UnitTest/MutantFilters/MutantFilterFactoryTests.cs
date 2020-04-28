@@ -50,10 +50,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            MutantFilterFactory.SetDiffProvider(diffProviderMock.Object);
-
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions);
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;

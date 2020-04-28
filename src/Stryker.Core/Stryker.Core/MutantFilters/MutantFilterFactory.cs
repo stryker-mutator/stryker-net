@@ -7,14 +7,16 @@ namespace Stryker.Core.MutantFilters
 {
     public static class MutantFilterFactory
     {
-        public static IDiffProvider DiffProvider { get; private set; }
+        private static IDiffProvider _diffProvider;
 
-        public static IMutantFilter Create(StrykerOptions options)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null)
         {
             if(options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
+            _diffProvider = diffProvider ?? new GitDiffProvider(options);
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
@@ -30,18 +32,10 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(DiffProvider ?? new GitDiffProvider(options)));
+                enabledFilters.Add(new DiffMutantFilter(_diffProvider));
             }
             
-
             return enabledFilters;
-
-           
-        }
-
-        public static void SetDiffProvider(IDiffProvider diffProvider)
-        {
-            DiffProvider = diffProvider;
         }
     }
 }
