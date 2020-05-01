@@ -115,6 +115,14 @@ namespace Stryker.CLI
 
         };
 
+        public static readonly CLIOption<string> DiffTargetCommit = new CLIOption<string>
+        {
+            ArgumentName = "--diff-commit",
+            ArgumentShortName = "-commit <commitHash>",
+            ArgumentDescription = "Used to provide the hash of a commit. This commit is used to compare the current working directory when the Diff Feature is enabled. Uses the latest commit by default.",
+            JsonKey = "diff-commit"
+        };
+
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
         {
             ArgumentName = "--git-source",

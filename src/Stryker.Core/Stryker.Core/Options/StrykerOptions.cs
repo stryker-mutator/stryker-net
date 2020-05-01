@@ -31,6 +31,7 @@ namespace Stryker.Core.Options
         public string ProjectUnderTestNameFilter { get; }
         public bool DiffEnabled { get; }
         public bool DiffCompareToDashboard { get; }
+        public string DiffCommit { get; }
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
@@ -85,6 +86,7 @@ namespace Stryker.Core.Options
             bool diff = false,
             bool diffCompareToDashboard = false,
             string gitSource = "master",
+            string diffCommit = "",
             string dashboadApiKey = null,
             string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
@@ -115,6 +117,7 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
+            DiffCommit = diffCommit;
             DiffCompareToDashboard = diffCompareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);

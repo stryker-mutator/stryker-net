@@ -72,6 +72,7 @@ namespace Stryker.CLI
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
             var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
+            var diffCommit = CreateOption(app, CLIOptions.DiffTargetCommit);
 
             app.HelpOption("--help | -h | -?");
 
@@ -109,6 +110,7 @@ namespace Stryker.CLI
                     languageVersion: languageVersion,
                     diff: diffParam,
                     diffCompareToDashboard: diffCompareToDashboard,
+                    diffCommit: diffCommit,
                     gitSource: gitSourceParam,
                     testProjects: testProjectsParam);
 

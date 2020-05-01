@@ -581,5 +581,25 @@ namespace Stryker.CLI.UnitTest
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitSource == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
+
+        [Theory]
+        [InlineData("--diff-commit e6a452e")]
+        [InlineData("-commit e6a452e")]
+        public void ShouldSetDiffCommit(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+
+            var runResults = new StrykerRunResult(options, 0.3);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffCommit == "e6a452e"), It.IsAny<IEnumerable<LogMessage>>()));
+
+        }
     }
 }

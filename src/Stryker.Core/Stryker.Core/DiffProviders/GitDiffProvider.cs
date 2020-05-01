@@ -1,12 +1,8 @@
 ﻿using LibGit2Sharp;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Clients;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -47,7 +43,7 @@ namespace Stryker.Core.DiffProviders
 
                 else
                 {
-                    foreach (var treeChanges in repository.Diff.Compare<TreeChanges>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+                    foreach (var treeChanges in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                     {
                         string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
                         diffResult.ChangedFiles.Add(diffPath);
