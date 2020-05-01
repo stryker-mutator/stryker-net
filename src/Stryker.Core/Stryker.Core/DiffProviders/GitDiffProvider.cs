@@ -15,7 +15,7 @@ namespace Stryker.Core.DiffProviders
             _options = options;
         }
 
-        
+
 
         public DiffResult ScanDiff()
         {
@@ -41,22 +41,42 @@ namespace Stryker.Core.DiffProviders
                     throw new StrykerInputException("Git source branch does not exist. Please set another source branch or remove the --git-source option.");
                 }
 
-                else
+                var commit = DetermineCommit(repository, sourceBranch);
+
+                foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                 {
-                    foreach (var treeChanges in repository.Diff.Compare<Patch>(sourceBranch.Tip.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchChanges.Path));
+                    diffResult.ChangedFiles.Add(diffPath);
+                    if (diffPath.StartsWith(_options.BasePath))
                     {
-                        string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, treeChanges.Path));
-                        diffResult.ChangedFiles.Add(diffPath);
-                        if (diffPath.StartsWith(_options.BasePath))
-                        {
-                            diffResult.TestsChanged = true;
-                        }
+                        diffResult.TestsChanged = true;
                     }
                 }
 
 
             }
             return diffResult;
+        }
+
+        private Commit DetermineCommit(Repository repository, Branch sourceBranch)
+        {
+            if (_options.DiffCommit != "")
+            {
+                var targetCommit = repository.Lookup(new ObjectId(_options.DiffCommit)) as Commit;
+
+                if (targetCommit != null)
+                {
+                    return targetCommit;
+                }
+                else
+                {
+                    throw new StrykerInputException("No commit was found with the given hash. Please provide another hash or remove the --diff-commit option.");
+                }
+            }
+            else
+            {
+                return sourceBranch.Tip;
+            }
         }
     }
 }
