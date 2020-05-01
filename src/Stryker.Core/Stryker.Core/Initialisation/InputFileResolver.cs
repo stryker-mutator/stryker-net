@@ -110,7 +110,6 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
-            ValidateResult(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
@@ -496,29 +495,6 @@ namespace Stryker.Core.Initialisation
         }
 
         private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerProjectOptions options)
-        {
-            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
-            // we have detected usage of mstest V1 and should exit
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
-                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
-            {
-                throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
-                    @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
-            }
-
-            // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFrameworkAndVersion().Framework == Framework.NetClassic &&
-                options.TestRunner != TestRunner.VsTest &&
-                (!testProject.Properties.ContainsKey("IsTestProject") ||
-                (testProject.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(testProject.Properties["IsTestProject"])))))
-            {
-                _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
-                options.TestRunner = TestRunner.VsTest;
-            }
-        }
-
-        private void ValidateResult(ProjectInfo projectInfo, StrykerProjectOptions options)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit

@@ -5,7 +5,7 @@ namespace Stryker.Core.Reporters.Progress
 {
     public interface IProgressBarReporter
     {
-        void ReportInitialState(int totalNumberOfTests);
+        void ReportInitialState(int totalNumberOfMutants);
         void ReportRunTest();
     }
 
