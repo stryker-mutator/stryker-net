@@ -432,6 +432,8 @@ $@"<RunSettings>
 {(targetFramework == Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
+<DesignMode>false</DesignMode>
+<BatchSize>1</BatchSize>
  </RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
             _logger.LogDebug("VsTest run settings set to: {0}", runSettings);

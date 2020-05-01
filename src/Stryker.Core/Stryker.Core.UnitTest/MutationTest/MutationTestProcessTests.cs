@@ -59,12 +59,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "AssemblyName", "AssemblyName" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "AssemblyName", "AssemblyName" }
                         }).Object
                     },
                     ProjectContents = new FolderComposite()
@@ -114,7 +116,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                Enumerable.Empty<IMutantFilter>());
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
 
             // start mutation process
             target.Mutate();
@@ -140,12 +142,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "AssemblyName", "AssemblyName" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "AssemblyName", "AssemblyName" }
                         }).Object
                     },
                     ProjectContents = new FolderComposite()
@@ -200,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new[] { mutantFilterMock.Object });
+                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }));
 
             // start mutation process
             target.Mutate();
@@ -275,7 +279,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                Enumerable.Empty<IMutantFilter>());
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
 
             target.Mutate();
 
@@ -389,7 +393,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 executorMock.Object,
-                mutantFilters: Enumerable.Empty<IMutantFilter>(),
+                mutantFilter: new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
                 options: options);
 
             target.Test(input.ProjectInfo.ProjectContents.Mutants);

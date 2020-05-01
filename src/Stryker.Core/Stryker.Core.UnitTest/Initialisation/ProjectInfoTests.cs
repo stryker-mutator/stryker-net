@@ -44,13 +44,15 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" }
+                        { "TargetFileName", "TestName.dll" },
+                        { "AssemblyName", "AssemblyName" }
                     }).Object
                 },
                 ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" }
+                        { "TargetFileName", "TestName.dll" },
+                        { "AssemblyName", "AssemblyName" }
                     }).Object
             };
 
@@ -73,7 +75,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" }
+                        { "TargetFileName", "TestName.dll" },
+                        { "AssemblyName", "AssemblyName" }
                     }).Object
                 },
                 ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -83,6 +86,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "TargetFileName", "TargetFileName.dll"},
                         { "OutputType", kindParam },
                         { "Nullable", "Annotations" },
+                        { "AssemblyName", "AssemblyName" }
                     }).Object
             };
 

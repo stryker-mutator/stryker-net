@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
-using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -48,7 +47,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
-        private readonly IEnumerable<IMutantFilter> _mutantFilters;
+        private readonly IMutantFilter _mutantFilter;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
@@ -61,7 +60,7 @@ namespace Stryker.Core.MutationTest
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
-            IEnumerable<IMutantFilter> mutantFilters = null)
+            IMutantFilter mutantFilter = null)
         {
             Input = mutationTestInput;
             _reporter = reporter;
@@ -71,14 +70,7 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilters = mutantFilters ?? new IMutantFilter[]
-                {
-                    new FilePatternMutantFilter(),
-                    new IgnoredMethodMutantFilter(),
-                    new ExcludeMutationMutantFilter(),
-                    new DiffMutantFilter(_options, new GitDiffProvider(_options)),
-                    new ExcludeFromCodeCoverageFilter()
-                };
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
         }
 
         public void Mutate()
@@ -97,23 +89,9 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
-                IEnumerable<Mutant> filteredMutants = allMutants;
 
-                foreach (var mutantFilter in _mutantFilters)
-                {
-                    var current = mutantFilter.FilterMutants(filteredMutants, file, _options).ToList();
+                _mutantFilter.FilterMutants(allMutants, file, _options);
 
-                    // Mark the filtered mutants as skipped
-                    foreach (var skippedMutant in filteredMutants.Except(current))
-                    {
-                        skippedMutant.ResultStatus = MutantStatus.Ignored;
-                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
-                    }
-
-                    filteredMutants = current;
-                }
-
-                // Store the generated mutants in the file
                 file.Mutants = allMutants;
             }
 
@@ -156,7 +134,8 @@ namespace Stryker.Core.MutationTest
                 if (msForSymbols != null)
                 {
                     // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(
+                        Path.GetDirectoryName(injectionPath),
                         Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);

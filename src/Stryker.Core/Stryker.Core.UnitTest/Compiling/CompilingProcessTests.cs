@@ -40,13 +40,12 @@ namespace ExampleProject
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -88,13 +87,12 @@ namespace ExampleProject
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -142,13 +140,12 @@ namespace ExampleProject
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
                 },
@@ -190,8 +187,7 @@ namespace ExampleProject
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
-                            { "TargetFileName", "" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
@@ -199,7 +195,7 @@ namespace ExampleProject
                         projectFilePath: "TestResources").Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
                 },
@@ -246,14 +242,14 @@ namespace ExampleProject
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll"},
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
                         projectFilePath: "project.csproj").Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
                 },
@@ -296,13 +292,13 @@ namespace ExampleProject
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
-                            { "AssemblyTitle", "AssemblyName"},
+                            { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
                 },
