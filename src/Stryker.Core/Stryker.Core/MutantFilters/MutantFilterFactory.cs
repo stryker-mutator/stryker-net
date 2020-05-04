@@ -32,7 +32,7 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(_diffProvider));
+                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider));
             }
             
             return enabledFilters;

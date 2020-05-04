@@ -26,6 +26,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var source = File.ReadAllText(file.FullName);
 
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -40,7 +42,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), null);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -59,6 +61,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var source = File.ReadAllText(file.FullName);
 
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -73,7 +77,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), null);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -94,6 +98,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var source = File.ReadAllText(file.FullName);
 
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -108,7 +114,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), null);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -121,7 +127,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
-            var target = new DiffMutantFilter(null) as IMutantFilter;
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object) as IMutantFilter;
             target.DisplayName.ShouldBe("git diff file filter");
         }
 
@@ -135,7 +142,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 ChangedFiles = new Collection<string>()
             });
-            var target = new DiffMutantFilter(diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -158,7 +165,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     myFile
                 }
             });
-            var target = new DiffMutantFilter(diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -171,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldMutateAllFilesWhenATestHasBeenChanged()
         {
-            string testProjectPath = "C:/MyTests";
+           string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             // If a file inside the test project is changed, a test has been changed
@@ -184,7 +191,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 },
                 TestsChanged = true
             });
-            var target = new DiffMutantFilter(diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object);
 
             // check the diff result for a file not inside the test project
             var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };

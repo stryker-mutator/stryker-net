@@ -30,11 +30,11 @@ namespace Stryker.Core.MutantFilters
 
         private readonly JsonReport _baseline;
 
-        private ILogger<DiffMutantFilter> _logger;
+        private readonly ILogger<DiffMutantFilter> _logger;
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
+        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
@@ -47,11 +47,7 @@ namespace Stryker.Core.MutantFilters
                 _baseline = GetBaseline().Result;
             }
 
-
-            if (options.DiffEnabled)
-            {
-                _diffResult = diffProvider.ScanDiff();
-            }
+            _diffResult = diffProvider.ScanDiff();
         }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
@@ -79,11 +75,11 @@ namespace Stryker.Core.MutantFilters
                     }
                     return mutants;
                 }
-                
-                else if(_options.DiffCompareToDashboard)
+
+                else if (_options.DiffCompareToDashboard)
                 {
                     var uncheckedMutants = new List<Mutant>();
-                    foreach(var mutant in mutants)
+                    foreach (var mutant in mutants)
                     {
                         if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
                         {
@@ -156,7 +152,8 @@ namespace Stryker.Core.MutantFilters
                         {
                             matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
                             matchingMutants.First().ResultStatusReason = "Result based on previous run.";
-                        } else
+                        }
+                        else
                         {
                             foreach (var matchingMutant in matchingMutants)
                             {
