@@ -91,6 +91,13 @@ namespace Stryker.Core.MutantFilters
                 }
                 return Enumerable.Empty<Mutant>();
             }
+
+            // Set mutant status to not run because tests changed and all mutants must run again.
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+            }
+
             return mutants;
         }
 
