@@ -121,7 +121,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
-            var target = new DiffMutantFilter(new StrykerOptions(), null) as IMutantFilter;
+            var target = new DiffMutantFilter(null) as IMutantFilter;
             target.DisplayName.ShouldBe("git diff file filter");
         }
 
@@ -135,7 +135,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 ChangedFiles = new Collection<string>()
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -158,27 +158,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     myFile
                 }
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
-
-            var mutant = new Mutant();
-
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
-
-            filterResult.ShouldContain(mutant);
-        }
-
-        [Fact]
-        public void ShouldMutateAllFilesWhenTurnedOff()
-        {
-            var options = new StrykerOptions(diff: false);
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
-            {
-                ChangedFiles = new Collection<string>()
-            });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -201,9 +181,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedFiles = new Collection<string>()
                 {
                     myTest
-                }
+                },
+                TestsChanged = true
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
 
             // check the diff result for a file not inside the test project
             var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };

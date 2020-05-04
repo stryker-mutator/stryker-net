@@ -8,14 +8,13 @@ namespace Stryker.Core.MutantFilters
 {
     public class BroadcastMutantFilter : IMutantFilter
     {
-        public string DisplayName => throw new System.NotImplementedException();
-
         public IEnumerable<IMutantFilter> MutantFilters { get; }
-
         public BroadcastMutantFilter(IEnumerable<IMutantFilter> mutantFilters)
         {
             MutantFilters = mutantFilters;
         }
+
+        public string DisplayName => "broadcast filter";
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
@@ -23,9 +22,9 @@ namespace Stryker.Core.MutantFilters
 
             foreach (var mutantFilter in MutantFilters)
             {
-                var current = mutantFilter.FilterMutants(mutants, file, options).ToList();
+                var current = mutantFilter.FilterMutants(mutants, file, options);
 
-                foreach(var skippedMutant in filteredMutants.Except(current))
+                foreach (var skippedMutant in filteredMutants.Except(current))
                 {
                     if (skippedMutant.ResultStatus == MutantStatus.NotRun)
                     {
@@ -38,7 +37,6 @@ namespace Stryker.Core.MutantFilters
             }
 
             return filteredMutants;
-
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
-using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -52,7 +51,7 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilter = mutantFilter ?? BroadcastMutantFilterFactory.Create(options);
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
         }
 
         public void Mutate()
@@ -74,8 +73,6 @@ namespace Stryker.Core.MutationTest
 
                 _mutantFilter.FilterMutants(allMutants, file, _options);
 
-
-                // Store the generated mutants in the file
                 file.Mutants = allMutants;
             }
 
@@ -180,19 +177,19 @@ namespace Stryker.Core.MutationTest
                 var total = testCount * viableMutantsCount;
                 if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
                 }
             }
             else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
             {
                 var total = viableMutantsCount;
                 var toTest = mutantsToTest.Count();
-                if (total > 0 && total != toTest)
+                if (total > 0  && total!= toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
                 }
             }
-
+            
             if (mutantsToTest.Any())
             {
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);

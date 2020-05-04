@@ -121,7 +121,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new BroadcastMutantFilter(new IMutantFilter[] { }));
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
 
             // start mutation process
             target.Mutate();
