@@ -51,7 +51,6 @@ namespace Stryker.CLI
             CommandOption languageVersion,
             CommandOption diff,
             CommandOption diffCompareToDashboard,
-            CommandOption diffCommit,
             CommandOption gitSource,
             CommandOption testProjects)
         {
@@ -104,7 +103,6 @@ namespace Stryker.CLI
                 diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) ? true : GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
                 diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompareToDashboard),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
-                diffCommit: GetOption(diffCommit.Value(), CLIOptions.DiffTargetCommit),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }
 

@@ -1,6 +1,7 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
@@ -34,14 +35,7 @@ namespace Stryker.Core.DiffProviders
             // A git repository has been detected, calculate the diff to filter
             using (var repository = new Repository(repositoryPath))
             {
-                var sourceBranch = repository.Branches[_options.GitSource];
-
-                if (sourceBranch == null)
-                {
-                    throw new StrykerInputException("Git source branch does not exist. Please set another source branch or remove the --git-source option.");
-                }
-
-                var commit = DetermineCommit(repository, sourceBranch);
+                var commit = DetermineCommit(repository);
 
                 foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
                 {
@@ -58,25 +52,23 @@ namespace Stryker.Core.DiffProviders
             return diffResult;
         }
 
-        private Commit DetermineCommit(Repository repository, Branch sourceBranch)
+        private Commit DetermineCommit(Repository repository)
         {
-            if (_options.DiffCommit != null)
-            {
-                var targetCommit = repository.Lookup(new ObjectId(_options.DiffCommit)) as Commit;
+            var sourceBranch = repository.Branches[_options.GitSource];
 
-                if (targetCommit != null)
-                {
-                    return targetCommit;
-                }
-                else
-                {
-                    throw new StrykerInputException("No commit was found with the given hash. Please provide another hash or remove the --diff-commit option.");
-                }
-            }
-            else
+            if (sourceBranch != null)
             {
                 return sourceBranch.Tip;
             }
+
+            var commit = repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
+
+            if (commit != null)
+            {
+                return commit;
+            }
+
+            throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
         }
     }
 }
