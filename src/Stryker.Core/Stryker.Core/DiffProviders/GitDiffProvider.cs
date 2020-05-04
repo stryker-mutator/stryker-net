@@ -60,7 +60,7 @@ namespace Stryker.Core.DiffProviders
 
         private Commit DetermineCommit(Repository repository, Branch sourceBranch)
         {
-            if (_options.DiffCommit != "")
+            if (_options.DiffCommit != null)
             {
                 var targetCommit = repository.Lookup(new ObjectId(_options.DiffCommit)) as Commit;
 
