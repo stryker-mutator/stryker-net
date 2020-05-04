@@ -474,8 +474,8 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--diff-compare-dashboard")]
-        [InlineData("-dc")]
+        [InlineData("--compare-dashboard")]
+        [InlineData("-compare")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(string argName)
         {
             StrykerOptions options = null;
@@ -497,8 +497,8 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--diff-compare-dashboard")]
-        [InlineData("-dc")]
+        [InlineData("--compare-dashboard")]
+        [InlineData("-compare")]
         public void ShouldEnableDiffFeatureWhenDashboardComparePassed(string argName)
         {
             StrykerOptions options = null;

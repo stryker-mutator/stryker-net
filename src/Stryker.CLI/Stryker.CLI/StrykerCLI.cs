@@ -68,7 +68,7 @@ namespace Stryker.CLI
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
-            var diffCompareToDashboard = CreateOption(app, CLIOptions.DiffCompareToDashboard);
+            var diffCompareToDashboard = CreateOption(app, CLIOptions.CompareDashboard);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
             var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
