@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETCoreApp,Version=v3.1": {
+      "RegexParser": {
+        "type": "Direct",
+        "requested": "[0.1.0, )",
+        "resolved": "0.1.0",
+        "contentHash": "Tedk+AR3FtTItx7BKZdKroPsqNrAI9p6t8nPYJGUN0Ce5KcvzR8s/PGt9C4PZvm1EiyaTqsOHXlAW7E4WqR+DA=="
+      }
+    }
+  }
+}
