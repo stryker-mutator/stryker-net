@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core.UnitTest", "..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.DataCollector", "..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj", "{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.RegexMutators", "..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj", "{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.RegexMutators.UnitTest", "..\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj", "{7C8C7670-4636-4C56-9E3E-22B987337EF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
