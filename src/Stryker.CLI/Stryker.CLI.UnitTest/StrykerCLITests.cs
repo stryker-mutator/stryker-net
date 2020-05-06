@@ -493,7 +493,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DiffCompareToDashboard.ShouldBeTrue();
+            options.CompareToDashboard.ShouldBeTrue();
         }
 
         [Theory]

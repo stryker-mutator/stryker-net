@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var target = new DashboardClient(new StrykerOptions(
                 dashboardUrl: "http://www.example.com/",
-                dashboadApiKey: "Acces_Token"
+                dashboardApiKey: "Acces_Token"
                 ), httpClient, loggerMock.Object);
 
             // Act
@@ -86,7 +86,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboadApiKey: "Acces_Token",
+                dashboardApiKey: "Acces_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters

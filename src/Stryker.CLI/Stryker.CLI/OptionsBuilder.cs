@@ -75,7 +75,7 @@ namespace Stryker.CLI
                 logger: _logger,
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
-                dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
+                dashboardApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
                 dashboardUrl: GetOption(dashboardUrl.Value(), CLIOptions.DashboardUrlOption),
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
@@ -101,7 +101,7 @@ namespace Stryker.CLI
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) ? true : GetOption(diffCompareToDashboard.HasValue(), CLIOptions.CompareDashboard),
-                diffCompareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.CompareDashboard),
+                compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.CompareDashboard),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }

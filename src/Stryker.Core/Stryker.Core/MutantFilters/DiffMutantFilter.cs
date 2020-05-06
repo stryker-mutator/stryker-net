@@ -42,7 +42,7 @@ namespace Stryker.Core.MutantFilters
             _branchProvider = branchProvider ?? new GitBranchProvider(options);
             _options = options;
 
-            if (options.DiffCompareToDashboard)
+            if (options.CompareToDashboard)
             {
                 _baseline = GetBaseline().Result;
             }
@@ -52,7 +52,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            if (options.DiffCompareToDashboard)
+            if (options.CompareToDashboard)
             {
                 if (_baseline == null)
                 {
@@ -76,7 +76,7 @@ namespace Stryker.Core.MutantFilters
                     return mutants;
                 }
 
-                else if (_options.DiffCompareToDashboard)
+                else if (_options.CompareToDashboard)
                 {
                     var uncheckedMutants = new List<Mutant>();
                     foreach (var mutant in mutants)

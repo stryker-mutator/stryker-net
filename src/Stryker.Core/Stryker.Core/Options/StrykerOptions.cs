@@ -30,7 +30,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public bool DiffEnabled { get; }
-        public bool DiffCompareToDashboard { get; }
+        public bool CompareToDashboard { get; }
+
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
@@ -83,9 +84,9 @@ namespace Stryker.Core.Options
             string solutionPath = null,
             string languageVersion = "latest",
             bool diff = false,
-            bool diffCompareToDashboard = false,
+            bool compareToDashboard = false,
             string gitSource = "master",
-            string dashboadApiKey = null,
+            string dashboardApiKey = null,
             string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
             string moduleName = null,
@@ -115,11 +116,11 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
-            DiffCompareToDashboard = diffCompareToDashboard;
+            CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
-            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion, FallbackVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion);
+            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion, FallbackVersion) = ValidateDashboardReporter(dashboardApiKey, projectName, moduleName, projectVersion, fallbackVersion);
         }
 
         private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion, string FallbackVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion)
