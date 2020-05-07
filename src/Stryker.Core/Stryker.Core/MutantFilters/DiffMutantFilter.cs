@@ -55,40 +55,55 @@ namespace Stryker.Core.MutantFilters
                 {
                     return mutants;
                 }
-                else
-                {
-                    UpdateMutantsWithBaseline(mutants, file);
-                }
+
+                UpdateMutantsWithBaseline(mutants, file);
             }
 
-            if (options.DiffEnabled && !_diffResult.TestsChanged)
+            if (!_diffResult.TestsChanged)
             {
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))
                 {
-                    foreach (var mutant in mutants)
-                    {
-                        mutant.ResultStatus = MutantStatus.NotRun;
-                        mutant.ResultStatusReason = "File changed since last commit.";
-                    }
-                    return mutants;
+                    return SetMutantStatusForFileChanged(mutants);
                 }
 
-                else if (_options.CompareToDashboard)
+                if (_options.CompareToDashboard)
                 {
-                    var uncheckedMutants = new List<Mutant>();
-                    foreach (var mutant in mutants)
-                    {
-                        if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
-                        {
-                            uncheckedMutants.Add(mutant);
-                        }
-                    }
-
-                    return uncheckedMutants;
+                    return ResetStatusForStatusUnclear(mutants);
                 }
+
                 return Enumerable.Empty<Mutant>();
             }
 
+            return ResetMutantStatus(mutants);
+
+        }
+
+        private static IEnumerable<Mutant> ResetStatusForStatusUnclear(IEnumerable<Mutant> mutants)
+        {
+            var uncheckedMutants = new List<Mutant>();
+            foreach (var mutant in mutants)
+            {
+                if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
+                {
+                    uncheckedMutants.Add(mutant);
+                }
+            }
+
+            return uncheckedMutants;
+        }
+
+        private static IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "File changed since last commit.";
+            }
+            return mutants;
+        }
+
+        private IEnumerable<Mutant> ResetMutantStatus(IEnumerable<Mutant> mutants)
+        {
             // Set mutant status to not run because tests changed and all mutants must run again.
             foreach (var mutant in mutants)
             {
@@ -147,29 +162,42 @@ namespace Stryker.Core.MutantFilters
                     {
                         var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
-                        var matchingMutants = mutants.Where(
-                            x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode
-                        && x.Mutation.DisplayName == baselineMutant.MutatorName
-                        );
+                        IEnumerable<Mutant> matchingMutants = GetMatchingMutants(mutants, baselineMutant, baselineMutantSourceCode);
 
                         if (matchingMutants.Count() == 1)
                         {
-                            matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                            matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+                            UpdateMutantStatusWithBaseline(baselineMutant, matchingMutants);
                         }
                         else
                         {
-                            foreach (var matchingMutant in matchingMutants)
-                            {
-                                matchingMutant.ResultStatus = MutantStatus.NotRun;
-                                matchingMutant.ResultStatusReason = "Could not affirm the right mutant status";
-                            }
+                            UpdateMutantStatusForNoCertainResult(matchingMutants);
                         }
                     }
                 }
             }
         }
 
+        private void UpdateMutantStatusWithBaseline(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
+        {
+            matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+            matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+        }
+
+        private IEnumerable<Mutant> GetMatchingMutants(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
+        {
+            return mutants.Where(
+            x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode
+            && x.Mutation.DisplayName == baselineMutant.MutatorName);
+        }
+
+        private void UpdateMutantStatusForNoCertainResult(IEnumerable<Mutant> matchingMutants)
+        {
+            foreach (var matchingMutant in matchingMutants)
+            {
+                matchingMutant.ResultStatus = MutantStatus.NotRun;
+                matchingMutant.ResultStatusReason = "Could not affirm the right mutant status";
+            }
+        }
 
         public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
         {

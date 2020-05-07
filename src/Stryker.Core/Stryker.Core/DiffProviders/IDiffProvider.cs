@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Stryker.Core.DiffProviders
+﻿namespace Stryker.Core.DiffProviders
 {
     public interface IDiffProvider
     {

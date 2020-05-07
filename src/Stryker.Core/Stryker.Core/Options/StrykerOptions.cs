@@ -5,7 +5,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Json;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
@@ -120,14 +119,16 @@ namespace Stryker.Core.Options
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
-            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion, FallbackVersion) = ValidateDashboardReporter(dashboardApiKey, projectName, moduleName, projectVersion, fallbackVersion);
+            (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
+            (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion);
+            ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
         }
 
-        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion, string FallbackVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion)
+        private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, null, null, null, null);
+                return (null, null);
             }
 
             var errorStrings = new StringBuilder();
@@ -154,7 +155,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion);
+            return (dashboadApiKey, projectName);
         }
 
         private string ValidateGitSource(string gitSource)
@@ -164,6 +165,32 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
             }
             return gitSource;
+        }
+
+        private (string ProjectVersion, string FallbackVersion) ValidateCompareToDashboard(string projectVersion, string fallbackVersion)
+        {
+            if (!CompareToDashboard)
+            {
+                return (projectVersion, null);
+            }
+
+            var errorStrings = new StringBuilder();
+            if (string.IsNullOrEmpty(projectVersion))
+            {
+                errorStrings.Append("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+            } 
+
+            if (fallbackVersion == projectVersion)
+            {
+                errorStrings.Append("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
+            }
+
+            if (errorStrings.Length > 0)
+            {
+                throw new StrykerInputException(errorStrings.ToString());
+            }
+
+            return (projectVersion, fallbackVersion);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
