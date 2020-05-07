@@ -60,10 +60,6 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadBaseline(JsonReport mutationReport)
         {
-            if (!_options.CompareToDashboard)
-            {
-                return;
-            }
             var projectVersion = _options.CurrentBranchCanonicalName ?? _options.FallbackVersion;
 
             var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), projectVersion);

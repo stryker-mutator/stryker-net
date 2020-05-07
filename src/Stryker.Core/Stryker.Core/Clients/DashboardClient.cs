@@ -16,7 +16,7 @@ namespace Stryker.Core.Clients
         Task<JsonReport> PullReport(string version);
     }
 
-    public class DashboardClient : IDashboardClient, IDisposable
+    public class DashboardClient : IDashboardClient
     {
         private readonly StrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
@@ -68,7 +68,7 @@ namespace Stryker.Core.Clients
 
             if (_options.ModuleName != null)
             {
-                url = new Uri(url, $"module={_options.ModuleName}");
+                url = new Uri(url, $"?module={_options.ModuleName}");
             }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
@@ -88,12 +88,6 @@ namespace Stryker.Core.Clients
                 return null;
 
             }
-        }
-
-
-        public void Dispose()
-        {
-            _httpClient.Dispose();
         }
     }
 }
