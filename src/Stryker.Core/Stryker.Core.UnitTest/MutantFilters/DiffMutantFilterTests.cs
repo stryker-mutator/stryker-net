@@ -1,5 +1,7 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -201,6 +203,141 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 
             filterResult.ShouldContain(mutant);
+        }
+
+        [Fact]
+        public async Task GetFallbackBaselineReturnsBaseline()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+            var reporters = new string[1];
+            reporters[0] = "dashboard";
+
+            var options = new StrykerOptions(
+                compareToDashboard: true,
+               dashboardApiKey: "Acces_Token",
+               projectName: "github.com/JohnDoe/project",
+               projectVersion: "version/human/readable",
+               reporters: reporters,
+               fallbackVersion: "fallback/version");
+
+            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+
+            var jsonReport = JsonReport.Build(options, inputComponent);
+
+            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
+
+            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+
+            // Act
+            var result  = await target.GetFallbackBaseline();
+
+            // Assert
+            result.ShouldBe(jsonReport);
+        }
+
+        [Fact]
+        public async Task GetFallBackBaselineReturnsNullWhenDashboardClientReturnsNull()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+
+            var reporters = new string[1];
+            reporters[0] = "dashboard";
+
+            var options = new StrykerOptions(
+                compareToDashboard: true,
+               dashboardApiKey: "Acces_Token",
+               projectName: "github.com/JohnDoe/project",
+               projectVersion: "version/human/readable",
+               reporters: reporters,
+               fallbackVersion: "fallback/version");
+
+            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult<JsonReport>(null));
+
+            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+
+            // Act
+            var result = await target.GetFallbackBaseline();
+
+            // Assert
+            result.ShouldBe(null);
+        }
+
+        [Fact]
+        public async Task GetBackBaselineReturnsFallbackWhenDashboardClientReturnsNull()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var reporters = new string[1];
+            reporters[0] = "dashboard";
+
+            var options = new StrykerOptions(
+                compareToDashboard: true,
+               dashboardApiKey: "Acces_Token",
+               projectName: "github.com/JohnDoe/project",
+               projectVersion: "version/human/readable",
+               reporters: reporters,
+               fallbackVersion: "fallback/version");
+
+            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+
+            var jsonReport = JsonReport.Build(options, inputComponent);
+
+            branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
+
+            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
+            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
+
+            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+
+            // Act
+            var result = await target.GetBaseline();
+
+            // Assert
+            result.ShouldBe(jsonReport);
+        }
+
+        [Fact]
+        public async Task GetBaselineReturnsWhenDashboardClientReturnsReport()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var reporters = new string[1];
+            reporters[0] = "dashboard";
+
+            var options = new StrykerOptions(
+                compareToDashboard: true,
+               dashboardApiKey: "Acces_Token",
+               projectName: "github.com/JohnDoe/project",
+               projectVersion: "version/human/readable",
+               reporters: reporters,
+               fallbackVersion: "fallback/version");
+
+            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+
+            var jsonReport = JsonReport.Build(options, inputComponent);
+
+            branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
+
+            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult(jsonReport));
+
+            var target = new DiffMutantFilter(options, branchProvider: branchProvider.Object, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+
+            // Act
+            var result = await target.GetBaseline();
+
+            // Assert
+            result.ShouldBe(jsonReport);
         }
     }
 }

@@ -98,7 +98,7 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private async Task<JsonReport> GetBaseline()
+        public async Task<JsonReport> GetBaseline()
         {
             var branchName = _branchProvider.GetCurrentBranchCanonicalName();
 
