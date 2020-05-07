@@ -474,9 +474,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--compare-dashboard")]
-        [InlineData("-compare")]
-        public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(string argName)
+        [InlineData("--compare-dashboard", "--dashboard-version project")]
+        [InlineData("-compare", "-version project")]
+        public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
         {
             StrykerOptions options = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
@@ -489,7 +489,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName });
+            target.Run(argName);
 
             mock.VerifyAll();
 
@@ -497,9 +497,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--compare-dashboard")]
-        [InlineData("-compare")]
-        public void ShouldEnableDiffFeatureWhenDashboardComparePassed(string argName)
+        [InlineData("--compare-dashboard", "--dashboard-version project")]
+        [InlineData("-compare", "-version project")]
+        public void ShouldEnableDiffFeatureWhenDashboardComparePassed(params string[] argNames)
         {
             StrykerOptions options = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
@@ -512,7 +512,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName });
+            target.Run(argNames);
 
             mock.VerifyAll();
 
