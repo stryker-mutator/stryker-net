@@ -47,7 +47,7 @@ Runs on test projects targeting:
  - netframework 4.5+
 
 #### Requirements
-Dotnet core runtime 2.2+ needs to be available on your system to run dotnet stryker.
+Dotnet core runtime 3.1+ needs to be available on your system to run dotnet stryker.
 
 For .NET Framework projects, Stryker.NET requires [nuget.exe](https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools#windows) to be installed on your system. Please follow their installation instructions.
 
