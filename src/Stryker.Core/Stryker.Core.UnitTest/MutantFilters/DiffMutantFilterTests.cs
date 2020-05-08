@@ -11,6 +11,7 @@ using Stryker.Core.Reporters.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -338,6 +339,31 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             result.ShouldBe(jsonReport);
+        }
+
+
+        [Fact]
+        public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailabe()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object );
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant(),
+                new Mutant(),
+                new Mutant()
+            };
+
+            var results = target.FilterMutants(mutants, null, options);
+
+            results.Count().ShouldBe(3);
         }
     }
 }

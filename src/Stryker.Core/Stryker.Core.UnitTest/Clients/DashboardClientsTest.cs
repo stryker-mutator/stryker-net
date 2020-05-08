@@ -282,5 +282,61 @@ namespace Stryker.Core.UnitTest.Clients
 
             result.ToJson().Equals(jsonReport.ToJson());
         }
+
+        [Fact]
+        public async Task DashboardClient_Get_Returns_Null_When_Statuscode_Not_200()
+        {
+            // Arrange 
+            var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+
+            var reporters = new string[] {
+                "dashboard"
+            };
+            
+
+            var options = new StrykerOptions(
+                dashboardUrl: "http://www.example.com",
+                dashboardApiKey: "Acces_Token",
+                projectName: "github.com/JohnDoe/project",
+                projectVersion: "test/version",
+                reporters: reporters
+                );
+
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                })
+                .Verifiable();
+
+            var httpClient = new HttpClient(handlerMock.Object);
+
+            var target = new DashboardClient(options, httpClient, loggerMock.Object);
+
+            // Act
+            var result = await target.PullReport("version");
+
+            // Assert
+            var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version");
+
+            handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Get
+                    && req.RequestUri == expectedUri
+                    ),
+                ItExpr.IsAny<CancellationToken>()
+                );
+
+            result.ShouldBeNull();
+        }
     }
 }
