@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()
         {
-            var result = MutantFilterFactory.Create(new StrykerOptions());
+            var result = new MutantFilterFactory().WithOptions(new StrykerOptions()).Create();
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void Create_Throws_ArgumentNullException_When_Stryker_Options_Is_Null()
         {
-            var result = Should.Throw<ArgumentNullException>(() => MutantFilterFactory.Create(null));
+            var result = Should.Throw<ArgumentNullException>(() => new MutantFilterFactory().Create(null));
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var strykerOptions = new StrykerOptions(diff: false);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions);
+            var result = new MutantFilterFactory().WithOptions(strykerOptions).Create();
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object);
+            var result = new MutantFilterFactory().WithOptions(strykerOptions).Create(diffProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;

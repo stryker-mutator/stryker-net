@@ -84,13 +84,6 @@ namespace Stryker.Core
                 // mutate
                 _mutationTestProcess.Mutate();
 
-                if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
-                {
-                    logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
-                    // coverage
-                    _mutationTestProcess.GetCoverage();
-                }
-
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);
             }

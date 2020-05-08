@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest
             initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);
 
             mutationTestProcessMock.Setup(x => x.Mutate());
-            mutationTestProcessMock.Setup(x => x.GetCoverage());
+            //mutationTestProcessMock.Setup(x => x.GetCoverage());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
