@@ -8,6 +8,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -140,10 +141,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             var options = new StrykerOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
+            string myFile = Path.Combine("C:/test/", "myfile.cs");
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedFiles = new Collection<string>(),
+                TestFilesChanged = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
@@ -179,7 +181,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void ShouldMutateAllFilesWhenATestHasBeenChanged()
+        public void ShouldNotFilterMutantsWhereCoveringTestsContainsChangedTestFile()
         {
            string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
@@ -192,7 +194,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 {
                     myTest
                 },
-                TestsChanged = true
+                TestFilesChanged = new Collection<string>() { 
+                    myTest
+                }
             });
             var target = new DiffMutantFilter(options, diffProvider.Object);
 
@@ -200,6 +204,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
 
             var mutant = new Mutant();
+
+            mutant.CoveringTests.Add(new TestDescription(Guid.NewGuid().ToString(), "name", myTest));
 
             var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 

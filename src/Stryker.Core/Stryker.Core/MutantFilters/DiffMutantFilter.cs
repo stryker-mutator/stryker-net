@@ -49,6 +49,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
+            var filteredMutants = new HashSet<Mutant>();
             if (options.CompareToDashboard)
             {
                 if (_baseline == null)
@@ -59,23 +60,22 @@ namespace Stryker.Core.MutantFilters
                 UpdateMutantsWithBaseline(mutants, file);
             }
 
-            if (!_diffResult.TestsChanged)
+            if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any())
             {
-                if (_diffResult.ChangedFiles.Contains(file.FullPath))
-                {
-                    return SetMutantStatusForFileChanged(mutants);
-                }
-
-                if (_options.CompareToDashboard)
-                {
-                    return ResetStatusForStatusUnclear(mutants);
-                }
-
-                return Enumerable.Empty<Mutant>();
+                filteredMutants.UnionWith(ResetMutantStatusForChangedTests(mutants));
             }
 
-            return ResetMutantStatus(mutants);
+            if (_diffResult.ChangedFiles.Contains(file.FullPath))
+            {
+                filteredMutants.UnionWith(SetMutantStatusForFileChanged(mutants));
+            }
 
+            if (_options.CompareToDashboard)
+            {
+                filteredMutants.UnionWith(ResetStatusForStatusUnclear(mutants));
+            }
+
+            return filteredMutants.ToList();
         }
 
         private static IEnumerable<Mutant> ResetStatusForStatusUnclear(IEnumerable<Mutant> mutants)
@@ -102,12 +102,20 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private IEnumerable<Mutant> ResetMutantStatus(IEnumerable<Mutant> mutants)
+        private IEnumerable<Mutant> ResetMutantStatusForChangedTests(IEnumerable<Mutant> mutants)
         {
-            // Set mutant status to not run because tests changed and all mutants must run again.
             foreach (var mutant in mutants)
             {
-                mutant.ResultStatus = MutantStatus.NotRun;
+                var mutantconveringTests = mutant.CoveringTests.Tests;
+
+                foreach (var test in mutantconveringTests)
+                {
+                    if (_diffResult.TestFilesChanged.Contains(test.TestfilePath))
+                    {
+                        mutant.ResultStatus = MutantStatus.NotRun;
+                        mutant.ResultStatusReason = "One of the covering tests changed";
+                    }
+                }
             }
 
             return mutants;

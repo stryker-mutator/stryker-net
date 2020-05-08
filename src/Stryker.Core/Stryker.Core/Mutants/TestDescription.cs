@@ -9,15 +9,17 @@ namespace Stryker.Core.Mutants
         private static readonly TestDescription AllTestsDescription;
         private const string AllTestsGuid = "-1";
 
-        public TestDescription(string guid, string name)
+        public TestDescription(string guid, string name, string testfilePath)
         {
             Guid = guid;
             Name = name;
+            TestfilePath = testfilePath;
         }
 
         static TestDescription()
         {
-            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests");
+            // TODO: Set this the value for testfilepath here
+            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests", "");
         }
 
         /// <summary>
@@ -34,6 +36,10 @@ namespace Stryker.Core.Mutants
 
         public bool IsAllTests => Guid == AllTestsGuid;
 
+        public string TestfilePath { get; }
+
+
+
         private bool Equals(TestDescription other)
         {
             return string.Equals(Guid, other.Guid) || IsAllTests || other.IsAllTests;
@@ -41,7 +47,7 @@ namespace Stryker.Core.Mutants
 
         public static implicit operator TestDescription(TestCase test)
         {
-            return new TestDescription(test.Id.ToString(), test.FullyQualifiedName);
+            return new TestDescription(test.Id.ToString(), test.FullyQualifiedName, test.CodeFilePath);
         }
 
         public override bool Equals(object obj)

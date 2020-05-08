@@ -26,6 +26,13 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
+            IEnumerable<Mutant> filteredMutants = mutants;
+
+            foreach (var mutantFilter in MutantFilters)
+            {
+                filteredMutants = FilterMutantsPerFilter(mutantFilter, mutants, file, options).ToList();
+            }
+
 
             if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
@@ -33,13 +40,7 @@ namespace Stryker.Core.MutantFilters
                 // coverage
                 CoverageMutantFilter?.FilterMutants();
             }
-
-            IEnumerable<Mutant> filteredMutants = mutants;
-
-            foreach (var mutantFilter in MutantFilters)
-            {
-                filteredMutants = FilterMutantsPerFilter(mutantFilter, mutants, file, options).ToList();
-            }
+            
 
             var diffMutantFilter = MutantFilters.FirstOrDefault(x => x.GetType() == typeof(DiffMutantFilter));
 
@@ -69,7 +70,6 @@ namespace Stryker.Core.MutantFilters
                     skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
                 }
             }
-
             return mutants;
         }
     }

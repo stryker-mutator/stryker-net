@@ -29,7 +29,7 @@ namespace Stryker.Core.DiffProviders
             var diffResult = new DiffResult()
             {
                 ChangedFiles = new Collection<string>(),
-                TestsChanged = false
+                TestFilesChanged = new Collection<string>()
             };
 
             // A git repository has been detected, calculate the diff to filter
@@ -43,7 +43,7 @@ namespace Stryker.Core.DiffProviders
                     diffResult.ChangedFiles.Add(diffPath);
                     if (diffPath.StartsWith(_options.BasePath))
                     {
-                        diffResult.TestsChanged = true;
+                        diffResult.TestFilesChanged.Add(diffPath);
                     }
                 }
 
