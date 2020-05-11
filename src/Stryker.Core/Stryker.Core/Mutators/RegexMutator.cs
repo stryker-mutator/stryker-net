@@ -26,7 +26,7 @@ namespace Stryker.Core.Mutators
                         yield return new Mutation()
                         {
                             OriginalNode = patternExpression,
-                            ReplacementNode = patternExpression.ReplaceNode(patternExpression, SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue))),
+                            ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),
                             DisplayName = "Regex mutation",
                             Type = Mutator.Regex
                         };
