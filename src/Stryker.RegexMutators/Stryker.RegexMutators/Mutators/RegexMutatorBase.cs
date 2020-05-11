@@ -1,7 +1,7 @@
 ﻿using RegexParser.Nodes;
 using System.Collections.Generic;
 
-namespace Stryker.RegexMutators
+namespace Stryker.RegexMutators.Mutators
 {
     /// <summary>
     /// Mutators can implement this class to check the type of the node and cast the node to the expected type.

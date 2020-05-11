@@ -2,15 +2,15 @@
 using RegexParser.Nodes.AnchorNodes;
 using System.Collections.Generic;
 
-namespace Stryker.RegexMutators
+namespace Stryker.RegexMutators.Mutators
 {
     public class AnchorRemovalMutator : RegexMutatorBase<AnchorNode>, IRegexMutator
     {
-        private RegexNode Root { get; }
+        private readonly RegexNode _root;
 
         public AnchorRemovalMutator(RegexNode root)
         {
-            Root = root;
+            _root = root;
         }
 
         public override IEnumerable<string> ApplyMutations(AnchorNode node)
@@ -20,7 +20,7 @@ namespace Stryker.RegexMutators
 
         private string AnchorRemoval(AnchorNode node)
         {
-            return Root.RemoveNode(node).ToString();
+            return _root.RemoveNode(node).ToString();
         }
     }
 }

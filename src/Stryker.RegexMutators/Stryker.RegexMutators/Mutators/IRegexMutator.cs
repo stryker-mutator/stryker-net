@@ -1,4 +1,4 @@
-﻿namespace Stryker.RegexMutators
+﻿namespace Stryker.RegexMutators.Mutators
 {
     public interface IRegexMutator
     {
