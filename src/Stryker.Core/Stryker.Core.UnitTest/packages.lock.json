@@ -494,8 +494,8 @@
       },
       "RegexParser": {
         "type": "Transitive",
-        "resolved": "0.1.0",
-        "contentHash": "Tedk+AR3FtTItx7BKZdKroPsqNrAI9p6t8nPYJGUN0Ce5KcvzR8s/PGt9C4PZvm1EiyaTqsOHXlAW7E4WqR+DA=="
+        "resolved": "0.3.2",
+        "contentHash": "5mRxiDg4EMNMAgN/HMRSrYWe33n+ejrcDv5CHnmDBVhn31xoPNcrLYWLPrHiEkr5gbUjLTDa+kMyNwZjqZ/D8A=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -1685,7 +1685,7 @@
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "0.1.0"
+          "RegexParser": "0.3.2"
         }
       }
     }
