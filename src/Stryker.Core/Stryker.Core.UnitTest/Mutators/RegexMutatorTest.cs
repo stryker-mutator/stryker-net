@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -57,6 +58,22 @@ namespace Stryker.Core.UnitTest.Mutators
             var result = target.ApplyMutations(objectCreationExpression);
 
             result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldMutateStringLiteralMultipleTimes()
+        {
+            var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
+            var target = new RegexMutator();
+
+            var result = target.ApplyMutations(objectCreationExpression);
+
+            result.Count().ShouldBe(2);
+            result.ShouldAllBe(mutant => mutant.DisplayName == "Regex mutation");
+            var first = result.First().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            var last = result.Last().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            first.Token.ValueText.ShouldBe("abc$");
+            last.Token.ValueText.ShouldBe("^abc");
         }
     }
 }
