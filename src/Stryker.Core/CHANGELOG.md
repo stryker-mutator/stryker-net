@@ -2,18 +2,14 @@
 
 
 ### Bug Fixes
-
+* **Statics coverage analysis** Add statistics message ([#1000](https://github.com/stryker-mutator/stryker-net/issues/1000)) ([0ae3f16](https://github.com/stryker-mutator/stryker-net/commit/0ae3f1694e583fb6f05c4b0c23c96d7b5b1a6ebd)), closes [#999](https://github.com/stryker-mutator/stryker-net/issues/999)
 * **Enum mutations warning:** Avoid mutating enum member declarations ([#1017](https://github.com/stryker-mutator/stryker-net/issues/1017)) ([abc51ce](https://github.com/stryker-mutator/stryker-net/commit/abc51ce4bd9c4e19e27fc86fa8d5d1db5ffe18e2))
 
 
 ### Features
-
-* add statistics message ([#1000](https://github.com/stryker-mutator/stryker-net/issues/1000)) ([0ae3f16](https://github.com/stryker-mutator/stryker-net/commit/0ae3f1694e583fb6f05c4b0c23c96d7b5b1a6ebd)), closes [#999](https://github.com/stryker-mutator/stryker-net/issues/999)
 * **Collection initializer mutator:** Add mutator for collections and arrays ([#1023](https://github.com/stryker-mutator/stryker-net/issues/1023)) ([863b56a](https://github.com/stryker-mutator/stryker-net/commit/863b56a09f0407e490d25efcdecce60e0187861e))
-* **Collection initializer mutator:** Also correctly deal with array creation without initializer ([#1060](https://github.com/stryker-mutator/stryker-net/issues/1060)) ([b12dd90](https://github.com/stryker-mutator/stryker-net/commit/b12dd907a247823a5d30f652a00a778b558bf415))
-* **compiling:** Support for project output types other than console app ([#1028](https://github.com/stryker-mutator/stryker-net/issues/1028)) ([c2d08ca](https://github.com/stryker-mutator/stryker-net/commit/c2d08ca29ab4d593a7da79c43f97f4781c3afdc4))
-* **core3.1:** Upgrade to dotnet core 3.1 ([#785](https://github.com/stryker-mutator/stryker-net/issues/785)) ([92283b5](https://github.com/stryker-mutator/stryker-net/commit/92283b5def0ffb10b74d0012d672905338deec14))
-
+* **Compiling:** Support for project output types other than console app ([#1028](https://github.com/stryker-mutator/stryker-net/issues/1028)) ([c2d08ca](https://github.com/stryker-mutator/stryker-net/commit/c2d08ca29ab4d593a7da79c43f97f4781c3afdc4))
+* **Core3.1:** Upgrade to dotnet core 3.1 ([#785](https://github.com/stryker-mutator/stryker-net/issues/785)) ([92283b5](https://github.com/stryker-mutator/stryker-net/commit/92283b5def0ffb10b74d0012d672905338deec14))
 
 
 ## [0.17.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.17.0...stryker@0.17.1) (2020-03-24)
