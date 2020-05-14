@@ -21,6 +21,8 @@ namespace Stryker.Core.MutationTest
         void Mutate();
         StrykerRunResult Test(StrykerOptions options);
         void GetCoverage();
+
+        void FilterMutants();
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -87,27 +89,6 @@ namespace Stryker.Core.MutationTest
             _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
 
             CompileMutations();
-
-            foreach(var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
-            {
-                _mutantFilter.FilterMutants(file.Mutants, file, _options);
-            }
-
-            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
-                .SelectMany(f => f.Mutants)
-                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
-                .OrderBy(x => x.Key);
-
-            foreach (var skippedMutantGroup in skippedMutantGroups)
-            {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
-                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
-            }
-
-            _logger.LogInformation("{0} mutants ready for test",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
-
-            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
 
         private void CompileMutations()
@@ -300,6 +281,30 @@ namespace Stryker.Core.MutationTest
         public void GetCoverage()
         {
             _coverageAnalyser.SetTestCoverage();
+        }
+
+        public void FilterMutants()
+        {
+            foreach (var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
+            {
+                _mutantFilter.FilterMutants(file.Mutants, file, _options);
+            }
+
+            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
+                .SelectMany(f => f.Mutants)
+                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
+                .OrderBy(x => x.Key);
+
+            foreach (var skippedMutantGroup in skippedMutantGroups)
+            {
+                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
+                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+            }
+
+            _logger.LogInformation("{0} mutants ready for test",
+                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
+
+            _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
     }
 }

@@ -86,6 +86,8 @@ namespace Stryker.Core
 
                 _mutationTestProcess.GetCoverage();
 
+                _mutationTestProcess.FilterMutants();
+
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);
             }
