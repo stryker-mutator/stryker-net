@@ -11,14 +11,12 @@ namespace Stryker.Core.MutantFilters
     public class BroadcastMutantFilter : IMutantFilter
     {
         public IEnumerable<IMutantFilter> MutantFilters { get; }
-        public IProjectMutantFilter CoverageMutantFilter { get; }
 
         private readonly ILogger<BroadcastMutantFilter> _logger;
 
-        public BroadcastMutantFilter(IEnumerable<IMutantFilter> mutantFilters, IProjectMutantFilter coverageMutantFilter)
+        public BroadcastMutantFilter(IEnumerable<IMutantFilter> mutantFilters)
         {
             MutantFilters = mutantFilters;
-            CoverageMutantFilter = coverageMutantFilter;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<BroadcastMutantFilter>();
         }
 
@@ -30,18 +28,9 @@ namespace Stryker.Core.MutantFilters
 
             foreach (var mutantFilter in MutantFilters)
             {
-                filteredMutants = FilterMutantsPerFilter(mutantFilter, mutants, file, options).ToList();
+                filteredMutants = FilterMutantsPerFilter(mutantFilter, mutants, file, options);
             }
-
-
-            if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
-            {
-                _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
-                // coverage
-                CoverageMutantFilter?.FilterMutants();
-            }
-            
-
+          
             var diffMutantFilter = MutantFilters.FirstOrDefault(x => x.GetType() == typeof(DiffMutantFilter));
 
             filteredMutants = diffMutantFilter?.FilterMutants(mutants, file, options);

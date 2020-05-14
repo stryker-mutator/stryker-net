@@ -536,7 +536,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var mockReporter = new Mock<IReporter>();
                 var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions);
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
-                //tester.GetCoverage();
+                tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);
                 tester.Test(strykerOptions);
 

@@ -84,6 +84,8 @@ namespace Stryker.Core
                 // mutate
                 _mutationTestProcess.Mutate();
 
+                _mutationTestProcess.GetCoverage();
+
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);
             }

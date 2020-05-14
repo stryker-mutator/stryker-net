@@ -8,7 +8,6 @@ namespace Stryker.Core.MutantFilters
 {
     public class MutantFilterFactory
     {
-        private IProjectMutantFilter _coverageMutantFilter;
         private IDiffProvider _diffProvider;
         private StrykerOptions _options;
 
@@ -21,7 +20,7 @@ namespace Stryker.Core.MutantFilters
 
             _diffProvider = diffProvider ?? new GitDiffProvider(_options);
 
-            return new BroadcastMutantFilter(DetermineEnabledMutantFilters(_options), _coverageMutantFilter ?? null);
+            return new BroadcastMutantFilter(DetermineEnabledMutantFilters(_options));
         }
 
         private IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
@@ -44,13 +43,6 @@ namespace Stryker.Core.MutantFilters
         public MutantFilterFactory WithOptions(StrykerOptions options)
         {
             _options = options;
-            return this;
-        }
-
-        public MutantFilterFactory WithCoverageMutantFilter(IMutationTestExecutor mutationTestExecutor, MutationTestInput input)
-        {
-            _coverageMutantFilter = new CoverageProjectMutantFilter(_options, mutationTestExecutor, input);
-
             return this;
         }
     }

@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants
     public sealed class TestDescription
     {
         private static readonly TestDescription AllTestsDescription;
-        private const string AllTestsGuid = "-1";
+        private static readonly string AllTestsGuid = "-1";
 
         public TestDescription(string guid, string name, string testfilePath)
         {

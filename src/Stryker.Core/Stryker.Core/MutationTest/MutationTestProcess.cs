@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -19,6 +20,7 @@ namespace Stryker.Core.MutationTest
     {
         void Mutate();
         StrykerRunResult Test(StrykerOptions options);
+        void GetCoverage();
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -31,6 +33,7 @@ namespace Stryker.Core.MutationTest
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
+        private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
@@ -40,7 +43,8 @@ namespace Stryker.Core.MutationTest
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
-            IMutantFilter mutantFilter = null)
+            IMutantFilter mutantFilter = null,
+            ICoverageAnalyser coverageAnalyser = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
@@ -50,15 +54,14 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, _input);
+
 
             var mutantFilterFactory = new MutantFilterFactory();
 
             _mutantFilter = mutantFilter 
                 ?? mutantFilterFactory
                 .WithOptions(options)
-                .WithCoverageMutantFilter(
-                    _mutationTestExecutor,
-                    _input)
                 .Create();
         }
 
@@ -78,15 +81,17 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
-
-                _mutantFilter.FilterMutants(allMutants, file, _options);
-
                 file.Mutants = allMutants;
             }
 
             _logger.LogDebug("{0} mutants created", _input.ProjectInfo.ProjectContents.Mutants.Count());
 
             CompileMutations();
+
+            foreach(var file in _input.ProjectInfo.ProjectContents.GetAllFiles())
+            {
+                _mutantFilter.FilterMutants(file.Mutants, file, _options);
+            }
 
             var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
                 .SelectMany(f => f.Mutants)
@@ -290,6 +295,11 @@ namespace Stryker.Core.MutationTest
             // compute number of tests that will be run
             _logger.LogInformation($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
             return blocks;
+        }
+
+        public void GetCoverage()
+        {
+            _coverageAnalyser.SetTestCoverage();
         }
     }
 }

@@ -49,7 +49,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            var filteredMutants = new HashSet<Mutant>();
+            var filteredMutants = new List<Mutant>();
             if (options.CompareToDashboard)
             {
                 if (_baseline == null)
@@ -60,22 +60,42 @@ namespace Stryker.Core.MutantFilters
                 UpdateMutantsWithBaseline(mutants, file);
             }
 
-            if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any())
+            if (_options.CompareToDashboard)
             {
-                filteredMutants.UnionWith(ResetMutantStatusForChangedTests(mutants));
+                filteredMutants = ResetStatusForStatusUnclear(mutants).ToList();
             }
 
             if (_diffResult.ChangedFiles.Contains(file.FullPath))
             {
-                filteredMutants.UnionWith(SetMutantStatusForFileChanged(mutants));
+                UpdateMutantStatusses(filteredMutants, SetMutantStatusForFileChanged(mutants));
             }
 
-            if (_options.CompareToDashboard)
+            if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any())
             {
-                filteredMutants.UnionWith(ResetStatusForStatusUnclear(mutants));
+                UpdateMutantStatusses(filteredMutants, ResetMutantStatusForChangedTests(mutants));
             }
+
 
             return filteredMutants.ToList();
+        }
+
+        private static void UpdateMutantStatusses(List<Mutant> mutants, IEnumerable<Mutant> mergingMutants)
+        {
+            foreach (var (mutant, filteredMutant) in from mutant in mergingMutants
+                                                     let filteredMutant = mutants.FirstOrDefault(filtered => filtered.Id == mutant.Id)
+                                                     select (mutant, filteredMutant))
+            {
+                if (filteredMutant != null)
+                {
+                    filteredMutant.ResultStatus = mutant.ResultStatus;
+                    filteredMutant.ResultStatusReason = mutant.ResultStatusReason;
+                }
+                else
+                {
+                    mutants.Add(mutant);
+                }
+
+            }
         }
 
         private static IEnumerable<Mutant> ResetStatusForStatusUnclear(IEnumerable<Mutant> mutants)
@@ -83,7 +103,7 @@ namespace Stryker.Core.MutantFilters
             var uncheckedMutants = new List<Mutant>();
             foreach (var mutant in mutants)
             {
-                if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
+                if (mutant.ResultStatusReason == "Could not affirm the correct mutant status")
                 {
                     uncheckedMutants.Add(mutant);
                 }
@@ -98,27 +118,33 @@ namespace Stryker.Core.MutantFilters
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "File changed since last commit.";
+                yield return mutant;
             }
-            return mutants;
         }
 
         private IEnumerable<Mutant> ResetMutantStatusForChangedTests(IEnumerable<Mutant> mutants)
         {
+            var filteredMutants = new List<Mutant>();
+
             foreach (var mutant in mutants)
             {
-                var mutantconveringTests = mutant.CoveringTests.Tests;
+                var mutantCoveringTests = mutant.CoveringTests.Tests;
 
-                foreach (var test in mutantconveringTests)
+                if (mutantCoveringTests.Any(
+                    coveringTest => _diffResult.TestFilesChanged.Any(
+                        changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                   || mutantCoveringTests.Any(coveringTest => coveringTest.IsAllTests))
                 {
-                    if (_diffResult.TestFilesChanged.Contains(test.TestfilePath))
-                    {
-                        mutant.ResultStatus = MutantStatus.NotRun;
-                        mutant.ResultStatusReason = "One of the covering tests changed";
-                    }
+
+                    mutant.ResultStatus = MutantStatus.NotRun;
+                    mutant.ResultStatusReason = "One or more covering tests changed";
+
+                    filteredMutants.Add(mutant);
+                    break;
                 }
             }
 
-            return mutants;
+            return filteredMutants;
         }
 
         public async Task<JsonReport> GetBaseline()
@@ -203,7 +229,7 @@ namespace Stryker.Core.MutantFilters
             foreach (var matchingMutant in matchingMutants)
             {
                 matchingMutant.ResultStatus = MutantStatus.NotRun;
-                matchingMutant.ResultStatusReason = "Could not affirm the right mutant status";
+                matchingMutant.ResultStatusReason = "Could not affirm the correct mutant status";
             }
         }
 
