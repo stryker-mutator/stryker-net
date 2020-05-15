@@ -6,7 +6,7 @@ The full list of Stryker.NET configuration options are:
 - [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
-- [Test runner](#test-runner)
+- [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
 - [Test projects](#test-projects)
