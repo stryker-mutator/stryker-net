@@ -15,7 +15,7 @@ The full list of Stryker.NET configuration options are:
 - [Excluding files (deprecated)](#excluding-files)
 - [Mutate](#mutate)
 - [Ignore methods](#ignore-methods)
-- [Custom tresholds](#unary-operators)
+- [Custom tresholds](#custom-thresholds)
 - [Coverage analysis](#coverage-analysis)
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
