@@ -68,10 +68,11 @@ namespace Stryker.CLI
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
-            var diffCompareToDashboard = CreateOption(app, CLIOptions.CompareDashboard);
+            var diffCompareToDashboard = CreateOption(app, CLIOptions.DiffCompare);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
             var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
+            var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
 
             app.HelpOption("--help | -h | -?");
 
@@ -110,7 +111,8 @@ namespace Stryker.CLI
                     diff: diffParam,
                     diffCompareToDashboard: diffCompareToDashboard,
                     gitSource: gitSourceParam,
-                    testProjects: testProjectsParam);
+                    testProjects: testProjectsParam,
+                    baselineStorageLocation: baselineStorageLocation);
 
                 RunStryker(options);
                 return ExitCode;

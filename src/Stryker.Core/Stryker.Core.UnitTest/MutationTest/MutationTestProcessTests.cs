@@ -126,13 +126,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             // start mutation process
             target.Mutate();
 
+            target.FilterMutants();
+
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()), Times.Once);
         }
 
         [Fact]
-        public void MutateShouldCallMutantFilters()
+        public void FilterMutantsShouldCallMutantFilters()
         {
             var inputFile = new FileLeaf()
             {
@@ -222,6 +224,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // start mutation process
             target.Mutate();
+
+            target.FilterMutants();
 
             // verify that filtered mutants are skipped
             inputFile.Mutants.ShouldContain(mutantToBeSkipped);

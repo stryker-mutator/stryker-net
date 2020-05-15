@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Baseline;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
@@ -20,7 +21,7 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-        private readonly IDashboardClient _dashboardClient;
+        private readonly IBaselineProvider _baselineProvider;
         private readonly IBranchProvider _branchProvider;
 
         private readonly StrykerOptions _options;
@@ -31,11 +32,11 @@ namespace Stryker.Core.MutantFilters
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
+        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IBranchProvider branchProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
-            _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _baselineProvider = baselineProvider ?? options.BaselineProvider ?? new DiskBaselineProvider(options);
             _branchProvider = branchProvider ?? new GitBranchProvider(options);
             _options = options;
 
@@ -153,7 +154,7 @@ namespace Stryker.Core.MutantFilters
 
             _options.CurrentBranchCanonicalName = branchName;
 
-            var report = await _dashboardClient.PullReport(branchName);
+            var report = await _baselineProvider.Load(branchName);
 
             if (report == null)
             {
@@ -169,7 +170,7 @@ namespace Stryker.Core.MutantFilters
 
         public async Task<JsonReport> GetFallbackBaseline()
         {
-            var report = await _dashboardClient.PullReport(_options.FallbackVersion);
+            var report = await _baselineProvider.Load(_options.FallbackVersion);
 
             if (report == null)
             {

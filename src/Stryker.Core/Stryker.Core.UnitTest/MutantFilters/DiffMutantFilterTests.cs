@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Baseline;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
@@ -216,7 +217,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public async Task GetFallbackBaselineReturnsBaseline()
         {
             // Arrange 
-            var dashboardClient = new Mock<IDashboardClient>();
+            var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             var reporters = new string[1];
@@ -234,9 +235,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
-            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
+            baselineProvider.Setup(x => x.Load("fallback/version")).Returns(Task.FromResult(jsonReport));
 
-            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+            var target = new DiffMutantFilter(options, baselineProvider: baselineProvider.Object, diffProvider: diffProvider.Object);
 
             // Act
             var result  = await target.GetFallbackBaseline();
@@ -249,7 +250,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public async Task GetFallBackBaselineReturnsNullWhenDashboardClientReturnsNull()
         {
             // Arrange 
-            var dashboardClient = new Mock<IDashboardClient>();
+            var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             var reporters = new string[1];
@@ -263,9 +264,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load("fallback/version")).Returns(Task.FromResult<JsonReport>(null));
 
-            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+            var target = new DiffMutantFilter(options, baselineProvider: baselineProvider.Object, diffProvider: diffProvider.Object);
 
             // Act
             var result = await target.GetFallbackBaseline();
@@ -278,7 +279,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public async Task GetBackBaselineReturnsFallbackWhenDashboardClientReturnsNull()
         {
             // Arrange 
-            var dashboardClient = new Mock<IDashboardClient>();
+            var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IBranchProvider>();
 
@@ -299,10 +300,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
 
-            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
-            dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
+            baselineProvider.Setup(x => x.Load("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load("fallback/version")).Returns(Task.FromResult(jsonReport));
 
-            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+            var target = new DiffMutantFilter(options, baselineProvider: baselineProvider.Object, diffProvider: diffProvider.Object);
 
             // Act
             var result = await target.GetBaseline();
@@ -315,7 +316,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public async Task GetBaselineReturnsWhenDashboardClientReturnsReport()
         {
             // Arrange 
-            var dashboardClient = new Mock<IDashboardClient>();
+            var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IBranchProvider>();
 
@@ -336,9 +337,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
 
-            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult(jsonReport));
+            baselineProvider.Setup(x => x.Load("refs/heads/master")).Returns(Task.FromResult(jsonReport));
 
-            var target = new DiffMutantFilter(options, branchProvider: branchProvider.Object, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
+            var target = new DiffMutantFilter(options, branchProvider: branchProvider.Object, baselineProvider: baselineProvider.Object, diffProvider: diffProvider.Object);
 
             // Act
             var result = await target.GetBaseline();
@@ -352,7 +353,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailabe()
         {
             // Arrange 
-            var dashboardClient = new Mock<IDashboardClient>();
+            var dashboardClient = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IBranchProvider>();
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Baseline;
 using Stryker.Core.Clients;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -27,20 +28,22 @@ namespace Stryker.Core.Reporters
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public async void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
+            
+            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion);
 
-           
-            if (_options.CompareToDashboard)
+            if (reportUrl != null)
             {
-                Task.WaitAll(UploadHumanReadableReport(mutationReport), UploadBaseline(mutationReport));
-            } else
+                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
+            }
+            else
             {
-                Task.WaitAll(UploadHumanReadableReport(mutationReport));
+                _chalk.Red("Uploading to stryker dashboard failed...");
             }
 
-            
+            Console.WriteLine(Environment.NewLine);
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
@@ -56,38 +59,6 @@ namespace Stryker.Core.Reporters
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
             // Method to implement the interface
-        }
-
-        private async Task UploadBaseline(JsonReport mutationReport)
-        {
-            var projectVersion = _options.CurrentBranchCanonicalName ?? _options.FallbackVersion;
-
-            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), projectVersion);
-
-            if (reportUrl != null)
-            {
-                _logger.LogDebug($"\nYour baseline stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
-            }
-            else
-            {
-                _logger.LogDebug("Uploading to stryker dashboard failed...");
-            }
-        }
-
-        private async Task UploadHumanReadableReport(JsonReport mutationReport)
-        {
-            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion);
-
-            if (reportUrl != null)
-            {
-                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
-            }
-            else
-            {
-                _chalk.Red("Uploading to stryker dashboard failed...");
-            }
-
-            Console.WriteLine(Environment.NewLine);
         }
     }
 }

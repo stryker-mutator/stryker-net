@@ -26,7 +26,8 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, new Chalk(), new DashboardClient(options)) }
+                { Reporter.Dashboard, new DashboardReporter(options, new Chalk(), new DashboardClient(options)) },
+                { Reporter.Baseline, new GitBaselineReporter(options) }
             };
         }
 

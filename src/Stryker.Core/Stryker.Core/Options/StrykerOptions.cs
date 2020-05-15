@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
+using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -21,6 +22,10 @@ namespace Stryker.Core.Options
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
+        public string BaselineOutputPath { get; }
+
+        public IBaselineProvider BaselineProvider { get; }
+
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -91,6 +96,7 @@ namespace Stryker.Core.Options
             string moduleName = null,
             string projectVersion = null,
             string fallbackVersion = null,
+            string baselineStorageLocation = null,
             IEnumerable<string> testProjects = null)
         {
             _logger = logger;
@@ -99,6 +105,8 @@ namespace Stryker.Core.Options
             var outputPath = ValidateOutputPath(basePath);
             IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
+            CompareToDashboard = compareToDashboard;
+            BaselineOutputPath = ValidateBaselineOutputPath(basePath);
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -115,13 +123,13 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
-            CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
             (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
+            BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
         }
 
         private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
@@ -178,7 +186,7 @@ namespace Stryker.Core.Options
             if (string.IsNullOrEmpty(projectVersion))
             {
                 errorStrings.Append("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
-            } 
+            }
 
             if (fallbackVersion == projectVersion)
             {
@@ -234,6 +242,19 @@ namespace Stryker.Core.Options
             return outputPath;
         }
 
+        private string ValidateBaselineOutputPath(string basePath)
+        {
+            if (string.IsNullOrWhiteSpace(basePath))
+            {
+                return "";
+            }
+
+            var outputPath = Path.Combine(basePath, "StrykerOutput", "Baselines");
+            _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
+
+            return outputPath;
+        }
+
         private IEnumerable<Reporter> ValidateReporters(string[] reporters)
         {
             if (reporters == null)
@@ -243,6 +264,13 @@ namespace Stryker.Core.Options
                     yield return reporter;
                 }
                 yield break;
+            }
+
+            if (CompareToDashboard)
+            {
+                var reportersList = reporters.ToList();
+                reportersList.Add("Baseline");
+                reporters = reportersList.ToArray();
             }
 
             IList<string> invalidReporters = new List<string>();
@@ -458,6 +486,21 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(ErrorMessage,
                     $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
+        }
+
+        private IBaselineProvider ValidateBaselineProvider(string baselineStorageLocation)
+        {
+            if (string.IsNullOrEmpty(baselineStorageLocation))
+            {
+                if (Reporters.Any(x => x == Reporter.Dashboard)) return new DashboardBaselineProvider(this);
+                return new DiskBaselineProvider(this);
+            }
+
+            if (baselineStorageLocation == "disk") return new DiskBaselineProvider(this);
+            if (baselineStorageLocation == "dashboard") return new DashboardBaselineProvider(this);
+
+            return new DiskBaselineProvider(this);
+
         }
     }
 }

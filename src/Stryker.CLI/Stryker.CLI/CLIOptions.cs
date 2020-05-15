@@ -105,13 +105,23 @@ namespace Stryker.CLI
             JsonKey = "diff"
         };
 
-        public static readonly CLIOption<bool> CompareDashboard = new CLIOption<bool>
+        public static readonly CLIOption<bool> DiffCompare = new CLIOption<bool>
         {
-            ArgumentName = "--compare-dashboard",
+            ArgumentName = "--diff-compare",
             ArgumentShortName = "-compare",
             ArgumentDescription = $@"Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "diff-compare-dashboard"
+
+        };
+
+        public static readonly CLIOption<string> BaselineStorageLocation = new CLIOption<string>
+        {
+            ArgumentName = "--baseline-storage-location",
+            ArgumentShortName = "-bsl <storageLocation>",
+            ArgumentDescription = $@"Allows to choose a storage location, this can be either disk or dashboard. When the dashboard reporter is enabled, the dashboard will be the default storage location. Otherwise disk is the default storage location. ",
+            ValueType = CommandOptionType.SingleValue,
+            JsonKey = "baseline-storage-location"
 
         };
 

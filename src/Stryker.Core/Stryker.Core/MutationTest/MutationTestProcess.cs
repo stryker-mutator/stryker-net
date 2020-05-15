@@ -280,7 +280,7 @@ namespace Stryker.Core.MutationTest
 
         public void GetCoverage()
         {
-            _coverageAnalyser.SetTestCoverage();
+            _coverageAnalyser.DetermineTestCoverage();
         }
 
         public void FilterMutants()

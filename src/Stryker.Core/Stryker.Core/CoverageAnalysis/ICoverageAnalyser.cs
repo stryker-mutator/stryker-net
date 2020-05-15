@@ -2,6 +2,6 @@
 {
     public interface ICoverageAnalyser
     {
-        void SetTestCoverage();
+        void DetermineTestCoverage();
     }
 }

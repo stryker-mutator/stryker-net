@@ -36,7 +36,6 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
 
             // Assert
-            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "refs/heads/master"), Times.Once);
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"), Times.Once);
         }
 
@@ -65,32 +64,6 @@ namespace Stryker.Core.UnitTest.Reporters
 
             // Assert
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"), Times.Once);
-        }
-
-        [Fact]
-        public void ShouldCallUploadBaselineWithFallbackVersion()
-        {
-            // Arrange
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
-
-            var options = new StrykerOptions(
-                compareToDashboard: true,
-               dashboardApiKey: "Acces_Token",
-               projectName: "github.com/JohnDoe/project",
-               projectVersion: "version/human/readable",
-               reporters: reporters,
-               fallbackVersion: "fallbackVersion");
-
-            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
-
-            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
-
-            // Act
-            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
-
-            // Assert
-            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "fallbackVersion"), Times.Once);
         }
 
         [Fact]

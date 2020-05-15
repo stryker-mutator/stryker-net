@@ -52,7 +52,8 @@ namespace Stryker.CLI
             CommandOption diff,
             CommandOption diffCompareToDashboard,
             CommandOption gitSource,
-            CommandOption testProjects)
+            CommandOption testProjects,
+            CommandOption baselineStorageLocation)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -100,10 +101,12 @@ namespace Stryker.CLI
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
-                diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) || GetOption(diffCompareToDashboard.HasValue(), CLIOptions.CompareDashboard),
-                compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.CompareDashboard),
+                diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) || GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompare),
+                compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompare),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
-                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
+                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects),
+                baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation)
+                );
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)
