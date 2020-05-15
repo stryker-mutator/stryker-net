@@ -1,3 +1,12 @@
+# [0.18.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.17.1...dotnet-stryker@0.18.0) (2020-05-07)
+
+
+### Features
+
+* **core3.1:** Upgrade to dotnet core 3.1 ([#785](https://github.com/stryker-mutator/stryker-net/issues/785)) ([92283b5](https://github.com/stryker-mutator/stryker-net/commit/92283b5def0ffb10b74d0012d672905338deec14))
+
+
+
 ## [0.17.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.17.0...dotnet-stryker@0.17.1) (2020-03-24)
 
 
