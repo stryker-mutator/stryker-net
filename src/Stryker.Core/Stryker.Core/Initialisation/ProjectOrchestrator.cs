@@ -50,7 +50,7 @@ namespace Stryker.Core.Initialisation
                 Parallel.ForEach(manager.Projects, project =>
                 {
                     _logger.LogDebug("Analysing {projectFilePath}", project.Value.ProjectFile.Path);
-                    var projectAnalyzerResult = project.Value.Build().FirstOrDefault();
+                    var projectAnalyzerResult = project.Value.Build().Results.FirstOrDefault();
                     if (projectAnalyzerResult is { })
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
@@ -90,7 +90,7 @@ namespace Stryker.Core.Initialisation
 
                 var testProjectsAnalyzerResults = projectsAnalyzerResults.Except(projectsUnderTestAnalyzerResults);
 
-                _logger.LogDebug("Found {0} projects", projectsUnderTestAnalyzerResults.Count());
+                _logger.LogDebug("Found {0} projects under test", projectsUnderTestAnalyzerResults.Count());
                 _logger.LogDebug("Found {0} test projects", testProjectsAnalyzerResults.Count());
 
                 foreach (var project in projectsUnderTestAnalyzerResults)
