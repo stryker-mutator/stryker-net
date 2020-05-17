@@ -103,10 +103,13 @@ stages:
         custom: tool
         arguments: install dotnet-stryker -g
         includeNuGetOrg: true
-    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
+    - task: PublishMutationReport@0
+      inputs:
+        reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
