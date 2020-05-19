@@ -36,7 +36,7 @@ namespace Stryker.Core.MutantFilters
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
-            _baselineProvider = baselineProvider ?? options.BaselineProvider ?? new DiskBaselineProvider(options);
+            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _branchProvider = branchProvider ?? new GitBranchProvider(options);
             _options = options;
 

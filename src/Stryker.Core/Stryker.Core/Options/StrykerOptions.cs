@@ -24,7 +24,7 @@ namespace Stryker.Core.Options
         public string OutputPath { get; }
         public string BaselineOutputPath { get; }
 
-        public IBaselineProvider BaselineProvider { get; }
+        public BaselineProvider BaselineProvider { get; }
 
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
@@ -488,19 +488,18 @@ namespace Stryker.Core.Options
             }
         }
 
-        private IBaselineProvider ValidateBaselineProvider(string baselineStorageLocation)
+        private BaselineProvider ValidateBaselineProvider(string baselineStorageLocation)
         {
-            if (string.IsNullOrEmpty(baselineStorageLocation))
+            var normalizedLocation = baselineStorageLocation?.ToLower() ?? "";
+
+            if (string.IsNullOrEmpty(normalizedLocation) && Reporters.Any(x => x == Reporter.Dashboard)) return BaselineProvider.Dashboard;
+
+            return normalizedLocation switch
             {
-                if (Reporters.Any(x => x == Reporter.Dashboard)) return new DashboardBaselineProvider(this);
-                return new DiskBaselineProvider(this);
-            }
-
-            if (baselineStorageLocation == "disk") return new DiskBaselineProvider(this);
-            if (baselineStorageLocation == "dashboard") return new DashboardBaselineProvider(this);
-
-            return new DiskBaselineProvider(this);
-
+                "disk" => BaselineProvider.Disk,
+                "dashboard" => BaselineProvider.Dashboard,
+                _ => BaselineProvider.Disk,
+            };
         }
     }
 }

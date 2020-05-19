@@ -16,7 +16,7 @@ namespace Stryker.Core.Reporters
         public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null)
         {
             _options = options;
-            _baselineProvider = _options.BaselineProvider ?? baselineProvider ?? new DiskBaselineProvider(options);
+            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
         }
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {

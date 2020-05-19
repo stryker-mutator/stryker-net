@@ -598,7 +598,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => (DiskBaselineProvider)o.BaselineProvider != null),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -617,7 +617,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => (DashboardBaselineProvider)o.BaselineProvider != null),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Dashboard),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -635,7 +635,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => (DiskBaselineProvider)o.BaselineProvider != null),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -650,13 +650,12 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { "--reporters",
-                $"['{ Reporter.Dashboard }']",
+            target.Run(new string[] { "--reporters ['dashboard']",
                 "--dashboard-api-key XXX-XXX-XXX",
                 "--dashboard-project PROJECT"
                 });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => (DashboardBaselineProvider)o.BaselineProvider != null),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Dashboard),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
     }
