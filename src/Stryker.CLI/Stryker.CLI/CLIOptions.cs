@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -121,6 +122,7 @@ namespace Stryker.CLI
             ArgumentShortName = "-bsl <storageLocation>",
             ArgumentDescription = $@"Allows to choose a storage location, this can be either disk or dashboard. When the dashboard reporter is enabled, the dashboard will be the default storage location. Otherwise disk is the default storage location. ",
             ValueType = CommandOptionType.SingleValue,
+            DefaultValue = _defaultOptions.BaselineProvider.ToString(),
             JsonKey = "baseline-storage-location"
 
         };
