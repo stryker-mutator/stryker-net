@@ -73,6 +73,9 @@ namespace Stryker.CLI
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
             var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
             var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
+            var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
+            var azureStorageName = CreateOption(app, CLIOptions.AzureStorageName);
+            var azureFileShare = CreateOption(app, CLIOptions.AzureFileShare);
 
             app.HelpOption("--help | -h | -?");
 
@@ -112,7 +115,10 @@ namespace Stryker.CLI
                     diffCompareToDashboard: diffCompareToDashboard,
                     gitSource: gitSourceParam,
                     testProjects: testProjectsParam,
-                    baselineStorageLocation: baselineStorageLocation);
+                    baselineStorageLocation: baselineStorageLocation,
+                    azureFileShare: azureFileShare,
+                    azureStorageName: azureStorageName,
+                    azureSAS: azureSAS);
 
                 RunStryker(options);
                 return ExitCode;
