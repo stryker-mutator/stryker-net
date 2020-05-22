@@ -150,16 +150,30 @@ namespace Stryker.Core.Options
 
             var errorStrings = new StringBuilder();
 
-            if (azureSAS == null) errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
-            if (azureStorageName == null) errorStrings.Append("A Storage Name is required when Azure File Storage is enabled!");
-            if (azureFileShare == null) errorStrings.Append("The name of the file share is required when Azure file Storage is enabled!");
+            if (azureSAS == null)
+            {
+                errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
+            }
 
-            if (errorStrings.Length > 0) throw new StrykerInputException(errorStrings.ToString());
+            if (azureStorageName == null)
+            {
+                errorStrings.Append("A Storage Name is required when Azure File Storage is enabled!");
+            }
+
+            if (azureFileShare == null)
+            {
+                errorStrings.Append("The name of the file share is required when Azure file Storage is enabled!");
+            }
+
+            if (errorStrings.Length > 0)
+            {
+                throw new StrykerInputException(errorStrings.ToString());
+            }
 
             // Normalize the SAS
-            if (!azureSAS.StartsWith("?sv="))
+            if (azureSAS.StartsWith("?sv="))
             {
-                azureSAS = $"?sv={azureSAS}";
+                azureSAS.Replace("?sv=", "");
             }
 
             return (azureSAS, azureStorageName, azureFileShare);
@@ -527,7 +541,10 @@ namespace Stryker.Core.Options
         {
             var normalizedLocation = baselineStorageLocation?.ToLower() ?? "";
 
-            if (string.IsNullOrEmpty(normalizedLocation) && Reporters.Any(x => x == Reporter.Dashboard)) return BaselineProvider.Dashboard;
+            if (string.IsNullOrEmpty(normalizedLocation) && Reporters.Any(x => x == Reporter.Dashboard))
+            {
+                return BaselineProvider.Dashboard;
+            }
 
             return normalizedLocation switch
             {
