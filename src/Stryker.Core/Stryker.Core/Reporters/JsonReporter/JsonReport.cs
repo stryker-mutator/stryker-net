@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Json
     {
         public string SchemaVersion { get; } = "1.3";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
+        public IDictionary<string, JsonReportFileComponent> Files { get; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
         private static StrykerOptions _options;

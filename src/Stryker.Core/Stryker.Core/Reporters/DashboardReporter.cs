@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,15 +15,15 @@ namespace Stryker.Core.Reporters
     public partial class DashboardReporter : IReporter
     {
         private readonly StrykerOptions _options;
-        private readonly IChalk _chalk;
         private readonly IDashboardClient _dashboardClient;
+        private readonly IBranchProvider _branchProvider;
         private readonly ILogger<DashboardReporter> _logger;
 
-        public DashboardReporter(StrykerOptions options, IChalk chalk = null, IDashboardClient dashboardClient = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
         {
             _options = options;
-            _chalk = chalk ?? new Chalk();
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _branchProvider = branchProvider ?? new GitBranchProvider(options);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
         }
 
@@ -31,16 +31,17 @@ namespace Stryker.Core.Reporters
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-           
+
             if (_options.CompareToDashboard)
             {
                 Task.WaitAll(UploadHumanReadableReport(mutationReport), UploadBaseline(mutationReport));
-            } else
+            }
+            else
             {
                 Task.WaitAll(UploadHumanReadableReport(mutationReport));
             }
 
-            
+
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
@@ -60,7 +61,9 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadBaseline(JsonReport mutationReport)
         {
-            var projectVersion = _options.CurrentBranchCanonicalName ?? _options.FallbackVersion;
+            var branchName = _branchProvider.GetCurrentBranchCanonicalName();
+
+            var projectVersion = !string.IsNullOrEmpty(branchName) ? branchName : _options.FallbackVersion;
 
             var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), projectVersion);
 
@@ -70,7 +73,7 @@ namespace Stryker.Core.Reporters
             }
             else
             {
-                _logger.LogDebug("Uploading to stryker dashboard failed...");
+                _logger.LogError("Uploading to stryker dashboard failed...");
             }
         }
 
@@ -80,11 +83,11 @@ namespace Stryker.Core.Reporters
 
             if (reportUrl != null)
             {
-                _chalk.Green($"\nYour stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
+                _logger.LogInformation("\nYour stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUrl);
             }
             else
             {
-                _chalk.Red("Uploading to stryker dashboard failed...");
+                _logger.LogError("Uploading to stryker dashboard failed...");
             }
 
             Console.WriteLine(Environment.NewLine);

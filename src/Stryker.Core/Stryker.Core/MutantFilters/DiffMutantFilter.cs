@@ -117,8 +117,6 @@ namespace Stryker.Core.MutantFilters
         {
             var branchName = _branchProvider.GetCurrentBranchCanonicalName();
 
-            _options.CurrentBranchCanonicalName = branchName;
-
             var report = await _dashboardClient.PullReport(branchName);
 
             if (report == null)

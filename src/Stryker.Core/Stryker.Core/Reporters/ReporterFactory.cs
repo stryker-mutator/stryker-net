@@ -4,7 +4,6 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,7 +25,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, new Chalk(), new DashboardClient(options)) }
+                { Reporter.Dashboard, new DashboardReporter(options, new DashboardClient(options)) }
             };
         }
 

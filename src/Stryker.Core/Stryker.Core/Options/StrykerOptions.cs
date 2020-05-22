@@ -43,9 +43,6 @@ namespace Stryker.Core.Options
         public OptimizationFlags Optimizations { get; }
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
-
-        public string CurrentBranchCanonicalName { get; set; }
-
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
         public string ProjectName { get; }
@@ -178,7 +175,7 @@ namespace Stryker.Core.Options
             if (string.IsNullOrEmpty(projectVersion))
             {
                 errorStrings.Append("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
-            } 
+            }
 
             if (fallbackVersion == projectVersion)
             {
