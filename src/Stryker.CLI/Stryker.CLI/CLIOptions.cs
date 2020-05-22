@@ -105,13 +105,13 @@ namespace Stryker.CLI
             JsonKey = "diff"
         };
 
-        public static readonly CLIOption<bool> CompareDashboard = new CLIOption<bool>
+        public static readonly CLIOption<bool> DashboardCompare = new CLIOption<bool>
         {
-            ArgumentName = "--compare-dashboard",
+            ArgumentName = "--dashboard-compare",
             ArgumentShortName = "-compare",
             ArgumentDescription = $@"Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "diff-compare-dashboard"
+            JsonKey = "dashboard-diff-compare"
 
         };
 
@@ -294,7 +294,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-fallback-version",
             ArgumentShortName = "-fallback-version <version>",
-            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
+            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. Example: If the current brnach is baed on the master branch, set 'master' as the fallback version",
             DefaultValue = null,
             JsonKey = "dashboard-fallback-version"
         };
