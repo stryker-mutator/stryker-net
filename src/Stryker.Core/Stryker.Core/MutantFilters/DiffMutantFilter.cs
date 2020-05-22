@@ -131,7 +131,7 @@ namespace Stryker.Core.MutantFilters
             return report;
         }
 
-        public async Task<JsonReport> GetFallbackBaseline()
+        private async Task<JsonReport> GetFallbackBaseline()
         {
             var report = await _dashboardClient.PullReport(_options.FallbackVersion);
 
@@ -197,7 +197,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
+        private string GetMutantSourceCode(string source, JsonMutant baselineMutant)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
 
