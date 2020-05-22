@@ -46,7 +46,7 @@ namespace Stryker.Core.Baseline
 
             await outputWriter.WriteAsync(reportJson);
 
-            _logger.LogDebug($"Baseline report has been writter to {Path.Combine(reportPath, $"stryker - report.json")}");
+            _logger.LogDebug($"Baseline report has been writter to {Path.Combine(reportPath, $"stryker-report.json")}");
         }
     }
 }

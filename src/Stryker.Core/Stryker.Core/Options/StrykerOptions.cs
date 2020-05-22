@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.Build.Logging.StructuredLogger;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Stryker.Core.Baseline;
@@ -57,6 +58,10 @@ namespace Stryker.Core.Options
         public string ModuleName { get; }
         public string ProjectVersion { get; }
 
+        public string AzureSAS { get; }
+        public string AzureStorageName { get; }
+        public string AzureFileShare { get; }
+
         public string FallbackVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
@@ -97,6 +102,9 @@ namespace Stryker.Core.Options
             string projectVersion = null,
             string fallbackVersion = null,
             string baselineStorageLocation = null,
+            string azureSAS = null,
+            string azureStorageName = null,
+            string azureFileShare = null,
             IEnumerable<string> testProjects = null)
         {
             _logger = logger;
@@ -130,6 +138,33 @@ namespace Stryker.Core.Options
             (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
+            (AzureSAS, AzureStorageName, AzureFileShare) = ValidateAzureFileStorage(azureSAS, azureStorageName, azureFileShare);
+        }
+
+        private (string AzureSAS, string AzureStorageName, string AzureFileShare) ValidateAzureFileStorage(string azureSAS, string azureStorageName, string azureFileShare)
+        {
+            if (BaselineProvider != BaselineProvider.AzureFileStorage)
+            {
+                return (null, null, null);
+            }
+
+            var errorStrings = new StringBuilder();
+
+            if (azureSAS == null) errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
+            if (azureStorageName == null) errorStrings.Append("A Storage Name is required when Azure File Storage is enabled!");
+            if (azureFileShare == null) errorStrings.Append("The name of the file share is required when Azure file Storage is enabled!");
+
+            if (errorStrings.Length > 0) throw new StrykerInputException(errorStrings.ToString());
+
+            // Normalize the SAS
+            if (!azureSAS.StartsWith("?sv="))
+            {
+                azureSAS = $"?sv={azureSAS}";
+            }
+
+            return (azureSAS, azureStorageName, azureFileShare);
+
+
         }
 
         private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)

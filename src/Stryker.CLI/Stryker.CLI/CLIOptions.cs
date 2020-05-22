@@ -1,6 +1,5 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -327,6 +326,33 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentDescription = $"Specify what test projects should run on the project under test.",
             DefaultValue = _defaultOptions.TestProjects,
             JsonKey = "test-projects"
+        };
+
+        public static readonly CLIOption<string> AzureSAS = new CLIOption<string>
+        {
+            ArgumentName = "--azure-sas-key",
+            ArgumentShortName = "-sas <azure-sas-key>",
+            ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
+            DefaultValue = null,
+            JsonKey = "azure-sas-key"
+        };
+
+        public static readonly CLIOption<string> AzureStorageName = new CLIOption<string>
+        {
+            ArgumentName = "--azure-storage-name",
+            ArgumentShortName = "-storage-name <azure-storage-name>",
+            ArgumentDescription = $"The storage name for Azure File Storage, only needed when the azure baseline provider is selected.",
+            DefaultValue = null,
+            JsonKey = "azure-storage-name"
+        };
+
+        public static readonly CLIOption<string> AzureFileShare = new CLIOption<string>
+        {
+            ArgumentName = "--azure-file-share",
+            ArgumentShortName = "-file-share <azure-storage-name>",
+            ArgumentDescription = $"The file share for Azure File Storage, only needed when the azure baseline provider is selected.",
+            DefaultValue = null,
+            JsonKey = "azure-file-share"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
