@@ -1,7 +1,6 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
@@ -15,8 +14,6 @@ namespace Stryker.Core.DiffProviders
         {
             _options = options;
         }
-
-
 
         public DiffResult ScanDiff()
         {
@@ -46,8 +43,6 @@ namespace Stryker.Core.DiffProviders
                         diffResult.TestsChanged = true;
                     }
                 }
-
-
             }
             return diffResult;
         }
