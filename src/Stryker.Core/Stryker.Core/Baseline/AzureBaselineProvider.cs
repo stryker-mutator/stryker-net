@@ -47,7 +47,10 @@ namespace Stryker.Core.Baseline
 
             var successfullyAllocated = await AllocateFileLocation(byteSize, version);
 
-            if (successfullyAllocated) await UploadFile(reportJson, byteSize, version);
+            if (successfullyAllocated)
+            {
+                await UploadFile(reportJson, byteSize, version);
+            }
         }
 
         private async Task<bool> AllocateFileLocation(int byteSize, string version)
@@ -104,14 +107,7 @@ namespace Stryker.Core.Baseline
             if (response.StatusCode != HttpStatusCode.Created)
             {
                 _logger.LogError("Azure File Storage upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
-                return false;
             }
-            return true;
-        }
-
-        private async Task DeleteFile(string version)
-        {
-
         }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using Stryker.Core.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Stryker.Core.Baseline
 {
@@ -13,6 +10,7 @@ namespace Stryker.Core.Baseline
             {
                 BaselineProvider.Dashboard => new DashboardBaselineProvider(options),
                 BaselineProvider.Disk => new DiskBaselineProvider(options),
+                BaselineProvider.AzureFileStorage => new AzureBaselineProvider(options),
                 _ => new DiskBaselineProvider(options),
             };
         }

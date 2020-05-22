@@ -53,7 +53,10 @@ namespace Stryker.CLI
             CommandOption diffCompareToDashboard,
             CommandOption gitSource,
             CommandOption testProjects,
-            CommandOption baselineStorageLocation)
+            CommandOption baselineStorageLocation,
+            CommandOption azureFileShare,
+            CommandOption azureStorageName,
+            CommandOption azureSAS)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -105,7 +108,10 @@ namespace Stryker.CLI
                 compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DiffCompare),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects),
-                baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation)
+                baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation),
+                azureSAS: GetOption(azureSAS.Value(), CLIOptions.AzureSAS),
+                azureStorageName: GetOption(azureStorageName.Value(), CLIOptions.AzureStorageName),
+                azureFileShare: GetOption(azureFileShare.Value(), CLIOptions.AzureFileShare)
                 );
         }
 

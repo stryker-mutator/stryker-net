@@ -533,6 +533,7 @@ namespace Stryker.Core.Options
             {
                 "disk" => BaselineProvider.Disk,
                 "dashboard" => BaselineProvider.Dashboard,
+                "azurefilestorage" => BaselineProvider.AzureFileStorage,
                 _ => BaselineProvider.Disk,
             };
         }
