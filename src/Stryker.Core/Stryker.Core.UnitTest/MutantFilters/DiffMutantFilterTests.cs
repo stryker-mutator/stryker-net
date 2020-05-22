@@ -150,7 +150,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutant = new Mutant();
 
-            var filterResult = target.FilterMutants( new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 
             filterResult.ShouldBeEmpty();
         }
@@ -181,7 +181,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldMutateAllFilesWhenATestHasBeenChanged()
         {
-           string testProjectPath = "C:/MyTests";
+            string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
             // If a file inside the test project is changed, a test has been changed
@@ -233,7 +233,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
 
             // Act
-            var result  = await target.GetFallbackBaseline();
+            var result = await target.GetFallbackBaseline();
 
             // Assert
             result.ShouldBe(jsonReport);
@@ -269,7 +269,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public async Task GetBackBaselineReturnsFallbackWhenDashboardClientReturnsNull()
+        public void GetBaselineCallsFallbackWhenDashboardClientReturnsNull()
         {
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
@@ -296,17 +296,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
             dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
             dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
 
-            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
-
             // Act
-            var result = await target.GetBaseline();
+            var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object, branchProvider: branchProvider.Object);
 
             // Assert
-            result.ShouldBe(jsonReport);
+            dashboardClient.Verify(x => x.PullReport("refs/heads/master"), Times.Once);
+            dashboardClient.Verify(x => x.PullReport("fallback/version"), Times.Once);
         }
 
         [Fact]
-        public async Task GetBaselineReturnsWhenDashboardClientReturnsReport()
+        public void GetBaselineDoesNotCallFallbackWhenDashboardClientReturnsReport()
         {
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
@@ -332,13 +331,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult(jsonReport));
 
+            // Act
             var target = new DiffMutantFilter(options, branchProvider: branchProvider.Object, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
 
-            // Act
-            var result = await target.GetBaseline();
-
             // Assert
-            result.ShouldBe(jsonReport);
+            dashboardClient.Verify(x => x.PullReport("refs/heads/master"), Times.Once);
+            dashboardClient.Verify(x => x.PullReport("fallback/version"), Times.Never);
         }
 
 
@@ -352,7 +350,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object );
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
 
             var mutants = new List<Mutant>
             {

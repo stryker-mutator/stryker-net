@@ -68,7 +68,7 @@ namespace Stryker.Core.MutantFilters
 
                 if (_options.CompareToDashboard)
                 {
-                    return ResetStatusForStatusUnclear(mutants);
+                    return FilterMutantsWithStatusUnclear(mutants);
                 }
 
                 return Enumerable.Empty<Mutant>();
@@ -78,12 +78,12 @@ namespace Stryker.Core.MutantFilters
 
         }
 
-        private static IEnumerable<Mutant> ResetStatusForStatusUnclear(IEnumerable<Mutant> mutants)
+        private IEnumerable<Mutant> FilterMutantsWithStatusUnclear(IEnumerable<Mutant> mutants)
         {
             var uncheckedMutants = new List<Mutant>();
             foreach (var mutant in mutants)
             {
-                if (mutant.ResultStatusReason == "Could not affirm the right mutant status")
+                if (mutant.ResultStatusReason == "Could not determine the correct mutant status")
                 {
                     uncheckedMutants.Add(mutant);
                 }
@@ -92,7 +92,7 @@ namespace Stryker.Core.MutantFilters
             return uncheckedMutants;
         }
 
-        private static IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
+        private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
         {
             foreach (var mutant in mutants)
             {
@@ -113,7 +113,7 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        public async Task<JsonReport> GetBaseline()
+        private async Task<JsonReport> GetBaseline()
         {
             var branchName = _branchProvider.GetCurrentBranchCanonicalName();
 
@@ -183,9 +183,9 @@ namespace Stryker.Core.MutantFilters
 
         private IEnumerable<Mutant> GetMatchingMutants(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
         {
-            return mutants.Where(
-            x => x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode
-            && x.Mutation.DisplayName == baselineMutant.MutatorName);
+            return mutants.Where(x =>
+                x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
+                x.Mutation.DisplayName == baselineMutant.MutatorName);
         }
 
         private void UpdateMutantStatusForNoCertainResult(IEnumerable<Mutant> matchingMutants)
@@ -193,7 +193,7 @@ namespace Stryker.Core.MutantFilters
             foreach (var matchingMutant in matchingMutants)
             {
                 matchingMutant.ResultStatus = MutantStatus.NotRun;
-                matchingMutant.ResultStatusReason = "Could not affirm the right mutant status";
+                matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
             }
         }
 
