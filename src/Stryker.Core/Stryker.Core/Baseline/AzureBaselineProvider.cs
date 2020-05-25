@@ -27,7 +27,7 @@ namespace Stryker.Core.Baseline
         {
             var subdir = $"strykerOutput/baselines/{version}";
             var filename = "stryker-report.json";
-            var url = new Uri($"https://{_options.AzureStorageName}.file.core.windows.net/{_options.AzureFileShare}/{subdir}/{filename}?sv={_options.AzureSAS}");
+            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -71,7 +71,7 @@ namespace Stryker.Core.Baseline
             var subdir = $"strykerOutput/baselines/{version}";
             _logger.LogInformation("Creating directory {0}", subdir);
 
-            var url = new Uri($"https://{_options.AzureStorageName}.file.core.windows.net/{_options.AzureFileShare}/{subdir}?restype=directory&sv={_options.AzureSAS}");
+            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}?restype=directory&sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -81,12 +81,12 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully created directory {0} on fileshare {1}", subdir, _options.AzureFileShare);
+                _logger.LogDebug("Succesfully created directory {0} on fileshare {1}", subdir, _options.AzureFileStorageUrl);
                 return true;
             }
             else if (response.StatusCode == HttpStatusCode.Conflict)
             {
-                _logger.LogDebug("Directory {0} already excists on fileshare {1}", subdir, _options.AzureFileShare);
+                _logger.LogDebug("Directory {0} already excists on fileshare {1}", subdir, _options.AzureFileStorageUrl);
                 return true;
             }
 
@@ -101,7 +101,7 @@ namespace Stryker.Core.Baseline
 
             var subdir = $"strykerOutput/baselines/{version}";
             var filename = "stryker-report.json";
-            var url = new Uri($"https://{_options.AzureStorageName}.file.core.windows.net/{_options.AzureFileShare}/{subdir}/{filename}?sv={_options.AzureSAS}");
+            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -115,7 +115,7 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully allocated storage on fileshare {0}", _options.AzureFileShare);
+                _logger.LogDebug("Succesfully allocated storage on fileshare {0}", _options.AzureFileStorageUrl);
                 return true;
             }
             else
@@ -132,7 +132,7 @@ namespace Stryker.Core.Baseline
             var subdir = $"strykerOutput/baselines/{version}";
             var filename = "stryker-report.json";
 
-            var url = new Uri($"https://{_options.AzureStorageName}.file.core.windows.net/{_options.AzureFileShare}/{subdir}/{filename}?comp=range&sv={_options.AzureSAS}");
+            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?comp=range&sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
             {

@@ -54,9 +54,8 @@ namespace Stryker.CLI
             CommandOption gitSource,
             CommandOption testProjects,
             CommandOption baselineStorageLocation,
-            CommandOption azureFileShare,
-            CommandOption azureStorageName,
-            CommandOption azureSAS)
+            CommandOption azureSAS,
+            CommandOption azureFileStorageUrl)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -110,8 +109,7 @@ namespace Stryker.CLI
                 testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects),
                 baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation),
                 azureSAS: GetOption(azureSAS.Value(), CLIOptions.AzureSAS),
-                azureStorageName: GetOption(azureStorageName.Value(), CLIOptions.AzureStorageName),
-                azureFileShare: GetOption(azureFileShare.Value(), CLIOptions.AzureFileShare)
+                azureFileStorageUrl: GetOption(azureFileStorageUrl.Value(), CLIOptions.AzureFileStorageUrl)
                 );
         }
 

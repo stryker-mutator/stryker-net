@@ -337,22 +337,18 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "azure-sas-key"
         };
 
-        public static readonly CLIOption<string> AzureStorageName = new CLIOption<string>
+        public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
         {
-            ArgumentName = "--azure-storage-name",
-            ArgumentShortName = "-storage-name <azure-storage-name>",
-            ArgumentDescription = $"The storage name for Azure File Storage, only needed when the azure baseline provider is selected.",
-            DefaultValue = null,
-            JsonKey = "azure-storage-name"
-        };
+            ArgumentName = "--azure-file-storage-url",
+            ArgumentShortName = "-storage-url",
+            ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+                                    The url should look something like this: 
 
-        public static readonly CLIOption<string> AzureFileShare = new CLIOption<string>
-        {
-            ArgumentName = "--azure-file-share",
-            ArgumentShortName = "-file-share <azure-storage-name>",
-            ArgumentDescription = $"The file share for Azure File Storage, only needed when the azure baseline provider is selected.",
+                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+
+                                    Note, the url might be different depending of where your file storage is hosted.",
             DefaultValue = null,
-            JsonKey = "azure-file-share"
+            JsonKey = "azure-file-storage-url"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

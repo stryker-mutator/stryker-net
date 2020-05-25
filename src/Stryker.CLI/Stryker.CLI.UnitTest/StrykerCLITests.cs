@@ -650,8 +650,7 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { "--reporters",
-                $"['{Reporter.Dashboard}']",
+            target.Run(new string[] { "-r", "['dashboard']",
                 "--dashboard-api-key XXX-XXX-XXX",
                 "--dashboard-project PROJECT"
                 });

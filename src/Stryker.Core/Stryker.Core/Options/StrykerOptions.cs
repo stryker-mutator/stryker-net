@@ -59,8 +59,8 @@ namespace Stryker.Core.Options
         public string ProjectVersion { get; }
 
         public string AzureSAS { get; }
-        public string AzureStorageName { get; }
-        public string AzureFileShare { get; }
+
+        public string AzureFileStorageUrl { get; set; }
 
         public string FallbackVersion { get; }
 
@@ -103,8 +103,7 @@ namespace Stryker.Core.Options
             string fallbackVersion = null,
             string baselineStorageLocation = null,
             string azureSAS = null,
-            string azureStorageName = null,
-            string azureFileShare = null,
+            string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null)
         {
             _logger = logger;
@@ -138,14 +137,14 @@ namespace Stryker.Core.Options
             (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
-            (AzureSAS, AzureStorageName, AzureFileShare) = ValidateAzureFileStorage(azureSAS, azureStorageName, azureFileShare);
+            (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
         }
 
-        private (string AzureSAS, string AzureStorageName, string AzureFileShare) ValidateAzureFileStorage(string azureSAS, string azureStorageName, string azureFileShare)
+        private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)
         {
             if (BaselineProvider != BaselineProvider.AzureFileStorage)
             {
-                return (null, null, null);
+                return (null, null);
             }
 
             var errorStrings = new StringBuilder();
@@ -155,14 +154,9 @@ namespace Stryker.Core.Options
                 errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
             }
 
-            if (azureStorageName == null)
+            if (azureFileStorageUrl == null)
             {
-                errorStrings.Append("A Storage Name is required when Azure File Storage is enabled!");
-            }
-
-            if (azureFileShare == null)
-            {
-                errorStrings.Append("The name of the file share is required when Azure file Storage is enabled!");
+                errorStrings.Append("The url pointing to your file storage is required when Azure File Storage is enabled!");
             }
 
             if (errorStrings.Length > 0)
@@ -176,7 +170,7 @@ namespace Stryker.Core.Options
                 azureSAS.Replace("?sv=", "");
             }
 
-            return (azureSAS, azureStorageName, azureFileShare);
+            return (azureSAS, azureFileStorageUrl);
 
 
         }
