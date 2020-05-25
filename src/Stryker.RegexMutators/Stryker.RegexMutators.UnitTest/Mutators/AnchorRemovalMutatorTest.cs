@@ -192,5 +192,20 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.ShouldBe("abc");
         }
+
+        [Fact]
+        public void MutateShouldNotMutateNonAnchorNode()
+        {
+            // Arrange
+            var characterNode = new CharacterNode('a');
+            var rootNode = new ConcatenationNode(characterNode);
+            var target = new AnchorRemovalMutator(rootNode);
+
+            // Act
+            var result = target.Mutate(characterNode);
+
+            // Assert
+            result.ShouldBeEmpty();
+        }
     }
 }

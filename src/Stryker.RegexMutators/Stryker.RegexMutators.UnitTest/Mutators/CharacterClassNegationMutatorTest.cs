@@ -46,5 +46,20 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.ShouldBe("x[abc]y");
         }
+
+        [Fact]
+        public void MutateShouldNotMutateNonCharacterClassNode()
+        {
+            // Arrange
+            var characterNode = new CharacterNode('a');
+            var rootNode = new ConcatenationNode(characterNode);
+            var target = new CharacterClassNegationMutator(rootNode);
+
+            // Act
+            var result = target.Mutate(characterNode);
+
+            // Assert
+            result.ShouldBeEmpty();
+        }
     }
 }

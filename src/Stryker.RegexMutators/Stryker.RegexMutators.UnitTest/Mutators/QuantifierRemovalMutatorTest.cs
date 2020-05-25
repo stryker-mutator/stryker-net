@@ -170,5 +170,20 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.ShouldBe("abcX");
         }
+
+        [Fact]
+        public void MutateShouldNotMutateNonQuantifierNode()
+        {
+            // Arrange
+            var characterNode = new CharacterNode('a');
+            var rootNode = new ConcatenationNode(characterNode);
+            var target = new QuantifierRemovalMutator(rootNode);
+
+            // Act
+            var result = target.Mutate(characterNode);
+
+            // Assert
+            result.ShouldBeEmpty();
+        }
     }
 }

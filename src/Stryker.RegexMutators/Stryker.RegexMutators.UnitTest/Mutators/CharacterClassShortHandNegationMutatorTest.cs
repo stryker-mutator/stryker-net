@@ -53,5 +53,20 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.ShouldBe(@"\dabc");
         }
+
+        [Fact]
+        public void MutateShouldNotMutateNonCharacterClassShorthandNode()
+        {
+            // Arrange
+            var characterNode = new CharacterNode('a');
+            var rootNode = new ConcatenationNode(characterNode);
+            var target = new CharacterClassShorthandNegationMutator(rootNode);
+
+            // Act
+            var result = target.Mutate(characterNode);
+
+            // Assert
+            result.ShouldBeEmpty();
+        }
     }
 }
