@@ -46,22 +46,34 @@ namespace Stryker.Core.Baseline
 
         public async Task Save(JsonReport report, string version)
         {
+            var existingReport = await Load(version);
+
             var reportJson = report.ToJson();
-            var byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
 
-            var succesfullyCreatedDirectory = await CreateDirectory(version);
-
-            if (!succesfullyCreatedDirectory)
+            int byteSize;
+            if (existingReport == null)
             {
-                return;
+                byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
+
+                var succesfullyCreatedDirectory = await CreateDirectory(version);
+
+                if (!succesfullyCreatedDirectory)
+                {
+                    return;
+                }
+
+                var successfullyAllocated = await AllocateFileLocation(byteSize, version);
+
+                if (!successfullyAllocated)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                byteSize = Encoding.UTF8.GetByteCount(existingReport.ToJson());
             }
 
-            var successfullyAllocated = await AllocateFileLocation(byteSize, version);
-
-            if (!successfullyAllocated)
-            {
-                return;
-            }
 
             await UploadFile(reportJson, byteSize, version);
         }
