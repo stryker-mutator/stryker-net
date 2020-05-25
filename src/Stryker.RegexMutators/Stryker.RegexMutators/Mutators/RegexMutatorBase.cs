@@ -1,5 +1,6 @@
 ﻿using RegexParser.Nodes;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.RegexMutators.Mutators
 {
@@ -11,6 +12,17 @@ namespace Stryker.RegexMutators.Mutators
     public abstract class RegexMutatorBase <T>
         where T : RegexNode
     {
+
+        public IEnumerable<string> Mutate(RegexNode node)
+        {
+            if (node is T)
+            {
+                return ApplyMutations(node as T);
+            }
+
+            return Enumerable.Empty<string>();
+        }
+
         /// <summary>
         /// Apply the given mutations to a single RegexNode
         /// </summary>
