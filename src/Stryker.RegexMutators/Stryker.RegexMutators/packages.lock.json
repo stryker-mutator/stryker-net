@@ -4,9 +4,9 @@
     ".NETCoreApp,Version=v3.1": {
       "RegexParser": {
         "type": "Direct",
-        "requested": "[0.3.2, )",
-        "resolved": "0.3.2",
-        "contentHash": "5mRxiDg4EMNMAgN/HMRSrYWe33n+ejrcDv5CHnmDBVhn31xoPNcrLYWLPrHiEkr5gbUjLTDa+kMyNwZjqZ/D8A=="
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "Qoiyn7nApfikVoZKxPMdihbZ7GFctRTC5E/1CeE7Q+cOqfG9n1RQL4+zeLtz5CW1dz3Bdzd8xDoxJoE/rijsfQ=="
       }
     }
   }
