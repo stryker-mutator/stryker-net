@@ -5,35 +5,60 @@ using System;
 
 namespace Stryker.Core.DashboardCompare
 {
-    public class GitBranchProvider : IBranchProvider
+    public class GitBranchProvider : IBranchProvider, IDisposable
     {
         private readonly StrykerOptions _options;
-        public GitBranchProvider(StrykerOptions options)
+        private readonly IRepository _repository;
+
+        public GitBranchProvider(StrykerOptions options, IRepository repository = null)
         {
             _options = options;
+
+            if (repository != null)
+            {
+                _repository = repository;
+            }
+            else
+            {
+                _repository = CreateRepository();
+            }
+
         }
 
         public string GetCurrentBranchCanonicalName()
         {
+            if (_repository?.Branches != null)
+            {
+                foreach (var branch in _repository.Branches)
+                {
+                    if (branch.IsCurrentRepositoryHead)
+                    {
+                        return branch.UpstreamBranchCanonicalName;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private IRepository CreateRepository()
+        {
+
             string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
             if (string.IsNullOrEmpty(repositoryPath))
             {
                 throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
             }
-
-            using (var repo = new Repository(repositoryPath))
+            else
             {
-                foreach(var branch in repo.Branches)
-                {
-                    if (branch.IsCurrentRepositoryHead)
-                    {
-                       return branch.UpstreamBranchCanonicalName;                       
-                    }
-                }
+                return new Repository(repositoryPath);
             }
+        }
 
-            return String.Empty;
+        public void Dispose()
+        {
+            _repository?.Dispose();
         }
     }
 }
