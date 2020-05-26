@@ -8,6 +8,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -193,5 +194,124 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             results.Count().ShouldBe(3);
         }
+
+        [Fact]
+        public void FilterMutantsForUnclearStatusReturnsAllMutantsWithCertainMutantStatus()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+
+            dashboardClient.Setup(x =>
+            x.PullReport(It.IsAny<string>())
+            ).Returns(
+                Task.FromResult(
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                    ));
+
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            {
+                TestsChanged = false,
+                ChangedFiles = new List<string>()
+            });
+
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant() {
+                    ResultStatusReason = "Could not determine the correct mutant status"
+                },
+                new Mutant() {
+                    ResultStatusReason = "Could not determine the correct mutant status"
+                },
+                new Mutant()
+            };
+
+            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+
+            results.Count().ShouldBe(2);
+        }
+
+        [Fact]
+        public void FilterMutantsFiltersAll_WhenNoTestsChanged_CompareToDashboardDisabled_AndFileNotCahnged()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+
+            dashboardClient.Setup(x =>
+            x.PullReport(It.IsAny<string>())
+            ).Returns(
+                Task.FromResult(
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                    ));
+
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
+
+            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            {
+                TestsChanged = false,
+                ChangedFiles = new List<string>()
+            });
+
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant(),
+                new Mutant(),
+                new Mutant()
+            };
+
+            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+
+            results.Count().ShouldBe(0);
+        }
+
+        [Fact]
+        public void FilterMutants_FiltersNoMutants_IfTestsChanged()
+        {
+            // Arrange 
+            var dashboardClient = new Mock<IDashboardClient>();
+
+            dashboardClient.Setup(x =>
+            x.PullReport(It.IsAny<string>())
+            ).Returns(
+                Task.FromResult(
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                    ));
+
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
+            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
+
+            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            {
+                TestsChanged = true,
+                ChangedFiles = new List<string>()
+            });
+
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant(),
+                new Mutant(),
+                new Mutant()
+            };
+
+            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+
+            results.Count().ShouldBe(3);
+        }
     }
 }
+
