@@ -51,34 +51,44 @@ namespace Stryker.Core.MutantFilters
         {
             if (options.CompareToDashboard)
             {
+                // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
                 {
                     return mutants;
                 }
 
+                // Updates all the mutants in this file with their counterpart's result in the report of the previous run.
                 UpdateMutantsWithBaseline(mutants, file);
             }
 
+
             if (!_diffResult.TestsChanged)
             {
+
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))
                 {
+                    // If the diffresult flags this file as modified. We want to run all mutants again.
                     return SetMutantStatusForFileChanged(mutants);
                 }
 
                 if (_options.CompareToDashboard)
                 {
-                    return FilterMutantsWithStatusUnclear(mutants);
+                    // When using the compare to dashboard feature. 
+                    // Some mutants mutants have no certain result because we couldn't say with certainty which mutant on the dashboard belonged to it. 
+                    //These mutants have to be reset and tested.
+                    return FilterMutantsIfStatusUnclear(mutants);
                 }
 
+                // If tests haven't changed and neither the file has changed or the compare feature is being used, we are not interested in the mutants of this file and thus can be filtered out completely.
                 return Enumerable.Empty<Mutant>();
             }
 
+            // If tests are changed, return all mutants with status set to NotRun. We cannot guarantee the result.
             return ResetMutantStatus(mutants);
 
         }
 
-        private IEnumerable<Mutant> FilterMutantsWithStatusUnclear(IEnumerable<Mutant> mutants)
+        private IEnumerable<Mutant> FilterMutantsIfStatusUnclear(IEnumerable<Mutant> mutants)
         {
             var uncheckedMutants = new List<Mutant>();
             foreach (var mutant in mutants)
@@ -168,7 +178,7 @@ namespace Stryker.Core.MutantFilters
                         }
                         else
                         {
-                            UpdateMutantStatusForNoCertainResult(matchingMutants);
+                            UpdateMutantsForStatusUnclear(matchingMutants);
                         }
                     }
                 }
@@ -188,7 +198,7 @@ namespace Stryker.Core.MutantFilters
                 x.Mutation.DisplayName == baselineMutant.MutatorName);
         }
 
-        private void UpdateMutantStatusForNoCertainResult(IEnumerable<Mutant> matchingMutants)
+        private void UpdateMutantsForStatusUnclear(IEnumerable<Mutant> matchingMutants)
         {
             foreach (var matchingMutant in matchingMutants)
             {
