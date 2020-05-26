@@ -1,18 +1,34 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Stryker.Core.DiffProviders
 {
-    public class GitDiffProvider : IDiffProvider
+    public class GitDiffProvider : IDiffProvider, IDisposable
     {
         private readonly StrykerOptions _options;
-
-        public GitDiffProvider(StrykerOptions options)
+        private readonly IRepository _repository;
+        public GitDiffProvider(StrykerOptions options, IRepository repository = null)
         {
             _options = options;
+            if (repository != null)
+            {
+                _repository = repository;
+            }
+            else
+            {
+                string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
+
+                if (string.IsNullOrEmpty(repositoryPath))
+                {
+                    throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+                }
+
+                _repository = new Repository(repositoryPath);
+            }
         }
 
         public DiffResult ScanDiff()
@@ -30,33 +46,30 @@ namespace Stryker.Core.DiffProviders
             };
 
             // A git repository has been detected, calculate the diff to filter
-            using (var repository = new Repository(repositoryPath))
-            {
-                var commit = DetermineCommit(repository);
+            var commit = DetermineCommit();
 
-                foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+            foreach (var patchChanges in _repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+            {
+                string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchChanges.Path));
+                diffResult.ChangedFiles.Add(diffPath);
+                if (diffPath.StartsWith(_options.BasePath))
                 {
-                    string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchChanges.Path));
-                    diffResult.ChangedFiles.Add(diffPath);
-                    if (diffPath.StartsWith(_options.BasePath))
-                    {
-                        diffResult.TestsChanged = true;
-                    }
+                    diffResult.TestsChanged = true;
                 }
             }
             return diffResult;
         }
 
-        private Commit DetermineCommit(Repository repository)
+        private Commit DetermineCommit()
         {
-            var sourceBranch = repository.Branches[_options.GitSource];
+            var sourceBranch = _repository.Branches[_options.GitSource];
 
             if (sourceBranch != null)
             {
                 return sourceBranch.Tip;
             }
 
-            var commit = repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
+            var commit = _repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
 
             if (commit != null)
             {
@@ -64,6 +77,11 @@ namespace Stryker.Core.DiffProviders
             }
 
             throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
+        }
+
+        public void Dispose()
+        {
+            _repository?.Dispose();
         }
     }
 }
