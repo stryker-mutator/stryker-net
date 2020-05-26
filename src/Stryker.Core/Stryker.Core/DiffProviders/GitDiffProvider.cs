@@ -11,6 +11,14 @@ namespace Stryker.Core.DiffProviders
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
+        private string _repositoryPath
+        {
+            get
+            {
+                return Repository.Discover(_options?.BasePath)?.Split(".git")[0];
+            }
+        }
+
         public GitDiffProvider(StrykerOptions options, IRepository repository = null)
         {
             _options = options;
@@ -20,25 +28,17 @@ namespace Stryker.Core.DiffProviders
             }
             else
             {
-                string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
-
-                if (string.IsNullOrEmpty(repositoryPath))
+                if (string.IsNullOrEmpty(_repositoryPath))
                 {
                     throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
                 }
 
-                _repository = new Repository(repositoryPath);
+                _repository = new Repository(_repositoryPath);
             }
         }
 
         public DiffResult ScanDiff()
         {
-            string repositoryPath = Repository.Discover(_options.BasePath)?.Split(".git")[0];
-
-            if (string.IsNullOrEmpty(repositoryPath))
-            {
-                throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
-            }
             var diffResult = new DiffResult()
             {
                 ChangedFiles = new Collection<string>(),
@@ -50,7 +50,7 @@ namespace Stryker.Core.DiffProviders
 
             foreach (var patchChanges in _repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
             {
-                string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(repositoryPath, patchChanges.Path));
+                string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_repositoryPath, patchChanges.Path));
                 diffResult.ChangedFiles.Add(diffPath);
                 if (diffPath.StartsWith(_options.BasePath))
                 {
