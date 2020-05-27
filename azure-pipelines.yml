@@ -73,17 +73,13 @@ stages:
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
-  - job: RunStrykerCLI
-    displayName: Run stryker on Stryker.CLI
-    dependsOn: []
-    timeoutInMinutes: 240
   - template: pipeline-templates/stryker-on-stryker-job.yml
     parameters:
-      projectName: 'Stryker.CLI'
+      projectName: 'CLI'
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
   - template: pipeline-templates/stryker-on-stryker-job.yml
     parameters:
-      projectName: 'Stryker.Core'
+      projectName: 'Core'
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
 
 - stage: DeployIntegrationtestPackage
