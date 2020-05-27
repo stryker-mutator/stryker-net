@@ -43,6 +43,7 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
+  condition: not(failed())
   jobs:
   - job:
     displayName: Run Sonar Analysis
