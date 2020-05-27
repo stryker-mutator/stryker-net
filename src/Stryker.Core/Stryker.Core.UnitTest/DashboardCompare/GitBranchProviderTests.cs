@@ -36,24 +36,6 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         }
 
         [Fact]
-        public void DisposingAlsoDisposesRepository()
-        {
-            // Arrange
-            var options = new StrykerOptions();
-            var repository = new Mock<IRepository>(MockBehavior.Strict);
-
-            repository.Setup(x => x.Dispose()).Verifiable();
-
-            var target = new GitBranchProvider(options, repository.Object);
-
-            // Act
-            target.Dispose();
-
-            // Assert
-            repository.Verify(x => x.Dispose(), Times.Once);
-        }
-
-        [Fact]
         public void ReturnsEmptyStringIfNoCurrentRepositoryHead()
         {
             // Arrange
@@ -66,6 +48,22 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             // Assert
             result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ReturnsCurrentBranch()
+        {
+            var options = new StrykerOptions();
+            var mock = new Mock<IRepository>(MockBehavior.Strict);
+
+            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns("refs/heads/master");
+            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Loose).Object);
+
+            var target = new GitBranchProvider(options, mock.Object);
+
+            var res = target.GetCurrentBranchCanonicalName();
+
+            res.ShouldBe("refs/heads/master");
         }
     }
 }

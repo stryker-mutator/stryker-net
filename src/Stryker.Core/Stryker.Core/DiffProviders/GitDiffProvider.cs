@@ -1,13 +1,12 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Stryker.Core.DiffProviders
 {
-    public class GitDiffProvider : IDiffProvider, IDisposable
+    public class GitDiffProvider : IDiffProvider
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
@@ -77,11 +76,6 @@ namespace Stryker.Core.DiffProviders
             }
 
             throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
-        }
-
-        public void Dispose()
-        {
-            _repository?.Dispose();
         }
     }
 }

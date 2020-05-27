@@ -57,25 +57,5 @@ namespace Stryker.Core.UnitTest.DiffProviders
             repository.Verify(x => x.Lookup(It.Is<ObjectId>(o => o.Sha == "d670460b4b4aece5915caf5c68d12f560a9fe3e4")), Times.Once);
             repository.VerifyNoOtherCalls();
         }
-
-        [Fact]
-        public void DisposingAlsoDisposesRepository()
-        {
-            // Arrange
-            var options = new StrykerOptions();
-            var repository = new Mock<IRepository>(MockBehavior.Strict);
-
-            repository.Setup(x => x.Dispose()).Verifiable();
-
-            var target = new GitDiffProvider(options, repository.Object);
-
-            // Act
-            target.Dispose();
-
-            // Assert
-            repository.Verify(x => x.Dispose(), Times.Once);
-        }
-
-
     }
 }

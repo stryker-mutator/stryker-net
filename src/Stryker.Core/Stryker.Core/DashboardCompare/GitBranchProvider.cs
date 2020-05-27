@@ -1,11 +1,10 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
 
 namespace Stryker.Core.DashboardCompare
 {
-    public class GitBranchProvider : IBranchProvider, IDisposable
+    public class GitBranchProvider : IBranchProvider
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
@@ -29,13 +28,7 @@ namespace Stryker.Core.DashboardCompare
         {
             if (_repository?.Branches != null)
             {
-                foreach (var branch in _repository.Branches)
-                {
-                    if (branch.IsCurrentRepositoryHead)
-                    {
-                        return branch.UpstreamBranchCanonicalName;
-                    }
-                }
+                return _repository.Head.UpstreamBranchCanonicalName;
             }
 
             return string.Empty;
@@ -54,11 +47,6 @@ namespace Stryker.Core.DashboardCompare
             {
                 return new Repository(repositoryPath);
             }
-        }
-
-        public void Dispose()
-        {
-            _repository?.Dispose();
         }
     }
 }
