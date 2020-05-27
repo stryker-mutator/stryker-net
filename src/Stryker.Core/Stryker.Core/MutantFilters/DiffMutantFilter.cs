@@ -61,7 +61,7 @@ namespace Stryker.Core.MutantFilters
                 UpdateMutantsWithBaseline(mutants, file);
             }
 
-
+            // We check if the tests have changed, if this is the case we should run all mutants. Otherwise we start filtering.
             if (!_diffResult.TestsChanged)
             {
 
@@ -76,7 +76,7 @@ namespace Stryker.Core.MutantFilters
                     // When using the compare to dashboard feature. 
                     // Some mutants mutants have no certain result because we couldn't say with certainty which mutant on the dashboard belonged to it. 
                     //These mutants have to be reset and tested.
-                    return FilterMutantsIfStatusUnclear(mutants);
+                    return ReturnMutantsWithStatusNotRun(mutants);
                 }
 
                 // If tests haven't changed and neither the file has changed or the compare feature is being used, we are not interested in the mutants of this file and thus can be filtered out completely.
@@ -88,18 +88,18 @@ namespace Stryker.Core.MutantFilters
 
         }
 
-        private IEnumerable<Mutant> FilterMutantsIfStatusUnclear(IEnumerable<Mutant> mutants)
+        private IEnumerable<Mutant> ReturnMutantsWithStatusNotRun(IEnumerable<Mutant> mutants)
         {
-            var uncheckedMutants = new List<Mutant>();
+            var unclearMutants = new List<Mutant>();
             foreach (var mutant in mutants)
             {
-                if (mutant.ResultStatusReason == "Could not determine the correct mutant status")
+                if (mutant.ResultStatus == MutantStatus.NotRun)
                 {
-                    uncheckedMutants.Add(mutant);
+                    unclearMutants.Add(mutant);
                 }
             }
 
-            return uncheckedMutants;
+            return unclearMutants;
         }
 
         private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
@@ -170,7 +170,7 @@ namespace Stryker.Core.MutantFilters
                     {
                         var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
-                        IEnumerable<Mutant> matchingMutants = GetMatchingMutants(mutants, baselineMutant, baselineMutantSourceCode);
+                        IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
 
                         if (matchingMutants.Count() == 1)
                         {
@@ -191,7 +191,7 @@ namespace Stryker.Core.MutantFilters
             matchingMutants.First().ResultStatusReason = "Result based on previous run.";
         }
 
-        private IEnumerable<Mutant> GetMatchingMutants(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
+        private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
         {
             return mutants.Where(x =>
                 x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
@@ -202,7 +202,7 @@ namespace Stryker.Core.MutantFilters
         {
             foreach (var matchingMutant in matchingMutants)
             {
-                matchingMutant.ResultStatus = MutantStatus.NotRun;
+                matchingMutant.ResultStatus = MutantStatus.Unclear;
                 matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
             }
         }

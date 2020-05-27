@@ -224,10 +224,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant>
             {
                 new Mutant() {
-                    ResultStatusReason = "Could not determine the correct mutant status"
+                    ResultStatus = MutantStatus.Unclear
                 },
                 new Mutant() {
-                    ResultStatusReason = "Could not determine the correct mutant status"
+                    ResultStatus = MutantStatus.Unclear
                 },
                 new Mutant()
             };
@@ -312,6 +312,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             results.Count().ShouldBe(3);
         }
+
+
+        [Fact]
+        public void
     }
 }
 
