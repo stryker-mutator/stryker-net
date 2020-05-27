@@ -6,6 +6,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;
 
@@ -60,11 +61,17 @@ namespace Stryker.Core.UnitTest.DiffProviders
             repository.VerifyNoOtherCalls();
         }
 
+
+        /**
+         * Libgit2sharp has most of its contructors sealed. 
+         * Because of that we are unable to make the repository mock return a explicit object and are only able to use mocks.
+        **/
         [Fact]
         public void ScanDiffReturnsListofFiles()
         {
             // Arrange
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4");
+            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
@@ -72,22 +79,41 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
             var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
 
-            commitMock.SetupGet(x => x.Tree).Returns(new Mock<Tree>(MockBehavior.Loose).Object);
-            branchMock.SetupGet(x => x.Tip).Returns(commitMock.Object);
-            repositoryMock.Setup(x => x.Branches["d670460b4b4aece5915caf5c68d12f560a9fe3e4"]).Returns(branchMock.Object).Verifiable();
-            patchEntryChangesMock.SetupGet(x => x.Path).Returns("file.cs");
-            patchMock.Setup(x => x.GetEnumerator())
-                .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
-            repositoryMock.Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory)).Returns(patchMock.Object);
+            // Setup of mocks
+            commitMock
+                .SetupGet(x => x.Tree)
+                .Returns(new Mock<Tree>(MockBehavior.Loose).Object);
 
-            var target = new GitDiffProvider(options, repositoryMock.Object);
+            branchMock
+                .SetupGet(x => x.Tip)
+                .Returns(commitMock.Object);
+
+            repositoryMock
+                .Setup(x => x.Branches["d670460b4b4aece5915caf5c68d12f560a9fe3e4"])
+                .Returns(branchMock.Object)
+                .Verifiable();
+
+            patchEntryChangesMock
+                .SetupGet(x => x.Path)
+                .Returns("file.cs");
+
+            patchMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
+
+            repositoryMock
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Returns(patchMock.Object);
+
+
+            var target = new GitDiffProvider(options, repositoryMock.Object, repositoryPath: "C://JohnDoe/Project");
 
             // Act
             var res = target.ScanDiff();
 
             // Assert
             res.ChangedFiles.Count().ShouldBe(1);
-            res.TestsChanged.ShouldBeTrue();
+            res.TestsChanged.ShouldBeFalse();
         }
     }
 }

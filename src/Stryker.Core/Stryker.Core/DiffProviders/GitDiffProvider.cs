@@ -10,17 +10,21 @@ namespace Stryker.Core.DiffProviders
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
-        private string _repositoryPath
-        {
-            get
-            {
-                return Repository.Discover(_options?.BasePath)?.Split(".git")[0];
-            }
-        }
+        private readonly string _repositoryPath;
 
-        public GitDiffProvider(StrykerOptions options, IRepository repository = null)
+        public GitDiffProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null)
         {
             _options = options;
+
+            if (repository != null)
+            {
+                _repositoryPath = repositoryPath;
+            }
+            else
+            {
+                _repositoryPath = Repository.Discover(_options?.BasePath)?.Split(".git")[0];
+            }
+
             if (repository != null)
             {
                 _repository = repository;

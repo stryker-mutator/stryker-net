@@ -33,13 +33,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldNotMutateUnchangedFiles()
         {
             var options = new StrykerOptions(diff: true);
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
                 ChangedFiles = new Collection<string>()
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -53,7 +56,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldOnlyMutateChangedFiles()
         {
             var options = new StrykerOptions(diff: true);
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
@@ -62,7 +67,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     myFile
                 }
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
