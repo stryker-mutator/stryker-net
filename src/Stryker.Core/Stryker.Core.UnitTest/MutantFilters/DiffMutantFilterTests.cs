@@ -196,7 +196,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void FilterMutantsForUnclearStatusReturnsAllMutantsWithCertainMutantStatus()
+        public void FilterMutantsForStatusNotRunReturnsAllMutantsWithStatusNotRun()
         {
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
@@ -223,13 +223,18 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutants = new List<Mutant>
             {
-                new Mutant() {
-                    ResultStatus = MutantStatus.Unclear
-                },
-                new Mutant() {
-                    ResultStatus = MutantStatus.Unclear
+                new Mutant()
+                {
+                    ResultStatus = MutantStatus.NotRun
                 },
                 new Mutant()
+                {
+                    ResultStatus = MutantStatus.NotRun
+                },
+                new Mutant()
+                {
+                    ResultStatus = MutantStatus.Killed
+                }
             };
 
             var results = target.FilterMutants(mutants, new FileLeaf(), options);
@@ -312,10 +317,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             results.Count().ShouldBe(3);
         }
-
-
-        [Fact]
-        public void
     }
 }
 
