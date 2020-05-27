@@ -28,11 +28,12 @@ namespace Stryker.Core
         private IMutationTestProcess _mutationTestProcess;
         private readonly IFileSystem _fileSystem;
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null)
+        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null, IReporter reporter = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
             _fileSystem = fileSystem ?? new FileSystem();
+            _reporter = reporter;
         }
 
         /// <summary>
@@ -68,7 +69,11 @@ namespace Stryker.Core
             try
             {
                 // initialize
-                _reporter = ReporterFactory.Create(options);
+                if (_reporter == null)
+                {
+                    _reporter = ReporterFactory.Create(options);
+                }
+
                 _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);
 
