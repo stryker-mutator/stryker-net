@@ -57,13 +57,15 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             var mock = new Mock<IRepository>(MockBehavior.Strict);
 
             mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns("refs/heads/master");
-            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Loose).Object);
+            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
 
             var target = new GitBranchProvider(options, mock.Object);
 
             var res = target.GetCurrentBranchCanonicalName();
 
             res.ShouldBe("refs/heads/master");
+
+            mock.Verify();
         }
     }
 }
