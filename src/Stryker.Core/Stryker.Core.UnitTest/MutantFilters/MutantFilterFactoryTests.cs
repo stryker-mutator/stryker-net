@@ -1,13 +1,13 @@
-﻿using Stryker.Core.MutantFilters;
+﻿using Moq;
+using Shouldly;
+using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
+using Stryker.Core.DiffProviders;
+using Stryker.Core.MutantFilters;
 using Stryker.Core.Options;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
-using Shouldly;
 using System.Linq;
-using Moq;
-using Stryker.Core.DiffProviders;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -49,9 +49,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var strykerOptions = new StrykerOptions(diff: true);
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object);
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;

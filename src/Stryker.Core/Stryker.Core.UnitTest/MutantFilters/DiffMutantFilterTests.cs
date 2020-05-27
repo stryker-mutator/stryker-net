@@ -24,7 +24,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public static void ShouldHaveName()
         {
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object) as IMutantFilter;
+            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object, branchProvider: branchProviderMock.Object) as IMutantFilter;
             target.DisplayName.ShouldBe("git diff file filter");
         }
 

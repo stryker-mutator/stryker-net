@@ -1,4 +1,6 @@
-﻿using Stryker.Core.DiffProviders;
+﻿using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -8,15 +10,19 @@ namespace Stryker.Core.MutantFilters
     public static class MutantFilterFactory
     {
         private static IDiffProvider _diffProvider;
+        private static IBranchProvider _branchProvider;
+        private static IDashboardClient _dashboardClient;
 
-        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
         {
-            if(options == null)
+            if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
             _diffProvider = diffProvider ?? new GitDiffProvider(options);
+            _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _branchProvider = branchProvider ?? new GitBranchProvider(options);
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
@@ -32,9 +38,9 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider));
+                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, dashboardClient: _dashboardClient, branchProvider: _branchProvider));
             }
-            
+
             return enabledFilters;
         }
     }
