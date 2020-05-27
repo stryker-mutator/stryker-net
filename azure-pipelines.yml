@@ -77,11 +77,11 @@ stages:
     displayName: Run stryker on Stryker.CLI
     dependsOn: []
     timeoutInMinutes: 240
-  - template: pipeline-templates/stryker-on-stryker.yml
+  - template: pipeline-templates/stryker-on-stryker-job.yml
     parameters:
       projectName: 'Stryker.CLI'
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
-  - template: pipeline-templates/stryker-on-stryker.yml
+  - template: pipeline-templates/stryker-on-stryker-job.yml
     parameters:
       projectName: 'Stryker.Core'
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
