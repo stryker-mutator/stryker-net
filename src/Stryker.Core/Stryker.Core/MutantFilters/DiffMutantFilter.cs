@@ -174,7 +174,7 @@ namespace Stryker.Core.MutantFilters
 
                         if (matchingMutants.Count() == 1)
                         {
-                            UpdateMutantStatusWithBaseline(baselineMutant, matchingMutants);
+                            UpdateMutantStatusWithBaseline(baselineMutant, matchingMutants.First());
                         }
                         else
                         {
@@ -185,10 +185,10 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        private void UpdateMutantStatusWithBaseline(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
+        private void UpdateMutantStatusWithBaseline(JsonMutant baselineMutant, Mutant matchingMutants)
         {
-            matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-            matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+            matchingMutants.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+            matchingMutants.ResultStatusReason = "Result based on previous run.";
         }
 
         private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
@@ -202,7 +202,7 @@ namespace Stryker.Core.MutantFilters
         {
             foreach (var matchingMutant in matchingMutants)
             {
-                matchingMutant.ResultStatus = MutantStatus.Unclear;
+                matchingMutant.ResultStatus = MutantStatus.NotRun;
                 matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
             }
         }
