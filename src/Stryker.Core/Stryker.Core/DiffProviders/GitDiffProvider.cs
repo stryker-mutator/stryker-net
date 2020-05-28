@@ -98,11 +98,14 @@ namespace Stryker.Core.DiffProviders
                 return sourceBranch.Tip;
             }
 
-            var commit = _repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
-
-            if (commit != null)
+            if (_options.GitSource.Length == 40)
             {
-                return commit;
+                var commit = _repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
+
+                if (commit != null)
+                {
+                    return commit;
+                }
             }
 
             throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
