@@ -28,6 +28,11 @@ namespace Stryker.Core.DashboardCompare
         {
             if (_repository?.Branches != null)
             {
+                if (_repository.Head.FriendlyName == null)
+                {
+                    Checkout();
+                }
+
                 return _repository.Head.FriendlyName;
             }
 
@@ -47,6 +52,13 @@ namespace Stryker.Core.DashboardCompare
             {
                 return new Repository(repositoryPath);
             }
+        }
+
+        public void Checkout()
+        {
+            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+
+            Commands.Checkout(_repository, currentBranch);
         }
     }
 }
