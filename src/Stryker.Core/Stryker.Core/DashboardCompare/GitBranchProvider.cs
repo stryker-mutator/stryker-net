@@ -56,9 +56,12 @@ namespace Stryker.Core.DashboardCompare
 
         public void Checkout()
         {
-            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+            var currentBranch = _repository.Branches[_options.ProjectVersion];
+            if (currentBranch != null)
+            {
+                Commands.Checkout(_repository, currentBranch);
+            }
 
-            Commands.Checkout(_repository, currentBranch);
         }
     }
 }
