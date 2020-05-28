@@ -66,7 +66,12 @@ namespace Stryker.Core.DiffProviders
 
         private Commit DetermineCommit()
         {
-            var sourceBranch = _repository.Branches.FirstOrDefault(x => x.FriendlyName == _options.GitSource);
+            var sourceBranch = _repository.Branches.FirstOrDefault(x => x.UpstreamBranchCanonicalName == _options.GitSource);
+
+            if (sourceBranch == null)
+            {
+                sourceBranch = _repository.Branches.FirstOrDefault(x => x.FriendlyName == _options.GitSource);
+            }
 
             if (sourceBranch != null)
             {
