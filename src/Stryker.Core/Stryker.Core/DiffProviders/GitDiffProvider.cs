@@ -67,8 +67,25 @@ namespace Stryker.Core.DiffProviders
 
         private Commit DetermineCommit()
         {
+            var commit = GetCommit();
 
-            //var sourceBranch = _repository.Branches.FirstOrDefault(x => x.UpstreamBranchCanonicalName == _options.GitSource);
+            if (commit == null)
+            {
+                Checkout();
+                commit = GetCommit();
+            }
+
+            if (commit == null)
+            {
+                throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
+            }
+
+            return commit;
+        }
+
+
+        private Commit GetCommit()
+        {
             Branch sourceBranch = null;
             foreach (var branch in _repository.Branches)
             {
@@ -108,7 +125,19 @@ namespace Stryker.Core.DiffProviders
                 }
             }
 
-            throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
+            return null;
+        }
+
+
+        public void Checkout()
+        {
+            var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+
+            Commands.Checkout(_repository, branch);
+
+            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+
+            Commands.Checkout(_repository, currentBranch);
         }
     }
 }
