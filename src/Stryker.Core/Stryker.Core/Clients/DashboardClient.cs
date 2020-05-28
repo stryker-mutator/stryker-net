@@ -46,6 +46,7 @@ namespace Stryker.Core.Clients
 
             requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
 
+            _logger.LogDebug("Sending POST to {0}", url);
             var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
@@ -75,6 +76,7 @@ namespace Stryker.Core.Clients
 
             requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
 
+            _logger.LogDebug("Sending GET to {0}", url);
             var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
