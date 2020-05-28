@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            repository.Setup(x => x.Branches["d670460b4b4aece5915caf5c68d12f560a9fe3e4"]).Returns((Branch)null).Verifiable();
+            repository.Setup(x => x.Branches.GetEnumerator()).Returns(((IEnumerable<Branch>)new List<Branch>()).GetEnumerator()).Verifiable();
             repository.Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns((GitObject)null).Verifiable();
 
             var target = new GitDiffProvider(options, repository.Object);
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .Message
                 .ShouldBe("No Branch or commit found with given source d670460b4b4aece5915caf5c68d12f560a9fe3e4. Please provide a different --git-source or remove this option.");
 
-            repository.Verify(x => x.Branches[It.Is<string>(o => o == "d670460b4b4aece5915caf5c68d12f560a9fe3e4")], Times.Once);
+            repository.Verify(x => x.Branches.GetEnumerator(), Times.Exactly(2));
             repository.Verify(x => x.Lookup(It.Is<ObjectId>(o => o.Sha == "d670460b4b4aece5915caf5c68d12f560a9fe3e4")), Times.Once);
             repository.VerifyNoOtherCalls();
         }
@@ -73,7 +73,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
-            var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
             var branchMock = new Mock<Branch>(MockBehavior.Strict);
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
@@ -88,9 +88,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Tip)
                 .Returns(commitMock.Object);
 
+            branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("refs/heads/branch");
+
+            branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
+
             repositoryMock
-                .Setup(x => x.Branches["d670460b4b4aece5915caf5c68d12f560a9fe3e4"])
-                .Returns(branchMock.Object)
+                .Setup(x => x.Branches.GetEnumerator())
+                .Returns(new List<Branch> { branchMock.Object }.GetEnumerator())
                 .Verifiable();
 
             patchEntryChangesMock
@@ -105,6 +109,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
+            repositoryMock
+                .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
             var target = new GitDiffProvider(options, repositoryMock.Object, repositoryPath: "C://JohnDoe/Project");
 
