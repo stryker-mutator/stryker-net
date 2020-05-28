@@ -8,7 +8,7 @@ namespace Stryker.Core.DashboardCompare
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
-
+        private const string NoBranch = "(no branch)";
         public GitBranchProvider(StrykerOptions options, IRepository repository = null)
         {
             _options = options;
@@ -28,7 +28,7 @@ namespace Stryker.Core.DashboardCompare
         {
             if (_repository?.Branches != null)
             {
-                if (_repository.Head.FriendlyName == null)
+                if (_repository.Head.FriendlyName == NoBranch)
                 {
                     Checkout();
                 }
