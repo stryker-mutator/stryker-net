@@ -6,6 +6,6 @@
     "dashboard-project": "github.com/stryker-mutator/stryker-net",
     "dashboard-version": "master",
     "dashboard-fallback-version": "master",
-    "dashboard-module": "cli"
+    "dashboard-module": "core"
   }
 }
