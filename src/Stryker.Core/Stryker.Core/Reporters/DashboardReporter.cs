@@ -61,7 +61,7 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadBaseline(JsonReport mutationReport)
         {
-            var branchName = _branchProvider.GetCurrentBranchCanonicalName();
+            var branchName = _branchProvider.GetCurrentBranchName();
 
             var projectVersion = !string.IsNullOrEmpty(branchName) ? branchName : _options.FallbackVersion;
 

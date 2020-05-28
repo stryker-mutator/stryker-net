@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IBranchProvider>();
-            branchProviderMock.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
+            branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProvider: branchProviderMock.Object);
 
             // Act
@@ -84,7 +84,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var branchProviderMock = new Mock<IBranchProvider>();
 
-            branchProviderMock.Setup(x => x.GetCurrentBranchCanonicalName()).Returns(string.Empty);
+            branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns(string.Empty);
 
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProviderMock.Object);
 

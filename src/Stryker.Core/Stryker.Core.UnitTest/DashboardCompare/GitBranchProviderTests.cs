@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             var target = new GitBranchProvider(options, repository.Object);
             // Act
-            var result = target.GetCurrentBranchCanonicalName();
+            var result = target.GetCurrentBranchName();
 
             // Assert
             result.ShouldBe(string.Empty);
@@ -61,9 +61,49 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             var target = new GitBranchProvider(options, mock.Object);
 
-            var res = target.GetCurrentBranchCanonicalName();
+            var res = target.GetCurrentBranchName();
 
             res.ShouldBe("refs/heads/master");
+
+            mock.Verify();
+        }
+
+        [Fact]
+        public void IfNoUpstreamName_ReturnsFriendlyName()
+        {
+            var options = new StrykerOptions();
+
+            var mock = new Mock<IRepository>(MockBehavior.Strict);
+
+            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns((string)null);
+            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
+            mock.SetupGet(x => x.Head.FriendlyName).Returns("branch");
+
+            var target = new GitBranchProvider(options, mock.Object);
+
+            var result = target.GetCurrentBranchName();
+
+            result.ShouldBe("branch");
+
+            mock.Verify();
+        }
+
+        [Fact]
+        public void ReturnsUpstreamName_WhenFriendlyNameAndUpstreamName_AreAvailable()
+        {
+            var options = new StrykerOptions();
+
+            var mock = new Mock<IRepository>(MockBehavior.Strict);
+
+            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns((string)null);
+            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
+            mock.SetupGet(x => x.Head.FriendlyName).Returns("branch");
+
+            var target = new GitBranchProvider(options, mock.Object);
+
+            var result = target.GetCurrentBranchName();
+
+            result.ShouldBe("branch");
 
             mock.Verify();
         }

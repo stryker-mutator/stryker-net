@@ -125,7 +125,7 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetBaseline()
         {
-            var branchName = _branchProvider.GetCurrentBranchCanonicalName();
+            var branchName = _branchProvider.GetCurrentBranchName();
 
             var report = await _dashboardClient.PullReport(branchName);
 

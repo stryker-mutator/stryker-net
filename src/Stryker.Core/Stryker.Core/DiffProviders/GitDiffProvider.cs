@@ -1,6 +1,7 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -66,7 +67,26 @@ namespace Stryker.Core.DiffProviders
 
         private Commit DetermineCommit()
         {
-            var sourceBranch = _repository.Branches.FirstOrDefault(x => x.UpstreamBranchCanonicalName == _options.GitSource);
+
+            //var sourceBranch = _repository.Branches.FirstOrDefault(x => x.UpstreamBranchCanonicalName == _options.GitSource);
+            Branch sourceBranch = null;
+            foreach (var branch in _repository.Branches)
+            {
+                try
+                {
+                    if (branch.UpstreamBranchCanonicalName == _options.GitSource)
+                    {
+                        sourceBranch = branch;
+                        break;
+                    }
+                }
+                catch (ArgumentNullException)
+                {
+                    // Internal error thrown by libgit2sharp which happens when there is no upstream on a branch.
+                    continue;
+                }
+            }
+
 
             if (sourceBranch == null)
             {

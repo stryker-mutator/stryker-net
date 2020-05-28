@@ -24,11 +24,11 @@ namespace Stryker.Core.DashboardCompare
 
         }
 
-        public string GetCurrentBranchCanonicalName()
+        public string GetCurrentBranchName()
         {
             if (_repository?.Branches != null)
             {
-                return _repository.Head.UpstreamBranchCanonicalName;
+                return _repository.Head.UpstreamBranchCanonicalName ?? _repository.Head.FriendlyName;
             }
 
             return string.Empty;

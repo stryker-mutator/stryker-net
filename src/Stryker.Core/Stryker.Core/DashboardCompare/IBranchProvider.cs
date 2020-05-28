@@ -2,6 +2,6 @@
 {
     public interface IBranchProvider
     {
-        string GetCurrentBranchCanonicalName();
+        string GetCurrentBranchName();
     }
 }

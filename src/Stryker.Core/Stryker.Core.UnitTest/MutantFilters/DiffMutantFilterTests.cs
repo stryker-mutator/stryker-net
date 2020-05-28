@@ -56,9 +56,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldOnlyMutateChangedFiles()
         {
             var options = new StrykerOptions(diff: true);
+
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IBranchProvider>();
+
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
@@ -82,7 +84,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
+
+            var dashboardClient = new Mock<IDashboardClient>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProvider = new Mock<IBranchProvider>();
+
             // If a file inside the test project is changed, a test has been changed
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -93,7 +99,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 },
                 TestsChanged = true
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
 
             // check the diff result for a file not inside the test project
             var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
@@ -128,7 +134,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
-            branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
+            branchProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
 
             dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
             dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
@@ -164,7 +170,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
-            branchProvider.Setup(x => x.GetCurrentBranchCanonicalName()).Returns("refs/heads/master");
+            branchProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
 
             dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult(jsonReport));
 

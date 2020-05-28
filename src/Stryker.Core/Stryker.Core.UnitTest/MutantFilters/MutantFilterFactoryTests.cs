@@ -33,8 +33,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var strykerOptions = new StrykerOptions(diff: false);
 
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions);
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
