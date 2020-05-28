@@ -3,6 +3,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -65,7 +66,7 @@ namespace Stryker.Core.DiffProviders
 
         private Commit DetermineCommit()
         {
-            var sourceBranch = _repository.Branches[_options.GitSource];
+            var sourceBranch = _repository.Branches.FirstOrDefault(x => x.FriendlyName == _options.GitSource);
 
             if (sourceBranch != null)
             {
