@@ -43,10 +43,10 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
+  condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
-    condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
     dependsOn: []
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
@@ -75,16 +75,41 @@ stages:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
     displayName: Run stryker on Stryker.CLI
+    condition: eq(variables['Build.Reason'], 'Schedule')
     dependsOn: []
     timeoutInMinutes: 240
-  - template: pipeline-templates/stryker-on-stryker.yml
-    parameters:
-      projectName: 'Stryker.CLI'
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-stryker'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-stryker -g
+        includeNuGetOrg: true
+    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+      condition: succeeded()
+      displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
-  - template: pipeline-templates/stryker-on-stryker.yml
-    parameters:
-      projectName: 'Stryker.Core'
+  - job: RunStrykerCore
+    displayName: Run stryker on Stryker.Core
+    condition: eq(variables['Build.Reason'], 'Schedule')
+    dependsOn: []
+    timeoutInMinutes: 240
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Install dotnet-stryker'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install dotnet-stryker -g
+        includeNuGetOrg: true
+    - script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+      condition: succeeded()
+      displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
+    - task: PublishMutationReport@0
+      inputs:
+        reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
