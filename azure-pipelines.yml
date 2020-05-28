@@ -43,7 +43,6 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: not(failed())
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -74,13 +73,17 @@ stages:
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
-  - template: pipeline-templates/stryker-on-stryker-job.yml
+  - job: RunStrykerCLI
+    displayName: Run stryker on Stryker.CLI
+    dependsOn: []
+    timeoutInMinutes: 240
+  - template: pipeline-templates/stryker-on-stryker.yml
     parameters:
-      projectName: 'CLI'
+      projectName: 'Stryker.CLI'
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
-  - template: pipeline-templates/stryker-on-stryker-job.yml
+  - template: pipeline-templates/stryker-on-stryker.yml
     parameters:
-      projectName: 'Core'
+      projectName: 'Stryker.Core'
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
 
 - stage: DeployIntegrationtestPackage
