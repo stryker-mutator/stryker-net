@@ -28,7 +28,7 @@ namespace Stryker.Core.DashboardCompare
         {
             if (_repository?.Branches != null)
             {
-                return _repository.Head.UpstreamBranchCanonicalName ?? _repository.Head.FriendlyName;
+                return _repository.Head.FriendlyName;
             }
 
             return string.Empty;

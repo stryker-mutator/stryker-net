@@ -6,6 +6,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Stryker.Core.Reporters
         private readonly IDashboardClient _dashboardClient;
         private readonly IBranchProvider _branchProvider;
         private readonly ILogger<DashboardReporter> _logger;
+
 
         public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
         {
@@ -63,9 +65,10 @@ namespace Stryker.Core.Reporters
         {
             var branchName = _branchProvider.GetCurrentBranchName();
 
-            var projectVersion = !string.IsNullOrEmpty(branchName) ? branchName : _options.FallbackVersion;
+            var baselineLocation = $"dashboard-compare/{branchName}";
 
-            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), projectVersion);
+
+            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), baselineLocation);
 
             if (reportUrl != null)
             {
@@ -83,7 +86,8 @@ namespace Stryker.Core.Reporters
 
             if (reportUrl != null)
             {
-                _logger.LogInformation("\nYour stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUrl);
+                _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUrl);
+                new Chalk().Green($"Your stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
             }
             else
             {

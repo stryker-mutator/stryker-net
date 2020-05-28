@@ -127,7 +127,9 @@ namespace Stryker.Core.MutantFilters
         {
             var branchName = _branchProvider.GetCurrentBranchName();
 
-            var report = await _dashboardClient.PullReport(branchName);
+            var baselineLocation = $"dashboard-compare/{branchName}";
+
+            var report = await _dashboardClient.PullReport(baselineLocation);
 
             if (report == null)
             {

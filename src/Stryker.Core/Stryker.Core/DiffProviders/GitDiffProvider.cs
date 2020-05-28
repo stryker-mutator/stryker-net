@@ -90,7 +90,7 @@ namespace Stryker.Core.DiffProviders
             {
                 try
                 {
-                    if (branch.UpstreamBranchCanonicalName == _options.GitSource || branch.FriendlyName == _options.GitSource)
+                    if (branch.CanonicalName == _options.GitSource || branch.FriendlyName == _options.GitSource)
                     {
                         sourceBranch = branch;
                         break;
