@@ -131,7 +131,7 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version", _options.ProjectName);
+                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version {1}", _options.ProjectName, _options.FallbackVersion);
 
                 return await GetFallbackBaseline();
             }

@@ -4,7 +4,6 @@ using Stryker.Core.Options;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -91,7 +90,7 @@ namespace Stryker.Core.DiffProviders
             {
                 try
                 {
-                    if (branch.UpstreamBranchCanonicalName == _options.GitSource)
+                    if (branch.UpstreamBranchCanonicalName == _options.GitSource || branch.FriendlyName == _options.GitSource)
                     {
                         sourceBranch = branch;
                         break;
@@ -102,12 +101,6 @@ namespace Stryker.Core.DiffProviders
                     // Internal error thrown by libgit2sharp which happens when there is no upstream on a branch.
                     continue;
                 }
-            }
-
-
-            if (sourceBranch == null)
-            {
-                sourceBranch = _repository.Branches.FirstOrDefault(x => x.FriendlyName == _options.GitSource);
             }
 
             if (sourceBranch != null)
