@@ -58,8 +58,9 @@ namespace Stryker.Core.UnitTest.Reporters
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"));
+            var branchProviderMock = new Mock<IBranchProvider>();
 
-            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
+            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProviderMock.Object);
 
             // Act
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
