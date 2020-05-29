@@ -2,6 +2,7 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -144,7 +145,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void CreatedWithoutRepositoryCreatesRepository()
         {
-            Should.NotThrow(() => new GitBranchProvider(new StrykerOptions()));
+            Should.Throw<StrykerInputException>(() => new GitBranchProvider(new StrykerOptions(basePath: "C:/Temp")));
         }
     }
 }
