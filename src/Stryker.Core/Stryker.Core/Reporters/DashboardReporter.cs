@@ -19,14 +19,15 @@ namespace Stryker.Core.Reporters
         private readonly IDashboardClient _dashboardClient;
         private readonly IBranchProvider _branchProvider;
         private readonly ILogger<DashboardReporter> _logger;
+        private readonly IChalk _chalk;
 
-
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _branchProvider = branchProvider ?? new GitBranchProvider(options);
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
+            _chalk = chalk ?? new Chalk();
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
@@ -87,7 +88,7 @@ namespace Stryker.Core.Reporters
             if (reportUrl != null)
             {
                 _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUrl);
-                new Chalk().Green($"Your stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
+                _chalk.Green($"Your stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
             }
             else
             {

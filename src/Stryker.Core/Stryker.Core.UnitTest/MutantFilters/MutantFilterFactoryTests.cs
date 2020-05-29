@@ -16,7 +16,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()
         {
-            var result = MutantFilterFactory.Create(new StrykerOptions(diff: false));
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+
+            var result = MutantFilterFactory.Create(new StrykerOptions(diff: false), diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
