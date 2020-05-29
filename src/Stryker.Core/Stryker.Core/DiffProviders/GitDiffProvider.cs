@@ -56,7 +56,7 @@ namespace Stryker.Core.DiffProviders
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_repositoryPath, patchChanges.Path));
                 diffResult.ChangedFiles.Add(diffPath);
-                if (diffPath.StartsWith(_options.BasePath))
+                if (diffPath.StartsWith(_options.BasePath) && diffPath.EndsWith(".cs"))
                 {
                     diffResult.TestsChanged = true;
                 }
