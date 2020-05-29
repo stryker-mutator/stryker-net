@@ -140,5 +140,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             repositoryMock.Verify();
         }
+
+        [Fact]
+        public void CreatedWithoutRepositoryCreatesRepository()
+        {
+            Should.NotThrow(() => new GitBranchProvider(new StrykerOptions()));
+        }
     }
 }
