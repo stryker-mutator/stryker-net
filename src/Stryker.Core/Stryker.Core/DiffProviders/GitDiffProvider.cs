@@ -17,6 +17,15 @@ namespace Stryker.Core.DiffProviders
         {
             _options = options;
 
+            if (repositoryPath != null)
+            {
+                _repositoryPath = repositoryPath;
+            }
+            else
+            {
+                _repositoryPath = Repository.Discover(_options?.BasePath)?.Split(".git")[0];
+            }
+
             if (repository != null)
             {
                 _repository = repository;

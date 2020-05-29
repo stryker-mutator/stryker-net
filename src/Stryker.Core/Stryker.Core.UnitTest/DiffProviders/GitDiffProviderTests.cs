@@ -127,5 +127,15 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             Should.Throw<StrykerInputException>(() => target.ScanDiff());
         }
+
+        [Fact]
+        public void IfRepositoryPath_Is_Null_Throw_StrykerINputException()
+        {
+            var options = new StrykerOptions();
+
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
+
+            Should.Throw<StrykerInputException>(() => new GitDiffProvider(options, repositoryPath: ""));
+        }
     }
 }
