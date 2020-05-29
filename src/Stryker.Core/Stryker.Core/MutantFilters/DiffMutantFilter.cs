@@ -54,6 +54,7 @@ namespace Stryker.Core.MutantFilters
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
                 {
+                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline", file.RelativePathToProjectFile);
                     return mutants;
                 }
 
@@ -184,6 +185,16 @@ namespace Stryker.Core.MutantFilters
                         }
                     }
                 }
+            }
+
+            var mutantGroups = mutants
+                .GroupBy(x => x.ResultStatusReason)
+                .OrderBy(x => x.Key);
+
+            foreach (var skippedMutantGroup in mutantGroups)
+            {
+                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
+                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
             }
         }
 
