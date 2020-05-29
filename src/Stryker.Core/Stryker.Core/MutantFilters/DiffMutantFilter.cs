@@ -45,6 +45,12 @@ namespace Stryker.Core.MutantFilters
             }
 
             _diffResult = diffProvider.ScanDiff();
+
+            _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles.Count());
+            foreach (var changedFile in _diffResult.ChangedFiles)
+            {
+                _logger.LogInformation("Changed file {0}", changedFile);
+            }
         }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
