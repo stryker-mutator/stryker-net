@@ -19,6 +19,6 @@ jobs:
       targetType: 'inline'
       pwsh: true
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        script: dotnet stryker -l debug --reporters "['dashboard', 'dots', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(Build.SourceBranchName)
+        script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(Build.SourceBranchName)
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        script: dotnet stryker -l debug --reporters "['dashboard', 'dots', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(System.PullRequest.SourceBranch) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
+        script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(System.PullRequest.SourceBranch) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
