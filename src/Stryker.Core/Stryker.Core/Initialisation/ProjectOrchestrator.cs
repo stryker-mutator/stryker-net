@@ -88,7 +88,7 @@ namespace Stryker.Core.Initialisation
                     }
                 }
 
-                var testProjectsAnalyzerResults = projectsAnalyzerResults.Except(projectsUnderTestAnalyzerResults);
+                var testProjectsAnalyzerResults = projectsAnalyzerResults.Except(projectsUnderTestAnalyzerResults).ToList();
 
                 _logger.LogDebug("Found {0} projects under test", projectsUnderTestAnalyzerResults.Count());
                 _logger.LogDebug("Found {0} test projects", testProjectsAnalyzerResults.Count());
@@ -96,7 +96,7 @@ namespace Stryker.Core.Initialisation
                 foreach (var project in projectsUnderTestAnalyzerResults)
                 {
                     var projectFilePath = project.ProjectFilePath;
-                    var relatedTestProjects = testProjectsAnalyzerResults.Where(x => x.ProjectReferences.Any(y => y == projectFilePath));
+                    var relatedTestProjects = testProjectsAnalyzerResults.Where(x => x.ProjectReferences.Any(y => y == projectFilePath)).ToList();
                     if (relatedTestProjects.Any())
                     {
                         _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count());
