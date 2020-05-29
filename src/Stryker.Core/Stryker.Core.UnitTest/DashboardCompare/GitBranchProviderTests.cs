@@ -5,6 +5,7 @@ using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
@@ -28,11 +29,15 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
+            var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+
+            branchCollectionMock.Setup(x => x.Add(It.IsAny<string>(), It.IsAny<string>())).Returns(new Mock<Branch>(MockBehavior.Loose).Object);
+
+            repository.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+
             Action act = () => new GitBranchProvider(options, repository.Object);
 
             act.ShouldNotThrow();
-
-            repository.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -53,59 +58,45 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void ReturnsCurrentBranch()
         {
+            // Arrange
             var options = new StrykerOptions();
-            var mock = new Mock<IRepository>(MockBehavior.Strict);
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
-            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns("refs/heads/master");
-            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
+            var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+            var branchMock = new Mock<Branch>();
 
-            var target = new GitBranchProvider(options, mock.Object);
+            branchCollectionMock
+                .Setup(x => x.Add(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new Mock<Branch>(MockBehavior.Loose).Object);
 
+            branchMock
+                .SetupGet(x => x.IsCurrentRepositoryHead)
+                .Returns(true);
+
+            branchMock
+                .SetupGet(x => x.FriendlyName)
+                .Returns("master");
+
+            branchCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Branch>)new List<Branch>
+                {
+                 branchMock.Object
+                }).GetEnumerator());
+
+            repositoryMock
+                .SetupGet(x => x.Branches)
+                .Returns(branchCollectionMock.Object);
+
+            var target = new GitBranchProvider(options, repositoryMock.Object);
+
+            // Act
             var res = target.GetCurrentBranchName();
 
-            res.ShouldBe("refs/heads/master");
+            // Assert
+            res.ShouldBe("master");
 
-            mock.Verify();
-        }
-
-        [Fact]
-        public void IfNoUpstreamName_ReturnsFriendlyName()
-        {
-            var options = new StrykerOptions();
-
-            var mock = new Mock<IRepository>(MockBehavior.Strict);
-
-            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns((string)null);
-            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
-            mock.SetupGet(x => x.Head.FriendlyName).Returns("branch");
-
-            var target = new GitBranchProvider(options, mock.Object);
-
-            var result = target.GetCurrentBranchName();
-
-            result.ShouldBe("branch");
-
-            mock.Verify();
-        }
-
-        [Fact]
-        public void ReturnsUpstreamName_WhenFriendlyNameAndUpstreamName_AreAvailable()
-        {
-            var options = new StrykerOptions();
-
-            var mock = new Mock<IRepository>(MockBehavior.Strict);
-
-            mock.SetupGet(x => x.Head.UpstreamBranchCanonicalName).Returns((string)null);
-            mock.SetupGet(x => x.Branches).Returns(new Mock<BranchCollection>(MockBehavior.Strict).Object);
-            mock.SetupGet(x => x.Head.FriendlyName).Returns("branch");
-
-            var target = new GitBranchProvider(options, mock.Object);
-
-            var result = target.GetCurrentBranchName();
-
-            result.ShouldBe("branch");
-
-            mock.Verify();
+            repositoryMock.Verify();
         }
     }
 }

@@ -136,14 +136,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             branchProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
 
-            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
+            dashboardClient.Setup(x => x.PullReport("dashboard-compare/refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
             dashboardClient.Setup(x => x.PullReport("fallback/version")).Returns(Task.FromResult(jsonReport));
 
             // Act
             var target = new DiffMutantFilter(options, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object, branchProvider: branchProvider.Object);
 
             // Assert
-            dashboardClient.Verify(x => x.PullReport("refs/heads/master"), Times.Once);
+            dashboardClient.Verify(x => x.PullReport("dashboard-compare/refs/heads/master"), Times.Once);
             dashboardClient.Verify(x => x.PullReport("fallback/version"), Times.Once);
         }
 
@@ -172,13 +172,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             branchProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
 
-            dashboardClient.Setup(x => x.PullReport("refs/heads/master")).Returns(Task.FromResult(jsonReport));
+            dashboardClient.Setup(x => x.PullReport("dashboard-compare/refs/heads/master")).Returns(Task.FromResult(jsonReport));
 
             // Act
             var target = new DiffMutantFilter(options, branchProvider: branchProvider.Object, dashboardClient: dashboardClient.Object, diffProvider: diffProvider.Object);
 
             // Assert
-            dashboardClient.Verify(x => x.PullReport("refs/heads/master"), Times.Once);
+            dashboardClient.Verify(x => x.PullReport("dashboard-compare/refs/heads/master"), Times.Once);
             dashboardClient.Verify(x => x.PullReport("fallback/version"), Times.Never);
         }
 
@@ -195,6 +195,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
 
+            var file = new Mock<FileLeaf>(MockBehavior.Loose);
+
             var mutants = new List<Mutant>
             {
                 new Mutant(),
@@ -202,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 new Mutant()
             };
 
-            var results = target.FilterMutants(mutants, null, options);
+            var results = target.FilterMutants(mutants, file.Object, options);
 
             results.Count().ShouldBe(3);
         }

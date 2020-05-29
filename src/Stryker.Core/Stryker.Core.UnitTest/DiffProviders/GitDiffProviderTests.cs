@@ -38,29 +38,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             repository.VerifyNoOtherCalls();
         }
 
-        [Fact]
-        public void DetermineCommitThrowsStrykerInputExceptionWhenBothSourceBranchAndCommitAreNull()
-        {
-            // Arrange
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4");
-
-            var repository = new Mock<IRepository>(MockBehavior.Strict);
-
-            repository.Setup(x => x.Branches.GetEnumerator()).Returns(((IEnumerable<Branch>)new List<Branch>()).GetEnumerator()).Verifiable();
-            repository.Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns((GitObject)null).Verifiable();
-
-            var target = new GitDiffProvider(options, repository.Object);
-
-            // Act / Assert
-            Should.Throw<StrykerInputException>(() => target.ScanDiff())
-                .Message
-                .ShouldBe("No Branch or commit found with given source d670460b4b4aece5915caf5c68d12f560a9fe3e4. Please provide a different --git-source or remove this option.");
-
-            repository.Verify(x => x.Branches.GetEnumerator(), Times.Exactly(2));
-            repository.Verify(x => x.Lookup(It.Is<ObjectId>(o => o.Sha == "d670460b4b4aece5915caf5c68d12f560a9fe3e4")), Times.Once);
-            repository.VerifyNoOtherCalls();
-        }
-
 
         /**
          * Libgit2sharp has most of its contructors sealed. 
@@ -88,7 +65,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Tip)
                 .Returns(commitMock.Object);
 
-            branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("refs/heads/branch");
+            branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
 
             branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
 

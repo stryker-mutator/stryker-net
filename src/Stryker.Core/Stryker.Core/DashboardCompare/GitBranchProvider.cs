@@ -1,9 +1,6 @@
 ﻿using LibGit2Sharp;
-using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using System;
 
 namespace Stryker.Core.DashboardCompare
 {
@@ -11,7 +8,6 @@ namespace Stryker.Core.DashboardCompare
     {
         private readonly StrykerOptions _options;
         private readonly IRepository _repository;
-        private const string NoBranch = "(no branch)";
         public GitBranchProvider(StrykerOptions options, IRepository repository = null)
         {
             _options = options;
@@ -24,15 +20,7 @@ namespace Stryker.Core.DashboardCompare
             {
                 _repository = CreateRepository();
             }
-
-            try
-            {
-                Checkout();
-            }
-            catch (Exception e)
-            {
-                ApplicationLogging.LoggerFactory.CreateLogger<GitBranchProvider>().LogInformation(e.InnerException, e.Message);
-            }
+            Checkout();
         }
 
         public string GetCurrentBranchName()
@@ -68,13 +56,20 @@ namespace Stryker.Core.DashboardCompare
 
         public void Checkout()
         {
-            var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+            try
+            {
+                var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
 
-            Commands.Checkout(_repository, branch);
+                Commands.Checkout(_repository, branch);
 
-            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+                var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
 
-            Commands.Checkout(_repository, currentBranch);
+                Commands.Checkout(_repository, currentBranch);
+            }
+            catch
+            {
+                // Do nothing, Checkout is already done
+            }
         }
     }
 }
