@@ -3,9 +3,10 @@ For .NET Core projects Stryker.NET can be run without any configuration. On .NET
 The full list of Stryker.NET configuration options are:
 
 <!-- TOC -->
+- [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
-- [Test runner](#test-runner)
+- [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
 - [Test projects](#test-projects)
@@ -14,12 +15,52 @@ The full list of Stryker.NET configuration options are:
 - [Excluding files (deprecated)](#excluding-files)
 - [Mutate](#mutate)
 - [Ignore methods](#ignore-methods)
-- [Custom tresholds](#unary-operators)
+- [Custom tresholds](#custom-thresholds)
 - [Coverage analysis](#coverage-analysis)
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
 <!-- /TOC -->
+
+## Use a config file
+When using Stryker in a team we recomend using a config file. This way you ensure all team members use the same settings to run Stryker. The settings will also be picked up in pipelines. To use a config file create a file called `stryker-config.json` in the folder you run Stryker and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
+
+Example `stryker-config.json` file:
+``` javascript
+{
+    "stryker-config":
+    {
+        "test-runner": "vstest",
+        "reporters": [
+            "progress",
+            "html"
+        ],
+        "log-level": "info",
+        "log-file":true,
+        "timeout-ms": 10000,
+        "project-file": "ExampleProject.csproj",
+        "max-concurrent-test-runners": 4,
+        "threshold-high": 80,
+        "threshold-low": 70,
+        "threshold-break": 60,
+        "file-patterns": [
+            "!ExampleClass.cs",
+            "!ExampleDirectory",
+            "!ExampleDirectory/ExampleClass2.cs",
+            "!C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
+        ],
+        "excluded-mutations": [
+            "string",
+            "Logical operators"
+        ],
+        "ignore-methods": [
+            "*Log*",
+            "ToString",
+            "*HashCode*"
+        ]
+    }
+}
+```
 
 ## Solution path
 On .NET Framework projects Stryker needs your `.sln` file path.
@@ -256,46 +297,6 @@ Both, method names and constructor names, support wildcards.
 `dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors`
 
 Default: `[]`
-
-## Use a config file
-There is also the option to use a config file. To use a config file all you have to do is add a file called `stryker-config.json` in the root of your test project and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
-
-Example config file:
-``` javascript
-{
-    "stryker-config":
-    {
-        "test-runner": "vstest",
-        "reporters": [
-            "progress",
-            "html"
-        ],
-        "log-level": "info",
-        "log-file":true,
-        "timeout-ms": 10000,
-        "project-file": "ExampleProject.csproj",
-        "max-concurrent-test-runners": 4,
-        "threshold-high": 80,
-        "threshold-low": 70,
-        "threshold-break": 60,
-        "file-patterns": [
-            "!ExampleClass.cs",
-            "!ExampleDirectory",
-            "!ExampleDirectory/ExampleClass2.cs",
-            "!C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
-        ],
-        "excluded-mutations": [
-            "string",
-            "Logical operators"
-        ],
-        "ignore-methods": [
-            "*Log*",
-            "ToString",
-            "*HashCode*"
-        ]
-    }
-}
-```
 
 ## Config file location
 If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command

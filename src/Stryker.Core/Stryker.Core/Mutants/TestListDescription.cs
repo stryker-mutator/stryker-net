@@ -3,15 +3,33 @@ using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
-    public class TestListDescription
+    public interface ITestListDescription
     {
+        List<TestDescription> Tests { get; }
+        int Count { get; }
+        bool IsEmpty { get; }
+        bool IsEveryTest { get; }
+
+        void Add(TestDescription test);
+        void AddTests(ITestListDescription otherFailingTests);
+        bool Contains(string id);
+        bool Contains(TestDescription test);
+        bool ContainsAny(IReadOnlyList<TestDescription> usedTests);
+        bool ContainsAny(ITestListDescription other);
+        IReadOnlyList<TestDescription> GetList();
+    }
+
+    public class TestListDescription : ITestListDescription
+    {
+
+        public List<TestDescription> Tests { get => _tests; }
         private List<TestDescription> _tests;
-        private static readonly TestListDescription EveryTests;
-        private static readonly TestListDescription NoTestInstance;
+        private static readonly ITestListDescription EveryTests;
+        private static readonly ITestListDescription NoTestInstance;
 
         static TestListDescription()
         {
-            EveryTests = new TestListDescription(new []{TestDescription.AllTests()});
+            EveryTests = new TestListDescription(new[] { TestDescription.AllTests() });
             NoTestInstance = new TestListDescription(null);
         }
 
@@ -33,7 +51,7 @@ namespace Stryker.Core.Mutants
 
         public void Add(TestDescription test)
         {
-            if (_tests!=null && IsEveryTest)
+            if (_tests != null && IsEveryTest)
             {
                 return;
             }
@@ -54,12 +72,12 @@ namespace Stryker.Core.Mutants
             return IsEveryTest || _tests.Any(t => t.Equals(test));
         }
 
-        public static TestListDescription EveryTest()
+        public static ITestListDescription EveryTest()
         {
             return EveryTests;
         }
 
-        public static TestListDescription NoTest()
+        public static ITestListDescription NoTest()
         {
             return NoTestInstance;
         }
@@ -69,23 +87,23 @@ namespace Stryker.Core.Mutants
             return _tests;
         }
 
-        public void AddTests(TestListDescription otherFailingTests)
+        public void AddTests(ITestListDescription otherFailingTests)
         {
             if (otherFailingTests.IsEmpty)
                 return;
-            foreach (var testDescription in otherFailingTests._tests)
+            foreach (var testDescription in otherFailingTests.Tests)
             {
                 Add(testDescription);
             }
         }
 
-        public bool ContainsAny(TestListDescription other)
+        public bool ContainsAny(ITestListDescription other)
         {
             return _tests?.Any(other.Contains) == true;
         }
 
         public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)
-        {   
+        {
             return _tests?.Any(usedTests.Contains) == true;
         }
     }

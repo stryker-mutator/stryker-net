@@ -1,7 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
-using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -13,7 +11,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
@@ -31,7 +28,7 @@ namespace Stryker.Core.MutationTest
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
         private readonly ILogger _logger;
-        private readonly IEnumerable<IMutantFilter> _mutantFilters;
+        private readonly IMutantFilter _mutantFilter;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
@@ -44,7 +41,7 @@ namespace Stryker.Core.MutationTest
             ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
-            IEnumerable<IMutantFilter> mutantFilters = null)
+            IMutantFilter mutantFilter = null)
         {
             _input = mutationTestInput;
             _reporter = reporter;
@@ -54,14 +51,7 @@ namespace Stryker.Core.MutationTest
             _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _mutantFilters = mutantFilters ?? new IMutantFilter[]
-                {
-                    new FilePatternMutantFilter(),
-                    new IgnoredMethodMutantFilter(),
-                    new ExcludeMutationMutantFilter(),
-                    new DiffMutantFilter(_options, new GitDiffProvider(_options)),
-                    new ExcludeFromCodeCoverageFilter()
-                };
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
         }
 
         public void Mutate()
@@ -80,23 +70,9 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
-                IEnumerable<Mutant> filteredMutants = allMutants;
 
-                foreach (var mutantFilter in _mutantFilters)
-                {
-                    var current = mutantFilter.FilterMutants(filteredMutants, file, _options).ToList();
+                _mutantFilter.FilterMutants(allMutants, file, _options);
 
-                    // Mark the filtered mutants as skipped
-                    foreach (var skippedMutant in filteredMutants.Except(current))
-                    {
-                        skippedMutant.ResultStatus = MutantStatus.Ignored;
-                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
-                    }
-
-                    filteredMutants = current;
-                }
-
-                // Store the generated mutants in the file
                 file.Mutants = allMutants;
             }
 
@@ -123,45 +99,50 @@ namespace Stryker.Core.MutationTest
 
         private void CompileMutations()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
+            // compile the mutated syntax trees
+            var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
+
+            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
-                // compile the mutated syntax trees
-                var compileResult = _compilingProcess.Compile(_input.ProjectInfo.ProjectContents.CompilationSyntaxTrees, ms, _options.DevMode);
-
-                foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+                var injectionPath = testProject.TargetDirectory;
+                if (!_fileSystem.Directory.Exists(injectionPath))
                 {
-                    var injectionPath = _input.ProjectInfo.GetInjectionPath(testProject);
-                    if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)) &&
-                        !_fileSystem.File.Exists(injectionPath))
-                    {
-                        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
-                    }
-
-                    // inject the mutated Assembly into the test project
-                    using (var fs = _fileSystem.File.Create(injectionPath))
-                    {
-                        ms.Position = 0;
-                        ms.CopyTo(fs);
-                    }
-
-                    _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                    _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
-                // if a rollback took place, mark the rollbacked mutants as status:BuildError
-                if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
-                {
-                    foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
-                        .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
-                    {
-                        // Ignore compilation errors if the mutation is skipped anyways.
-                        if (mutant.ResultStatus == MutantStatus.Ignored)
-                        {
-                            continue;
-                        }
+                // inject the mutated Assembly into the test project
+                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                ms.Position = 0;
+                ms.CopyTo(fs);
 
-                        mutant.ResultStatus = MutantStatus.CompileError;
-                        mutant.ResultStatusReason = "Could not compile";
+                if (msForSymbols != null)
+                {
+                    // inject the debug symbols into the test project
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                    msForSymbols.Position = 0;
+                    msForSymbols.CopyTo(symbolDestination);
+                }
+
+                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+            }
+
+            // if a rollback took place, mark the rolled back mutants as status:BuildError
+            if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
+            {
+                foreach (var mutant in _input.ProjectInfo.ProjectContents.Mutants
+                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
+                {
+                    // Ignore compilation errors if the mutation is skipped anyways.
+                    if (mutant.ResultStatus == MutantStatus.Ignored)
+                    {
+                        continue;
                     }
+
+                    mutant.ResultStatus = MutantStatus.CompileError;
+                    mutant.ResultStatusReason = "Could not compile";
                 }
             }
         }

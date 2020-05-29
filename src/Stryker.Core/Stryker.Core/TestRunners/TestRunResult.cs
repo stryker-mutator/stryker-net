@@ -11,7 +11,10 @@ namespace Stryker.Core.TestRunners
             ResultMessage = message;
         }
 
-        public TestRunResult(TestListDescription ranTests, TestListDescription failedTests, TestListDescription timedOutTest, string message)
+        public TestRunResult(ITestListDescription ranTests,
+            ITestListDescription failedTests,
+            ITestListDescription timedOutTest,
+            string message)
         {
             RanTests = ranTests;
             FailingTests = failedTests;
@@ -19,14 +22,17 @@ namespace Stryker.Core.TestRunners
             ResultMessage = message;
         }
 
-        public static TestRunResult TimedOut(TestListDescription ranTests, TestListDescription failedTest, TestListDescription timedOutTests, string message)
+        public static TestRunResult TimedOut(ITestListDescription ranTests,
+            ITestListDescription failedTest,
+            ITestListDescription timedOutTests,
+            string message)
         {
             return new TestRunResult(ranTests, failedTest, timedOutTests, message){SessionTimedOut = true};
         }
 
-        public TestListDescription FailingTests { get; set; }
-        public TestListDescription RanTests { get; }
-        public TestListDescription TimedOutTests { get; }
+        public ITestListDescription FailingTests { get; set; }
+        public ITestListDescription RanTests { get; }
+        public ITestListDescription TimedOutTests { get; }
         public bool SessionTimedOut { get; private set; }
         public string ResultMessage { get; set; }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -29,7 +28,7 @@ namespace Stryker.Core.Mutators
                     ReplacementNode =
                         SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
                             SyntaxFactory.Literal("Stryker was here!")),
-                    DisplayName = @"String mutation",
+                    DisplayName = "String mutation",
                     Type = Mutator.String
                 };
             }

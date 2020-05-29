@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Initialisation
 {
@@ -40,7 +41,7 @@ namespace Stryker.Core.Initialisation
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
             _fileSystem = fileSystem;
-            _projectFileReader = projectFileReader;
+            _projectFileReader = projectFileReader ?? new ProjectFileReader();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
@@ -82,6 +83,19 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
+            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
+            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
+            {
+                _logger.LogInformation("**** Buildalyzer properties. ****");
+                // dump properties
+                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
+                {
+                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
+                }
+
+                _logger.LogInformation("**** Buildalyzer properties. ****");
+            }
+
             FolderComposite inputFiles;
             if (projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
@@ -119,12 +133,13 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
+
         private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
-            var generatedAssemblyInfo = (_fileSystem.Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs").ToLowerInvariant();
+            var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName;
             var rootFolderComposite = new FolderComposite()
             {
                 Name = string.Empty,
@@ -146,12 +161,6 @@ namespace Stryker.Core.Initialisation
                     continue;
                 }
 
-                // Skip assembly info
-                if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
-                {
-                    continue;
-                }
-
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
@@ -168,11 +177,18 @@ namespace Stryker.Core.Initialisation
                 // Get the syntax tree for the source file
                 var syntaxTree = CSharpSyntaxTree.ParseText(file.SourceCode,
                     path: file.FullPath,
+                    encoding: Encoding.UTF32,
                     options: cSharpParseOptions);
 
                 // don't mutate auto generated code
                 if (syntaxTree.IsGenerated())
                 {
+                    // we found the generated assemblyinfo file
+                    if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
+                    {
+                        // add the mutated text
+                        syntaxTree = InjectMutationLabel(syntaxTree);
+                    }
                     _logger.LogDebug("Skipping auto-generated code file: {fileName}", file.Name);
                     folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
                     continue; // Don't add the file to the folderComposite as we're not reporting on the file
@@ -186,20 +202,46 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
+        private SyntaxTree InjectMutationLabel(SyntaxTree syntaxTree)
+        {
+            var root = syntaxTree.GetRoot();
+
+            var myAttribute = ((CompilationUnitSyntax) root).AttributeLists
+                .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
+                                                                     && ((QualifiedNameSyntax) n.Name).Right
+                                                                     .Kind() == SyntaxKind.IdentifierName
+                                                                     && (string)((IdentifierNameSyntax) ((QualifiedNameSyntax) n.Name).Right)
+                                                                     .Identifier.Value == "AssemblyTitleAttribute");
+            var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
+            var newLabel = string.Empty;
+            if (labelNode != null && labelNode.Kind() == SyntaxKind.StringLiteralExpression)
+            {
+                var literal = (LiteralExpressionSyntax) labelNode;
+                newLabel = $"Mutated {literal.Token.Value}";
+            }
+
+            if (myAttribute != null)
+            {
+                var newAttribute = myAttribute.ReplaceNode(labelNode, 
+                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newLabel)));
+                root = root.ReplaceNode(myAttribute, newAttribute);
+                return root.SyntaxTree;
+            }
+
+            return syntaxTree;
+        }
+
+        private static void InjectMutantHelpers(FolderComposite rootFolderComposite, CSharpParseOptions cSharpParseOptions)
         {
             foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
-                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, options: cSharpParseOptions));
+                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32,  options: cSharpParseOptions));
             }
         }
 
-        private CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private static CSharpParseOptions BuildCsharpParseOptions(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
-            var preprocessorSymbols = analyzerResult.DefineConstants;
-
-            var cSharpParseOptions = new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: preprocessorSymbols);
-            return cSharpParseOptions;
+            return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.DefineConstants);
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
@@ -292,40 +334,35 @@ namespace Stryker.Core.Initialisation
             {
                 folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath, cSharpParseOptions));
             }
-            foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly))
+            foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.cs", SearchOption.TopDirectoryOnly).Where(f => !f.EndsWith(".xaml.cs")))
             {
                 // Roslyn cannot compile xaml.cs files generated by xamarin. 
                 // Since the files are generated they should not be mutated anyway, so skip these files.
-                if (!file.EndsWith(".xaml.cs"))
+                var fileName = Path.GetFileName(file);
+
+                var fileLeaf = new FileLeaf()
                 {
-                    var fileName = Path.GetFileName(file);
+                    SourceCode = _fileSystem.File.ReadAllText(file),
+                    Name = _fileSystem.Path.GetFileName(file),
+                    RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
+                    FullPath = file,
+                    RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
+                };
 
-                    var fileLeaf = new FileLeaf()
-                    {
-                        SourceCode = _fileSystem.File.ReadAllText(file),
-                        Name = _fileSystem.Path.GetFileName(file),
-                        RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
-                        FullPath = file,
-                        RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
-                    };
+                // Get the syntax tree for the source file
+                var syntaxTree = CSharpSyntaxTree.ParseText(fileLeaf.SourceCode, path: fileLeaf.FullPath, options: cSharpParseOptions);
 
-                    // Get the syntax tree for the source file
-                    var syntaxTree = CSharpSyntaxTree.ParseText(fileLeaf.SourceCode,
-                        path: fileLeaf.FullPath,
-                        options: cSharpParseOptions);
-
-                    // don't mutate auto generated code
-                    if (syntaxTree.IsGenerated())
-                    {
-                        _logger.LogDebug("Skipping auto-generated code file: {fileName}", fileLeaf.Name);
-                        folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
-                        continue; // Don't add the file to the folderComposite as we're not reporting on the file
-                    }
-
-                    fileLeaf.SyntaxTree = syntaxTree;
-
-                    folderComposite.Add(fileLeaf);
+                // don't mutate auto generated code
+                if (syntaxTree.IsGenerated())
+                {
+                    _logger.LogDebug("Skipping auto-generated code file: {fileName}", fileLeaf.Name);
+                    folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
+                    continue; // Don't add the file to the folderComposite as we're not reporting on the file
                 }
+
+                fileLeaf.SyntaxTree = syntaxTree;
+
+                folderComposite.Add(fileLeaf);
             }
 
             return folderComposite;
@@ -408,7 +445,7 @@ namespace Stryker.Core.Initialisation
             var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
 
-            foreach (var sharedProject in new ProjectFileReader().FindSharedProjects(xDocument))
+            foreach (var sharedProject in FindSharedProjects(xDocument))
             {
                 var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
 
@@ -422,6 +459,19 @@ namespace Stryker.Core.Initialisation
             }
 
             return folders;
+        }
+
+        private IEnumerable<string> FindSharedProjects(XDocument document)
+        {
+            var importStatements = document.Elements().Descendants()
+                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
+
+            var sharedProjects = importStatements
+                .SelectMany(importStatement => importStatement.Attributes(
+                    XName.Get("Project")))
+                .Select(importFileLocation => FilePathUtils.NormalizePathSeparators(importFileLocation.Value))
+                .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
+            return sharedProjects;
         }
 
         private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
@@ -545,7 +595,7 @@ namespace Stryker.Core.Initialisation
 
         private StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             builder.AppendLine($"Choose one of the following references:");
             builder.AppendLine("");
 

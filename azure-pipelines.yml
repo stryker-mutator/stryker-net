@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.17.1'
-  VersionBuildNumber: $[counter('0.17.1', 1)]
+  PackageVersion: '0.18.0'
+  VersionBuildNumber: $[counter('0.18.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -57,7 +57,7 @@ stages:
         scannerMode: 'MSBuild'
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
-        projectVersion: '$(Build.BuildNumber)'
+        projectVersion: '$(PackageVersion)'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
@@ -103,10 +103,13 @@ stages:
         custom: tool
         arguments: install dotnet-stryker -g
         includeNuGetOrg: true
-    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
+    - task: PublishMutationReport@0
+      inputs:
+        reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
