@@ -28,12 +28,13 @@ namespace Stryker.Core.DashboardCompare
         {
             if (_repository?.Branches != null)
             {
-                if (_repository.Head.FriendlyName == NoBranch)
+                foreach (var branch in _repository.Branches)
                 {
-                    Checkout();
+                    if (branch.IsCurrentRepositoryHead)
+                    {
+                        return branch.FriendlyName;
+                    }
                 }
-
-                return _repository.Head.FriendlyName;
             }
 
             return string.Empty;
