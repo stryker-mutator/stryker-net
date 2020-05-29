@@ -10,10 +10,10 @@ namespace Stryker.Core.MutantFilters
     public static class MutantFilterFactory
     {
         private static IDiffProvider _diffProvider;
-        private static IBranchProvider _branchProvider;
+        private static IGitInfoProvider _branchProvider;
         private static IDashboardClient _dashboardClient;
 
-        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null)
         {
             if (options == null)
             {
@@ -22,7 +22,7 @@ namespace Stryker.Core.MutantFilters
 
             _diffProvider = diffProvider ?? new GitDiffProvider(options);
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _branchProvider = branchProvider ?? new GitBranchProvider(options);
+            _branchProvider = branchProvider ?? new GitInfoProvider(options);
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }

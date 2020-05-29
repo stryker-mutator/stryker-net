@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
 
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>();
+            var branchProviderMock = new Mock<IGitInfoProvider>();
             branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProvider: branchProviderMock.Object);
 
@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"));
-            var branchProviderMock = new Mock<IBranchProvider>();
+            var branchProviderMock = new Mock<IGitInfoProvider>();
 
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProviderMock.Object);
 
@@ -86,7 +86,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var loggerMock = new Mock<ILogger<DashboardReporter>>(MockBehavior.Loose);
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>();
+            var branchProviderMock = new Mock<IGitInfoProvider>();
             var chalkMock = new Mock<IChalk>();
 
             branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");

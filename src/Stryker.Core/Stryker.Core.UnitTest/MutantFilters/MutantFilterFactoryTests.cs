@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()
         {
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
 
             var result = MutantFilterFactory.Create(new StrykerOptions(diff: false), diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var strykerOptions = new StrykerOptions(diff: false);
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
 
             // Act
@@ -57,7 +57,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var strykerOptions = new StrykerOptions(diff: true);
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
 
             // Act

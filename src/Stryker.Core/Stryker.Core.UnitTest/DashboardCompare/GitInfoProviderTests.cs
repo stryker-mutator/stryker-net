@@ -2,7 +2,6 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
-    public class GitBranchProviderTests
+
+    public class GitInfoProviderTests
     {
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             repository.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
 
-            Action act = () => new GitBranchProvider(options, repository.Object);
+            Action act = () => new GitInfoProvider(options, repository.Object);
 
             act.ShouldNotThrow();
         }
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             var options = new StrykerOptions();
             var repository = new Mock<IRepository>(MockBehavior.Loose);
 
-            var target = new GitBranchProvider(options, repository.Object);
+            var target = new GitInfoProvider(options, repository.Object);
             // Act
             var result = target.GetCurrentBranchName();
 
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
                 .SetupGet(x => x.Branches)
                 .Returns(branchCollectionMock.Object);
 
-            var target = new GitBranchProvider(options, repositoryMock.Object);
+            var target = new GitInfoProvider(options, repositoryMock.Object);
 
             // Act
             var res = target.GetCurrentBranchName();
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
                 .SetupGet(x => x.Branches)
                 .Returns(branchCollectionMock.Object);
 
-            var target = new GitBranchProvider(options, repositoryMock.Object);
+            var target = new GitInfoProvider(options, repositoryMock.Object);
 
             // Act
             var res = target.GetCurrentBranchName();
@@ -140,12 +140,6 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             res.ShouldBe("master");
 
             repositoryMock.Verify();
-        }
-
-        [Fact]
-        public void CreatedWithoutRepositoryCreatesRepository()
-        {
-            Should.Throw<StrykerInputException>(() => new GitBranchProvider(new StrykerOptions(basePath: "C:/Temp")));
         }
     }
 }

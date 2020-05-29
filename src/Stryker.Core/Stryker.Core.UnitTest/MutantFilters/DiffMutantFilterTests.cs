@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public static void ShouldHaveName()
         {
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object, branchProvider: branchProviderMock.Object) as IMutantFilter;
             target.DisplayName.ShouldBe("git diff file filter");
         }
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions(diff: true);
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -59,7 +59,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
@@ -87,7 +87,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             // If a file inside the test project is changed, a test has been changed
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
@@ -117,7 +117,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var reporters = new string[1];
             reporters[0] = "dashboard";
@@ -153,7 +153,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var reporters = new string[1];
             reporters[0] = "dashboard";
@@ -189,7 +189,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange 
             var dashboardClient = new Mock<IDashboardClient>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
@@ -223,7 +223,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
@@ -270,7 +270,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
 
@@ -308,7 +308,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IBranchProvider>();
+            var branchProvider = new Mock<IGitInfoProvider>();
 
             var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
 

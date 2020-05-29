@@ -12,12 +12,12 @@ namespace Stryker.Core.Reporters
 {
     public static class ReporterFactory
     {
-        public static IReporter Create(StrykerOptions options, IBranchProvider branchProvider = null)
+        public static IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, branchProvider)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IBranchProvider branchProvider = null)
+        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new Dictionary<Reporter, IReporter>
             {

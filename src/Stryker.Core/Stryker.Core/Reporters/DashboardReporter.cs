@@ -17,15 +17,15 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
-        private readonly IBranchProvider _branchProvider;
+        private readonly IGitInfoProvider _branchProvider;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IChalk _chalk;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _branchProvider = branchProvider ?? new GitBranchProvider(options);
+            _branchProvider = branchProvider ?? new GitInfoProvider(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _chalk = chalk ?? new Chalk();
         }

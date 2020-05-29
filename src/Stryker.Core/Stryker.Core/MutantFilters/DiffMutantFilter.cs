@@ -21,7 +21,7 @@ namespace Stryker.Core.MutantFilters
     {
         private readonly DiffResult _diffResult;
         private readonly IDashboardClient _dashboardClient;
-        private readonly IBranchProvider _branchProvider;
+        private readonly IGitInfoProvider _branchProvider;
 
         private readonly StrykerOptions _options;
 
@@ -31,12 +31,12 @@ namespace Stryker.Core.MutantFilters
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IBranchProvider branchProvider = null)
+        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _branchProvider = branchProvider ?? new GitBranchProvider(options);
+            _branchProvider = branchProvider ?? new GitInfoProvider(options);
             _options = options;
 
             if (options.CompareToDashboard)

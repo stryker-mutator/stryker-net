@@ -1,6 +1,7 @@
 ﻿using LibGit2Sharp;
 using Moq;
 using Shouldly;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
@@ -19,13 +20,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
         {
             var options = new StrykerOptions(basePath: "C:\\");
 
-            var repository = new Mock<IRepository>(MockBehavior.Strict);
+            var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
-            Action act = () => new GitDiffProvider(options, repository.Object);
+            Action act = () => new GitDiffProvider(options, gitInfoProvider.Object);
 
             act.ShouldNotThrow();
 
-            repository.VerifyNoOtherCalls();
+            gitInfoProvider.VerifyNoOtherCalls();
         }
 
 
@@ -40,6 +41,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
+            var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
             var branchMock = new Mock<Branch>(MockBehavior.Strict);
@@ -79,7 +81,11 @@ namespace Stryker.Core.UnitTest.DiffProviders
             repositoryMock
                 .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-            var target = new GitDiffProvider(options, repositoryMock.Object, repositoryPath: "C://JohnDoe/Project");
+            gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
+
+            gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -91,7 +97,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
 
         [Fact]
-        public void DetermineCommitThrowsException_When_Commit_Is_Null_After_Checkout()
+        public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()
         {
             var options = new StrykerOptions(gitSource: "branch");
 
@@ -122,20 +128,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
 
+            var gitInfoMock = new Mock<IGitInfoProvider>();
 
-            var target = new GitDiffProvider(options, repositoryMock.Object);
+            gitInfoMock.Setup(x => x.DetermineCommit()).Returns((Commit)null);
+            gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
+            var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             Should.Throw<StrykerInputException>(() => target.ScanDiff());
-        }
-
-        [Fact]
-        public void IfRepositoryPath_Is_Null_Throw_StrykerINputException()
-        {
-            var options = new StrykerOptions();
-
-            var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
-
-            Should.Throw<StrykerInputException>(() => new GitDiffProvider(options, repositoryPath: ""));
         }
     }
 }
