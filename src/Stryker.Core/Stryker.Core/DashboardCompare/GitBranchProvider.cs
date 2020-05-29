@@ -1,6 +1,9 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using System;
 
 namespace Stryker.Core.DashboardCompare
 {
@@ -22,6 +25,14 @@ namespace Stryker.Core.DashboardCompare
                 _repository = CreateRepository();
             }
 
+            try
+            {
+                Checkout();
+            }
+            catch (Exception e)
+            {
+                ApplicationLogging.LoggerFactory.CreateLogger<GitBranchProvider>().LogInformation(e.InnerException, e.Message);
+            }
         }
 
         public string GetCurrentBranchName()
@@ -57,12 +68,13 @@ namespace Stryker.Core.DashboardCompare
 
         public void Checkout()
         {
-            var currentBranch = _repository.Branches[_options.ProjectVersion];
-            if (currentBranch != null)
-            {
-                Commands.Checkout(_repository, currentBranch);
-            }
+            var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
 
+            Commands.Checkout(_repository, branch);
+
+            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+
+            Commands.Checkout(_repository, currentBranch);
         }
     }
 }
