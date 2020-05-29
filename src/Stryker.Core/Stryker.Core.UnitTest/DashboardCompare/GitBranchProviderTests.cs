@@ -87,5 +87,58 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             repositoryMock.Verify();
         }
+
+        [Fact]
+        public void ReturnsCurrentBranchWhenMultipleBranches()
+        {
+            // Arrange
+            var options = new StrykerOptions();
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
+
+            var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+            var branchMock = new Mock<Branch>();
+            var branchMock2 = new Mock<Branch>();
+
+            branchCollectionMock
+                .Setup(x => x.Add(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(new Mock<Branch>(MockBehavior.Loose).Object);
+
+            branchMock
+                .SetupGet(x => x.IsCurrentRepositoryHead)
+                .Returns(true);
+
+            branchMock2
+             .SetupGet(x => x.IsCurrentRepositoryHead)
+             .Returns(false);
+
+            branchMock
+                .SetupGet(x => x.FriendlyName)
+                .Returns("master");
+
+            branchMock2
+             .SetupGet(x => x.FriendlyName)
+             .Returns("dev");
+
+            branchCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Branch>)new List<Branch>
+                {
+                 branchMock.Object
+                }).GetEnumerator());
+
+            repositoryMock
+                .SetupGet(x => x.Branches)
+                .Returns(branchCollectionMock.Object);
+
+            var target = new GitBranchProvider(options, repositoryMock.Object);
+
+            // Act
+            var res = target.GetCurrentBranchName();
+
+            // Assert
+            res.ShouldBe("master");
+
+            repositoryMock.Verify();
+        }
     }
 }

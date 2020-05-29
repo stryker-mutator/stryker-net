@@ -127,6 +127,5 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             Should.Throw<StrykerInputException>(() => target.ScanDiff());
         }
-
     }
 }
