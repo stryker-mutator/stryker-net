@@ -15,16 +15,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
     public class GitDiffProviderTests
     {
         [Fact]
-        public void WhenRepositoryPathNullThrowsStrykerInputException()
-        {
-            var options = new StrykerOptions(basePath: "C:\\");
-
-            Should.Throw<StrykerInputException>(() => new GitDiffProvider(options))
-                .Message
-                .ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
-        }
-
-        [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
             var options = new StrykerOptions(basePath: "C:\\");
@@ -137,5 +127,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             Should.Throw<StrykerInputException>(() => target.ScanDiff());
         }
+
     }
 }

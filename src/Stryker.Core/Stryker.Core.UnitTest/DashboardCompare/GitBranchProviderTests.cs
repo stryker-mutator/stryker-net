@@ -2,7 +2,6 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -12,16 +11,6 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 {
     public class GitBranchProviderTests
     {
-        [Fact]
-        public void WhenRepositoryPathNullThorwsStrykerInputException()
-        {
-            var options = new StrykerOptions(basePath: "C:\\");
-
-            Should.Throw<StrykerInputException>(() => new GitBranchProvider(options))
-                .Message
-                .ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
-        }
-
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {

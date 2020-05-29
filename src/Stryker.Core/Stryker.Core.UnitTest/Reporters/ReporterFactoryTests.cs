@@ -47,7 +47,8 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
+            var branchProviderMock = new Mock<IBranchProvider>(MockBehavior.Loose);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
