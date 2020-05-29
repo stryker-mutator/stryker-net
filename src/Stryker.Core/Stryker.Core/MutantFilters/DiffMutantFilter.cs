@@ -68,6 +68,7 @@ namespace Stryker.Core.MutantFilters
 
                 if (_diffResult.ChangedFiles.Contains(file.FullPath))
                 {
+                    _logger.LogDebug("returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
                     // If the diffresult flags this file as modified. We want to run all mutants again.
                     return SetMutantStatusForFileChanged(mutants);
                 }
@@ -77,13 +78,15 @@ namespace Stryker.Core.MutantFilters
                     // When using the compare to dashboard feature. 
                     // Some mutants mutants have no certain result because we couldn't say with certainty which mutant on the dashboard belonged to it. 
                     //These mutants have to be reset and tested.
+                    _logger.LogDebug("Running mutants for which we couldn't determine status on file {0}", file.RelativePathToProjectFile);
                     return ReturnMutantsWithStatusNotRun(mutants);
                 }
-
+                _logger.LogDebug("Filtered all mutants because file {0} hasn't changed", file.RelativePathToProjectFile);
                 // If tests haven't changed and neither the file has changed or the compare feature is being used, we are not interested in the mutants of this file and thus can be filtered out completely.
                 return Enumerable.Empty<Mutant>();
             }
 
+            _logger.LogDebug("Running all mmutants in {0} because tests have changed", file.RelativePathToProjectFile);
             // If tests are changed, return all mutants with status set to NotRun. We cannot guarantee the result.
             return ResetMutantStatus(mutants);
 
