@@ -99,7 +99,6 @@ namespace Stryker.Core.DiffProviders
                 catch (ArgumentNullException)
                 {
                     // Internal error thrown by libgit2sharp which happens when there is no upstream on a branch.
-                    continue;
                 }
             }
 
@@ -124,13 +123,20 @@ namespace Stryker.Core.DiffProviders
 
         public void Checkout()
         {
-            var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+            try
+            {
+                var branch = _repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
 
-            Commands.Checkout(_repository, branch);
+                Commands.Checkout(_repository, branch);
 
-            var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+                var currentBranch = _repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
 
-            Commands.Checkout(_repository, currentBranch);
+                Commands.Checkout(_repository, currentBranch);
+            }
+            catch
+            {
+                // Do nothing, Checkout is already done
+            }
         }
     }
 }

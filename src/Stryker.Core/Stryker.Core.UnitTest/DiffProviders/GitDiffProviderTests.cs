@@ -98,5 +98,44 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedFiles.Count().ShouldBe(1);
             res.TestsChanged.ShouldBeFalse();
         }
+
+
+        [Fact]
+        public void DetermineCommitThrowsException_When_Commit_Is_Null_After_Checkout()
+        {
+            var options = new StrykerOptions(gitSource: "branch");
+
+            var repositoryMock = new Mock<IRepository>();
+            var branchCollectionMock = new Mock<BranchCollection>();
+            var branchMock = new Mock<Branch>();
+
+            var commitMock = new Mock<Commit>();
+
+            branchCollectionMock
+              .Setup(x => x.Add(It.IsAny<string>(), It.IsAny<string>()))
+              .Returns(new Mock<Branch>(MockBehavior.Loose).Object);
+
+            branchMock
+                .SetupGet(x => x.IsCurrentRepositoryHead)
+                .Returns(true);
+
+            branchMock
+                .SetupGet(x => x.FriendlyName)
+                .Returns("master");
+
+            branchCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Branch>)new List<Branch>
+                {
+                 branchMock.Object
+                }).GetEnumerator());
+
+            repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+
+
+            var target = new GitDiffProvider(options, repositoryMock.Object);
+
+            Should.Throw<StrykerInputException>(() => target.ScanDiff());
+        }
     }
 }
