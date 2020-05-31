@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.RegexMutators;
@@ -28,7 +27,8 @@ namespace Stryker.Core.Mutators
                             OriginalNode = patternExpression,
                             ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),
                             DisplayName = "Regex mutation",
-                            Type = Mutator.Regex
+                            Type = Mutator.Regex,
+                            Description = "Dit is een regex mutatie"
                         };
                     }
                 }
