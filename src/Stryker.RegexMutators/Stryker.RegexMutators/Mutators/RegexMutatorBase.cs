@@ -12,6 +12,7 @@ namespace Stryker.RegexMutators.Mutators
     public abstract class RegexMutatorBase <T>
         where T : RegexNode
     {
+        protected RegexNode Root;
 
         public IEnumerable<string> Mutate(RegexNode node)
         {

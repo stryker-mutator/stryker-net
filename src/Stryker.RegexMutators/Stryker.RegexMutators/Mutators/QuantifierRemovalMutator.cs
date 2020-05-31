@@ -7,8 +7,6 @@ namespace Stryker.RegexMutators.Mutators
 {
     public class QuantifierRemovalMutator : RegexMutatorBase<QuantifierNode>, IRegexMutator
     {
-        private RegexNode Root { get; }
-
         public QuantifierRemovalMutator(RegexNode root)
         {
             Root = root;

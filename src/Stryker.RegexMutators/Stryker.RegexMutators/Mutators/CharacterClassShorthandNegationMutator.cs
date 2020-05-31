@@ -5,8 +5,6 @@ namespace Stryker.RegexMutators.Mutators
 {
     public class CharacterClassShorthandNegationMutator : RegexMutatorBase<CharacterClassShorthandNode>, IRegexMutator
     {
-        private RegexNode Root { get; }
-
         public CharacterClassShorthandNegationMutator(RegexNode root)
         {
             Root = root;
