@@ -7,8 +7,8 @@ namespace Stryker.RegexMutators.Mutators
     public class CharacterClassNegationMutator : RegexMutatorBase<CharacterClassNode>, IRegexMutator
     {
         public CharacterClassNegationMutator(RegexNode root)
+            : base(root)
         {
-            Root = root;
         }
 
         public override IEnumerable<string> ApplyMutations(CharacterClassNode node)

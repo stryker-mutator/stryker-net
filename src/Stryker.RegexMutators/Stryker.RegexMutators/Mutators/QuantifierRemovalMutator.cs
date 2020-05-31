@@ -8,8 +8,8 @@ namespace Stryker.RegexMutators.Mutators
     public class QuantifierRemovalMutator : RegexMutatorBase<QuantifierNode>, IRegexMutator
     {
         public QuantifierRemovalMutator(RegexNode root)
+            : base(root)
         {
-            Root = root;
         }
 
         public override IEnumerable<string> ApplyMutations(QuantifierNode node)

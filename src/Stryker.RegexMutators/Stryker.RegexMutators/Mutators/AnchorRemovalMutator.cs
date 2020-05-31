@@ -7,8 +7,8 @@ namespace Stryker.RegexMutators.Mutators
     public class AnchorRemovalMutator : RegexMutatorBase<AnchorNode>, IRegexMutator
     {
         public AnchorRemovalMutator(RegexNode root)
+            : base(root)
         {
-            Root = root;
         }
 
         public override IEnumerable<string> ApplyMutations(AnchorNode node)
