@@ -1,7 +1,10 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.RegexMutators;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -9,6 +12,13 @@ namespace Stryker.Core.Mutators
 {
     public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>, IMutator
     {
+        private ILogger Logger { get; }
+
+        public RegexMutator()
+        {
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
+        }
+
         public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node)
         {
             string name = GetTypeName(node);
@@ -22,6 +32,16 @@ namespace Stryker.Core.Mutators
                     var replacementValues = regexMutantOrchestrator.Mutate();
                     foreach (string replacementValue in replacementValues)
                     {
+                        try
+                        {
+                            _ = new Regex(replacementValue);
+                        }
+                        catch (ArgumentException exception)
+                        {
+                            Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {replacementValue} which is an invalid regular expression:\n{exception.Message}");
+                            continue;
+                        }
+
                         yield return new Mutation()
                         {
                             OriginalNode = patternExpression,

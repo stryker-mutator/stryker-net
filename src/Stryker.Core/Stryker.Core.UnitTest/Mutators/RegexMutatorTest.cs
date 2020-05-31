@@ -75,5 +75,20 @@ namespace Stryker.Core.UnitTest.Mutators
             first.Token.ValueText.ShouldBe("abc$");
             last.Token.ValueText.ShouldBe("^abc");
         }
+
+        [Fact]
+        public void ShouldMutateStringLiteralInRegexConstructors()
+        {
+            var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^*abc\")") as ObjectCreationExpressionSyntax;
+            var target = new RegexMutator();
+
+            var result = target.ApplyMutations(objectCreationExpression);
+
+            var mutation = result.ShouldHaveSingleItem();
+
+            mutation.DisplayName.ShouldBe("Regex mutation");
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            replacement.Token.ValueText.ShouldBe("^abc");
+        }
     }
 }
