@@ -361,3 +361,38 @@ dotnet stryker -gs "development"
 ```
 
 Default: `master`
+
+## Dashboard Compare
+Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
+
+```
+dotnet stryker --dashboard-compare
+dotnet stryker -compare
+```
+
+Default `"off"`
+
+This feature automatically enables the --diff feature.
+
+## Fallback version
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
+
+```
+dotnet stryker --dashboard-compare --dashboard-fallback-version master
+dotnet stryker -compare -fallback-version master
+```
+Default: `null`
+
+## Configuring Dashboard Compare on pull requests
+When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
+
+1.  Enable --dashboard-compare.
+2. Set --dashboard-version to the name of the source branch for your pull request.
+3. Set --dashboard-fallback-version to the name of the target branch for your pull request.
+4. Set --git-source to the name of the target branch of your pull request.
+
+```
+dotnet stryker --dashboard-compare --dashboard-fallback-version master -git-source master --dashboard-version development
+dotenet stryker -compare -fallback-version master -source master -version development
+
+```
