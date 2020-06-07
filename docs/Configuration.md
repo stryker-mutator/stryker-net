@@ -383,6 +383,46 @@ dotnet stryker -compare -fallback-version master
 ```
 Default: `null`
 
+## Baseline Storage location
+Sets the storage location for the baseline used by --dashboard-compare. By default this is set to disk, when the dashboard reporter is enabled this is automatically set to Stryker Dashboard.
+
+Supported storage locations are:
+
+| Storage location | Option | Description |
+|------------------|--------|-------------|
+| Disk             | disk   | Saves the baseline to the `StrykerOutput` folder|
+| Stryker Dashboard| dashboard | Saves the baseline to Stryker Dashboard |
+| Azure File Storage | azure | Saves the baseline to Azure File Storage |
+
+```
+dotnet stryker --dashboard-compare --baseline-storage-location disk
+dotnet stryker -compare -bsl disk
+```
+Defaut `"disk"`
+
+## Configuring Azure File Storage
+When using Azure File Storage as baseline storage location you are required to provide the following values.
+
+### Azure File Storage URL
+This is the url to your Azure File Storage. The URL should look something like this:
+
+```
+https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
+Providing a subfolder is optional, we storage the baseline in a `StrykerOutput` subfolder.
+
+### Shared Access Signature (SAS)
+For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+
+```
+dotnet stryker --dashboard-compare --baseline-storage-location azure --azure-file-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-sas SAS_KEY
+
+or
+
+dotnet stryker -compare -bsl azure -storage-url --azure-file-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas SAS_KEY
+```
+
+
 ## Configuring Dashboard Compare on pull requests
 When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
 
