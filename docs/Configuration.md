@@ -364,7 +364,7 @@ Default: `master`
 
 
 ## Dashboard Compare
-Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
+Dashboard compare lets you save your mutation result in [the stryker dashboard](https://dashboard.stryker-mutator.io). On subsequent test runs only changed mutants, or mutants for which a covering unit test has been changed, will be tested. Unchanged mutants will get the status from the dashboard in order to provide a full report.
 
 ```
 dotnet stryker --dashboard-compare
@@ -376,7 +376,12 @@ Default `"off"`
 This feature automatically enables the --diff feature.
 
 ## Fallback version
-When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to download a report when we cannot find one for your current source version. When we are unable to find a fallback version we will do a complete mutation testrun.
+
+For example:
+You use a development branch and you use feature branches that merge back to development. Your fallback version would be development. 
+You start a pull request to merge your finished feature back into development. Since this is a new feature and a new pull request, you will not yet have a report for your feature branch and the fallback version is used instead.
+Since your feature branch is branched off of development, a report for development will be fairly up-to-date with your feature branch, and you will only have to test the new mutations added in your feature branch. All other mutants can be skipped, because we have an up-to-date report for the development branch.
 
 ```
 dotnet stryker --dashboard-compare --dashboard-fallback-version master
