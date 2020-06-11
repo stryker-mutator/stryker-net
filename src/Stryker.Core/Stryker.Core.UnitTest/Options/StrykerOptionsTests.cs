@@ -203,5 +203,14 @@ namespace Stryker.Core.UnitTest.Options
 
             Should.NotThrow(act);
         }
+
+        [Fact]
+        public void ShouldSetFallbackToGitSourceWhenNullAndCompareEnabled()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
+
+            options.GitSource.ShouldBe("development");
+            options.FallbackVersion.ShouldBe("development");
+        }
     }
 }
