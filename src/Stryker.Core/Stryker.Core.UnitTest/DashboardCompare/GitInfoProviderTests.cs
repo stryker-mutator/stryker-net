@@ -188,5 +188,34 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             Should.Throw<StrykerInputException>(act);
         }
+
+
+        [Fact]
+        public void LooksUpCommitWhenGitSourceIsFortyCharacters()
+        { 
+            // Arrange
+            string sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
+            var strykerOptions = new StrykerOptions(gitSource: sha);
+
+            var commitMock = new Mock<Commit>();
+            var repositoryMock = new Mock<IRepository>();
+            var branchCollectionMock = new Mock<BranchCollection>();
+
+            branchCollectionMock
+               .Setup(x => x.GetEnumerator()).Returns(
+                ((IEnumerable<Branch>)new List<Branch>()).GetEnumerator());
+
+            repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+            repositoryMock.Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
+
+            var target = new GitInfoProvider(strykerOptions, repositoryMock.Object);
+
+            // Act
+            Commit result = target.DetermineCommit();
+
+            // Assert
+            result.ShouldNotBeNull();
+            repositoryMock.Verify(x => x.Lookup(It.Is<ObjectId>(x => x.Sha == sha)), Times.Once);
+        }
     }
 }
