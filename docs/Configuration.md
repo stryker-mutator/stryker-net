@@ -394,11 +394,11 @@ When configuring the --dashboard-compare feature on pull requests please provide
 
 1. Enable --dashboard-compare.
 2. Set --dashboard-version to the name of the source branch for your pull request.
-3. Set --dashboard-fallback-version to the name of the target branch for your pull request.
-4. Set --git-source to the name of the target branch of your pull request.
+3. Set --git-source to the name of the target branch of your pull request.
+4. (Optionally) Set a --dashboard-fallback-version. When you do not set a fallback version we will use --git-source as fallback. Since the source branch should be based on the target branche, this fallback baseline should be fairly up to date.
 
 ```
-dotnet stryker --dashboard-compare --dashboard-fallback-version master --git-source master --dashboard-version development
-dotnet stryker -compare -fallback-version master -source master -version development
+dotnet stryker --dashboard-compare --git-source master --dashboard-version development
+dotnet stryker -compare -source master -version development
 
 ```
