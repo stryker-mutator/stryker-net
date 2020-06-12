@@ -376,7 +376,7 @@ Default `"off"`
 This feature automatically enables the --diff feature.
 
 ## Fallback version
-When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to download a report when we cannot find one for your current source version. When we are unable to find a fallback version we will do a complete mutation testrun.
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to download a report when we cannot find one for your current source version.  If you don't specify a value for fallback version, we will use --git-source as the fallback version.When we are unable to find a fallback version we will do a complete mutation testrun. 
 
 For example:
 You use a development branch and you use feature branches that merge back to development. Your fallback version would be development. 
@@ -387,7 +387,7 @@ Since your feature branch is branched off of development, a report for developme
 dotnet stryker --dashboard-compare --dashboard-fallback-version master
 dotnet stryker -compare -fallback-version master
 ```
-Default: `null`
+Default: `--git-source`
 
 ## Configuring Dashboard Compare on pull requests
 When configuring the --dashboard-compare feature on pull requests please provide the following configurations.

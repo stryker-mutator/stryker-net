@@ -294,7 +294,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-fallback-version",
             ArgumentShortName = "-fallback-version <version>",
-            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. Example: If the current branch is based on the master branch, set 'master' as the fallback version",
+            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. When you don't specify a fallback version, --git-source will be used as fallback version. Example: If the current branch is based on the master branch, set 'master' as the fallback version",
             DefaultValue = null,
             JsonKey = "dashboard-fallback-version"
         };
