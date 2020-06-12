@@ -8,19 +8,20 @@ namespace Stryker.Core.DashboardCompare
     public class GitInfoProvider : IGitInfoProvider
     {
         private readonly StrykerOptions _options;
-
+        private readonly string _repositoryPath;
         public IRepository Repository { get; }
 
         public string RepositoryPath
         {
             get
             {
-                return LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
+                return _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
             }
         }
 
-        public GitInfoProvider(StrykerOptions options, IRepository repository = null)
+        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null)
         {
+            _repositoryPath = repositoryPath;
             _options = options;
 
             if (repository != null)
@@ -31,7 +32,6 @@ namespace Stryker.Core.DashboardCompare
             {
                 Repository = CreateRepository();
             }
-            Checkout();
         }
 
         public string GetCurrentBranchName()

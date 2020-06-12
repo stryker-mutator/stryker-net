@@ -2,6 +2,7 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,17 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
     public class GitInfoProviderTests
     {
+
+        [Fact]
+        public void WhenProvidedReturnsRepositoryPath()
+        {
+            var repository = new Mock<IRepository>(MockBehavior.Strict);
+
+            var target = new GitInfoProvider(null, repository.Object, "path");
+
+            target.RepositoryPath.ShouldBe("path");
+        }
+
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
@@ -140,6 +152,41 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             res.ShouldBe("master");
 
             repositoryMock.Verify();
+        }
+
+        [Fact]
+        public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
+        {
+            void act() => new GitInfoProvider(null, repositoryPath: string.Empty);
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+            
+        }
+
+
+        [Fact]
+        public void DetermineCommitThrowsStrykerInputException()
+        {
+            var strykerOptions = new StrykerOptions(gitSource: "master");
+
+            var repository = new Mock<IRepository>();
+
+            var branchCollectionMock = new Mock<BranchCollection>();
+
+            branchCollectionMock
+               .Setup(x => x.GetEnumerator()).Returns(
+                ((IEnumerable<Branch>)new List<Branch>()).GetEnumerator());
+
+
+            repository.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+
+            var target = new GitInfoProvider(strykerOptions, repository.Object);
+
+
+            void act() => target.DetermineCommit();
+
+            Should.Throw<StrykerInputException>(act);
         }
     }
 }
