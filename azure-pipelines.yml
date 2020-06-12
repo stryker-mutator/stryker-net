@@ -82,6 +82,9 @@ stages:
     parameters:
       projectName: 'Core'
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
+  - task: PublishMutationReport@0	
+      inputs:	
+        reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
