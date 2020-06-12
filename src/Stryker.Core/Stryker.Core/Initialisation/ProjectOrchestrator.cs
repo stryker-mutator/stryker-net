@@ -1,5 +1,7 @@
 ﻿using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -46,52 +48,35 @@ namespace Stryker.Core.Initialisation
                 // build all projects
                 var projectsAnalyzerResults = new List<IAnalyzerResult>();
                 _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
-
-                Parallel.ForEach(manager.Projects, project =>
+                try
                 {
-                    _logger.LogDebug("Analysing {projectFilePath}", project.Value.ProjectFile.Path);
-                    var projectAnalyzerResult = project.Value.Build().Results.FirstOrDefault();
-                    if (projectAnalyzerResult is { })
+                    Parallel.ForEach(manager.Projects, project =>
                     {
-                        projectsAnalyzerResults.Add(projectAnalyzerResult);
-                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.Value.ProjectFile.Path);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed", project.Value.ProjectFile.Path);
-                    }
-                });
-
-                var projectsUnderTestAnalyzerResults = new List<IAnalyzerResult>();
-                foreach (var project in projectsAnalyzerResults)
+                        _logger.LogDebug("Analysing {projectFilePath}", project.Value.ProjectFile.Path);
+                        var options = new EnvironmentOptions();
+                        options.Arguments.Add("--configuration debug");
+                        var projectAnalyzerResult = project.Value.Build(options).Results.FirstOrDefault();
+                        if (projectAnalyzerResult is { })
+                        {
+                            projectsAnalyzerResults.Add(projectAnalyzerResult);
+                            _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.Value.ProjectFile.Path);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Analysis of project {projectFilePath} failed", project.Value.ProjectFile.Path);
+                        }
+                    });
+                } catch (AggregateException ex)
                 {
-                    if (project.Properties.ContainsKey("IsTestProject"))
-                    {
-                        if (project.Properties["IsTestProject"].Equals(
-                            "False",
-                            StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            projectsUnderTestAnalyzerResults.Add(project);
-                        }
-                    }
-                    else if (project.Properties.ContainsKey("ProjectTypeGuids"))
-                    {
-                        if (!project.Properties["ProjectTypeGuids"]
-                            .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}"))
-                        {
-                            projectsUnderTestAnalyzerResults.Add(project);
-                        }
-                    }
-                    else
-                    {
-                        projectsUnderTestAnalyzerResults.Add(project);
-                    }
+                    throw ex.GetBaseException();
                 }
+
+                var projectsUnderTestAnalyzerResults = AddProjectsUnderTest(projectsAnalyzerResults);
 
                 var testProjectsAnalyzerResults = projectsAnalyzerResults.Except(projectsUnderTestAnalyzerResults).ToList();
 
-                _logger.LogDebug("Found {0} projects under test", projectsUnderTestAnalyzerResults.Count());
-                _logger.LogDebug("Found {0} test projects", testProjectsAnalyzerResults.Count());
+                _logger.LogDebug("Found {0} projects under test", projectsUnderTestAnalyzerResults.Count);
+                _logger.LogDebug("Found {0} test projects", testProjectsAnalyzerResults.Count);
 
                 foreach (var project in projectsUnderTestAnalyzerResults)
                 {
@@ -99,7 +84,7 @@ namespace Stryker.Core.Initialisation
                     var relatedTestProjects = testProjectsAnalyzerResults.Where(x => x.ProjectReferences.Any(y => y == projectFilePath)).ToList();
                     if (relatedTestProjects.Any())
                     {
-                        _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count());
+                        _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count);
                         foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
                         {
                             _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults.ProjectFilePath);
@@ -139,6 +124,38 @@ namespace Stryker.Core.Initialisation
             // mutate
             process.Mutate();
             return process;
+        }
+
+        private List<IAnalyzerResult> AddProjectsUnderTest(List<IAnalyzerResult> projectsAnalyzerResults)
+        {
+            var projectsUnderTestAnalyzerResults = new List<IAnalyzerResult>();
+
+            foreach (var project in projectsAnalyzerResults)
+            {
+                if (project.Properties.ContainsKey("IsTestProject"))
+                {
+                    if (project.Properties["IsTestProject"].Equals(
+                        "False",
+                        StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        projectsUnderTestAnalyzerResults.Add(project);
+                    }
+                }
+                else if (project.Properties.ContainsKey("ProjectTypeGuids"))
+                {
+                    if (!project.Properties["ProjectTypeGuids"]
+                        .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}"))
+                    {
+                        projectsUnderTestAnalyzerResults.Add(project);
+                    }
+                }
+                else
+                {
+                    projectsUnderTestAnalyzerResults.Add(project);
+                }
+            }
+
+            return projectsUnderTestAnalyzerResults;
         }
     }
 }

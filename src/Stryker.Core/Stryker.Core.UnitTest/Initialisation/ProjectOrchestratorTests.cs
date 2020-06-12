@@ -1,5 +1,6 @@
 ﻿using Buildalyzer;
 using Buildalyzer.Construction;
+using Buildalyzer.Environment;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
@@ -106,12 +107,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 { "put", projectUnderTestAnalyzerMock.Object }, { "test", testProjectAnalyzerMock.Object } 
             });
             testProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(testProjectProjectFileMock.Object);
-            testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultsMock.Object);
+            testProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns(testProjectAnalyzerResultsMock.Object);
             testProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { testProjectAnalyzerResultMock.Object });
             testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectundertest/projectundertest.csproj" });
             testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
             projectUnderTestAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectUnderTestProjectFileMock.Object);
-            projectUnderTestAnalyzerMock.Setup(x => x.Build()).Returns(projectUnderTestAnalyzerResultsMock.Object);
+            projectUnderTestAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns(projectUnderTestAnalyzerResultsMock.Object);
             projectUnderTestAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { projectUnderTestAnalyzerResultMock.Object });
             projectUnderTestProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
             projectUnderTestProjectFileMock.Setup(x => x.Path).Returns("C:/projectUnderTest/");

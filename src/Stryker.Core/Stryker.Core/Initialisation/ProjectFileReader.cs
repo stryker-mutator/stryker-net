@@ -1,4 +1,5 @@
 ﻿using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;

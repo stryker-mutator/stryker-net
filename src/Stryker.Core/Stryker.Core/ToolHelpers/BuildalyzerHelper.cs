@@ -146,7 +146,7 @@ namespace Stryker.Core.ToolHelpers
 
         public static IList<string> GetDefineConstants(this IAnalyzerResult analyzerResult)
         {
-            var constants = analyzerResult?.GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            var constants = analyzerResult?.GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
 
             var (frameworkSupportsAppDomain, frameworkSupportsPipes) = CompatibilityModes(analyzerResult);
 
