@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,12 +17,12 @@ namespace Stryker.Core.Reporters
 
     public class ReporterFactory : IReporterFactory
     {
-        public IReporter Create(StrykerOptions options)
+        public static IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
-            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
+            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, branchProvider)));
         }
 
-        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -30,7 +31,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, new Chalk()) }
+                { Reporter.Dashboard, new DashboardReporter(options, new DashboardClient(options), branchProvider: branchProvider) }
             };
         }
 

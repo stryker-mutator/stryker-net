@@ -31,12 +31,12 @@ namespace Stryker.Core
         private ILogger _logger;
         private readonly IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IFileSystem fileSystem = null, IReporterFactory reporterFactory = null)
+        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null, IReporter reporter = null)
         {
             _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
             _mutationTestProcesses = new List<IMutationTestProcess>();
             _fileSystem = fileSystem ?? new FileSystem();
-            _reporterFactory = reporterFactory ?? new ReporterFactory();
+            _reporter = reporter;
         }
 
         /// <summary>

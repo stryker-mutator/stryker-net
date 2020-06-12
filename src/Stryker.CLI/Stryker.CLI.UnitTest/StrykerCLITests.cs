@@ -473,6 +473,96 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--dashboard-compare", "--dashboard-version project")]
+        [InlineData("-compare", "-version project")]
+        public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(argName);
+
+            mock.VerifyAll();
+
+            options.CompareToDashboard.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("--dashboard-compare", "--dashboard-version project")]
+        [InlineData("-compare", "-version project")]
+        public void ShouldEnableDiffFeatureWhenDashboardComparePassed(params string[] argNames)
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(argNames);
+
+            mock.VerifyAll();
+
+            options.DiffEnabled.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("--dashboard-url https://www.example.com/")]
+        [InlineData("-url https://www.example.com/")]
+        public void ShouldOverwriteDefaultDashboardUrlWhenPassed(string argName)
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.VerifyAll();
+
+            options.DashboardUrl.ShouldBe("https://www.example.com/");
+        }
+
+        [Fact]
+        public void ShouldKeepDefaultDashboardUrlWhenArgumentNotProvided()
+        {
+            StrykerOptions options = null;
+            var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
+
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
+                .Returns(runResults)
+                .Verifiable();
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { });
+
+            mock.VerifyAll();
+
+            options.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+        }
+
+        [Theory]
         [InlineData("--git-source")]
         [InlineData("-gs")]
         public void ShouldSetGitSourceWhenPassed(string argName)

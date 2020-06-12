@@ -1,4 +1,6 @@
-﻿using Shouldly;
+﻿using Moq;
+using Shouldly;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;
@@ -20,10 +22,8 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("ClearText", typeof(ClearTextReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
-            var target = new ReporterFactory();
-            
-            var result = target.Create(new StrykerOptions(reporters: new[] { option }));
-
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var result = ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
@@ -31,9 +31,9 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesAllReporters()
         {
-            var target = new ReporterFactory();
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var result = target.Create(new StrykerOptions(reporters: new[] { "All" }));
+            var result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
 
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is JsonReporter);
@@ -49,14 +49,8 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            var target = new ReporterFactory();
-
-            var result = target.Create(new StrykerOptions(reporters: new[] {
-                "ConsoleProgressBar",
-                "ConsoleProgressDots",
-                "ConsoleReport"
-            }));
-            
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var result = ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);
