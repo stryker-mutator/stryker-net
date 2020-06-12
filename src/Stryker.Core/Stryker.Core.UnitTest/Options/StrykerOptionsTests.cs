@@ -168,5 +168,49 @@ namespace Stryker.Core.UnitTest.Options
             });
             ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
         }
+
+        [Fact]
+        public void ProjectVersionCannotBeEmpty()
+        {
+            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+        }
+
+        [Fact]
+        public void ProjectVersionCannotBeNull()
+        {
+            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+        }
+
+        [Fact]
+        public void FallbackVersionCannotBeProjectVersion()
+        {
+            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
+        }
+
+        [Fact]
+        public void ShouldNotThrowInputExceptionWhenSetCorrectly()
+        {
+            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+
+            Should.NotThrow(act);
+        }
+
+        [Fact]
+        public void ShouldSetFallbackToGitSourceWhenNullAndCompareEnabled()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
+
+            options.GitSource.ShouldBe("development");
+            options.FallbackVersion.ShouldBe("development");
+        }
     }
 }
