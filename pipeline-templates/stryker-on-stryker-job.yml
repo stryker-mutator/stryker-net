@@ -10,7 +10,7 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version 0.18.0-alpha.125 --add-source $(AzureArtifactFeedUri)
+      arguments: install dotnet-stryker -g
       includeNuGetOrg: true
   - task: Powershell@2
     displayName: Run Stryker on ${{ parameters.projectName }}
