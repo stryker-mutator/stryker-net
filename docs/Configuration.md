@@ -6,7 +6,7 @@ The full list of Stryker.NET configuration options are:
 - [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
-- [Test runner](#test-runner)
+- [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
 - [Test projects](#test-projects)
@@ -15,7 +15,7 @@ The full list of Stryker.NET configuration options are:
 - [Excluding files (deprecated)](#excluding-files)
 - [Mutate](#mutate)
 - [Ignore methods](#ignore-methods)
-- [Custom tresholds](#unary-operators)
+- [Custom tresholds](#custom-thresholds)
 - [Coverage analysis](#coverage-analysis)
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
@@ -361,3 +361,44 @@ dotnet stryker -gs "development"
 ```
 
 Default: `master`
+
+
+## Dashboard Compare
+Dashboard compare lets you save your mutation result in [the stryker dashboard](https://dashboard.stryker-mutator.io). On subsequent test runs only changed mutants, or mutants for which a covering unit test has been changed, will be tested. Unchanged mutants will get the status from the dashboard in order to provide a full report.
+
+```
+dotnet stryker --dashboard-compare
+dotnet stryker -compare
+```
+
+Default `"off"`
+
+This feature automatically enables the --diff feature.
+
+## Fallback version
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to download a report when we cannot find one for your current source version.  If you don't specify a value for fallback version, we will use --git-source as the fallback version.When we are unable to find a fallback version we will do a complete mutation testrun. 
+
+For example:
+You use a development branch and you use feature branches that merge back to development. Your fallback version would be development. 
+You start a pull request to merge your finished feature back into development. Since this is a new feature and a new pull request, you will not yet have a report for your feature branch and the fallback version is used instead.
+Since your feature branch is branched off of development, a report for development will be fairly up-to-date with your feature branch, and you will only have to test the new mutations added in your feature branch. All other mutants can be skipped, because we have an up-to-date report for the development branch.
+
+```
+dotnet stryker --dashboard-compare --dashboard-fallback-version master
+dotnet stryker -compare -fallback-version master
+```
+Default: `--git-source`
+
+## Configuring Dashboard Compare on pull requests
+When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
+
+1. Enable --dashboard-compare.
+2. Set --dashboard-version to the name of the source branch for your pull request.
+3. Set --git-source to the name of the target branch of your pull request.
+4. (Optionally) Set a --dashboard-fallback-version. When you do not set a fallback version we will use --git-source as fallback. Since the source branch should be based on the target branche, this fallback baseline should be fairly up to date.
+
+```
+dotnet stryker --dashboard-compare --git-source master --dashboard-version development
+dotnet stryker -compare -source master -version development
+
+```
