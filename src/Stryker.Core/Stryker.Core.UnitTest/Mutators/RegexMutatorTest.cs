@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var mutation = result.ShouldHaveSingleItem();
 
-            mutation.DisplayName.ShouldBe("Regex mutation");
+            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
             replacement.Token.ValueText.ShouldBe("abc");
         }
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var mutation = result.ShouldHaveSingleItem();
 
-            mutation.DisplayName.ShouldBe("Regex mutation");
+            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
             replacement.Token.ValueText.ShouldBe("abc");
         }
@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var result = target.ApplyMutations(objectCreationExpression);
 
             result.Count().ShouldBe(2);
-            result.ShouldAllBe(mutant => mutant.DisplayName == "Regex mutation");
+            result.ShouldAllBe(mutant => mutant.DisplayName == "Regex anchor removal mutation");
             var first = result.First().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
             var last = result.Last().ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
             first.Token.ValueText.ShouldBe("abc$");
@@ -86,7 +86,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var mutation = result.ShouldHaveSingleItem();
 
-            mutation.DisplayName.ShouldBe("Regex mutation");
+            mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
             replacement.Token.ValueText.ShouldBe("^abc");
         }

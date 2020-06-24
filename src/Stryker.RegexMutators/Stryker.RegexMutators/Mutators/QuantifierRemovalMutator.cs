@@ -1,5 +1,6 @@
 ﻿using RegexParser.Nodes;
 using RegexParser.Nodes.QuantifierNodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,18 +13,35 @@ namespace Stryker.RegexMutators.Mutators
         {
         }
 
-        public override IEnumerable<string> ApplyMutations(QuantifierNode node)
+        public override IEnumerable<RegexMutation> ApplyMutations(QuantifierNode node)
         {
             yield return QuantifierRemoval(node);
         }
 
-        private string QuantifierRemoval(QuantifierNode node)
+        private RegexMutation QuantifierRemoval(QuantifierNode node)
         {
+            var replacementNode = node.ChildNodes.FirstOrDefault();
+            var (start, length) = node.GetSpan();
+            RegexNode target;
+
             if (node.Parent is LazyNode)
             {
-                return Root.ReplaceNode(node.Parent, node.ChildNodes.First()).ToString();
+                target = node.Parent;
+                length += 1;
             }
-            return Root.ReplaceNode(node, node.ChildNodes.First()).ToString();
+            else
+            {
+                target = node;
+            }
+
+            return new RegexMutation
+            {
+                OriginalNode = target,
+                ReplacementNode = replacementNode,
+                DisplayName = "Regex quantifier removal mutation",
+                Description = $"Quantifier \"{Root.ToString().Substring(start, length)}\" was removed at offset {start}.",
+                Pattern = Root.ReplaceNode(target, replacementNode).ToString()
+            };
         }
     }
 }

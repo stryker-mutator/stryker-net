@@ -30,25 +30,25 @@ namespace Stryker.Core.Mutators
                     var currentValue = ((LiteralExpressionSyntax)patternExpression).Token.ValueText;
                     var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
                     var replacementValues = regexMutantOrchestrator.Mutate();
-                    foreach (string replacementValue in replacementValues)
+                    foreach (RegexMutation regexMutation in replacementValues)
                     {
                         try
                         {
-                            _ = new Regex(replacementValue);
+                            _ = new Regex(regexMutation.Pattern);
                         }
                         catch (ArgumentException exception)
                         {
-                            Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {replacementValue} which is an invalid regular expression:\n{exception.Message}");
+                            Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {regexMutation.Pattern} which is an invalid regular expression:\n{exception.Message}");
                             continue;
                         }
 
                         yield return new Mutation()
                         {
                             OriginalNode = patternExpression,
-                            ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),
-                            DisplayName = "Regex mutation",
+                            ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(regexMutation.Pattern)),
+                            DisplayName = regexMutation.DisplayName,
                             Type = Mutator.Regex,
-                            Description = "Dit is een regex mutatie"
+                            Description = regexMutation.Description
                         };
                     }
                 }

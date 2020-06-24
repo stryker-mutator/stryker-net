@@ -5,6 +5,6 @@ namespace Stryker.RegexMutators.Mutators
 {
     public interface IRegexMutator
     {
-        IEnumerable<string> Mutate(RegexNode node);
+        IEnumerable<RegexMutation> Mutate(RegexNode node);
     }
 }

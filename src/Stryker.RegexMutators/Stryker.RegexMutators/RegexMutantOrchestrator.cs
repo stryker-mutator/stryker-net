@@ -22,7 +22,7 @@ namespace Stryker.RegexMutators
             _pattern = pattern;
         }
 
-        public IEnumerable<string> Mutate()
+        public IEnumerable<RegexMutation> Mutate()
         {
             var parser = new Parser(_pattern);
             try
@@ -67,17 +67,17 @@ namespace Stryker.RegexMutators
                 },
             };
 
-            foreach (string mutant in _root.GetDescendantNodes().SelectMany(FindMutants))
+            foreach (RegexMutation mutant in _root.GetDescendantNodes().SelectMany(FindMutants))
             {
                 yield return mutant;
             }
-            foreach (string mutant in FindMutants(_root))
+            foreach (RegexMutation mutant in FindMutants(_root))
             {
                 yield return mutant;
             }
         }
 
-        private IEnumerable<string> FindMutants(RegexNode regexNode)
+        private IEnumerable<RegexMutation> FindMutants(RegexNode regexNode)
         {
             return _mutatorsByRegexNodeType
                 .Where(item => regexNode.GetType() == item.Key || regexNode.GetType().IsSubclassOf(item.Key))

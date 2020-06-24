@@ -15,7 +15,9 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var characters = new List<RegexNode> { new CharacterNode('a'), new CharacterNode('b'), new CharacterNode('c') };
             var characterSet = new CharacterClassCharacterSetNode(characters);
-            var characterClass = new CharacterClassNode(characterSet, false);
+            var subtractionCharacterSet = new CharacterClassCharacterSetNode(new CharacterNode('a'));
+            var subtraction = new CharacterClassNode(subtractionCharacterSet, false);
+            var characterClass = new CharacterClassNode(characterSet, subtraction, false);
             var childNodes = new List<RegexNode> { new CharacterNode('x'), characterClass, new CharacterNode('y') };
             var root = new ConcatenationNode(childNodes);
             var target = new CharacterClassNegationMutator(root);
@@ -25,7 +27,11 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("x[^abc]y");
+            mutation.OriginalNode.ShouldBe(characterClass);
+            mutation.ReplacementNode.ToString().ShouldBe("[^abc-[a]]");
+            mutation.Pattern.ShouldBe("x[^abc-[a]]y");
+            mutation.DisplayName.ShouldBe("Regex character class negation mutation");
+            mutation.Description.ShouldBe("Character class \"[abc-[a]]\" was replaced with \"[^abc-[a]]\" at offset 1.");
         }
 
         [Fact]
@@ -34,7 +40,9 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var characters = new List<RegexNode> { new CharacterNode('a'), new CharacterNode('b'), new CharacterNode('c') };
             var characterSet = new CharacterClassCharacterSetNode(characters);
-            var characterClass = new CharacterClassNode(characterSet, true);
+            var subtractionCharacterSet = new CharacterClassCharacterSetNode(new CharacterNode('a'));
+            var subtraction = new CharacterClassNode(subtractionCharacterSet, false);
+            var characterClass = new CharacterClassNode(characterSet, subtraction, true);
             var childNodes = new List<RegexNode> { new CharacterNode('x'), characterClass, new CharacterNode('y') };
             var root = new ConcatenationNode(childNodes);
             var target = new CharacterClassNegationMutator(root);
@@ -44,7 +52,11 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("x[abc]y");
+            mutation.OriginalNode.ShouldBe(characterClass);
+            mutation.ReplacementNode.ToString().ShouldBe("[abc-[a]]");
+            mutation.Pattern.ShouldBe("x[abc-[a]]y");
+            mutation.DisplayName.ShouldBe("Regex character class negation mutation");
+            mutation.Description.ShouldBe("Character class \"[^abc-[a]]\" was replaced with \"[abc-[a]]\" at offset 1.");
         }
 
         [Fact]

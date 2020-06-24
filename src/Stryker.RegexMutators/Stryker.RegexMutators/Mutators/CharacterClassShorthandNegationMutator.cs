@@ -10,15 +10,24 @@ namespace Stryker.RegexMutators.Mutators
         {
         }
 
-        public override IEnumerable<string> ApplyMutations(CharacterClassShorthandNode node)
+        public override IEnumerable<RegexMutation> ApplyMutations(CharacterClassShorthandNode node)
         {
             yield return CharacterClassShorthandNegation(node);
         }
 
-        private string CharacterClassShorthandNegation(CharacterClassShorthandNode node)
+        private RegexMutation CharacterClassShorthandNegation(CharacterClassShorthandNode node)
         {
-            var negatedShorthand = char.IsLower(node.Shorthand) ? char.ToUpper(node.Shorthand) : char.ToLower(node.Shorthand);
-            return Root.ReplaceNode(node, new CharacterClassShorthandNode(negatedShorthand)).ToString();
+            var negatedShorthandCharacter = char.IsLower(node.Shorthand) ? char.ToUpper(node.Shorthand) : char.ToLower(node.Shorthand);
+            var replacementNode = new CharacterClassShorthandNode(negatedShorthandCharacter);
+            var (start, _) = node.GetSpan();
+            return new RegexMutation
+            {
+                OriginalNode = node,
+                ReplacementNode = replacementNode,
+                DisplayName = "Regex character class shorthand negation mutation",
+                Description = $"Character class shorthand \"{node}\" was replaced with \"{replacementNode}\" at offset {start}.",
+                Pattern = Root.ReplaceNode(node, replacementNode).ToString()
+            };
         }
     }
 }

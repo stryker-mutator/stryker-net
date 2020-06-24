@@ -11,14 +11,21 @@ namespace Stryker.RegexMutators.Mutators
         {
         }
 
-        public override IEnumerable<string> ApplyMutations(AnchorNode node)
+        public override IEnumerable<RegexMutation> ApplyMutations(AnchorNode node)
         {
             yield return AnchorRemoval(node);
         }
 
-        private string AnchorRemoval(AnchorNode node)
+        private RegexMutation AnchorRemoval(AnchorNode node)
         {
-            return Root.RemoveNode(node).ToString();
+            var (start, length) = node.GetSpan();
+            return new RegexMutation
+            {
+                OriginalNode = node,
+                DisplayName = "Regex anchor removal mutation",
+                Description = $"Anchor \"{Root.ToString().Substring(start, length)}\" was removed at offset {start}.",
+                Pattern = Root.RemoveNode(node).ToString()
+            };
         }
     }
 }

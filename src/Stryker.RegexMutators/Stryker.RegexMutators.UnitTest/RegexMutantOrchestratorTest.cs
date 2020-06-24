@@ -17,7 +17,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("abc");
+            mutation.OriginalNode.ToString().ShouldBe("^");
+            mutation.ReplacementNode.ShouldBeNull();
+            mutation.Pattern.ShouldBe("abc");
+            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+            mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
         }
 
         [Fact]
@@ -31,7 +35,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("abcX");
+            mutation.OriginalNode.ToString().ShouldBe("X?");
+            mutation.ReplacementNode.ToString().ShouldBe("X");
+            mutation.Pattern.ShouldBe("abcX");
+            mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
+            mutation.Description.ShouldBe("Quantifier \"?\" was removed at offset 4.");
         }
 
         [Fact]
@@ -45,7 +53,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("abcX");
+            mutation.OriginalNode.ToString().ShouldBe("X??");
+            mutation.ReplacementNode.ToString().ShouldBe("X");
+            mutation.Pattern.ShouldBe("abcX");
+            mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
+            mutation.Description.ShouldBe("Quantifier \"??\" was removed at offset 4.");
         }
 
         [Fact]
@@ -59,7 +71,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("abc[^XY]");
+            mutation.OriginalNode.ToString().ShouldBe("[XY]");
+            mutation.ReplacementNode.ToString().ShouldBe("[^XY]");
+            mutation.Pattern.ShouldBe("abc[^XY]");
+            mutation.DisplayName.ShouldBe("Regex character class negation mutation");
+            mutation.Description.ShouldBe("Character class \"[XY]\" was replaced with \"[^XY]\" at offset 3.");
         }
 
         [Fact]
@@ -73,7 +89,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe("abc[XY]");
+            mutation.OriginalNode.ToString().ShouldBe("[^XY]");
+            mutation.ReplacementNode.ToString().ShouldBe("[XY]");
+            mutation.Pattern.ShouldBe("abc[XY]");
+            mutation.DisplayName.ShouldBe("Regex character class negation mutation");
+            mutation.Description.ShouldBe("Character class \"[^XY]\" was replaced with \"[XY]\" at offset 3.");
         }
 
         [Fact]
@@ -87,7 +107,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe(@"abc\D");
+            mutation.OriginalNode.ToString().ShouldBe("\\d");
+            mutation.ReplacementNode.ToString().ShouldBe("\\D");
+            mutation.Pattern.ShouldBe("abc\\D");
+            mutation.DisplayName.ShouldBe("Regex character class shorthand negation mutation");
+            mutation.Description.ShouldBe("Character class shorthand \"\\d\" was replaced with \"\\D\" at offset 3.");
         }
 
         [Fact]
@@ -101,7 +125,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
-            mutation.ShouldBe(@"abc\d");
+            mutation.OriginalNode.ToString().ShouldBe("\\D");
+            mutation.ReplacementNode.ToString().ShouldBe("\\d");
+            mutation.Pattern.ShouldBe("abc\\d");
+            mutation.DisplayName.ShouldBe("Regex character class shorthand negation mutation");
+            mutation.Description.ShouldBe("Character class shorthand \"\\D\" was replaced with \"\\d\" at offset 3.");
         }
 
         [Fact]
@@ -115,10 +143,11 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             result.Count().ShouldBe(4);
-            result.ShouldContain(@"[abc]\d?");
-            result.ShouldContain(@"^[^abc]\d?");
-            result.ShouldContain(@"^[abc]\D?");
-            result.ShouldContain(@"^[abc]\d");
+            var patterns = result.Select(mutation => mutation.Pattern);
+            patterns.ShouldContain(@"[abc]\d?");
+            patterns.ShouldContain(@"^[^abc]\d?");
+            patterns.ShouldContain(@"^[abc]\D?");
+            patterns.ShouldContain(@"^[abc]\d");
         }
     }
 }

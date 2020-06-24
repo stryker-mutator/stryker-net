@@ -19,14 +19,14 @@ namespace Stryker.RegexMutators.Mutators
             Root = root;
         }
 
-        public IEnumerable<string> Mutate(RegexNode node)
+        public IEnumerable<RegexMutation> Mutate(RegexNode node)
         {
             if (node is T)
             {
                 return ApplyMutations(node as T);
             }
 
-            return Enumerable.Empty<string>();
+            return Enumerable.Empty<RegexMutation>();
         }
 
         /// <summary>
@@ -34,6 +34,6 @@ namespace Stryker.RegexMutators.Mutators
         /// </summary>
         /// <param name="node">The node to mutate</param>
         /// <returns>One or more mutations</returns>
-        public abstract IEnumerable<string> ApplyMutations(T node);
+        public abstract IEnumerable<RegexMutation> ApplyMutations(T node);
     }
 }
