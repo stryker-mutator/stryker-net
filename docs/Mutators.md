@@ -13,6 +13,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 - [Linq Methods](#linq-methods)
 - [String Literals and Constants](#string-literals-and-constants)
 - [Bitwise Operators](#bitwise-operators)
+- [Regular Expressions](#regular-expressions)
 <!-- /TOC -->
 
 ## Arithmetic Operators
@@ -140,3 +141,29 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `&` | `\|` |
 | `\|` | `&` |
 | `a^b` | `~(a^b)` |
+
+## Regular Expressions
+| Original | Mutated |
+| ------------- | ------------- | 
+| `[abc]` | `[^abc]` |
+| `[^abc]` | `[abc]` |
+| `\d` | `\D` |
+| `\D` | `\d` |
+| `\w` | `\W` |
+| `\W` | `\w` |
+| `\s` | `\S` |
+| `\S` | `\s` |
+| `^abc` | `abc` |
+| `abc$` | `abc` |
+| `\Aabc` | `abc` |
+| `abc\Z` | `abc` |
+| `abc\z` | `abc` |
+| `abc\b` | `abc` |
+| `abc\B` | `abc` |
+| `\Gabc` | `abc` |
+| `abc*` | `abc` |
+| `abc?` | `abc` |
+| `abc+` | `abc` |
+| `abc{5}` | `abc` |
+| `abc{5,}` | `abc` |
+| `abc{5,8}` | `abc` |
