@@ -21,7 +21,7 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node)
         {
-            string name = GetTypeName(node);
+            string name = node.Type.ToString();
             if (name == typeof(Regex).Name || name == typeof(Regex).FullName)
             {
                 var patternExpression = node.ArgumentList.Arguments.FirstOrDefault()?.Expression;
@@ -34,18 +34,18 @@ namespace Stryker.Core.Mutators
                     {
                         try
                         {
-                            _ = new Regex(regexMutation.Pattern);
+                            _ = new Regex(regexMutation.ReplacementPattern);
                         }
                         catch (ArgumentException exception)
                         {
-                            Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {regexMutation.Pattern} which is an invalid regular expression:\n{exception.Message}");
+                            Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {regexMutation.ReplacementPattern} which is an invalid regular expression:\n{exception.Message}");
                             continue;
                         }
 
                         yield return new Mutation()
                         {
                             OriginalNode = patternExpression,
-                            ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(regexMutation.Pattern)),
+                            ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(regexMutation.ReplacementPattern)),
                             DisplayName = regexMutation.DisplayName,
                             Type = Mutator.Regex,
                             Description = regexMutation.Description
@@ -53,28 +53,6 @@ namespace Stryker.Core.Mutators
                     }
                 }
             }
-        }
-
-        private string GetTypeName(ObjectCreationExpressionSyntax node)
-        {
-            if (node.Type.Kind() == SyntaxKind.IdentifierName)
-            {
-                return ((IdentifierNameSyntax)node.Type).Identifier.ValueText;
-            }
-
-            else if (node.Type.Kind() == SyntaxKind.QualifiedName)
-            {
-                var qualifiedName = (QualifiedNameSyntax)node.Type;
-                var name = qualifiedName.Right.Identifier.ValueText;
-                while (qualifiedName.Left.Kind() == SyntaxKind.QualifiedName)
-                {
-                    qualifiedName = (QualifiedNameSyntax)qualifiedName.Left;
-                    name = $"{qualifiedName.Right.Identifier.ValueText}.{name}";
-                }
-                return $"{((IdentifierNameSyntax)qualifiedName.Left).Identifier.ValueText}.{name}";
-            }
-
-            return null;
         }
     }
 }
