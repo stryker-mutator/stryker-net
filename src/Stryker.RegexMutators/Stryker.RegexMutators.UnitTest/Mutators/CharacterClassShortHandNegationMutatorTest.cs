@@ -30,7 +30,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(shorthandNode);
             mutation.ReplacementNode.ToString().ShouldBe("\\D");
-            mutation.Pattern.ShouldBe("\\Dabc");
+            mutation.ReplacementPattern.ShouldBe("\\Dabc");
             mutation.DisplayName.ShouldBe("Regex character class shorthand negation mutation");
             mutation.Description.ShouldBe("Character class shorthand \"\\d\" was replaced with \"\\D\" at offset 0.");
         }
@@ -57,7 +57,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(shorthandNode);
             mutation.ReplacementNode.ToString().ShouldBe("\\d");
-            mutation.Pattern.ShouldBe("\\dabc");
+            mutation.ReplacementPattern.ShouldBe("\\dabc");
             mutation.DisplayName.ShouldBe("Regex character class shorthand negation mutation");
             mutation.Description.ShouldBe("Character class shorthand \"\\D\" was replaced with \"\\d\" at offset 0.");
         }

@@ -29,7 +29,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(characterClass);
             mutation.ReplacementNode.ToString().ShouldBe("[^abc-[a]]");
-            mutation.Pattern.ShouldBe("x[^abc-[a]]y");
+            mutation.ReplacementPattern.ShouldBe("x[^abc-[a]]y");
             mutation.DisplayName.ShouldBe("Regex character class negation mutation");
             mutation.Description.ShouldBe("Character class \"[abc-[a]]\" was replaced with \"[^abc-[a]]\" at offset 1.");
         }
@@ -54,7 +54,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(characterClass);
             mutation.ReplacementNode.ToString().ShouldBe("[abc-[a]]");
-            mutation.Pattern.ShouldBe("x[abc-[a]]y");
+            mutation.ReplacementPattern.ShouldBe("x[abc-[a]]y");
             mutation.DisplayName.ShouldBe("Regex character class negation mutation");
             mutation.Description.ShouldBe("Character class \"[^abc-[a]]\" was replaced with \"[abc-[a]]\" at offset 1.");
         }

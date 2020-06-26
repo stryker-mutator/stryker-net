@@ -31,7 +31,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"*\" was removed at offset 4.");
         }
@@ -58,7 +58,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"+\" was removed at offset 4.");
         }
@@ -85,7 +85,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"?\" was removed at offset 4.");
         }
@@ -112,7 +112,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"{5}\" was removed at offset 4.");
         }
@@ -139,7 +139,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"{5,}\" was removed at offset 4.");
         }
@@ -166,7 +166,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(quantifierNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"{5,10}\" was removed at offset 4.");
         }
@@ -194,7 +194,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(lazyNode);
             mutation.ReplacementNode.ToString().ShouldBe("X");
-            mutation.Pattern.ShouldBe("abcX");
+            mutation.ReplacementPattern.ShouldBe("abcX");
             mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
             mutation.Description.ShouldBe("Quantifier \"*?\" was removed at offset 4.");
         }

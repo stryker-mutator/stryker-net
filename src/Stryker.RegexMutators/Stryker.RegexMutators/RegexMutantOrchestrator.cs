@@ -20,6 +20,8 @@ namespace Stryker.RegexMutators
         public RegexMutantOrchestrator(string pattern)
         {
             _pattern = pattern;
+
+
         }
 
         public IEnumerable<RegexMutation> Mutate()
@@ -37,41 +39,16 @@ namespace Stryker.RegexMutators
 
             _mutatorsByRegexNodeType = new Dictionary<Type, IEnumerable<IRegexMutator>>
             {
-                {
-                    typeof(AnchorNode),
-                    new List<IRegexMutator>
-                    {
-                        new AnchorRemovalMutator(_root)
-                    }
-                },
-                {
-                    typeof(QuantifierNode),
-                    new List<IRegexMutator>
-                    {
-                        new QuantifierRemovalMutator(_root)
-                    }
-                },
-                {
-                    typeof(CharacterClassNode),
-                    new List<IRegexMutator>
-                    {
-                        new CharacterClassNegationMutator(_root)
-                    }
-                },
-                {
-                    typeof(CharacterClassShorthandNode),
-                    new List<IRegexMutator>
-                    {
-                        new CharacterClassShorthandNegationMutator(_root)
-                    }
-                },
+                { typeof(AnchorNode), new List<IRegexMutator> { new AnchorRemovalMutator(_root) } },
+                { typeof(QuantifierNode), new List<IRegexMutator> { new QuantifierRemovalMutator(_root) } },
+                { typeof(CharacterClassNode), new List<IRegexMutator> { new CharacterClassNegationMutator(_root) } },
+                { typeof(CharacterClassShorthandNode), new List<IRegexMutator> { new CharacterClassShorthandNegationMutator(_root) } },
             };
 
-            foreach (RegexMutation mutant in _root.GetDescendantNodes().SelectMany(FindMutants))
-            {
-                yield return mutant;
-            }
-            foreach (RegexMutation mutant in FindMutants(_root))
+            var regexNodes = _root.GetDescendantNodes().ToList();
+            regexNodes.Add(_root);
+
+            foreach (RegexMutation mutant in regexNodes.SelectMany(FindMutants))
             {
                 yield return mutant;
             }
@@ -82,8 +59,7 @@ namespace Stryker.RegexMutators
             return _mutatorsByRegexNodeType
                 .Where(item => regexNode.GetType() == item.Key || regexNode.GetType().IsSubclassOf(item.Key))
                 .SelectMany(item => item.Value)
-                .SelectMany(mutator => mutator.Mutate(regexNode))
-                .Select(mutant => mutant);
+                .SelectMany(mutator => mutator.Mutate(regexNode));
         }
 
     }

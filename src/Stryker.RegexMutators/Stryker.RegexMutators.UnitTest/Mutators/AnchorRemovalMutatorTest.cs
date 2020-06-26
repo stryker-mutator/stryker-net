@@ -1,4 +1,5 @@
-﻿using RegexParser.Nodes;
+﻿using RegexParser;
+using RegexParser.Nodes;
 using RegexParser.Nodes.AnchorNodes;
 using RegexParser.Nodes.GroupNodes;
 using Shouldly;
@@ -32,7 +33,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(startOfLineNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
         }
@@ -59,7 +60,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(endOfLineNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"$\" was removed at offset 3.");
         }
@@ -86,7 +87,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(startOfStringNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\A\" was removed at offset 0.");
         }
@@ -113,7 +114,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(endOfStringNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\z\" was removed at offset 3.");
         }
@@ -140,7 +141,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(endOfStringZNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\Z\" was removed at offset 3.");
         }
@@ -167,7 +168,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(wordBoundaryNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\b\" was removed at offset 0.");
         }
@@ -194,7 +195,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(nonWordBoundaryNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\B\" was removed at offset 0.");
         }
@@ -221,7 +222,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(contiguousMatchNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("abc");
+            mutation.ReplacementPattern.ShouldBe("abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"\\G\" was removed at offset 0.");
         }
@@ -264,7 +265,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var mutation = result.ShouldHaveSingleItem();
             mutation.OriginalNode.ShouldBe(startOfLineNode);
             mutation.ReplacementNode.ShouldBeNull();
-            mutation.Pattern.ShouldBe("(?#This is a comment.)abc");
+            mutation.ReplacementPattern.ShouldBe("(?#This is a comment.)abc");
             mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 22.");
         }

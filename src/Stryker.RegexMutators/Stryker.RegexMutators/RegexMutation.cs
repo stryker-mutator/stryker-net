@@ -6,7 +6,7 @@ namespace Stryker.RegexMutators
     {
         public RegexNode OriginalNode { get; set; }
         public RegexNode ReplacementNode { get; set; }
-        public string Pattern { get; set; }
+        public string ReplacementPattern { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
     }
