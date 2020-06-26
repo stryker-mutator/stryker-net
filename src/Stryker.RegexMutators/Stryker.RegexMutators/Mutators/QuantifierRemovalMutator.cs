@@ -21,17 +21,19 @@ namespace Stryker.RegexMutators.Mutators
         private RegexMutation QuantifierRemoval(QuantifierNode node)
         {
             var replacementNode = node.ChildNodes.FirstOrDefault();
-            var (start, length) = node.GetSpan();
+            var span = node.GetSpan();
+            int length;
             RegexNode target;
 
             if (node.Parent is LazyNode)
             {
                 target = node.Parent;
-                length += 1;
+                length = span.Length + 1;
             }
             else
             {
                 target = node;
+                length = span.Length;
             }
 
             return new RegexMutation
@@ -39,8 +41,8 @@ namespace Stryker.RegexMutators.Mutators
                 OriginalNode = target,
                 ReplacementNode = replacementNode,
                 DisplayName = "Regex quantifier removal mutation",
-                Description = $"Quantifier \"{Root.ToString().Substring(start, length)}\" was removed at offset {start}.",
-                Pattern = Root.ReplaceNode(target, replacementNode).ToString()
+                Description = $"Quantifier \"{Root.ToString().Substring(span.Start, length)}\" was removed at offset {span.Start}.",
+                ReplacementPattern = Root.ReplaceNode(target, replacementNode).ToString()
             };
         }
     }

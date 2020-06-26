@@ -18,13 +18,13 @@ namespace Stryker.RegexMutators.Mutators
 
         private RegexMutation AnchorRemoval(AnchorNode node)
         {
-            var (start, length) = node.GetSpan();
+            var span = node.GetSpan();
             return new RegexMutation
             {
                 OriginalNode = node,
                 DisplayName = "Regex anchor removal mutation",
-                Description = $"Anchor \"{Root.ToString().Substring(start, length)}\" was removed at offset {start}.",
-                Pattern = Root.RemoveNode(node).ToString()
+                Description = $"Anchor \"{Root.ToString().Substring(span.Start, span.Length)}\" was removed at offset {span.Start}.",
+                ReplacementPattern = Root.RemoveNode(node).ToString()
             };
         }
     }
