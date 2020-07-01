@@ -20,9 +20,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.14.4, )",
-        "resolved": "4.14.4",
-        "contentHash": "kzlRGhwjcw8pF6ty73tGPAHTw8idUzcHqwmPQVhzSzY5ztr9ZwpQpW785FtdCRLHNQXGYEQA7NL52RQz+Qr5KQ==",
+        "requested": "[4.14.5, )",
+        "resolved": "4.14.5",
+        "contentHash": "g/TLN+z6Fjd1E3DAUDbBI3nZcNDUXGKGEmImYqJdZ9TzvjME9KkE4BfV4vsKSXm3Of/C0y+rQKW3/5QSCeTUPA==",
         "dependencies": {
           "Castle.Core": "4.4.0",
           "System.Threading.Tasks.Extensions": "4.5.1"
