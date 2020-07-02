@@ -77,18 +77,19 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
-        public void ShouldMutateStringLiteralInRegexConstructors()
+        public void ShouldMutateStringLiteralAsNamedArgumentPatternInRegexConstructor()
         {
-            var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^*abc\")") as ObjectCreationExpressionSyntax;
+            var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;
+            var o = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
             var result = target.ApplyMutations(objectCreationExpression);
 
             var mutation = result.ShouldHaveSingleItem();
 
-            mutation.DisplayName.ShouldBe("Regex quantifier removal mutation");
+            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
             var replacement = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-            replacement.Token.ValueText.ShouldBe("^abc");
+            replacement.Token.ValueText.ShouldBe("abc");
         }
     }
 }

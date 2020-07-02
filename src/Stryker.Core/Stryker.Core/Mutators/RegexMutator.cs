@@ -6,12 +6,15 @@ using Stryker.Core.Mutants;
 using Stryker.RegexMutators;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators
 {
     public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>, IMutator
     {
+        private const string PatternArgumentName = "pattern";
         private ILogger Logger { get; }
 
         public RegexMutator()
@@ -24,7 +27,11 @@ namespace Stryker.Core.Mutators
             string name = node.Type.ToString();
             if (name == typeof(Regex).Name || name == typeof(Regex).FullName)
             {
-                var patternExpression = node.ArgumentList.Arguments.FirstOrDefault()?.Expression;
+                var arguments = node.ArgumentList.Arguments;
+                var namedArgument = arguments.Where(argument => argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName).FirstOrDefault();
+                var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
+                var patternExpression = patternArgument?.Expression;
+
                 if (patternExpression?.Kind() == SyntaxKind.StringLiteralExpression)
                 {
                     var currentValue = ((LiteralExpressionSyntax)patternExpression).Token.ValueText;
