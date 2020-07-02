@@ -22,10 +22,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -49,10 +49,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -76,10 +76,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -103,10 +103,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -130,10 +130,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -157,10 +157,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 quantifierNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -185,10 +185,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 lazyNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(quantifierNode);
+            var result = target.ApplyMutations(quantifierNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -205,10 +205,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var characterNode = new CharacterNode('a');
             var rootNode = new ConcatenationNode(characterNode);
-            var target = new QuantifierRemovalMutator(rootNode);
+            var target = new QuantifierRemovalMutator();
 
             // Act
-            var result = target.Mutate(characterNode);
+            var result = target.Mutate(characterNode, rootNode);
 
             // Assert
             result.ShouldBeEmpty();

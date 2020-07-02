@@ -8,17 +8,12 @@ namespace Stryker.RegexMutators.Mutators
 {
     public class QuantifierRemovalMutator : RegexMutatorBase<QuantifierNode>, IRegexMutator
     {
-        public QuantifierRemovalMutator(RegexNode root)
-            : base(root)
+        public override IEnumerable<RegexMutation> ApplyMutations(QuantifierNode node, RegexNode root)
         {
+            yield return QuantifierRemoval(node, root);
         }
 
-        public override IEnumerable<RegexMutation> ApplyMutations(QuantifierNode node)
-        {
-            yield return QuantifierRemoval(node);
-        }
-
-        private RegexMutation QuantifierRemoval(QuantifierNode node)
+        private RegexMutation QuantifierRemoval(QuantifierNode node, RegexNode root)
         {
             var replacementNode = node.ChildNodes.FirstOrDefault();
             var span = node.GetSpan();
@@ -41,8 +36,8 @@ namespace Stryker.RegexMutators.Mutators
                 OriginalNode = target,
                 ReplacementNode = replacementNode,
                 DisplayName = "Regex quantifier removal mutation",
-                Description = $"Quantifier \"{Root.ToString().Substring(span.Start, length)}\" was removed at offset {span.Start}.",
-                ReplacementPattern = Root.ReplaceNode(target, replacementNode).ToString()
+                Description = $"Quantifier \"{root.ToString().Substring(span.Start, length)}\" was removed at offset {span.Start}.",
+                ReplacementPattern = root.ReplaceNode(target, replacementNode).ToString()
             };
         }
     }

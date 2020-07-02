@@ -24,10 +24,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(startOfLineNode);
+            var result = target.ApplyMutations(startOfLineNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -51,10 +51,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 endOfLineNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(endOfLineNode);
+            var result = target.ApplyMutations(endOfLineNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -78,10 +78,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(startOfStringNode);
+            var result = target.ApplyMutations(startOfStringNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -105,10 +105,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 endOfStringNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(endOfStringNode);
+            var result = target.ApplyMutations(endOfStringNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -132,10 +132,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 endOfStringZNode
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(endOfStringZNode);
+            var result = target.ApplyMutations(endOfStringZNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -159,10 +159,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(wordBoundaryNode);
+            var result = target.ApplyMutations(wordBoundaryNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -186,10 +186,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(nonWordBoundaryNode);
+            var result = target.ApplyMutations(nonWordBoundaryNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -213,10 +213,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(contiguousMatchNode);
+            var result = target.ApplyMutations(contiguousMatchNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -233,10 +233,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var characterNode = new CharacterNode('a');
             var rootNode = new ConcatenationNode(characterNode);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.Mutate(characterNode);
+            var result = target.Mutate(characterNode, rootNode);
 
             // Assert
             result.ShouldBeEmpty();
@@ -256,10 +256,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator(rootNode);
+            var target = new AnchorRemovalMutator();
 
             // Act
-            var result = target.ApplyMutations(startOfLineNode);
+            var result = target.ApplyMutations(startOfLineNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();

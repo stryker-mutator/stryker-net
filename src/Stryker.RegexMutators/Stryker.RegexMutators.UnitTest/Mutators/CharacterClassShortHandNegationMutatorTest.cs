@@ -21,10 +21,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new CharacterClassShorthandNegationMutator(rootNode);
+            var target = new CharacterClassShorthandNegationMutator();
 
             // Act
-            var result = target.ApplyMutations(shorthandNode);
+            var result = target.ApplyMutations(shorthandNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -48,10 +48,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('c')
             };
             var rootNode = new ConcatenationNode(childNodes);
-            var target = new CharacterClassShorthandNegationMutator(rootNode);
+            var target = new CharacterClassShorthandNegationMutator();
 
             // Act
-            var result = target.ApplyMutations(shorthandNode);
+            var result = target.ApplyMutations(shorthandNode, rootNode);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -68,10 +68,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var characterNode = new CharacterNode('a');
             var rootNode = new ConcatenationNode(characterNode);
-            var target = new CharacterClassShorthandNegationMutator(rootNode);
+            var target = new CharacterClassShorthandNegationMutator();
 
             // Act
-            var result = target.Mutate(characterNode);
+            var result = target.Mutate(characterNode, rootNode);
 
             // Assert
             result.ShouldBeEmpty();

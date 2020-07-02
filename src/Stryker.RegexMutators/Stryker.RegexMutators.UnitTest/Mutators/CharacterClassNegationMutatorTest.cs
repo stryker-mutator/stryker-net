@@ -20,10 +20,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var characterClass = new CharacterClassNode(characterSet, subtraction, false);
             var childNodes = new List<RegexNode> { new CharacterNode('x'), characterClass, new CharacterNode('y') };
             var root = new ConcatenationNode(childNodes);
-            var target = new CharacterClassNegationMutator(root);
+            var target = new CharacterClassNegationMutator();
 
             // Act
-            var result = target.ApplyMutations(characterClass);
+            var result = target.ApplyMutations(characterClass, root);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -45,10 +45,10 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var characterClass = new CharacterClassNode(characterSet, subtraction, true);
             var childNodes = new List<RegexNode> { new CharacterNode('x'), characterClass, new CharacterNode('y') };
             var root = new ConcatenationNode(childNodes);
-            var target = new CharacterClassNegationMutator(root);
+            var target = new CharacterClassNegationMutator();
 
             // Act
-            var result = target.ApplyMutations(characterClass);
+            var result = target.ApplyMutations(characterClass, root);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -64,11 +64,11 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
         {
             // Arrange
             var characterNode = new CharacterNode('a');
-            var rootNode = new ConcatenationNode(characterNode);
-            var target = new CharacterClassNegationMutator(rootNode);
+            var root = new ConcatenationNode(characterNode);
+            var target = new CharacterClassNegationMutator();
 
             // Act
-            var result = target.Mutate(characterNode);
+            var result = target.Mutate(characterNode, root);
 
             // Assert
             result.ShouldBeEmpty();

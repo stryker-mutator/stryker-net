@@ -6,17 +6,12 @@ namespace Stryker.RegexMutators.Mutators
 {
     public class CharacterClassNegationMutator : RegexMutatorBase<CharacterClassNode>, IRegexMutator
     {
-        public CharacterClassNegationMutator(RegexNode root)
-            : base(root)
+        public override IEnumerable<RegexMutation> ApplyMutations(CharacterClassNode node, RegexNode root)
         {
+            yield return CharacterClassNegation(node, root);
         }
 
-        public override IEnumerable<RegexMutation> ApplyMutations(CharacterClassNode node)
-        {
-            yield return CharacterClassNegation(node);
-        }
-
-        private RegexMutation CharacterClassNegation(CharacterClassNode node)
+        private RegexMutation CharacterClassNegation(CharacterClassNode node, RegexNode root)
         {
             var span = node.GetSpan();
             var replacementNode = node.Subtraction == null ?  new CharacterClassNode(node.CharacterSet, !node.Negated) : new CharacterClassNode(node.CharacterSet, node.Subtraction, !node.Negated);
@@ -26,7 +21,7 @@ namespace Stryker.RegexMutators.Mutators
                 ReplacementNode = replacementNode,
                 DisplayName = "Regex character class negation mutation",
                 Description = $"Character class \"{node}\" was replaced with \"{replacementNode}\" at offset {span.Start}.",
-                ReplacementPattern = Root.ReplaceNode(node, replacementNode).ToString()
+                ReplacementPattern = root.ReplaceNode(node, replacementNode).ToString()
             };
         }
     }
