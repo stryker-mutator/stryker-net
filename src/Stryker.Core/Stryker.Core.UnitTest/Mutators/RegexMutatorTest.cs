@@ -80,7 +80,6 @@ namespace Stryker.Core.UnitTest.Mutators
         public void ShouldMutateStringLiteralAsNamedArgumentPatternInRegexConstructor()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;
-            var o = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
             var result = target.ApplyMutations(objectCreationExpression);
