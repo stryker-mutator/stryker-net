@@ -30,7 +30,9 @@ namespace Stryker.Core.Mutators
         [Description("Bitwise operators")]
         Bitwise,
         [Description("Array initializer")]
-        Initializer
+        Initializer,
+        [Description("Regular expressions")]
+        Regex
     }
 
     public static class EnumExtension
