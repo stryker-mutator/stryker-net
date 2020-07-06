@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutators
 {
@@ -9,8 +10,11 @@ namespace Stryker.Core.Mutators
     {
         public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node)
         {
-            if (!(node.Parent is ArrayCreationExpressionSyntax) && !(node.Parent is ImplicitArrayCreationExpressionSyntax) && 
-                node.Kind() == SyntaxKind.ArrayInitializerExpression && node.Expressions.Count > 0)
+            if (!(node.Parent is ArrayCreationExpressionSyntax) && !(node.Parent is ImplicitArrayCreationExpressionSyntax) && !(node.Parent is StackAllocArrayCreationExpressionSyntax))
+            {
+                yield break;
+            }
+            if (node.Kind() == SyntaxKind.ArrayInitializerExpression && node.Expressions.Count > 0)
             {
                 yield return new Mutation()
                 {
