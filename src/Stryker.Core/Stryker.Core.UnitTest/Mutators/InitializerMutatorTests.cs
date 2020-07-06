@@ -38,5 +38,41 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldBeEmpty();
         }
+
+        [Fact]
+        public void ShouldNotMutateStackallocArrayCreationExpressionSyntax()
+        {
+            var arrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 0 }") as StackAllocArrayCreationExpressionSyntax;
+            
+            var target = new InitializerMutator();
+
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateArrayCreationExpressionSyntax()
+        {
+            var arrayCreationExpression = SyntaxFactory.ParseExpression("new int[] { 0 }") as ArrayCreationExpressionSyntax;
+
+            var target = new InitializerMutator();
+
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateImplicitArrayCreationExpressionSyntax()
+        {
+            var arrayCreationExpression = SyntaxFactory.ParseExpression("new [] { 0 }") as ImplicitArrayCreationExpressionSyntax;
+
+            var target = new InitializerMutator();
+
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+
+            result.ShouldBeEmpty();
+        }
     }
 }

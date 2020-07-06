@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
     {
         public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node)
         {
-            if (!(node.Parent is ArrayCreationExpressionSyntax) && !(node.Parent is ImplicitArrayCreationExpressionSyntax) && !(node.Parent is StackAllocArrayCreationExpressionSyntax))
+            if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax)
             {
                 yield break;
             }
