@@ -20,9 +20,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.14.1, )",
-        "resolved": "4.14.1",
-        "contentHash": "yRrU+cLNBtZpL9eLVyicOENMPUx7DjOOB+VPgDhrXaCjhfob661d4HJ82YJpPUBmlYoivNA8F4R+NIMfoKbD7g==",
+        "requested": "[4.14.5, )",
+        "resolved": "4.14.5",
+        "contentHash": "g/TLN+z6Fjd1E3DAUDbBI3nZcNDUXGKGEmImYqJdZ9TzvjME9KkE4BfV4vsKSXm3Of/C0y+rQKW3/5QSCeTUPA==",
         "dependencies": {
           "Castle.Core": "4.4.0",
           "System.Threading.Tasks.Extensions": "4.5.1"
@@ -61,10 +61,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "UlSePQj+UxgPpHRBbX8qXRxJwEfm9oYciy7jawfO3Nn0KxKKPcs2erDdFUfP8zRgSzmLJi7cc44lNdxpzMLrJQ==",
+        "resolved": "3.0.1",
+        "contentHash": "WxXxlfoF8O2El7AN4CWshL3+L7em7yAT/MiOX+eySG2dzsdLw1/5z75xEuSOt1kvJtQce3xpIzr+z4g02aJ3wQ==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.0.0",
+          "Buildalyzer.Logger": "3.0.1",
           "MSBuild.StructuredLogger": "2.1.133",
           "Microsoft.Build": "16.5.0",
           "Microsoft.Build.Framework": "16.5.0",
@@ -73,14 +73,14 @@
           "Microsoft.Extensions.DependencyModel": "2.1.0",
           "Microsoft.Extensions.Logging": "2.1.1",
           "Microsoft.Extensions.Logging.Abstractions": "2.1.1",
-          "MsBuildPipeLogger.Server": "1.1.2",
+          "MsBuildPipeLogger.Server": "1.1.3",
           "System.Reflection.TypeExtensions": "4.6.0"
         }
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "BYvl4OnELo9gZmcX5kzjtBwaA6o9WSpPapsrwZRjTmFRO2hJXa23uQhJhI/r/y95QHsAteTwotMg33ub8/J+HQ==",
+        "resolved": "3.0.1",
+        "contentHash": "L6Y8hXDTGJUyNivg5DCgH36r/dwknJa5J05iT6IYyQZgOzQLDAWuXODUAaL7FPR2+43cSp0ioja0p/fhDF5Y+g==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -456,8 +456,8 @@
       },
       "MsBuildPipeLogger.Server": {
         "type": "Transitive",
-        "resolved": "1.1.2",
-        "contentHash": "3kIOap0qKW+/+Cd9o6tUM420ibgzCVuhTvLXVRv7M6EOmkH1iEiUsUTkFeQ+SqH5JuLHZfXmEZieDiWvRFtq1Q==",
+        "resolved": "1.1.3",
+        "contentHash": "kASNZDxdZNJi4UARMMh49F1DczgivmEyuYIpTbnO4h/wnMJQrtFe7N55cp6fqkYjDJFvYCjai6WwR/U7qSaEXw==",
         "dependencies": {
           "Microsoft.Build": "15.3.409",
           "NETStandard.Library": "1.6.1"
@@ -485,6 +485,11 @@
         "type": "Transitive",
         "resolved": "5.5.0",
         "contentHash": "jH8Q+XRO9REVelfvAUlRnLqrQCNi3NRVLM+MIWY4XW2CMxCD+R/X7cJWVAW7A6rG1FpgO8MbGM8DLwloMgYm0w=="
+      },
+      "RegexParser": {
+        "type": "Transitive",
+        "resolved": "0.5.1",
+        "contentHash": "cFqI0vxy4E7C83ijq1uFIkIOEnG3kezH+xBkBaQX9FvJKikrt+riQRDC4J4NQ5QXh/p6R3DC8qBVGXloC58zEQ=="
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": {
         "type": "Transitive",
@@ -933,8 +938,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "11.0.7",
-        "contentHash": "Q67kQFcsdw3of9/kNbv303TYU5MNIGiQvYGsDOjgi7+Ii/HABw7E/TUgMOtwCFiwkZTyEvnHj/m7CEe/ybELfg==",
+        "resolved": "12.0.4",
+        "contentHash": "CrfL6Lk9f2Ei4TO1CDfqIjXuRQw0DAM77r6pfd7akBLLRyG2NgIW+fVf79qehZL5UT2Aqf23ao2r+jVk//AtsA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -1643,7 +1648,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "3.0.0",
+          "Buildalyzer": "3.0.1",
           "DotNet.Glob": "3.0.9",
           "LibGit2Sharp": "0.26.2",
           "Microsoft.CodeAnalysis.CSharp": "3.6.0",
@@ -1661,14 +1666,21 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
-          "System.IO.Abstractions": "11.0.7"
+          "Stryker.DataCollector": "0.18.0",
+          "Stryker.RegexMutators": "1.0.0",
+          "System.IO.Abstractions": "12.0.4"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
           "Microsoft.TestPlatform.ObjectModel": "16.6.1"
+        }
+      },
+      "stryker.regexmutators": {
+        "type": "Project",
+        "dependencies": {
+          "RegexParser": "0.5.1"
         }
       }
     }
