@@ -245,6 +245,15 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(0)?1 - 1:1 + 1), (Str
             ShouldMutateSourceToExpected(source, expected);
         }
 
+        [Fact]
+        public void ShouldMutateStackalloc()
+        {
+            string source = @"Span<ushort> kindaUnrelated = stackalloc ushort[] { 0 };";
+            string expected = @"Span<ushort> kindaUnrelated = (StrykerNamespace.MutantControl.IsActive(0)?stackalloc ushort[] {}:stackalloc ushort[] { 0 });";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
         /// <summary>
         /// Verifies that <code>EnumMemberDeclarationSyntax</code> nodes are not mutated.
         /// Mutating would introduce code like <code>StrykerXGJbRBlHxqRdD9O.MutantControl.IsActive(0) ? One + 1 : One - 1</code>
