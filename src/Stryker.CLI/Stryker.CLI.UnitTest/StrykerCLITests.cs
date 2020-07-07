@@ -638,25 +638,5 @@ namespace Stryker.CLI.UnitTest
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
-
-        [Fact]
-        public void ShouldSetDashboardBaselineProviderWhenNotSpecifiedAndDashboardReporterSpecified()
-        {
-            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions();
-            var runResults = new StrykerRunResult(options, 0.3);
-
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
-
-            var target = new StrykerCLI(mock.Object);
-
-            target.Run(new string[] { "-r", "['dashboard']",
-                "--dashboard-api-key XXX-XXX-XXX",
-                "--dashboard-project PROJECT"
-                });
-
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Dashboard),
-                It.IsAny<IEnumerable<LogMessage>>()));
-        }
     }
 }

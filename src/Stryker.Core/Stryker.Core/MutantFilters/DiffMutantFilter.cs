@@ -83,7 +83,7 @@ namespace Stryker.Core.MutantFilters
 
 
             // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
-            if (_diffResult.TestFilesChanged.Any())
+            if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any())
             {
                 filteredMutants = ResetMutantStatusForChangedTests(mutants).ToList();
             }

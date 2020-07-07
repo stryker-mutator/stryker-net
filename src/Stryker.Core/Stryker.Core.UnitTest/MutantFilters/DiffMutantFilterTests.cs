@@ -352,14 +352,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 new Mutant()
                 {
+                    Id = 1,
                     ResultStatus = MutantStatus.NotRun
                 },
                 new Mutant()
                 {
+                    Id = 2,
                     ResultStatus = MutantStatus.NotRun
                 },
                 new Mutant()
                 {
+                    Id = 3,
                     ResultStatus = MutantStatus.Killed
                 }
             };
@@ -389,7 +392,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>()
+                ChangedFiles = new List<string>(),
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
@@ -426,21 +429,27 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>()
+                ChangedFiles = new List<string>(),
+                TestFilesChanged = new List<string> { "C:/testfile.cs" }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, dashboardClient.Object, branchProvider.Object);
 
+            var testDescriptions = new List<TestDescription> { new TestDescription(Guid.NewGuid().ToString(), "name", "C:/testfile.cs") };
+            var testListDescription = new TestListDescription(testDescriptions);
+
             var mutants = new List<Mutant>
             {
-                new Mutant(),
+                new Mutant {
+                    CoveringTests = testListDescription
+                },
                 new Mutant(),
                 new Mutant()
             };
 
             var results = target.FilterMutants(mutants, new FileLeaf(), options);
 
-            results.Count().ShouldBe(3);
+            results.Count().ShouldBe(1);
         }
     }
 }
