@@ -130,11 +130,12 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
+            CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
-            (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion);
+            (ProjectVersion, FallbackVersion, GitSource) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitSource);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
@@ -218,11 +219,16 @@ namespace Stryker.Core.Options
             return gitSource;
         }
 
-        private (string ProjectVersion, string FallbackVersion) ValidateCompareToDashboard(string projectVersion, string fallbackVersion)
+        private (string ProjectVersion, string FallbackVersion, string GitSource) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource)
         {
+            if (string.IsNullOrEmpty(fallbackVersion))
+            {
+                fallbackVersion = gitSource;
+            }
+
             if (!CompareToDashboard)
             {
-                return (projectVersion, null);
+                return (projectVersion, null, gitSource);
             }
 
             var errorStrings = new StringBuilder();
@@ -241,7 +247,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (projectVersion, fallbackVersion);
+            return (projectVersion, fallbackVersion, gitSource);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

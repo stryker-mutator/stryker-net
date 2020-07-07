@@ -4,7 +4,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
+using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
@@ -20,6 +20,7 @@ namespace Stryker.Core.UnitTest
             var initialisationMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
+            var reporterMock = new Mock<IReporter>(MockBehavior.Loose);
 
             var mutationTestInput = new MutationTestInput()
             {
@@ -48,7 +49,9 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<StrykerOptions>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
-            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock);
+
+
+            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock, reporter: reporterMock.Object);
 
             target.RunMutationTest(options);
 

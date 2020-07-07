@@ -58,13 +58,9 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, _input);
 
-
-            var mutantFilterFactory = new MutantFilterFactory();
-
             _mutantFilter = mutantFilter 
-                ?? mutantFilterFactory
-                .WithOptions(options)
-                .Create();
+                ?? MutantFilterFactory
+                .Create(options);
         }
 
         public void Mutate()

@@ -1,4 +1,6 @@
-﻿using Stryker.Core.DiffProviders;
+﻿using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
+using Stryker.Core.DiffProviders;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using System;
@@ -8,22 +10,25 @@ namespace Stryker.Core.MutantFilters
 {
     public class MutantFilterFactory
     {
-        private IDiffProvider _diffProvider;
-        private StrykerOptions _options;
+        private static IDiffProvider _diffProvider;
+        private static IGitInfoProvider _gitInfoProvider;
+        private static IDashboardClient _dashboardClient;
 
-        public IMutantFilter Create(IDiffProvider diffProvider = null)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider gitInfoProvider = null)
         {
-            if (_options == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(_options));
+                throw new ArgumentNullException(nameof(options));
             }
 
-            _diffProvider = diffProvider ?? new GitDiffProvider(_options);
+            _diffProvider = diffProvider ?? new GitDiffProvider(options);
+            _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
 
-            return new BroadcastMutantFilter(DetermineEnabledMutantFilters(_options));
+            return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
 
-        private IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
+        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
         {
             var enabledFilters = new List<IMutantFilter> {
                     new FilePatternMutantFilter(),
@@ -34,16 +39,10 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider));
+                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, dashboardClient: _dashboardClient, gitInfoProvider: _gitInfoProvider));
             }
 
             return enabledFilters;
-        }
-
-        public MutantFilterFactory WithOptions(StrykerOptions options)
-        {
-            _options = options;
-            return this;
         }
     }
 }

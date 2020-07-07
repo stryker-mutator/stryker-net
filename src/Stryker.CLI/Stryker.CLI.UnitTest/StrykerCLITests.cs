@@ -475,7 +475,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--diff-compare", "--dashboard-version project")]
+        [InlineData("--dashboard-compare", "--dashboard-version project")]
         [InlineData("-compare", "-version project")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
         {
@@ -498,7 +498,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--diff-compare", "--dashboard-version project")]
+        [InlineData("--dashboard-compare", "--dashboard-version project")]
         [InlineData("-compare", "-version project")]
         public void ShouldEnableDiffFeatureWhenDashboardComparePassed(params string[] argNames)
         {

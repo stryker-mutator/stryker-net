@@ -121,8 +121,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Reverse()`           | `AsEnumerable()`     |
 | `AsEnumerable()`     | `Reverse()`           |
 
-*
-`Sum()` was mutated to `Count()` in previous versions; this change reduces compilation errors.
+`* Sum() was mutated to Count() in previous versions; this change reduces compilation errors.`
 
 ## String Literals and Constants
 | Original | Mutated |
@@ -138,6 +137,6 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ------------- | 
 | `<<` | `>>` |
 | `>>` | `<<` |
-| `&` | `|` |
-| `|` | `&` |
+| `&` | `\|` |
+| `\|` | `&` |
 | `a^b` | `~(a^b)` |

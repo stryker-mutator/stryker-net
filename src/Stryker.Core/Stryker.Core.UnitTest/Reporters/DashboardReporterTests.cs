@@ -1,10 +1,11 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using Stryker.Core.Clients;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -25,17 +26,18 @@ namespace Stryker.Core.UnitTest.Reporters
                projectVersion: "version/human/readable",
                reporters: reporters)
             {
-                CurrentBranchCanonicalName = "refs/heads/master"
             };
 
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
-
-            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
+            var branchProviderMock = new Mock<IGitInfoProvider>();
+            branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
+            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, gitInfoProvider: branchProviderMock.Object);
 
             // Act
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
 
             // Assert
+            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "dashboard-compare/refs/heads/master"), Times.Once);
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"), Times.Once);
         }
 
@@ -56,8 +58,9 @@ namespace Stryker.Core.UnitTest.Reporters
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"));
+            var branchProviderMock = new Mock<IGitInfoProvider>();
 
-            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
+            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, branchProviderMock.Object);
 
             // Act
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
@@ -67,7 +70,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void ShouldCallChalkRedWhenReportUrlIsNull()
+        public void LogsDebugWhenBaselineUploadedSuccesfull()
         {
             // Arrange
             var reporters = new string[1];
@@ -78,52 +81,25 @@ namespace Stryker.Core.UnitTest.Reporters
                dashboardApiKey: "Acces_Token",
                projectName: "github.com/JohnDoe/project",
                projectVersion: "version/human/readable",
-               reporters: reporters,
-               fallbackVersion: "fallbackVersion");
-
+               reporters: reporters)
+            {
+            };
+            var loggerMock = new Mock<ILogger<DashboardReporter>>(MockBehavior.Loose);
             var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>();
+            var chalkMock = new Mock<IChalk>();
 
-            var chalkMock = new Mock<IChalk>(MockBehavior.Loose);
-
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(default(string)));
-
-            var target = new DashboardReporter(options, chalkMock.Object, dashboardClientMock.Object);
+            branchProviderMock.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
+            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "dashboard-compare/refs/heads/master")).ReturnsAsync("http://www.example.com/baseline");
+            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "version/human/readable")).ReturnsAsync("http://www.example.com/humanreadable");
+            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, gitInfoProvider: branchProviderMock.Object, loggerMock.Object, chalkMock.Object);
 
             // Act
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
 
             // Assert
-            chalkMock.Verify(x => x.Red("Uploading to stryker dashboard failed..."));
-        }
-
-        [Fact]
-        public void ShouldCallChalkGreenWhenReportUrl()
-        {
-            // Arrange
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
-
-            var options = new StrykerOptions(
-                compareToDashboard: true,
-               dashboardApiKey: "Acces_Token",
-               projectName: "github.com/JohnDoe/project",
-               projectVersion: "version/human/readable",
-               reporters: reporters,
-               fallbackVersion: "fallbackVersion");
-
-            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
-
-            var chalkMock = new Mock<IChalk>(MockBehavior.Loose);
-
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult("www.example.com"));
-
-            var target = new DashboardReporter(options, chalkMock.Object, dashboardClientMock.Object);
-
-            // Act
-            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
-
-            // Assert
-            chalkMock.Verify(x => x.Green("\nYour stryker report has been uploaded to: \n www.example.com \nYou can open it in your browser of choice."));
+            loggerMock.Verify(x => x.Log(LogLevel.Debug, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => true), It.IsAny<Exception>(), It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)));
+            chalkMock.Verify(x => x.Green(It.Is<string>(s => s == "Your stryker report has been uploaded to: \n http://www.example.com/humanreadable \nYou can open it in your browser of choice.")));
         }
     }
 }
