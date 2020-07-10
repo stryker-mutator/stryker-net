@@ -12,12 +12,9 @@ namespace Stryker.Core.MutantFilters
     {
         public IEnumerable<IMutantFilter> MutantFilters { get; }
 
-        private readonly ILogger<BroadcastMutantFilter> _logger;
-
         public BroadcastMutantFilter(IEnumerable<IMutantFilter> mutantFilters)
         {
             MutantFilters = mutantFilters;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<BroadcastMutantFilter>();
         }
 
         public string DisplayName => "broadcast filter";
@@ -28,38 +25,21 @@ namespace Stryker.Core.MutantFilters
 
             foreach (var mutantFilter in MutantFilters)
             {
-                filteredMutants = FilterMutantsPerFilter(mutantFilter, mutants, file, options);
-            }
-          
-            var diffMutantFilter = MutantFilters.FirstOrDefault(x => x.GetType() == typeof(DiffMutantFilter));
+                var current = mutantFilter.FilterMutants(mutants, file, options);
 
-            filteredMutants = diffMutantFilter?.FilterMutants(mutants, file, options);
+                foreach (var skippedMutant in filteredMutants.Except(current))
+                {
+                    if (skippedMutant.ResultStatus == MutantStatus.NotRun)
+                    {
+                        skippedMutant.ResultStatus = MutantStatus.Ignored;
+                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
+                    }
+                }
+
+                filteredMutants = current;
+            }
 
             return filteredMutants;
-        }
-
-
-        public IEnumerable<Mutant> FilterMutantsPerFilter(IMutantFilter mutantFilter, IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
-        {
-            DiffMutantFilter filterType = mutantFilter as DiffMutantFilter;
-
-            if (filterType != null)
-            {
-                return mutants;
-
-            }
-
-            var current = mutantFilter.FilterMutants(mutants, file, options);
-
-            foreach (var skippedMutant in mutants.Except(current))
-            {
-                if (skippedMutant.ResultStatus == MutantStatus.NotRun)
-                {
-                    skippedMutant.ResultStatus = MutantStatus.Ignored;
-                    skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
-                }
-            }
-            return mutants;
         }
     }
 }
