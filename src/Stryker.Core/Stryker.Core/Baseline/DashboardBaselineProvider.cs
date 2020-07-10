@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Clients;
-using Stryker.Core.Logging;
+﻿using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System.Threading.Tasks;
