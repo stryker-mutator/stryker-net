@@ -433,7 +433,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
-            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
 
             var runnerMock = new Mock<ITestRunner>();
             runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
@@ -454,7 +454,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBe(double.NaN);
@@ -535,7 +535,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()));
-            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
+            reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()));
 
             var runnerMock = new Mock<ITestRunner>();
             runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
@@ -556,7 +556,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent>()), Times.Once);
             testResult.MutationScore.ShouldBe(double.NaN);

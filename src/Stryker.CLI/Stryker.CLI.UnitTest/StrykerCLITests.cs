@@ -538,7 +538,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DashboardUrl.ShouldBe("https://www.example.com/");
+            options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://www.example.com/");
         }
 
         [Fact]
@@ -559,7 +559,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+            options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
 
         [Theory]

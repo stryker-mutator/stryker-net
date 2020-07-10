@@ -304,7 +304,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
             ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
-            DefaultValue = _defaultOptions.DashboardUrl,
+            DefaultValue = _defaultOptions.DashboardReporterOptions.DashboardUrl,
             JsonKey = "dashboard-url"
         };
 

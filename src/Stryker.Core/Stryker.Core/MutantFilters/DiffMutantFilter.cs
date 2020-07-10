@@ -23,7 +23,7 @@ namespace Stryker.Core.MutantFilters
         private readonly IDashboardClient _dashboardClient;
         private readonly IGitInfoProvider _branchProvider;
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
         private readonly JsonReport _baseline;
 
@@ -31,7 +31,7 @@ namespace Stryker.Core.MutantFilters
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null)
+        public DiffMutantFilter(IStrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
@@ -146,19 +146,19 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version {1}", _options.ProjectName, _options.FallbackVersion);
+                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version {1}", _options.DashboardReporterOptions.ProjectName, _options.DashboardReporterOptions.FallbackVersion);
 
                 return await GetFallbackBaseline();
             }
 
-            _logger.LogInformation("Found report of project {0} using version {1} ", _options.ProjectName, branchName);
+            _logger.LogInformation("Found report of project {0} using version {1} ", _options.DashboardReporterOptions.ProjectName, branchName);
 
             return report;
         }
 
         private async Task<JsonReport> GetFallbackBaseline()
         {
-            var report = await _dashboardClient.PullReport(_options.FallbackVersion);
+            var report = await _dashboardClient.PullReport(_options.DashboardReporterOptions.FallbackVersion);
 
             if (report == null)
             {
@@ -167,7 +167,7 @@ namespace Stryker.Core.MutantFilters
             }
             else
             {
-                _logger.LogInformation("Found report of project {0} using version {1}", _options.ProjectName, _options.FallbackVersion);
+                _logger.LogInformation("Found report of project {0} using version {1}", _options.DashboardReporterOptions.ProjectName, _options.DashboardReporterOptions.FallbackVersion);
 
                 return report;
             }

@@ -210,7 +210,7 @@ namespace Stryker.Core.UnitTest.Options
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
 
             options.GitSource.ShouldBe("development");
-            options.FallbackVersion.ShouldBe("development");
+            options.DashboardReporterOptions.FallbackVersion.ShouldBe("development");
         }
     }
 }

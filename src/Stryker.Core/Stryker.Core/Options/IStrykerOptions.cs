@@ -16,6 +16,7 @@ namespace Stryker.Core.Options
         DashboardReporterOptions DashboardReporterOptions { get; }
         bool DevMode { get; }
         bool DiffEnabled { get; }
+        public bool CompareToDashboard { get; }
         IEnumerable<Mutator> ExcludedMutations { get; }
         IEnumerable<FilePattern> FilePatterns { get; }
         string GitSource { get; }

@@ -18,11 +18,11 @@ namespace Stryker.Core.Clients
 
     public class DashboardClient : IDashboardClient
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
         private readonly HttpClient _httpClient;
 
-        public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
+        public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
@@ -31,11 +31,11 @@ namespace Stryker.Core.Clients
 
         public async Task<string> PublishReport(string json, string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
+            var url = new Uri($"{_options.DashboardReporterOptions.DashboardUrl}/api/reports/{_options.DashboardReporterOptions.ProjectName}/{version}");
 
-            if (_options.ModuleName != null)
+            if (_options.DashboardReporterOptions.ModuleName != null)
             {
-                url = new Uri(url, $"?module={_options.ModuleName}");
+                url = new Uri(url, $"?module={_options.DashboardReporterOptions.ModuleName}");
             }
 
 
@@ -44,7 +44,7 @@ namespace Stryker.Core.Clients
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
 
-            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+            requestMessage.Headers.Add("X-Api-Key", _options.DashboardReporterOptions.DashboardApiKey);
 
             _logger.LogDebug("Sending POST to {0}", url);
             var response = await _httpClient.SendAsync(requestMessage);
@@ -65,16 +65,16 @@ namespace Stryker.Core.Clients
 
         public async Task<JsonReport> PullReport(string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
+            var url = new Uri($"{_options.DashboardReporterOptions.DashboardUrl}/api/reports/{_options.DashboardReporterOptions.ProjectName}/{version}");
 
-            if (_options.ModuleName != null)
+            if (_options.DashboardReporterOptions.ModuleName != null)
             {
-                url = new Uri(url, $"?module={_options.ModuleName}");
+                url = new Uri(url, $"?module={_options.DashboardReporterOptions.ModuleName}");
             }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
-            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
+            requestMessage.Headers.Add("X-Api-Key", _options.DashboardReporterOptions.DashboardApiKey);
 
             _logger.LogDebug("Sending GET to {0}", url);
             var response = await _httpClient.SendAsync(requestMessage);

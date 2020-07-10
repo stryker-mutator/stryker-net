@@ -12,17 +12,17 @@ namespace Stryker.Core.Reporters
 {
     public interface IReporterFactory
     {
-        IReporter Create(StrykerOptions options);
+        IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null);
     }
 
     public class ReporterFactory : IReporterFactory
     {
-        public static IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
+        public IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, branchProvider)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider branchProvider = null)
+        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -35,7 +35,7 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        private static IEnumerable<IReporter> DetermineEnabledReporters(IList<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
+        private IEnumerable<IReporter> DetermineEnabledReporters(IList<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
             if (enabledReporters.Contains(Reporter.All))
             {
@@ -62,7 +62,7 @@ namespace Stryker.Core.Reporters
                 .Select(reporter => reporter.Value);
         }
 
-        private static ProgressReporter CreateProgressReporter()
+        private ProgressReporter CreateProgressReporter()
         {
             var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
             var progressBarReporter =

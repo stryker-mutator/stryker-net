@@ -7,7 +7,7 @@ namespace Stryker.Core.DashboardCompare
 {
     public class GitInfoProvider : IGitInfoProvider
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly string _repositoryPath;
         public IRepository Repository { get; }
 
@@ -19,10 +19,15 @@ namespace Stryker.Core.DashboardCompare
             }
         }
 
-        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null)
+        public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null)
         {
             _repositoryPath = repositoryPath;
             _options = options;
+
+            if (!options.DiffEnabled)
+            {
+                return;
+            }
 
             if (repository != null)
             {
@@ -69,7 +74,7 @@ namespace Stryker.Core.DashboardCompare
 
                 Commands.Checkout(Repository, branch);
 
-                var currentBranch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+                var currentBranch = Repository.CreateBranch(_options.DashboardReporterOptions.ProjectVersion, $"origin/{_options.DashboardReporterOptions.ProjectVersion}");
 
                 Commands.Checkout(Repository, currentBranch);
             }

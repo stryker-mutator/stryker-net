@@ -15,7 +15,7 @@ namespace Stryker.Core.Reporters
 {
     public partial class DashboardReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
         private readonly IGitInfoProvider _branchProvider;
         private readonly ILogger<DashboardReporter> _logger;
@@ -56,7 +56,7 @@ namespace Stryker.Core.Reporters
             // Method to implement the interface
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // Method to implement the interface
         }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadHumanReadableReport(JsonReport mutationReport)
         {
-            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion);
+            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.DashboardReporterOptions.ProjectVersion);
 
             if (reportUrl != null)
             {

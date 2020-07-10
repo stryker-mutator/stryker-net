@@ -54,8 +54,8 @@ namespace Stryker.Core.Initialisation
                     {
                         _logger.LogDebug("Analysing {projectFilePath}", project.Value.ProjectFile.Path);
                         var options = new EnvironmentOptions();
-                        options.Arguments.Add("--configuration debug");
-                        var projectAnalyzerResult = project.Value.Build(options).Results.FirstOrDefault();
+                        var buildResult = project.Value.Build();
+                        var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
                         if (projectAnalyzerResult is { })
                         {
                             projectsAnalyzerResults.Add(projectAnalyzerResult);

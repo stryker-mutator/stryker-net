@@ -30,7 +30,6 @@ namespace Stryker.Core.Options
         public string ProjectUnderTestNameFilter { get; }
         public bool DiffEnabled { get; }
         public bool CompareToDashboard { get; }
-
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
@@ -76,8 +75,8 @@ namespace Stryker.Core.Options
             bool diff = false,
             bool compareToDashboard = false,
             string gitSource = "master",
+            string dashboardUrl = null,
             string dashboardApiKey = null,
-            string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
             string moduleName = null,
             string projectVersion = null,
@@ -109,7 +108,7 @@ namespace Stryker.Core.Options
             CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
-            DashboardReporterOptions = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+            DashboardReporterOptions = ValidateDashboardReporter(dashboardApiKey, projectName, moduleName, projectVersion, fallbackVersion, dashboardUrl);
         }
 
         public StrykerProjectOptions ToProjectOptions(string basePath = null, string projectUnderTest = null, IEnumerable<string> testProjects = null)
@@ -136,12 +135,13 @@ namespace Stryker.Core.Options
                 languageVersion: LanguageVersion,
                 diff: DiffEnabled,
                 gitSource: GitSource,
-                testProjects: testProjects ?? TestProjects);
+                testProjects: testProjects ?? TestProjects,
+                compareToDashboard: CompareToDashboard);
         }
 
-        private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion)
+        private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion, string dashboardUrl)
         {
-            var defaultOptions = new DashboardReporterOptions(null, null, null, null, null);
+            var defaultOptions = new DashboardReporterOptions(null, null, null, null, null, null);
             if (!Reporters.Contains(Reporter.Dashboard))
             {
                 return defaultOptions;
@@ -171,7 +171,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return new DashboardReporterOptions(dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion);
+            return new DashboardReporterOptions(dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion, dashboardUrl);
         }
 
         private string ValidateGitSource(string gitSource)

@@ -32,6 +32,7 @@ namespace Stryker.Core.Options
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
         public DashboardReporterOptions DashboardReporterOptions { get; }
+        public bool CompareToDashboard { get; }
 
         public StrykerProjectOptions(
             string basePath = null,
@@ -55,7 +56,8 @@ namespace Stryker.Core.Options
             bool diff = false,
             string gitSource = null,
             DashboardReporterOptions dashboardReporterOptions = null,
-            IEnumerable<string> testProjects = null)
+            IEnumerable<string> testProjects = null,
+            bool compareToDashboard = false)
         {
             IgnoredMethods = ignoredMethods;
             BasePath = basePath;
@@ -79,6 +81,7 @@ namespace Stryker.Core.Options
             GitSource = gitSource;
             TestProjects = testProjects;
             DashboardReporterOptions = dashboardReporterOptions;
+            CompareToDashboard = compareToDashboard;
         }
     }
 }
