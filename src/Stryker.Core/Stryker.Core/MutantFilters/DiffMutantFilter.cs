@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Baseline;
-using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Logging;

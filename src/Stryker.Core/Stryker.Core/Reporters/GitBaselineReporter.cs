@@ -1,4 +1,5 @@
 ﻿using Stryker.Core.Baseline;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -11,15 +12,18 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
-        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null)
+        private readonly IGitInfoProvider _gitInfoProvider;
+
+        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
+            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
-            var projectVersion = _options.CurrentBranchCanonicalName ?? _options.FallbackVersion;
+            var projectVersion = _gitInfoProvider.GetCurrentBranchName() ?? _options.FallbackVersion;
 
             _baselineProvider.Save(mutationReport, projectVersion).Wait();
         }

@@ -1,5 +1,4 @@
 ﻿using Stryker.Core.Baseline;
-using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Options;

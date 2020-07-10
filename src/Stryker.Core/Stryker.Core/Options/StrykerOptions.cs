@@ -50,8 +50,6 @@ namespace Stryker.Core.Options
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
 
-        public string CurrentBranchCanonicalName { get; set; }
-
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
         public string ProjectName { get; }
