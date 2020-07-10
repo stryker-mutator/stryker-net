@@ -1667,7 +1667,7 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
           "Stryker.DataCollector": "0.18.0",
-          "Stryker.RegexMutators": "1.0.0",
+          "Stryker.RegexMutators": "0.18.0",
           "System.IO.Abstractions": "12.0.4"
         }
       },
