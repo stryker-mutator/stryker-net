@@ -104,13 +104,14 @@ namespace Stryker.Core.UnitTest.Baseline
                 ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage()
                 {
-                    StatusCode = System.Net.HttpStatusCode.OK
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    Content = new StringContent("Something went wrong", Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
             var target = new AzureBaselineProvider(options, new HttpClient(handlerMock.Object));
 
-            var result = target.Save(jsonReport, "project_version");
+            await target.Save(jsonReport, "project_version");
             
             // assert
             handlerMock
@@ -235,7 +236,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var target = new AzureBaselineProvider(options, new HttpClient(handlerMock.Object));
 
-            var result = target.Save(jsonReport, "project_version");
+            await target.Save(jsonReport, "project_version");
 
             // assert
             handlerMock

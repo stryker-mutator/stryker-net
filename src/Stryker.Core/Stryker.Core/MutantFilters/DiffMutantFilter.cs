@@ -113,19 +113,7 @@ namespace Stryker.Core.MutantFilters
 
                         IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
 
-                        if (matchingMutants.Count() == 1)
-                        {
-                            matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                            matchingMutants.First().ResultStatusReason = "Result based on previous run.";
-                        }
-                        else
-                        {
-                            foreach (var matchingMutant in matchingMutants)
-                            {
-                                matchingMutant.ResultStatus = MutantStatus.NotRun;
-                                matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
-                            }
-                        }
+                        SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                     }
                 }
             }
@@ -138,6 +126,23 @@ namespace Stryker.Core.MutantFilters
             {
                 _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
                     skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+            }
+        }
+
+        private static void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
+        {
+            if (matchingMutants.Count() == 1)
+            {
+                matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+                matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+            }
+            else
+            {
+                foreach (var matchingMutant in matchingMutants)
+                {
+                    matchingMutant.ResultStatus = MutantStatus.NotRun;
+                    matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
+                }
             }
         }
 

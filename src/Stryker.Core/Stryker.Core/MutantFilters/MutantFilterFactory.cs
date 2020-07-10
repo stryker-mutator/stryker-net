@@ -1,14 +1,13 @@
 ﻿using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
-using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.MutantFilters
 {
-    public class MutantFilterFactory
+    public static class MutantFilterFactory
     {
         private static IDiffProvider _diffProvider;
         private static IGitInfoProvider _gitInfoProvider;

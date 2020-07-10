@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;

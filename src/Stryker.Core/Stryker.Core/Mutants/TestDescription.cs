@@ -18,7 +18,6 @@ namespace Stryker.Core.Mutants
 
         static TestDescription()
         {
-            // TODO: Set this the value for testfilepath here
             AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests", "");
         }
 

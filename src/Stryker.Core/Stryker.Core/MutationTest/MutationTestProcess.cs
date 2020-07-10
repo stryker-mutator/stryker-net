@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.CoverageAnalysis;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;

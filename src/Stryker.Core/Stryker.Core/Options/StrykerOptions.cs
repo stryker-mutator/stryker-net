@@ -168,7 +168,7 @@ namespace Stryker.Core.Options
             // Normalize the SAS
             if (azureSAS.StartsWith("?sv="))
             {
-                azureSAS.Replace("?sv=", "");
+                azureSAS = azureSAS.Replace("?sv=", "");
             }
 
             return (azureSAS, azureFileStorageUrl);

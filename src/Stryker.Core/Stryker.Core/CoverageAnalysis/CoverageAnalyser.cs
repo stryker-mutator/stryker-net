@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.CoverageAnalysis
@@ -39,30 +40,34 @@ namespace Stryker.Core.CoverageAnalysis
                 var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
                 if (testResult.FailingTests.Count == 0)
                 {
-                    // force static mutants to be tested against all tests.
-                    if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                    {
-                        foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
-                        {
-                            mutant.MustRunAgainstAllTests = true;
-                        }
-                    }
-                    foreach (var mutant in mutantsToScan)
-                    {
-                        if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
-                        {
-                            mutant.ResultStatus = MutantStatus.NoCoverage;
-                        }
-                        else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
-                        {
-                            mutant.CoveringTests = TestListDescription.EveryTest();
-                        }
-                    }
-
+                    SetCoveringTests(mutantsToScan);
                     return;
                 }
                 _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
                 throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
+            }
+        }
+
+        private void SetCoveringTests(List<Mutant> mutantsToScan)
+        {
+            // force static mutants to be tested against all tests.
+            if (!_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            {
+                foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                {
+                    mutant.MustRunAgainstAllTests = true;
+                }
+            }
+            foreach (var mutant in mutantsToScan)
+            {
+                if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
+                {
+                    mutant.ResultStatus = MutantStatus.NoCoverage;
+                }
+                else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+                {
+                    mutant.CoveringTests = TestListDescription.EveryTest();
+                }
             }
         }
     }
