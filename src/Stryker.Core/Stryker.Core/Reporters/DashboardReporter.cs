@@ -28,7 +28,6 @@ namespace Stryker.Core.Reporters
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _chalk = chalk ?? new Chalk();
-            _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
         }
 

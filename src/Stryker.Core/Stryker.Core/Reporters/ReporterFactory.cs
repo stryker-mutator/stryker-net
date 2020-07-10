@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
@@ -11,12 +12,12 @@ namespace Stryker.Core.Reporters
 {
     public static class ReporterFactory
     {
-        public static IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
+        public static IReporter Create(StrykerOptions options, IGitInfoProvider gitInfoProvider = null, IBaselineProvider baselineProvider = null)
         {
-            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, branchProvider)));
+            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, gitInfoProvider, baselineProvider: baselineProvider)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider gitInfoProvider = null)
+        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider gitInfoProvider = null, IBaselineProvider baselineProvider = null)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -26,7 +27,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
                 { Reporter.Dashboard, new DashboardReporter(options, gitInfoProvider: gitInfoProvider)},
-                { Reporter.Baseline, new GitBaselineReporter(options) }
+                { Reporter.Baseline, new GitBaselineReporter(options, baselineProvider: baselineProvider, gitInfoProvider: gitInfoProvider) }
             };
         }
 

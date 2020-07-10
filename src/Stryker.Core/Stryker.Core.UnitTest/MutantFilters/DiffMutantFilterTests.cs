@@ -34,6 +34,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
+            var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -48,7 +52,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object, baselineProvider.Object, gitInfoProvider.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -69,6 +73,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
+            var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -83,7 +91,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object, baselineProvider.Object, gitInfoProvider.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -106,6 +114,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
+            var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
             var jsonMutant = new JsonMutant
             {
                 Location = new JsonMutantLocation(new JsonMutantPosition
@@ -120,7 +132,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }),
             };
 
-            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object);
+            var target = new DiffMutantFilter(new StrykerOptions(diff: false), diffProviderMock.Object, baselineProvider.Object, gitInfoProvider.Object);
 
             // Act
             var result = target.GetMutantSourceCode(source, jsonMutant);
@@ -424,7 +436,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IGitInfoProvider>();
+            var gitInfoProvider = new Mock<IGitInfoProvider>();
 
             var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
 
@@ -434,7 +446,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 TestFilesChanged = new List<string> { "C:/testfile.cs" }
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
+            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
 
             var testDescriptions = new List<TestDescription> { new TestDescription(Guid.NewGuid().ToString(), "name", "C:/testfile.cs") };
             var testListDescription = new TestListDescription(testDescriptions);
