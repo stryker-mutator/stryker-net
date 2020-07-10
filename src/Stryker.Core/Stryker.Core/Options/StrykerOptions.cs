@@ -1,5 +1,4 @@
-﻿using Microsoft.Build.Logging.StructuredLogger;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Stryker.Core.Baseline;
