@@ -43,11 +43,10 @@ Example `stryker-config.json` file:
         "threshold-high": 80,
         "threshold-low": 70,
         "threshold-break": 60,
-        "file-patterns": [
+        "mutate": [
             "!ExampleClass.cs",
-            "!ExampleDirectory",
-            "!ExampleDirectory/ExampleClass2.cs",
-            "!C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
+            "!Migrations/*.*",
+            "!ExampleDirectory\\ExampleClass2.cs"
         ],
         "excluded-mutations": [
             "string",

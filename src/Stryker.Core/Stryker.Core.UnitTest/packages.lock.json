@@ -70,9 +70,9 @@
       },
       "Xunit.SkippableFact": {
         "type": "Direct",
-        "requested": "[1.4.8, )",
-        "resolved": "1.4.8",
-        "contentHash": "1gHizZoATBkCZxxnza6YqejAaJZUv5TFaibnjXGVHSHaij3Y97C0FyAfpfNCh+sofUWIRJaLYKgTLNYsEC0GbA==",
+        "requested": "[1.4.13, )",
+        "resolved": "1.4.13",
+        "contentHash": "IyzZNvJEtXGlXrzxDiSbtH5Lyxf4iJdRQADuyjGdDf00LjXRLJwIoezQNFhFGKTMtvk8IIgaSHxW4mAV4O7b8A==",
         "dependencies": {
           "Validation": "2.4.18",
           "xunit.extensibility.execution": "2.4.0"
