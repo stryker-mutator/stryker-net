@@ -124,7 +124,6 @@ namespace Stryker.CLI
             ValueType = CommandOptionType.SingleValue,
             DefaultValue = _defaultOptions.BaselineProvider.ToString(),
             JsonKey = "baseline-storage-location"
-
         };
 
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
