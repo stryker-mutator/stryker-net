@@ -24,6 +24,18 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         }
 
         [Fact]
+        public void DoesNotCheckForRepositoryPathWhenDisabled()
+        {
+            var repository = new Mock<IRepository>(MockBehavior.Strict);
+
+            var options = new StrykerOptions(diff: false);
+
+            var target = new GitInfoProvider(options, repository.Object, null);
+
+            target.Repository.ShouldBe(null);
+        }
+
+        [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
             var options = new StrykerOptions(basePath: "C:\\");
