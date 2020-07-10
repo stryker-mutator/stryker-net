@@ -23,7 +23,10 @@ namespace Stryker.Core.UnitTest.Reporters
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var result = ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
+
+            var target = new ReporterFactory();
+
+            var result = target.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
@@ -33,7 +36,9 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
+            var target = new ReporterFactory();
+
+            var result = (BroadcastReporter)target.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
 
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is JsonReporter);
@@ -50,7 +55,10 @@ namespace Stryker.Core.UnitTest.Reporters
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var result = ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
+
+            var target = new ReporterFactory();
+
+            var result = target.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);

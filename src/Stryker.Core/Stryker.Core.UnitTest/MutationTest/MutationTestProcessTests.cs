@@ -451,7 +451,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 mutantFilter: mutantFilterMock.Object,
                 options: options);
 
-            var testResult = target.Test(options);
+            var testResult = target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
@@ -553,7 +553,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 mutantFilter: mutantFilterMock.Object,
                 options: options);
 
-            var testResult = target.Test(options);
+            var testResult = target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
             executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
