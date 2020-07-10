@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Clients;
+﻿using Stryker.Core.Baseline;
+using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Options;
@@ -11,9 +12,9 @@ namespace Stryker.Core.MutantFilters
     {
         private static IDiffProvider _diffProvider;
         private static IGitInfoProvider _gitInfoProvider;
-        private static IDashboardClient _dashboardClient;
+        private static IBaselineProvider _baselineProvider;
 
-        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider gitInfoProvider = null)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             if (options == null)
             {
@@ -21,7 +22,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             _diffProvider = diffProvider ?? new GitDiffProvider(options);
-            _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
@@ -38,7 +39,7 @@ namespace Stryker.Core.MutantFilters
 
             if (options.DiffEnabled)
             {
-                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, dashboardClient: _dashboardClient, gitInfoProvider: _gitInfoProvider));
+                enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, baselineProvider: _baselineProvider, gitInfoProvider: _gitInfoProvider));
             }
 
             return enabledFilters;

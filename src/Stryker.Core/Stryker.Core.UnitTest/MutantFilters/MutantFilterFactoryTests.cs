@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Baseline;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
@@ -18,9 +19,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
-            var result = MutantFilterFactory.Create(new StrykerOptions(diff: false), diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(new StrykerOptions(diff: false), diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
@@ -39,10 +40,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -58,10 +59,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var dashboardClientMock = new Mock<IDashboardClient>(MockBehavior.Loose);
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, dashboardClientMock.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;

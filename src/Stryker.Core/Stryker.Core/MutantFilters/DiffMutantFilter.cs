@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Baseline;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
@@ -20,7 +21,7 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-        private readonly IDashboardClient _dashboardClient;
+        private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
         private readonly StrykerOptions _options;
@@ -29,13 +30,13 @@ namespace Stryker.Core.MutantFilters
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider gitInfoProvider = null)
+        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
-            _dashboardClient = dashboardClient ?? new DashboardClient(options);
+            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
 
             if (options.CompareToDashboard)
             {
@@ -174,7 +175,7 @@ namespace Stryker.Core.MutantFilters
 
             var baselineLocation = $"dashboard-compare/{branchName}";
 
-            var report = await _dashboardClient.PullReport(baselineLocation);
+            var report = await _baselineProvider.Load(baselineLocation);
 
             if (report == null)
             {
@@ -190,7 +191,7 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetFallbackBaselineAsync()
         {
-            var report = await _dashboardClient.PullReport(_options.FallbackVersion);
+            var report = await _baselineProvider.Load(_options.FallbackVersion);
 
             if (report == null)
             {
