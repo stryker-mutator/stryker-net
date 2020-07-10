@@ -111,7 +111,7 @@ namespace Stryker.CLI
             ArgumentShortName = "-compare",
             ArgumentDescription = $@"Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "dashboard-diff-compare"
+            JsonKey = "dashboard-compare"
 
         };
 
@@ -120,7 +120,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--baseline-storage-location",
             ArgumentShortName = "-bsl <storageLocation>",
-            ArgumentDescription = $@"Allows to choose a storage location, this can be either disk or dashboard. When the dashboard reporter is enabled, the dashboard will be the default storage location. Otherwise disk is the default storage location. ",
+            ArgumentDescription = $@"Allows to choose a storage location, this can be either azure, disk or dashboard. When the dashboard reporter is enabled, the dashboard will be the default storage location. Otherwise disk is the default storage location. Selecting azure allows you to store baselines using your own instance of azure file storage.",
             ValueType = CommandOptionType.SingleValue,
             DefaultValue = _defaultOptions.BaselineProvider.ToString(),
             JsonKey = "baseline-storage-location"
@@ -330,16 +330,16 @@ For example: Your project might be called 'consumer-loans' and it might contains
 
         public static readonly CLIOption<string> AzureSAS = new CLIOption<string>
         {
-            ArgumentName = "--azure-sas-key",
+            ArgumentName = "--azure-storage-sas",
             ArgumentShortName = "-sas <azure-sas-key>",
             ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
             DefaultValue = null,
-            JsonKey = "azure-sas-key"
+            JsonKey = "azure-storage-sas"
         };
 
         public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
         {
-            ArgumentName = "--azure-file-storage-url",
+            ArgumentName = "--azure-storage-url",
             ArgumentShortName = "-storage-url",
             ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
@@ -348,7 +348,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
 
                                     Note, the url might be different depending of where your file storage is hosted.",
             DefaultValue = null,
-            JsonKey = "azure-file-storage-url"
+            JsonKey = "azure-storage-url"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
