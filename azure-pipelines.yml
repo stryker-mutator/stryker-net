@@ -139,7 +139,7 @@ stages:
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
           - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
             displayName: 'Restore'
-              inputs:
+            inputs:
               command: 'restore'
               projects: 'src/Stryker.CLI/Stryker.CLI.sln'
           - task: DotNetCoreCLI@2
