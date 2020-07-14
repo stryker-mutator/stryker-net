@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -120,7 +121,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--baseline-storage-location",
             ArgumentShortName = "-bsl <storageLocation>",
-            ArgumentDescription = $@"Allows to choose a storage location, this can be either azure, disk or dashboard. When the dashboard reporter is enabled, the dashboard will be the default storage location. Otherwise disk is the default storage location. Selecting azure allows you to store baselines using your own instance of azure file storage.",
+            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(_defaultOptions.BaselineProvider, (IEnumerable<BaselineProvider>)Enum.GetValues(_defaultOptions.BaselineProvider.GetType())) }]
+                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.",
             ValueType = CommandOptionType.SingleValue,
             DefaultValue = _defaultOptions.BaselineProvider.ToString(),
             JsonKey = "baseline-storage-location"
@@ -340,7 +342,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
         {
             ArgumentName = "--azure-storage-url",
-            ArgumentShortName = "-storage-url",
+            ArgumentShortName = "-storage-url <url>",
             ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
 
