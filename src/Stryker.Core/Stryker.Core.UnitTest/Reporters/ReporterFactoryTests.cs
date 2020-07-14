@@ -23,9 +23,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("ClearText", typeof(ClearTextReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
-            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }), gitInfoProviderMock.Object, baselineProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
@@ -33,9 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesAllReporters()
         {
-            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }), gitInfoProviderMock.Object, baselineProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is JsonReporter);
             result.Reporters.ShouldContain(r => r is HtmlReporter);
@@ -51,9 +47,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), gitInfoProvider: gitInfoProviderMock.Object, baselineProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
