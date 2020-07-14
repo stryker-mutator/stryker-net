@@ -389,9 +389,9 @@ Supported storage locations are:
 
 | Storage location | Option | Description |
 |------------------|--------|-------------|
-| Disk             | disk   | Saves the baseline to the `StrykerOutput` folder|
-| Stryker Dashboard| dashboard | Saves the baseline to Stryker Dashboard |
-| Azure File Storage | azure | Saves the baseline to Azure File Storage |
+| Disk             | Disk   | Saves the baseline to the `StrykerOutput` folder|
+| Stryker Dashboard| Dashboard | Saves the baseline to Stryker Dashboard |
+| Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
 
 ```
 dotnet stryker --dashboard-compare --baseline-storage-location disk
@@ -414,11 +414,11 @@ Providing a subfolder is optional, we storage the baseline in a `StrykerOutput` 
 For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
 ```
-dotnet stryker --dashboard-compare --baseline-storage-location azure --azure-file-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-sas SAS_KEY
+dotnet stryker --dashboard-compare --baseline-storage-location AzureFileStorage --azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-storage-sas STORAGE_SAS
 
 or
 
-dotnet stryker -compare -bsl azure -storage-url --azure-file-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas SAS_KEY
+dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
 ```
 
 
