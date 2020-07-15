@@ -23,9 +23,9 @@
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
-        "requested": "[3.16.1, )",
-        "resolved": "3.16.1",
-        "contentHash": "wKuxi7G9Gs2I9gnckwtMVzbPIy7vkNj+FafrmQPaYCUguT+se5kmzI3XwsVCXEalWk9pSYZW7roBkNu4ogn3DA==",
+        "requested": "[3.17.0, )",
+        "resolved": "3.17.0",
+        "contentHash": "I9MNvK+GM2yXrHPitwZkAZKU9sYI2OO/8wKC+VuBD7V3z+ySQ1pSopX/urr0ooedI8/TIcajYPRO4vGRr7AM8A==",
         "dependencies": {
           "Microsoft.DotNet.InternalAbstractions": "1.0.0",
           "System.ComponentModel.EventBasedAsync": "4.3.0",
