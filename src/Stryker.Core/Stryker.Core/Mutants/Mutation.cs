@@ -12,5 +12,6 @@ namespace Stryker.Core.Mutants
         public SyntaxNode ReplacementNode { get; set; }
         public string DisplayName { get; set; }
         public Mutator Type { get; set; }
+        public string Description { get; set; }
     }
 }
