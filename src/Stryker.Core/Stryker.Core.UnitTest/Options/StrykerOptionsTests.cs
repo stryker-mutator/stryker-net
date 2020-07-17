@@ -212,5 +212,37 @@ namespace Stryker.Core.UnitTest.Options
             options.GitSource.ShouldBe("development");
             options.FallbackVersion.ShouldBe("development");
         }
+
+        [Fact]
+        public void Should_Throw_Exception_When_AzureSAS_null()
+        {
+            Action act = () => new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("A Shared Access Signature is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_null()
+        {
+            Action act = () => new StrykerOptions(azureFileStorageUrl: null, azureSAS: "AZURE_SAS", baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_and_SAS_null()
+        {
+            Action act = () => new StrykerOptions(azureFileStorageUrl: null, azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe(@"A Shared Access Signature is required when Azure File Storage is enabled!The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Normalize_SAS()
+        {
+            var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
+
+            target.AzureSAS.ShouldBe("SAS");
+        }
     }
 }

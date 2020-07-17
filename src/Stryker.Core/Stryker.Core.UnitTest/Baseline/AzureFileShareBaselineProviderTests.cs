@@ -12,6 +12,7 @@ using Stryker.Core.Reporters.Json;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.UnitTest.Reporters;
 using System;
+using System.Linq;
 
 namespace Stryker.Core.UnitTest.Baseline
 {
@@ -87,7 +88,7 @@ namespace Stryker.Core.UnitTest.Baseline
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>( requestMessage => requestMessage.RequestUri == expectedGetUri && requestMessage.Method == HttpMethod.Get),
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedGetUri && requestMessage.Method == HttpMethod.Get),
                 ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage()
                 {
@@ -112,7 +113,7 @@ namespace Stryker.Core.UnitTest.Baseline
             var target = new AzureFileShareBaselineProvider(options, new HttpClient(handlerMock.Object));
 
             await target.Save(jsonReport, "project_version");
-            
+
             // assert
             handlerMock
                .Protected()
