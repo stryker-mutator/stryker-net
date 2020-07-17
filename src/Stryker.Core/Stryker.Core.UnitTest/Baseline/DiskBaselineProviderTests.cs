@@ -65,5 +65,26 @@ namespace Stryker.Core.UnitTest.Baseline
 
             result.ShouldBeNull();
         }
+
+        [Fact]
+        public async Task ShouldLoadReportFromDisk()
+        {
+            // Arrange
+            var fileSystemMock = new MockFileSystem();
+            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
+
+            var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith());
+
+            fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());
+
+            var target = new DiskBaselineProvider(options, fileSystemMock);
+
+            // Act
+            var result = await target.Load("version");
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.ToJson().ShouldBe(report.ToJson());
+        }
     }
 }
