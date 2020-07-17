@@ -50,11 +50,10 @@ namespace Stryker.Core.Baseline
 
             var reportJson = report.ToJson();
 
-            int byteSize;
+            int byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
+
             if (existingReport == null)
             {
-                byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
-
                 var succesfullyCreatedDirectory = await CreateDirectory(version);
 
                 if (!succesfullyCreatedDirectory)
@@ -69,9 +68,14 @@ namespace Stryker.Core.Baseline
                     return;
                 }
             }
-            else
+            else if (Encoding.UTF8.GetByteCount(existingReport.ToJson()) != byteSize)
             {
-                byteSize = Encoding.UTF8.GetByteCount(existingReport.ToJson());
+                var succesfullyResizedFile = await ResizeFile(byteSize, version);
+
+                if (!succesfullyResizedFile)
+                {
+                    return;
+                }
             }
 
 
@@ -166,6 +170,35 @@ namespace Stryker.Core.Baseline
             {
                 _logger.LogInformation("Report uploaded");
             }
+        }
+
+        private async Task<bool> ResizeFile(int byteSize, string version)
+        {
+            _logger.LogInformation("Updating file size to the size of the current report");
+
+            var subdir = $"strykerOutput/baselines/{version}";
+            var filename = "stryker-report.json";
+
+            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?comp=properties&sv={_options.AzureSAS}");
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+
+            SetWritingHeaders(requestMessage);
+
+            requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
+
+            var response = await _httpClient.SendAsync(requestMessage);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                _logger.LogError("Azure File Storage file resizing failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                return false;
+            } else
+            {
+                _logger.LogInformation("File resized");
+                return true;
+            }
+
         }
 
         private void SetWritingHeaders(HttpRequestMessage requestMessage)
