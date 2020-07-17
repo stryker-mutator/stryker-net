@@ -50,5 +50,20 @@ namespace Stryker.Core.UnitTest.Baseline
             var report = JsonConvert.DeserializeObject<JsonReport>(file.TextContents);
             report.ShouldNotBeNull();
         }
+
+        [Fact]
+        public async Task ShouldHandleFileNotFoundExceptionOnLoad()
+        {
+            // Arrange
+            var fileSystemMock = new MockFileSystem();
+
+            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
+            var sut = new DiskBaselineProvider(options, fileSystemMock);
+
+            // Act
+            var result = await sut.Load("testversion");
+
+            result.ShouldBeNull();
+        }
     }
 }
