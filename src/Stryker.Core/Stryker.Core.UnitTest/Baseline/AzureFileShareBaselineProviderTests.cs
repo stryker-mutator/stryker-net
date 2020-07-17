@@ -15,7 +15,7 @@ using System;
 
 namespace Stryker.Core.UnitTest.Baseline
 {
-    public class AzureBaselineProviderTests
+    public class AzureFileShareBaselineProviderTests
     {
         [Fact]
         public async Task Load_Calls_Correct_URL()
@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var httpClient = new HttpClient(handlerMock.Object);
 
-            var target = new AzureBaselineProvider(options, httpClient: httpClient);
+            var target = new AzureFileShareBaselineProvider(options, httpClient: httpClient);
 
             var result = await target.Load("project_version");
 
@@ -109,7 +109,7 @@ namespace Stryker.Core.UnitTest.Baseline
                 })
                 .Verifiable();
 
-            var target = new AzureBaselineProvider(options, new HttpClient(handlerMock.Object));
+            var target = new AzureFileShareBaselineProvider(options, new HttpClient(handlerMock.Object));
 
             await target.Save(jsonReport, "project_version");
             
@@ -234,7 +234,7 @@ namespace Stryker.Core.UnitTest.Baseline
                 })
                 .Verifiable();
 
-            var target = new AzureBaselineProvider(options, new HttpClient(handlerMock.Object));
+            var target = new AzureFileShareBaselineProvider(options, new HttpClient(handlerMock.Object));
 
             await target.Save(jsonReport, "project_version");
 

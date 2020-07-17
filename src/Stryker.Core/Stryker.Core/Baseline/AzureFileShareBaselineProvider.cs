@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.Baseline
 {
-    public class AzureBaselineProvider : IBaselineProvider
+    public class AzureFileShareBaselineProvider : IBaselineProvider
     {
         private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
-        private readonly ILogger<AzureBaselineProvider> _logger;
-        public AzureBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
+        private readonly ILogger<AzureFileShareBaselineProvider> _logger;
+        public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureBaselineProvider>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
         }
 
         public async Task<JsonReport> Load(string version)
