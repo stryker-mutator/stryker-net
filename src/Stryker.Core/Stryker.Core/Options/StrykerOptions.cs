@@ -280,6 +280,14 @@ namespace Stryker.Core.Options
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
+            // Create output dir with gitignore
+            var gitignorePath = Path.Combine(basePath, "StrykerOutput", ".gitignore");
+            _fileSystem.File.Create(gitignorePath).Close();
+            using (var file = _fileSystem.File.CreateText(gitignorePath))
+            {
+                file.WriteLine("*");
+            }
+
             return outputPath;
         }
 

@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest
 
 
 
-            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, fileSystemMock, reporter: reporterMock.Object);
+            var target = new StrykerRunner(initialisationMock.Object, mutationTestProcessMock.Object, reporter: reporterMock.Object);
 
             target.RunMutationTest(options);
 

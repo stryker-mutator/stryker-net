@@ -10,8 +10,6 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions;
 
 namespace Stryker.Core
 {
@@ -26,13 +24,11 @@ namespace Stryker.Core
         private IInitialisationProcess _initialisationProcess;
         private MutationTestInput _input;
         private IMutationTestProcess _mutationTestProcess;
-        private readonly IFileSystem _fileSystem;
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null, IReporter reporter = null)
+        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IReporter reporter = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
-            _fileSystem = fileSystem ?? new FileSystem();
             _reporter = reporter;
         }
 
@@ -51,14 +47,6 @@ namespace Stryker.Core
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Create output dir with gitignore
-            _fileSystem.Directory.CreateDirectory(options.OutputPath);
-            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
-            {
-                file.WriteLine("*");
-            }
-
             // setup logging
             ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
@@ -74,10 +62,10 @@ namespace Stryker.Core
                     _reporter = ReporterFactory.Create(options);
                 }
 
-                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
+                _initialisationProcess ??= new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);
 
-                _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
+                _mutationTestProcess ??= new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
