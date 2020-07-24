@@ -26,20 +26,18 @@ namespace Stryker.Core.Baseline
         public async Task<JsonReport> Load(string version)
         {
             var reportPath = Path.Combine(_options.BaselineOutputPath, version, "stryker-report.json");
-            try
+
+            if (_fileSystem.File.Exists(reportPath))
             {
                 using StreamReader inputReader = _fileSystem.File.OpenText(reportPath);
 
                 var reportJson = await inputReader.ReadToEndAsync();
 
                 return JsonConvert.DeserializeObject<JsonReport>(reportJson);
-            } 
-            catch(FileNotFoundException)
-            {
-                _logger.LogInformation("No baseline was found at {0}", reportPath.ToString());
-                return null;
             }
-           
+
+            _logger.LogDebug("No baseline was found at {0}", reportPath.ToString());
+            return null;
         }
 
         public async Task Save(JsonReport report, string version)
@@ -54,7 +52,7 @@ namespace Stryker.Core.Baseline
 
             await outputWriter.WriteAsync(reportJson);
 
-            _logger.LogDebug($"Baseline report has been writter to {Path.Combine(reportPath, $"stryker-report.json")}");
+            _logger.LogDebug($"Baseline report has been saved to {Path.Combine(reportPath, $"stryker-report.json")}");
         }
     }
 }
