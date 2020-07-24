@@ -1,13 +1,10 @@
-﻿using Moq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,7 +18,7 @@ namespace Stryker.Core.UnitTest.Baseline
             // Arrange
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-            var sut = new DiskBaselineProvider(options, fileSystemMock);
+            var sut = new DiskBaselineProvider(fileSystemMock);
 
             // Act
             await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith()), "version");
@@ -39,7 +36,7 @@ namespace Stryker.Core.UnitTest.Baseline
             // Arrange
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-            var sut = new DiskBaselineProvider(options, fileSystemMock);
+            var sut = new DiskBaselineProvider(fileSystemMock);
 
             // Act
             await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith()), "version");
@@ -57,8 +54,7 @@ namespace Stryker.Core.UnitTest.Baseline
             // Arrange
             var fileSystemMock = new MockFileSystem();
 
-            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-            var sut = new DiskBaselineProvider(options, fileSystemMock);
+            var sut = new DiskBaselineProvider(fileSystemMock);
 
             // Act
             var result = await sut.Load("testversion");
@@ -77,7 +73,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());
 
-            var target = new DiskBaselineProvider(options, fileSystemMock);
+            var target = new DiskBaselineProvider(fileSystemMock);
 
             // Act
             var result = await target.Load("version");

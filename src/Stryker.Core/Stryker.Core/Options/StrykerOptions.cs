@@ -22,8 +22,6 @@ namespace Stryker.Core.Options
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
-        public string BaselineOutputPath { get; }
-
         public BaselineProvider BaselineProvider { get; }
 
         public IEnumerable<Reporter> Reporters { get; }
@@ -110,7 +108,6 @@ namespace Stryker.Core.Options
             IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
             CompareToDashboard = compareToDashboard;
-            BaselineOutputPath = ValidateBaselineOutputPath(basePath);
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -281,19 +278,6 @@ namespace Stryker.Core.Options
             }
 
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
-
-            return outputPath;
-        }
-
-        private string ValidateBaselineOutputPath(string basePath)
-        {
-            if (string.IsNullOrWhiteSpace(basePath))
-            {
-                return "";
-            }
-
-            var outputPath = Path.Combine(basePath, "StrykerOutput", "Baselines");
             _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             return outputPath;
