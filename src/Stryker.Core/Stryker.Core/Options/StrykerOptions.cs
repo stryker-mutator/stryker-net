@@ -223,25 +223,23 @@ namespace Stryker.Core.Options
                 fallbackVersion = gitSource;
             }
 
-            if (!CompareToDashboard)
+            if (CompareToDashboard)
             {
-                return (projectVersion, null, gitSource);
-            }
+                var errorStrings = new StringBuilder();
+                if (string.IsNullOrEmpty(projectVersion))
+                {
+                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be null, please provide a dashboard-version");
+                }
 
-            var errorStrings = new StringBuilder();
-            if (string.IsNullOrEmpty(projectVersion))
-            {
-                errorStrings.Append("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
-            }
+                if (fallbackVersion == projectVersion)
+                {
+                    errorStrings.Append("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
+                }
 
-            if (fallbackVersion == projectVersion)
-            {
-                errorStrings.Append("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
-            }
-
-            if (errorStrings.Length > 0)
-            {
-                throw new StrykerInputException(errorStrings.ToString());
+                if (errorStrings.Length > 0)
+                {
+                    throw new StrykerInputException(errorStrings.ToString());
+                }
             }
 
             return (projectVersion, fallbackVersion, gitSource);
