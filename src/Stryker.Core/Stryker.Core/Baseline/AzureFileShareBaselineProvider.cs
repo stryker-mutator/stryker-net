@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Stryker.Core.Baseline
         private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
-        private const string _outputPath = "StrykerOutput/Baselines/";
+        private const string _outputPath = "StrykerOutput/Baselines";
 
         public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
         {
@@ -92,12 +93,15 @@ namespace Stryker.Core.Baseline
         {
             _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
-            var pathSegments = fileUrl.Split('/');
-            var currentDirectory = pathSegments[0];
+            var uriParts = fileUrl.Split(_outputPath);
+            var currentDirectory = $"{uriParts[0]}";
 
-            for (var i = 1; i < pathSegments.Length; i++)
+            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains("."));
+
+            foreach (var segment in storagePathSegments)
             {
-                if (!await CreateDirectory($"{currentDirectory}/{pathSegments[i]}"))
+                currentDirectory += $"{segment}/";
+                if (!await CreateDirectory(currentDirectory))
                 {
                     return false;
                 }
