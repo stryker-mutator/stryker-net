@@ -8,6 +8,7 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Stryker.Core.Mutants.NodeOrchestrator;
 
 namespace Stryker.Core.Mutants
 {
@@ -32,6 +33,7 @@ namespace Stryker.Core.Mutants
         private int MutantCount { get; set; }
         private IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
+        private TypeBasedStrategy<SyntaxNode, INodeMutator> specificOrchestrator = new TypeBasedStrategy<SyntaxNode, INodeMutator>();
 
         private bool MustInjectCoverageLogic =>
             _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
@@ -62,6 +64,8 @@ namespace Stryker.Core.Mutants
                 };
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
+
+            specificOrchestrator.RegisterHandler(new IfStatementOrchestrator());
         }
 
         /// <summary>
@@ -82,10 +86,10 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            return Mutate(currentNode, new MutationContext());
+            return Mutate(currentNode, new MutationContext(this));
         }
 
-        private SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
+        internal SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
         {
             // don't mutate immutable nodes
             if (!SyntaxHelper.CanBeMutated(currentNode))
@@ -98,11 +102,11 @@ namespace Stryker.Core.Mutants
             {
                 // static fields
                 case FieldDeclarationSyntax fieldDeclaration when fieldDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext { InStaticValue = true };
+                    context = new MutationContext(this) { InStaticValue = true };
                     break;
                 // static constructors
                 case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext { InStaticValue = true };
+                    context = new MutationContext(this) { InStaticValue = true };
                     if (MustInjectCoverageLogic)
                     {
                         return MutateStaticConstructor(constructorDeclaration, context);
@@ -110,12 +114,19 @@ namespace Stryker.Core.Mutants
                     break;
                 // static properties
                 case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
-                    context = new MutationContext { InStaticValue = true };
+                    context = new MutationContext(this) { InStaticValue = true };
                     if (MustInjectCoverageLogic)
                     {
                         return MutateStaticAccessor(propertyDeclaration, context);
                     }
                     break;
+            }
+
+            var result = this.specificOrchestrator.FindHandler(currentNode.GetType());
+
+            if (result != null)
+            {
+                return result.Mutate(currentNode, context);
             }
 
             switch (currentNode)
@@ -128,8 +139,6 @@ namespace Stryker.Core.Mutants
                 case ExpressionStatementSyntax expressionStatement:
                     // we must skip the expression statement part
                     return currentNode.ReplaceNode(expressionStatement.Expression, Mutate(expressionStatement.Expression, context));
-                case IfStatementSyntax ifStatement:
-                    return MutateIfStatement(ifStatement, context);
                 case ForStatementSyntax forStatement:
                     return MutateForStatement(forStatement, context);
             }
