@@ -380,7 +380,7 @@ When enabling the --dashboard-compare feature you can provide a fallback version
 dotnet stryker --dashboard-compare --dashboard-fallback-version master
 dotnet stryker -compare -fallback-version master
 ```
-Default: `null`
+Default: value provided to --git-source or null
 
 ## Baseline Storage location
 Sets the storage location for the baseline used by --dashboard-compare. By default this is set to disk, when the dashboard reporter is enabled this is automatically set to Stryker Dashboard.
@@ -431,7 +431,7 @@ When configuring the --dashboard-compare feature on pull requests please provide
 4. Set --git-source to the name of the target branch of your pull request.
 
 ```
-dotnet stryker --dashboard-compare --dashboard-fallback-version master -git-source master --dashboard-version development
-dotenet stryker -compare -fallback-version master -source master -version development
+dotnet stryker --dashboard-compare --git-source master --dashboard-version development
+dotnet stryker -compare -source master -version development
 
 ```
