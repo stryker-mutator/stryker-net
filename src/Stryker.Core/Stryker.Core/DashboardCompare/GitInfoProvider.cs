@@ -24,6 +24,11 @@ namespace Stryker.Core.DashboardCompare
             _repositoryPath = repositoryPath;
             _options = options;
 
+            if (!options.DiffEnabled)
+            {
+                return;
+            }
+
             if (repository != null)
             {
                 Repository = repository;

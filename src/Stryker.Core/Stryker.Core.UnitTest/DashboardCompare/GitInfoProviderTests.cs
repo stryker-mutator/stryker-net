@@ -18,9 +18,21 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            var target = new GitInfoProvider(null, repository.Object, "path");
+            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, "path");
 
             target.RepositoryPath.ShouldBe("path");
+        }
+
+        [Fact]
+        public void DoesNotCheckForRepositoryPathWhenDisabled()
+        {
+            var repository = new Mock<IRepository>(MockBehavior.Strict);
+
+            var options = new StrykerOptions(diff: false);
+
+            var target = new GitInfoProvider(options, repository.Object, null);
+
+            target.Repository.ShouldBe(null);
         }
 
         [Fact]
@@ -60,7 +72,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsCurrentBranch()
         {
             // Arrange
-            var options = new StrykerOptions();
+            var options = new StrykerOptions(diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -104,7 +116,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsCurrentBranchWhenMultipleBranches()
         {
             // Arrange
-            var options = new StrykerOptions();
+            var options = new StrykerOptions(diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -156,17 +168,16 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
         {
-            void act() => new GitInfoProvider(null, repositoryPath: string.Empty);
+            void act() => new GitInfoProvider(new StrykerOptions(diff: true), repositoryPath: string.Empty);
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
-
         }
 
         [Fact]
         public void DetermineCommitThrowsStrykerInputException()
         {
-            var strykerOptions = new StrykerOptions(gitSource: "master");
+            var strykerOptions = new StrykerOptions(gitSource: "master", diff: true);
 
             var repository = new Mock<IRepository>();
 
@@ -192,7 +203,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             // Arrange
             string sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
-            var strykerOptions = new StrykerOptions(gitSource: sha);
+            var strykerOptions = new StrykerOptions(gitSource: sha, diff: true);
 
             var commitMock = new Mock<Commit>();
             var repositoryMock = new Mock<IRepository>();
@@ -219,7 +230,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Canonical_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitSource: "origin/master");
+            var options = new StrykerOptions(gitSource: "origin/master", diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -263,7 +274,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Friendly_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitSource: "master");
+            var options = new StrykerOptions(gitSource: "master", diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
