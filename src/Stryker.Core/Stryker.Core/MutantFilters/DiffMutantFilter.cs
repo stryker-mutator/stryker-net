@@ -48,7 +48,7 @@ namespace Stryker.Core.MutantFilters
             {
                 _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles.Count);
 
-                foreach(var changedFile in _diffResult.ChangedFiles)
+                foreach (var changedFile in _diffResult.ChangedFiles)
                 {
                     _logger.LogInformation("Changed file {0}", changedFile);
                 }
@@ -101,13 +101,13 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            foreach(var baselineFile in _baseline.Files)
+            foreach (var baselineFile in _baseline.Files)
             {
                 var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
 
                 if (filePath == file.RelativePath)
                 {
-                    foreach(var baselineMutant in baselineFile.Value.Mutants)
+                    foreach (var baselineMutant in baselineFile.Value.Mutants)
                     {
                         var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
@@ -178,12 +178,12 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for version {0}, now trying fallback version {1}", _options.ProjectName, _options.FallbackVersion);
+                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.FallbackVersion);
 
                 return await GetFallbackBaselineAsync();
             }
 
-            _logger.LogInformation("Found report of project {0} using version {1}", _options.ProjectName, branchName);
+            _logger.LogInformation("Found baseline report for current branch {0}", branchName);
 
             return report;
         }
@@ -194,18 +194,18 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for project using fallback version. Now running a complete test to establish a baseline.");
+                _logger.LogInformation("We could not locate a baseline report for the current branch or fallback version. Now running a complete test to establish a baseline.");
                 return null;
             }
 
-            _logger.LogInformation("Found a fallback of project {0} using fallback version {1}", _options.ProjectName, _options.FallbackVersion);
+            _logger.LogInformation("Found fallback report using version {0}", _options.FallbackVersion);
 
             return report;
         }
 
         private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
         {
-            foreach(var mutant in mutants)
+            foreach (var mutant in mutants)
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "File changed since last commit.";
@@ -223,7 +223,7 @@ namespace Stryker.Core.MutantFilters
         {
             var filteredMutants = new List<Mutant>();
 
-            foreach(var mutant in mutants)
+            foreach (var mutant in mutants)
             {
                 var coveringTests = mutant.CoveringTests.Tests;
 

@@ -66,6 +66,7 @@ namespace Stryker.Core.DashboardCompare
                 return new Repository(RepositoryPath);
             }
         }
+
         private void Checkout()
         {
             try
