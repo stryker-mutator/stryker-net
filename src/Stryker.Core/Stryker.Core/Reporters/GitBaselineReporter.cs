@@ -23,9 +23,10 @@ namespace Stryker.Core.Reporters
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
-            var projectVersion = _gitInfoProvider.GetCurrentBranchName() ?? _options.FallbackVersion;
+            var projectVersion = _gitInfoProvider.GetCurrentBranchName() ?? _options.ProjectVersion;
+            var baselineVersion = $"dashboard-compare/{projectVersion}";
 
-            _baselineProvider.Save(mutationReport, projectVersion).Wait();
+            _baselineProvider.Save(mutationReport, baselineVersion).Wait();
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
