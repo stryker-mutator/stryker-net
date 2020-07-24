@@ -172,34 +172,34 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ProjectVersionCannotBeEmpty()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
         }
 
         [Fact]
         public void ProjectVersionCannotBeNull()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
         }
 
         [Fact]
         public void FallbackVersionCannotBeProjectVersion()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
+                .Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
         }
 
         [Fact]
         public void ShouldNotThrowInputExceptionWhenSetCorrectly()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
 
             Should.NotThrow(act);
         }
@@ -216,7 +216,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void Should_Throw_Exception_When_AzureSAS_null()
         {
-            Action act = () => new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+            static void act() => new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: null, baselineStorageLocation: "AzureFileStorage");
 
             Should.Throw<StrykerInputException>(act).Message.ShouldBe("A Shared Access Signature is required when Azure File Storage is enabled!");
         }
@@ -224,7 +224,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void Should_Throw_Exception_When_Azure_Storage_url_null()
         {
-            Action act = () => new StrykerOptions(azureFileStorageUrl: null, azureSAS: "AZURE_SAS", baselineStorageLocation: "AzureFileStorage");
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: "AZURE_SAS", baselineStorageLocation: "AzureFileStorage");
 
             Should.Throw<StrykerInputException>(act).Message.ShouldBe("The url pointing to your file storage is required when Azure File Storage is enabled!");
         }
@@ -232,7 +232,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void Should_Throw_Exception_When_Azure_Storage_url_and_SAS_null()
         {
-            Action act = () => new StrykerOptions(azureFileStorageUrl: null, azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: null, baselineStorageLocation: "AzureFileStorage");
 
             Should.Throw<StrykerInputException>(act).Message.ShouldBe(@"A Shared Access Signature is required when Azure File Storage is enabled!The url pointing to your file storage is required when Azure File Storage is enabled!");
         }

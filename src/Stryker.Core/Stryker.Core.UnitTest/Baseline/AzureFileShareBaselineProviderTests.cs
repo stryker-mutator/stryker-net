@@ -1,18 +1,15 @@
-﻿using Xunit;
+﻿using Moq;
+using Moq.Protected;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
-using System.Net.Http;
-using Moq;
-using Moq.Protected;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Text;
-using Newtonsoft.Json;
-using Stryker.Core.Reporters.Json;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.UnitTest.Reporters;
+using Stryker.Core.Reporters.Json;
 using System;
-using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline
 {
@@ -49,7 +46,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var result = await target.Load("project_version");
 
-            var expectedUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -65,7 +62,7 @@ namespace Stryker.Core.UnitTest.Baseline
         }
 
         [Fact]
-        public async Task Save_Doesnt_Call_CreateDictionary_And_AllocateFileLocation_When_Baseline_Excists()
+        public async Task Save_Doesnt_Call_CreateDictionary_And_AllocateFileLocation_When_Baseline_Exists()
         {
             // arrange
             var options = new StrykerOptions(azureFileStorageUrl: "https://www.filestoragelocation.com", azureSAS: "AZURE_SAS_KEY", baselineStorageLocation: "azurefilestorage");
@@ -76,13 +73,13 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
-            var expectedGetUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedGetUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedCreateDirectoryUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version?restype=directory&sv=AZURE_SAS_KEY");
 
-            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
+            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -101,12 +98,25 @@ namespace Stryker.Core.UnitTest.Baseline
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedFileAllocationUri && requestMessage.Method == HttpMethod.Put),
+                ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.Created,
+                    Content = new StringContent("Nothing went wrong", Encoding.UTF8, "application/json")
+                })
+                .Verifiable();
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
                 ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedUploadContentUri && requestMessage.Method == HttpMethod.Put),
                 ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent("Something went wrong", Encoding.UTF8, "application/json")
+                    Content = new StringContent("Nothing went wrong", Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
@@ -124,8 +134,7 @@ namespace Stryker.Core.UnitTest.Baseline
                    req.Method == HttpMethod.Get
                    && req.RequestUri == expectedGetUri
                    ),
-                   ItExpr.IsAny<CancellationToken>()
-                );
+                ItExpr.IsAny<CancellationToken>());
 
             handlerMock
                .Protected()
@@ -136,21 +145,7 @@ namespace Stryker.Core.UnitTest.Baseline
                    req.Method == HttpMethod.Put
                    && req.RequestUri == expectedCreateDirectoryUri
                    ),
-                   ItExpr.IsAny<CancellationToken>()
-                );
-
-            handlerMock
-              .Protected()
-              .Verify(
-               "SendAsync",
-               Times.Exactly(0),
-               ItExpr.Is<HttpRequestMessage>(req =>
-                  req.Method == HttpMethod.Put
-                  && req.RequestUri == expectedFileAllocationUri
-                  && req.Headers.Contains("x-ms-type")
-                  ),
-                  ItExpr.IsAny<CancellationToken>()
-               );
+                ItExpr.IsAny<CancellationToken>());
 
             handlerMock
               .Protected()
@@ -159,14 +154,24 @@ namespace Stryker.Core.UnitTest.Baseline
                Times.Exactly(1),
                ItExpr.Is<HttpRequestMessage>(req =>
                   req.Method == HttpMethod.Put
-                  && req.RequestUri == expectedUploadContentUri
+                  && req.RequestUri == expectedFileAllocationUri
+                  && req.Headers.Contains("x-ms-type")
                   ),
-                  ItExpr.IsAny<CancellationToken>()
-               );
+                ItExpr.IsAny<CancellationToken>());
+
+            handlerMock
+              .Protected()
+              .Verify(
+               "SendAsync",
+               Times.Exactly(1),
+               ItExpr.Is<HttpRequestMessage>(req =>
+                  req.Method == HttpMethod.Put
+                  && req.RequestUri == expectedUploadContentUri),
+                ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]
-        public async Task Save_Calls_CreateDictionary_And_AllocateFileLocation_When_Baseline_Does_Not_Excists()
+        public async Task Save_Calls_CreateDictionary_And_AllocateFileLocation_When_Baseline_Does_Not_Exists()
         {
             // arrange
             var options = new StrykerOptions(azureFileStorageUrl: "https://www.filestoragelocation.com", azureSAS: "AZURE_SAS_KEY", baselineStorageLocation: "azurefilestorage");
@@ -177,13 +182,15 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
-            var expectedGetUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedGetUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedCreateDirectoryUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateStrykerOutputDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateBaselinesDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateVersionDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/?restype=directory&sv=AZURE_SAS_KEY");
 
-            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/strykerOutput/baselines/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
+            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -202,7 +209,29 @@ namespace Stryker.Core.UnitTest.Baseline
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedCreateDirectoryUri && requestMessage.Method == HttpMethod.Put),
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedCreateStrykerOutputDirectoryUri && requestMessage.Method == HttpMethod.Put),
+                ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.Created
+                })
+                .Verifiable();
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedCreateBaselinesDirectoryUri && requestMessage.Method == HttpMethod.Put),
+                ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.Created
+                })
+                .Verifiable();
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedCreateVersionDirectoryUri && requestMessage.Method == HttpMethod.Put),
                 ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage()
                 {
@@ -247,10 +276,8 @@ namespace Stryker.Core.UnitTest.Baseline
                 Times.Exactly(1),
                 ItExpr.Is<HttpRequestMessage>(req =>
                    req.Method == HttpMethod.Get
-                   && req.RequestUri == expectedGetUri
-                   ),
-                   ItExpr.IsAny<CancellationToken>()
-                );
+                   && req.RequestUri == expectedGetUri),
+                ItExpr.IsAny<CancellationToken>());
 
             handlerMock
                .Protected()
@@ -259,10 +286,26 @@ namespace Stryker.Core.UnitTest.Baseline
                 Times.Exactly(1),
                 ItExpr.Is<HttpRequestMessage>(req =>
                    req.Method == HttpMethod.Put
-                   && req.RequestUri == expectedCreateDirectoryUri
-                   ),
-                   ItExpr.IsAny<CancellationToken>()
-                );
+                   && req.RequestUri == expectedCreateStrykerOutputDirectoryUri),
+                ItExpr.IsAny<CancellationToken>());
+            handlerMock
+               .Protected()
+               .Verify(
+                "SendAsync",
+                Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                   req.Method == HttpMethod.Put
+                   && req.RequestUri == expectedCreateBaselinesDirectoryUri),
+                ItExpr.IsAny<CancellationToken>());
+            handlerMock
+               .Protected()
+               .Verify(
+                "SendAsync",
+                Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                   req.Method == HttpMethod.Put
+                   && req.RequestUri == expectedCreateVersionDirectoryUri),
+                ItExpr.IsAny<CancellationToken>());
 
             handlerMock
               .Protected()
@@ -272,10 +315,8 @@ namespace Stryker.Core.UnitTest.Baseline
                ItExpr.Is<HttpRequestMessage>(req =>
                   req.Method == HttpMethod.Put
                   && req.RequestUri == expectedFileAllocationUri
-                  && req.Headers.Contains("x-ms-type")
-                  ),
-                  ItExpr.IsAny<CancellationToken>()
-               );
+                  && req.Headers.Contains("x-ms-type")),
+                ItExpr.IsAny<CancellationToken>());
 
             handlerMock
               .Protected()
@@ -284,10 +325,8 @@ namespace Stryker.Core.UnitTest.Baseline
                Times.Exactly(1),
                ItExpr.Is<HttpRequestMessage>(req =>
                   req.Method == HttpMethod.Put
-                  && req.RequestUri == expectedUploadContentUri
-                  ),
-                  ItExpr.IsAny<CancellationToken>()
-               );
+                  && req.RequestUri == expectedUploadContentUri),
+                ItExpr.IsAny<CancellationToken>());
         }
     }
 }

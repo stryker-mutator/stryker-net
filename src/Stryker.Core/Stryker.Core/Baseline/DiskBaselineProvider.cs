@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
+using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System.IO;
 using System.IO.Abstractions;
@@ -10,12 +11,14 @@ namespace Stryker.Core.Baseline
 {
     public class DiskBaselineProvider : IBaselineProvider
     {
+        private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DiskBaselineProvider> _logger;
         private const string _outputPath = "StrykerOutput/Baselines/";
 
-        public DiskBaselineProvider(IFileSystem fileSystem = null)
+        public DiskBaselineProvider(StrykerOptions options, IFileSystem fileSystem = null)
         {
+            _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiskBaselineProvider>();
         }
@@ -23,7 +26,8 @@ namespace Stryker.Core.Baseline
 
         public async Task<JsonReport> Load(string version)
         {
-            var reportPath = Path.Combine(_outputPath, version, "stryker-report.json");
+            var reportPath = FilePathUtils.NormalizePathSeparators(
+                Path.Combine(_options.BasePath, _outputPath, version, "stryker-report.json"));
 
             if (_fileSystem.File.Exists(reportPath))
             {
@@ -40,7 +44,8 @@ namespace Stryker.Core.Baseline
 
         public async Task Save(JsonReport report, string version)
         {
-            var reportPath = Path.Combine(_outputPath, version);
+            var reportPath = FilePathUtils.NormalizePathSeparators(
+                Path.Combine(_options.BasePath, _outputPath, version));
 
             var reportJson = report.ToJson();
 

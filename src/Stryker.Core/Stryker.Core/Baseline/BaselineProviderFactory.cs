@@ -9,9 +9,9 @@ namespace Stryker.Core.Baseline
             return options.BaselineProvider switch
             {
                 BaselineProvider.Dashboard => new DashboardBaselineProvider(options),
-                BaselineProvider.Disk => new DiskBaselineProvider(),
+                BaselineProvider.Disk => new DiskBaselineProvider(options),
                 BaselineProvider.AzureFileStorage => new AzureFileShareBaselineProvider(options),
-                _ => new DiskBaselineProvider(),
+                _ => new DiskBaselineProvider(options),
             };
         }
     }

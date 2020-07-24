@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Shouldly;
+﻿using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
@@ -18,7 +17,7 @@ namespace Stryker.Core.UnitTest.Baseline
             // Arrange
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-            var sut = new DiskBaselineProvider(fileSystemMock);
+            var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
             await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith()), "version");
@@ -31,30 +30,12 @@ namespace Stryker.Core.UnitTest.Baseline
         }
 
         [Fact]
-        public async Task ShouldBeValidJsonReport()
-        {
-            // Arrange
-            var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-            var sut = new DiskBaselineProvider(fileSystemMock);
-
-            // Act
-            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith()), "version");
-
-            // Assert
-            var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json");
-            MockFileData file = fileSystemMock.GetFile(path);
-            var report = JsonConvert.DeserializeObject<JsonReport>(file.TextContents);
-            report.ShouldNotBeNull();
-        }
-
-        [Fact]
         public async Task ShouldHandleFileNotFoundExceptionOnLoad()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
 
-            var sut = new DiskBaselineProvider(fileSystemMock);
+            var sut = new DiskBaselineProvider(new StrykerOptions(), fileSystemMock);
 
             // Act
             var result = await sut.Load("testversion");
@@ -73,7 +54,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());
 
-            var target = new DiskBaselineProvider(fileSystemMock);
+            var target = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
             var result = await target.Load("version");

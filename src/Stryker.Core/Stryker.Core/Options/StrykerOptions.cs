@@ -225,7 +225,7 @@ namespace Stryker.Core.Options
                 var errorStrings = new StringBuilder();
                 if (string.IsNullOrEmpty(projectVersion))
                 {
-                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be null, please provide a dashboard-version");
+                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
                 }
 
                 if (fallbackVersion == projectVersion)
@@ -285,10 +285,8 @@ namespace Stryker.Core.Options
             if (!_fileSystem.File.Exists(gitignorePath))
             {
                 _fileSystem.File.Create(gitignorePath).Close();
-                using (var file = _fileSystem.File.CreateText(gitignorePath))
-                {
-                    file.WriteLine("*");
-                }
+                using var file = _fileSystem.File.CreateText(gitignorePath);
+                file.WriteLine("*");
             }
 
             return outputPath;
