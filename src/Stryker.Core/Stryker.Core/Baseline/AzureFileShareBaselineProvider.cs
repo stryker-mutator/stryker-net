@@ -183,7 +183,7 @@ namespace Stryker.Core.Baseline
             }
             else
             {
-                _logger.LogDebug("Report uploaded");
+                _logger.LogDebug("Uploaded report to azure file share");
             }
         }
 
