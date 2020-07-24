@@ -284,7 +284,7 @@ namespace Stryker.Core.Options
             var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, "StrykerOutput", ".gitignore"));
             if (!_fileSystem.File.Exists(gitignorePath))
             {
-                using var writer = _fileSystem.File.Create(gitignorePath, 0, FileOptions.Asynchronous);
+                using var writer = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
                 using var file = _fileSystem.File.CreateText(gitignorePath);
                 file.WriteLine("*");
             }
