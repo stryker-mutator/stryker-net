@@ -16,6 +16,8 @@ namespace Stryker.Core.Baseline
         private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
+        private const string _outputPath = "StrykerOutput/Baselines/";
+
         public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
@@ -25,9 +27,8 @@ namespace Stryker.Core.Baseline
 
         public async Task<JsonReport> Load(string version)
         {
-            var subdir = $"strykerOutput/baselines/{version}";
-            var filename = "stryker-report.json";
-            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?sv={_options.AzureSAS}");
+            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
+            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -41,11 +42,16 @@ namespace Stryker.Core.Baseline
 
                 return JsonConvert.DeserializeObject<JsonReport>(content);
             }
+
+            _logger.LogDebug("No baseline was found at {0}", fileUrl);
             return null;
         }
 
         public async Task Save(JsonReport report, string version)
         {
+            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
+            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureSAS}");
+
             var existingReport = await Load(version);
 
             var reportJson = report.ToJson();
@@ -54,14 +60,14 @@ namespace Stryker.Core.Baseline
 
             if (existingReport == null)
             {
-                var succesfullyCreatedDirectory = await CreateDirectory(version);
+                var succesfullyCreatedDirectories = await CreateDirectories(fileUrl);
 
-                if (!succesfullyCreatedDirectory)
+                if (!succesfullyCreatedDirectories)
                 {
                     return;
                 }
 
-                var successfullyAllocated = await AllocateFileLocation(byteSize, version);
+                var successfullyAllocated = await AllocateFileLocation(byteSize, fileUrl);
 
                 if (!successfullyAllocated)
                 {
@@ -70,7 +76,7 @@ namespace Stryker.Core.Baseline
             }
             else if (Encoding.UTF8.GetByteCount(existingReport.ToJson()) != byteSize)
             {
-                var succesfullyResizedFile = await ResizeFile(byteSize, version);
+                var succesfullyResizedFile = await ResizeFile(byteSize, fileUrl);
 
                 if (!succesfullyResizedFile)
                 {
@@ -78,16 +84,33 @@ namespace Stryker.Core.Baseline
                 }
             }
 
-
-            await UploadFile(reportJson, byteSize, version);
+            await UploadFile(reportJson, byteSize, url);
+            _logger.LogDebug("Baseline report has been saved to {0}", fileUrl);
         }
 
-        public async Task<bool> CreateDirectory(string version)
+        private async Task<bool> CreateDirectories(string fileUrl)
         {
-            var subdir = $"strykerOutput/baselines/{version}";
-            _logger.LogInformation("Creating directory {0}", subdir);
+            _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
-            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}?restype=directory&sv={_options.AzureSAS}");
+            var pathSegments = fileUrl.Split('/');
+            var currentDirectory = pathSegments[0];
+
+            for (var i = 1; i < pathSegments.Length; i++)
+            {
+                if (!await CreateDirectory($"{currentDirectory}/{pathSegments[i]}"))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> CreateDirectory(string fileUrl)
+        {
+            _logger.LogDebug("Creating directory {0}", fileUrl);
+
+            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -97,27 +120,24 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully created directory {0} on fileshare {1}", subdir, _options.AzureFileStorageUrl);
+                _logger.LogDebug("Succesfully created directory {0}", fileUrl);
                 return true;
             }
             else if (response.StatusCode == HttpStatusCode.Conflict)
             {
-                _logger.LogDebug("Directory {0} already excists on fileshare {1}", subdir, _options.AzureFileStorageUrl);
+                _logger.LogDebug("Directory {0} already exists", fileUrl);
                 return true;
             }
 
-            _logger.LogError("Creating directory failed with status {0} and message {1}", response.StatusCode.ToString(), response.RequestMessage);
+            _logger.LogError("Creating directory failed with status {0} and message {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
             return false;
-
         }
 
-        private async Task<bool> AllocateFileLocation(int byteSize, string version)
+        private async Task<bool> AllocateFileLocation(int byteSize, string fileUrl)
         {
-            _logger.LogInformation("Allocating storage for file");
+            _logger.LogDebug("Allocating storage for file {0}", fileUrl);
 
-            var subdir = $"strykerOutput/baselines/{version}";
-            var filename = "stryker-report.json";
-            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -131,26 +151,21 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully allocated storage on fileshare {0}", _options.AzureFileStorageUrl);
+                _logger.LogDebug("Succesfully allocated storage");
                 return true;
             }
             else
             {
-                _logger.LogError("Azure File Storage upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                _logger.LogError("Azure File Storage allocation failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
                 return false;
             }
         }
 
-        private async Task UploadFile(string report, int byteSize, string version)
+        private async Task UploadFile(string report, int byteSize, Uri uploadUri)
         {
-            _logger.LogInformation("Uploading file to azure file storage");
+            _logger.LogDebug("Uploading file to azure file storage");
 
-            var subdir = $"strykerOutput/baselines/{version}";
-            var filename = "stryker-report.json";
-
-            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?comp=range&sv={_options.AzureSAS}");
-
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
             {
                 Content = new StringContent(report, Encoding.UTF8, "application/json")
             };
@@ -164,22 +179,19 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
-                _logger.LogError("Azure File Storage upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                _logger.LogError("Azure File Storage upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
             }
             else
             {
-                _logger.LogInformation("Report uploaded");
+                _logger.LogDebug("Report uploaded");
             }
         }
 
-        private async Task<bool> ResizeFile(int byteSize, string version)
+        private async Task<bool> ResizeFile(int byteSize, string fileUrl)
         {
-            _logger.LogInformation("Updating file size to the size of the current report");
+            _logger.LogDebug("Updating file size to the size of the current report");
 
-            var subdir = $"strykerOutput/baselines/{version}";
-            var filename = "stryker-report.json";
-
-            var url = new Uri($"{_options.AzureFileStorageUrl}/{subdir}/{filename}?comp=properties&sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?comp=properties&sv={_options.AzureSAS}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -191,11 +203,12 @@ namespace Stryker.Core.Baseline
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                _logger.LogError("Azure File Storage file resizing failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                _logger.LogError("Azure File Storage file resizing failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
                 return false;
-            } else
+            }
+            else
             {
-                _logger.LogInformation("File resized");
+                _logger.LogDebug("File resized");
                 return true;
             }
 
@@ -207,6 +220,11 @@ namespace Stryker.Core.Baseline
             requestMessage.Headers.Add("x-ms-file-attributes", "None");
             requestMessage.Headers.Add("x-ms-file-creation-time", "now");
             requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
+        }
+
+        private string ToSafeResponseMessage(string responseMessage)
+        {
+            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureSAS, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         }
     }
 }
