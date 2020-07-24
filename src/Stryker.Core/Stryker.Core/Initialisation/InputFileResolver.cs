@@ -76,7 +76,14 @@ namespace Stryker.Core.Initialisation
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
             // Determine project under test
-            projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                projectUnderTest = FindProjectFile(options.BasePath);
+            }
+            else
+            {
+                projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
+            }
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 

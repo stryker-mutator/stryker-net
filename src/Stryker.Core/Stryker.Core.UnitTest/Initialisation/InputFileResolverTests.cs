@@ -841,16 +841,16 @@ Please specify a test project name filter that results in one project.
         public void ShouldSelectCorrectProjectUnderTest_WhenTestProjectsAreGiven()
         {
             // Arrange
-            var basePath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder");
-            var testProjectPath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder", "TestProject.csproj");
-            var projectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
+            var basePath = Path.Combine(_filesystemRoot, "src", "ExampleProject");
+            var testProjectPath = Path.Combine(_filesystemRoot, "src", "TestProjectFolder", "TestProject.csproj");
+            var projectUnderTestPath = Path.Combine(_filesystemRoot, "src", "ExampleProject", "ExampleProject.csproj");
             var projectUnderTestNameFilter = "ExampleProject.csproj";
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
                 { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
+                { Path.Combine(_filesystemRoot, "src", "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
             var options = new StrykerOptions(
@@ -1108,7 +1108,6 @@ Please specify a test project name filter that results in one project.
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
 
-        #region FindProjectUnderTest
         [Fact]
         public void HappyFlow()
         {
@@ -1210,6 +1209,5 @@ Please specify a test project name filter that results in one project.
             ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("no project", Case.Insensitive);
         }
-        #endregion
     }
 }
