@@ -443,8 +443,8 @@ namespace Stryker.Core.Options
         {
             var filesToInclude = new List<FilePattern>();
 
-            filePatterns = filePatterns ?? Array.Empty<string>();
-            filesToExclude = filesToExclude ?? Array.Empty<string>();
+            filePatterns ??= Array.Empty<string>();
+            filesToExclude ??= Array.Empty<string>();
 
             if (!filePatterns.Any())
             {
