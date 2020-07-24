@@ -432,6 +432,6 @@ When configuring the --dashboard-compare feature on pull requests please provide
 
 ```
 dotnet stryker --dashboard-compare --dashboard-fallback-version master -git-source master --dashboard-version development
-dotenet stryker -compare -fallback-version master -source master -version development
+dotnet stryker -compare -source master -version development
 
 ```
