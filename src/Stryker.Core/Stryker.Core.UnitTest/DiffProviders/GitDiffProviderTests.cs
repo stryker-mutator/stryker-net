@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger());
+            var options = new StrykerOptions(basePath: "C:\\", logger: NullLogger.Instance);
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
