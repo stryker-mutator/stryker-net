@@ -7,6 +7,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\");
+            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger());
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
