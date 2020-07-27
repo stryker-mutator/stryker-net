@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string solutionPath);
+        void InitialBuild(bool fullFramework, string projectFileName, string solutionPath);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -23,11 +23,11 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectFile, string solutionPath)
+        public void InitialBuild(bool fullFramework, string projectFileName, string solutionPath)
         {
             _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
 
-            string projectPath = Path.GetDirectoryName(projectFile);
+            string projectPath = Path.GetDirectoryName(projectFileName);
             ProcessResult result;
             if (fullFramework)
             {
@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
             else
             {
                 // Build with dotnet build
-                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{projectFile}\"");
+                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{projectFileName}\"");
             }
 
             _logger.LogDebug("Initial build output {0}", result.Output);
