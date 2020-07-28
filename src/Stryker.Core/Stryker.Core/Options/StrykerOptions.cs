@@ -286,7 +286,7 @@ namespace Stryker.Core.Options
             {
                 try
                 {
-                    using var writer = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
+                    using var _ = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
                     using var file = _fileSystem.File.CreateText(gitignorePath);
                     file.WriteLine("*");
                 }
