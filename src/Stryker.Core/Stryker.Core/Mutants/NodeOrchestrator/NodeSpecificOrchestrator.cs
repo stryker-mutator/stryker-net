@@ -12,9 +12,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
     {
         public Type ManagedType => typeof(T);
 
-        public virtual bool CanHandle(SyntaxNode t) => true;
+        protected virtual bool CanHandleThis(T t) => true;
 
-        internal abstract T OrchestrateMutation(T node, MutationContext context);
+        public bool CanHandle(SyntaxNode t) => CanHandleThis(t as T);
+
+        internal abstract SyntaxNode OrchestrateMutation(T node, MutationContext context);
 
         public SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {

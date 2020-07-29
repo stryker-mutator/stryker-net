@@ -17,43 +17,29 @@ namespace Stryker.Core.Mutants
 
         public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf, MutationHelper};
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block)
-        {
-            return SyntaxFactory.Block( 
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
+            SyntaxFactory.Block( 
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
-        }
 
-        public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId)
-        {
-            // place the mutated statement inside the if statement
-            return SyntaxFactory.IfStatement(
-                condition: GetBinaryExpression(mutantId),
-                statement: SyntaxFactory.Block(mutated),
-                @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
+        public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
+            SyntaxFactory.IfStatement(
+                    condition: GetBinaryExpression(mutantId),
+                    statement: SyntaxFactory.Block(mutated),
+                    @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIf, mutantId.ToString()));
-        }
 
-        public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
-        {
-            // remove the mutated node using its MutantPlacer remove method and update the tree
-            if (nodeToRemove is IfStatementSyntax ifStatement)
+        public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove) =>
+            nodeToRemove switch
             {
-                return RemoveByIfStatement(ifStatement);
-            }
-
-            if (nodeToRemove is ParenthesizedExpressionSyntax parenthesizedExpression)
-            {
-                return RemoveByConditionalExpression(parenthesizedExpression);
-            }
-
-            if (nodeToRemove.GetAnnotatedNodes(MutationHelper).Any())
-            {
-                return SyntaxFactory.EmptyStatement();
-            }
-            // this is not one of our structure
-            return nodeToRemove;
-        }
+                // remove the mutated node using its MutantPlacer remove method and update the tree
+                IfStatementSyntax ifStatement => RemoveByIfStatement(ifStatement),
+                ParenthesizedExpressionSyntax parenthesizedExpression => RemoveByConditionalExpression(
+                    parenthesizedExpression),
+                _ => nodeToRemove.GetAnnotatedNodes(MutationHelper).Any()
+                    ? SyntaxFactory.EmptyStatement()
+                    : nodeToRemove
+            };
 
         private static SyntaxNode RemoveByIfStatement(IfStatementSyntax ifStatement)
         {
@@ -62,33 +48,20 @@ namespace Stryker.Core.Mutants
             return childNodes.Count == 1 ? childNodes[0] : ifStatement.Else.Statement;
         }
 
-        public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId)
-        {
-            // place the mutated statement inside the if statement
-            return SyntaxFactory.ParenthesizedExpression(
+        public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId) =>
+            SyntaxFactory.ParenthesizedExpression(
                     SyntaxFactory.ConditionalExpression(
                         condition: GetBinaryExpression(mutantId),
                         whenTrue: mutated,
                         whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
-        }
 
-        public static T AnnotateHelper<T>(T node) where T:SyntaxNode
-        {
-            return node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
-        }
+        // us this method to annotate injected helper code. I.e. any injected code that is NOT a mutation but provides some infrastructure for the mutant to run
+        public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
 
-        private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized)
-        {
-            if (parenthesized.Expression is ConditionalExpressionSyntax conditional)
-            {
-                // return original expression
-                return conditional.WhenFalse;
-            }
-
-            return null;
-        }
+        private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized) => 
+            parenthesized.Expression is ConditionalExpressionSyntax conditional ? conditional.WhenFalse : null;
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
@@ -96,9 +69,7 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
-        private static ExpressionSyntax GetBinaryExpression(int mutantId)
-        {
-            return SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression.Replace("ID", mutantId.ToString()));
-        }
+        private static ExpressionSyntax GetBinaryExpression(int mutantId) => 
+            SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression.Replace("ID", mutantId.ToString()));
     }
 }

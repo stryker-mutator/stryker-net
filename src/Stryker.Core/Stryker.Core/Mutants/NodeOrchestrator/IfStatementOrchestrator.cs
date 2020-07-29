@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 {
     class IfStatementOrchestrator: NodeSpecificOrchestrator<IfStatementSyntax>
     {
-        internal override IfStatementSyntax OrchestrateMutation(IfStatementSyntax nodeToParse, MutationContext context)
+        internal override SyntaxNode OrchestrateMutation(IfStatementSyntax nodeToParse, MutationContext context)
         {
             var mutatedIf = nodeToParse.Else != null
                 ? nodeToParse.TrackNodes(nodeToParse.Condition, nodeToParse.Statement, nodeToParse.Else)

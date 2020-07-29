@@ -6,29 +6,49 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
     // 
     internal class TypeBasedStrategy<T, THandler> where THandler: class, ITypeHandler<T>
     {
-        private readonly IDictionary<Type, THandler> _mappingCache = new Dictionary<Type, THandler>();
+        private readonly IDictionary<Type, IList<THandler>> _mappingCache = new Dictionary<Type, IList<THandler>>();
 
         public void RegisterHandler(THandler handler)
         {
-            _mappingCache[handler.ManagedType] = handler;
+            if (!_mappingCache.ContainsKey(handler.ManagedType))
+            {
+                _mappingCache.Add(handler.ManagedType, new List<THandler>());
+            }
+            _mappingCache[handler.ManagedType].Add(handler);
         }
 
-        public THandler FindHandler(Type type)
+        public void RegisterHandlers(List<THandler> handlers)
         {
-            if (type == null)
+            foreach (var handler in handlers)
+            {
+                RegisterHandler(handler);   
+            }
+        }
+
+        public THandler FindHandler(T item)
+        {
+            return FindHandler(item, item.GetType());
+        }
+
+        private THandler FindHandler(T item, Type type)
+        {
+            if (item == null || type == null)
             {
                 return null;
             }
 
-            if (_mappingCache.TryGetValue(type, out var result))
+            if (_mappingCache.TryGetValue(type, out var handlers))
             {
-                return result;
+                foreach (var typeHandler in handlers)
+                {
+                    if (typeHandler.CanHandle(item))
+                    {
+                        return typeHandler;
+                    }
+                }
             }
 
-            result = FindHandler(type.BaseType);
-            _mappingCache[type] = result;
-
-            return result;
+            return FindHandler(item, type.BaseType);
         }
     }
 }
