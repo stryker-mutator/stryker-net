@@ -32,7 +32,10 @@ namespace Stryker.Core.CoverageAnalysis
                 _logger.LogInformation($"Capture mutant coverage using '{_options.OptimizationMode}' mode.");
 
                 var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
-                var mutantsToScan = _input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus != MutantStatus.Ignored).ToList();
+                var mutantsToScan =
+                    _input.ProjectInfo.ProjectContents.Mutants
+                        .Where(x => x.ResultStatus == MutantStatus.NotRun)
+                    .ToList();
                 foreach (var mutant in mutantsToScan)
                 {
                     mutant.CoveringTests = new TestListDescription(null);
@@ -63,6 +66,7 @@ namespace Stryker.Core.CoverageAnalysis
                 if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
                 {
                     mutant.ResultStatus = MutantStatus.NoCoverage;
+                    mutant.ResultStatusReason = "Mutant has no test coverage";
                 }
                 else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
