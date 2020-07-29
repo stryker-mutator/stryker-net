@@ -117,16 +117,6 @@ namespace Stryker.Core.MutantFilters
                     }
                 }
             }
-
-            var mutantGroups = mutants
-                .GroupBy(x => x.ResultStatusReason)
-                .OrderBy(x => x.Key);
-
-            foreach (var skippedMutantGroup in mutantGroups)
-            {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
-                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
-            }
         }
 
         private static void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
@@ -134,7 +124,7 @@ namespace Stryker.Core.MutantFilters
             if (matchingMutants.Count() == 1)
             {
                 matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                matchingMutants.First().ResultStatusReason = "Result based on previous run.";
+                matchingMutants.First().ResultStatusReason = "Result based on previous run";
             }
             else
             {
@@ -223,18 +213,35 @@ namespace Stryker.Core.MutantFilters
         {
             var filteredMutants = new List<Mutant>();
 
+            void resetMutant(Mutant mutant)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "One or more covering tests changed";
+
+                filteredMutants.Add(mutant);
+            }
+
             foreach (var mutant in mutants)
             {
+                NextMutant:
                 var coveringTests = mutant.CoveringTests.Tests;
 
-                if (coveringTests.Any(coveringTest => _diffResult.TestFilesChanged.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
-                    || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
+                foreach (var coveringTest in coveringTests)
                 {
-                    mutant.ResultStatus = MutantStatus.NotRun;
-                    mutant.ResultStatusReason = "One or more covering tests changed";
+                    foreach (var changedTestFile in _diffResult.TestFilesChanged)
+                    {
+                        if (coveringTest.TestfilePath == changedTestFile)
+                        {
+                            resetMutant(mutant);
+                            goto NextMutant;
+                        }
+                    }
+                }
 
-                    filteredMutants.Add(mutant);
-                    break;
+                if (coveringTests.Any(coveringTest => coveringTest.IsAllTests))
+                {
+                    resetMutant(mutant);
+                    goto NextMutant;
                 }
             }
 
