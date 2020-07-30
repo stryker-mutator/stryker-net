@@ -102,11 +102,9 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            foreach (var baselineFile in _baseline.Files)
+            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == file.RelativePath);
             {
-                var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
-
-                if (filePath == file.RelativePath)
+                if (baselineFile is { })
                 {
                     foreach (var baselineMutant in baselineFile.Value.Mutants)
                     {
@@ -132,7 +130,7 @@ namespace Stryker.Core.MutantFilters
                 foreach (var matchingMutant in matchingMutants)
                 {
                     matchingMutant.ResultStatus = MutantStatus.NotRun;
-                    matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
+                    matchingMutant.ResultStatusReason = "Result based on previous run was inconclusive";
                 }
             }
         }

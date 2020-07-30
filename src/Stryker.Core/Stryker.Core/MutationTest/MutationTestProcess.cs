@@ -286,22 +286,56 @@ namespace Stryker.Core.MutationTest
             }
 
             var skippedMutants = _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
-            var skippedMutantGroups = skippedMutants.GroupBy(x => x.ResultStatusReason);
+            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
             {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
-                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+                _logger.LogInformation(
+                    FormatStatusReasonLogString(skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus),
+                    skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
             }
 
             if (skippedMutants.Any())
             {
-                _logger.LogInformation("{0} total mutants are skipped for the above mentioned reasons", skippedMutants.Count());
+                _logger.LogInformation(
+                    LeftPadAndFormatForMutantCount(skippedMutants.Count(), "total mutants are skipped for the above mentioned reasons"),
+                    skippedMutants.Count());
             }
-            _logger.LogInformation("{0} mutants will be tested",
-                _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun));
+
+            var notRunMutantsWithResultStatusReason = _input.ProjectInfo.ProjectContents.ReadOnlyMutants
+                .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
+                .GroupBy(x => x.ResultStatusReason);
+
+            foreach (var notRunMutantReason in notRunMutantsWithResultStatusReason)
+            {
+                _logger.LogInformation(
+                    LeftPadAndFormatForMutantCount(notRunMutantReason.Count(), "mutants will be tested because: {1}"),
+                    notRunMutantReason.Count(),
+                    notRunMutantReason.Key);
+            }
+
+            var notRunCount = _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
+            _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
 
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
+        }
+
+        private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
+        {
+            // Pad for status CompileError length
+
+            var padForResultStatusLength = 13 - resultStatus.ToString().Length;
+            var formattedString = LeftPadAndFormatForMutantCount(mutantCount, "mutants got status {1}.");
+            formattedString += "Reason: {2}".PadLeft(11 + padForResultStatusLength);
+
+            return formattedString;
+        }
+
+        private string LeftPadAndFormatForMutantCount(int mutantCount, string logString)
+        {
+            // Pad for max 5 digits mutant amount
+            var padLengthForMutantCount = 5 - mutantCount.ToString().Length;
+            return "{0} " + logString.PadLeft(logString.Length + padLengthForMutantCount);
         }
     }
 }
