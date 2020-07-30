@@ -61,6 +61,7 @@ namespace Stryker.Core.MutantFilters
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             var filteredMutants = new List<Mutant>();
 
+            // If the dashboard feature is turned on we first filter based on previous results
             if (options.CompareToDashboard)
             {
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
@@ -70,7 +71,7 @@ namespace Stryker.Core.MutantFilters
                     return mutants;
                 }
 
-                // Updates all the mutants iun this file with their counterpart's result in the report of the previous run
+                // Updates all the mutants in this file with their counterpart's result in the report of the previous run
                 UpdateMutantsWithBaselineStatus(mutants, file);
             }
 
@@ -88,10 +89,10 @@ namespace Stryker.Core.MutantFilters
                 filteredMutants = ResetMutantStatusForChangedTests(mutants).ToList();
             }
 
-            // Identical mutants within the same file cannot be distinguished from eachother and therefore we cannot give them a mutant status from the baseline. These ill have to be rerun.
+            // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
             if (_options.CompareToDashboard)
             {
-                var mutantsNotRun = GetMutantsWithStatusNotRun(mutants).ToList();
+                var mutantsNotRun = GetMutantsWithStatusNotRun(mutants);
                 filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);
             }
 
@@ -233,20 +234,18 @@ namespace Stryker.Core.MutantFilters
 
         /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
         /// If the targetMutants already contain a member with the same Id. The results are updated.
-        private List<Mutant> MergeMutantLists(List<Mutant> targetMutants, List<Mutant> updateMutants)
+        private List<Mutant> MergeMutantLists(List<Mutant> targetMutants, IEnumerable<Mutant> updateMutants)
         {
-            foreach (var (updateMutant, targetMutant) in from updateMutant in updateMutants
-                                                         let targetMutant = targetMutants.FirstOrDefault(filtered => filtered.Id == updateMutant.Id)
-                                                         select (updateMutant, targetMutant))
+            foreach (var mutant in updateMutants)
             {
-                if (targetMutant != null)
+                if (targetMutants.SingleOrDefault(targetMutant => targetMutant.Id == mutant.Id) is var targetMutant && targetMutant is { })
                 {
-                    targetMutant.ResultStatus = updateMutant.ResultStatus;
-                    targetMutant.ResultStatusReason = updateMutant.ResultStatusReason;
+                    targetMutant.ResultStatus = mutant.ResultStatus;
+                    targetMutant.ResultStatusReason = mutant.ResultStatusReason;
                 }
                 else
                 {
-                    targetMutants.Add(updateMutant);
+                    targetMutants.Add(mutant);
                 }
             }
 
