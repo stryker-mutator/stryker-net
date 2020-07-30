@@ -92,7 +92,7 @@ namespace Stryker.Core.MutantFilters
             // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
             if (_options.CompareToDashboard)
             {
-                var mutantsNotRun = GetMutantsWithStatusNotRun(mutants);
+                var mutantsNotRun = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
                 filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);
             }
 
@@ -203,11 +203,6 @@ namespace Stryker.Core.MutantFilters
             }
 
             return mutants;
-        }
-
-        private IEnumerable<Mutant> GetMutantsWithStatusNotRun(IEnumerable<Mutant> mutants)
-        {
-            return mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
         }
 
         private IEnumerable<Mutant> ResetMutantStatusForChangedTests(IEnumerable<Mutant> mutants)
