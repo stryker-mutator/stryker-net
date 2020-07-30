@@ -320,8 +320,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldCallExecutorForEveryMutant()
         {
-            var mutant = new Mutant { Id = 1 };
-            var otherMutant = new Mutant { Id = 2 };
+            var mutant = new Mutant { Id = 1, MustRunAgainstAllTests = true };
+            var otherMutant = new Mutant { Id = 2, MustRunAgainstAllTests = true };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var input = new MutationTestInput()
             {
