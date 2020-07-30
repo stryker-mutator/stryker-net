@@ -299,7 +299,7 @@ namespace Stryker.Core.MutationTest
                 _logger.LogInformation("{0} total mutants are skipped for the above mentioned reasons", skippedMutants.Count());
             }
             _logger.LogInformation("{0} mutants will be tested",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Where(m => m.ResultStatus == MutantStatus.NotRun).Count());
+                _input.ProjectInfo.ProjectContents.TotalMutants.Count(m => m.ResultStatus == MutantStatus.NotRun));
 
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
