@@ -213,35 +213,18 @@ namespace Stryker.Core.MutantFilters
         {
             var filteredMutants = new List<Mutant>();
 
-            void resetMutant(Mutant mutant)
-            {
-                mutant.ResultStatus = MutantStatus.NotRun;
-                mutant.ResultStatusReason = "One or more covering tests changed";
-
-                filteredMutants.Add(mutant);
-            }
-
             foreach (var mutant in mutants)
             {
-                NextMutant:
                 var coveringTests = mutant.CoveringTests.Tests;
 
-                foreach (var coveringTest in coveringTests)
+                if (coveringTests.Any(coveringTest => _diffResult.TestFilesChanged.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                    || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
                 {
-                    foreach (var changedTestFile in _diffResult.TestFilesChanged)
-                    {
-                        if (coveringTest.TestfilePath == changedTestFile)
-                        {
-                            resetMutant(mutant);
-                            goto NextMutant;
-                        }
-                    }
-                }
+                    mutant.ResultStatus = MutantStatus.NotRun;
+                    mutant.ResultStatusReason = "One or more covering tests changed";
 
-                if (coveringTests.Any(coveringTest => coveringTest.IsAllTests))
-                {
-                    resetMutant(mutant);
-                    goto NextMutant;
+                    filteredMutants.Add(mutant);
+                    break;
                 }
             }
 
