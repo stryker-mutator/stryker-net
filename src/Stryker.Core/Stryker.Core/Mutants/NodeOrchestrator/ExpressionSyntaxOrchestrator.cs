@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrator
@@ -13,7 +12,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
         internal override SyntaxNode OrchestrateMutation(ExpressionSyntax node, MutationContext context)
         {
-            return context.MutateWithConditionals(node,   context.MutateChildren(node) as ExpressionSyntax);
+            return context.MutateWithConditionals(node, context.MutateChildren(node) as ExpressionSyntax);
         }
     }
 }

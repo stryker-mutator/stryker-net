@@ -18,7 +18,21 @@ namespace Stryker.Core
         // does the expression contain declaration?
         public static bool ContainsDeclarations(this ExpressionSyntax node)
         {
-            return node.DescendantNodes().Any(x =>
+            // check if there is a variable declaration at this scope level
+            return node.DescendantNodes((child) =>
+            {
+                // we ignore block of code
+                if (child is BlockSyntax)
+                {
+                    return false;
+                }
+                // including anonymous/lambda declaration
+                if (child.Parent is AnonymousFunctionExpressionSyntax function && function.ExpressionBody == child)
+                {
+                    return false;
+                }
+                return true;
+            } ).Any(x =>
                 x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
         }
 

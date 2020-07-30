@@ -101,7 +101,7 @@ private bool Out(out string test)
             string source = @"void TestMethod()
 {
     int i = 0;
-    var result = Out(out ver test) ? test : """";
+    var result = Out(out var test) ? test : """";
 }
 private bool Out(out string test)
 {
@@ -110,13 +110,39 @@ private bool Out(out string test)
             string expected = @"void TestMethod()
 {
     int i = 0;
-    var result = Out(out ver test) ? test : (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
+    var result = Out(out var test) ? test : (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
 }
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
     return default(bool);
 }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateWhenDeclarationInInnerScope()
+        {
+            string source = @"void TestMethod()
+{
+    int i = 0;
+    var result = Out(i, (x) => { int.TryParse(""3"", out int y); return x == y;} ) ? i.ToString() : """";
+}
+private bool Out(int test, Func<int, bool>lambda )
+{
+    return true;
+}
+";
+            string expected = @"void TestMethod()
+{
+    int i = 0;
+    var result = (StrykerNamespace.MutantControl.IsActive(2)?!(Out(i, (x) => { int.TryParse(""3"", out int y); return x == y;} ) ):Out(i, (x) => { int.TryParse((StrykerNamespace.MutantControl.IsActive(0)?"""":""3""), out int y); return (StrykerNamespace.MutantControl.IsActive(1)?x != y:x == y);} ) )? i.ToString() : (StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":"""");
+}
+private bool Out(int test, Func<int, bool>lambda )
+{
+    return (StrykerNamespace.MutantControl.IsActive(4)?false:true);
+return default(bool );}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
