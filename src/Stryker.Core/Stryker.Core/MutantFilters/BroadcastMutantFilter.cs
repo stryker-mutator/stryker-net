@@ -19,25 +19,31 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
-            IEnumerable<Mutant> filteredMutants = mutants;
+            IEnumerable<Mutant> mutantsToTest = mutants.ToList();
 
-            foreach (var mutantFilter in MutantFilters)
+            // Then all other filters except diff filter
+            foreach (var mutantFilter in MutantFilters.Where(f => !(f is DiffMutantFilter)))
             {
-                var current = mutantFilter.FilterMutants(mutants, file, options);
+                // These mutants should be tested according to current filter
+                var extraMutantsToTest = mutantFilter.FilterMutants(mutantsToTest, file, options);
 
-                foreach (var skippedMutant in filteredMutants.Except(current))
+                // All mutants that weren't filtered out by a previous filter but were by the current filter are set to Ignored
+                foreach (var skippedMutant in mutantsToTest.Except(extraMutantsToTest))
                 {
-                    if (skippedMutant.ResultStatus == MutantStatus.NotRun)
-                    {
-                        skippedMutant.ResultStatus = MutantStatus.Ignored;
-                        skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
-                    }
+                    skippedMutant.ResultStatus = MutantStatus.Ignored;
+                    skippedMutant.ResultStatusReason = $"Removed by {mutantFilter.DisplayName}";
                 }
 
-                filteredMutants = current;
+                mutantsToTest = extraMutantsToTest;
             }
 
-            return filteredMutants;
+            // Diff filter goes last if it is enabled
+            if (MutantFilters.SingleOrDefault(f => f is DiffMutantFilter) is var diffFilter && diffFilter is { })
+            {
+                mutantsToTest = diffFilter.FilterMutants(mutantsToTest, file, options);
+            }
+
+            return mutantsToTest;
         }
     }
 }
