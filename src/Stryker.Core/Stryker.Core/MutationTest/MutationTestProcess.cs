@@ -285,7 +285,7 @@ namespace Stryker.Core.MutationTest
                 _mutantFilter.FilterMutants(file.Mutants, file, _options);
             }
 
-            var skippedMutants = _input.ProjectInfo.ProjectContents.TotalMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+            var skippedMutants = _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
             var skippedMutantGroups = skippedMutants.GroupBy(x => x.ResultStatusReason);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
@@ -299,7 +299,7 @@ namespace Stryker.Core.MutationTest
                 _logger.LogInformation("{0} total mutants are skipped for the above mentioned reasons", skippedMutants.Count());
             }
             _logger.LogInformation("{0} mutants will be tested",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count(m => m.ResultStatus == MutantStatus.NotRun));
+                _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun));
 
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
