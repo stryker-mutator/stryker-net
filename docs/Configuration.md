@@ -30,7 +30,6 @@ Example `stryker-config.json` file:
 {
     "stryker-config":
     {
-        "test-runner": "vstest",
         "reporters": [
             "progress",
             "html"
@@ -56,7 +55,11 @@ Example `stryker-config.json` file:
             "*Log*",
             "ToString",
             "*HashCode*"
-        ]
+        ],
+        "dashboard-compare": true,
+        "baseline-storage-location": "AzureFileStorage",
+        "azure-storage-url": "https://storageaccount.file.core.windows.net/sharename",
+        "azure-storage-sas": "<SAS>"
     }
 }
 ```
@@ -408,11 +411,22 @@ This is the url to your Azure File Storage. The URL should look something like t
 ```
 https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
 ```
-Providing a subfolder is optional, we storage the baseline in a `StrykerOutput` subfolder.
+Providing a subfolder is optional, we store the baseline in a `StrykerOutput` subfolder.
+
+```
+-storage url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+--azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
 
 ### Shared Access Signature (SAS)
 For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
+```
+-storage-sas <STORAGE_SAS>
+--azure-storage-sas <STORAGE_SAS>
+```
+
+The complete configuration would look like this:
 ```
 dotnet stryker --dashboard-compare --baseline-storage-location AzureFileStorage --azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-storage-sas STORAGE_SAS
 
