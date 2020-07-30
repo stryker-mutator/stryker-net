@@ -162,7 +162,7 @@ namespace Stryker.Core.MutationTest
             if (_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
                 var testCount = _mutationTestExecutor.TestRunner.DiscoverNumberOfTests();
-                var toTest = @mutantsNotRun.Sum(x => x.MustRunAgainstAllTests ? testCount : x.CoveringTests.Count);
+                var toTest = mutantsNotRun.Sum(x => x.MustRunAgainstAllTests ? testCount : x.CoveringTests.Count);
                 var total = testCount * viableMutantsCount;
                 if (total > 0 && total != toTest)
                 {
@@ -323,8 +323,8 @@ namespace Stryker.Core.MutationTest
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
         {
             // Pad for status CompileError length
-
             var padForResultStatusLength = 13 - resultStatus.ToString().Length;
+
             var formattedString = LeftPadAndFormatForMutantCount(mutantCount, "mutants got status {1}.");
             formattedString += "Reason: {2}".PadLeft(11 + padForResultStatusLength);
 
