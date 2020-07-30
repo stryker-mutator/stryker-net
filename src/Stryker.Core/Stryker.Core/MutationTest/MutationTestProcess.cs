@@ -57,7 +57,7 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, _input);
 
-            _mutantFilter = mutantFilter 
+            _mutantFilter = mutantFilter
                 ?? MutantFilterFactory
                 .Create(options);
         }
@@ -131,7 +131,7 @@ namespace Stryker.Core.MutationTest
                     }
 
                     mutant.ResultStatus = MutantStatus.CompileError;
-                    mutant.ResultStatusReason = "Could not compile";
+                    mutant.ResultStatusReason = "Mutant caused compile errors";
                 }
             }
         }
@@ -166,19 +166,19 @@ namespace Stryker.Core.MutationTest
                 var total = testCount * viableMutantsCount;
                 if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
             else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
             {
                 var total = viableMutantsCount;
                 var toTest = mutantsToTest.Count();
-                if (total > 0  && total!= toTest)
+                if (total > 0 && total != toTest)
                 {
-                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total-toTest)/(double)total:P1} of tests because they would not change results.");
+                    _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
-            
+
             if (mutantsToTest.Any())
             {
                 var mutantGroups = BuildMutantGroupsForTest(mutantsNotRun);
@@ -285,10 +285,8 @@ namespace Stryker.Core.MutationTest
                 _mutantFilter.FilterMutants(file.Mutants, file, _options);
             }
 
-            var skippedMutantGroups = _input.ProjectInfo.ProjectContents.GetAllFiles()
-                .SelectMany(f => f.Mutants)
-                .Where(x => x.ResultStatus != MutantStatus.NotRun).GroupBy(x => x.ResultStatusReason)
-                .OrderBy(x => x.Key);
+            var skippedMutants = _input.ProjectInfo.ProjectContents.TotalMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+            var skippedMutantGroups = skippedMutants.GroupBy(x => x.ResultStatusReason);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
             {
@@ -296,8 +294,12 @@ namespace Stryker.Core.MutationTest
                     skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
             }
 
-            _logger.LogInformation("{0} mutants ready for test",
-                _input.ProjectInfo.ProjectContents.TotalMutants.Count());
+            if (skippedMutants.Any())
+            {
+                _logger.LogInformation("{0} total mutants are skipped for the above mentioned reasons", skippedMutants.Count());
+            }
+            _logger.LogInformation("{0} mutants will be tested",
+                _input.ProjectInfo.ProjectContents.TotalMutants.Where(m => m.ResultStatus == MutantStatus.NotRun).Count());
 
             _reporter.OnMutantsCreated(_input.ProjectInfo.ProjectContents);
         }
