@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Baseline;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
@@ -12,12 +10,12 @@ namespace Stryker.Core.Reporters
 {
     public static class ReporterFactory
     {
-        public static IReporter Create(StrykerOptions options, IGitInfoProvider gitInfoProvider = null, IBaselineProvider baselineProvider = null)
+        public static IReporter Create(StrykerOptions options)
         {
-            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options, gitInfoProvider, baselineProvider: baselineProvider)));
+            return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options, IGitInfoProvider gitInfoProvider = null, IBaselineProvider baselineProvider = null)
+        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -26,8 +24,8 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, gitInfoProvider: gitInfoProvider)},
-                { Reporter.Baseline, new GitBaselineReporter(options, baselineProvider: baselineProvider, gitInfoProvider: gitInfoProvider) }
+                { Reporter.Dashboard, new DashboardReporter(options)},
+                { Reporter.Baseline, new GitBaselineReporter(options) }
             };
         }
 
@@ -48,7 +46,7 @@ namespace Stryker.Core.Reporters
                 var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(typeof(ReporterFactory).Name);
                 foreach (var deprecatedReporter in deprecatedReporters)
                 {
-                    logger.LogWarning($"Reporter {deprecatedReporter.ToString()} is deprecated. Please use {replacementFor[deprecatedReporter].ToString()} instead.");
+                    logger.LogWarning($"Reporter {deprecatedReporter} is deprecated. Please use {replacementFor[deprecatedReporter]} instead.");
 
                     enabledReporters.Add(replacementFor[deprecatedReporter]);
                 }
