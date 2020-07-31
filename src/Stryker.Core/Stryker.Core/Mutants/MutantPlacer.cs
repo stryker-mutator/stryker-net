@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
@@ -21,11 +22,14 @@ namespace Stryker.Core.Mutants
             SyntaxFactory.Block( 
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
 
+
+        public static BlockSyntax AsBlock(StatementSyntax input) => SyntaxFactory.Block(input);
+
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
             SyntaxFactory.IfStatement(
                     condition: GetBinaryExpression(mutantId),
-                    statement: SyntaxFactory.Block(mutated),
-                    @else: SyntaxFactory.ElseClause(SyntaxFactory.Block(original)))
+                    statement: AsBlock(mutated),
+                    @else: SyntaxFactory.ElseClause( AsBlock(original)))
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIf, mutantId.ToString()));
 

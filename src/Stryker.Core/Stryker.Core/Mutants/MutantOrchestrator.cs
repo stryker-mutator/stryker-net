@@ -74,7 +74,8 @@ namespace Stryker.Core.Mutants
                 new ForStatementOrchestrator(),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
-                new ExpressionStatementOrchestrator(),
+   //             new ExpressionStatementOrchestrator(),
+                new BlockStatementOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new StaticPropertyOrchestrator(),
@@ -144,11 +145,15 @@ namespace Stryker.Core.Mutants
             return Mutators.SelectMany(mutator => ApplyMutator(current, mutator, context));
         }
 
+        internal IEnumerable<Mutant> CaptureMutations(SyntaxNode node, MutationContext context)
+        {
+            return FindMutants(node, context);
+        }
+
         internal StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode,
             StatementSyntax nodeToReplace, SyntaxNode subExpression, MutationContext context)
         {
             // The mutations should be placed using an IfStatement
-
             return FindMutants(subExpression, context).Aggregate(nodeToReplace, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, ApplyMutant(originalNode, mutant), mutant.Id));
         }
 
@@ -184,6 +189,17 @@ namespace Stryker.Core.Mutants
         {
             Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
+        }
+
+        public StatementSyntax PlaceMutantsAtBlockLevel(in StatementSyntax node, in StatementSyntax mutated ,List<Mutant> mutationsControlledByIfs)
+        {
+            var result = mutated;
+            foreach (var mutant in mutationsControlledByIfs)
+            {
+                result = MutantPlacer.PlaceWithIfStatement(result, ApplyMutant(node, mutant), mutant.Id);
+            }
+
+            return result;
         }
     }
 }

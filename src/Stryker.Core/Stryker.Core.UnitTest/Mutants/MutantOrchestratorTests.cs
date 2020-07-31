@@ -108,15 +108,18 @@ private bool Out(out string test)
     return true;
 }";
             string expected = @"void TestMethod()
-{
+{if(StrykerNamespace.MutantControl.IsActive(0)){{
     int i = 0;
-    var result = Out(out var test) ? test : (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
+    var result = !(Out(out var test) )? test : """";
 }
-private bool Out(out string test)
+}else{{
+    int i = 0;
+    var result = Out(out var test) ? test : (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":"""");
+}
+}}private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
-    return default(bool);
-}";
+    return (StrykerNamespace.MutantControl.IsActive(2)?false:true);
+returndefault(bool );}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -142,7 +145,8 @@ private bool Out(int test, Func<int, bool>lambda )
 private bool Out(int test, Func<int, bool>lambda )
 {
     return (StrykerNamespace.MutantControl.IsActive(4)?false:true);
-return default(bool );}";
+returndefault(bool );}
+";
 
             ShouldMutateSourceToExpected(source, expected);
         }
