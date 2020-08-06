@@ -3,21 +3,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrator
 {
-    internal class AssignmentStatementOrchestrator : NodeSpecificOrchestrator<ExpressionStatementSyntax>
+    internal class AssignmentStatementOrchestrator : NodeSpecificOrchestrator<AssignmentExpressionSyntax>
     {
-        protected override bool CanHandleThis(ExpressionStatementSyntax t)
+        internal override SyntaxNode OrchestrateMutation(AssignmentExpressionSyntax node, MutationContext context)
         {
-            return t.Expression is AssignmentExpressionSyntax;
-        }
-
-        internal override SyntaxNode OrchestrateMutation(ExpressionStatementSyntax node, MutationContext context)
-        {
-            var assign = node.Expression as AssignmentExpressionSyntax;
-            var expressionCopy = node.TrackNodes(node, assign, assign.Right);
             // mutate +=, *=, ...
-            var result =  context.MutateSubExpressionWithIfStatements(node, expressionCopy, assign);
+            // those mutations must can"t be controlled in line, they can only be controlled as a full statement (i.e. using 'if's)
+            context.StoreMutants(node);
             // mutate the part right to the equal sign
-            return result.ReplaceNode(result.GetCurrentNode(assign.Right), context.Mutate(assign.Right));
+            return node.ReplaceNode(node.Right, context.Mutate(node.Right));
         }
     }
 }

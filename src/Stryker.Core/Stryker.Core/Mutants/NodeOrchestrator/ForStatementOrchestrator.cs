@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
             foreach (var incrementor in forStatement.Incrementors)
             {
-                forWithMutantIncrementors = context.MutateSubExpressionWithIfStatements(forStatement, forWithMutantIncrementors, incrementor);
+                context.StoreMutants(incrementor);
             }
 
             var originalFor = forWithMutantIncrementors.GetCurrentNode(forStatement);

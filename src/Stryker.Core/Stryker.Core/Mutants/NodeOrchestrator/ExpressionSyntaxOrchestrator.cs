@@ -15,5 +15,5 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             context.StoreMutants(node);
             return context.MutateChildren(node);
         }
-    }
+    }    
 }

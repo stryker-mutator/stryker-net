@@ -35,7 +35,7 @@ namespace Stryker.Core.Mutants
 
         private ICollection<Mutant> Mutants { get; set; }
         private int MutantCount { get; set; }
-        private IEnumerable<IMutator> Mutators { get; }
+        internal IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
         internal bool MustInjectCoverageLogic =>
@@ -74,8 +74,6 @@ namespace Stryker.Core.Mutants
                 new ForStatementOrchestrator(),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
-   //             new ExpressionStatementOrchestrator(),
-                new BlockStatementOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new StaticPropertyOrchestrator(),
@@ -116,76 +114,46 @@ namespace Stryker.Core.Mutants
 
             // search for node specific handler
             var result = this._specificOrchestrator.FindHandler(currentNode);
-
             return result.Mutate(currentNode, context);
         }
 
-        internal SyntaxNode MutateExpression(SyntaxNode currentNode, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
-            // Nothing to mutate, dig further
-            var childCopy = currentNode.TrackNodes(currentNode.ChildNodes().ToList().Append(currentNode));
-            var mutated = false;
-
-            foreach (var child in currentNode.ChildNodes().ToList())
+            foreach (var mutator in Mutators)
             {
-                var mutatedChild = Mutate(child, context);
-                if (child != mutatedChild)
+                foreach (var mutation in mutator.Mutate(current))
                 {
-                    var currentChild = childCopy.GetCurrentNode(child);
-                    childCopy = childCopy.ReplaceNode(currentChild, mutatedChild);
-                    mutated = true;
+                    var id = MutantCount++;
+                    Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
+                        mutation.ReplacementNode, mutator.GetType());
+                    yield return new Mutant
+                    {
+                        Id = id,
+                        Mutation = mutation,
+                        ResultStatus = MutantStatus.NotRun,
+                        IsStaticValue = context.InStaticValue
+                    };
                 }
             }
-
-            return mutated ? childCopy : currentNode;
-        }
-
-        private IEnumerable<Mutant> FindMutants(SyntaxNode current, MutationContext context)
-        {
-            return Mutators.SelectMany(mutator => ApplyMutator(current, mutator, context));
-        }
-
-        internal IEnumerable<Mutant> CaptureMutations(SyntaxNode node, MutationContext context)
-        {
-            return FindMutants(node, context);
         }
 
         internal StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode,
             StatementSyntax nodeToReplace, SyntaxNode subExpression, MutationContext context)
         {
             // The mutations should be placed using an IfStatement
-            return FindMutants(subExpression, context).Aggregate(nodeToReplace, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, ApplyMutant(originalNode, mutant), mutant.Id));
+            return GenerateMutationsForNode(subExpression, context).Aggregate(nodeToReplace, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(originalNode, mutant), mutant.Id));
         }
 
         internal ExpressionSyntax MutateSubExpressionWithConditional(ExpressionSyntax originalNode,
             ExpressionSyntax currentNode, MutationContext context)
         {
-            return FindMutants(originalNode, context).Aggregate(currentNode,
+            return GenerateMutationsForNode(originalNode, context).Aggregate(currentNode,
                 (current, mutant) =>
-                    MutantPlacer.PlaceWithConditionalExpression(current, ApplyMutant(originalNode, mutant), mutant.Id));
+                    MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(originalNode, mutant), mutant.Id));
         }
 
-        /// <summary>
-        /// Mutates one single SyntaxNode using a mutator
-        /// </summary>
-        private IEnumerable<Mutant> ApplyMutator(SyntaxNode syntaxNode, IMutator mutator, MutationContext context)
-        {
-            var mutations = mutator.Mutate(syntaxNode);
-            foreach (var mutation in mutations)
-            {
-                Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", MutantCount, mutation.OriginalNode,
-                    mutation.ReplacementNode, mutator.GetType());
-                yield return new Mutant()
-                {
-                    Id = MutantCount++,
-                    Mutation = mutation,
-                    ResultStatus = MutantStatus.NotRun,
-                    IsStaticValue = context.InStaticValue
-                };
-            }
-        }
-
-        private T ApplyMutant<T>(T node, Mutant mutant) where T : SyntaxNode
+        // inject the mutation within the control structure
+        private T InjectMutation<T>(T node, Mutant mutant) where T : SyntaxNode
         {
             Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
@@ -196,7 +164,7 @@ namespace Stryker.Core.Mutants
             var result = mutated;
             foreach (var mutant in mutationsControlledByIfs)
             {
-                result = MutantPlacer.PlaceWithIfStatement(result, ApplyMutant(node, mutant), mutant.Id);
+                result = MutantPlacer.PlaceWithIfStatement(result, InjectMutation(node, mutant), mutant.Id);
             }
 
             return result;

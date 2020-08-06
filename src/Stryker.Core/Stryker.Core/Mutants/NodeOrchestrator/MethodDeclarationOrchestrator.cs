@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
                 return node;
             }
 
-            TypeSyntax returnType = node.ReturnType;
+            var returnType = node.ReturnType;
 
             // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
             var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();

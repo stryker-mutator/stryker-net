@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,12 +12,14 @@ namespace Stryker.Core.Mutants
     internal class MutationContext
     {
         private readonly MutantOrchestrator _mainOrchestrator;
-        private readonly List<Mutant> _mutationsControlledByIfs = new List<Mutant>();
+        private readonly List<Mutant> _blockLevelControlledMutations = new List<Mutant>();
+        private readonly List<Mutant> _statementLevelControlledMutations = new List<Mutant>();
 
         public MutationContext(MutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
         }
+
 
         /// <summary>
         ///  True when inside a static initializer, fields or accessor.
@@ -25,21 +28,56 @@ namespace Stryker.Core.Mutants
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
-        public SyntaxNode Mutate(SyntaxNode subNode) => _mainOrchestrator.Mutate(subNode, this);
+        public SyntaxNode Mutate(SyntaxNode subNode)
+        {
+            if (!(subNode is StatementSyntax statement))
+            {
+                return _mainOrchestrator.Mutate(subNode, this);
+            }
+            var context = Clone();
+            var mutations = _mainOrchestrator.Mutate(subNode, context) as StatementSyntax;
+            if (subNode is BlockSyntax blockSyntax)
+            {
+                return context.InjectIfMutants(blockSyntax,
+                    (BlockSyntax) mutations);
+            }
+
+            _blockLevelControlledMutations.AddRange(context._blockLevelControlledMutations);
+            mutations = _mainOrchestrator.PlaceMutantsAtBlockLevel(statement, mutations,
+                context._statementLevelControlledMutations);
+            return mutations;
+
+        }
 
         public SyntaxNode MutateChildren(SyntaxNode node)
         {
-            return _mainOrchestrator.MutateExpression(node, this);
+            // Nothing to mutate, dig further
+            var childCopy = node.TrackNodes(node.ChildNodes().ToList().Append(node));
+            var mutated = false;
+
+            foreach (var child in node.ChildNodes().ToList())
+            {
+                var mutatedChild = Mutate(child);
+                if (child != mutatedChild)
+                {
+                    childCopy = childCopy.ReplaceNode(childCopy.GetCurrentNode(child), mutatedChild);
+                    mutated = true;
+                }
+            }
+
+            return mutated ? childCopy : node;
         }
     
-        public StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode, StatementSyntax nodeToReplace, ExpressionSyntax subExpression)
-        {
-            return _mainOrchestrator.MutateSubExpressionWithIfStatements(originalNode, nodeToReplace, subExpression, this);
-        }
-
         public void StoreMutants(SyntaxNode node)
         {
-            _mutationsControlledByIfs.AddRange(_mainOrchestrator.CaptureMutations(node, this));
+            if (node is ExpressionSyntax expression && expression.ContainsDeclarations())
+            {
+                _blockLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutationsForNode(node, this));
+            }
+            else if (node is AssignmentExpressionSyntax || node is PostfixUnaryExpressionSyntax)
+            {
+                _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutationsForNode(node, this));
+            }
         }
 
         public MutationContext EnterStatic()
@@ -47,20 +85,20 @@ namespace Stryker.Core.Mutants
             return new MutationContext(_mainOrchestrator) { InStaticValue =  true};
         }
 
-        public SyntaxNode MutateWithConditionals(ExpressionSyntax node, ExpressionSyntax mutateChildren)
+        public SyntaxNode MutateWithConditionals(ExpressionSyntax originalNode, ExpressionSyntax mutatedNode)
         {
-            return _mainOrchestrator.MutateSubExpressionWithConditional(node, mutateChildren, this);
+            return _mainOrchestrator.MutateSubExpressionWithConditional(originalNode, mutatedNode, this);
         }
 
         public SyntaxNode InjectIfMutants(BlockSyntax original, BlockSyntax node)
         {
-            if (_mutationsControlledByIfs.Count == 0)
+            if (_blockLevelControlledMutations.Count == 0)
             {
                 return node;
             }
             var newBlock =
-                SyntaxFactory.Block(_mainOrchestrator.PlaceMutantsAtBlockLevel(original, node, _mutationsControlledByIfs));
-            _mutationsControlledByIfs.Clear();
+                SyntaxFactory.Block(_mainOrchestrator.PlaceMutantsAtBlockLevel(original, node, _blockLevelControlledMutations));
+            _blockLevelControlledMutations.Clear();
             return newBlock;
         }
 
