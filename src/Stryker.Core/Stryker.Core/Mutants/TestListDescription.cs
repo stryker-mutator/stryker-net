@@ -33,7 +33,12 @@ namespace Stryker.Core.Mutants
             NoTestInstance = new TestListDescription(null);
         }
 
-        public TestListDescription(IEnumerable<TestDescription> testDescriptions = null)
+        public TestListDescription()
+        {
+            Tests = null;
+        }
+
+        public TestListDescription(IEnumerable<TestDescription> testDescriptions)
         {
             Tests = testDescriptions == null ? new List<TestDescription>() : testDescriptions.ToList();
         }
