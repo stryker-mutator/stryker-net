@@ -7,14 +7,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 {
     internal class MethodDeclarationOrchestrator : NodeSpecificOrchestrator<MethodDeclarationSyntax>
     {
+        protected override bool CanHandleThis(MethodDeclarationSyntax t)
+        {
+            return t.Body != null;
+        }
+
         internal override SyntaxNode OrchestrateMutation(MethodDeclarationSyntax node, MutationContext context)
         {
             node = (MethodDeclarationSyntax) context.MutateChildren(node);
-            // If it's not a method or the method has no body skip the node
-            if ( node.Body == null)
-            {
-                return node;
-            }
 
             // If method return type is void skip the node
             if (node.ReturnType is PredefinedTypeSyntax predefinedType &&

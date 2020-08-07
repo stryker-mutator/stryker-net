@@ -36,7 +36,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             }
 
             return trackedNode;
-
         }
     }
 }

@@ -7,6 +7,7 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrator;
 
 namespace Stryker.Core.Mutants
@@ -104,6 +105,7 @@ namespace Stryker.Core.Mutants
             return Mutate(currentNode, new MutationContext(this));
         }
 
+        // recursive version
         internal SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
         {
             // don't mutate immutable nodes
@@ -117,7 +119,7 @@ namespace Stryker.Core.Mutants
             return result.Mutate(currentNode, context);
         }
 
-        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode current, MutationContext context)
         {
             foreach (var mutator in Mutators)
             {
@@ -137,37 +139,24 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        internal StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode,
-            StatementSyntax nodeToReplace, SyntaxNode subExpression, MutationContext context)
+        internal StatementSyntax PlaceMutantWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
         {
-            // The mutations should be placed using an IfStatement
-            return GenerateMutationsForNode(subExpression, context).Aggregate(nodeToReplace, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(originalNode, mutant), mutant.Id));
+            var syntax = node;
+            return mutationsControlledByIfs.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(syntax, mutant), mutant.Id));
         }
 
-        internal ExpressionSyntax MutateSubExpressionWithConditional(ExpressionSyntax originalNode,
-            ExpressionSyntax currentNode, MutationContext context)
+        internal ExpressionSyntax PlaceMutantWithinConditionalControls(in ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
         {
-            return GenerateMutationsForNode(originalNode, context).Aggregate(currentNode,
-                (current, mutant) =>
-                    MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(originalNode, mutant), mutant.Id));
+            var syntax = node;
+            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(syntax, mutant), mutant.Id));
         }
 
         // inject the mutation within the control structure
-        private T InjectMutation<T>(T node, Mutant mutant) where T : SyntaxNode
+        private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
         {
             Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
 
-        public StatementSyntax PlaceMutantsAtBlockLevel(in StatementSyntax node, in StatementSyntax mutated ,List<Mutant> mutationsControlledByIfs)
-        {
-            var result = mutated;
-            foreach (var mutant in mutationsControlledByIfs)
-            {
-                result = MutantPlacer.PlaceWithIfStatement(result, InjectMutation(node, mutant), mutant.Id);
-            }
-
-            return result;
-        }
     }
 }

@@ -34,16 +34,24 @@ namespace Stryker.Core.Mutants
             {
                 return _mainOrchestrator.Mutate(subNode, this);
             }
+            // we are about to mutate a statement
+            // create statement local context
             var context = Clone();
             var mutations = _mainOrchestrator.Mutate(subNode, context) as StatementSyntax;
             if (subNode is BlockSyntax blockSyntax)
             {
-                return context.InjectIfMutants(blockSyntax,
-                    (BlockSyntax) mutations);
+                // if this was a block, inject all block level controlled mutations
+                if (context._blockLevelControlledMutations.Count == 0)
+                {
+                    return mutations;
+                }
+                var newBlock =
+                    SyntaxFactory.Block(_mainOrchestrator.PlaceMutantWithinIfControls(blockSyntax, mutations, context._blockLevelControlledMutations));
+                return newBlock;
             }
-
+            // simple statement, inject all statement level controlled mutations and aggregates block level mutations.
             _blockLevelControlledMutations.AddRange(context._blockLevelControlledMutations);
-            mutations = _mainOrchestrator.PlaceMutantsAtBlockLevel(statement, mutations,
+            mutations = _mainOrchestrator.PlaceMutantWithinIfControls(statement, mutations,
                 context._statementLevelControlledMutations);
             return mutations;
 
@@ -68,15 +76,15 @@ namespace Stryker.Core.Mutants
             return mutated ? childCopy : node;
         }
     
-        public void StoreMutants(SyntaxNode node)
+        public void GenerateStatementLevelControlledMutants(SyntaxNode node)
         {
             if (node is ExpressionSyntax expression && expression.ContainsDeclarations())
             {
-                _blockLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutationsForNode(node, this));
+                _blockLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
             }
-            else if (node is AssignmentExpressionSyntax || node is PostfixUnaryExpressionSyntax)
+            else
             {
-                _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutationsForNode(node, this));
+                _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
             }
         }
 
@@ -87,22 +95,11 @@ namespace Stryker.Core.Mutants
 
         public SyntaxNode MutateWithConditionals(ExpressionSyntax originalNode, ExpressionSyntax mutatedNode)
         {
-            return _mainOrchestrator.MutateSubExpressionWithConditional(originalNode, mutatedNode, this);
+            var mutations = _mainOrchestrator.GenerateMutantsForNode(originalNode, this);
+            return _mainOrchestrator.PlaceMutantWithinConditionalControls(originalNode, mutatedNode, mutations);
         }
 
-        public SyntaxNode InjectIfMutants(BlockSyntax original, BlockSyntax node)
-        {
-            if (_blockLevelControlledMutations.Count == 0)
-            {
-                return node;
-            }
-            var newBlock =
-                SyntaxFactory.Block(_mainOrchestrator.PlaceMutantsAtBlockLevel(original, node, _blockLevelControlledMutations));
-            _blockLevelControlledMutations.Clear();
-            return newBlock;
-        }
-
-        public MutationContext Clone()
+        private MutationContext Clone()
         {
             var inStatic = InStaticValue;
             return new MutationContext(_mainOrchestrator){InStaticValue = inStatic};

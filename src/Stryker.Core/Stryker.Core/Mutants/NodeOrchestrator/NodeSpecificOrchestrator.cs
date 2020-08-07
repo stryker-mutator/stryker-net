@@ -3,11 +3,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutants.NodeOrchestrator
 {
-    interface INodeMutator: ITypeHandler<SyntaxNode>
-    {
-        SyntaxNode Mutate(SyntaxNode node, MutationContext context);
-    }
-
     internal abstract class NodeSpecificOrchestrator<T>:INodeMutator where T: SyntaxNode
     {
         public Type ManagedType => typeof(T);

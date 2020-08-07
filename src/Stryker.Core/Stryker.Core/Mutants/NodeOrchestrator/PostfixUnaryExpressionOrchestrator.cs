@@ -13,7 +13,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
         internal override SyntaxNode OrchestrateMutation(PostfixUnaryExpressionSyntax node, MutationContext context)
         {
             // incrementor/decrementor as statement must be mutated as statements
-            context.StoreMutants(node);
+            context.GenerateStatementLevelControlledMutants(node);
             return context.MutateChildren(node);
         }
     }
