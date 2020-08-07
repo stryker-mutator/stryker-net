@@ -1,7 +1,6 @@
 ﻿using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
-using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
@@ -205,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldNotFilterMutantsWhereCoveringTestsContainsChangedTestFile()
         {
-           string testProjectPath = "C:/MyTests";
+            string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
 
             var baselineProvider = new Mock<IBaselineProvider>();
@@ -220,7 +219,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 {
                     myTest
                 },
-                TestFilesChanged = new Collection<string>() { 
+                TestFilesChanged = new Collection<string>() {
                     myTest
                 }
             });
@@ -346,8 +345,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             x.Load(It.IsAny<string>())
             ).Returns(
                 Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
-                    ));
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IGitInfoProvider>();
@@ -380,7 +378,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             };
 
-            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
             results.Count().ShouldBe(2);
         }
