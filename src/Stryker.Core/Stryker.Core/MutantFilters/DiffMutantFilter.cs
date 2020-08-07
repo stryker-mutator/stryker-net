@@ -22,10 +22,10 @@ namespace Stryker.Core.MutantFilters
         private readonly DiffResult _diffResult;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
+        private readonly ILogger<DiffMutantFilter> _logger;
 
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
-        private readonly ILogger<DiffMutantFilter> _logger;
 
         public string DisplayName => "git diff file filter";
 
@@ -75,6 +75,13 @@ namespace Stryker.Core.MutantFilters
                 UpdateMutantsWithBaselineStatus(mutants, file);
             }
 
+            // A non-cSharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
+            if (_diffResult.ChangedFiles.Any(x => !x.EndsWith(".cs")))
+            {
+                _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
+                return SetMutantStatusForNonCSharpFileChanged(mutants);
+            }
+
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedFiles.Contains(file.FullPath))
             {
@@ -104,7 +111,7 @@ namespace Stryker.Core.MutantFilters
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == file.RelativePath);
             {
-                if (baselineFile is { })
+                if (baselineFile is { } && baselineFile.Value is { })
                 {
                     foreach (var baselineMutant in baselineFile.Value.Mutants)
                     {
@@ -198,6 +205,17 @@ namespace Stryker.Core.MutantFilters
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "File changed since last commit.";
+            }
+
+            return mutants;
+        }
+
+        private IEnumerable<Mutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "A file with a different extension than .cs was changed. Cannot determine influence of file change on this mutant";
             }
 
             return mutants;
