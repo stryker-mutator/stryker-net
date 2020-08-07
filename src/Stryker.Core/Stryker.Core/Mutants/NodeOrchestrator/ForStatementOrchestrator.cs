@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             }
 
             // mutate the statement/block
-            forStatement = forStatement.ReplaceNode(originalFor.Statement, context.Mutate(originalFor.Statement));
+            forStatement = forStatement.ReplaceNode(forStatement.Statement, context.Mutate(originalFor.Statement));
             // and now we replace it
             return forStatement;
         }
