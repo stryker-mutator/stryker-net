@@ -46,11 +46,14 @@ namespace Stryker.Core.MutantFilters
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles.Count);
+                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles?.Count);
 
-                foreach (var changedFile in _diffResult.ChangedFiles)
+                if (_diffResult.ChangedFiles != null)
                 {
-                    _logger.LogInformation("Changed file {0}", changedFile);
+                    foreach (var changedFile in _diffResult.ChangedFiles)
+                    {
+                        _logger.LogInformation("Changed file {0}", changedFile);
+                    }
                 }
             }
         }
