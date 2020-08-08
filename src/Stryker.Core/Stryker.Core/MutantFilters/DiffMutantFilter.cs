@@ -215,7 +215,7 @@ namespace Stryker.Core.MutantFilters
             foreach (var mutant in mutants)
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
-                mutant.ResultStatusReason = "A file with a different extension than .cs was changed. Cannot determine influence of file change on this mutant";
+                mutant.ResultStatusReason = "Non-CSharp files in test project were changed.";
             }
 
             return mutants;
