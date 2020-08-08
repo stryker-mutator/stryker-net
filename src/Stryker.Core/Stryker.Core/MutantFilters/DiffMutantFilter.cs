@@ -76,7 +76,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // A non-cSharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
-            if (_diffResult.ChangedFiles.Any(x => !x.EndsWith(".cs")))
+            if (_diffResult.TestFilesChanged is { } &&  _diffResult.TestFilesChanged.Any(x => !x.EndsWith(".cs")))
             {
                 _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
                 return SetMutantStatusForNonCSharpFileChanged(mutants);

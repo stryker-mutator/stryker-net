@@ -467,7 +467,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void Should_ReturnAllMutants_When_NonSourceCodeFile_Has_Changed()
+        public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
         {
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
@@ -475,7 +475,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProviderMock = new Mock<IBaselineProvider>();
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var diffResult = new DiffResult() { ChangedFiles = new List<string> { "config.json" } };
+            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "config.json" } };
             diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
 
             baselineProviderMock.Setup(x =>
