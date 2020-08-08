@@ -253,7 +253,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: eq(variables['build.sourcebranch'], 'refs/heads/master')
+  condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
