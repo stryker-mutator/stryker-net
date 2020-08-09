@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             {
                 return context.MutateWithConditionals(node, context.MutateChildren(node) as ExpressionSyntax);
             }
-            // we have variable declaration as part of the expression, mutation need to be controlled at the block level
+            // we have variable declaration(s) as part of the expression, mutation need to be controlled at the block level
             context.GenerateStatementLevelControlledMutants(node);
             return context.MutateChildren(node);
         }

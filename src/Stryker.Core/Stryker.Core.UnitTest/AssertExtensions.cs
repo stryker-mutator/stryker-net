@@ -33,9 +33,9 @@ namespace Stryker.Core.UnitTest
             {
                 return;
             }
-            var issame = SyntaxFactory.AreEquivalent(actual, expected);
+            var isSame = SyntaxFactory.AreEquivalent(actual, expected);
 
-            if (!issame)
+            if (!isSame)
             {
                 // find the different
                 var actuaLines = actual.ToString().Split(Environment.NewLine);
@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest
                 {
                     if (actuaLines[i] != expectedLines[i])
                     {
-                        issame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                        isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
                     }
                 }
             }
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest
             var errors = actual.SyntaxTree.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);
             if (errors > 0)
             {
-                errors.ShouldBe(0, $"errors: {string.Join(Environment.NewLine, actual.SyntaxTree.GetDiagnostics())}");
+                errors.ShouldBe(0, $"Actual code has build errors!\n{actual.ToFullString()}\nerrors: {string.Join(Environment.NewLine, actual.SyntaxTree.GetDiagnostics())}");
             }
         }
     }

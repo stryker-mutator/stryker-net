@@ -119,7 +119,7 @@ private bool Out(out string test)
 }}private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(2)?false:true);
-returndefault(bool );}";
+return default(bool );}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -145,7 +145,7 @@ private bool Out(int test, Func<int, bool>lambda )
 private bool Out(int test, Func<int, bool>lambda )
 {
     return (StrykerNamespace.MutantControl.IsActive(4)?false:true);
-returndefault(bool );}
+return default(bool );}
 ";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -196,7 +196,7 @@ returndefault(bool );}
         }
 
         [Fact]
-        void ShouldMutateConditionalExpressionOnArrayDeclaration()
+        public void ShouldMutateConditionalExpressionOnArrayDeclaration()
         {
             string source = @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
             string expected = @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(1)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(0)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
@@ -205,38 +205,39 @@ returndefault(bool );}
         }
 
         [Fact]
-        void ShouldMutateArrayInitializer()
+        public void ShouldMutateArrayInitializer()
         {
             string source = @"public int[] Foo(){
 int[] test = { 1 };
 }";
             string expected = @"public int[] Foo(){
-int[] test = (StrykerNamespace.MutantControl.IsActive(0)?{}:{ 1 });
-returndefault(int[] );}";
+if(StrykerNamespace.MutantControl.IsActive(0)){int[] test = {};
+}else{int[] test = { 1 };
+}return default(int[] );}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
-        void ShouldMutateArrayDeclaration()
+        public void ShouldMutateArrayDeclaration()
         {
-            string source = @"public int[] Foo() => new int[] { 1 };";
-            string expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new int[] {}:new int[] { 1 });";
+            var source = @"public int[] Foo() => new int[] { 1 };";
+            var expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new int[] {}:new int[] { 1 });";
 
             ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
-        void ShouldMutateListCreation()
+        public void ShouldMutateListCreation()
         {
-            string source = @"public int[] Foo() => new List<int> { 1 };";
-            string expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new List<int> {}:new List<int> { 1 });";
+            var source = @"public int[] Foo() => new List<int> { 1 };";
+            var expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new List<int> {}:new List<int> { 1 });";
 
             ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
-        void ShouldNotMutateImplicitArrayCreation()
+        public void ShouldNotMutateImplicitArrayCreation()
         {
             string source = @"public int[] Foo() => new [] { 1 };";
             string expected = @"public int[] Foo() => new [] { 1 };";
@@ -726,16 +727,35 @@ static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (Stryker
             actualNode.ShouldNotContainErrors();
         }
 
-        private void ShouldMutateSourceToExpected(string original, string expected)
+        [Fact]
+        public void ShouldMutateStaticProperties()
         {
-            original = @"using System;
+            var source = @"static string Value => """";
+
+static TestClass(){}";
+
+            var expected = @"static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""
+);
+static TestClass(){using(new StrykerNamespace.MutantContext()){}}";
+
+            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        private void ShouldMutateSourceToExpected(string actual, string expected)
+        {
+            actual = @"using System;
 using System.Collections.Generic;
             using System.Text;
 
 namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
-        {" + original + "}}";
+        {" + actual + "}}";
 
             expected = @"using System;
 using System.Collections.Generic;
@@ -745,11 +765,14 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
         {" + expected + "}}";
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(original).GetRoot());
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
+            actual = actualNode.ToFullString();
+            actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
+            actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
         }
     }
+
 }

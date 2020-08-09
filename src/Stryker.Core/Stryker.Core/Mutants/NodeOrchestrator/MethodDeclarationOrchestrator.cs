@@ -43,7 +43,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
             var newBody = node.Body.AddStatements(
                 MutantPlacer.AnnotateHelper(
-                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType))));
+                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType).WithLeadingTrivia(SyntaxFactory.Space))));
             node = node.ReplaceNode(node.Body, newBody);
 
             return node;
