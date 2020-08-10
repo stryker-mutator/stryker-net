@@ -58,39 +58,38 @@ private bool Out(out string test)
             string expected = @"void TestMethod()
 {
     int i = 0;
-    if ((StrykerNamespace.MutantControl.IsActive(2)?!(i + 8 == 8):(StrykerNamespace.MutantControl.IsActive(1)?i + 8 != 8:(StrykerNamespace.MutantControl.IsActive(0)?i - 8 :i + 8 )== 8)))
+    if ((StrykerNamespace.MutantControl.IsActive(1)?i + 8 != 8:(StrykerNamespace.MutantControl.IsActive(0)?i - 8 :i + 8 )== 8))
     {
-        i = (StrykerNamespace.MutantControl.IsActive(9)?i - 1:i + 1);
-        if ((StrykerNamespace.MutantControl.IsActive(12)?!(i + 8 == 9):(StrykerNamespace.MutantControl.IsActive(11)?i + 8 != 9:(StrykerNamespace.MutantControl.IsActive(10)?i - 8 :i + 8 )== 9)))
+        i = (StrykerNamespace.MutantControl.IsActive(7)?i - 1:i + 1);
+        if ((StrykerNamespace.MutantControl.IsActive(9)?i + 8 != 9:(StrykerNamespace.MutantControl.IsActive(8)?i - 8 :i + 8 )== 9))
         {
-            i = (StrykerNamespace.MutantControl.IsActive(13)?i - 1:i + 1);
+            i = (StrykerNamespace.MutantControl.IsActive(10)?i - 1:i + 1);
         };
     }
     else
     {
-        i = (StrykerNamespace.MutantControl.IsActive(3)?i - 3:i + 3);
-        if ((StrykerNamespace.MutantControl.IsActive(7)?!(i == i + i - 8):(StrykerNamespace.MutantControl.IsActive(6)?i != i + i - 8:i == (StrykerNamespace.MutantControl.IsActive(5)?i + i + 8:(StrykerNamespace.MutantControl.IsActive(4)?i - i :i + i )- 8))))
+        i = (StrykerNamespace.MutantControl.IsActive(2)?i - 3:i + 3);
+        if ((StrykerNamespace.MutantControl.IsActive(5)?i != i + i - 8:i == (StrykerNamespace.MutantControl.IsActive(4)?i + i + 8:(StrykerNamespace.MutantControl.IsActive(3)?i - i :i + i )- 8)))
         {
-            i = (StrykerNamespace.MutantControl.IsActive(8)?i - 1:i + 1);
+            i = (StrykerNamespace.MutantControl.IsActive(6)?i - 1:i + 1);
         };
     }
 
     if (!Out(out var test))
     {
-        return (StrykerNamespace.MutantControl.IsActive(14)?i - 1:i + 1);
+        return (StrykerNamespace.MutantControl.IsActive(11)?i - 1:i + 1);
     }
 
     if (i is int x)
     {
-        return (StrykerNamespace.MutantControl.IsActive(15)?x - 1:x + 1);
+        return (StrykerNamespace.MutantControl.IsActive(12)?x - 1:x + 1);
     }
 }
 
 private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(16)?false:true);
-    return default(bool);
-}";
+    return (StrykerNamespace.MutantControl.IsActive(13)?false:true);
+return default(bool );}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -181,7 +180,7 @@ return default(bool );}
         {
             string SomeLocalFunction()
             {
-                return string.Empty?.All(x => !string.IsEmpty(x));
+                return string.Empty?.All(x => !string.IsEmpty(x)); 
             };
         }";
             string expected = @"void TestMethod()
@@ -192,6 +191,22 @@ return default(bool );}
             };
         }";
 
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotGenerateDuplicatesBasicConditions()
+        {
+            var source = @"void TestMethod()
+{
+  if (!SomeMethod())
+ {}
+}";
+            var expected = @"void TestMethod()
+{
+if ((StrykerNamespace.MutantControl.IsActive(0)?SomeMethod():!SomeMethod()))
+{}
+}";
             ShouldMutateSourceToExpected(source, expected);
         }
 
@@ -611,7 +626,7 @@ namespace TestApp
             _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var mutants = _target.GetLatestMutantBatch().ToList();
-            mutants.Count.ShouldBe(4);
+            mutants.Count.ShouldBe(3);
             foreach (var mutant in mutants)
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
