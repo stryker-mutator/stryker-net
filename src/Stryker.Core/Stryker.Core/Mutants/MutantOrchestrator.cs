@@ -7,6 +7,7 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrator;
 
@@ -126,16 +127,36 @@ namespace Stryker.Core.Mutants
             {
                 foreach (var mutation in mutator.Mutate(current))
                 {
-                    var id = MutantCount++;
+                    var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
                         mutation.ReplacementNode, mutator.GetType());
-                    yield return new Mutant
+                    var node = new Mutant
                     {
                         Id = id,
                         Mutation = mutation,
                         ResultStatus = MutantStatus.NotRun,
                         IsStaticValue = context.InStaticValue
                     };
+                    var duplicate = false;
+                    // check if we have a duplicate
+                    foreach (var mutant in Mutants)
+                    {
+                        if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
+                            !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, node.Mutation.ReplacementNode))
+                        {
+                            continue;
+                        }
+                        Logger.LogDebug($"Mutant {id} discarded as it is a duplicate of {mutant.Id}");
+                        duplicate = true;
+                        break;
+                    }
+
+                    if (duplicate)
+                    {
+                        continue;
+                    }
+                    MutantCount++;
+                    yield return node;
                 }
             }
         }
