@@ -36,7 +36,7 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
             // skip string additions
-            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
+            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()|| node.Right.IsAStringExpression()))
             {
                 yield break;
             }
@@ -101,7 +101,7 @@ namespace Stryker.Core.Mutators
             };
         }
 
-        private static Mutation GetIntegralMutation(BinaryExpressionSyntax node)
+        private static Mutation GetIntegralMutation(ExpressionSyntax node)
         {
             var replacementNode = SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, SyntaxFactory.ParenthesizedExpression(node));
 

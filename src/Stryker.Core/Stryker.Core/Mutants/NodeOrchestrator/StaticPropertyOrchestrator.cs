@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
         {
             if (!context.MustInjectCoverageLogic)
             {
-                return context.MutateChildren(node);
+                return context.MutateNodeAndChildren(node);
             }
 
             var trackedNode = node.TrackNodes(node.AccessorList.Accessors.Select(x => (SyntaxNode)x.Body ?? x.ExpressionBody).Where(x => x != null));

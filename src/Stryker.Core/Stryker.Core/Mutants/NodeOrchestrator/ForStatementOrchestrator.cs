@@ -3,15 +3,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrator
 {
-    class ForStatementOrchestrator: NodeSpecificOrchestrator<ForStatementSyntax>
+    internal class ForStatementOrchestrator: NodeSpecificOrchestrator<ForStatementSyntax>
     {
         internal override SyntaxNode OrchestrateMutation(ForStatementSyntax forStatement, MutationContext context)
         {
-            // for needs special treatments for its incrementors
+            // for needs special treatments for its incrementer
             var originalFor = forStatement;
-            foreach (var incrementor in forStatement.Incrementors)
+            foreach (var incrementer in forStatement.Incrementors)
             {
-                context.GenerateStatementLevelControlledMutants(incrementor);
+                context.GenerateStatementLevelControlledMutants(incrementer);
             }
 
             // mutate condition, if any

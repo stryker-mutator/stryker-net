@@ -130,7 +130,7 @@ namespace Stryker.Core.Mutants
                     var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
                         mutation.ReplacementNode, mutator.GetType());
-                    var node = new Mutant
+                    var newMutant = new Mutant
                     {
                         Id = id,
                         Mutation = mutation,
@@ -142,7 +142,7 @@ namespace Stryker.Core.Mutants
                     foreach (var mutant in Mutants)
                     {
                         if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
-                            !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, node.Mutation.ReplacementNode))
+                            !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
                         {
                             continue;
                         }
@@ -155,8 +155,10 @@ namespace Stryker.Core.Mutants
                     {
                         continue;
                     }
+
+                    Mutants.Add(newMutant);
                     MutantCount++;
-                    yield return node;
+                    yield return newMutant;
                 }
             }
         }
@@ -176,7 +178,6 @@ namespace Stryker.Core.Mutants
         // inject the mutation within the control structure
         private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
         {
-            Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
 

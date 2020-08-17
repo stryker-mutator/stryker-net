@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
         internal override SyntaxNode OrchestrateMutation(MethodDeclarationSyntax node, MutationContext context)
         {
-            node = (MethodDeclarationSyntax) context.MutateChildren(node);
+            node = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
 
             // If method return type is void skip the node
             if (node.ReturnType is PredefinedTypeSyntax predefinedType &&

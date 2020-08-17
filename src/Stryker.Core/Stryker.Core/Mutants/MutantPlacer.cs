@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
 
 
-        public static BlockSyntax AsBlock(StatementSyntax input) => SyntaxFactory.Block(input);
+        public static BlockSyntax AsBlock(StatementSyntax input) =>  (input is BlockSyntax block) ? block : SyntaxFactory.Block(input);
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
             SyntaxFactory.IfStatement(

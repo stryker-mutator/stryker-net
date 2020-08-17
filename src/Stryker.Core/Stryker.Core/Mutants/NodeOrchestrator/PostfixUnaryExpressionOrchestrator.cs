@@ -12,9 +12,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
         internal override SyntaxNode OrchestrateMutation(PostfixUnaryExpressionSyntax node, MutationContext context)
         {
-            // incrementor/decrementor as statement must be mutated as statements
-            context.GenerateStatementLevelControlledMutants(node);
-            return context.MutateChildren(node);
+            // incrementer/decrementer as statement must be mutated as statements
+            return context.MutateNodeAndChildren(node, true);
         }
     }
 }

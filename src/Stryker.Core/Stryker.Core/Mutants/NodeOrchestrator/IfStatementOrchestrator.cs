@@ -7,6 +7,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
     {
         internal override SyntaxNode OrchestrateMutation(IfStatementSyntax nodeToParse, MutationContext context)
         {
+
+            return context.MutateNodeAndChildren(nodeToParse);
             var mutatedIf = nodeToParse.Else != null
                 ? nodeToParse.TrackNodes(nodeToParse.Condition, nodeToParse.Statement, nodeToParse.Else)
                 : nodeToParse.TrackNodes(nodeToParse.Condition, nodeToParse.Statement);
@@ -16,7 +18,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             if (!nodeToParse.Condition.ContainsDeclarations())
             {
                 var currentCondition = mutatedIf.GetCurrentNode(nodeToParse.Condition);
-                var mutatedCondition = context.Mutate(nodeToParse.Condition);
+                var mutatedCondition = context.MutateNodeAndChildren(nodeToParse.Condition);
                 if (mutatedCondition != currentCondition)
                 {
                     mutatedIf = mutatedIf.ReplaceNode(currentCondition, mutatedCondition);
@@ -27,7 +29,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             if (nodeToParse.Else != null)
             {
                 var currentElse = mutatedIf.GetCurrentNode(nodeToParse.Else);
-                var mutatedElse = context.Mutate(nodeToParse.Else);
+                var mutatedElse = context.MutateNodeAndChildren(nodeToParse.Else);
                 if (mutatedElse != currentElse)
                 {
                     mutatedIf = mutatedIf.ReplaceNode(currentElse, mutatedElse);
@@ -36,7 +38,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             }
 
             var currentStatement = mutatedIf.GetCurrentNode(nodeToParse.Statement);
-            var mutatedStatement = context.Mutate(nodeToParse.Statement);
+            var mutatedStatement = context.MutateNodeAndChildren(nodeToParse.Statement);
             if (currentStatement != mutatedStatement)
             {
                 mutatedIf = mutatedIf.ReplaceNode(currentStatement, mutatedStatement);

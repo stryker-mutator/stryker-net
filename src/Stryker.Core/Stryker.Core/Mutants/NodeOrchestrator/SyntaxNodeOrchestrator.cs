@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
     {
         internal override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
         {
-            return context.MutateChildren(node);
+            return context.MutateNodeAndChildren(node);
         }
     }
 }
