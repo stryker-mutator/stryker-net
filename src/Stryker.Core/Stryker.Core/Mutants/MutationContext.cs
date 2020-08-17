@@ -88,27 +88,8 @@ namespace Stryker.Core.Mutants
                 mutatedNode = node.TrackNodes(node.ChildNodes());
             }
 
-            return GenerateMutatedChildren(node, mutatedNode);
-        }
-
-        public T GenerateStatementLevelControlledMutants<T>(T node) where T: SyntaxNode
-        {
-            // declarations expression must be controlled at the block level (declarations have block level visibility)
-            if (node is ExpressionSyntax expression && expression.ContainsDeclarations())
-            {
-                _blockLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
-            }
-            else
-            {
-                _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
-            }
-            // no mutation occurs
-            return node;
-        }
-
-        internal SyntaxNode GenerateMutatedChildren(SyntaxNode originalNode, SyntaxNode mutatedNode)
-        {
-            foreach (var child in originalNode.ChildNodes().ToList())
+            var mutatedNode1 = mutatedNode;
+            foreach (var child in node.ChildNodes().ToList())
             {
                 var mutatedChild = Mutate(child);
                 if (SyntaxFactory.AreEquivalent(child, mutatedChild))
@@ -116,10 +97,10 @@ namespace Stryker.Core.Mutants
                     continue;
                 }
 
-                mutatedNode = mutatedNode.ReplaceNode(mutatedNode.GetCurrentNode(child), mutatedChild);
+                mutatedNode1 = mutatedNode1.ReplaceNode(mutatedNode1.GetCurrentNode(child), mutatedChild);
             }
 
-            return mutatedNode;
+            return mutatedNode1;
         }
 
         public MutationContext EnterStatic()

@@ -9,20 +9,22 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
         {
             // for needs special treatments for its incrementer
             var originalFor = forStatement;
-            foreach (var incrementer in forStatement.Incrementors)
+            forStatement = originalFor.TrackNodes(forStatement.Incrementors);
+            foreach (var incrementer in originalFor.Incrementors)
             {
-                context.GenerateStatementLevelControlledMutants(incrementer);
+                forStatement = forStatement.ReplaceNode(forStatement.GetCurrentNode(incrementer),
+                    context.MutateNodeAndChildren(incrementer, true));
             }
 
             // mutate condition, if any
             if (forStatement.Condition != null)
             {
                 forStatement = forStatement.ReplaceNode(forStatement.Condition,
-                    context.Mutate(forStatement.Condition));
+                    context.MutateNodeAndChildren(forStatement.Condition));
             }
 
             // mutate the statement/block
-            forStatement = forStatement.ReplaceNode(forStatement.Statement, context.Mutate(originalFor.Statement));
+            forStatement = forStatement.ReplaceNode(forStatement.Statement, context.MutateNodeAndChildren(forStatement.Statement));
             // and now we replace it
             return forStatement;
         }

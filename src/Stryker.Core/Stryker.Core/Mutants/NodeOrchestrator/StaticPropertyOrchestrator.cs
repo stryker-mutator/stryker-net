@@ -25,12 +25,12 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             {
                 if (accessor.ExpressionBody != null)
                 {
-                    var markedBlock = context.Mutate(accessor.ExpressionBody);
+                    var markedBlock = context.MutateNodeAndChildren(accessor.ExpressionBody);
                     trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.ExpressionBody), markedBlock);
                 }
                 else if (accessor.Body != null)
                 {
-                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)context.Mutate(accessor.Body));
+                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)context.MutateNodeAndChildren(accessor.Body));
                     trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
                 }
             }

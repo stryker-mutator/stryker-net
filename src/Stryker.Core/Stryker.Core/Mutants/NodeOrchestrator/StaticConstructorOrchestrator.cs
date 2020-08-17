@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             {
                 var bodyBlock =
                     SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(node.ExpressionBody.Expression));
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.Mutate(bodyBlock));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.MutateNodeAndChildren(bodyBlock));
                 trackedConstructor = trackedConstructor.Update(
                     trackedConstructor.AttributeLists,
                     trackedConstructor.Modifiers,
@@ -36,7 +36,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
             }
             else if (node.Body != null)
             {
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.Mutate(node.Body));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.MutateNodeAndChildren(node.Body));
                 trackedConstructor =
                     trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(node.Body), markedBlock);
             }

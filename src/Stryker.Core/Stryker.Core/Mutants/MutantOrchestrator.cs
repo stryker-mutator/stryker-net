@@ -72,7 +72,6 @@ namespace Stryker.Core.Mutants
 
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
-                new IfStatementOrchestrator(),
                 new ForStatementOrchestrator(),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
@@ -80,7 +79,6 @@ namespace Stryker.Core.Mutants
                 new StaticConstructorOrchestrator(),
                 new StaticPropertyOrchestrator(),
                 new ArrayInitializerOrchestrator(),
-                new ExpressionSyntaxOrchestrator(),
                 new MethodDeclarationOrchestrator(),
                 new SyntaxNodeOrchestrator()
             });
