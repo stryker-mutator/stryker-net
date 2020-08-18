@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutants
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
-        public SyntaxNode Mutate(SyntaxNode subNode)
+        internal SyntaxNode Mutate(SyntaxNode subNode)
         {
             if (!(subNode is StatementSyntax statement))
             {

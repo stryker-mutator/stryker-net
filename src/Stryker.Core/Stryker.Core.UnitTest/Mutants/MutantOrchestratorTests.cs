@@ -118,7 +118,7 @@ else{
 private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(14)?false:true);
-return default(bool );}";
+}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -147,7 +147,7 @@ else{
 }private bool Out(out string test)
 {
     return (StrykerNamespace.MutantControl.IsActive(2)?false:true);
-return default(bool );}";
+}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -173,7 +173,6 @@ private bool Out(int test, Func<int, bool>lambda )
         private bool Out(int test, Func<int, bool>lambda )
         {
             return (StrykerNamespace.MutantControl.IsActive(4)?false:true);
-            return default(bool );}
     }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -424,7 +423,6 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"public int TestLinq(int count){
     var list = Enumerable.Range(1, count);
     return (StrykerNamespace.MutantControl.IsActive(0)?list.First():list.Last());
-    return default(int);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -461,7 +459,6 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             string expected = @"private bool Move()
         {
             return (StrykerNamespace.MutantControl.IsActive(0)?false:true);
-            return default(bool);
         }";
 
             ShouldMutateSourceToExpected(source, expected);

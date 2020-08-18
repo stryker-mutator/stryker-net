@@ -14,20 +14,29 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
 
         internal override SyntaxNode OrchestrateMutation(MethodDeclarationSyntax node, MutationContext context)
         {
-            node = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
+            var mutatedNode = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
 
+            if (mutatedNode.Body == null)
+            {
+                return mutatedNode;
+            }
             // If method return type is void skip the node
-            if (node.ReturnType is PredefinedTypeSyntax predefinedType &&
+            if (mutatedNode.ReturnType is PredefinedTypeSyntax predefinedType &&
                 predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword))
             {
-                return node;
+                return mutatedNode;
             }
 
-            var returnType = node.ReturnType;
+            if (mutatedNode.Body.Statements.Last().Kind() == SyntaxKind.ReturnStatement)
+            {
+                return mutatedNode;
+            }
+
+            var returnType = mutatedNode.ReturnType;
 
             // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
             var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
-            if (node.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
+            if (mutatedNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
             {
                 if (genericReturn != null)
                 {
@@ -37,16 +46,16 @@ namespace Stryker.Core.Mutants.NodeOrchestrator
                 else
                 {
                     // if the method is async but returns a non-generic task, don't add the return default
-                    return node;
+                    return mutatedNode;
                 }
             }
 
-            var newBody = node.Body.AddStatements(
+            var newBody = mutatedNode.Body.AddStatements(
                 MutantPlacer.AnnotateHelper(
                     SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType).WithLeadingTrivia(SyntaxFactory.Space))));
-            node = node.ReplaceNode(node.Body, newBody);
+            mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body, newBody);
 
-            return node;
+            return mutatedNode;
         }
     }
 }
