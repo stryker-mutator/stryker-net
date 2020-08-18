@@ -178,6 +178,5 @@ namespace Stryker.Core.Mutants
         {
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
-
     }
 }
