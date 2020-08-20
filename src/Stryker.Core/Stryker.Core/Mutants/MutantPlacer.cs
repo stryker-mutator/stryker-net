@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
@@ -10,7 +9,6 @@ namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
-
         private const string MutationConditional = "MutationConditional";
         private const string MutationIf = "MutationIf";
         private const string MutationHelper = "Helper";
@@ -21,7 +19,6 @@ namespace Stryker.Core.Mutants
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
             SyntaxFactory.Block( 
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
-
 
         public static BlockSyntax AsBlock(StatementSyntax input) =>  (input is BlockSyntax block) ? block : SyntaxFactory.Block(input);
 

@@ -46,12 +46,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // Traverse the tree upwards
-            if (syntaxNode.Parent != null)
-            {
-                return IsPartOfIgnoredMethodCall(syntaxNode.Parent, options);
-            }
-
-            return false;
+            return syntaxNode.Parent != null && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options);
         }
     }
 }

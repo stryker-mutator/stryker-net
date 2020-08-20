@@ -144,7 +144,7 @@ namespace Stryker.Core.Mutants
                         {
                             continue;
                         }
-                        Logger.LogDebug($"Mutant {id} discarded as it is a duplicate of {mutant.Id}");
+                        Logger.LogDebug($"Mutant {newMutant.DisplayName} discarded as it is a duplicate of {mutant.Id}");
                         duplicate = true;
                         break;
                     }
@@ -174,7 +174,7 @@ namespace Stryker.Core.Mutants
         }
 
         // inject the mutation within the control structure
-        private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
+        private static T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
         {
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }

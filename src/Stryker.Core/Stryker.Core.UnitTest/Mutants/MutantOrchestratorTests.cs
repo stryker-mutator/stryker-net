@@ -4,6 +4,7 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -748,8 +749,8 @@ namespace TestApp
         }
 
         [Theory]
-        [InlineData("=> Value = \"Hello, World!\";")]
         [InlineData("{Value = \"Hello, World!\";}")]
+        [InlineData("=> Value = \"Hello, World!\";")]
         public void ShouldMutateStaticConstructor(string source)
         {
             source = @"static string Value { get; }
@@ -768,23 +769,35 @@ static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (Stryker
             actualNode.ShouldNotContainErrors();
         }
 
+        [Theory]
+        [InlineData("{get =>\"Hello, World!\"}")]
+        [InlineData("{get {return \"Hello, World!\";}}")]
+        public void ShouldMutateStaticProperties(string source)
+        {
+            source = @"static string Value " + source;
+
+            var expected = @"static string Value {get {using(new StrykerNamespace.MutantContext()){return(StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}}";
+
+
+            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            CompareMutatedSource(actualNode.ToFullString(), expected);
+        }
+
+
         [Fact]
-        public void ShouldMutateStaticProperties()
+        public void ShouldMutateStaticPropertiesWithExpressionBodies()
         {
             var source = @"static string Value => """";
 
 static TestClass(){}";
 
-            var expected = @"static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""
-);
+            var expected = @"static string Value {get{using(new StrykerNamespace.MutantContext()){return(StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");}}}
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}";
 
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            CompareMutatedSource(actualNode.ToFullString(), expected);
         }
 
         private void ShouldMutateSourceToExpected(string actual, string expected)
@@ -808,6 +821,12 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         {" + expected + "}}";
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
             actual = actualNode.ToFullString();
+            CompareMutatedSource(actual, expected);
+        }
+
+        private static void CompareMutatedSource(string actual, string expected)
+        {
+            SyntaxNode actualNode;
             actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
             actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();

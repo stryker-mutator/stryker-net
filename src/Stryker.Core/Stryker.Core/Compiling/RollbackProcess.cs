@@ -199,11 +199,12 @@ namespace Stryker.Core.Compiling
 
                     foreach (var (key, value) in scan)
                     {
-                        if (!brokenMutations.Contains(key))
+                        if (brokenMutations.Contains(key))
                         {
-                            brokenMutations.Add(key);
-                            RolledBackIds.Add(value);
+                            continue;
                         }
+                        brokenMutations.Add(key);
+                        RolledBackIds.Add(value);
                     }
                 }
             }
