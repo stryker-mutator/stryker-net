@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
@@ -461,6 +462,34 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, new FileLeaf(), options);
 
             results.Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var diffProviderMock = new Mock<IDiffProvider>();
+            var baselineProviderMock = new Mock<IBaselineProvider>();
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "config.json" } };
+            diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
+
+            baselineProviderMock.Setup(x =>
+                x.Load(It.IsAny<string>())
+                ).Returns(
+                    Task.FromResult(
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         ));
+
+            var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+
+            var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
+
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath= "C:\\Foo\\Bar" }, options);
+
+            result.ShouldBe(mutants);
         }
     }
 }

@@ -22,10 +22,10 @@ namespace Stryker.Core.MutantFilters
         private readonly DiffResult _diffResult;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
+        private readonly ILogger<DiffMutantFilter> _logger;
 
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
-        private readonly ILogger<DiffMutantFilter> _logger;
 
         public string DisplayName => "git diff file filter";
 
@@ -46,11 +46,14 @@ namespace Stryker.Core.MutantFilters
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles.Count);
+                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles?.Count);
 
-                foreach (var changedFile in _diffResult.ChangedFiles)
+                if (_diffResult.ChangedFiles != null)
                 {
-                    _logger.LogInformation("Changed file {0}", changedFile);
+                    foreach (var changedFile in _diffResult.ChangedFiles)
+                    {
+                        _logger.LogInformation("Changed file {0}", changedFile);
+                    }
                 }
             }
         }
@@ -73,6 +76,13 @@ namespace Stryker.Core.MutantFilters
 
                 // Updates all the mutants in this file with their counterpart's result in the report of the previous run
                 UpdateMutantsWithBaselineStatus(mutants, file);
+            }
+
+            // A non-cSharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
+            if (_diffResult.TestFilesChanged is { } &&  _diffResult.TestFilesChanged.Any(x => !x.EndsWith(".cs")))
+            {
+                _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
+                return SetMutantStatusForNonCSharpFileChanged(mutants);
             }
 
             // If the diff result flags this file as modified, we want to run all mutants again
@@ -104,7 +114,7 @@ namespace Stryker.Core.MutantFilters
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == file.RelativePath);
             {
-                if (baselineFile is { })
+                if (baselineFile is { } && baselineFile.Value is { })
                 {
                     foreach (var baselineMutant in baselineFile.Value.Mutants)
                     {
@@ -198,6 +208,17 @@ namespace Stryker.Core.MutantFilters
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "File changed since last commit.";
+            }
+
+            return mutants;
+        }
+
+        private IEnumerable<Mutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "Non-CSharp files in test project were changed.";
             }
 
             return mutants;

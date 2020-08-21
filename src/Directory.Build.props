@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	  <MicrosoftTestPlatform>16.6.1</MicrosoftTestPlatform>
-    <SystemIOAbstractions>12.0.10</SystemIOAbstractions>
-    <MicrosoftExtensionsConfiguration>3.1.6</MicrosoftExtensionsConfiguration>
+	  <MicrosoftTestPlatform>16.7.1</MicrosoftTestPlatform>
+    <SystemIOAbstractions>12.1.1</SystemIOAbstractions>
+    <MicrosoftExtensionsConfiguration>3.1.7</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 </Project>
