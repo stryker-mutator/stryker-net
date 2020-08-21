@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class ArrayInitializerOrchestrator : NodeSpecificOrchestrator<InitializerExpressionSyntax>
     {
-        protected override bool CanHandleThis(InitializerExpressionSyntax t)
+        protected override bool CanHandle(InitializerExpressionSyntax t)
         {
             return (t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0);
         }

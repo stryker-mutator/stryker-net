@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class StaticFieldDeclarationOrchestrator: NodeSpecificOrchestrator<FieldDeclarationSyntax>
     {
-        protected override bool CanHandleThis(FieldDeclarationSyntax t)
+        protected override bool CanHandle(FieldDeclarationSyntax t)
         {
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }

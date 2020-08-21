@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class MethodDeclarationOrchestrator : NodeSpecificOrchestrator<MethodDeclarationSyntax>
     {
-        protected override bool CanHandleThis(MethodDeclarationSyntax t)
+        protected override bool CanHandle(MethodDeclarationSyntax t)
         {
             return t.Body != null;
         }

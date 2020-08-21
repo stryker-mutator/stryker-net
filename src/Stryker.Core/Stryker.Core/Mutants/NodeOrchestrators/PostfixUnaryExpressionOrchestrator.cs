@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class PostfixUnaryExpressionOrchestrator: NodeSpecificOrchestrator<PostfixUnaryExpressionSyntax>
     {
-        protected override bool CanHandleThis(PostfixUnaryExpressionSyntax t)
+        protected override bool CanHandle(PostfixUnaryExpressionSyntax t)
         {
             return t.Parent is ExpressionStatementSyntax;
         }

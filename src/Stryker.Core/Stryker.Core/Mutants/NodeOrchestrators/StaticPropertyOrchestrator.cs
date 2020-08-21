@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class StaticPropertyOrchestrator: NodeSpecificOrchestrator<PropertyDeclarationSyntax>
     {
-        protected override bool CanHandleThis(PropertyDeclarationSyntax t)
+        protected override bool CanHandle(PropertyDeclarationSyntax t)
         {
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) &&
                 t.AccessorList != null;
