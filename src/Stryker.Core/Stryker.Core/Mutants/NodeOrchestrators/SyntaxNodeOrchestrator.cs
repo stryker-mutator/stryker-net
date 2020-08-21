@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants.NodeOrchestrator
+namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class SyntaxNodeOrchestrator: NodeSpecificOrchestrator<SyntaxNode>
     {

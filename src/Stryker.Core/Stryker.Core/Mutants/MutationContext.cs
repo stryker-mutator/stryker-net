@@ -110,8 +110,7 @@ namespace Stryker.Core.Mutants
 
         private MutationContext Clone()
         {
-            var inStatic = InStaticValue;
-            return new MutationContext(_mainOrchestrator){InStaticValue = inStatic};
+            return new MutationContext(_mainOrchestrator){InStaticValue = InStaticValue};
         }
     }
 }

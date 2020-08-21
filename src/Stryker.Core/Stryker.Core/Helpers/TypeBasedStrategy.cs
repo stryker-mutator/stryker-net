@@ -7,15 +7,15 @@ namespace Stryker.Core.Helpers
     // keeping a cache for faster resolution
     internal class TypeBasedStrategy<T, THandler> where THandler: class, ITypeHandler<T>
     {
-        private readonly IDictionary<Type, IList<THandler>> _mappingCache = new Dictionary<Type, IList<THandler>>();
+        private readonly IDictionary<Type, IList<THandler>> _handlerMapping = new Dictionary<Type, IList<THandler>>();
 
         public void RegisterHandler(THandler handler)
         {
-            if (!_mappingCache.ContainsKey(handler.ManagedType))
+            if (!_handlerMapping.ContainsKey(handler.ManagedType))
             {
-                _mappingCache.Add(handler.ManagedType, new List<THandler>());
+                _handlerMapping.Add(handler.ManagedType, new List<THandler>());
             }
-            _mappingCache[handler.ManagedType].Add(handler);
+            _handlerMapping[handler.ManagedType].Add(handler);
         }
 
         public void RegisterHandlers(List<THandler> handlers)
@@ -38,7 +38,7 @@ namespace Stryker.Core.Helpers
                 return null;
             }
 
-            if (_mappingCache.TryGetValue(type, out var handlers))
+            if (_handlerMapping.TryGetValue(type, out var handlers))
             {
                 foreach (var typeHandler in handlers)
                 {

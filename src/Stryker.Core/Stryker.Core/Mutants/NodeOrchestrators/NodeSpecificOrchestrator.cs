@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants.NodeOrchestrator
+namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal abstract class NodeSpecificOrchestrator<T>:INodeMutator where T: SyntaxNode
     {

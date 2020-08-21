@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Helpers;
-using Stryker.Core.Mutants.NodeOrchestrator;
+using Stryker.Core.Mutants.NodeOrchestrators;
 
 namespace Stryker.Core.Mutants
 {
@@ -115,8 +115,8 @@ namespace Stryker.Core.Mutants
             }
 
             // search for node specific handler
-            var result = this._specificOrchestrator.FindHandler(currentNode);
-            return result.Mutate(currentNode, context);
+            var nodeHandler = _specificOrchestrator.FindHandler(currentNode);
+            return nodeHandler.Mutate(currentNode, context);
         }
 
         internal IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode current, MutationContext context)

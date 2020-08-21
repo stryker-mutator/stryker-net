@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Stryker.Core.Helpers;
 
-namespace Stryker.Core.Mutants.NodeOrchestrator
+namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     interface INodeMutator: ITypeHandler<SyntaxNode>
     {
