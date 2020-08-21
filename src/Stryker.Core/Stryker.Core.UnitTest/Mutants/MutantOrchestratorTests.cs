@@ -671,10 +671,7 @@ namespace TestApp
     ;
     return default(bool);
 }";
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
@@ -689,10 +686,7 @@ namespace TestApp
     ;
     return default(bool);
 }";
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
@@ -707,10 +701,7 @@ namespace TestApp
     ;
     return default(bool);
 }";
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
@@ -724,10 +715,7 @@ namespace TestApp
 {
     ;
 }";
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
@@ -741,10 +729,7 @@ namespace TestApp
 {
     ;
 }";
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Theory]
@@ -752,13 +737,15 @@ namespace TestApp
         [InlineData("{Value = \"Hello, World!\";}")]
         public void ShouldMutateStaticConstructor(string source)
         {
-            source = @"static string Value { get; }
+            source = @"class Test {
+static string Value { get; }
 
-static TestClass() " + source;
+static TestClass() " + source + "}";
 
-            var expected = @"static string Value { get; }
+            var expected = @"class Test {
+static string Value { get; }
 
-static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}";
+static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}}";
 
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
@@ -771,13 +758,15 @@ static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (Stryker
         [Fact]
         public void ShouldMutateStaticProperties()
         {
-            var source = @"static string Value => """";
+            var source = @"class Test {
+static string Value => """";
 
-static TestClass(){}";
+static TestClass(){}}";
 
-            var expected = @"static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""
+            var expected = @"class Test {
+static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""
 );
-static TestClass(){using(new StrykerNamespace.MutantContext()){}}";
+static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
