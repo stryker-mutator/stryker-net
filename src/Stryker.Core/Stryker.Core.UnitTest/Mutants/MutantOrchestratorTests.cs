@@ -690,6 +690,26 @@ namespace TestApp
         }
 
         [Fact]
+        public void ShouldNotAddReturnDefaultToEnumerationMethods()
+        {
+            string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
+        {
+        foreach (var o in enumerable)
+        {
+            yield return value;
+        }
+    }";
+            string expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
+        {
+        foreach (var o in enumerable)
+        {
+            yield return value;
+        }
+    }";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldAddReturnDefaultToAsyncWithFullNamespaceMethods()
         {
             string source = @"public async System.Threading.Tasks.Task<bool> TestMethod()

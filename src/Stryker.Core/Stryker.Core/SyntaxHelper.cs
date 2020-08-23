@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,11 +19,16 @@ namespace Stryker.Core
         // does the expression contain declaration?
         public static bool ContainsDeclarations(this ExpressionSyntax node)
         {
+            return node.ContainsNodeThatVerifies(x =>
+                x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
+        }
+
+        public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true)
+        {
             // check if there is a variable declaration at this scope level
             return node.DescendantNodes((child) =>
             {
-                // we ignore block of code
-                if (child is BlockSyntax)
+                if (skipBlock && child is BlockSyntax)
                 {
                     return false;
                 }
@@ -32,8 +38,7 @@ namespace Stryker.Core
                     return false;
                 }
                 return true;
-            } ).Any(x =>
-                x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
+            } ).Any(predicate);
         }
 
         public static bool CanBeMutated(SyntaxNode node)

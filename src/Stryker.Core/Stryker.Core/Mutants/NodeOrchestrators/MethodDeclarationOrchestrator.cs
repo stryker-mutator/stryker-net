@@ -27,6 +27,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return mutatedNode;
             }
 
+            if (node.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement), false))
+            {
+                // not need to add yield return at the end of an enumeration method
+                return mutatedNode;
+            }
             if (mutatedNode.Body.Statements.Last().Kind() == SyntaxKind.ReturnStatement)
             {
                 return mutatedNode;
