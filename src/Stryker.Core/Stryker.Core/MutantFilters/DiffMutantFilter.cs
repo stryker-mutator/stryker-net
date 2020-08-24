@@ -113,17 +113,16 @@ namespace Stryker.Core.MutantFilters
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == file.RelativePath);
+
+            if (baselineFile is { } && baselineFile.Value is { })
             {
-                if (baselineFile is { } && baselineFile.Value is { })
+                foreach (var baselineMutant in baselineFile.Value.Mutants)
                 {
-                    foreach (var baselineMutant in baselineFile.Value.Mutants)
-                    {
-                        var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
+                    var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
-                        IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
+                    IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
 
-                        SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
-                    }
+                    SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                 }
             }
         }
