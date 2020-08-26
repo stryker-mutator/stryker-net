@@ -17,19 +17,6 @@ namespace Stryker.Core.Mutators
                 yield break;
             }
 
-            // these mutations are handled by the binaryexpressionmutator.
-            switch (node.Kind())
-            {
-                case SyntaxKind.EqualsExpression:
-                case SyntaxKind.NotEqualsExpression:
-                case SyntaxKind.GreaterThanOrEqualExpression:
-                case SyntaxKind.GreaterThanExpression:
-                case SyntaxKind.LessThanOrEqualExpression:
-                case SyntaxKind.LessThanExpression:
-                case SyntaxKind.LogicalNotExpression:
-                    yield break;
-            }
-
             switch (node.Parent)
             {
                 case IfStatementSyntax ifStatementSyntax:
