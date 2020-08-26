@@ -56,7 +56,36 @@ private bool Out(out string test)
     return true;
 }";
             string expected = @"void TestMethod()
-{if(StrykerNamespace.MutantControl.IsActive(11)){
+{if(StrykerNamespace.MutantControl.IsActive(15)){
+    int i = 0;
+    if (i + 8 == 8)
+    {
+        i = i + 1;
+        if (i + 8 == 9)
+        {
+            i = i + 1;
+        };
+    }
+    else
+    {
+        i = i + 3;
+        if (i == i + i - 8)
+        {
+            i = i + 1;
+        };
+    }
+
+    if (!(!Out(out var test)))
+    {
+        return i + 1;
+    }
+
+    if (i is int x)
+    {
+        return x + 1;
+    }
+}
+else{if(StrykerNamespace.MutantControl.IsActive(14)){
     int i = 0;
     if (i + 8 == 8)
     {
@@ -87,37 +116,37 @@ private bool Out(out string test)
 }
 else{
     int i = 0;
-    if ((StrykerNamespace.MutantControl.IsActive(0)?i + 8 != 8:(StrykerNamespace.MutantControl.IsActive(1)?i - 8 :i + 8 )== 8))
+    if ((StrykerNamespace.MutantControl.IsActive(1)?!(i + 8 == 8):(StrykerNamespace.MutantControl.IsActive(0)?i + 8 != 8:(StrykerNamespace.MutantControl.IsActive(2)?i - 8 :i + 8 )== 8)))
     {
-        i = (StrykerNamespace.MutantControl.IsActive(2)?i - 1:i + 1);
-        if ((StrykerNamespace.MutantControl.IsActive(3)?i + 8 != 9:(StrykerNamespace.MutantControl.IsActive(4)?i - 8 :i + 8 )== 9))
+        i = (StrykerNamespace.MutantControl.IsActive(3)?i - 1:i + 1);
+        if ((StrykerNamespace.MutantControl.IsActive(5)?!(i + 8 == 9):(StrykerNamespace.MutantControl.IsActive(4)?i + 8 != 9:(StrykerNamespace.MutantControl.IsActive(6)?i - 8 :i + 8 )== 9)))
         {
-            i = (StrykerNamespace.MutantControl.IsActive(5)?i - 1:i + 1);
+            i = (StrykerNamespace.MutantControl.IsActive(7)?i - 1:i + 1);
         };
     }
     else
     {
-        i = (StrykerNamespace.MutantControl.IsActive(6)?i - 3:i + 3);
-        if ((StrykerNamespace.MutantControl.IsActive(7)?i != i + i - 8:i == (StrykerNamespace.MutantControl.IsActive(8)?i + i + 8:(StrykerNamespace.MutantControl.IsActive(9)?i - i :i + i )- 8)))
+        i = (StrykerNamespace.MutantControl.IsActive(8)?i - 3:i + 3);
+        if ((StrykerNamespace.MutantControl.IsActive(10)?!(i == i + i - 8):(StrykerNamespace.MutantControl.IsActive(9)?i != i + i - 8:i == (StrykerNamespace.MutantControl.IsActive(11)?i + i + 8:(StrykerNamespace.MutantControl.IsActive(12)?i - i :i + i )- 8))))
         {
-            i = (StrykerNamespace.MutantControl.IsActive(10)?i - 1:i + 1);
+            i = (StrykerNamespace.MutantControl.IsActive(13)?i - 1:i + 1);
         };
     }
 
     if (!Out(out var test))
     {
-        return (StrykerNamespace.MutantControl.IsActive(12)?i - 1:i + 1);
+        return (StrykerNamespace.MutantControl.IsActive(16)?i - 1:i + 1);
     }
 
     if (i is int x)
     {
-        return (StrykerNamespace.MutantControl.IsActive(13)?x - 1:x + 1);
+        return (StrykerNamespace.MutantControl.IsActive(17)?x - 1:x + 1);
     }
 }
-}
+}}
 private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(14)?false:true);
+    return (StrykerNamespace.MutantControl.IsActive(18)?false:true);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -219,22 +248,6 @@ private bool Out(int test, Func<int, bool>lambda )
         };
     }";
 
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotGenerateDuplicatesBasicConditions()
-        {
-            var source = @"void TestMethod()
-{
-  if (!SomeMethod())
- {}
-}";
-            var expected = @"void TestMethod()
-{
-if ((StrykerNamespace.MutantControl.IsActive(0)?SomeMethod():!SomeMethod()))
-{}
-}";
             ShouldMutateSourceToExpected(source, expected);
         }
 
@@ -652,7 +665,7 @@ namespace TestApp
             _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var mutants = _target.GetLatestMutantBatch().ToList();
-            mutants.Count.ShouldBe(3);
+            mutants.Count.ShouldBe(4);
             foreach (var mutant in mutants)
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
