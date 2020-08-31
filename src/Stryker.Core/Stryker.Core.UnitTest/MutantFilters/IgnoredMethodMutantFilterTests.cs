@@ -73,6 +73,60 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Theory]
+        [InlineData("Where", true)]
+        [InlineData("Where*", true)]
+        [InlineData("*Where", true)]
+        [InlineData("*Where*", true)]
+        [InlineData("*ere", true)]
+        [InlineData("Wh*", true)]
+        [InlineData("W*e", true)]
+        [InlineData("*", true)]
+        [InlineData("ToList", false)]
+        [InlineData("*List", false)]
+        [InlineData("To*", false)]
+        [InlineData("T*ist", false)]
+        [InlineData("", false)]
+        public void MutantFilter_WorksWithConditionalInvocation(string ignoredMethodName, bool shouldSkipMutant)
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        var t = Enumerable.Range(0, 9)?.Where(x => x < 5).ToList();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf('<'), 1));
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            if (shouldSkipMutant)
+            {
+                filteredMutants.ShouldNotContain(mutant);
+            }
+            else
+            {
+                filteredMutants.ShouldContain(mutant);
+            }
+        }
+
+        [Theory]
         [InlineData("MyType.ctor", true)]
         [InlineData("MyType*.ctor", true)]
         [InlineData("*MyType.ctor", true)]

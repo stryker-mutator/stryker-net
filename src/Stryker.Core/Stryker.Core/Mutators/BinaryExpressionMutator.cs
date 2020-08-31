@@ -7,13 +7,13 @@ namespace Stryker.Core.Mutators
 {
     public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
     {
-        private Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate { get; set; }
+        private readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate;
 
         public BinaryExpressionMutator()
         {
             _kindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>
             {
-                {SyntaxKind.SubtractExpression, new List<SyntaxKind> { SyntaxKind.AddExpression } },
+                {SyntaxKind.SubtractExpression, new List<SyntaxKind> { SyntaxKind.AddExpression} },
                 {SyntaxKind.AddExpression, new List<SyntaxKind> {SyntaxKind.SubtractExpression } },
                 {SyntaxKind.MultiplyExpression, new List<SyntaxKind> {SyntaxKind.DivideExpression } },
                 {SyntaxKind.DivideExpression, new List<SyntaxKind> {SyntaxKind.MultiplyExpression } },
@@ -35,13 +35,14 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
+            // skip string additions
+            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()|| node.Right.IsAStringExpression()))
+            {
+                yield break;
+            }
+
             if(_kindsToMutate.ContainsKey(node.Kind()))
             {
-                // skip string additions
-                if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()||node.Right.IsAStringExpression()))
-                {
-                    yield break;
-                }
                 foreach(var mutationKind in _kindsToMutate[node.Kind()])
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
@@ -63,33 +64,30 @@ namespace Stryker.Core.Mutators
                 yield return GetLogicalMutation(node);
                 yield return GetIntegralMutation(node);
             }
-
         }
 
-        private Mutator GetMutatorType(SyntaxKind kind)
+        private static Mutator GetMutatorType(SyntaxKind kind)
         {
-            string kindString = kind.ToString();
+            var kindString = kind.ToString();
             if (kindString.StartsWith("Logical"))
             {
                 return Mutator.Logical;
             }
-            else if (kindString.Contains("Equals") 
+
+            if (kindString.Contains("Equals") 
                 || kindString.Contains("Greater") 
                 || kindString.Contains("Less"))
             {
                 return Mutator.Equality;
             }
-            else if (kindString.StartsWith("Bitwise") || kindString.Contains("Shift"))
+            if (kindString.StartsWith("Bitwise") || kindString.Contains("Shift"))
             {
                 return Mutator.Bitwise;
             }
-            else
-            {
-                return Mutator.Arithmetic;
-            }
+            return Mutator.Arithmetic;
         }
 
-        private Mutation GetLogicalMutation(BinaryExpressionSyntax node)
+        private static Mutation GetLogicalMutation(BinaryExpressionSyntax node)
         {
             var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left, node.Right);
             replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
@@ -103,7 +101,7 @@ namespace Stryker.Core.Mutators
             };
         }
 
-        private Mutation GetIntegralMutation(BinaryExpressionSyntax node)
+        private static Mutation GetIntegralMutation(ExpressionSyntax node)
         {
             var replacementNode = SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, SyntaxFactory.ParenthesizedExpression(node));
 
