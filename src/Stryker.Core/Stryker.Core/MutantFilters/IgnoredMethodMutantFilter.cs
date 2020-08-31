@@ -28,19 +28,21 @@ namespace Stryker.Core.MutantFilters
 
         private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options)
         {
-            // Check if the current node is an invocation and the expression is a member
-            // This will also ignore invokable properties like `Func<bool> MyProp { get;}`
-            if (syntaxNode is InvocationExpressionSyntax invocation &&
-                invocation.Expression is MemberAccessExpressionSyntax member)
+            switch (syntaxNode)
             {
-                return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
-            }
-
-            // Check if the current node is an object creation syntax (constructor invocation).
-            if (syntaxNode is ObjectCreationExpressionSyntax creation)
-            {
-                var methodName = creation.Type + ".ctor";
-                return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
+                // Check if the current node is an invocation and the expression is a member
+                // This will also ignore invokable properties like `Func<bool> MyProp { get;}`
+                case InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax member:
+                    return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
+                // check when conditional access
+                case InvocationExpressionSyntax invocation when invocation.Expression is MemberBindingExpressionSyntax member:
+                    return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
+                // Check if the current node is an object creation syntax (constructor invocation).
+                case ObjectCreationExpressionSyntax creation:
+                {
+                    var methodName = creation.Type + ".ctor";
+                    return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
+                }
             }
 
             // Traverse the tree upwards

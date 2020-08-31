@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var result = MutantPlacer.PlaceWithIfStatement(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically(@"if (System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + @""")
+            result.ToFullString().ShouldBeSemantically("if ("+CodeInjection.HelperNamespace+".MutantControl.IsActive("+id+@"))
             {
                 1 - 8;
             } else {
@@ -52,7 +53,8 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var result = MutantPlacer.PlaceWithConditionalExpression(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically(@"(System.Environment.GetEnvironmentVariable(""ActiveMutation"") == """ + id.ToString() + ") ? 1 - 8 : 1 + 8);");
+            result.ToFullString()
+                .ShouldBeSemantically(@$"({CodeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");
 
             var removedResult = MutantPlacer.RemoveMutant(result);
 

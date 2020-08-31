@@ -134,12 +134,12 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "3.6.0",
-        "contentHash": "jQxDeYyQbNZwx/9O8hiyApTqZ7+KR3xVA6Ogbb50qsODfjAKRWuH7z3lGkU/62PYUz4yiDtgXlRtntWNdhFPfQ==",
+        "resolved": "3.7.0",
+        "contentHash": "SFEdnbw8204hTlde3JePYSIpNX58h/MMXa7LctUsUDigWMR8Ar9gE8LnsLqAIFM0O33JEuQbJ0G4Sat+cPGldw==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.0.0",
           "System.Collections.Immutable": "1.5.0",
-          "System.Memory": "4.5.3",
+          "System.Memory": "4.5.4",
           "System.Reflection.Metadata": "1.6.0",
           "System.Runtime.CompilerServices.Unsafe": "4.7.0",
           "System.Text.Encoding.CodePages": "4.5.1",
@@ -148,10 +148,10 @@
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "3.6.0",
-        "contentHash": "kflVAdezWxqIfKNvEi4cmWZchX0Cgm3bRk1asYSnAQWQPTMddecrHzb9D8+ZDfYUeyYKkF4DETwjmONeSChCqA==",
+        "resolved": "3.7.0",
+        "contentHash": "sKi5PIVy9nVDerkbplY6OQhJBNzEO4XJsMGrnmb6KFEa6K1ulGCHIv6NtDjdUQ/dGrouU3OExc3yzww0COD76w==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[3.6.0]"
+          "Microsoft.CodeAnalysis.Common": "[3.7.0]"
         }
       },
       "Microsoft.DotNet.PlatformAbstractions": {
@@ -884,8 +884,8 @@
       },
       "System.Memory": {
         "type": "Transitive",
-        "resolved": "4.5.3",
-        "contentHash": "3oDzvc/zzetpTKWMShs1AADwZjQ/36HnsufHRPcOjyRAAMLDlu2iD33MBI2opxnezcVUtXyqDXXjoFMOU9c7SA=="
+        "resolved": "4.5.4",
+        "contentHash": "1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw=="
       },
       "System.Net.Http": {
         "type": "Transitive",
@@ -1381,7 +1381,7 @@
           "Buildalyzer": "3.0.1",
           "DotNet.Glob": "3.1.0",
           "LibGit2Sharp": "0.26.2",
-          "Microsoft.CodeAnalysis.CSharp": "3.6.0",
+          "Microsoft.CodeAnalysis.CSharp": "3.7.0",
           "Microsoft.Extensions.Configuration": "3.1.7",
           "Microsoft.Extensions.Configuration.Json": "3.1.7",
           "Microsoft.Extensions.Logging": "3.1.7",
