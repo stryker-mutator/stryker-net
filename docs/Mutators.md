@@ -126,6 +126,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `ThenByDescending()`  | `ThenBy()`            |
 | `Reverse()`           | `AsEnumerable()`     |
 | `AsEnumerable()`     | `Reverse()`           |
+| `Union()`            | `Intersect()`         |
+| `Intersect()`        | `Union()`             |
 
 `* Sum() was mutated to Count() in previous versions; this change reduces compilation errors.`
 
