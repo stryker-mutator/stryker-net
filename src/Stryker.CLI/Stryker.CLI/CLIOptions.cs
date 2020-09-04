@@ -110,7 +110,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-compare",
             ArgumentShortName = "-compare",
-            ArgumentDescription = $@"Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
+            ArgumentDescription = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dashboard-compare"
 

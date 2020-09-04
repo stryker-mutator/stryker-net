@@ -364,7 +364,7 @@ dotnet stryker -gs "development"
 
 Default: `master`
 
-## Dashboard Compare
+## EXPERIMENTAL: Dashboard Compare
 Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
 
 ```
@@ -375,6 +375,8 @@ dotnet stryker -compare
 Default `"off"`
 
 This feature automatically enables the --diff feature.
+
+This feature is experimental. Results can contain slight false postives and false negatives.
 
 ## Fallback version
 When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
