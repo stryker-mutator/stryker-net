@@ -781,7 +781,7 @@ namespace TestApp
     {
         ""test"" => (StrykerNamespace.MutantControl.IsActive(0)?"""":""test""
 )    };
-returndefault(string );}";
+}";
             ShouldMutateSourceToExpected(source, expected);
         }
 
