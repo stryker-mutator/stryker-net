@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
             var kind = node.Kind();
-            if (kind == SyntaxKind.StringLiteralExpression)
+            if (kind == SyntaxKind.StringLiteralExpression && !(node.Parent is ConstantPatternSyntax))
             {
                 var currentValue = (string) node.Token.Value;
                 var replacementValue = currentValue == "" ? "Stryker was here!" : "";
