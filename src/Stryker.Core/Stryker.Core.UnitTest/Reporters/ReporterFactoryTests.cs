@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
@@ -22,8 +23,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("ClearText", typeof(ClearTextReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
@@ -31,8 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesAllReporters()
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is JsonReporter);
             result.Reporters.ShouldContain(r => r is HtmlReporter);
@@ -40,15 +39,15 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
             result.Reporters.ShouldContain(r => r is DashboardReporter);
+            result.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            result.Reporters.Count().ShouldBe(6);
+            result.Reporters.Count().ShouldBe(7);
         }
 
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
+            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
             result.ShouldBeOfType(typeof(BroadcastReporter));
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
