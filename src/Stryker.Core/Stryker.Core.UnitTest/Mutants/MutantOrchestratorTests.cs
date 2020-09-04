@@ -688,6 +688,16 @@ namespace TestApp
         }
 
         [Fact]
+        public void ShouldNotMutateConstDeclaration()
+        {
+            var source = @"void Test(){
+const string text = ""a""+""b""+""c"";}";
+            var expected = @"void Test(){
+const string text = ""a""+""b""+""c"";}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldAddReturnDefaultToAsyncMethods()
         {
             string source = @"public async Task<bool> TestMethod()
@@ -761,6 +771,26 @@ namespace TestApp
             string expected = @"void TestMethod()
 {
     ;
+}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldSkipStringsInSwitchExpression()
+        {
+            string source = @"string TestMethod()
+{
+    return input switch
+    {
+        ""test"" => ""test""
+    };
+}";
+            string expected = @"string TestMethod()
+{
+    return input switch
+    {
+        ""test"" => (StrykerNamespace.MutantControl.IsActive(0)?"""":""test""
+)    };
 }";
             ShouldMutateSourceToExpected(source, expected);
         }

@@ -80,6 +80,7 @@ namespace Stryker.Core.Mutants
                 new StaticPropertyOrchestrator(),
                 new ArrayInitializerOrchestrator(),
                 new MethodDeclarationOrchestrator(),
+                new ConstLocalDeclarationOrchestrator(),
                 new SyntaxNodeOrchestrator()
             });
         }
