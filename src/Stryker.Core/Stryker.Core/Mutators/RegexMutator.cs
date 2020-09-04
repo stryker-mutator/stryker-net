@@ -7,7 +7,6 @@ using Stryker.RegexMutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators

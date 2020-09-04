@@ -75,6 +75,8 @@ namespace TestApplication
         [InlineData(LinqExpression.ThenByDescending, LinqExpression.ThenBy)]
         [InlineData(LinqExpression.Reverse, LinqExpression.AsEnumerable)]
         [InlineData(LinqExpression.AsEnumerable, LinqExpression.Reverse)]
+        [InlineData(LinqExpression.Union, LinqExpression.Intersect)]
+        [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();

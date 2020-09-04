@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -42,7 +41,9 @@ namespace Stryker.Core.Mutators
                 { LinqExpression.ThenBy, LinqExpression.ThenByDescending },
                 { LinqExpression.ThenByDescending, LinqExpression.ThenBy },
                 { LinqExpression.Reverse, LinqExpression.AsEnumerable },
-                { LinqExpression.AsEnumerable, LinqExpression.Reverse }
+                { LinqExpression.AsEnumerable, LinqExpression.Reverse },
+                { LinqExpression.Union, LinqExpression.Intersect },
+                { LinqExpression.Intersect, LinqExpression.Union }
             };
             RequireArguments = new HashSet<LinqExpression>
             {
@@ -53,6 +54,8 @@ namespace Stryker.Core.Mutators
                 LinqExpression.OrderByDescending,
                 LinqExpression.ThenBy,
                 LinqExpression.ThenByDescending,
+                LinqExpression.Union,
+                LinqExpression.Intersect
             };
         }
 
@@ -158,6 +161,8 @@ namespace Stryker.Core.Mutators
         Sum,
         Count,
         ThenBy,
-        ThenByDescending
+        ThenByDescending,
+        Union,
+        Intersect
     }
 }
