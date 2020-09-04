@@ -112,7 +112,7 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == file.RelativePath);
+            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
 
             if (baselineFile is { } && baselineFile.Value is { })
             {

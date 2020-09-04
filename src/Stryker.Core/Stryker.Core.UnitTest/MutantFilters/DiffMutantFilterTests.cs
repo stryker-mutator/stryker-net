@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
@@ -6,6 +7,7 @@ using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
@@ -145,15 +147,21 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
+            // Arrange
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            // Act
             var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object, gitInfoProvider: gitInfoProvider.Object) as IMutantFilter;
+
+            // Assert
             target.DisplayName.ShouldBe("git diff file filter");
         }
 
         [Fact]
         public void ShouldNotMutateUnchangedFiles()
         {
+            // Arrange
             var options = new StrykerOptions(diff: true);
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -170,14 +178,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutant = new Mutant();
 
+            // Act
             var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 
+            // Assert
             filterResult.ShouldBeEmpty();
         }
 
         [Fact]
         public void ShouldOnlyMutateChangedFiles()
         {
+            // Arrange
             var options = new StrykerOptions(diff: true);
 
             var baselineProvider = new Mock<IBaselineProvider>();
@@ -197,14 +208,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutant = new Mutant();
 
+            // Act
             var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 
+            // Assert
             filterResult.ShouldContain(mutant);
         }
 
         [Fact]
         public void ShouldNotFilterMutantsWhereCoveringTestsContainsChangedTestFile()
         {
+            // Arrange
             string testProjectPath = "C:/MyTests";
             var options = new StrykerOptions(diff: false);
 
@@ -233,8 +247,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             mutant.CoveringTests.Add(new TestDescription(Guid.NewGuid().ToString(), "name", myTest));
 
+            // Act
             var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
 
+            // Assert
             filterResult.ShouldContain(mutant);
         }
 
@@ -331,8 +347,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 new Mutant()
             };
 
+            // Act
             var results = target.FilterMutants(mutants, file.Object, options);
 
+            // Assert
             results.Count().ShouldBe(3);
         }
 
@@ -342,11 +360,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange 
             var baselineProvider = new Mock<IBaselineProvider>();
 
-            baselineProvider.Setup(x =>
-            x.Load(It.IsAny<string>())
-            ).Returns(
-                Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())));
+            baselineProvider.Setup(x => x.Load(It.IsAny<string>())).ReturnsAsync(JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith()));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IGitInfoProvider>();
@@ -360,28 +374,44 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
+            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+            var mutation = new Mutation()
+            {
+                OriginalNode = originalNode,
+                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+                DisplayName = "This name should display",
+                Type = Mutator.Arithmetic
+            };
+
             var mutants = new List<Mutant>
             {
                 new Mutant()
                 {
                     Id = 1,
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.NotRun,
+                    Mutation = mutation
                 },
                 new Mutant()
                 {
                     Id = 2,
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.NotRun,
+                    Mutation = mutation
                 },
                 new Mutant()
                 {
                     Id = 3,
-                    ResultStatus = MutantStatus.Killed
+                    ResultStatus = MutantStatus.Killed,
+                    Mutation = mutation
                 }
             };
 
+            // Act
             var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
-            results.Count().ShouldBe(2);
+            // Assert
+            results.Count().ShouldBe(3);
         }
 
         [Fact]
@@ -416,8 +446,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 new Mutant()
             };
 
+            // Act
             var results = target.FilterMutants(mutants, new FileLeaf(), options);
 
+            // Assert
             results.Count().ShouldBe(0);
         }
 
@@ -459,14 +491,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 new Mutant()
             };
 
+            // Act
             var results = target.FilterMutants(mutants, new FileLeaf(), options);
 
+            // Assert
             results.Count().ShouldBe(1);
         }
 
         [Fact]
         public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
         {
+            // Arrange
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
             var diffProviderMock = new Mock<IDiffProvider>();
@@ -487,8 +522,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
-            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath= "C:\\Foo\\Bar" }, options);
+            // Act
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }, options);
 
+            // Assert
             result.ShouldBe(mutants);
         }
     }
