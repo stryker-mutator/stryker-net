@@ -688,6 +688,16 @@ namespace TestApp
         }
 
         [Fact]
+        public void ShouldNotMutateConstDeclaration()
+        {
+            var source = @"void Test(){
+const string text = ""a""+""b""+""c"";}";
+            var expected = @"void Test(){
+const string text = ""a""+""b""+""c"";}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldAddReturnDefaultToAsyncMethods()
         {
             string source = @"public async Task<bool> TestMethod()
