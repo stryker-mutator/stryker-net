@@ -17,10 +17,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             }
 
             // mutate condition, if any
-            if (forStatement.Condition != null)
+            if (originalFor.Condition != null)
             {
                 forStatement = forStatement.ReplaceNode(forStatement.Condition,
-                    context.MutateNodeAndChildren(forStatement.Condition));
+                    context.MutateNodeAndChildren(originalFor.Condition));
             }
 
             // mutate the statement/block
