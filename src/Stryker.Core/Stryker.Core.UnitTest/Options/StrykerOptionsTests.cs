@@ -168,5 +168,81 @@ namespace Stryker.Core.UnitTest.Options
             });
             ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
         }
+
+        [Fact]
+        public void ProjectVersionCannotBeEmpty()
+        {
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+        }
+
+        [Fact]
+        public void ProjectVersionCannotBeNull()
+        {
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+        }
+
+        [Fact]
+        public void FallbackVersionCannotBeProjectVersion()
+        {
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+
+            Should.Throw<StrykerInputException>(act)
+                .Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
+        }
+
+        [Fact]
+        public void ShouldNotThrowInputExceptionWhenSetCorrectly()
+        {
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+
+            Should.NotThrow(act);
+        }
+
+        [Fact]
+        public void ShouldSetFallbackToGitSourceWhenNullAndCompareEnabled()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
+
+            options.GitSource.ShouldBe("development");
+            options.FallbackVersion.ShouldBe("development");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_AzureSAS_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("A Shared Access Signature is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: "AZURE_SAS", baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_and_SAS_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe(@"A Shared Access Signature is required when Azure File Storage is enabled!The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Normalize_SAS()
+        {
+            var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
+
+            target.AzureSAS.ShouldBe("SAS");
+        }
     }
 }

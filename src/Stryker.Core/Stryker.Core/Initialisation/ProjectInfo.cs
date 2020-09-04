@@ -136,7 +136,7 @@ namespace Stryker.Core.Initialisation
 
         private IList<string> BuildDefineConstants()
         {
-            var constants = GetPropertyOrDefault("DefineConstants", "").Split(";").ToList();
+            var constants = GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
 
             var (frameworkDoesNotSupportAppDomain, frameworkDoesNotSupportPipes) = CompatibilityModes;
 

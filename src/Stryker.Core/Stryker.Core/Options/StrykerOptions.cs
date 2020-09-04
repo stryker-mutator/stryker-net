@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
+using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -21,6 +22,8 @@ namespace Stryker.Core.Options
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
+        public BaselineProvider BaselineProvider { get; }
+
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -29,6 +32,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
         public bool DiffEnabled { get; }
+        public bool CompareToDashboard { get; }
+
         public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
@@ -47,6 +52,12 @@ namespace Stryker.Core.Options
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
+
+        public string AzureSAS { get; }
+
+        public string AzureFileStorageUrl { get; set; }
+
+        public string FallbackVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -77,11 +88,17 @@ namespace Stryker.Core.Options
             string solutionPath = null,
             string languageVersion = "latest",
             bool diff = false,
+            bool compareToDashboard = false,
             string gitSource = "master",
-            string dashboadApiKey = null,
+            string dashboardApiKey = null,
+            string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
             string moduleName = null,
             string projectVersion = null,
+            string fallbackVersion = null,
+            string baselineStorageLocation = null,
+            string azureSAS = null,
+            string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null)
         {
             _logger = logger;
@@ -90,6 +107,7 @@ namespace Stryker.Core.Options
             var outputPath = ValidateOutputPath(basePath);
             IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
+            CompareToDashboard = compareToDashboard;
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -106,16 +124,57 @@ namespace Stryker.Core.Options
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
+            CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
-            (DashboardApiKey, ProjectName, ModuleName, ProjectVersion) = ValidateDashboardReporter(dashboadApiKey, projectName, moduleName, projectVersion);
+            DashboardUrl = dashboardUrl;
+            (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
+            (ProjectVersion, FallbackVersion, GitSource) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitSource);
+            ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
+            BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
+            (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
         }
 
-        private (string DashboardApiKey, string ProjectName, string ModuleName, string ProjectVersion) ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion)
+        private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)
+        {
+            if (BaselineProvider != BaselineProvider.AzureFileStorage)
+            {
+                return (null, null);
+            }
+
+            var errorStrings = new StringBuilder();
+
+            if (azureSAS == null)
+            {
+                errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
+            }
+
+            if (azureFileStorageUrl == null)
+            {
+                errorStrings.Append("The url pointing to your file storage is required when Azure File Storage is enabled!");
+            }
+
+            if (errorStrings.Length > 0)
+            {
+                throw new StrykerInputException(errorStrings.ToString());
+            }
+
+            // Normalize the SAS
+            if (azureSAS.StartsWith("?sv="))
+            {
+                azureSAS = azureSAS.Replace("?sv=", "");
+            }
+
+            return (azureSAS, azureFileStorageUrl);
+
+
+        }
+
+        private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, null, null, null);
+                return (null, null);
             }
 
             var errorStrings = new StringBuilder();
@@ -142,7 +201,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, projectName, moduleName, projectVersion);
+            return (dashboadApiKey, projectName);
         }
 
         private string ValidateGitSource(string gitSource)
@@ -152,6 +211,35 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
             }
             return gitSource;
+        }
+
+        private (string ProjectVersion, string FallbackVersion, string GitSource) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource)
+        {
+            if (string.IsNullOrEmpty(fallbackVersion))
+            {
+                fallbackVersion = gitSource;
+            }
+
+            if (CompareToDashboard)
+            {
+                var errorStrings = new StringBuilder();
+                if (string.IsNullOrEmpty(projectVersion))
+                {
+                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+                }
+
+                if (fallbackVersion == projectVersion)
+                {
+                    errorStrings.Append("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
+                }
+
+                if (errorStrings.Length > 0)
+                {
+                    throw new StrykerInputException(errorStrings.ToString());
+                }
+            }
+
+            return (projectVersion, fallbackVersion, gitSource);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
@@ -192,6 +280,22 @@ namespace Stryker.Core.Options
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
+            // Create output dir with gitignore
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, "StrykerOutput", ".gitignore"));
+            if (!_fileSystem.File.Exists(gitignorePath))
+            {
+                try
+                {
+                    using var _ = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
+                    using var file = _fileSystem.File.CreateText(gitignorePath);
+                    file.WriteLine("*");
+                }
+                catch (IOException)
+                {
+                    _logger.LogDebug("Couldn't create gitignore file at {0}, probably because it already exists", gitignorePath);
+                }
+            }
+
             return outputPath;
         }
 
@@ -204,6 +308,13 @@ namespace Stryker.Core.Options
                     yield return reporter;
                 }
                 yield break;
+            }
+
+            if (CompareToDashboard)
+            {
+                var reportersList = reporters.ToList();
+                reportersList.Add("Baseline");
+                reporters = reportersList.ToArray();
             }
 
             IList<string> invalidReporters = new List<string>();
@@ -332,8 +443,8 @@ namespace Stryker.Core.Options
         {
             var filesToInclude = new List<FilePattern>();
 
-            filePatterns = filePatterns ?? Array.Empty<string>();
-            filesToExclude = filesToExclude ?? Array.Empty<string>();
+            filePatterns ??= Array.Empty<string>();
+            filesToExclude ??= Array.Empty<string>();
 
             if (!filePatterns.Any())
             {
@@ -419,6 +530,24 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(ErrorMessage,
                     $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
+        }
+
+        private BaselineProvider ValidateBaselineProvider(string baselineStorageLocation)
+        {
+            var normalizedLocation = baselineStorageLocation?.ToLower() ?? "";
+
+            if (string.IsNullOrEmpty(normalizedLocation) && Reporters.Any(x => x == Reporter.Dashboard))
+            {
+                return BaselineProvider.Dashboard;
+            }
+
+            return normalizedLocation switch
+            {
+                "disk" => BaselineProvider.Disk,
+                "dashboard" => BaselineProvider.Dashboard,
+                "azurefilestorage" => BaselineProvider.AzureFileStorage,
+                _ => BaselineProvider.Disk,
+            };
         }
     }
 }

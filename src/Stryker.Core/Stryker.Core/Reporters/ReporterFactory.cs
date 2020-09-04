@@ -3,7 +3,6 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +24,8 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options, new Chalk()) }
+                { Reporter.Dashboard, new DashboardReporter(options)},
+                { Reporter.Baseline, new GitBaselineReporter(options) }
             };
         }
 
@@ -46,7 +46,7 @@ namespace Stryker.Core.Reporters
                 var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(typeof(ReporterFactory).Name);
                 foreach (var deprecatedReporter in deprecatedReporters)
                 {
-                    logger.LogWarning($"Reporter {deprecatedReporter.ToString()} is deprecated. Please use {replacementFor[deprecatedReporter].ToString()} instead.");
+                    logger.LogWarning($"Reporter {deprecatedReporter} is deprecated. Please use {replacementFor[deprecatedReporter]} instead.");
 
                     enabledReporters.Add(replacementFor[deprecatedReporter]);
                 }

@@ -24,9 +24,11 @@ namespace Stryker.CLI
             string basePath,
             CommandOption reporter,
             CommandOption dashboardApiKey,
+            CommandOption dashboardUrl,
             CommandOption reportersProjectName,
             CommandOption reportersModuleName,
             CommandOption reportersProjectVersion,
+            CommandOption fallbackVersion,
             CommandOption projectUnderTestNameFilter,
             CommandOption additionalTimeoutMS,
             CommandOption excludedMutations,
@@ -48,8 +50,12 @@ namespace Stryker.CLI
             CommandOption solutionPath,
             CommandOption languageVersion,
             CommandOption diff,
+            CommandOption diffCompareToDashboard,
             CommandOption gitSource,
-            CommandOption testProjects)
+            CommandOption testProjects,
+            CommandOption baselineStorageLocation,
+            CommandOption azureSAS,
+            CommandOption azureFileStorageUrl)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -72,10 +78,12 @@ namespace Stryker.CLI
                 logger: _logger,
                 basePath: basePath,
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
-                dashboadApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
+                dashboardApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
+                dashboardUrl: GetOption(dashboardUrl.Value(), CLIOptions.DashboardUrlOption),
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
                 projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),
+                fallbackVersion: GetOption(fallbackVersion.Value(), CLIOptions.DashboardFallbackVersionOption),
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
@@ -95,9 +103,14 @@ namespace Stryker.CLI
                 testRunner: GetOption(testRunner.Value(), CLIOptions.TestRunner),
                 solutionPath: GetOption(solutionPath.Value(), CLIOptions.SolutionPath),
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
-                diff: GetOption(diff.HasValue(), CLIOptions.Diff),
+                diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) || GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
+                compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
                 gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
-                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
+                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects),
+                baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation),
+                azureSAS: GetOption(azureSAS.Value(), CLIOptions.AzureSAS),
+                azureFileStorageUrl: GetOption(azureFileStorageUrl.Value(), CLIOptions.AzureFileStorageUrl)
+                );
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)

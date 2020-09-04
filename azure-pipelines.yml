@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.18.0'
-  VersionBuildNumber: $[counter('0.18.0', 1)]
+  PackageVersion: '0.19.0'
+  VersionBuildNumber: $[counter('0.19.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -59,6 +59,11 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
+    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
+      displayName: 'Restore'
+      inputs:
+        command: 'restore'
+        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
@@ -104,6 +109,11 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+          - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
+            displayName: 'Restore'
+            inputs:
+              command: 'restore'
+              projects: 'src/Stryker.CLI/Stryker.CLI.sln'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -215,7 +225,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: eq(variables['build.sourcebranch'], 'refs/heads/master')
+  condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
@@ -228,6 +238,11 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
+      displayName: 'Restore'
+      inputs:
+        command: 'restore'
+        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Pack release package'
       inputs:
