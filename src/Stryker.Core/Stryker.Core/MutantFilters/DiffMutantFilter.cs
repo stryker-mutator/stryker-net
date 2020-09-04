@@ -120,6 +120,12 @@ namespace Stryker.Core.MutantFilters
                 {
                     var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
+                    if (string.IsNullOrEmpty(baselineMutantSourceCode))
+                    {
+                        _logger.LogWarning("Unable to find mutant span in original baseline source code. This indicates a bug in stryker. Please report this on github.");
+                        continue;
+                    }
+
                     IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
 
                     SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
@@ -154,9 +160,10 @@ namespace Stryker.Core.MutantFilters
             LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
 
             var textSpan = tree.GetText().Lines.GetTextSpan(span);
+            var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));
+            return originalNode?.ToString();
 
-            return tree.GetRoot().DescendantNodes(textSpan)
-                .First(n => textSpan.Equals(n.Span)).ToString();
+
         }
 
         private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
