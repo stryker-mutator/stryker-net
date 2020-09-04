@@ -765,6 +765,26 @@ namespace TestApp
             ShouldMutateSourceToExpected(source, expected);
         }
 
+        [Fact]
+        public void ShouldSkipStringsInSwitchExpression()
+        {
+            string source = @"string TestMethod()
+{
+    return input switch
+    {
+        ""test"" => ""test""
+    };
+}";
+            string expected = @"string TestMethod()
+{
+    return input switch
+    {
+        ""test"" => (StrykerNamespace.MutantControl.IsActive(0)?"""":""test""
+)    };
+}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
         [Theory]
         [InlineData("=> Value = \"Hello, World!\";")]
         [InlineData("{Value = \"Hello, World!\";}")]
