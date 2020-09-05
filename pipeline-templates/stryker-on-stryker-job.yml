@@ -19,9 +19,9 @@ jobs:
       targetType: 'inline'
       pwsh: true
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(Build.SourceBranchName)
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(Build.SourceBranchName) --git-source (Build.SourceBranchName)
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(System.PullRequest.SourceBranch) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare --dashboard-version $(System.PullRequest.SourceBranch) --git-source (Build.SourceBranchName) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
   - task: PublishMutationReport@0		
     inputs:		
       reportPattern: '${{ parameters.workingDirectory }}/**/mutation-report.html'
