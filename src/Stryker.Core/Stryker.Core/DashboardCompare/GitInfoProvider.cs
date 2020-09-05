@@ -49,6 +49,7 @@ namespace Stryker.Core.DashboardCompare
         {
             if (Repository?.Branches == null)
             {
+                _logger.LogInformation("There is no information available about your current branch. Performing a checkout.");
                 Checkout();
             }
 
@@ -58,11 +59,13 @@ namespace Stryker.Core.DashboardCompare
                 {
                     if (branch.IsCurrentRepositoryHead)
                     {
+                        _logger.LogInformation("{0} identified as current branch", branch.FriendlyName);
                         return branch.FriendlyName;
                     }
                 }
             }
 
+            _logger.LogInformation("Could not locate the current branch name");
             return string.Empty;
         }
 
@@ -82,9 +85,13 @@ namespace Stryker.Core.DashboardCompare
         {
             try
             {
-                var branch = Repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+                _logger.LogInformation("Performing checkout of source branch {0}", _options.GitSource);
 
+                var branch = Repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+ 
                 Commands.Checkout(Repository, branch);
+
+                _logger.LogInformation("Performing checkout of source branch {0}", _options.ProjectVersion);
 
                 var currentBranch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
 
