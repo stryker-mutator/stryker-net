@@ -41,6 +41,11 @@ namespace Stryker.Core.DashboardCompare
 
         public string GetCurrentBranchName()
         {
+            if (Repository?.Branches == null)
+            {
+                Checkout();
+            }
+
             if (Repository?.Branches != null)
             {
                 foreach (var branch in Repository.Branches)
