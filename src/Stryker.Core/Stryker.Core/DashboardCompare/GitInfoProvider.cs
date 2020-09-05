@@ -1,5 +1,8 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 
@@ -9,6 +12,8 @@ namespace Stryker.Core.DashboardCompare
     {
         private readonly StrykerOptions _options;
         private readonly string _repositoryPath;
+        private readonly ILogger<GitInfoProvider> _logger;
+
         public IRepository Repository { get; }
 
         public string RepositoryPath
@@ -19,10 +24,11 @@ namespace Stryker.Core.DashboardCompare
             }
         }
 
-        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null)
-        {
+        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
+        { 
             _repositoryPath = repositoryPath;
             _options = options;
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
             if (!options.DiffEnabled)
             {
@@ -84,9 +90,9 @@ namespace Stryker.Core.DashboardCompare
 
                 Commands.Checkout(Repository, currentBranch);
             }
-            catch
+            catch(Exception e)
             {
-                // Do nothing, Checkout is already done
+                _logger.LogWarning(e.Message);
             }
         }
 
