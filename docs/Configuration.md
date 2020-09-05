@@ -364,6 +364,10 @@ dotnet stryker -gs "development"
 
 Default: `master`
 
+This feature works based on file diffs, which means that all changed filles will have all of its possible mutants mutated.
+
+Also note that for changes on test files all mutants being tested in that file will be mutated.
+
 ## EXPERIMENTAL: Dashboard Compare
 Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
 
