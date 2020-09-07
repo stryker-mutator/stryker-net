@@ -1,4 +1,5 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\");
+            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger<StrykerOptions>());
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
@@ -92,7 +93,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             // Assert
             res.ChangedFiles.Count().ShouldBe(1);
-            res.TestsChanged.ShouldBeFalse();
+            res.TestFilesChanged.Count().ShouldBe(0);
         }
 
 

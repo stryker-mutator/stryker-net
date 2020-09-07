@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.18.0'
-  VersionBuildNumber: $[counter('0.18.0', 1)]
+  PackageVersion: '0.19.0'
+  VersionBuildNumber: $[counter('0.19.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -89,9 +89,9 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install dotnet-stryker -g
+        arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
-    - script: dotnet stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
@@ -106,9 +106,9 @@ stages:
       inputs:
         command: custom
         custom: tool
-        arguments: install dotnet-stryker -g
+        arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
-    - script: dotnet stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
@@ -253,7 +253,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: and(succeeded(), eq(variables['build.sourcebranch'], 'refs/heads/master'))
+  condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts

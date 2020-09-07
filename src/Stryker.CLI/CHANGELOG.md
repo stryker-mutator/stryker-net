@@ -1,3 +1,14 @@
+# [0.19.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.18.0...dotnet-stryker@0.19.0) (2020-09-04)
+
+
+### Features
+
+* **dashboard compare:** Save mutation testing result in stryker dashboard to re-use in later run ([#1067](https://github.com/stryker-mutator/stryker-net/issues/1067)) ([c9a986d](https://github.com/stryker-mutator/stryker-net/commit/c9a986d39b56983aa10bc77706880ffd968cb03a))
+* **dashboard compare:** test the mutants which are covered by unit tests in changed test files ([#1101](https://github.com/stryker-mutator/stryker-net/issues/1101)) ([e847896](https://github.com/stryker-mutator/stryker-net/commit/e847896228aad54809ad0db0c188ef0a5d7d7d9f))
+* **Regex mutations:** Add mutations on regular expressions ([#1123](https://github.com/stryker-mutator/stryker-net/issues/1123)) ([45da048](https://github.com/stryker-mutator/stryker-net/commit/45da0484f9cde5cfd0c5cb93bcab068548d80ead))
+
+
+
 # [0.18.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.17.1...dotnet-stryker@0.18.0) (2020-05-07)
 
 

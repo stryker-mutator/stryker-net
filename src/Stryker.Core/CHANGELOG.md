@@ -1,3 +1,23 @@
+# [0.19.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.18.0...stryker@0.19.0) (2020-09-04)
+
+
+### Bug Fixes
+
+* **Const mutation warning:** Don't mutate const local declaration ([#1183](https://github.com/stryker-mutator/stryker-net/issues/1183)) ([dde8e2b](https://github.com/stryker-mutator/stryker-net/commit/dde8e2b04351d5b6db5c55a673a89fe38d4b6218))
+* **Mutation compile errors:** Redesign mutation logic ([#1172](https://github.com/stryker-mutator/stryker-net/issues/1172)) ([3ddb251](https://github.com/stryker-mutator/stryker-net/commit/3ddb25136b6eb20d6583651e1cb78f77b7ccc7b3))
+* **Stackalloc arrays:** Mutate stackalloc arrays correctly ([#1133](https://github.com/stryker-mutator/stryker-net/issues/1133)) ([1a7416b](https://github.com/stryker-mutator/stryker-net/commit/1a7416b7961bb144d2b65be810530dfe745448f2))
+* **SwitchExpressions:** Don't mutate constant value in SwitchExpression ([#1176](https://github.com/stryker-mutator/stryker-net/issues/1176)) ([e62c7d3](https://github.com/stryker-mutator/stryker-net/commit/e62c7d3d5306d12193f780b076433032cc46f88f))
+
+
+### Features
+
+* **Added linq mutations:** Added linq Union and intersect mutation. ([#1182](https://github.com/stryker-mutator/stryker-net/issues/1182)) ([edf7ebb](https://github.com/stryker-mutator/stryker-net/commit/edf7ebba3762f7798f9ca9657a7861e124dcea35))
+* **dashboard compare:** Save mutation testing result in stryker dashboard to re-use in later run ([#1067](https://github.com/stryker-mutator/stryker-net/issues/1067)) ([c9a986d](https://github.com/stryker-mutator/stryker-net/commit/c9a986d39b56983aa10bc77706880ffd968cb03a))
+* **dashboard compare:** test the mutants which are covered by unit tests in changed test files ([#1101](https://github.com/stryker-mutator/stryker-net/issues/1101)) ([e847896](https://github.com/stryker-mutator/stryker-net/commit/e847896228aad54809ad0db0c188ef0a5d7d7d9f))
+* **Regex mutations:** Add mutations on regular expressions ([#1123](https://github.com/stryker-mutator/stryker-net/issues/1123)) ([45da048](https://github.com/stryker-mutator/stryker-net/commit/45da0484f9cde5cfd0c5cb93bcab068548d80ead))
+
+
+
 # [0.18.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.17.1...stryker@0.18.0) (2020-05-07)
 
 

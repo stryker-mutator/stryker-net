@@ -17,17 +17,18 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
-        private readonly IGitInfoProvider _branchProvider;
+        private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IChalk _chalk;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IGitInfoProvider gitInfoProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _branchProvider = branchProvider ?? new GitInfoProvider(options);
+            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _chalk = chalk ?? new Chalk();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
@@ -43,8 +44,6 @@ namespace Stryker.Core.Reporters
             {
                 Task.WaitAll(UploadHumanReadableReport(mutationReport));
             }
-
-
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
@@ -64,7 +63,7 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadBaseline(JsonReport mutationReport)
         {
-            var branchName = _branchProvider.GetCurrentBranchName();
+            var branchName = _gitInfoProvider.GetCurrentBranchName();
 
             var baselineLocation = $"dashboard-compare/{branchName}";
 
