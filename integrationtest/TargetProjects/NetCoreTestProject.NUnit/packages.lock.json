@@ -780,7 +780,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "0.18.0"
+          "Library": "0.19.0"
         }
       }
     }
