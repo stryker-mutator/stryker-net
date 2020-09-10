@@ -600,8 +600,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "2.9.0",
-        "contentHash": "QzcrD33A3+CsVvwi1I5CSei67ikQnkGrw7SscgL+vZTghaC2aNYg8fiUcedXHzKJFNjgje9rBjzwYGQTKEaXaA=="
+        "resolved": "2.10.0",
+        "contentHash": "+QX0hmf37a0/OZLxM3wL7V6/ADvC1XihXN4Kq/p6d8lCPfgkRdiuhbWlMaFjR9Av0dy5F0+MBeDmDdRZN/YwQA=="
       },
       "Serilog.Extensions.Logging": {
         "type": "Transitive",
@@ -1662,7 +1662,7 @@
           "Microsoft.Web.LibraryManager.Build": "2.1.76",
           "Mono.Cecil": "0.11.2",
           "Newtonsoft.Json": "12.0.3",
-          "Serilog": "2.9.0",
+          "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
