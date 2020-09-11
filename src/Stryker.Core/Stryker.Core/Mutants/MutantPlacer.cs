@@ -1,55 +1,65 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Instrumentation;
 
 namespace Stryker.Core.Mutants
 {
     public static class MutantPlacer
     {
-
         private const string MutationConditional = "MutationConditional";
         private const string MutationIf = "MutationIf";
         private const string MutationHelper = "Helper";
+        private const string Injector = "Injector";
         private const string HelperId = "-1";
+
+        private static readonly StaticInstrumentationEngine StaticEngine;
+        private static readonly IfInstrumentationEngine IfEngine;
+        private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
         public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf, MutationHelper};
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-            SyntaxFactory.Block( 
-                SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
 
+        static MutantPlacer()
+        {
+            StaticEngine = new StaticInstrumentationEngine(Injector);
+            RegisterEngine(StaticEngine);
+            IfEngine = new IfInstrumentationEngine(Injector);
+            RegisterEngine(IfEngine);
+        }
 
-        public static BlockSyntax AsBlock(StatementSyntax input) =>  (input is BlockSyntax block) ? block : SyntaxFactory.Block(input);
+        private static void RegisterEngine(IInstrumentCode engine)
+        {
+            InstrumentEngines.Add(engine.IInstrumentEngineID, engine);
+        }
+
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => StaticEngine.PlaceStaticContextMarker(block).WithAdditionalAnnotations(new SyntaxAnnotation(Injector, StaticEngine.IInstrumentEngineID));
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
-            SyntaxFactory.IfStatement(
-                    condition: GetBinaryExpression(mutantId),
-                    statement: AsBlock(mutated),
-                    @else: SyntaxFactory.ElseClause( AsBlock(original)))
+            IfEngine.InjectIf(GetBinaryExpression(mutantId), original, mutated)
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIf, mutantId.ToString()));
 
-        public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove) =>
-            nodeToRemove switch
+        public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
+        {
+            var engine = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault()?.GetAnnotations(Injector).First().Data;
+            if (!string.IsNullOrEmpty(engine))
+            {
+                return InstrumentEngines[engine].RemoveInstrumentation(nodeToRemove);
+            }
+
+            return nodeToRemove switch
             {
                 // remove the mutated node using its MutantPlacer remove method and update the tree
-                IfStatementSyntax ifStatement => RemoveByIfStatement(ifStatement),
                 ParenthesizedExpressionSyntax parenthesizedExpression => RemoveByConditionalExpression(
                     parenthesizedExpression),
-                _ => nodeToRemove.GetAnnotatedNodes(MutationHelper).Any()
+                _ => nodeToRemove.GetAnnotatedNodes(StaticEngine.IInstrumentEngineID).Any()
                     ? SyntaxFactory.EmptyStatement()
                     : nodeToRemove
             };
-
-        private static SyntaxNode RemoveByIfStatement(IfStatementSyntax ifStatement)
-        {
-            // return original statement
-            var childNodes = ifStatement.Else.Statement.ChildNodes().ToList();
-            return childNodes.Count == 1 ? childNodes[0] : ifStatement.Else.Statement;
         }
 
         public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original, ExpressionSyntax mutated, int mutantId) =>
