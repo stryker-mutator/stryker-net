@@ -107,7 +107,7 @@ namespace Stryker.Core.MutantFilters
 
 
             // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
-            // Only check for cheged c# files. Other files have already been handled.
+            // Only check for changed c# files. Other files have already been handled.
             if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any(file => file.EndsWith(".cs")))
             {
                 filteredMutants = ResetMutantStatusForChangedTests(mutants).ToList();
