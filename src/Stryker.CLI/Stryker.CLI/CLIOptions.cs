@@ -116,6 +116,22 @@ namespace Stryker.CLI
 
         };
 
+        public static readonly CLIOption<string[]> DashboardCompareFileExcludePatterns = new CLIOption<string[]>
+        {
+            ArgumentName = "--dashboard-compare-excluded-non-source-files", // TODO: Really needs a better name
+            ArgumentShortName = "-compare-excluded",
+            ArgumentDescription = @"Allows to specify an array of non-C# files that you want to exclude from testing.
+             Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+            This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
+            
+            Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+            Use '!' at the start of a pattern to exclude all matched files.
+            Use '{< start > .. < end >}' at the end of a pattern to specify spans of text in files to in- or exclude.
+            Example: ['**/*Assets.json','!**/favicon.ico']",
+            DefaultValue = null,
+            JsonKey = "dashboard-compare-excluded-non-source-files"
+        };
+
 
         public static readonly CLIOption<string> BaselineStorageLocation = new CLIOption<string>
         {
