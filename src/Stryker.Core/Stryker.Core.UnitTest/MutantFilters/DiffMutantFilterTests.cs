@@ -554,7 +554,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
 
-            var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
+            var mutants = new List<Mutant> { new Mutant { Id = 1, ResultStatus = MutantStatus.Killed }, new Mutant { Id = 2, ResultStatus = MutantStatus.Killed }, new Mutant { Id = 3, ResultStatus = MutantStatus.Killed } };
 
             var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\TargetFolder\\Foo.cs" }, options);
 
