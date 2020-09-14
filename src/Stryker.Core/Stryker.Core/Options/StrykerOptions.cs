@@ -53,6 +53,8 @@ namespace Stryker.Core.Options
         public string ModuleName { get; }
         public string ProjectVersion { get; }
 
+        public IEnumerable<FilePattern> DashboardCompareFileExcludePatterns { get; } // TODO: Should use a better name
+
         public string AzureSAS { get; }
 
         public string AzureFileStorageUrl { get; set; }
@@ -99,7 +101,8 @@ namespace Stryker.Core.Options
             string baselineStorageLocation = null,
             string azureSAS = null,
             string azureFileStorageUrl = null,
-            IEnumerable<string> testProjects = null)
+            IEnumerable<string> testProjects = null,
+            IEnumerable<FilePattern> dashboardCompareFileExcludePatterns = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -129,7 +132,7 @@ namespace Stryker.Core.Options
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
-            (ProjectVersion, FallbackVersion, GitSource) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitSource);
+            (ProjectVersion, FallbackVersion, GitSource, DashboardCompareFileExcludePatterns) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitSource, dashboardCompareFileExcludePatterns);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
@@ -213,7 +216,7 @@ namespace Stryker.Core.Options
             return gitSource;
         }
 
-        private (string ProjectVersion, string FallbackVersion, string GitSource) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource)
+        private (string ProjectVersion, string FallbackVersion, string GitSource, IEnumerable<FilePattern> DashboardCompareFileExcludePatterns) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource, IEnumerable<FilePattern> dashboardCompareFileExcludePatterns)
         {
             if (string.IsNullOrEmpty(fallbackVersion))
             {
@@ -239,7 +242,7 @@ namespace Stryker.Core.Options
                 }
             }
 
-            return (projectVersion, fallbackVersion, gitSource);
+            return (projectVersion, fallbackVersion, gitSource, dashboardCompareFileExcludePatterns);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

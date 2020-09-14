@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using DotNet.Globbing;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
@@ -527,6 +528,68 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             result.ShouldBe(mutants);
+        }
+
+        [Fact]
+        public void Should_Not_Return_All_Mutants_When_Non_Source_File_In_Excluded_Pattern()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new List<FilePattern>
+            {
+                new FilePattern(Glob.Parse("C:\\TargetFolder\\excludedFile.json"), isExclude: true, null)
+            });
+
+            var diffProviderMock = new Mock<IDiffProvider>();
+            var baselineProviderMock = new Mock<IBaselineProvider>();
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "C:\\TargetFolder\\excludedFile.json" } };
+            diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
+
+            baselineProviderMock.Setup(x =>
+                x.Load(It.IsAny<string>())
+                ).Returns(
+                    Task.FromResult(
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         ));
+
+            var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+
+            var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
+
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\TargetFolder\\Foo.cs" }, options);
+
+            result.Count().ShouldBe(0);
+        }
+
+        [Fact]
+        public void Should_Return_All_mutants_When_Non_Source_File_Is_Not_In_Excluded_Pattern()
+        {
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new List<FilePattern>
+            {
+                new FilePattern(Glob.Parse("C:\\TargetFolder\\excludedFile.json"), isExclude: true, null)
+            });
+
+            var diffProviderMock = new Mock<IDiffProvider>();
+            var baselineProviderMock = new Mock<IBaselineProvider>();
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "C:\\TargetFolder\\notExcludedFile.json" } };
+            diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
+
+            baselineProviderMock.Setup(x =>
+                x.Load(It.IsAny<string>())
+                ).Returns(
+                    Task.FromResult(
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         ));
+
+            var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+
+            var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
+
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\TargetFolder\\Foo.cs" }, options);
+
+            result.Count().ShouldBe(3);
         }
     }
 }
