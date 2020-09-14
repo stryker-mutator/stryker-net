@@ -533,9 +533,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void Should_Not_Return_All_Mutants_When_Non_Source_File_In_Excluded_Pattern()
         {
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new List<FilePattern>
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new string[]
             {
-                new FilePattern(Glob.Parse("C:\\TargetFolder\\excludedFile.json"), isExclude: true, null)
+                "C:\\TargetFolder\\excludedFile.json"
             });
 
             var diffProviderMock = new Mock<IDiffProvider>();
@@ -564,9 +564,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void Should_Return_All_mutants_When_Non_Source_File_Is_Not_In_Excluded_Pattern()
         {
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new List<FilePattern>
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", dashboardCompareFileExcludePatterns: new string[]
             {
-                new FilePattern(Glob.Parse("C:\\TargetFolder\\excludedFile.json"), isExclude: true, null)
+               "C:\\TargetFolder\\excludedFile.json"
             });
 
             var diffProviderMock = new Mock<IDiffProvider>();

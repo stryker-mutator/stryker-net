@@ -102,7 +102,7 @@ namespace Stryker.Core.Options
             string azureSAS = null,
             string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null,
-            IEnumerable<FilePattern> dashboardCompareFileExcludePatterns = null)
+            string[] dashboardCompareFileExcludePatterns = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -216,15 +216,25 @@ namespace Stryker.Core.Options
             return gitSource;
         }
 
-        private (string ProjectVersion, string FallbackVersion, string GitSource, IEnumerable<FilePattern> DashboardCompareFileExcludePatterns) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource, IEnumerable<FilePattern> dashboardCompareFileExcludePatterns)
+        private (string ProjectVersion, string FallbackVersion, string GitSource, IEnumerable<FilePattern> DashboardCompareFileExcludePatterns) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource, IEnumerable<string> dashboardCompareFileExcludePatterns)
         {
             if (string.IsNullOrEmpty(fallbackVersion))
             {
                 fallbackVersion = gitSource;
             }
 
+            var excludedFiles = new List<FilePattern>();
+
             if (CompareToDashboard)
             {
+                if (dashboardCompareFileExcludePatterns != null)
+                {
+                    foreach (var pattern in dashboardCompareFileExcludePatterns)
+                    {
+                        excludedFiles.Add(FilePattern.Parse(pattern));
+                    }
+                }
+
                 var errorStrings = new StringBuilder();
                 if (string.IsNullOrEmpty(projectVersion))
                 {
@@ -242,7 +252,7 @@ namespace Stryker.Core.Options
                 }
             }
 
-            return (projectVersion, fallbackVersion, gitSource, dashboardCompareFileExcludePatterns);
+            return (projectVersion, fallbackVersion, gitSource, excludedFiles);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)

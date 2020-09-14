@@ -87,14 +87,10 @@ namespace Stryker.Core.MutantFilters
                _diffResult.TestFilesChanged.Where(file => !file.EndsWith(".cs")).ToList();
 
                 // If any of the changed non-cSharp files does not match any of the given exclusion file patterns, all mutants must be returned
-                if (changedNonSourceFiles.Count() != 0)
+                if (changedNonSourceFiles.Count != 0 && (options.DashboardCompareFileExcludePatterns == null || changedNonSourceFiles.Any(file => !_options.DashboardCompareFileExcludePatterns.Any(FilePattern => FilePattern.Glob.IsMatch(file)))))
                 {
-                    if (options.DashboardCompareFileExcludePatterns == null || changedNonSourceFiles.Any(file => !_options.DashboardCompareFileExcludePatterns.Any(FilePattern => FilePattern.Glob.IsMatch(file))))
-                    {
-                        _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
-                        return SetMutantStatusForNonCSharpFileChanged(mutants);
-                    }
-
+                    _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
+                    return SetMutantStatusForNonCSharpFileChanged(mutants);
                 }
             }
 
