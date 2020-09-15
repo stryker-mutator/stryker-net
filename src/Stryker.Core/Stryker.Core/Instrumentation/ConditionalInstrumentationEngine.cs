@@ -5,16 +5,16 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
-    class ConditionalInstrumentationEngine : IInstrumentCode
+    public class ConditionalInstrumentationEngine : IInstrumentCode
     {
         private readonly SyntaxAnnotation _marker;
 
         public ConditionalInstrumentationEngine(string marker)
         {
-            _marker = new SyntaxAnnotation(marker, IInstrumentEngineID);
+            _marker = new SyntaxAnnotation(marker, InstrumentEngineID);
         }
 
-        public string IInstrumentEngineID => "ConditionalInstrumentation";
+        public string InstrumentEngineID => "ConditionalInstrumentation";
 
         public  ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
             SyntaxFactory.ParenthesizedExpression(

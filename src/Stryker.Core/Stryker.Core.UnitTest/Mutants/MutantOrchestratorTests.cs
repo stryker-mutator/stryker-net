@@ -4,6 +4,8 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -827,12 +829,14 @@ static string Value => """";
 static TestClass(){}}";
 
             var expected = @"class Test {
-static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""
-);
+static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
+
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+
+            
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);

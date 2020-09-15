@@ -16,6 +16,7 @@
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Stryker.Core.UnitTest.v3.ncrunchproject" />
     <None Remove="TestResources\StrongNameKeyFile.snk" />
   </ItemGroup>
   <ItemGroup>

@@ -7,12 +7,12 @@ namespace Stryker.Core.Instrumentation
     /// Implements code instrumentation logic.
     /// Note that instrumentation methods have specific signature and are not part of the interface.
     /// </summary>
-    interface IInstrumentCode
+    public interface IInstrumentCode
     {
         /// <summary>
         /// Returns the specific identifier, used for roll back
         /// </summary>
-        string IInstrumentEngineID { get; }
+        string InstrumentEngineID { get; }
 
         /// <summary>
         /// Removes instrumentation.

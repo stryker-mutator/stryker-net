@@ -6,30 +6,27 @@ using Stryker.Core.InjectedHelpers;
 
 namespace Stryker.Core.Instrumentation
 {
-    class StaticInstrumentationEngine : IInstrumentCode
+    class StaticInstrumentationEngine : BaseEngine<BlockSyntax>, IInstrumentCode
     {
-        private readonly SyntaxAnnotation _marker;
-        public string IInstrumentEngineID => "StaticMarker";
-
         private readonly ExpressionSyntax _cachedMarker = SyntaxFactory.ParseExpression(CodeInjection.StaticMarker);
 
-        public StaticInstrumentationEngine(string annotation)
+        public StaticInstrumentationEngine(string annotation) : base(annotation, "StaticMarker")
         {
-            _marker = new SyntaxAnnotation(annotation, IInstrumentEngineID);
         }
 
-        public SyntaxNode RemoveInstrumentation(SyntaxNode node)
+        protected override SyntaxNode Revert(BlockSyntax node)
         {
-            if (node is BlockSyntax block && block.Statements.Count == 1 && block.Statements[0] is UsingStatementSyntax usingStatement)
+            if ( node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
             {
                 return usingStatement.Statement;
             }
-            throw new InvalidOperationException($"Expected a block containing an 'using' statement, found:\n{node.ToFullString()}.");
+
+            return node;
         }
 
-        public BlockSyntax PlaceStaticContextMarker(StatementSyntax block) =>
+        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
             SyntaxFactory.Block( 
-                SyntaxFactory.UsingStatement(null, _cachedMarker, block)).WithAdditionalAnnotations(_marker);
+                SyntaxFactory.UsingStatement(null, _cachedMarker, block)).WithAdditionalAnnotations(Marker);
 
     }
 }

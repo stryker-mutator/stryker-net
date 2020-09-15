@@ -175,7 +175,7 @@ namespace Stryker.Core.Mutants
         }
 
         // inject the mutation within the control structure
-        private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
+        private static T InjectMutation<T>(in T node, IReadOnlyMutant mutant) where T : SyntaxNode
         {
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }

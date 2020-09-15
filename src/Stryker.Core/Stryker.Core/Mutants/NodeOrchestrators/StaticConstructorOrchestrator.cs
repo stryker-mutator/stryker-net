@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,18 +22,9 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             var trackedConstructor = node.TrackNodes((SyntaxNode) node.Body ?? node.ExpressionBody);
             if (node.ExpressionBody != null)
             {
-                var bodyBlock =
-                    SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(node.ExpressionBody.Expression));
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.MutateNodeAndChildren(bodyBlock));
-                trackedConstructor = trackedConstructor.Update(
-                    trackedConstructor.AttributeLists,
-                    trackedConstructor.Modifiers,
-                    trackedConstructor.Identifier,
-                    trackedConstructor.ParameterList,
-                    trackedConstructor.Initializer,
-                    markedBlock,
-                    null,
-                    SyntaxFactory.Token(SyntaxKind.None));
+                var mutated = node.ReplaceNode(node.ExpressionBody, context.MutateNodeAndChildren(node.ExpressionBody));
+                trackedConstructor = MutantPlacer.ConvertExpressionToBody(mutated);
+                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.Body, MutantPlacer.PlaceStaticContextMarker(trackedConstructor.Body));
             }
             else if (node.Body != null)
             {
@@ -41,7 +33,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                     trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(node.Body), markedBlock);
             }
             return trackedConstructor;
-
         }
     }
 }

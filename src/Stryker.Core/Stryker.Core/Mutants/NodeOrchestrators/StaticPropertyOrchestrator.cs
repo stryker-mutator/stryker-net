@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         internal override SyntaxNode OrchestrateMutation(PropertyDeclarationSyntax node, MutationContext context)
         {
-            if (!context.MustInjectCoverageLogic)
+            //if (!context.MustInjectCoverageLogic)
             {
                 return context.MutateNodeAndChildren(node);
             }

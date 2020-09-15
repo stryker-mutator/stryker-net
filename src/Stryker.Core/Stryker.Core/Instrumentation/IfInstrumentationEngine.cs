@@ -11,10 +11,10 @@ namespace Stryker.Core.Instrumentation
 
         public IfInstrumentationEngine(string annotation)
         {
-            _marker = new SyntaxAnnotation(annotation, IInstrumentEngineID);
+            _marker = new SyntaxAnnotation(annotation, InstrumentEngineID);
         }
 
-        public string IInstrumentEngineID => "IfInstrumentation";
+        public string InstrumentEngineID => "IfInstrumentation";
 
         public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
         {

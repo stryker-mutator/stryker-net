@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -20,9 +21,9 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             {
                 return mutatedNode;
             }
+
             // If method return type is void skip the node
-            if (mutatedNode.ReturnType is PredefinedTypeSyntax predefinedType &&
-                predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword))
+            if (mutatedNode.IsVoidReturningMethod())
             {
                 return mutatedNode;
             }

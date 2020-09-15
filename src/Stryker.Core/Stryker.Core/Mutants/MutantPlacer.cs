@@ -9,20 +9,24 @@ using Stryker.Core.Instrumentation;
 
 namespace Stryker.Core.Mutants
 {
+    /// <summary>
+    /// Implements multiple (reversible) patterns for injecting code in the mutated assembly?
+    /// Each pattern is implemented in a dedicated class.
+    /// </summary>
     public static class MutantPlacer
     {
         private const string MutationMarker = "Mutation";
         private const string MutationHelper = "Helper";
         private const string Injector = "Injector";
-        private const string HelperId = "-1";
 
         private static readonly StaticInstrumentationEngine StaticEngine;
         private static readonly IfInstrumentationEngine IfEngine;
-        private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
         private static readonly ConditionalInstrumentationEngine ConditionalEngine;
+        private static readonly ExpressionToBodyEngine ExpressionEngine;
+        
+        private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
         public static IEnumerable<string> MutationMarkers => new[] { MutationMarker, MutationHelper};
-
 
         static MutantPlacer()
         {
@@ -32,14 +36,26 @@ namespace Stryker.Core.Mutants
             RegisterEngine(IfEngine);
             ConditionalEngine = new ConditionalInstrumentationEngine(Injector);
             RegisterEngine(ConditionalEngine);
+            ExpressionEngine = new ExpressionToBodyEngine(Injector);
+            RegisterEngine(ExpressionEngine);
         }
 
-        private static void RegisterEngine(IInstrumentCode engine)
+        /// <summary>
+        ///  register an instrumentation engine
+        /// </summary>
+        /// <param name="engine"></param>
+        public static void RegisterEngine(IInstrumentCode engine)
         {
-            InstrumentEngines.Add(engine.IInstrumentEngineID, engine);
+            InstrumentEngines.Add(engine.InstrumentEngineID, engine);
         }
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => StaticEngine.PlaceStaticContextMarker(block).WithAdditionalAnnotations(new SyntaxAnnotation(Injector, StaticEngine.IInstrumentEngineID));
+        public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax
+        {
+            return ExpressionEngine.ConvertToBody(method)
+                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+        }
+
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => StaticEngine.PlaceStaticContextMarker(block).WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
             IfEngine.InjectIf(GetBinaryExpression(mutantId), original, mutated)
@@ -54,8 +70,9 @@ namespace Stryker.Core.Mutants
                 return InstrumentEngines[engine].RemoveInstrumentation(nodeToRemove);
             }
 
-            throw new InvalidOperationException($"Unable to remove any injection from this node : {nodeToRemove.ToString()}");
+            throw new InvalidOperationException($"Unable to remove any injection from this node: {nodeToRemove}");
         }
+
 
         public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original,
             ExpressionSyntax mutated, int mutantId) =>
@@ -64,7 +81,7 @@ namespace Stryker.Core.Mutants
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutantId.ToString()));
 
         // us this method to annotate injected helper code. I.e. any injected code that is NOT a mutation but provides some infrastructure for the mutant to run
-        public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
+        public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
