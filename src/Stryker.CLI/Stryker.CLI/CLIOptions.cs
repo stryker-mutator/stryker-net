@@ -126,7 +126,6 @@ namespace Stryker.CLI
             
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
             Use '!' at the start of a pattern to exclude all matched files.
-            Use '{< start > .. < end >}' at the end of a pattern to specify spans of text in files to in- or exclude.
             Example: ['**/*Assets.json','!**/favicon.ico']",
             DefaultValue = null,
             JsonKey = "dashboard-compare-excluded-non-source-files"
