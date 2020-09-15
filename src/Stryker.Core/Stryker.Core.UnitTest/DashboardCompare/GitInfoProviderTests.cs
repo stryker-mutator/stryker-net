@@ -11,6 +11,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
+    using Microsoft.Extensions.Logging;
 
     public class GitInfoProviderTests
     {
@@ -19,7 +20,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, "path");
+            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, Mock.Of<ILogger<GitInfoProvider>>(), "path");
 
             target.RepositoryPath.ShouldBe("path");
         }
