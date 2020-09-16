@@ -341,8 +341,8 @@
       },
       "Mono.Cecil": {
         "type": "Transitive",
-        "resolved": "0.11.2",
-        "contentHash": "hZNAnXKQsOs/SZMFtT/e82/nA/iLgkeDy+sHD8xix4f0m9/3G0RNZplE1QHB+0n8QXq54jLqR/IPgVOkLapkyg=="
+        "resolved": "0.11.3",
+        "contentHash": "DNYE+io5XfEE8+E+5padThTPHJARJHbz1mhbhMPNrrWGKVKKqj/KEeLvbawAmbIcT73NuxLV7itHZaYCZcVWGg=="
       },
       "MSBuild.StructuredLogger": {
         "type": "Transitive",
@@ -1390,7 +1390,7 @@
           "Microsoft.TestPlatform.Portable": "16.7.1",
           "Microsoft.TestPlatform.TranslationLayer": "16.7.1",
           "Microsoft.Web.LibraryManager.Build": "2.1.76",
-          "Mono.Cecil": "0.11.2",
+          "Mono.Cecil": "0.11.3",
           "Newtonsoft.Json": "12.0.3",
           "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.0.1",
