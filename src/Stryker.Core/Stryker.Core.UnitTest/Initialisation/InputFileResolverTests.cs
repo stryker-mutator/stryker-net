@@ -62,13 +62,16 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1)]
-        [InlineData("netstandard1.6", Framework.DotNetStandard, 1, 6)]
-        [InlineData("mono4.6", Framework.Unknown, 4, 6)]
-        [InlineData("net4.5", Framework.DotNetClassic, 4, 5)]
-        [InlineData("net5.0", Framework.DotNet, 5, 0)]
-        [InlineData("net5.0-windows", Framework.DotNet, 5, 0)]
-        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor)
+        [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1, null)]
+        [InlineData("netstandard1.6", Framework.DotNetStandard, 1, 6, null)]
+        [InlineData("mono4.6", Framework.Unknown, 4, 6, null)]
+        [InlineData("net4.5", Framework.DotNetClassic, 4, 5, null)]
+        [InlineData("net4.5.1", Framework.DotNetClassic, 4, 5, 1)]
+        [InlineData("net45", Framework.DotNetClassic, 4, 5, null)]
+        [InlineData("net452", Framework.DotNetClassic, 4, 5, 2)]
+        [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
+        [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
+        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor, int? patch)
         {
             var test = new ProjectAnalyzerResult(null, null)
             {
@@ -78,7 +81,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                 References = new[] { "" }
             };
 
-            test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor)));
+            if (patch.HasValue)
+            {
+                test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor, patch.Value)));
+            }
+            else
+            {
+                test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor)));
+            }
         }
 
         [Fact]
