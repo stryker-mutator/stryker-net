@@ -64,10 +64,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1", Framework.NetCore, 2, 1)]
-        [InlineData("netstandard1.6", Framework.NetStandard, 1, 6)]
+        [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1)]
+        [InlineData("netstandard1.6", Framework.DotNetNetStandard, 1, 6)]
         [InlineData("mono4.6", Framework.Unknown, 0, 0)]
-        [InlineData("net4.5", Framework.NetClassic, 4, 5)]
+        [InlineData("net4.5", Framework.DotNetClassic, 4, 5)]
         public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor)
         {
             var test = new ProjectAnalyzerResult(null, null)
@@ -930,7 +930,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFramework = Framework.NetClassic,
+                    TargetFramework = Framework.DotNetClassic,
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string> { { "IsTestProject", "false" } },
                     References = new[] { "" }

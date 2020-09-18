@@ -83,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool CantUseStrykerDataCollector()
         {
             return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.NetCore && t.TargetFrameworkAndVersion.version.Major < 2);
+                t.TargetFrameworkAndVersion.framework == Framework.DotNet && t.TargetFrameworkAndVersion.version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -398,8 +398,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
             string targetFrameworkVersionString = targetFramework switch
             {
-                Framework.NetCore => $".NETCoreApp,Version=v{targetFrameworkVersion}",
-                Framework.NetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
+                Framework.DotNet => $".NETCoreApp,Version=v{targetFrameworkVersion}",
+                Framework.DotNetNetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
                 _ => $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}",
             };
 
@@ -421,7 +421,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
-{(targetFramework == Initialisation.Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
+{(targetFramework == Initialisation.Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
   <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>

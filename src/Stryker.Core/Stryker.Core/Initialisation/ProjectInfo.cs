@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Buildalyzer;
+﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -24,7 +24,7 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)), 
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
@@ -36,9 +36,9 @@ namespace Stryker.Core.Initialisation
 
     public enum Framework
     {
-        NetClassic,
-        NetCore,
-        NetStandard,
+        DotNetClassic,
+        DotNet,
+        DotNetNetStandard,
         Unknown
     }
 
@@ -62,9 +62,9 @@ namespace Stryker.Core.Initialisation
             _analyzerResult = analyzerResult;
         }
 
-        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName+".dll");
+        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName + ".dll");
 
-        public string AssemblyName =>  GetPropertyOrDefault("AssemblyName");
+        public string AssemblyName => GetPropertyOrDefault("AssemblyName");
 
         public string SymbolFileName => $"{AssemblyName}.pdb";
 
@@ -163,15 +163,15 @@ namespace Stryker.Core.Initialisation
 
                 switch (framework)
                 {
-                    case Framework.NetCore when version.Major < 2:
+                    case Framework.DotNet when version.Major < 2:
                         compat_noAppDomain = true;
                         break;
-                    case Framework.NetStandard when version.Major < 2:
+                    case Framework.DotNetNetStandard when version.Major < 2:
                         compat_noAppDomain = true;
                         compat_noPipe = true;
                         break;
                     case Framework.Unknown:
-                    case Framework.NetClassic:
+                    case Framework.DotNetClassic:
                         compat_noPipe = version < new Version(3, 5);
                         break;
                 }
@@ -218,9 +218,9 @@ namespace Stryker.Core.Initialisation
             {
                 var label = new Dictionary<string, Framework>
                 {
-                    ["netcoreapp"] = Framework.NetCore,
-                    ["netstandard"] = Framework.NetStandard,
-                    ["net"] = Framework.NetClassic
+                    ["netcoreapp"] = Framework.DotNet,
+                    ["netstandard"] = Framework.DotNetNetStandard,
+                    ["net"] = Framework.DotNetClassic
                 };
                 try
                 {
@@ -288,9 +288,9 @@ namespace Stryker.Core.Initialisation
             {
                 nullableOptions = NullableContextOptions.Enable;
             }
-            
+
             var result = new CSharpCompilationOptions(kind)
-                .WithNullableContextOptions((NullableContextOptions) nullableOptions)
+                .WithNullableContextOptions((NullableContextOptions)nullableOptions)
                 .WithAllowUnsafe(GetPropertyOrDefault("AllowUnsafeBlocks", true))
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)
