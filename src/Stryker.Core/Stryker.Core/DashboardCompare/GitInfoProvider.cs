@@ -61,17 +61,16 @@ namespace Stryker.Core.DashboardCompare
         {
             try
             {
+                var currentCommit = this.Repository.Head.Tip;
                 var branchName = gitSourceKind == GitSourceKinds.FriendlyBranchName ? _options.GitSource : GetFriendlyName(_options.GitSource);
-
+                
                 _logger.LogDebug($"Creating branch ${branchName} with committish origin/{branchName}");
                 var branch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
                 _logger.LogDebug($"Checking out branch ${branchName}");
                 Commands.Checkout(Repository, branch);
 
-                _logger.LogDebug($"Creating branch ${_options.ProjectVersion} with committish origin/{_options.ProjectVersion}");
-                var currentBranch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
-                _logger.LogDebug($"Checking out branch ${_options.ProjectVersion}");
-                Commands.Checkout(Repository, currentBranch);
+                _logger.LogDebug($"Checking out cached commit ${currentCommit.Sha}");
+                Commands.Checkout(Repository, currentCommit);
             }
             catch (Exception e)
             {
