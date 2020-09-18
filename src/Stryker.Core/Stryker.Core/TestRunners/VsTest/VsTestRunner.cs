@@ -394,14 +394,6 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.TargetFramework;
-            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkVersion;
-
-            string targetFrameworkVersionString = targetFramework switch
-            {
-                Framework.DotNet => $".NETCoreApp,Version=v{targetFrameworkVersion}",
-                Framework.DotNetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
-                _ => $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}",
-            };
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, CodeInjection.HelperNamespace) : "";
