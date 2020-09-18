@@ -399,7 +399,7 @@ namespace Stryker.Core.TestRunners.VsTest
             string targetFrameworkVersionString = targetFramework switch
             {
                 Framework.DotNet => $".NETCoreApp,Version=v{targetFrameworkVersion}",
-                Framework.DotNetNetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
+                Framework.DotNetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
                 _ => $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}",
             };
 

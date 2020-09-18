@@ -38,7 +38,7 @@ namespace Stryker.Core.Initialisation
     {
         DotNetClassic,
         DotNet,
-        DotNetNetStandard,
+        DotNetStandard,
         Unknown
     }
 
@@ -166,7 +166,7 @@ namespace Stryker.Core.Initialisation
                     case Framework.DotNet when version.Major < 2:
                         compat_noAppDomain = true;
                         break;
-                    case Framework.DotNetNetStandard when version.Major < 2:
+                    case Framework.DotNetStandard when version.Major < 2:
                         compat_noAppDomain = true;
                         compat_noPipe = true;
                         break;
@@ -210,46 +210,56 @@ namespace Stryker.Core.Initialisation
         /// A tuple of <c>Framework</c> and <c>Version</c> which together form the target framework and framework version of the project.
         /// </returns>
         /// <example>
-        /// <c>(Framework.NetCore, 3.0)</c>
+        /// <c>(Framework.DotNet, 3.0)</c>
         /// </example>
         public (Framework framework, Version version) TargetFrameworkAndVersion
         {
             get
             {
-                var label = new Dictionary<string, Framework>
-                {
-                    ["netcoreapp"] = Framework.DotNet,
-                    ["netstandard"] = Framework.DotNetNetStandard,
-                    ["net"] = Framework.DotNetClassic
-                };
                 try
                 {
-                    var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
-                    if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
-                    {
-                        var version = analysis.Groups["version"].Value;
-                        if (!version.Contains('.'))
-                        {
-                            if (version.Length == 2)
-                            // we have a aggregated version id
-                            {
-                                version = $"{version[0]}.{version.Substring(1)}";
-                            }
-                            else if (version.Length == 3)
-                            {
-                                version = $"{version[0]}.{version[1]}.{version[2]}";
-                            }
-                        }
-                        return (label[analysis.Groups["kind"].Value], new Version(version));
-                    }
-
-                    return (Framework.Unknown, new Version());
+                    return (ParseTargetFramework(), ParseTargetFrameworkVersion());
                 }
                 catch (ArgumentException)
                 {
                     throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
                 }
             }
+        }
+
+        private Framework ParseTargetFramework()
+        {
+            return TargetFrameworkVersionString switch
+            {
+                string framework when framework.StartsWith("netcoreapp") => Framework.DotNet,
+                string framework when framework.StartsWith("netstandard") => Framework.DotNetStandard,
+                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) >= 5 => Framework.DotNet,
+                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) <= 4 => Framework.DotNetClassic,
+                _ => Framework.Unknown
+            };
+        }
+
+        private Version ParseTargetFrameworkVersion()
+        {
+            var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<version>[\\d\\.]+)");
+            if (analysis.Success)
+            {
+                var version = analysis.Groups["version"].Value;
+                if (!version.Contains('.'))
+                {
+                    if (version.Length == 2)
+                    // we have a aggregated version id
+                    {
+                        version = $"{version[0]}.{version.Substring(1)}";
+                    }
+                    else if (version.Length == 3)
+                    {
+                        version = $"{version[0]}.{version[1]}.{version[2]}";
+                    }
+                }
+                return new Version(version);
+            }
+            return new Version();
         }
 
         public string GetPropertyOrDefault(string name, string defaultValue = null)
