@@ -1,7 +1,8 @@
-﻿using Microsoft.Build.ObjectModelRemoting;
+﻿using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Helpers
 {
@@ -30,6 +31,15 @@ namespace Stryker.Core.Helpers
             }
 
             return false;
+        }
+
+        public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
+        {
+            if (!original.Contains(mutation.OriginalNode))
+            {
+                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' as id does not contains the reference node.");
+            }
+            return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }
     }
 }

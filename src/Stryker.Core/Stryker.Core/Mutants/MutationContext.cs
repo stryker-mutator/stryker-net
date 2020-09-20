@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants
 {
@@ -27,33 +29,53 @@ namespace Stryker.Core.Mutants
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
+        public bool HasBlockLevelMutant => _blockLevelControlledMutations.Count > 0;
+
         private SyntaxNode Mutate(SyntaxNode subNode)
         {
             if (!(subNode is StatementSyntax statement))
             {
                 return _mainOrchestrator.Mutate(subNode, this);
             }
+
             // we are about to mutate a statement
             // create statement local context
             var context = Clone();
             var mutations = _mainOrchestrator.Mutate(subNode, context) as StatementSyntax;
-            if (subNode is BlockSyntax blockSyntax)
+            // inject any mutant that must be placed at the statement level
+            if (subNode is BlockSyntax)
             {
-                // if this was a block, inject all block level controlled mutations
-                if (context._blockLevelControlledMutations.Count == 0)
-                {
-                    return mutations;
-                }
-                var newBlock =
-                    SyntaxFactory.Block(_mainOrchestrator.PlaceMutantWithinIfControls(blockSyntax, mutations, context._blockLevelControlledMutations));
-                return newBlock;
+                return InjectBlockLevelMutations(mutations, statement, context);
             }
-            // simple statement, inject all statement level controlled mutations and aggregates block level mutations.
+            mutations = _mainOrchestrator.PlaceMutationsWithinIfControls(statement, mutations, context._statementLevelControlledMutations);
             _blockLevelControlledMutations.AddRange(context._blockLevelControlledMutations);
-            mutations = _mainOrchestrator.PlaceMutantWithinIfControls(statement, mutations,
-                context._statementLevelControlledMutations);
             return mutations;
+        }
 
+        public SyntaxNode InjectBlockLevelMutations(StatementSyntax mutatedBlock, StatementSyntax originalBlock, MutationContext context)
+        {
+            mutatedBlock =
+                _mainOrchestrator.PlaceMutationsWithinIfControls( mutatedBlock,
+                    context._statementLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation))));
+            // if this was a block, inject all block level controlled mutations
+            if (context._blockLevelControlledMutations.Count == 0)
+            {
+                return mutatedBlock;
+            }
+
+            var newBlock =
+                SyntaxFactory.Block(_mainOrchestrator.PlaceMutationsWithinIfControls(mutatedBlock,
+                    context._blockLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation)))));
+            return newBlock;
+        }
+
+        public SyntaxNode InjectBlockLevelMutations(StatementSyntax mutatedBlock, ExpressionSyntax originalBlock, MutationContext context)
+        {
+            mutatedBlock =
+                _mainOrchestrator.PlaceMutationsWithinIfControls( mutatedBlock,
+                    context._statementLevelControlledMutations.Union(context._blockLevelControlledMutations).
+                        Select( m => (m.Id, (StatementSyntax) SyntaxFactory.ReturnStatement(originalBlock.InjectMutation(m.Mutation)))));
+            return SyntaxFactory.Block(mutatedBlock);
         }
 
         public SyntaxNode MutateNodeAndChildren(SyntaxNode node, bool statementLevelControlled = false)
@@ -67,7 +89,7 @@ namespace Stryker.Core.Mutants
                     {
                         // the mutations can be controlled by conditional operator
                         mutatedNode = node.TrackNodes(expression.ChildNodes());
-                        mutatedNode = _mainOrchestrator.PlaceMutantWithinConditionalControls(expression, (ExpressionSyntax) mutatedNode, 
+                        mutatedNode = _mainOrchestrator.PlaceMutationsWithinConditionalControls(expression, (ExpressionSyntax) mutatedNode, 
                             _mainOrchestrator.GenerateMutantsForNode(node, this));
                     }
                     else

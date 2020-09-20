@@ -162,16 +162,21 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        internal StatementSyntax PlaceMutantWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
+        internal StatementSyntax PlaceMutationsWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
         {
-            var syntax = node;
-            return mutationsControlledByIfs.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(syntax, mutant), mutant.Id));
+            var original = node;
+            return PlaceMutationsWithinIfControls(mutated,
+                mutationsControlledByIfs.Select(m => (m.Id, InjectMutation(original, m))));
         }
 
-        internal ExpressionSyntax PlaceMutantWithinConditionalControls(in ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
+        internal StatementSyntax PlaceMutationsWithinIfControls(in StatementSyntax targetNode, IEnumerable<(int Id, StatementSyntax Node)> mutations)
         {
-            var syntax = node;
-            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(syntax, mutant), mutant.Id));
+            return mutations.Aggregate(targetNode, (current, mutation) => MutantPlacer.PlaceWithIfStatement(current, mutation.Node, mutation.Id));
+        }
+
+        internal ExpressionSyntax PlaceMutationsWithinConditionalControls(ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
+        {
+            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(node, mutant), mutant.Id));
         }
 
         // inject the mutation within the control structure

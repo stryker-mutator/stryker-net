@@ -6,20 +6,25 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class MethodDeclarationOrchestrator : NodeSpecificOrchestrator<MethodDeclarationSyntax>
+    internal class MethodDeclarationOrchestrator : NodeSpecificOrchestrator<BaseMethodDeclarationSyntax>
     {
-        protected override bool CanHandle(MethodDeclarationSyntax t)
-        {
-            return t.Body != null;
-        }
-
-        internal override SyntaxNode OrchestrateMutation(MethodDeclarationSyntax node, MutationContext context)
+        internal override SyntaxNode OrchestrateMutation(BaseMethodDeclarationSyntax node, MutationContext context)
         {
             var mutatedNode = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
 
             if (mutatedNode.Body == null)
             {
-                return mutatedNode;
+                if (!context.HasBlockLevelMutant)
+                {
+                    return mutatedNode;
+                }
+
+                // we convert the mutated node to the body form
+                mutatedNode = MutantPlacer.ConvertExpressionToBody(mutatedNode);
+
+                // we convert the original node to the body form
+                mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body, 
+                    context.InjectBlockLevelMutations(mutatedNode.Body, node.ExpressionBody.Expression, context));
             }
 
             // If method return type is void skip the node
@@ -28,7 +33,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return mutatedNode;
             }
 
-            if (node.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement), false))
+            if (mutatedNode.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement), false))
             {
                 // not need to add yield return at the end of an enumeration method
                 return mutatedNode;

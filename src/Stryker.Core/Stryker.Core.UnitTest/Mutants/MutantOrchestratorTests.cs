@@ -403,6 +403,20 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
         }
 
         [Fact]
+        public void Test()
+        {
+            string source = @"public int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+            string expected = @"public void SomeMethod() {
+if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
+{ }
+}else{for (var i = 0; ; i++)
+{ }
+}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateInlineArrowFunction()
         {
             string source = @"public void SomeMethod() {
