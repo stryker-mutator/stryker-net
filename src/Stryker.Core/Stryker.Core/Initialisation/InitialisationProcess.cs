@@ -52,7 +52,7 @@ namespace Stryker.Core.Initialisation
                     projectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetFramework == Framework.NetClassic,
+                    testProjects[i].TargetFramework == Framework.DotNetClassic,
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath);
             }
