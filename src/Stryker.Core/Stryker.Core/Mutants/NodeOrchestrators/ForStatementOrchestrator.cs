@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class ForStatementOrchestrator: NodeSpecificOrchestrator<ForStatementSyntax>
     {
-        internal override SyntaxNode OrchestrateMutation(ForStatementSyntax forStatement, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(ForStatementSyntax forStatement, MutationContext context)
         {
             // for needs special treatments for its incrementer
             var originalFor = forStatement;
@@ -27,6 +27,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             forStatement = forStatement.ReplaceNode(forStatement.Statement, context.MutateNodeAndChildren(forStatement.Statement));
             // and now we replace it
             return forStatement;
+        }
+
+        public ForStatementOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

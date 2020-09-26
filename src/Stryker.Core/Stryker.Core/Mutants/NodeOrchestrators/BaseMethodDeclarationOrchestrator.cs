@@ -6,11 +6,11 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class MethodDeclarationOrchestrator : NodeSpecificOrchestrator<BaseMethodDeclarationSyntax>
+    internal class BaseMethodDeclarationOrchestrator : NodeSpecificOrchestrator<BaseMethodDeclarationSyntax>
     {
-        internal override SyntaxNode OrchestrateMutation(BaseMethodDeclarationSyntax node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(BaseMethodDeclarationSyntax node, MutationContext context)
         {
-            var mutatedNode = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
+            var mutatedNode = (BaseMethodDeclarationSyntax) context.MutateNodeAndChildren(node);
 
             if (mutatedNode.Body == null)
             {
@@ -23,12 +23,12 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 mutatedNode = MutantPlacer.ConvertExpressionToBody(mutatedNode);
 
                 // we convert the original node to the body form
-                mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body, 
-                    context.InjectBlockLevelMutations(mutatedNode.Body, node.ExpressionBody.Expression, context));
+                mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body!, 
+                    context.InjectBlockLevelMutations(mutatedNode.Body, node.ExpressionBody!.Expression, context));
             }
 
             // If method return type is void skip the node
-            if (mutatedNode.IsVoidReturningMethod())
+            if (!mutatedNode.NeedsReturn())
             {
                 return mutatedNode;
             }
@@ -38,12 +38,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 // not need to add yield return at the end of an enumeration method
                 return mutatedNode;
             }
-            if (mutatedNode.Body.Statements.Last().Kind() == SyntaxKind.ReturnStatement)
+
+            if (mutatedNode.Body!.Statements.Last().Kind() == SyntaxKind.ReturnStatement)
             {
                 return mutatedNode;
             }
 
-            var returnType = mutatedNode.ReturnType;
+            var returnType = mutatedNode.ReturnType();
 
             // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
             var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
@@ -61,12 +62,16 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 }
             }
 
-            var newBody = mutatedNode.Body.AddStatements(
+            var newBody = mutatedNode.Body!.AddStatements(
                 MutantPlacer.AnnotateHelper(
                     SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType).WithLeadingTrivia(SyntaxFactory.Space))));
             mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body, newBody);
 
             return mutatedNode;
+        }
+
+        public BaseMethodDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

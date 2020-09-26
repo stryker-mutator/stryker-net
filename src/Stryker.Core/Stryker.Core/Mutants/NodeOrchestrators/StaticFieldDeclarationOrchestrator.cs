@@ -7,14 +7,23 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class StaticFieldDeclarationOrchestrator: NodeSpecificOrchestrator<FieldDeclarationSyntax>
     {
+        protected override MutationContext PrepareContext(FieldDeclarationSyntax node, MutationContext context)
+        {
+            return context.EnterStatic();
+        }
+
         protected override bool CanHandle(FieldDeclarationSyntax t)
         {
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }
 
-        internal override SyntaxNode OrchestrateMutation(FieldDeclarationSyntax node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(FieldDeclarationSyntax node, MutationContext context)
         {
-            return context.EnterStatic().MutateNodeAndChildren(node);
+            return context.MutateNodeAndChildren(node);
+        }
+
+        public StaticFieldDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

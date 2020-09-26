@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Helpers;
 using Stryker.Core.Instrumentation;
 
 namespace Stryker.Core.Mutants
@@ -23,6 +24,8 @@ namespace Stryker.Core.Mutants
         private static readonly IfInstrumentationEngine IfEngine;
         private static readonly ConditionalInstrumentationEngine ConditionalEngine;
         private static readonly ExpressionToBodyEngine ExpressionEngine;
+        private static ExpressionSyntax _binaryExpression;
+        private static SyntaxNode _placeHolderNode;
         
         private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
@@ -57,10 +60,14 @@ namespace Stryker.Core.Mutants
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => StaticEngine.PlaceStaticContextMarker(block).WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
-        public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
-            IfEngine.InjectIf(GetBinaryExpression(mutantId), original, mutated)
+        public static StatementSyntax PlaceIfControlledMutations(StatementSyntax original,
+            IEnumerable<(int mutantId, StatementSyntax mutated)> mutations)
+        {
+            return mutations.Aggregate(original, (syntaxNode, mutation) => 
+                IfEngine.InjectIf(GetBinaryExpression(mutation.mutantId), syntaxNode, mutation.mutated)
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutantId.ToString()));
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.mutantId.ToString())));
+        }
 
         public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
         {
@@ -73,23 +80,35 @@ namespace Stryker.Core.Mutants
             throw new InvalidOperationException($"Unable to remove any injection from this node: {nodeToRemove}");
         }
 
-
-        public static ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax original,
-            ExpressionSyntax mutated, int mutantId) =>
-            ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutantId), original, mutated)
+        public static ExpressionSyntax PlaceExpressionControlledMutations( 
+            ExpressionSyntax modified, 
+            IEnumerable<(int id, ExpressionSyntax mutation)> mutations)
+        {
+            return mutations.Aggregate(modified, (current, mutation) => 
+                ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutantId.ToString()));
-
+                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.id.ToString())));
+        }
+        
         // us this method to annotate injected helper code. I.e. any injected code that is NOT a mutation but provides some infrastructure for the mutant to run
         public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
-        /// Example for mutantId 1: Stryker.Helper.ActiveMutation == 1
+        /// Example for mutationId 1: Stryker.Helper.ActiveMutation == 1
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
-        private static ExpressionSyntax GetBinaryExpression(int mutantId) => 
-            SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression.Replace("ID", mutantId.ToString()));
+        private static ExpressionSyntax GetBinaryExpression(int mutantId)
+        {
+            if (_binaryExpression == null)
+            {
+                _binaryExpression = SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression);
+                _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax identifier && identifier.Identifier.Text == "ID");
+            }
+
+            return _binaryExpression.ReplaceNode(_placeHolderNode,
+                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
+        }
     }
 }

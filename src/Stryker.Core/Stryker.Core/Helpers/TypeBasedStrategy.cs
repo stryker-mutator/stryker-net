@@ -33,23 +33,27 @@ namespace Stryker.Core.Helpers
 
         private THandler FindHandler(T item, Type type)
         {
-            if (item == null || type == null)
+            for (;;)
             {
-                return null;
-            }
-
-            if (_handlerMapping.TryGetValue(type, out var handlers))
-            {
-                foreach (var typeHandler in handlers)
+                if (item == null || type == null)
                 {
-                    if (typeHandler.CanHandle(item))
+                    return null;
+                }
+
+                if (_handlerMapping.TryGetValue(type, out var handlers))
+                {
+                    foreach (var typeHandler in handlers)
                     {
-                        return typeHandler;
+                        if (typeHandler.CanHandle(item))
+                        {
+                            return typeHandler;
+                        }
                     }
                 }
+
+                // recurse
+                type = type.BaseType;
             }
-            // recurse
-            return FindHandler(item, type.BaseType);
         }
     }
 }

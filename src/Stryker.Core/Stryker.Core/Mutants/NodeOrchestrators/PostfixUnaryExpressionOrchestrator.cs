@@ -10,10 +10,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.Parent is ExpressionStatementSyntax;
         }
 
-        internal override SyntaxNode OrchestrateMutation(PostfixUnaryExpressionSyntax node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(PostfixUnaryExpressionSyntax node, MutationContext context)
         {
             // incrementer/decrementer as statement must be mutated as statements
             return context.MutateNodeAndChildren(node, true);
+        }
+
+        public PostfixUnaryExpressionOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

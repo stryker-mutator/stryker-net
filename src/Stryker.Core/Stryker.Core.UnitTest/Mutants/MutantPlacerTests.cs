@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-            var result = MutantPlacer.PlaceWithIfStatement(originalNode, mutatedNode, id);
+            var result = MutantPlacer.PlaceIfControlledMutations(originalNode, new[] {(id, (StatementSyntax) mutatedNode)});
 
             result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive("+id+@"))
             {
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = MutantPlacer.PlaceWithConditionalExpression(originalNode, mutatedNode, id);
+            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, new[]{(id, (ExpressionSyntax) mutatedNode)});
 
             result.ToFullString()
                 .ShouldBeSemantically(@$"({CodeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");

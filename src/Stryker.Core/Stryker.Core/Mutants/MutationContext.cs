@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,8 +13,8 @@ namespace Stryker.Core.Mutants
     internal class MutationContext
     {
         private readonly MutantOrchestrator _mainOrchestrator;
-        private readonly List<Mutant> _blockLevelControlledMutations = new List<Mutant>();
-        private readonly List<Mutant> _statementLevelControlledMutations = new List<Mutant>();
+        public readonly List<Mutant> BlockLevelControlledMutations = new List<Mutant>();
+        public readonly List<Mutant> StatementLevelControlledMutations = new List<Mutant>();
 
         public MutationContext(MutantOrchestrator mutantOrchestrator)
         {
@@ -29,7 +28,7 @@ namespace Stryker.Core.Mutants
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
-        public bool HasBlockLevelMutant => _blockLevelControlledMutations.Count > 0;
+        public bool HasBlockLevelMutant => BlockLevelControlledMutations.Count > 0;
 
         private SyntaxNode Mutate(SyntaxNode subNode)
         {
@@ -47,82 +46,73 @@ namespace Stryker.Core.Mutants
             {
                 return InjectBlockLevelMutations(mutations, statement, context);
             }
-            mutations = _mainOrchestrator.PlaceMutationsWithinIfControls(statement, mutations, context._statementLevelControlledMutations);
-            _blockLevelControlledMutations.AddRange(context._blockLevelControlledMutations);
+            mutations = MutantPlacer.PlaceIfControlledMutations(mutations, context.StatementLevelControlledMutations.Select( m=>(m.Id, statement.InjectMutation(m.Mutation))));
+            BlockLevelControlledMutations.AddRange(context.BlockLevelControlledMutations);
             return mutations;
         }
 
         public SyntaxNode InjectBlockLevelMutations(StatementSyntax mutatedBlock, StatementSyntax originalBlock, MutationContext context)
         {
             mutatedBlock =
-                _mainOrchestrator.PlaceMutationsWithinIfControls( mutatedBlock,
-                    context._statementLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation))));
+                MutantPlacer.PlaceIfControlledMutations( mutatedBlock,
+                    context.StatementLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation))));
             // if this was a block, inject all block level controlled mutations
-            if (context._blockLevelControlledMutations.Count == 0)
+            if (context.BlockLevelControlledMutations.Count == 0)
             {
                 return mutatedBlock;
             }
 
             var newBlock =
-                SyntaxFactory.Block(_mainOrchestrator.PlaceMutationsWithinIfControls(mutatedBlock,
-                    context._blockLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation)))));
+                SyntaxFactory.Block(MutantPlacer.PlaceIfControlledMutations(mutatedBlock,
+                    context.BlockLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation)))));
             return newBlock;
         }
 
         public SyntaxNode InjectBlockLevelMutations(StatementSyntax mutatedBlock, ExpressionSyntax originalBlock, MutationContext context)
         {
             mutatedBlock =
-                _mainOrchestrator.PlaceMutationsWithinIfControls( mutatedBlock,
-                    context._statementLevelControlledMutations.Union(context._blockLevelControlledMutations).
+                MutantPlacer.PlaceIfControlledMutations( mutatedBlock,
+                    context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select( m => (m.Id, (StatementSyntax) SyntaxFactory.ReturnStatement(originalBlock.InjectMutation(m.Mutation)))));
             return SyntaxFactory.Block(mutatedBlock);
         }
 
         public SyntaxNode MutateNodeAndChildren(SyntaxNode node, bool statementLevelControlled = false)
         {
-            SyntaxNode mutatedNode;
+            var mutations = _mainOrchestrator.GenerateMutationsForNode(node, this);
+
             if (node is ExpressionSyntax expression)
             {
                 if (!expression.ContainsDeclarations())
                 {
-                    if (!statementLevelControlled)
+                    if (statementLevelControlled)
                     {
-                        // the mutations can be controlled by conditional operator
-                        mutatedNode = node.TrackNodes(expression.ChildNodes());
-                        mutatedNode = _mainOrchestrator.PlaceMutationsWithinConditionalControls(expression, (ExpressionSyntax) mutatedNode, 
-                            _mainOrchestrator.GenerateMutantsForNode(node, this));
-                    }
-                    else
-                    {
-                        _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
-                        mutatedNode = node.TrackNodes(node.ChildNodes());
+                        StatementLevelControlledMutations.AddRange(mutations);
+                        mutations = Enumerable.Empty<Mutant>();
                     }
                 }
                 else
                 {
-                    _blockLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
-                    mutatedNode = node.TrackNodes(node.ChildNodes());
+                    BlockLevelControlledMutations.AddRange(mutations);
+                    mutations = Enumerable.Empty<Mutant>();
                 }
             }
             else
             {
-                _statementLevelControlledMutations.AddRange(_mainOrchestrator.GenerateMutantsForNode(node, this));
-                mutatedNode = node.TrackNodes(node.ChildNodes());
+                StatementLevelControlledMutations.AddRange(mutations);
+                mutations = Enumerable.Empty<Mutant>();
             }
 
-            var mutatedNode1 = mutatedNode;
-            foreach (var child in node.ChildNodes().ToList())
+
+            var mutatedNode = node.ReplaceNodes(node.ChildNodes(), (original, mutated) => Mutate(original));
+            if (node is ExpressionSyntax mutatedExpression)
             {
-                var mutatedChild = Mutate(child);
-                if (SyntaxFactory.AreEquivalent(child, mutatedChild))
-                {
-                    continue;
-                }
-
-                mutatedNode1 = mutatedNode1.ReplaceNode(mutatedNode1.GetCurrentNode(child), mutatedChild);
+                mutatedNode = MutantPlacer.PlaceExpressionControlledMutations(
+                    (ExpressionSyntax) mutatedNode,
+                    mutations.Select(m=> (m.Id, mutatedExpression.InjectMutation(m.Mutation))));
             }
 
-            return mutatedNode1;
+            return mutatedNode;
         }
 
         public MutationContext EnterStatic()

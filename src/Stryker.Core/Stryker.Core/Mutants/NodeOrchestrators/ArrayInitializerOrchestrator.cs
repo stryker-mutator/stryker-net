@@ -11,9 +11,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return (t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0);
         }
 
-        internal override SyntaxNode OrchestrateMutation(InitializerExpressionSyntax node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(InitializerExpressionSyntax node, MutationContext context)
         {
             return context.MutateNodeAndChildren(node, true);
+        }
+
+        public ArrayInitializerOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

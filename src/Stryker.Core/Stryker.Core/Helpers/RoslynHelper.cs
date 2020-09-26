@@ -22,22 +22,23 @@ namespace Stryker.Core.Helpers
             };
         }
 
-        public static bool IsVoidReturningMethod(this MethodDeclarationSyntax baseMethod)
+        public static bool NeedsReturn(this BaseMethodDeclarationSyntax baseMethod)
         {
-            if (baseMethod.ReturnType is PredefinedTypeSyntax predefinedType &&
-                predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword))
+            return baseMethod switch
             {
-                return true;
-            }
-
-            return false;
+                MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
+                                                    predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
+                OperatorDeclarationSyntax _ => true,
+                ConversionOperatorDeclarationSyntax _=> true,
+                _ => false
+            };
         }
 
         public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
             {
-                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' as id does not contains the reference node.");
+                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' as it does not contains the reference node.");
             }
             return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }

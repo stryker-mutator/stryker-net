@@ -13,11 +13,21 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }
 
-        internal override SyntaxNode OrchestrateMutation(ConstructorDeclarationSyntax node, MutationContext context)
+        protected override MutationContext PrepareContext(ConstructorDeclarationSyntax node, MutationContext context)
         {
             if (!context.MustInjectCoverageLogic)
             {
-                return context.EnterStatic().MutateNodeAndChildren(node);
+                return context.EnterStatic();
+            }
+
+            return context;
+        }
+
+        protected override SyntaxNode OrchestrateMutation(ConstructorDeclarationSyntax node, MutationContext context)
+        {
+            if (!context.MustInjectCoverageLogic)
+            {
+                return context.MutateNodeAndChildren(node);
             }
             var trackedConstructor = node.TrackNodes((SyntaxNode) node.Body ?? node.ExpressionBody);
             if (node.ExpressionBody != null)
@@ -33,6 +43,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                     trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(node.Body), markedBlock);
             }
             return trackedConstructor;
+        }
+
+        public StaticConstructorOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

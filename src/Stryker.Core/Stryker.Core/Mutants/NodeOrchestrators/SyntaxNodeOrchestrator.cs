@@ -4,9 +4,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class SyntaxNodeOrchestrator: NodeSpecificOrchestrator<SyntaxNode>
     {
-        internal override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
         {
-            return context.MutateNodeAndChildren(node);
+//            context.StatementLevelControlledMutations.AddRange(MutantOrchestrator.GenerateMutationsForNode(node, context));
+            var mutatedNode = context.MutateNodeAndChildren(node);
+            return mutatedNode;
+        }
+
+        public SyntaxNodeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

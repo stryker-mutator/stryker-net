@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrators;
@@ -48,7 +46,7 @@ namespace Stryker.Core.Mutants
         public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
         {
             _options = options;
-            Mutators = mutators ?? new List<IMutator>()
+            Mutators = mutators ?? new List<IMutator>
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
@@ -72,16 +70,16 @@ namespace Stryker.Core.Mutants
 
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
-                new ForStatementOrchestrator(),
-                new AssignmentStatementOrchestrator(),
-                new PostfixUnaryExpressionOrchestrator(),
-                new StaticFieldDeclarationOrchestrator(),
-                new StaticConstructorOrchestrator(),
-                new StaticPropertyOrchestrator(),
-                new ArrayInitializerOrchestrator(),
-                new MethodDeclarationOrchestrator(),
-                new ConstLocalDeclarationOrchestrator(),
-                new SyntaxNodeOrchestrator()
+                new ForStatementOrchestrator(this),
+                new AssignmentStatementOrchestrator(this),
+                new PostfixUnaryExpressionOrchestrator(this),
+                new StaticFieldDeclarationOrchestrator(this),
+                new StaticConstructorOrchestrator(this),
+                new StaticPropertyOrchestrator(this),
+                new ArrayInitializerOrchestrator(this),
+                new BaseMethodDeclarationOrchestrator(this),
+                new ConstLocalDeclarationOrchestrator(this),
+                new SyntaxNodeOrchestrator(this)
             });
         }
 
@@ -120,8 +118,9 @@ namespace Stryker.Core.Mutants
             return nodeHandler.Mutate(currentNode, context);
         }
 
-        internal IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode current, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
+            var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)
             {
                 foreach (var mutation in mutator.Mutate(current))
@@ -157,32 +156,11 @@ namespace Stryker.Core.Mutants
 
                     Mutants.Add(newMutant);
                     MutantCount++;
-                    yield return newMutant;
+                    mutations.Add(newMutant);
                 }
             }
-        }
 
-        internal StatementSyntax PlaceMutationsWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
-        {
-            var original = node;
-            return PlaceMutationsWithinIfControls(mutated,
-                mutationsControlledByIfs.Select(m => (m.Id, InjectMutation(original, m))));
-        }
-
-        internal StatementSyntax PlaceMutationsWithinIfControls(in StatementSyntax targetNode, IEnumerable<(int Id, StatementSyntax Node)> mutations)
-        {
-            return mutations.Aggregate(targetNode, (current, mutation) => MutantPlacer.PlaceWithIfStatement(current, mutation.Node, mutation.Id));
-        }
-
-        internal ExpressionSyntax PlaceMutationsWithinConditionalControls(ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
-        {
-            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(node, mutant), mutant.Id));
-        }
-
-        // inject the mutation within the control structure
-        private static T InjectMutation<T>(in T node, IReadOnlyMutant mutant) where T : SyntaxNode
-        {
-            return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
+            return mutations;
         }
     }
 }

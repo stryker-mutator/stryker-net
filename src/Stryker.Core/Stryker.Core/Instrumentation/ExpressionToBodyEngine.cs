@@ -19,7 +19,7 @@ namespace Stryker.Core.Instrumentation
             StatementSyntax statementLine;
             switch (method)
             {
-                case MethodDeclarationSyntax actualMethod when !actualMethod.IsVoidReturningMethod():
+                case MethodDeclarationSyntax actualMethod when actualMethod.NeedsReturn():
                     statementLine = SyntaxFactory.ReturnStatement(method.ExpressionBody.Expression.WithLeadingTrivia(SyntaxFactory.Space));
                     break;
 

@@ -10,10 +10,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.IsConst;
         }
 
-        internal override SyntaxNode OrchestrateMutation(LocalDeclarationStatementSyntax node, MutationContext context)
+        protected override SyntaxNode OrchestrateMutation(LocalDeclarationStatementSyntax node, MutationContext context)
         {
             // don't mutate const declaration statement
             return node;
+        }
+
+        public ConstLocalDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }
