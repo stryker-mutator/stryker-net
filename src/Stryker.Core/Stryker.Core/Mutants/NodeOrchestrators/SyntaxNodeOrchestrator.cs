@@ -6,7 +6,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         protected override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
         {
-//            context.StatementLevelControlledMutations.AddRange(MutantOrchestrator.GenerateMutationsForNode(node, context));
             var mutatedNode = context.MutateNodeAndChildren(node);
             return mutatedNode;
         }

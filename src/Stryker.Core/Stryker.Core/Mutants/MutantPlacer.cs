@@ -58,7 +58,9 @@ namespace Stryker.Core.Mutants
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
         }
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => StaticEngine.PlaceStaticContextMarker(block).WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
+            StaticEngine.PlaceStaticContextMarker(block).
+            WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static StatementSyntax PlaceIfControlledMutations(StatementSyntax original,
             IEnumerable<(int mutantId, StatementSyntax mutated)> mutations)

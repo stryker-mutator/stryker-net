@@ -18,14 +18,17 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         public bool CanHandle(SyntaxNode t) => CanHandle(t as T);
 
-        protected abstract SyntaxNode OrchestrateMutation(T node, MutationContext context);
+        protected virtual SyntaxNode OrchestrateMutation(T node, MutationContext context)
+        {
+            return context.MutateNodeAndChildren(node);
+        }
 
         protected virtual MutationContext PrepareContext(T node, MutationContext context)
         {
             return context;
         }
 
-        public SyntaxNode Mutate(SyntaxNode node, MutationContext context)
+        public virtual SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {
             return OrchestrateMutation(node as T, PrepareContext(node as T, context));
         }

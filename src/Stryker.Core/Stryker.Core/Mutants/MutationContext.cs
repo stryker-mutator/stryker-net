@@ -30,41 +30,20 @@ namespace Stryker.Core.Mutants
 
         public bool HasBlockLevelMutant => BlockLevelControlledMutations.Count > 0;
 
-        private SyntaxNode Mutate(SyntaxNode subNode)
+        public SyntaxNode InjectBlockLevelMutations(StatementSyntax inBlock, StatementSyntax originalBlock)
         {
-            if (!(subNode is StatementSyntax statement))
-            {
-                return _mainOrchestrator.Mutate(subNode, this);
-            }
-
-            // we are about to mutate a statement
-            // create statement local context
-            var context = Clone();
-            var mutations = _mainOrchestrator.Mutate(subNode, context) as StatementSyntax;
-            // inject any mutant that must be placed at the statement level
-            if (subNode is BlockSyntax)
-            {
-                return InjectBlockLevelMutations(mutations, statement, context);
-            }
-            mutations = MutantPlacer.PlaceIfControlledMutations(mutations, context.StatementLevelControlledMutations.Select( m=>(m.Id, statement.InjectMutation(m.Mutation))));
-            BlockLevelControlledMutations.AddRange(context.BlockLevelControlledMutations);
-            return mutations;
-        }
-
-        public SyntaxNode InjectBlockLevelMutations(StatementSyntax mutatedBlock, StatementSyntax originalBlock, MutationContext context)
-        {
-            mutatedBlock =
-                MutantPlacer.PlaceIfControlledMutations( mutatedBlock,
-                    context.StatementLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation))));
+            var mutatedBlock =
+                MutantPlacer.PlaceIfControlledMutations(inBlock,
+                    this.StatementLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation))));
             // if this was a block, inject all block level controlled mutations
-            if (context.BlockLevelControlledMutations.Count == 0)
+            if (this.BlockLevelControlledMutations.Count == 0)
             {
-                return mutatedBlock;
+                return inBlock==mutatedBlock ? inBlock : SyntaxFactory.Block(mutatedBlock);
             }
 
             var newBlock =
                 SyntaxFactory.Block(MutantPlacer.PlaceIfControlledMutations(mutatedBlock,
-                    context.BlockLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation)))));
+                    this.BlockLevelControlledMutations.Select( m => (m.Id, originalBlock.InjectMutation(m.Mutation)))));
             return newBlock;
         }
 
@@ -103,8 +82,10 @@ namespace Stryker.Core.Mutants
                 mutations = Enumerable.Empty<Mutant>();
             }
 
-
-            var mutatedNode = node.ReplaceNodes(node.ChildNodes(), (original, mutated) => Mutate(original));
+            var mutatedNode = node.ReplaceNodes(node.ChildNodes(), (original, mutated) =>
+            {
+                return _mainOrchestrator.Mutate(original, this);
+            });
             if (node is ExpressionSyntax mutatedExpression)
             {
                 mutatedNode = MutantPlacer.PlaceExpressionControlledMutations(
@@ -120,7 +101,7 @@ namespace Stryker.Core.Mutants
             return new MutationContext(_mainOrchestrator) { InStaticValue =  true};
         }
 
-        private MutationContext Clone()
+        public MutationContext Clone()
         {
             return new MutationContext(_mainOrchestrator){InStaticValue = InStaticValue};
         }
