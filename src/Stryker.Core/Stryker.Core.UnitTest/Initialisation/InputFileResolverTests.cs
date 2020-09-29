@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -11,10 +13,6 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
-using System.Xml.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -64,11 +62,16 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1", Framework.NetCore, 2, 1)]
-        [InlineData("netstandard1.6", Framework.NetStandard, 1, 6)]
-        [InlineData("mono4.6", Framework.Unknown, 0, 0)]
-        [InlineData("net4.5", Framework.NetClassic, 4, 5)]
-        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor)
+        [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1, null)]
+        [InlineData("netstandard1.6", Framework.DotNetStandard, 1, 6, null)]
+        [InlineData("mono4.6", Framework.Unknown, 4, 6, null)]
+        [InlineData("net4.5", Framework.DotNetClassic, 4, 5, null)]
+        [InlineData("net4.5.1", Framework.DotNetClassic, 4, 5, 1)]
+        [InlineData("net45", Framework.DotNetClassic, 4, 5, null)]
+        [InlineData("net452", Framework.DotNetClassic, 4, 5, 2)]
+        [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
+        [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
+        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework fmk, int major, int minor, int? patch)
         {
             var test = new ProjectAnalyzerResult(null, null)
             {
@@ -78,7 +81,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                 References = new[] { "" }
             };
 
-            test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor)));
+            if (patch.HasValue)
+            {
+                test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor, patch.Value)));
+            }
+            else
+            {
+                test.TargetFrameworkAndVersion.ShouldBe((fmk, new Version(major, minor)));
+            }
         }
 
         [Fact]
@@ -253,16 +263,16 @@ using System.Reflection;
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
-            var mutatedFile = result.ProjectContents.CompilationSyntaxTrees.First( s => s!=null && s.FilePath.Contains("AssemblyInfo.cs"));
+            var mutatedFile = result.ProjectContents.CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
 
-            var node=  ((CompilationUnitSyntax) mutatedFile.GetRoot()).AttributeLists
+            var node = ((CompilationUnitSyntax)mutatedFile.GetRoot()).AttributeLists
                 .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
-                                                                     && ((QualifiedNameSyntax) n.Name).Right
+                                                                     && ((QualifiedNameSyntax)n.Name).Right
                                                                      .Kind() == SyntaxKind.IdentifierName
-                                                                     && (string)((IdentifierNameSyntax) ((QualifiedNameSyntax) n.Name).Right)
+                                                                     && (string)((IdentifierNameSyntax)((QualifiedNameSyntax)n.Name).Right)
                                                                      .Identifier.Value == "AssemblyTitleAttribute");
 
-            node.ArgumentList.Arguments.ShouldContain( t => t.Expression.ToString().Contains("Mutated"));
+            node.ArgumentList.Arguments.ShouldContain(t => t.Expression.ToString().Contains("Mutated"));
         }
 
         [Fact]
@@ -930,7 +940,7 @@ Please specify a test project name filter that results in one project.
                 .Returns(new ProjectAnalyzerResult(null, null)
                 {
                     ProjectReferences = new List<string>() { "" },
-                    TargetFramework = Framework.NetClassic,
+                    TargetFramework = Framework.DotNetClassic,
                     ProjectFilePath = testProjectPath,
                     Properties = new Dictionary<string, string> { { "IsTestProject", "false" } },
                     References = new[] { "" }
