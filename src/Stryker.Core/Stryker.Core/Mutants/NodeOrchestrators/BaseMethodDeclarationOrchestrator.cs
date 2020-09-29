@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,11 +12,12 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         protected override SyntaxNode OrchestrateMutation(BaseMethodDeclarationSyntax node, MutationContext context)
         {
-            var mutatedNode = (BaseMethodDeclarationSyntax) context.MutateNodeAndChildren(node);
+            var newContext = context.Clone();
+            var mutatedNode = (BaseMethodDeclarationSyntax) base.OrchestrateMutation(node, newContext);
 
             if (mutatedNode.Body == null)
             {
-                if (!context.HasBlockLevelMutant)
+                if (!newContext.HasBlockLevelMutant)
                 {
                     return mutatedNode;
                 }
@@ -23,8 +26,20 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 mutatedNode = MutantPlacer.ConvertExpressionToBody(mutatedNode);
 
                 // we convert the original node to the body form
+                StatementSyntax mutatedBlock = mutatedNode.Body;
+
+                var converter = mutatedNode.NeedsReturn()
+                    ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
+                        SyntaxFactory.ReturnStatement(node.ExpressionBody!.Expression.InjectMutation(toConvert)))
+                    : (toConvert) =>
+                        SyntaxFactory.ExpressionStatement(node.ExpressionBody!.Expression.InjectMutation(toConvert));
+
+                mutatedBlock =
+                    MutantPlacer.PlaceIfControlledMutations(mutatedBlock,
+                        newContext.StatementLevelControlledMutations.Union(newContext.BlockLevelControlledMutations).
+                        Select( m => (m.Id, converter(m.Mutation))));
                 mutatedNode = mutatedNode.ReplaceNode(mutatedNode.Body!, 
-                    context.InjectBlockLevelMutations(mutatedNode.Body, node.ExpressionBody!.Expression, context));
+                    SyntaxFactory.Block(mutatedBlock));
             }
 
             // If method return type is void skip the node

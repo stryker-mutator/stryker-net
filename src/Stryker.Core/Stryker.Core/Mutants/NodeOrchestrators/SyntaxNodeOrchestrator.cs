@@ -6,8 +6,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         protected override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
         {
-            var mutatedNode = context.MutateNodeAndChildren(node);
-            return mutatedNode;
+            // we don't know (yet?) how to control mutations outside of expression, statement or block. So need to mutate other syntax node.
+            return node.ReplaceNodes(node.ChildNodes(), (original, mutated) => MutantOrchestrator.Mutate(original, context));
         }
 
         public SyntaxNodeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)

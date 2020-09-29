@@ -13,18 +13,18 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             foreach (var incrementer in originalFor.Incrementors)
             {
                 forStatement = forStatement.ReplaceNode(forStatement.GetCurrentNode(incrementer),
-                    context.MutateNodeAndChildren(incrementer, true));
+                    MutantOrchestrator.Mutate(incrementer, context));
             }
 
             // mutate condition, if any
             if (originalFor.Condition != null)
             {
-                forStatement = forStatement.ReplaceNode(forStatement.Condition,
-                    context.MutateNodeAndChildren(originalFor.Condition));
+                forStatement = forStatement.ReplaceNode(forStatement.Condition!,
+                    MutantOrchestrator.Mutate(forStatement.Condition, context));
             }
 
             // mutate the statement/block
-            forStatement = forStatement.ReplaceNode(forStatement.Statement, context.MutateNodeAndChildren(forStatement.Statement));
+            forStatement = forStatement.ReplaceNode(forStatement.Statement, MutantOrchestrator.Mutate(forStatement.Statement, context));
             // and now we replace it
             return forStatement;
         }

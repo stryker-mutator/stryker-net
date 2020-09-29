@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,18 +13,26 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
         }
 
+        protected override BlockSyntax InjectMutations(BlockSyntax originalNode, BlockSyntax mutatedNode, MutationContext context,
+            IEnumerable<Mutant> mutations)
+        {
+            context.BlockLevelControlledMutations.AddRange(context.StatementLevelControlledMutations);
+            return InjectBlockLevelMutations(originalNode, mutatedNode, context);
+        }
+
+        internal static BlockSyntax InjectBlockLevelMutations(BlockSyntax originalNode, BlockSyntax mutatedNode,
+            MutationContext context)
+        {
+            var blockLevelMutations = MutantPlacer.PlaceIfControlledMutations(mutatedNode,
+                context.BlockLevelControlledMutations.Select(m =>
+                    (m.Id, (originalNode as StatementSyntax).InjectMutation(m.Mutation))));
+            return !(blockLevelMutations is BlockSyntax block) ? SyntaxFactory.Block(blockLevelMutations) : block;
+        }
+
         public override SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {
             var newContext = context.Clone();
-            var mutated = base.Mutate(node, newContext);
-
-            var blockLevelMutations = MutantPlacer.PlaceIfControlledMutations(mutated as StatementSyntax,
-                newContext.BlockLevelControlledMutations.Select( m => (m.Id,  (node as StatementSyntax).InjectMutation(m.Mutation))));
-            if (!(blockLevelMutations is BlockSyntax))
-            {
-                blockLevelMutations = SyntaxFactory.Block(blockLevelMutations);
-            }
-            return blockLevelMutations;
+            return base.Mutate(node, newContext);
         }
     }
 }

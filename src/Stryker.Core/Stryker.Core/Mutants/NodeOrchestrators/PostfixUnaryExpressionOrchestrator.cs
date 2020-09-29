@@ -1,23 +1,24 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class PostfixUnaryExpressionOrchestrator: NodeSpecificOrchestrator<PostfixUnaryExpressionSyntax>
+    internal class PostfixUnaryExpressionOrchestrator: ExpressionSpecificOrchestrator<PostfixUnaryExpressionSyntax>
     {
         protected override bool CanHandle(PostfixUnaryExpressionSyntax t)
         {
-            return t.Parent is ExpressionStatementSyntax;
-        }
-
-        protected override SyntaxNode OrchestrateMutation(PostfixUnaryExpressionSyntax node, MutationContext context)
-        {
-            // incrementer/decrementer as statement must be mutated as statements
-            return context.MutateNodeAndChildren(node, true);
+            return t.Parent is ExpressionStatementSyntax || t.Parent is ForStatementSyntax;
         }
 
         public PostfixUnaryExpressionOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
+        }
+
+        protected override ExpressionSyntax InjectMutations(PostfixUnaryExpressionSyntax originalNode, ExpressionSyntax mutatedNode,
+            MutationContext context, IEnumerable<Mutant> mutations)
+        {
+            context.StatementLevelControlledMutations.AddRange(mutations);
+            return mutatedNode;
         }
     }
 }

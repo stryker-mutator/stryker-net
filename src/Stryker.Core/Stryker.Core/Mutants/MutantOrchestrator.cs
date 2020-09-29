@@ -6,6 +6,7 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrators;
 
@@ -75,12 +76,12 @@ namespace Stryker.Core.Mutants
                 new PostfixUnaryExpressionOrchestrator(this),
                 new StaticFieldDeclarationOrchestrator(this),
                 new StaticConstructorOrchestrator(this),
-                new StaticPropertyOrchestrator(this),
                 new ArrayInitializerOrchestrator(this),
                 new BaseMethodDeclarationOrchestrator(this),
                 new ConstLocalDeclarationOrchestrator(this),
-                new StatementSyntaxOrchestrator(this),
+                new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),
+                new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
                 new SyntaxNodeOrchestrator(this)
             });
         }

@@ -381,7 +381,6 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; i < 10; i--)
 }else{for (var i = 0; (StrykerNamespace.MutantControl.IsActive(2)?i <= 10:(StrykerNamespace.MutantControl.IsActive(1)?i > 10:i < 10)); i++)
 { }
 }}";
-
             ShouldMutateSourceToExpected(source, expected);
         }
 
@@ -398,7 +397,6 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
 }else{for (var i = 0; ; i++)
 { }
 }}";
-
             ShouldMutateSourceToExpected(source, expected);
         }
 
