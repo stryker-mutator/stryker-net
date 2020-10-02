@@ -49,20 +49,14 @@ namespace Stryker.Core.DashboardCompare
                 //Checkout();
             }
 
-            if (Repository?.Branches != null)
+            if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
             {
-                foreach (var branch in Repository.Branches)
-                {
-                    if (branch.IsCurrentRepositoryHead)
-                    {
-                        _logger.LogInformation("{0} identified as current branch", branch.FriendlyName);
-                        return branch.FriendlyName;
-                    }
-                }
+                _logger.LogInformation("{0} identified as current branch", identifiedBranch.FriendlyName);
+                return identifiedBranch.FriendlyName;
             }
 
-            _logger.LogInformation("Could not locate the current branch name");
-            return null;
+            _logger.LogInformation("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
+            return _options.ProjectVersion;
         }
 
         public Commit DetermineCommit()
