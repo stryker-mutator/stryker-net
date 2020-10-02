@@ -20,6 +20,7 @@ The full list of Stryker.NET configuration options are:
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
+- [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
 <!-- /TOC -->
 
 ## Use a config file
@@ -408,6 +409,10 @@ dotnet stryker -compare -bsl disk
 ```
 Defaut `"disk"`
 
+## Configurating Dashboard location
+
+See: [Dashboard Reporter Settings](/docs/Reporters.md#dashboard-reporter)
+
 ## Configuring Azure File Storage
 When using Azure File Storage as baseline storage location you are required to provide the following values.
 
@@ -440,3 +445,7 @@ or
 
 dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
 ```
+
+## Using dashboard compare in a pull request pipeline
+
+See: [Using stryker in pipelines](/docs/Stryker-in-pipeline.md)
