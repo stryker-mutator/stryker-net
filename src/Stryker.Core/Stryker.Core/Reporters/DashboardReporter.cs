@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -16,15 +15,13 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
-        private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IChalk _chalk;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, IGitInfoProvider gitInfoProvider = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _chalk = chalk ?? new Chalk();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();

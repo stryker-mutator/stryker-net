@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, Mock.Of<ILogger<GitInfoProvider>>(), "path");
+            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, "path", Mock.Of<ILogger<GitInfoProvider>>());
 
             target.RepositoryPath.ShouldBe("path");
         }
