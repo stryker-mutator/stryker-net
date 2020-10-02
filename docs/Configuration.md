@@ -6,6 +6,7 @@ The full list of Stryker.NET configuration options are:
 - [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
+- [Mutation level](#mutation-level)
 - [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
@@ -89,6 +90,33 @@ When Stryker finds two or more project references inside your test project, it n
 dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
 ```
+
+## Mutation level
+Stryker support multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
+
+The levels are as follows:
+- Basic
+- Standard (Default)
+- Advanced
+- Complete
+
+| Mutations| Level| 
+| ------------- | ------------- | 
+| Arithmetic Operators | Basic|
+| Block (not yet implemented) | Basic|
+| Equality Operators | Standard |
+| Boolean Literals | Standard|
+| Assignment statements | Standard |
+| Collection initializer | Standard |
+| Unary Operators | Standard |
+| Update Operators | Standard |
+| String Literals and Constants | Standard |
+| Bitwise Operators | Standard |
+| Checked Statements | Advanced |
+| Linq Methods | Advanced |
+| Regex | Advanced |
+| Advanced Linq Methods (not yet implemented) | Complete |
+| Advanced Regex (not yet implemented) | Complete |
 
 ## Specify testrunner
 Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
