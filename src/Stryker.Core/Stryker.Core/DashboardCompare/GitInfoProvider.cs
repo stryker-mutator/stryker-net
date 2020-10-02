@@ -1,5 +1,8 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 
@@ -24,12 +27,13 @@ namespace Stryker.Core.DashboardCompare
         private readonly StrykerOptions _options;
         private readonly string _repositoryPath;
         private readonly ILogger<GitInfoProvider> _logger;
+
         public IRepository Repository { get; }
 
         public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
-        public GitInfoProvider(StrykerOptions options, IRepository repository = null, ILogger<GitInfoProvider> logger = null, string repositoryPath = null)
-        {
+        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
+        { 
             _repositoryPath = repositoryPath;
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
@@ -44,7 +48,26 @@ namespace Stryker.Core.DashboardCompare
 
         public string GetCurrentBranchName()
         {
-            return Repository?.Branches?.FirstOrDefault(x => x.IsCurrentRepositoryHead)?.FriendlyName ?? string.Empty;
+            if (Repository?.Branches == null)
+            {
+                _logger.LogInformation("There is no information available about your current branch. Performing a checkout.");
+                Checkout();
+            }
+
+            if (Repository?.Branches != null)
+            {
+                foreach (var branch in Repository.Branches)
+                {
+                    if (branch.IsCurrentRepositoryHead)
+                    {
+                        _logger.LogInformation("{0} identified as current branch", branch.FriendlyName);
+                        return branch.FriendlyName;
+                    }
+                }
+            }
+
+            _logger.LogInformation("Could not locate the current branch name");
+            return string.Empty;
         }
 
         private IRepository CreateRepository()
