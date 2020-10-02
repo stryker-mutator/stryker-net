@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         }
 
         [Fact]
-        public void ReturnsEmptyStringIfNoCurrentRepositoryHead()
+        public void ThrowsExceptionIfNoCurrentBranchOrProjectVersionSet()
         {
             // Arrange
             var options = new StrykerOptions();
@@ -64,10 +64,10 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             var target = new GitInfoProvider(options, repository.Object);
             // Act
-            var result = target.GetCurrentBranchName();
+            Action result = () => target.GetCurrentBranchName();
 
             // Assert
-            result.ShouldBe(string.Empty);
+            result.ShouldThrow<StrykerInputException>();
         }
 
         [Fact]

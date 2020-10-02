@@ -110,7 +110,7 @@ namespace Stryker.Core.UnitTest.Options
             {
                 var options = new StrykerOptions(gitDiffTarget: "");
             });
-            ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
+            ex.Message.ShouldBe("GitDiffTarget may not be empty, please provide a valid git branch name");
         }
 
         [Fact]
