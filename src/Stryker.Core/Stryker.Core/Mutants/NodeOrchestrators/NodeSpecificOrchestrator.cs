@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal abstract class NodeSpecificOrchestrator<T>:INodeMutator where T: SyntaxNode
+    /// <summary>
+    /// This purpose of ech implementation of this class is to support one specific C# code construct during the mutation process.
+    /// Indeed some constructs need to be handled specifically to ensure successful mutations.
+    /// Others are used to inject the need mutation control logic. It is strongly suggested to review each of those classes to
+    /// get a grasp of how they work before adding a new one.
+    /// </summary>
+    /// <typeparam name="TNode">Roslyn type which represents the C# construct</typeparam>
+    /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
+    internal abstract class NodeSpecificOrchestrator<TNode, TBase>:INodeMutator where TBase: SyntaxNode where TNode: TBase
     {
         protected MutantOrchestrator MutantOrchestrator;
 
@@ -14,30 +21,96 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             MutantOrchestrator = mutantOrchestrator;
         }
 
-        public Type ManagedType => typeof(T);
+        protected virtual bool NewContext => false;
 
-        protected virtual bool CanHandle(T t) => true;
+        /// <summary>
+        /// Get the Roslyn type handled by this class
+        /// </summary>
+        public Type ManagedType => typeof(TNode);
 
-        public bool CanHandle(SyntaxNode t) => CanHandle(t as T);
+        /// <summary>
+        /// Checks if this class will manage a specific node.
+        /// </summary>
+        /// <param name="t">Syntax node to be tested</param>
+        /// <returns>True if this class can process the provided node.</returns>
+        /// <remarks>Default implementation always returns true. You can override this method to have several classes supporting various sub cases for a single node type.</remarks>
+        protected virtual bool CanHandle(TNode t) => t!=null;
 
-        protected virtual T InjectMutations(T originalNode, T mutatedNode, MutationContext context, IEnumerable<Mutant> mutations)
+        /// <summary>
+        /// Checks if this class will manage a specific node.
+        /// </summary>
+        /// <param name="t">Syntax node to be tested</param>
+        /// <returns>True if this class can process the provided node.</returns>
+        /// <remarks>Delegate the implementation to an polymorphic implementation.</remarks>
+        public bool CanHandle(SyntaxNode t) => CanHandle(t as TNode);
+
+        /// <summary>
+        /// Inject mutation(s) in this node.
+        /// </summary>
+        /// <param name="originalNode">Original, unmodified syntax node</param>
+        /// <param name="mutatedNode">Variant of <paramref name="originalNode"/> including mutated children.</param>
+        /// <param name="context">Mutation context which contains pending mutations.</param>
+        /// <returns>A syntax node (typeof <see cref="TBase"></see>) with mutations injected, if possible./></returns>
+        /// <remarks>Override this </remarks>
+        protected virtual TBase InjectMutations(TNode originalNode, TBase mutatedNode, MutationContext context) => mutatedNode;
+
+        /// <summary>
+        /// Generates and returns the list of possible mutations for the provided node.
+        /// </summary>
+        /// <param name="node">Node to generate mutations from.</param>
+        /// <param name="context">Mutation context.</param>
+        /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
+        /// <remarks></remarks>
+        protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, MutationContext context) => MutantOrchestrator.GenerateMutationsForNode(node, context);
+
+        /// <summary>
+        /// Stores provided mutations.
+        /// </summary>
+        /// <param name="mutations">Mutations to store</param>
+        /// <param name="node">Associated node.</param>
+        /// <param name="context">Mutation context.</param>
+        /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
+        /// <remarks>You need to override this method if the mutations have to be controlled at a higher scope than the default one.</remarks>
+        protected virtual MutationContext StoreMutations(IEnumerable<Mutant> mutations,
+            TNode node,
+            MutationContext context) =>  context;
+
+        /// <summary>
+        /// Mutate children, grandchildren (recursively). 
+        /// </summary>
+        /// <param name="node">Node which children will be mutating</param>
+        /// <param name="context">Mutation status</param>
+        /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
+        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
+            node.ReplaceNodes(node.ChildNodes(), 
+                (original, _) => MutantOrchestrator.Mutate(original, context));
+
+        /// <summary>
+        /// Mutates a node and its children. Update the mutation context with mutations needed to be injected in a higher level node.
+        /// </summary>
+        /// <param name="node">Node to be mutated</param>
+        /// <param name="context">Mutation context</param>
+        /// <returns>A <see cref="SyntaxNode"/> instance will all injected mutations.</returns>
+        public SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {
-            return mutatedNode;
-        }
-
-        protected virtual SyntaxNode OrchestrateMutation(T node, MutationContext context)
-        {
-            var mutations = MutantOrchestrator.GenerateMutationsForNode(node, context);
-
-            var mutatedNode1 = node.ReplaceNodes(node.ChildNodes(), 
-                (original, mutated) => MutantOrchestrator.Mutate(original, context));
-
-            return InjectMutations(node, mutatedNode1, context, mutations);
-        }
-
-        public virtual SyntaxNode Mutate(SyntaxNode node, MutationContext context)
-        {
-            return OrchestrateMutation(node as T, context);
+            var specificNode = node as TNode;
+            if (NewContext)
+            {
+                using var newContext = context.Clone();
+                // we generate mutations for this node (to help numbering being in 'code reading' order)
+                var mutations = GenerateMutationForNode(specificNode, newContext);
+                return InjectMutations(specificNode,
+                    OrchestrateChildrenMutation(specificNode, newContext),
+                    StoreMutations(mutations, specificNode, newContext));
+            }
+            else
+            {
+                // we generate mutations for this node (to help numbering being in 'code reading' order)
+                var mutations = GenerateMutationForNode(specificNode, context);
+                return InjectMutations(specificNode,
+                    OrchestrateChildrenMutation(specificNode, context),
+                    StoreMutations(mutations, specificNode, context));
+            }
         }
     }
 }

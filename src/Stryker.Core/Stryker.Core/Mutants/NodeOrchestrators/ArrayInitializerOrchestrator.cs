@@ -12,15 +12,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         }
 
         // mutations must be controlled at the statement level
-        protected override ExpressionSyntax InjectMutations(InitializerExpressionSyntax originalNode, ExpressionSyntax mutatedNode,
-            MutationContext context, IEnumerable<Mutant> mutations)
+        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
+            InitializerExpressionSyntax node,
+            MutationContext context)
         {
             context.StatementLevelControlledMutations.AddRange(mutations);
-            return mutatedNode;
+            return context;
         }
 
         public ArrayInitializerOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
+        {}
     }
 }

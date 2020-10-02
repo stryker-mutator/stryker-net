@@ -1,19 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
 {
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    internal class MutationContext
+    internal class MutationContext: IDisposable
     {
         private readonly MutantOrchestrator _mainOrchestrator;
+        private readonly MutationContext _ancestor;
+        public readonly List<Mutant> ExpressionLevelMutations = new List<Mutant>();
         public readonly List<Mutant> BlockLevelControlledMutations = new List<Mutant>();
         public readonly List<Mutant> StatementLevelControlledMutations = new List<Mutant>();
 
         public MutationContext(MutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
+        }
+
+        private MutationContext(MutationContext parent)
+        {
+            _ancestor = parent;
+            _mainOrchestrator = parent._mainOrchestrator;
+            InStaticValue = parent.InStaticValue;
         }
 
         /// <summary>
@@ -24,15 +34,27 @@ namespace Stryker.Core.Mutants
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
         public bool HasBlockLevelMutant => BlockLevelControlledMutations.Count > 0;
+        
+        public bool HasStatementLevelMutant => StatementLevelControlledMutations.Count > 0 || HasBlockLevelMutant;
 
         public MutationContext EnterStatic()
         {
-            return new MutationContext(_mainOrchestrator) {InStaticValue = true};
+            return new MutationContext(this) {InStaticValue = true};
         }
 
         public MutationContext Clone()
         {
-            return new MutationContext(_mainOrchestrator) {InStaticValue = InStaticValue};
+            return new MutationContext(this);
+        }
+
+        public void Dispose()
+        {
+            if (_ancestor != null)
+            {
+                // copy the pending mutation to the enclosing context
+                _ancestor.StatementLevelControlledMutations.AddRange(StatementLevelControlledMutations);
+                _ancestor.BlockLevelControlledMutations.AddRange(BlockLevelControlledMutations);
+            }
         }
     }
 }

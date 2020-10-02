@@ -1,34 +1,35 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T> where T: ExpressionSyntax
+    internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, ExpressionSyntax> where T: ExpressionSyntax
     {
-        protected override SyntaxNode OrchestrateMutation(T node, MutationContext context)
+
+        protected override ExpressionSyntax InjectMutations(T originalNode, ExpressionSyntax mutatedNode, MutationContext context)
         {
-            var mutations = MutantOrchestrator.GenerateMutationsForNode(node, context);
-
-            var mutatedNode1 = (ExpressionSyntax) node.ReplaceNodes(node.ChildNodes(), 
-                (original, mutated) => MutantOrchestrator.Mutate(original, context));
-
-            return InjectMutations(node, mutatedNode1, context, mutations);
+            var result = MutantPlacer.PlaceExpressionControlledMutations(
+                mutatedNode,
+                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax) originalNode.InjectMutation(m.Mutation)))) as T;
+            context.ExpressionLevelMutations.Clear();
+            return result;
         }
 
-        protected virtual ExpressionSyntax InjectMutations(T originalNode, ExpressionSyntax mutatedNode, MutationContext context, IEnumerable<Mutant> mutations)
+        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
+            T node,
+            MutationContext context)
         {
-            if (!originalNode.ContainsDeclarations())
+            if (!node.ContainsDeclarations())
             {
-                return MutantPlacer.PlaceExpressionControlledMutations(
-                    mutatedNode,
-                    mutations.Select(m => (m.Id, (ExpressionSyntax) originalNode.InjectMutation(m.Mutation))));
+                context.ExpressionLevelMutations.AddRange(mutations);
             }
-            context.BlockLevelControlledMutations.AddRange(mutations);
-            return mutatedNode;
-
+            else
+            {
+                context.BlockLevelControlledMutations.AddRange(mutations);
+            }
+            return context;
         }
 
         public ExpressionSpecificOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)

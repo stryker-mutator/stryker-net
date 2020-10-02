@@ -6,7 +6,7 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation
 {
-    internal class ExpressionToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>, IInstrumentCode
+    internal class ExpressionToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
         public T ConvertToBody<T>(T method) where T: BaseMethodDeclarationSyntax
         {

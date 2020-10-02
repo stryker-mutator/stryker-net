@@ -10,15 +10,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.Parent is ExpressionStatementSyntax || t.Parent is ForStatementSyntax;
         }
 
-        public PostfixUnaryExpressionOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
-
-        protected override ExpressionSyntax InjectMutations(PostfixUnaryExpressionSyntax originalNode, ExpressionSyntax mutatedNode,
-            MutationContext context, IEnumerable<Mutant> mutations)
+        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
+            PostfixUnaryExpressionSyntax node, MutationContext context)
         {
             context.StatementLevelControlledMutations.AddRange(mutations);
-            return mutatedNode;
+            return context;
+        }
+
+        public PostfixUnaryExpressionOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

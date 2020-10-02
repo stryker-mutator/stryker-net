@@ -5,22 +5,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
-    class IfInstrumentationEngine: IInstrumentCode
+    class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
     {
-        private readonly SyntaxAnnotation _marker;
-
-        public IfInstrumentationEngine(string annotation)
+        public IfInstrumentationEngine(string annotation) : base(annotation, "IfInstrumentation")
         {
-            _marker = new SyntaxAnnotation(annotation, InstrumentEngineID);
         }
-
-        public string InstrumentEngineID => "IfInstrumentation";
 
         public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
         {
             return SyntaxFactory.IfStatement(condition, 
                 AsBlock(mutatedNode), 
-                SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(_marker);
+                SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
         }
 
         private static BlockSyntax AsBlock(StatementSyntax code)
@@ -28,13 +23,13 @@ namespace Stryker.Core.Instrumentation
             return (code as BlockSyntax) ?? SyntaxFactory.Block(code);
         }
 
-        public SyntaxNode RemoveInstrumentation(SyntaxNode node)
+        protected override SyntaxNode Revert(IfStatementSyntax ifNode)
         {
-            if (node is IfStatementSyntax ifNode && ifNode.Else?.Statement is BlockSyntax block)
+            if (ifNode.Else?.Statement is BlockSyntax block)
             {
                 return block.Statements.Count == 1 ? block.Statements[0] : block;
             }
-            throw new InvalidOperationException($"Expected a block containing an 'if' statement, found:\n{node.ToFullString()}.");
+            throw new InvalidOperationException($"Expected a block containing an 'else' statement, found:\n{ifNode.ToFullString()}.");
         }
     }
 }

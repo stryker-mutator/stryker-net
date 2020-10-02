@@ -1,13 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class SyntaxNodeOrchestrator: NodeSpecificOrchestrator<SyntaxNode>
+    internal class SyntaxNodeOrchestrator: NodeSpecificOrchestrator<SyntaxNode, SyntaxNode>
     {
-        protected override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
+        // we don't mutate this node
+        protected override IEnumerable<Mutant> GenerateMutationForNode(SyntaxNode node, MutationContext context)
         {
-            // we don't know (yet?) how to control mutations outside of expression, statement or block. So need to mutate other syntax node.
-            return node.ReplaceNodes(node.ChildNodes(), (original, mutated) => MutantOrchestrator.Mutate(original, context));
+            return Enumerable.Empty<Mutant>();
         }
 
         public SyntaxNodeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)

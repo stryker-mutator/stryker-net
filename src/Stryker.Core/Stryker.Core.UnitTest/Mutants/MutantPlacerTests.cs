@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-            var result = MutantPlacer.PlaceIfControlledMutations(originalNode, new[] {(id, (StatementSyntax) mutatedNode)});
+            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, new[] {(id, (StatementSyntax) mutatedNode)});
 
             result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive("+id+@"))
             {
@@ -104,6 +104,11 @@ static TestClass()=> Value-='a';}";
 
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
+            actualNode = actualNode.ReplaceNode(node, restored);
+            
+            // remove mutation
+            node = actualNode.DescendantNodes().First(t => t.Kind() == SyntaxKind.IfStatement);
+            restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
             // remove expression to body conversion

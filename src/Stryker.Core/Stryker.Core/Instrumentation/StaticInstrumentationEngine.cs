@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 
 namespace Stryker.Core.Instrumentation
 {
-    class StaticInstrumentationEngine : BaseEngine<BlockSyntax>, IInstrumentCode
+    class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     {
         private readonly ExpressionSyntax _cachedMarker = SyntaxFactory.ParseExpression(CodeInjection.StaticMarker);
 

@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Helpers;
 using Stryker.Core.Instrumentation;
 
 namespace Stryker.Core.Mutants
@@ -24,6 +23,7 @@ namespace Stryker.Core.Mutants
         private static readonly IfInstrumentationEngine IfEngine;
         private static readonly ConditionalInstrumentationEngine ConditionalEngine;
         private static readonly ExpressionToBodyEngine ExpressionEngine;
+        private static readonly EndingReturnEngine endingReturnEngine;
         private static ExpressionSyntax _binaryExpression;
         private static SyntaxNode _placeHolderNode;
         
@@ -41,6 +41,8 @@ namespace Stryker.Core.Mutants
             RegisterEngine(ConditionalEngine);
             ExpressionEngine = new ExpressionToBodyEngine(Injector);
             RegisterEngine(ExpressionEngine);
+            endingReturnEngine = new EndingReturnEngine(Injector);
+            RegisterEngine(endingReturnEngine);
         }
 
         /// <summary>
@@ -52,17 +54,17 @@ namespace Stryker.Core.Mutants
             InstrumentEngines.Add(engine.InstrumentEngineID, engine);
         }
 
-        public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax
-        {
-            return ExpressionEngine.ConvertToBody(method)
+        public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax =>
+            ExpressionEngine.ConvertToBody(method)
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
-        }
+
+        public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node);
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
             StaticEngine.PlaceStaticContextMarker(block).
             WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
-        public static StatementSyntax PlaceIfControlledMutations(StatementSyntax original,
+        public static StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
             IEnumerable<(int mutantId, StatementSyntax mutated)> mutations)
         {
             return mutations.Aggregate(original, (syntaxNode, mutation) => 
@@ -71,6 +73,16 @@ namespace Stryker.Core.Mutants
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.mutantId.ToString())));
         }
 
+        public static ExpressionSyntax PlaceExpressionControlledMutations( 
+            ExpressionSyntax modified, 
+            IEnumerable<(int id, ExpressionSyntax mutation)> mutations)
+        {
+            return mutations.Aggregate(modified, (current, mutation) => 
+                ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
+                    // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.id.ToString())));
+        }
+        
         public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
         {
             var engine = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault()?.GetAnnotations(Injector).First().Data;
@@ -81,19 +93,6 @@ namespace Stryker.Core.Mutants
 
             throw new InvalidOperationException($"Unable to remove any injection from this node: {nodeToRemove}");
         }
-
-        public static ExpressionSyntax PlaceExpressionControlledMutations( 
-            ExpressionSyntax modified, 
-            IEnumerable<(int id, ExpressionSyntax mutation)> mutations)
-        {
-            return mutations.Aggregate(modified, (current, mutation) => 
-                ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
-                // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.id.ToString())));
-        }
-        
-        // us this method to annotate injected helper code. I.e. any injected code that is NOT a mutation but provides some infrastructure for the mutant to run
-        public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active

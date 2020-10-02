@@ -5,16 +5,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
-    public class ConditionalInstrumentationEngine : IInstrumentCode
+    internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
-        private readonly SyntaxAnnotation _marker;
 
-        public ConditionalInstrumentationEngine(string marker)
+        public ConditionalInstrumentationEngine(string marker): base(marker, "ConditionalInstrumentation")
         {
-            _marker = new SyntaxAnnotation(marker, InstrumentEngineID);
         }
-
-        public string InstrumentEngineID => "ConditionalInstrumentation";
 
         public  ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
             SyntaxFactory.ParenthesizedExpression(
@@ -23,15 +19,15 @@ namespace Stryker.Core.Instrumentation
                         whenTrue: mutated,
                         whenFalse: original))
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                .WithAdditionalAnnotations(_marker);
+                .WithAdditionalAnnotations(Marker);
 
-        public SyntaxNode RemoveInstrumentation(SyntaxNode node)
+        protected override SyntaxNode Revert(ParenthesizedExpressionSyntax parenthesized)
         {
-            if (node is ParenthesizedExpressionSyntax parenthesized && parenthesized.Expression is ConditionalExpressionSyntax conditional)
+            if (parenthesized.Expression is ConditionalExpressionSyntax conditional)
             {
                 return conditional.WhenFalse;
             }
-            throw new InvalidOperationException($"Expected a block containing a conditional expressionn, found:\n{node.ToFullString()}.");
+            throw new InvalidOperationException($"Expected a block containing a conditional expression, found:\n{parenthesized.ToFullString()}.");
         }
     }
 }

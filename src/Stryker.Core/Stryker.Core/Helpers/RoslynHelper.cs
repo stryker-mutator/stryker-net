@@ -38,7 +38,7 @@ namespace Stryker.Core.Helpers
         {
             if (!original.Contains(mutation.OriginalNode))
             {
-                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' as it does not contains the reference node.");
+                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in {original}.");
             }
             return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }

@@ -4,8 +4,6 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -401,15 +399,19 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
         }
 
         [Fact]
-        public void Test()
+        public void ShouldMutateComplexExpressionBodiedMethod()
         {
             string source = @"public int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
-            string expected = @"public void SomeMethod() {
-if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
-{ }
-}else{for (var i = 0; ; i++)
-{ }
-}}";
+            string expected = @"public int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(0)){return!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(1)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{return ((StrykerNamespace.MutantControl.IsActive(2)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateExpressionBodiedStaticConstructor()
+        {
+            string source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+            string expected = @"static Test()  {if(StrykerNamespace.MutantControl.IsActive(0)){!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(1)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(2)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -816,12 +818,10 @@ const string text = ""a""+""b""+""c"";}";
         {
             source = @"class Test {
 static string Value { get; }
-
 static TestClass() " + source + "}";
 
             var expected = @"class Test {
 static string Value { get; }
-
 static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}}";
 
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
@@ -837,18 +837,15 @@ static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (Stryker
         {
             var source = @"class Test {
 static string Value => """";
-
 static TestClass(){}}";
 
             var expected = @"class Test {
 static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
-
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
             var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
-            
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);

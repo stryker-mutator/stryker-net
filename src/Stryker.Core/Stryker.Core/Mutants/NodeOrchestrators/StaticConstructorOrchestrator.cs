@@ -5,33 +5,31 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class StaticConstructorOrchestrator : NodeSpecificOrchestrator<ConstructorDeclarationSyntax>
+    internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator<ConstructorDeclarationSyntax>
     {
+        protected override bool NewContext => true;
+
         protected override bool CanHandle(ConstructorDeclarationSyntax t)
         {
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }
 
-        protected override SyntaxNode OrchestrateMutation(ConstructorDeclarationSyntax node, MutationContext context)
+        protected override BaseMethodDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax originalNode,
+            BaseMethodDeclarationSyntax mutatedNode, MutationContext context)
         {
+            var mutated = base.InjectMutations(originalNode, mutatedNode, context);
+
             if (!context.MustInjectCoverageLogic)
             {
-                return base.OrchestrateMutation(node, context.EnterStatic());
+                return mutated;
             }
-            var trackedConstructor = node.TrackNodes((SyntaxNode) node.Body ?? node.ExpressionBody);
-            if (node.ExpressionBody != null)
+            if (mutated.ExpressionBody != null)
             {
-                var mutated = node.ReplaceNode(node.ExpressionBody, MutantOrchestrator.Mutate(node.ExpressionBody, context));
-                trackedConstructor = MutantPlacer.ConvertExpressionToBody(mutated);
-                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.Body, MutantPlacer.PlaceStaticContextMarker(trackedConstructor.Body));
+                // we need a body to place the marker
+                mutated = MutantPlacer.ConvertExpressionToBody(mutated);
             }
-            else if (node.Body != null)
-            {
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) MutantOrchestrator.Mutate(node.Body, context));
-                trackedConstructor =
-                    trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(node.Body), markedBlock);
-            }
-            return trackedConstructor;
+
+            return mutated.ReplaceNode(mutated.Body!, MutantPlacer.PlaceStaticContextMarker(mutated.Body));
         }
 
         public StaticConstructorOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
