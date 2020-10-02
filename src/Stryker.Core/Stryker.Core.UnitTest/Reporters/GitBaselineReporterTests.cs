@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var readOnlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(projectVersion: "new-feature", gitSource: "master", compareToDashboard: true);
+            var options = new StrykerOptions(projectVersion: "new-feature", gitDiffTarget: "master", compareToDashboard: true);
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns<string>(null);
 
@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var readOnlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(projectVersion: "new-feature", gitSource: "master", compareToDashboard: true);
+            var options = new StrykerOptions(projectVersion: "new-feature", gitDiffTarget: "master", compareToDashboard: true);
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");
 

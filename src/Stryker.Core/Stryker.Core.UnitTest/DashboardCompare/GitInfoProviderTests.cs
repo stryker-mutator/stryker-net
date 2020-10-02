@@ -179,7 +179,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void DetermineCommitThrowsStrykerInputException()
         {
-            var strykerOptions = new StrykerOptions(gitSource: "master", diff: true);
+            var strykerOptions = new StrykerOptions(gitDiffTarget: "master", diff: true);
 
             var repository = new Mock<IRepository>();
 
@@ -205,7 +205,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             // Arrange
             string sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
-            var strykerOptions = new StrykerOptions(gitSource: sha, diff: true);
+            var strykerOptions = new StrykerOptions(gitDiffTarget: sha, diff: true);
 
             var commitMock = new Mock<Commit>();
             var repositoryMock = new Mock<IRepository>();
@@ -232,7 +232,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Canonical_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitSource: "origin/master", diff: true);
+            var options = new StrykerOptions(gitDiffTarget: "origin/master", diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -276,7 +276,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Friendly_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitSource: "master", diff: true);
+            var options = new StrykerOptions(gitDiffTarget: "master", diff: true);
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);

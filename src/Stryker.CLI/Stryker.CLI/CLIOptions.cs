@@ -128,12 +128,12 @@ namespace Stryker.CLI
             JsonKey = "baseline-storage-location"
         };
 
-        public static readonly CLIOption<string> GitSource = new CLIOption<string>
+        public static readonly CLIOption<string> GitDiffTarget = new CLIOption<string>
         {
             ArgumentName = "--git-source",
             ArgumentShortName = "-gs <branchName>",
             ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
-            DefaultValue = _defaultOptions.GitSource,
+            DefaultValue = _defaultOptions.GitDiffTarget,
             JsonKey = "git-source"
         };
 
