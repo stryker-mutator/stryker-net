@@ -356,7 +356,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         public static readonly CLIOption<string> MutationLevel = new CLIOption<string>
         {
             ArgumentName = "--mutation-level",
-            ArgumentShortName = "-ml",
+            ArgumentShortName = "-level",
             ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
             DefaultValue = _defaultOptions.MutationLevel.ToString(),
             JsonKey = "mutation-level"
