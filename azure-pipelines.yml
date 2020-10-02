@@ -139,6 +139,13 @@ stages:
     - task: Delay@1
       inputs:
         delayForMinutes: '1'
+
+- stage: IntegrationTests 
+  dependsOn: 
+    - Analysis
+    - DeployIntegrationtestPackage
+  condition: not(failed())
+  jobs:
   - template: pipeline-templates/stryker-on-stryker-job.yml
     parameters:
       projectName: 'CLI'
@@ -147,13 +154,6 @@ stages:
     parameters:
       projectName: 'Core'
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
-
-- stage: IntegrationTests 
-  dependsOn: 
-    - Analysis
-    - DeployIntegrationtestPackage
-  condition: not(failed())
-  jobs:
   - job: WindowsTests
     displayName: Run tests on Windows
     steps:
