@@ -83,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool CantUseStrykerDataCollector()
         {
             return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.NetCore && t.TargetFrameworkAndVersion.version.Major < 2);
+                t.TargetFrameworkAndVersion.framework == Framework.DotNet && t.TargetFrameworkAndVersion.version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -394,14 +394,6 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.TargetFramework;
-            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkVersion;
-
-            string targetFrameworkVersionString = targetFramework switch
-            {
-                Framework.NetCore => $".NETCoreApp,Version=v{targetFrameworkVersion}",
-                Framework.NetStandard => throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework),
-                _ => $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}",
-            };
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, CodeInjection.HelperNamespace) : "";
@@ -421,12 +413,14 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
-{(targetFramework == Initialisation.Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
+{(targetFramework == Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
-  <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
+{timeoutSettings}
+{settingsForCoverage}
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
- </RunConfiguration>{dataCollectorSettings}
+ </RunConfiguration>
+{dataCollectorSettings}
 </RunSettings>";
             _logger.LogDebug("VsTest run settings set to: {0}", runSettings);
 
