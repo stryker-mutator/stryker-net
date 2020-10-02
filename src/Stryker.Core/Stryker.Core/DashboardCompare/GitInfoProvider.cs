@@ -1,18 +1,13 @@
 ﻿using LibGit2Sharp;
-using Microsoft.Build.Framework;
-using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
 
 namespace Stryker.Core.DashboardCompare
 {
-    using System.Linq;
-
     using Logging;
-
     using Microsoft.Extensions.Logging;
+    using System.Linq;
 
     public class GitInfoProvider : IGitInfoProvider
     {
@@ -23,7 +18,7 @@ namespace Stryker.Core.DashboardCompare
             CanonicalBranchName,
             FriendlyBranchName
         }
-        
+
         private readonly StrykerOptions _options;
         private readonly string _repositoryPath;
         private readonly ILogger<GitInfoProvider> _logger;
@@ -33,11 +28,11 @@ namespace Stryker.Core.DashboardCompare
         public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
         public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
-        { 
+        {
             _repositoryPath = repositoryPath;
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
-            
+
             if (!options.DiffEnabled)
             {
                 return;
@@ -51,7 +46,7 @@ namespace Stryker.Core.DashboardCompare
             if (Repository?.Branches == null)
             {
                 _logger.LogInformation("There is no information available about your current branch. Performing a checkout.");
-                Checkout();
+                //Checkout();
             }
 
             if (Repository?.Branches != null)
@@ -67,44 +62,7 @@ namespace Stryker.Core.DashboardCompare
             }
 
             _logger.LogInformation("Could not locate the current branch name");
-            return string.Empty;
-        }
-
-        private IRepository CreateRepository()
-        {
-            if (string.IsNullOrEmpty(RepositoryPath))
-            {
-                throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
-            }
-
-            return new Repository(RepositoryPath);
-        }
-
-        private void Checkout(GitSourceKinds gitSourceKind)
-        {
-            try
-            {
-                var currentCommit = this.Repository.Head.Tip;
-                var branchName = gitSourceKind == GitSourceKinds.FriendlyBranchName ? _options.GitSource : GetFriendlyName(_options.GitSource);
-                
-                _logger.LogDebug($"Creating branch ${branchName} with committish origin/{branchName}");
-                var branch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
-                _logger.LogDebug($"Checking out branch ${branchName}");
-                Commands.Checkout(Repository, branch);
-
-                _logger.LogDebug($"Checking out cached commit ${currentCommit.Sha}");
-                Commands.Checkout(Repository, currentCommit);
-            }
-            catch (Exception e)
-            {
-                _logger.LogDebug($"Something went wrong during checkout.\n{e.Message}");
-                // Do nothing, Checkout is already done
-            }
-        }
-
-        private string GetFriendlyName(string canonicalBranchName)
-        {
-            return string.Join('/', canonicalBranchName.Split('/', StringSplitOptions.RemoveEmptyEntries).Skip(2));
+            return null;
         }
 
         public Commit DetermineCommit()
@@ -125,6 +83,15 @@ namespace Stryker.Core.DashboardCompare
             return commit;
         }
 
+        private IRepository CreateRepository()
+        {
+            if (string.IsNullOrEmpty(RepositoryPath))
+            {
+                throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+            }
+
+            return new Repository(RepositoryPath);
+        }
 
         private (GitSourceKinds, Commit) GetCommit()
         {
@@ -152,7 +119,7 @@ namespace Stryker.Core.DashboardCompare
                     // Internal error thrown by libgit2sharp which happens when there is no upstream on a branch.
                 }
             }
-            
+
             if (sourceBranch != null)
             {
                 return (gitSourceKind, sourceBranch.Tip);
@@ -170,6 +137,32 @@ namespace Stryker.Core.DashboardCompare
             }
 
             return (gitSourceKind, null);
+        }
+
+        private void Checkout(GitSourceKinds gitSourceKind)
+        {
+            try
+            {
+                var currentCommit = Repository.Head.Tip;
+                var branchName = gitSourceKind == GitSourceKinds.FriendlyBranchName ? _options.GitSource : GetFriendlyName(_options.GitSource);
+
+                _logger.LogDebug($"Creating branch ${branchName} with committish origin/{branchName}");
+                var branch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
+                _logger.LogDebug($"Checking out branch ${branchName}");
+                Commands.Checkout(Repository, branch);
+
+                _logger.LogDebug($"Checking out cached commit ${currentCommit.Sha}");
+                Commands.Checkout(Repository, currentCommit);
+            }
+            catch
+            {
+                // Do nothing, Checkout is already done
+            }
+        }
+
+        private string GetFriendlyName(string canonicalBranchName)
+        {
+            return string.Join('/', canonicalBranchName.Split('/', StringSplitOptions.RemoveEmptyEntries).Skip(2));
         }
     }
 }
