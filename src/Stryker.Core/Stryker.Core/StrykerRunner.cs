@@ -10,8 +10,6 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions;
 
 namespace Stryker.Core
 {
@@ -26,13 +24,12 @@ namespace Stryker.Core
         private IInitialisationProcess _initialisationProcess;
         private MutationTestInput _input;
         private IMutationTestProcess _mutationTestProcess;
-        private readonly IFileSystem _fileSystem;
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IFileSystem fileSystem = null)
+        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IReporter reporter = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
-            _fileSystem = fileSystem ?? new FileSystem();
+            _reporter = reporter;
         }
 
         /// <summary>
@@ -50,14 +47,6 @@ namespace Stryker.Core
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Create output dir with gitignore
-            _fileSystem.Directory.CreateDirectory(options.OutputPath);
-            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
-            {
-                file.WriteLine("*");
-            }
-
             // setup logging
             ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
@@ -68,11 +57,15 @@ namespace Stryker.Core
             try
             {
                 // initialize
-                _reporter = ReporterFactory.Create(options);
-                _initialisationProcess = _initialisationProcess ?? new InitialisationProcess();
+                if (_reporter == null)
+                {
+                    _reporter = ReporterFactory.Create(options);
+                }
+
+                _initialisationProcess ??= new InitialisationProcess();
                 _input = _initialisationProcess.Initialize(options);
 
-                _mutationTestProcess = _mutationTestProcess ?? new MutationTestProcess(
+                _mutationTestProcess ??= new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
@@ -84,12 +77,9 @@ namespace Stryker.Core
                 // mutate
                 _mutationTestProcess.Mutate();
 
-                if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
-                {
-                    logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
-                    // coverage
-                    _mutationTestProcess.GetCoverage();
-                }
+                _mutationTestProcess.GetCoverage();
+
+                _mutationTestProcess.FilterMutants();
 
                 // test mutations and return results
                 return _mutationTestProcess.Test(options);

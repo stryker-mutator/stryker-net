@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -103,6 +104,28 @@ namespace Stryker.CLI
             ArgumentDescription = @"Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "diff"
+        };
+
+        public static readonly CLIOption<bool> DashboardCompare = new CLIOption<bool>
+        {
+            ArgumentName = "--dashboard-compare",
+            ArgumentShortName = "-compare",
+            ArgumentDescription = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
+            ValueType = CommandOptionType.NoValue,
+            JsonKey = "dashboard-compare"
+
+        };
+
+
+        public static readonly CLIOption<string> BaselineStorageLocation = new CLIOption<string>
+        {
+            ArgumentName = "--baseline-storage-location",
+            ArgumentShortName = "-bsl <storageLocation>",
+            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(_defaultOptions.BaselineProvider, (IEnumerable<BaselineProvider>)Enum.GetValues(_defaultOptions.BaselineProvider.GetType())) }]
+                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.",
+            ValueType = CommandOptionType.SingleValue,
+            DefaultValue = _defaultOptions.BaselineProvider.ToString(),
+            JsonKey = "baseline-storage-location"
         };
 
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
@@ -280,6 +303,24 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-version"
         };
 
+        public static readonly CLIOption<string> DashboardFallbackVersionOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-fallback-version",
+            ArgumentShortName = "-fallback-version <version>",
+            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. When you don't specify a fallback version, --git-source will be used as fallback version. Example: If the current branch is based on the master branch, set 'master' as the fallback version",
+            DefaultValue = null,
+            JsonKey = "dashboard-fallback-version"
+        };
+
+        public static readonly CLIOption<string> DashboardUrlOption = new CLIOption<string>
+        {
+            ArgumentName = "--dashboard-url",
+            ArgumentShortName = "-url <dashboard-url>",
+            ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
+            DefaultValue = _defaultOptions.DashboardUrl,
+            JsonKey = "dashboard-url"
+        };
+
         public static readonly CLIOption<IEnumerable<string>> TestProjects = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--test-projects",
@@ -287,6 +328,29 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentDescription = $"Specify what test projects should run on the project under test.",
             DefaultValue = _defaultOptions.TestProjects,
             JsonKey = "test-projects"
+        };
+
+        public static readonly CLIOption<string> AzureSAS = new CLIOption<string>
+        {
+            ArgumentName = "--azure-storage-sas",
+            ArgumentShortName = "-sas <azure-sas-key>",
+            ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
+            DefaultValue = null,
+            JsonKey = "azure-storage-sas"
+        };
+
+        public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
+        {
+            ArgumentName = "--azure-storage-url",
+            ArgumentShortName = "-storage-url <url>",
+            ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+                                    The url should look something like this: 
+
+                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+
+                                    Note, the url might be different depending of where your file storage is hosted.",
+            DefaultValue = null,
+            JsonKey = "azure-storage-url"
         };
 
         public static readonly CLIOption<string> MutationLevel = new CLIOption<string>

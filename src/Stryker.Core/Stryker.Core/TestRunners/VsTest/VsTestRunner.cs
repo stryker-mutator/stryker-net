@@ -83,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool CantUseStrykerDataCollector()
         {
             return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.NetCore && t.TargetFrameworkAndVersion.version.Major < 2);
+                t.TargetFrameworkAndVersion.framework == Framework.DotNet && t.TargetFrameworkAndVersion.version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -329,43 +329,41 @@ namespace Stryker.Core.TestRunners.VsTest
             Action<RunEventHandler> updateHandler = null,
             int retries = 0)
         {
-            using (var eventHandler = new RunEventHandler(_logger, RunnerId))
+            using var eventHandler = new RunEventHandler(_logger, RunnerId);
+            void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
+            void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
+            var strykerVsTestHostLauncher = _hostBuilder(_id);
+
+            eventHandler.VsTestFailed += HandlerVsTestFailed;
+            eventHandler.ResultsUpdated += HandlerUpdate;
+
+            _aborted = false;
+            if (testCases != null)
             {
-                void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
-                void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
-                var strykerVsTestHostLauncher = _hostBuilder(_id);
-
-                eventHandler.VsTestFailed += HandlerVsTestFailed;
-                eventHandler.ResultsUpdated += HandlerUpdate;
-
-                _aborted = false;
-                if (testCases != null)
-                {
-                    _vsTestConsole.RunTestsWithCustomTestHost(_discoveredTests.Where(discoveredTest => testCases.Any(test => test.Id == discoveredTest.Id)), runSettings, eventHandler, strykerVsTestHostLauncher);
-                }
-                else
-                {
-                    _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler, strykerVsTestHostLauncher);
-                }
-
-                // Test host exited signal comes after the run completed
-                strykerVsTestHostLauncher.WaitProcessExit();
-
-                // At this point, run must have complete. Check signal for true
-                eventHandler.WaitEnd();
-
-                eventHandler.ResultsUpdated -= HandlerUpdate;
-                eventHandler.VsTestFailed -= HandlerVsTestFailed;
-
-                if (!_vsTestFailed || retries > 10)
-                {
-                    return eventHandler;
-                }
-                _vsTestConsole = PrepareVsTestConsole();
-                _vsTestFailed = false;
-
-                return RunTestSession(testCases, runSettings, updateHandler, ++retries);
+                _vsTestConsole.RunTestsWithCustomTestHost(_discoveredTests.Where(discoveredTest => testCases.Any(test => test.Id == discoveredTest.Id)), runSettings, eventHandler, strykerVsTestHostLauncher);
             }
+            else
+            {
+                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler, strykerVsTestHostLauncher);
+            }
+
+            // Test host exited signal comes after the run completed
+            strykerVsTestHostLauncher.WaitProcessExit();
+
+            // At this point, run must have complete. Check signal for true
+            eventHandler.WaitEnd();
+
+            eventHandler.ResultsUpdated -= HandlerUpdate;
+            eventHandler.VsTestFailed -= HandlerVsTestFailed;
+
+            if (!_vsTestFailed || retries > 10)
+            {
+                return eventHandler;
+            }
+            _vsTestConsole = PrepareVsTestConsole();
+            _vsTestFailed = false;
+
+            return RunTestSession(testCases, runSettings, updateHandler, ++retries);
         }
 
         private TraceLevel DetermineTraceLevel()
@@ -396,20 +394,6 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.TargetFramework;
-            var targetFrameworkVersion = projectAnalyzerResult.TargetFrameworkVersion;
-            string targetFrameworkVersionString;
-
-            switch (targetFramework)
-            {
-                case Initialisation.Framework.NetCore:
-                    targetFrameworkVersionString = $".NETCoreApp,Version=v{targetFrameworkVersion}";
-                    break;
-                case Initialisation.Framework.NetStandard:
-                    throw new StrykerInputException("Unsupported targetframework detected. A unit test project cannot be netstandard!: " + targetFramework);
-                default:
-                    targetFrameworkVersionString = $".NETFramework,Version=v{targetFrameworkVersion.ToString(2)}";
-                    break;
-            }
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, CodeInjection.HelperNamespace) : "";
@@ -429,12 +413,14 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
-{(targetFramework == Initialisation.Framework.NetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
+{(targetFramework == Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
-  <TargetFrameworkVersion>{targetFrameworkVersionString}</TargetFrameworkVersion>{timeoutSettings}{settingsForCoverage}
+{timeoutSettings}
+{settingsForCoverage}
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
- </RunConfiguration>{dataCollectorSettings}
+ </RunConfiguration>
+{dataCollectorSettings}
 </RunSettings>";
             _logger.LogDebug("VsTest run settings set to: {0}", runSettings);
 

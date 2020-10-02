@@ -1,4 +1,7 @@
-﻿using Shouldly;
+﻿using Moq;
+using Shouldly;
+using Stryker.Core.Baseline;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;
@@ -36,8 +39,9 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
             result.Reporters.ShouldContain(r => r is DashboardReporter);
+            result.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            result.Reporters.Count().ShouldBe(6);
+            result.Reporters.Count().ShouldBe(7);
         }
 
         [Fact]

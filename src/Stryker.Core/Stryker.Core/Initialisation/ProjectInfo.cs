@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Buildalyzer;
+﻿using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -24,7 +24,7 @@ namespace Stryker.Core.Initialisation
 
         public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {
-            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)), 
+            return Path.Combine(Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(testProject.AssemblyPath)),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.AssemblyPath));
         }
 
@@ -36,9 +36,9 @@ namespace Stryker.Core.Initialisation
 
     public enum Framework
     {
-        NetClassic,
-        NetCore,
-        NetStandard,
+        DotNetClassic,
+        DotNet,
+        DotNetStandard,
         Unknown
     }
 
@@ -62,9 +62,9 @@ namespace Stryker.Core.Initialisation
             _analyzerResult = analyzerResult;
         }
 
-        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName+".dll");
+        public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName + ".dll");
 
-        public string AssemblyName =>  GetPropertyOrDefault("AssemblyName");
+        public string AssemblyName => GetPropertyOrDefault("AssemblyName");
 
         public string SymbolFileName => $"{AssemblyName}.pdb";
 
@@ -136,7 +136,7 @@ namespace Stryker.Core.Initialisation
 
         private IList<string> BuildDefineConstants()
         {
-            var constants = GetPropertyOrDefault("DefineConstants", "").Split(";").ToList();
+            var constants = GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
 
             var (frameworkDoesNotSupportAppDomain, frameworkDoesNotSupportPipes) = CompatibilityModes;
 
@@ -163,15 +163,15 @@ namespace Stryker.Core.Initialisation
 
                 switch (framework)
                 {
-                    case Framework.NetCore when version.Major < 2:
+                    case Framework.DotNet when version.Major < 2:
                         compat_noAppDomain = true;
                         break;
-                    case Framework.NetStandard when version.Major < 2:
+                    case Framework.DotNetStandard when version.Major < 2:
                         compat_noAppDomain = true;
                         compat_noPipe = true;
                         break;
                     case Framework.Unknown:
-                    case Framework.NetClassic:
+                    case Framework.DotNetClassic:
                         compat_noPipe = version < new Version(3, 5);
                         break;
                 }
@@ -210,46 +210,56 @@ namespace Stryker.Core.Initialisation
         /// A tuple of <c>Framework</c> and <c>Version</c> which together form the target framework and framework version of the project.
         /// </returns>
         /// <example>
-        /// <c>(Framework.NetCore, 3.0)</c>
+        /// <c>(Framework.DotNet, 3.0)</c>
         /// </example>
         public (Framework framework, Version version) TargetFrameworkAndVersion
         {
             get
             {
-                var label = new Dictionary<string, Framework>
-                {
-                    ["netcoreapp"] = Framework.NetCore,
-                    ["netstandard"] = Framework.NetStandard,
-                    ["net"] = Framework.NetClassic
-                };
                 try
                 {
-                    var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<kind>\\D+)(?<version>[\\d\\.]+)");
-                    if (analysis.Success && label.ContainsKey(analysis.Groups["kind"].Value))
-                    {
-                        var version = analysis.Groups["version"].Value;
-                        if (!version.Contains('.'))
-                        {
-                            if (version.Length == 2)
-                            // we have a aggregated version id
-                            {
-                                version = $"{version[0]}.{version.Substring(1)}";
-                            }
-                            else if (version.Length == 3)
-                            {
-                                version = $"{version[0]}.{version[1]}.{version[2]}";
-                            }
-                        }
-                        return (label[analysis.Groups["kind"].Value], new Version(version));
-                    }
-
-                    return (Framework.Unknown, new Version());
+                    return (ParseTargetFramework(), ParseTargetFrameworkVersion());
                 }
                 catch (ArgumentException)
                 {
                     throw new StrykerInputException($"Unable to parse framework version string {TargetFrameworkVersionString}. Please fix the framework version in the csproj.");
                 }
             }
+        }
+
+        private Framework ParseTargetFramework()
+        {
+            return TargetFrameworkVersionString switch
+            {
+                string framework when framework.StartsWith("netcoreapp") => Framework.DotNet,
+                string framework when framework.StartsWith("netstandard") => Framework.DotNetStandard,
+                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) >= 5 => Framework.DotNet,
+                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) <= 4 => Framework.DotNetClassic,
+                _ => Framework.Unknown
+            };
+        }
+
+        private Version ParseTargetFrameworkVersion()
+        {
+            var analysis = Regex.Match(TargetFrameworkVersionString ?? string.Empty, "(?<version>[\\d\\.]+)");
+            if (analysis.Success)
+            {
+                var version = analysis.Groups["version"].Value;
+                if (!version.Contains('.'))
+                {
+                    if (version.Length == 2)
+                    // we have a aggregated version id
+                    {
+                        version = $"{version[0]}.{version.Substring(1)}";
+                    }
+                    else if (version.Length == 3)
+                    {
+                        version = $"{version[0]}.{version[1]}.{version[2]}";
+                    }
+                }
+                return new Version(version);
+            }
+            return new Version();
         }
 
         public string GetPropertyOrDefault(string name, string defaultValue = null)
@@ -288,9 +298,9 @@ namespace Stryker.Core.Initialisation
             {
                 nullableOptions = NullableContextOptions.Enable;
             }
-            
+
             var result = new CSharpCompilationOptions(kind)
-                .WithNullableContextOptions((NullableContextOptions) nullableOptions)
+                .WithNullableContextOptions((NullableContextOptions)nullableOptions)
                 .WithAllowUnsafe(GetPropertyOrDefault("AllowUnsafeBlocks", true))
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)

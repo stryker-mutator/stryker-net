@@ -44,6 +44,7 @@ namespace Stryker.CLI
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
             var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
+            var dashboardUrlParam = CreateOption(app, CLIOptions.DashboardUrlOption);
             var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectNameOption);
             var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleNameOption);
             var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersionOption);
@@ -67,8 +68,13 @@ namespace Stryker.CLI
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
+            var diffCompareToDashboard = CreateOption(app, CLIOptions.DashboardCompare);
             var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
+            var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
+            var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
+            var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
+            var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);
             var mutationLevelParam = CreateOption(app, CLIOptions.MutationLevel);
 
             app.HelpOption("--help | -h | -?");
@@ -80,7 +86,9 @@ namespace Stryker.CLI
                     basePath: Directory.GetCurrentDirectory(),
                     reporter: reporterParam,
                     dashboardApiKey: dashboardApiKeyParam,
+                    dashboardUrl: dashboardUrlParam,
                     reportersProjectName: reportersProjectNameParam,
+                    fallbackVersion: fallbackVersionParam,
                     reportersModuleName: reportersModuleNameParam,
                     reportersProjectVersion: reportersProjectVersionParam,
                     projectUnderTestNameFilter: projectNameParam,
@@ -104,8 +112,12 @@ namespace Stryker.CLI
                     solutionPath: solutionPathParam,
                     languageVersion: languageVersion,
                     diff: diffParam,
+                    diffCompareToDashboard: diffCompareToDashboard,
                     gitSource: gitSourceParam,
                     testProjects: testProjectsParam,
+                    baselineStorageLocation: baselineStorageLocation,
+                    azureFileStorageUrl: azureFileStorageUrl,
+                    azureSAS: azureSAS,
                     mutationLevel: mutationLevelParam);
 
                 RunStryker(options);

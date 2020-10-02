@@ -148,6 +148,10 @@ namespace Stryker.Core.Initialisation
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
             };
             var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
+
+            // Save cache in a singleton so we can use it in other parts of the project
+            FolderCompositeCache.Instance.Cache = cache;
+
             inputFiles.Add(rootFolderComposite);
 
             CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
@@ -505,7 +509,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.NetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.DotNetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&

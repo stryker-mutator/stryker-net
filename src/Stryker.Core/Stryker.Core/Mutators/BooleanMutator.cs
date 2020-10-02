@@ -7,27 +7,23 @@ namespace Stryker.Core.Mutators
 {
     public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
     {
-        private Dictionary<SyntaxKind, SyntaxKind> _kindsToMutate { get; }
-
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public BooleanMutator()
+        private static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
         {
-            _kindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
-            {
-                {SyntaxKind.TrueLiteralExpression, SyntaxKind.FalseLiteralExpression },
-                {SyntaxKind.FalseLiteralExpression, SyntaxKind.TrueLiteralExpression }
-            };
-        }
+            {SyntaxKind.TrueLiteralExpression, SyntaxKind.FalseLiteralExpression },
+            {SyntaxKind.FalseLiteralExpression, SyntaxKind.TrueLiteralExpression }
+        };
+
 
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
-            if (_kindsToMutate.ContainsKey(node.Kind()))
+            if (KindsToMutate.ContainsKey(node.Kind()))
             {
                 yield return new Mutation()
                 {
                     OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.LiteralExpression(_kindsToMutate[node.Kind()]),
+                    ReplacementNode = SyntaxFactory.LiteralExpression(KindsToMutate[node.Kind()]),
                     DisplayName = "Boolean mutation",
                     Type = Mutator.Boolean
                 };

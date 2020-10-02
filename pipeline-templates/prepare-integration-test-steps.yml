@@ -1,8 +1,9 @@
 steps:
-  - task: UseDotNet@2
-    displayName: 'Install dotnet core 3.1.x because agents are not up to date'
+  - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
+    displayName: 'Restore'
     inputs:
-      version: 3.1.x
+      command: 'restore'
+      projects: 'src/Stryker.CLI/Stryker.CLI.sln'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run unit tests'
@@ -16,16 +17,16 @@ steps:
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
       includeNuGetOrg: false
       workingDirectory: 'pipeline-templates'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Install integrationtest dotnet tool'
+    displayName: 'Install integrationtest dotnet tool (source)'
     condition: eq(variables['System.PullRequest.IsFork'], 'False')
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker -g --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
       includeNuGetOrg: false
       workingDirectory: 'pipeline-templates'

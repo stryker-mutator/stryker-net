@@ -30,7 +30,6 @@ Example `stryker-config.json` file:
 {
     "stryker-config":
     {
-        "test-runner": "vstest",
         "reporters": [
             "progress",
             "html"
@@ -43,11 +42,10 @@ Example `stryker-config.json` file:
         "threshold-high": 80,
         "threshold-low": 70,
         "threshold-break": 60,
-        "file-patterns": [
+        "mutate": [
             "!ExampleClass.cs",
-            "!ExampleDirectory",
-            "!ExampleDirectory/ExampleClass2.cs",
-            "!C:\\ExampleRepo\\ExampleDirectory\\ExampleClass.cs"
+            "!Migrations/*.*",
+            "!ExampleDirectory\\ExampleClass2.cs"
         ],
         "excluded-mutations": [
             "string",
@@ -57,7 +55,11 @@ Example `stryker-config.json` file:
             "*Log*",
             "ToString",
             "*HashCode*"
-        ]
+        ],
+        "dashboard-compare": true,
+        "baseline-storage-location": "AzureFileStorage",
+        "azure-storage-url": "https://storageaccount.file.core.windows.net/sharename",
+        "azure-storage-sas": "<SAS>"
     }
 }
 ```
@@ -361,3 +363,95 @@ dotnet stryker -gs "development"
 ```
 
 Default: `master`
+
+This feature works based on file diffs, which means that all changed filles will have all of its possible mutants mutated.
+
+Also note that for changes on test files all mutants being tested in that file will be mutated.
+
+## EXPERIMENTAL: Dashboard Compare
+Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
+
+```
+dotnet stryker --dashboard-compare
+dotnet stryker -compare
+```
+
+Default `"off"`
+
+This feature automatically enables the --diff feature.
+
+This feature is experimental. Results can contain slight false postives and false negatives.
+
+## Fallback version
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
+
+```
+dotnet stryker --dashboard-compare --dashboard-fallback-version master
+dotnet stryker -compare -fallback-version master
+```
+Default: value provided to --git-source or null
+
+## Baseline Storage location
+Sets the storage location for the baseline used by --dashboard-compare. By default this is set to disk, when the dashboard reporter is enabled this is automatically set to Stryker Dashboard.
+
+Supported storage locations are:
+
+| Storage location | Option | Description |
+|------------------|--------|-------------|
+| Disk             | Disk   | Saves the baseline to the `StrykerOutput` folder|
+| Stryker Dashboard| Dashboard | Saves the baseline to Stryker Dashboard |
+| Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
+
+```
+dotnet stryker --dashboard-compare --baseline-storage-location disk
+dotnet stryker -compare -bsl disk
+```
+Defaut `"disk"`
+
+## Configuring Azure File Storage
+When using Azure File Storage as baseline storage location you are required to provide the following values.
+
+### Azure File Storage URL
+This is the url to your Azure File Storage. The URL should look something like this:
+
+```
+https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
+Providing a subfolder is optional, we store the baseline in a `StrykerOutput` subfolder.
+
+```
+-storage url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+--azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
+
+### Shared Access Signature (SAS)
+For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+
+```
+-storage-sas <STORAGE_SAS>
+--azure-storage-sas <STORAGE_SAS>
+```
+
+The complete configuration would look like this:
+```
+dotnet stryker --dashboard-compare --baseline-storage-location AzureFileStorage --azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-storage-sas STORAGE_SAS
+
+or
+
+dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
+```
+
+
+## Configuring Dashboard Compare on pull requests
+When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
+
+1.  Enable --dashboard-compare.
+2. Set --dashboard-version to the name of the source branch for your pull request.
+3. Set --dashboard-fallback-version to the name of the target branch for your pull request.
+4. Set --git-source to the name of the target branch of your pull request.
+
+```
+dotnet stryker --dashboard-compare --git-source master --dashboard-version development
+dotnet stryker -compare -source master -version development
+
+```

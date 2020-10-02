@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
@@ -8,12 +7,16 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Helpers;
+using Stryker.Core.Mutants.NodeOrchestrators;
 
 namespace Stryker.Core.Mutants
 {
     public interface IMutantOrchestrator
     {
         SyntaxNode Mutate(SyntaxNode rootNode);
+
         /// <summary>
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
@@ -28,12 +31,16 @@ namespace Stryker.Core.Mutants
     public class MutantOrchestrator : IMutantOrchestrator
     {
         private readonly StrykerOptions _options;
+
+        private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
+            new TypeBasedStrategy<SyntaxNode, INodeMutator>();
+
         private ICollection<Mutant> Mutants { get; set; }
         private int MutantCount { get; set; }
-        private IEnumerable<IMutator> Mutators { get; }
+        internal IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
-        private bool MustInjectCoverageLogic =>
+        internal bool MustInjectCoverageLogic =>
             _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
             !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
 
@@ -42,25 +49,40 @@ namespace Stryker.Core.Mutants
         {
             _options = options;
             Mutators = mutators ?? new List<IMutator>()
-                {
-                    // the default list of mutators
-                    new BinaryExpressionMutator(),
-                    new BooleanMutator(),
-                    new AssignmentExpressionMutator(),
-                    new PrefixUnaryMutator(),
-                    new PostfixUnaryMutator(),
-                    new CheckedMutator(),
-                    new LinqMutator(),
-                    new StringMutator(),
-                    new StringEmptyMutator(),
-                    new InterpolatedStringMutator(),
-                    new NegateConditionMutator(),
-                    new InitializerMutator(),
-                    new ObjectCreationMutator(),
-                    new ArrayCreationMutator()
-                };
+            {
+                // the default list of mutators
+                new BinaryExpressionMutator(),
+                new BooleanMutator(),
+                new AssignmentExpressionMutator(),
+                new PrefixUnaryMutator(),
+                new PostfixUnaryMutator(),
+                new CheckedMutator(),
+                new LinqMutator(),
+                new StringMutator(),
+                new StringEmptyMutator(),
+                new InterpolatedStringMutator(),
+                new NegateConditionMutator(),
+                new InitializerMutator(),
+                new ObjectCreationMutator(),
+                new ArrayCreationMutator(),
+                new RegexMutator()
+            };
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
+
+            _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
+            {
+                new ForStatementOrchestrator(),
+                new AssignmentStatementOrchestrator(),
+                new PostfixUnaryExpressionOrchestrator(),
+                new StaticFieldDeclarationOrchestrator(),
+                new StaticConstructorOrchestrator(),
+                new StaticPropertyOrchestrator(),
+                new ArrayInitializerOrchestrator(),
+                new MethodDeclarationOrchestrator(),
+                new ConstLocalDeclarationOrchestrator(),
+                new SyntaxNodeOrchestrator()
+            });
         }
 
         /// <summary>
@@ -71,7 +93,7 @@ namespace Stryker.Core.Mutants
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();
-            return (IReadOnlyCollection<Mutant>)tempMutants;
+            return (IReadOnlyCollection<Mutant>) tempMutants;
         }
 
         /// <summary>
@@ -81,10 +103,11 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            return Mutate(currentNode, new MutationContext());
+            return Mutate(currentNode, new MutationContext(this));
         }
 
-        private SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
+        // recursive version
+        internal SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
         {
             // don't mutate immutable nodes
             if (!SyntaxHelper.CanBeMutated(currentNode))
@@ -92,295 +115,68 @@ namespace Stryker.Core.Mutants
                 return currentNode;
             }
 
-            // identify static related structure
-            switch (currentNode)
+            // search for node specific handler
+            var nodeHandler = _specificOrchestrator.FindHandler(currentNode);
+            return nodeHandler.Mutate(currentNode, context);
+        }
+
+        internal IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode current, MutationContext context)
+        {
+            foreach (var mutator in Mutators)
             {
-                // static fields
-                case FieldDeclarationSyntax fieldDeclaration when fieldDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext { InStaticValue = true };
-                    break;
-                // static constructors
-                case ConstructorDeclarationSyntax constructorDeclaration when constructorDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword):
-                    context = new MutationContext { InStaticValue = true };
-                    if (MustInjectCoverageLogic)
+                foreach (var mutation in mutator.Mutate(current, _options))
+                {
+                    var id = MutantCount;
+                    Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
+                        mutation.ReplacementNode, mutator.GetType());
+                    var newMutant = new Mutant
                     {
-                        return MutateStaticConstructor(constructorDeclaration, context);
-                    }
-                    break;
-                // static properties
-                case PropertyDeclarationSyntax propertyDeclaration when propertyDeclaration.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword) && propertyDeclaration.AccessorList != null:
-                    context = new MutationContext { InStaticValue = true };
-                    if (MustInjectCoverageLogic)
+                        Id = id,
+                        Mutation = mutation,
+                        ResultStatus = MutantStatus.NotRun,
+                        IsStaticValue = context.InStaticValue
+                    };
+                    var duplicate = false;
+                    // check if we have a duplicate
+                    foreach (var mutant in Mutants)
                     {
-                        return MutateStaticAccessor(propertyDeclaration, context);
+                        if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
+                            !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
+                        {
+                            continue;
+                        }
+                        Logger.LogDebug($"Mutant {id} discarded as it is a duplicate of {mutant.Id}");
+                        duplicate = true;
+                        break;
                     }
-                    break;
-            }
 
-            switch (currentNode)
-            {
-                // apply statement specific strategies (where applicable)
-                case ExpressionStatementSyntax tentativeAssignment when tentativeAssignment.Expression is AssignmentExpressionSyntax assign:
-                    return MutateAssignment(tentativeAssignment, assign, context);
-                case ExpressionStatementSyntax tentativeAssignment when tentativeAssignment.Expression is PostfixUnaryExpressionSyntax || tentativeAssignment.Expression is PrefixUnaryExpressionSyntax:
-                    return MutateUnaryStatement(tentativeAssignment, context);
-                case ExpressionStatementSyntax expressionStatement:
-                    // we must skip the expression statement part
-                    return currentNode.ReplaceNode(expressionStatement.Expression, Mutate(expressionStatement.Expression, context));
-                case IfStatementSyntax ifStatement:
-                    return MutateIfStatement(ifStatement, context);
-                case ForStatementSyntax forStatement:
-                    return MutateForStatement(forStatement, context);
-            }
+                    if (duplicate)
+                    {
+                        continue;
+                    }
 
-            var mutatedNode = MutateExpression(currentNode, context);
-            return AddReturnDefault(mutatedNode);
-        }
-
-        private SyntaxNode MutateStaticConstructor(ConstructorDeclarationSyntax constructorDeclaration, MutationContext context)
-        {
-            var trackedConstructor = constructorDeclaration.TrackNodes((SyntaxNode) constructorDeclaration.Body ?? constructorDeclaration.ExpressionBody);
-            if (constructorDeclaration.ExpressionBody != null)
-            {
-                var bodyBlock = SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(constructorDeclaration.ExpressionBody.Expression));
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(bodyBlock, context));
-                trackedConstructor = trackedConstructor.Update(
-                    trackedConstructor.AttributeLists,
-                    trackedConstructor.Modifiers,
-                    trackedConstructor.Identifier,
-                    trackedConstructor.ParameterList,
-                    trackedConstructor.Initializer,
-                    markedBlock,
-                    null,
-                    SyntaxFactory.Token(SyntaxKind.None));
-            }
-            else if (constructorDeclaration.Body != null)
-            {
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) Mutate(constructorDeclaration.Body, context));
-                trackedConstructor = trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(constructorDeclaration.Body), markedBlock);
-            }
-
-            return trackedConstructor;
-        }
-
-        private SyntaxNode MutateStaticAccessor(PropertyDeclarationSyntax accessorDeclaration, MutationContext context)
-        {
-            var trackedNode = accessorDeclaration.TrackNodes(accessorDeclaration.AccessorList.Accessors.Select(x => (SyntaxNode)x.Body ?? x.ExpressionBody).Where(x => x != null));
-            foreach (var accessor in accessorDeclaration.AccessorList.Accessors)
-            {
-                if (accessor.ExpressionBody != null)
-                {
-                    var markedBlock = Mutate(accessor.ExpressionBody, context);
-                    trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.ExpressionBody), markedBlock);
-                }
-                else if (accessor.Body != null)
-                {
-                    var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)Mutate(accessor.Body, context));
-                    trackedNode = trackedNode.ReplaceNode(trackedNode.GetCurrentNode(accessor.Body), markedBlock);
+                    Mutants.Add(newMutant);
+                    MutantCount++;
+                    yield return newMutant;
                 }
             }
-
-            return trackedNode;
         }
 
-        private SyntaxNode MutateAssignment(ExpressionStatementSyntax tentativeAssignment, AssignmentExpressionSyntax assign, MutationContext context)
+        internal StatementSyntax PlaceMutantWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
         {
-            var expressionCopy = tentativeAssignment.TrackNodes(tentativeAssignment, assign, assign.Right);
-            // mutate +=, *=, ...
-            var result = MutateSubExpressionWithIfStatements(tentativeAssignment, expressionCopy, assign, context);
-            // mutate the part right to the equal sign
-            return result.ReplaceNode(result.GetCurrentNode(assign.Right), Mutate(assign.Right, context));
+            var syntax = node;
+            return mutationsControlledByIfs.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(syntax, mutant), mutant.Id));
         }
 
-        private SyntaxNode MutateIfStatement(IfStatementSyntax ifStatement, MutationContext context)
+        internal ExpressionSyntax PlaceMutantWithinConditionalControls(in ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
         {
-            var mutatedIf = ifStatement.Else != null
-                ? ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement, ifStatement.Else)
-                : ifStatement.TrackNodes(ifStatement.Condition, ifStatement.Statement);
-
-            var mutated = false;
-
-            if (!ifStatement.Condition.ContainsDeclarations())
-            {
-                var currentCondition = mutatedIf.GetCurrentNode(ifStatement.Condition);
-                var mutatedCondition = Mutate(ifStatement.Condition, context);
-                if (mutatedCondition != currentCondition)
-                {
-                    mutatedIf = mutatedIf.ReplaceNode(currentCondition, mutatedCondition);
-                    mutated = true;
-                }
-            }
-
-            if (ifStatement.Else != null)
-            {
-                var currentElse = mutatedIf.GetCurrentNode(ifStatement.Else);
-                var mutatedElse = Mutate(ifStatement.Else, context);
-                if (mutatedElse != currentElse)
-                {
-                    mutatedIf = mutatedIf.ReplaceNode(currentElse, mutatedElse);
-                    mutated = true;
-                }
-            }
-
-            var currentStatement = mutatedIf.GetCurrentNode(ifStatement.Statement);
-            var mutatedStatement = Mutate(ifStatement.Statement, context);
-            if (currentStatement != mutatedStatement)
-            {
-                mutatedIf = mutatedIf.ReplaceNode(currentStatement, mutatedStatement);
-                mutated = true;
-            }
-            return mutated ? mutatedIf : ifStatement;
+            var syntax = node;
+            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(syntax, mutant), mutant.Id));
         }
 
-        private SyntaxNode MutateForStatement(ForStatementSyntax forStatement, MutationContext context)
+        // inject the mutation within the control structure
+        private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
         {
-            // for needs special treatments for its incrementors
-            StatementSyntax forWithMutantIncrementors = forStatement.TrackNodes(forStatement);
-
-            foreach (var incrementor in forStatement.Incrementors)
-            {
-                forWithMutantIncrementors = MutateSubExpressionWithIfStatements(forStatement, forWithMutantIncrementors, incrementor, context);
-            }
-
-            var originalFor = forWithMutantIncrementors.GetCurrentNode(forStatement);
-
-            // mutate condition, if any
-            ForStatementSyntax mutatedFor;
-            StatementSyntax statementPart;
-            if (forStatement.Condition == null)
-            {
-                mutatedFor = forStatement;
-                statementPart = forStatement.Statement;
-            }
-            else
-            {
-                mutatedFor = forStatement.TrackNodes(forStatement.Condition, forStatement.Statement);
-                mutatedFor = mutatedFor.ReplaceNode(mutatedFor.GetCurrentNode(forStatement.Condition),
-                    Mutate(forStatement.Condition, context));
-                statementPart = mutatedFor.GetCurrentNode(forStatement.Statement);
-            }
-
-            // mutate the statement/block
-            mutatedFor = mutatedFor.ReplaceNode(statementPart, Mutate(forStatement.Statement, context));
-            // and now we replace it
-            return forWithMutantIncrementors.ReplaceNode(originalFor, mutatedFor);
-        }
-
-        private SyntaxNode MutateUnaryStatement(ExpressionStatementSyntax expressionStatement, MutationContext context)
-        {
-            var expressionCopy = expressionStatement.TrackNodes(expressionStatement, expressionStatement.Expression);
-            return MutateSubExpressionWithIfStatements(expressionStatement, expressionCopy, expressionStatement.Expression, context);
-        }
-
-        private SyntaxNode MutateExpression(SyntaxNode currentNode, MutationContext context)
-        {
-            // Nothing to mutate, dig further
-            var childCopy = currentNode.TrackNodes(currentNode.ChildNodes().ToList().Append(currentNode));
-            var mutated = false;
-            foreach (var child in currentNode.ChildNodes().ToList())
-            {
-                var mutatedChild = Mutate(child, context);
-                if (child != mutatedChild)
-                {
-                    var currentChild = childCopy.GetCurrentNode(child);
-                    childCopy = childCopy.ReplaceNode(currentChild, mutatedChild);
-                    mutated = true;
-                }
-            }
-
-            if (currentNode is ExpressionSyntax expression && !expression.ContainsDeclarations())
-            {
-                childCopy = MutateSubExpressionWithConditional(expression, (ExpressionSyntax)childCopy, context);
-                mutated = true;
-            }
-
-            return mutated ? childCopy : currentNode;
-        }
-
-        private IEnumerable<Mutant> FindMutants(SyntaxNode current, MutationContext context)
-        {
-            return Mutators.SelectMany(mutator => ApplyMutator(current, mutator, context));
-        }
-
-        private StatementSyntax MutateSubExpressionWithIfStatements(StatementSyntax originalNode, StatementSyntax nodeToReplace, SyntaxNode subExpression, MutationContext context)
-        {
-            var ast = nodeToReplace;
-            // The mutations should be placed using an IfStatement
-            foreach (var mutant in FindMutants(subExpression, context))
-            {
-                var mutatedNode = ApplyMutant(originalNode, mutant);
-                ast = MutantPlacer.PlaceWithIfStatement(ast, mutatedNode, mutant.Id);
-            }
-            return ast;
-        }
-
-        private ExpressionSyntax MutateSubExpressionWithConditional(ExpressionSyntax originalNode, ExpressionSyntax currentNode, MutationContext context)
-        {
-            return FindMutants(originalNode, context).Aggregate(currentNode, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, ApplyMutant(originalNode, mutant), mutant.Id));
-        }
-
-        /// <summary>
-        /// Mutates one single SyntaxNode using a mutator
-        /// </summary>
-        private IEnumerable<Mutant> ApplyMutator(SyntaxNode syntaxNode, IMutator mutator, MutationContext context)
-        {
-            var mutations = mutator.Mutate(syntaxNode, _options);
-            foreach (var mutation in mutations)
-            {
-                Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", MutantCount, mutation.OriginalNode, mutation.ReplacementNode, mutator.GetType());
-                yield return new Mutant()
-                {
-                    Id = MutantCount++,
-                    Mutation = mutation,
-                    ResultStatus = MutantStatus.NotRun,
-                    IsStaticValue = context.InStaticValue
-                };
-            }
-        }
-
-        /// <summary>
-        /// Add return default to the end of the method to prevent "not all code paths return a value" error as a result of mutations
-        /// </summary>
-        private SyntaxNode AddReturnDefault(SyntaxNode currentNode)
-        {
-            // If it's not a method or the method has no body skip the node
-            if (!(currentNode is MethodDeclarationSyntax methodNode) || methodNode.Body == null)
-            {
-                return currentNode;
-            }
-
-            // If method return type is void skip the node
-            if (methodNode.ReturnType is PredefinedTypeSyntax predefinedType && predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword))
-            {
-                return currentNode;
-            }
-            
-            TypeSyntax returnType = methodNode.ReturnType;
-
-            // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
-            var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
-            if (methodNode.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
-            {
-                if (genericReturn != null)
-                {
-                    // if the method is async and returns a generic task, make the return default return the underlying type
-                    returnType = genericReturn.TypeArgumentList.Arguments.First();
-                } else
-                {
-                    // if the method is async but returns a non-generic task, don't add the return default
-                    return currentNode;
-                }
-            }
-
-            var newBody = methodNode.Body.AddStatements(MutantPlacer.AnnotateHelper(SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType))));
-            currentNode = currentNode.ReplaceNode(methodNode.Body, newBody);
-
-            return currentNode;
-        }
-
-        private T ApplyMutant<T>(T node, Mutant mutant) where T : SyntaxNode
-        {
-            Mutants.Add(mutant);
             return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
         }
     }

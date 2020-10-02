@@ -51,5 +51,21 @@ namespace Stryker.Core.UnitTest.Mutators
             result1.ShouldBeEmpty();
             result2.ShouldBeEmpty();
         }
+
+        [Fact]
+        public void ShouldMutateStackallocArrays()
+        {
+            var stackallocArrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 1 }") as StackAllocArrayCreationExpressionSyntax;
+
+            var target = new ArrayCreationMutator();
+
+            var result = target.ApplyMutations(stackallocArrayCreationExpression);
+
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("Array initializer mutation");
+
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<StackAllocArrayCreationExpressionSyntax>();
+            replacement.Initializer.Expressions.ShouldBeEmpty();
+        }
     }
 }

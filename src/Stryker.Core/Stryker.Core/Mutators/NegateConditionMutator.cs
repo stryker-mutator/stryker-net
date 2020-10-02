@@ -18,13 +18,20 @@ namespace Stryker.Core.Mutators
                 // we can't mutate IsPatternExpression without breaking build
                 yield break;
             }
+
             switch (node.Parent)
             {
                 case IfStatementSyntax ifStatementSyntax:
-                    replacement = NegateCondition(ifStatementSyntax.Condition);
+                    if (ifStatementSyntax.Condition == node)
+                    {
+                        replacement = NegateCondition(ifStatementSyntax.Condition);
+                    }
                     break;
                 case WhileStatementSyntax whileStatementSyntax:
-                    replacement = NegateCondition(whileStatementSyntax.Condition);
+                    if (whileStatementSyntax.Condition == node)
+                    {
+                        replacement = NegateCondition(whileStatementSyntax.Condition);
+                    }
                     break;
                 case ConditionalExpressionSyntax conditionalExpressionSyntax:
                     if (conditionalExpressionSyntax.Condition == node)
