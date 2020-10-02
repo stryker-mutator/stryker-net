@@ -9,7 +9,7 @@ namespace Stryker.Core.Logging
 
     using Serilog.Events;
 
-    using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
+    using MSLogLevel = LogLevel;
 
     public static class ApplicationLogging
     {
