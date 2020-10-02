@@ -35,14 +35,24 @@ namespace Stryker.Core.DashboardCompare
 
         public string GetCurrentBranchName()
         {
+            string branchName = null;
             if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
             {
                 _logger.LogDebug("{0} identified as current branch", identifiedBranch.FriendlyName);
-                return identifiedBranch.FriendlyName;
+                branchName = identifiedBranch.FriendlyName;
             }
 
-            _logger.LogWarning("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
-            return _options.ProjectVersion ?? throw new StrykerInputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                _logger.LogDebug("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
+                branchName = _options.ProjectVersion;
+            }
+
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                throw new StrykerInputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
+            }
+            return branchName;
         }
 
         public Commit DetermineCommit()
