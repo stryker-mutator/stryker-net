@@ -11,14 +11,6 @@ namespace Stryker.Core.DashboardCompare
 
     public class GitInfoProvider : IGitInfoProvider
     {
-        private enum GitSourceKinds
-        {
-            Unknown,
-            Commit,
-            CanonicalBranchName,
-            FriendlyBranchName
-        }
-
         private readonly StrykerOptions _options;
         private readonly string _repositoryPath;
         private readonly ILogger<GitInfoProvider> _logger;
@@ -43,35 +35,29 @@ namespace Stryker.Core.DashboardCompare
 
         public string GetCurrentBranchName()
         {
-            if (Repository?.Branches == null)
-            {
-                _logger.LogInformation("There is no information available about your current branch. Performing a checkout.");
-                //Checkout();
-            }
-
             if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
             {
-                _logger.LogInformation("{0} identified as current branch", identifiedBranch.FriendlyName);
+                _logger.LogDebug("{0} identified as current branch", identifiedBranch.FriendlyName);
                 return identifiedBranch.FriendlyName;
             }
 
-            _logger.LogInformation("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
-            return _options.ProjectVersion;
+            _logger.LogWarning("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
+            return _options.ProjectVersion ?? throw new StrykerInputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
         }
 
         public Commit DetermineCommit()
         {
-            var (gitSourceKind, commit) = GetCommit();
+            var commit = GetCommit();
 
             if (commit == null)
             {
-                Checkout(gitSourceKind);
-                (_, commit) = GetCommit();
+                CreateLocalBranchForGitDiffTarget();
+                commit = GetCommit();
             }
 
             if (commit == null)
             {
-                throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
+                throw new StrykerInputException($"No Branch or commit found with given target {_options.GitDiffTarget}. Please provide a different GitDiffTarget.");
             }
 
             return commit;
@@ -87,24 +73,21 @@ namespace Stryker.Core.DashboardCompare
             return new Repository(RepositoryPath);
         }
 
-        private (GitSourceKinds, Commit) GetCommit()
+        private Commit GetCommit()
         {
-            GitSourceKinds gitSourceKind = GitSourceKinds.Unknown;
             Branch sourceBranch = null;
             foreach (var branch in Repository.Branches)
             {
                 try
                 {
-                    if (branch.CanonicalName == _options.GitSource)
+                    if (branch.CanonicalName.Contains(_options.GitDiffTarget))
                     {
                         sourceBranch = branch;
-                        gitSourceKind = GitSourceKinds.CanonicalBranchName;
                         break;
                     }
-                    if (branch.FriendlyName == _options.GitSource)
+                    if (branch.FriendlyName.Contains(_options.GitDiffTarget))
                     {
                         sourceBranch = branch;
-                        gitSourceKind = GitSourceKinds.FriendlyBranchName;
                         break;
                     }
                 }
@@ -116,47 +99,42 @@ namespace Stryker.Core.DashboardCompare
 
             if (sourceBranch != null)
             {
-                return (gitSourceKind, sourceBranch.Tip);
+                return sourceBranch.Tip;
             }
 
-            if (_options.GitSource.Length == 40)
+            // It's a commit!
+            if (_options.GitDiffTarget.Length == 40)
             {
-                var commit = Repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
+                var commit = Repository.Lookup(new ObjectId(_options.GitDiffTarget)) as Commit;
 
                 if (commit != null)
                 {
-                    _logger.LogDebug($"Found commit {commit.Sha} for commit {_options.GitSource}");
-                    return (GitSourceKinds.Commit, commit);
+                    _logger.LogDebug($"Found commit {commit.Sha} for branch {_options.GitDiffTarget}");
+                    return commit;
                 }
             }
 
-            return (gitSourceKind, null);
+            return null;
         }
 
-        private void Checkout(GitSourceKinds gitSourceKind)
+        private void CreateLocalBranchForGitDiffTarget()
         {
             try
             {
                 var currentCommit = Repository.Head.Tip;
-                var branchName = gitSourceKind == GitSourceKinds.FriendlyBranchName ? _options.GitSource : GetFriendlyName(_options.GitSource);
 
-                _logger.LogDebug($"Creating branch ${branchName} with committish origin/{branchName}");
-                var branch = Repository.CreateBranch(_options.ProjectVersion, $"origin/{_options.ProjectVersion}");
-                _logger.LogDebug($"Checking out branch ${branchName}");
-                Commands.Checkout(Repository, branch);
+                _logger.LogDebug("Creating branch {0} with committish dashboard-compare/{0}", _options.GitDiffTarget);
+                var targetBranch = Repository.CreateBranch(_options.GitDiffTarget, $"dashboard-compare/{_options.GitDiffTarget}");
+                _logger.LogDebug("Checking out branch {0}", _options.GitDiffTarget);
+                Commands.Checkout(Repository, targetBranch);
 
-                _logger.LogDebug($"Checking out cached commit ${currentCommit.Sha}");
+                _logger.LogDebug("Checking out cached commit {0}", currentCommit.Sha);
                 Commands.Checkout(Repository, currentCommit);
             }
             catch
             {
                 // Do nothing, Checkout is already done
             }
-        }
-
-        private string GetFriendlyName(string canonicalBranchName)
-        {
-            return string.Join('/', canonicalBranchName.Split('/', StringSplitOptions.RemoveEmptyEntries).Skip(2));
         }
     }
 }
