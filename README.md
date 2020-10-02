@@ -79,3 +79,5 @@ For the full list of all available reporters, see the [reporter docs](/docs/Repo
 
 ## Contributing
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
+
+Issues for the HTML report should be issued at https://github.com/stryker-mutator/mutation-testing-elements
