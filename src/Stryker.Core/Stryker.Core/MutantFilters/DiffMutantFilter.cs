@@ -175,7 +175,7 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetBaselineAsync()
         {
-            var branchName = _gitInfoProvider.GetCurrentBranchName();
+            var branchName = _gitInfoProvider.GetCurrentBranchName() ?? _options.ProjectVersion;
 
             var baselineLocation = $"dashboard-compare/{branchName}";
 

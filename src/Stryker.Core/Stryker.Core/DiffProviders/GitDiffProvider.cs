@@ -2,7 +2,6 @@
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
@@ -31,12 +30,12 @@ namespace Stryker.Core.DiffProviders
             };
 
             // A git repository has been detected, calculate the diff to filter
-            var commit = _gitInfoProvider.DetermineCommit();
             var repository = _gitInfoProvider.Repository;
+            var commit = _gitInfoProvider.DetermineCommit();
 
             if (commit == null)
             {
-                throw new Stryker.Core.Exceptions.StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
+                throw new StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
             foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
@@ -44,9 +43,9 @@ namespace Stryker.Core.DiffProviders
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
                 if (!StrykerGeneratedFiles.IsMatch(diffPath))
                 {
-                    diffResult.ChangedFiles.Add(diffPath);    
+                    diffResult.ChangedFiles.Add(diffPath);
                 }
-                
+
                 if (diffPath.StartsWith(_options.BasePath))
                 {
                     diffResult.TestFilesChanged.Add(diffPath);
