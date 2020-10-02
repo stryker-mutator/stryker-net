@@ -48,6 +48,13 @@ namespace TestApplication
             return memberAccessExpression;
         }
 
+        [Fact]
+        public void ShouldBeMutationlevelAdvanced()
+        {
+            var target = new LinqMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Advanced);
+        }
+
         /// <summary>
         ///     Test method to check for correct mutation of different Linq Expression Mutations
         /// </summary>

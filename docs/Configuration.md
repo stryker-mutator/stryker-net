@@ -112,9 +112,9 @@ The levels are as follows:
 | Update Operators | Standard |
 | String Literals and Constants | Standard |
 | Bitwise Operators | Standard |
-| Checked Statements | Advanced |
 | Linq Methods | Advanced |
 | Regex | Advanced |
+| Checked Statements | Complete |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 
