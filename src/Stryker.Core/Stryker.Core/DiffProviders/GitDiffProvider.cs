@@ -8,6 +8,7 @@ using System.IO;
 
 namespace Stryker.Core.DiffProviders
 {
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     public class GitDiffProvider : IDiffProvider
@@ -52,7 +53,19 @@ namespace Stryker.Core.DiffProviders
                     diffResult.TestFilesChanged.Add(diffPath);
                 }
             }
+
+            RemoveFilteredOutFiles(diffResult);
+
             return diffResult;
+        }
+
+        private void RemoveFilteredOutFiles(DiffResult diffResult)
+        {
+            foreach(FilePattern filePattern in _options.DiffIgnoreFiles)
+            {
+                diffResult.ChangedFiles = diffResult.ChangedFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
+                diffResult.TestFilesChanged = diffResult.TestFilesChanged.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
+            }
         }
     }
 }

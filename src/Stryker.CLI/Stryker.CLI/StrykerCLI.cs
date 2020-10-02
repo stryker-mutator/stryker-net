@@ -75,7 +75,7 @@ namespace Stryker.CLI
             var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
             var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
             var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);
-            var dashboardCompareFileExcludePatterns = CreateOption(app, CLIOptions.DashboardCompareFileExcludePatterns);
+            var dashboardCompareFileExcludePatterns = CreateOption(app, CLIOptions.DiffIgnoreFiles);
 
             app.HelpOption("--help | -h | -?");
 

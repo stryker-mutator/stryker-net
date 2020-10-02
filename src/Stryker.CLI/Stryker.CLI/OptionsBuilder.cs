@@ -81,7 +81,7 @@ namespace Stryker.CLI
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 dashboardApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
                 dashboardUrl: GetOption(dashboardUrl.Value(), CLIOptions.DashboardUrlOption),
-                dashboardCompareFileExcludePatterns: GetOption(dashboardCompareFileExcludePatterns.Value(), CLIOptions.DashboardCompareFileExcludePatterns),
+                diffIgnoreFiles: GetOption(dashboardCompareFileExcludePatterns.Value(), CLIOptions.DiffIgnoreFiles),
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
                 projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),

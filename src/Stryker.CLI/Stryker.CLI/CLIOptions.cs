@@ -116,9 +116,9 @@ namespace Stryker.CLI
 
         };
 
-        public static readonly CLIOption<string[]> DashboardCompareFileExcludePatterns = new CLIOption<string[]>
+        public static readonly CLIOption<string[]> DiffIgnoreFiles = new CLIOption<string[]>
         {
-            ArgumentName = "--dashboard-compare-excluded-non-source-files", // TODO: Really needs a better name
+            ArgumentName = "--diff-ignore-files",
             ArgumentShortName = "-compare-excluded",
             ArgumentDescription = @"Allows to specify an array of non-C# files that you want to exclude from testing.
              Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
