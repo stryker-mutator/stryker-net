@@ -20,6 +20,7 @@ namespace Stryker.Core.Reporters
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
+
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
