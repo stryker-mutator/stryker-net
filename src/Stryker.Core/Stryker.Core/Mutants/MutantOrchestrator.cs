@@ -5,10 +5,13 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Serilog;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrators;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
@@ -104,7 +107,19 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            return Mutate(currentNode, new MutationContext(this));
+            var mutationContext = new MutationContext(this);
+            var mutation = Mutate(currentNode, mutationContext);
+            if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
+            {
+                Log.Error($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count+mutationContext.StatementLevelControlledMutations.Count}");
+            }
+            // mark remaining mutants as CompileError
+            foreach (var mutant in mutationContext.StatementLevelControlledMutations.Union(mutationContext.BlockLevelControlledMutations))
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
+            }
+            return mutation;
         }
 
         // recursive version

@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
@@ -10,9 +10,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
             // for needs special treatments for its incrementer
             var originalFor = forStatement;
-            forStatement = originalFor.ReplaceNodes(originalFor.Incrementors,
+            forStatement = originalFor.ReplaceNodes(originalFor.Initializers.Union(originalFor.Incrementors),
                 (syntax, expressionSyntax) => MutantOrchestrator.Mutate(syntax, context));
-
+            forStatement = forStatement.ReplaceNode(forStatement.Declaration,
+                MutantOrchestrator.Mutate(forStatement.Declaration, context));
             // mutate condition, if any
             if (originalFor.Condition != null)
             {

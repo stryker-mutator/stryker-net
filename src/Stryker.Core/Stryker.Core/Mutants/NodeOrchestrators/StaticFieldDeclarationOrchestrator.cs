@@ -13,8 +13,9 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         protected override BaseFieldDeclarationSyntax OrchestrateChildrenMutation(FieldDeclarationSyntax node, MutationContext context)
         {
+            using var newContext = context.EnterStatic();
             // we need to signal we are in a static field
-            return base.OrchestrateChildrenMutation(node, context.EnterStatic());
+            return base.OrchestrateChildrenMutation(node, newContext);
         }
 
         public StaticFieldDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)

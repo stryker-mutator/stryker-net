@@ -275,7 +275,7 @@ if(StrykerNamespace.MutantControl.IsActive(0)){int[] test = {};
         }
 
         [Fact]
-        public void ShouldMutateArrayDeclaration()
+        public void ShouldMutateArrayDeclarationAsReturnValue()
         {
             var source = @"public int[] Foo() => new int[] { 1 };";
             var expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?new int[] {}:new int[] { 1 });";
@@ -293,7 +293,7 @@ if(StrykerNamespace.MutantControl.IsActive(0)){int[] test = {};
         }
 
         [Fact]
-        public void ShouldNotMutateImplicitArrayCreation()
+        public void ShouldNotMutateImplicitArrayCreationProperties()
         {
             string source = @"public int[] Foo() => new [] { 1 };";
             string expected = @"public int[] Foo() => new [] { 1 };";
@@ -302,10 +302,19 @@ if(StrykerNamespace.MutantControl.IsActive(0)){int[] test = {};
         }
 
         [Fact]
+        public void ShouldNotMutateImplicitArrayCreation()
+        {
+            string source = "public static readonly int[] Foo =  { 1 };";
+            string expected = "public static readonly int[] Foo =  { 1 };";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateProperties()
         {
-            string source = @"private string text = ""Some"" + ""Text"";";
-            string expected = @"private string text = (StrykerNamespace.MutantControl.IsActive(0) ? """" : ""Some"") + (StrykerNamespace.MutantControl.IsActive(1) ? """" : ""Text"");";
+            string source = @"private string text => ""Some"" + ""Text"";";
+            string expected = @"private string text => (StrykerNamespace.MutantControl.IsActive(0) ? """" : ""Some"") + (StrykerNamespace.MutantControl.IsActive(1) ? """" : ""Text"");";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -385,14 +394,30 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; i < 10; i--)
         [Fact]
         public void ShouldMutateForWithoutConditionWithIfStatementAndConditionalStatement()
         {
-            string source = @"public void SomeMethod() {
+            var source = @"public void SomeMethod() {
 for (var i = 0; ; i++)
 { }
 }";
-            string expected = @"public void SomeMethod() {
+            var expected = @"public void SomeMethod() {
 if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; ; i--)
 { }
 }else{for (var i = 0; ; i++)
+{ }
+}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateInitializersForWithoutConditionWithIfStatementAndConditionalStatement()
+        {
+            var source = @"public void SomeMethod() {
+for (var i = Method(true); ; i++)
+{ }
+}";
+            var expected = @"public void SomeMethod() {
+if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = Method(true); ; i--)
+{ }
+}else{for (var i = Method((StrykerNamespace.MutantControl.IsActive(1)?false:true)); ; i++)
 { }
 }}";
             ShouldMutateSourceToExpected(source, expected);

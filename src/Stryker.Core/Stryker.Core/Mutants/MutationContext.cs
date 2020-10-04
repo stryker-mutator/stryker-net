@@ -49,12 +49,13 @@ namespace Stryker.Core.Mutants
 
         public void Dispose()
         {
-            if (_ancestor != null)
+            if (_ancestor == null)
             {
-                // copy the pending mutation to the enclosing context
-                _ancestor.StatementLevelControlledMutations.AddRange(StatementLevelControlledMutations);
-                _ancestor.BlockLevelControlledMutations.AddRange(BlockLevelControlledMutations);
+                return;
             }
+            // copy the pending mutation to the enclosing context
+            _ancestor.StatementLevelControlledMutations.AddRange(StatementLevelControlledMutations);
+            _ancestor.BlockLevelControlledMutations.AddRange(BlockLevelControlledMutations);
         }
     }
 }
