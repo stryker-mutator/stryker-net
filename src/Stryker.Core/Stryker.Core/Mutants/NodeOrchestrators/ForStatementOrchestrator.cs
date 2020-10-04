@@ -12,8 +12,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             var originalFor = forStatement;
             forStatement = originalFor.ReplaceNodes(originalFor.Initializers.Union(originalFor.Incrementors),
                 (syntax, expressionSyntax) => MutantOrchestrator.Mutate(syntax, context));
-            forStatement = forStatement.ReplaceNode(forStatement.Declaration,
+            if (forStatement.Declaration != null)
+            {
+                forStatement = forStatement.ReplaceNode(forStatement.Declaration,
                 MutantOrchestrator.Mutate(forStatement.Declaration, context));
+            }
             // mutate condition, if any
             if (originalFor.Condition != null)
             {
