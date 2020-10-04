@@ -14,7 +14,13 @@ Stryker.NET offers you mutation testing for your .NET Core and .NET Framework pr
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/). Looking for mutation testing in [JavaScript & Typescript](https://stryker-mutator.github.io/stryker) or [Scala](https://stryker-mutator.github.io/stryker4s)?
 
 ## Getting started
-Stryker.NET is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core global tool. Stryker.NET can be installed in one of these ways:
+
+Stryker.NET is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core global tool.
+
+<details>
+  <summary>Read more</summary>
+ 
+ Stryker.NET can be installed in one of these ways:
 
 ### Global install
 `dotnet tool install -g dotnet-stryker`
@@ -33,6 +39,8 @@ Then install stryker without the -g flag while executing the following command i
 Now you can run Stryker.NET from your test project directory by executing:
 
 `dotnet stryker`
+
+</details>
 
 ### Documentation
 For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
@@ -79,3 +87,5 @@ For the full list of all available reporters, see the [reporter docs](/docs/Repo
 
 ## Contributing
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
+
+Issues for the HTML report should be issued at https://github.com/stryker-mutator/mutation-testing-elements
