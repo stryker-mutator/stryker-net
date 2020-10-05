@@ -3,15 +3,20 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Handles syntax blocks.
+    /// </summary>
     internal class BlockOrchestrator : BlockScopeOrchestrator<BlockSyntax>
     {
         public BlockOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
 
-        protected override StatementSyntax InjectMutations(BlockSyntax originalNode, StatementSyntax mutatedNode, MutationContext context)
+        /// <inheritdoc/>
+        /// <remarks>Ensure we returns a block after mutants are injected.</remarks>
+        protected override StatementSyntax InjectMutations(BlockSyntax sourceNode, StatementSyntax targetNode, MutationContext context)
         {
-            var mutated= base.InjectMutations(originalNode, mutatedNode, context);
+            var mutated= base.InjectMutations(sourceNode, targetNode, context);
             // ensure we still return a block!
             return mutated is BlockSyntax ? mutated : SyntaxFactory.Block(mutated);
         }

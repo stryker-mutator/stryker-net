@@ -21,6 +21,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             MutantOrchestrator = mutantOrchestrator;
         }
 
+        /// <summary>
+        /// Get if this class this a new context.
+        /// </summary>
+        /// <remarks>The base class uses this information to determine if it has to create a new MutationContext. This is required when mutations pending injections
+        /// must not be propagated 'down' in the syntax tree.</remarks>
         protected virtual bool NewContext => false;
 
         /// <summary>
@@ -47,12 +52,12 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <summary>
         /// Inject mutation(s) in this node.
         /// </summary>
-        /// <param name="originalNode">Original, unmodified syntax node</param>
-        /// <param name="mutatedNode">Variant of <paramref name="originalNode"/> including mutated children.</param>
+        /// <param name="sourceNode">Original, unmodified syntax node</param>
+        /// <param name="targetNode">Variant of <paramref name="sourceNode"/> including mutated children.</param>
         /// <param name="context">Mutation context which contains pending mutations.</param>
         /// <returns>A syntax node (typeof <see cref="TBase"></see>) with mutations injected, if possible./></returns>
-        /// <remarks>Override this </remarks>
-        protected virtual TBase InjectMutations(TNode originalNode, TBase mutatedNode, MutationContext context) => mutatedNode;
+        /// <remarks>Override this method when you need to inject some code (e.g : mutation control, or analysis markers).</remarks>
+        protected virtual TBase InjectMutations(TNode sourceNode, TBase targetNode, MutationContext context) => targetNode;
 
         /// <summary>
         /// Generates and returns the list of possible mutations for the provided node.
@@ -60,19 +65,19 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <param name="node">Node to generate mutations from.</param>
         /// <param name="context">Mutation context.</param>
         /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
-        /// <remarks></remarks>
+        /// <remarks>You should not override this, unless you want to block mutation generation for the node. Then returns and empty list.</remarks>
         protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, MutationContext context) => MutantOrchestrator.GenerateMutationsForNode(node, context);
 
         /// <summary>
         /// Stores provided mutations.
         /// </summary>
-        /// <param name="mutations">Mutations to store</param>
         /// <param name="node">Associated node.</param>
+        /// <param name="mutations">Mutations to store</param>
         /// <param name="context">Mutation context.</param>
         /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
-        /// <remarks>You need to override this method if the mutations have to be controlled at a higher scope than the default one.</remarks>
-        protected virtual MutationContext StoreMutations(IEnumerable<Mutant> mutations,
-            TNode node,
+        /// <remarks>You need to override this method if you need to ensure mutations are controlled at with 'if' at the statement or block level.</remarks>
+        protected virtual MutationContext StoreMutations(TNode node,
+            IEnumerable<Mutant> mutations,
             MutationContext context) =>  context;
 
         /// <summary>
@@ -81,6 +86,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <param name="node">Node which children will be mutating</param>
         /// <param name="context">Mutation status</param>
         /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
+        /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
+        /// skip mutation the children node.</remarks>
         protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
             node.ReplaceNodes(node.ChildNodes(), 
                 (original, _) => MutantOrchestrator.Mutate(original, context));
@@ -101,7 +108,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 var mutations = GenerateMutationForNode(specificNode, newContext);
                 return InjectMutations(specificNode,
                     OrchestrateChildrenMutation(specificNode, newContext),
-                    StoreMutations(mutations, specificNode, newContext));
+                    StoreMutations(specificNode, mutations, newContext));
             }
             else
             {
@@ -109,7 +116,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 var mutations = GenerateMutationForNode(specificNode, context);
                 return InjectMutations(specificNode,
                     OrchestrateChildrenMutation(specificNode, context),
-                    StoreMutations(mutations, specificNode, context));
+                    StoreMutations(specificNode, mutations, context));
             }
         }
     }

@@ -5,22 +5,28 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Handles expressions and sub expressions.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, ExpressionSyntax> where T: ExpressionSyntax
     {
-
-        protected override ExpressionSyntax InjectMutations(T originalNode, ExpressionSyntax mutatedNode, MutationContext context)
+        /// <inheritdoc/>
+        /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
+        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context)
         {
             var result = MutantPlacer.PlaceExpressionControlledMutations(
-                mutatedNode,
-                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax) originalNode.InjectMutation(m.Mutation)))) as T;
+                targetNode,
+                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax) sourceNode.InjectMutation(m.Mutation)))) as T;
             context.ExpressionLevelMutations.Clear();
             return result;
         }
 
-        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
-            T node,
+        protected override MutationContext StoreMutations(T node,
+            IEnumerable<Mutant> mutations,
             MutationContext context)
         {
+            // if the expression contains a declaration, it must be controlled at the block level.
             if (!node.ContainsDeclarations())
             {
                 context.ExpressionLevelMutations.AddRange(mutations);

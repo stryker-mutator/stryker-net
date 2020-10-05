@@ -56,36 +56,7 @@ private bool Out(out string test)
     return true;
 }";
             string expected = @"void TestMethod()
-{if(StrykerNamespace.MutantControl.IsActive(12)){
-    int i = 0;
-    if (i + 8 == 8)
-    {
-        i = i + 1;
-        if (i + 8 == 9)
-        {
-            i = i + 1;
-        };
-    }
-    else
-    {
-        i = i + 3;
-        if (i == i + i - 8)
-        {
-            i = i + 1;
-        };
-    }
-
-    if (!(!Out(out var test)))
-    {
-        return i + 1;
-    }
-
-    if (i is int x)
-    {
-        return x + 1;
-    }
-}
-else{if(StrykerNamespace.MutantControl.IsActive(11)){
+{if(StrykerNamespace.MutantControl.IsActive(11)){
     int i = 0;
     if (i + 8 == 8)
     {
@@ -135,19 +106,19 @@ else{
 
     if (!Out(out var test))
     {
-        return (StrykerNamespace.MutantControl.IsActive(13)?i - 1:i + 1);
+        return (StrykerNamespace.MutantControl.IsActive(12)?i - 1:i + 1);
     }
 
     if (i is int x)
     {
-        return (StrykerNamespace.MutantControl.IsActive(14)?x - 1:x + 1);
+        return (StrykerNamespace.MutantControl.IsActive(13)?x - 1:x + 1);
     }
 }
-}}
+}
 private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(15)?false:true);
-}";
+    return (StrykerNamespace.MutantControl.IsActive(14)?false:true);
+}}";
 
             ShouldMutateSourceToExpected(source, expected);
         }

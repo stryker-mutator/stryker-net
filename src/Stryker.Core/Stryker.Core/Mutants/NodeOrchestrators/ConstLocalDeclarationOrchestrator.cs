@@ -2,6 +2,9 @@
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Handle const declarations.
+    /// </summary>
     class ConstLocalDeclarationOrchestrator : StatementSpecificOrchestrator<LocalDeclarationStatementSyntax>
     {
         protected override bool CanHandle(LocalDeclarationStatementSyntax t)
@@ -9,6 +12,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.IsConst;
         }
 
+        /// <inheritdoc/>
+        /// <remarks>We cannot mutate constants (for the time being)</remarks>
         protected override StatementSyntax OrchestrateChildrenMutation(LocalDeclarationStatementSyntax node, MutationContext context)
         {
             // don't mutate const declaration statement

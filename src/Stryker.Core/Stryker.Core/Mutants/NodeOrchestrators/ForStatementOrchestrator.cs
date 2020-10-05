@@ -6,9 +6,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class ForStatementOrchestrator: BlockScopeOrchestrator<ForStatementSyntax>
     {
+        /// <inheritdoc/>
+        /// `<remarks>The sole benefit of this orchestrator is to provide code ordered mutations for now.</remarks>
         protected override StatementSyntax OrchestrateChildrenMutation(ForStatementSyntax forStatement, MutationContext context)
         {
-            // for needs special treatments for its incrementer
+            // for needs special treatments for its incrementer(s)
             var originalFor = forStatement;
             forStatement = originalFor.ReplaceNodes(originalFor.Initializers.Union(originalFor.Incrementors),
                 (syntax, expressionSyntax) => MutantOrchestrator.Mutate(syntax, context));

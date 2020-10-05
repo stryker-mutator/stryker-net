@@ -10,8 +10,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.Parent is ExpressionStatementSyntax || t.Parent is ForStatementSyntax;
         }
 
-        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
-            PostfixUnaryExpressionSyntax node, MutationContext context)
+        // even if they are 'expressions', the ++ and -- operators need to be controlled at the statement level.
+        protected override MutationContext StoreMutations(PostfixUnaryExpressionSyntax node,
+            IEnumerable<Mutant> mutations,
+            MutationContext context)
         {
             context.StatementLevelControlledMutations.AddRange(mutations);
             return context;

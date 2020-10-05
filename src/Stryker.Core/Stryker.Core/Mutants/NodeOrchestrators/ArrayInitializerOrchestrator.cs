@@ -11,9 +11,9 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return (t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0);
         }
 
-        // mutations must be controlled at the statement level
-        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations,
-            InitializerExpressionSyntax node,
+        // mutations must be controlled at the statement level as those are not really expressions.
+        protected override MutationContext StoreMutations(InitializerExpressionSyntax node,
+            IEnumerable<Mutant> mutations,
             MutationContext context)
         {
             context.StatementLevelControlledMutations.AddRange(mutations);

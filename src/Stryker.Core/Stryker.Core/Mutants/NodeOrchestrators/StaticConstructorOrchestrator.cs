@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Supports static constructor.
+    /// </summary>
     internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator<ConstructorDeclarationSyntax>
     {
         protected override bool NewContext => true;
@@ -14,10 +17,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }
 
-        protected override BaseMethodDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax originalNode,
-            BaseMethodDeclarationSyntax mutatedNode, MutationContext context)
+        /// <inheritdoc/>
+        /// <remarks>Injects a static marker used for coverage information; this implies converting
+        /// expression arrow bodied method to regular ones.</remarks>
+        protected override BaseMethodDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax sourceNode,
+            BaseMethodDeclarationSyntax targetNode, MutationContext context)
         {
-            var mutated = base.InjectMutations(originalNode, mutatedNode, context);
+            var mutated = base.InjectMutations(sourceNode, targetNode, context);
 
             if (!context.MustInjectCoverageLogic)
             {

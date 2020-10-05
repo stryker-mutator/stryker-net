@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutators
             }
 
             // we don't mutate expressions that can be mutated by binary expression mutator
-            if (IsSimpleFinaryExpression(node))
+            if (WillBeMutatedByOtherMutators(node))
             {
                 yield break;
             }
@@ -58,11 +58,15 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private bool IsSimpleFinaryExpression(ExpressionSyntax node)
+        private static bool WillBeMutatedByOtherMutators(ExpressionSyntax node)
         {
+            if (node.Kind() == SyntaxKind.LogicalNotExpression)
+            {
+                return true;
+            }
             if (node is ParenthesizedExpressionSyntax parenthesized)
             {
-                return IsSimpleFinaryExpression(parenthesized.Expression);
+                return WillBeMutatedByOtherMutators(parenthesized.Expression);
             }
 
             if (node is BinaryExpressionSyntax binary)

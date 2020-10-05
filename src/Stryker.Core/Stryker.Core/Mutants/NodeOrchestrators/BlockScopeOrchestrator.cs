@@ -5,6 +5,10 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Handles statements that have block scope (e.g. curly braces blocks, for/while statements...)
+    /// </summary>
+    /// <typeparam name="T">Precise type of the statement</typeparam>
     internal class BlockScopeOrchestrator<T>: StatementSpecificOrchestrator<T> where T: StatementSyntax
     {
         public BlockScopeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
@@ -12,22 +16,25 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         protected override bool NewContext => true;
 
-        protected override StatementSyntax InjectMutations(T originalNode, StatementSyntax mutatedNode, MutationContext context)
+        /// <inheritdoc/>
+        /// <remarks>Inject all pending mutations and control them with if statements.</remarks>
+        protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context)
         {
             // we inject all pending mutations
             var mutationsToInject = context.StatementLevelControlledMutations
                 .Union(context.BlockLevelControlledMutations);
             // mutations are controlled by 'if's
-            var blockLevelMutations = MutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            var blockLevelMutations = MutantPlacer.PlaceStatementControlledMutations(targetNode,
                 mutationsToInject.Select(m =>
-                    (m.Id, (originalNode as StatementSyntax).InjectMutation(m.Mutation))));
+                    (m.Id, (sourceNode as StatementSyntax).InjectMutation(m.Mutation))));
             context.BlockLevelControlledMutations.Clear();
             context.StatementLevelControlledMutations.Clear();
             // ensure we have a block at the end
             return blockLevelMutations;
         }
 
-        protected override MutationContext StoreMutations(IEnumerable<Mutant> mutations, T node,
+        protected override MutationContext StoreMutations(T node,
+            IEnumerable<Mutant> mutations,
             MutationContext context)
         {
             context.BlockLevelControlledMutations.AddRange(mutations);
