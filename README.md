@@ -9,45 +9,51 @@
 *William Stryker: Oh, they serve their purpose... as long as they can be controlled.*
 
 ## Introduction
-Stryker.NET offers you mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs. 
+Stryker offers mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs in your source code
 
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/). Looking for mutation testing in [JavaScript & Typescript](https://stryker-mutator.github.io/stryker) or [Scala](https://stryker-mutator.github.io/stryker4s)?
 
 ## Getting started
 
-Stryker.NET is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core global tool.
+Stryker is installed using [NuGet](https://www.nuget.org/packages/dotnet-stryker/) as a dotnet core tool
 
 <details>
   <summary>Read more</summary>
- 
- Stryker.NET can be installed in one of these ways:
 
-### Global install
+### Install globally
 `dotnet tool install -g dotnet-stryker`
 
-### Project install
+### Install in project
 Starting from dotnet core 3.0 dotnet tools can also be installed on a project level. This requires the following steps:
 
-Create a file called dotnet-tools.json in your project folder. You can checkin to version control to make sure all team members have access to stryker
+Create a file called dotnet-tools.json in your project folder
 
 `dotnet new tool-manifest` 
 
-Then install stryker without the -g flag while executing the following command in the project folder
+Then install stryker without the -g flag by executing the following command in the project folder
 
 `dotnet tool install dotnet-stryker`
 
-Now you can run Stryker.NET from your test project directory by executing:
+Check the `dotnet-tools.json` file into source control
+
+Now the rest of your team can install or update stryker with the following command:
+`dotnet tool restore`
+
+Now you can run stryker from your test project directory by executing:
 
 `dotnet stryker`
+
+### Updating stryker
+Dotnet tools do not auto update so you are responsible for making sure you're up-to-date. To help with this stryker will notify you when a new version is available
+
+To update stryker as a global tool run `dotnet tool update --global dotnet-stryker`
+
+To update stryker as a project tool run `dotnet tool update --local dotnet-stryker` or change the version in the `dotnet-tools.json` file. Then check in the updated `dotnet-tools.json` file.
 
 </details>
 
 ### Documentation
-For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md).
-
-### Update stryker dotnet tool
-Dotnet global tools do not auto update. To update stryker as a global tool run `dotnet tool update --global dotnet-stryker`.
-Stryker will notify you when a new version is available on every run.
+For the full documentation on how to use Stryker.NET, see our [configuration docs](/docs/Configuration.md)
 
 #### Compatibility
 Runs on test projects targeting:
