@@ -4,8 +4,8 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Stryker.Core.Reporters
 {
@@ -14,6 +14,11 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
+        private const string ContinueLine = "│   ";
+        private const string NoLine = "    ";
+        private const string BranchLine = "├── ";
+        private const string FinalBranchLine = "└── "; 
+        
         private readonly IChalk _chalk;
         private readonly StrykerOptions _options;
 
@@ -44,36 +49,60 @@ namespace Stryker.Core.Reporters
             reportComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
-                _chalk.Default($"{new string('-', depth)} {Path.DirectorySeparatorChar}{Path.GetFileName(current.Name)} ");
+                var stringBuilder = new StringBuilder();
+                for (var i = 1; i < depth; i++)
+                {
+                    stringBuilder.Append(ContinueLine);
+                }
+
+                _chalk.Default($"{stringBuilder}{BranchLine}{current.Name}"); 
                 DisplayComponent(current);
             };
 
             reportComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
-                _chalk.Default($"{new string('-', depth)} {current.Name} ");
+                var stringBuilder = new StringBuilder();
+                for (var i = 1; i < depth; i++)
+                {
+                    stringBuilder.Append(ContinueLine);
+                }
+
+                _chalk.Default($"{stringBuilder}{BranchLine}{current.Name}");
                 DisplayComponent(current);
+
+                stringBuilder.Append(ContinueLine);
+                var prefix = stringBuilder.ToString();
+
                 foreach (var mutant in current.TotalMutants)
                 {
-                    if (mutant.ResultStatus == MutantStatus.Killed ||
-                    mutant.ResultStatus == MutantStatus.Timeout)
+                    var isLastMutant = current.TotalMutants.Last() == mutant;
+
+                    _chalk.Default($"{prefix}{(isLastMutant ? FinalBranchLine : BranchLine)}");
+
+                    switch (mutant.ResultStatus)
                     {
-                        _chalk.Green($"[{mutant.ResultStatus}] ");
+                        case MutantStatus.Killed:
+                        case MutantStatus.Timeout:
+                            _chalk.Green($"[{mutant.ResultStatus}]");
+                            break;
+                        case MutantStatus.NoCoverage:
+                            _chalk.Yellow($"[{mutant.ResultStatus}]");
+                            break;
+                        default:
+                            _chalk.Red($"[{mutant.ResultStatus}]");
+                            break;
                     }
-                    else if (mutant.ResultStatus == MutantStatus.NoCoverage)
-                    {
-                        _chalk.Yellow($"[{mutant.ResultStatus}] ");
-                    }
-                    else
-                    {
-                        _chalk.Red($"[{mutant.ResultStatus}] ");
-                    }
-                    _chalk.Default(mutant.LongName + Environment.NewLine);
+
+                    _chalk.Default($" {mutant.Mutation.DisplayName} on line {mutant.Line}{Environment.NewLine}");
+                    _chalk.Default($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{BranchLine}[-] {mutant.Mutation.OriginalNode}{Environment.NewLine}");
+                    _chalk.Default($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{FinalBranchLine}[+] {mutant.Mutation.ReplacementNode}{Environment.NewLine}");
                 }
             };
 
             // print empty line for readability
             _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
+            
             // start recursive invocation of handlers
             reportComponent.Display(1);
         }
@@ -83,7 +112,7 @@ namespace Stryker.Core.Reporters
             var mutationScore = inputComponent.GetMutationScore();
             // Convert the threshold integer values to decimal values
 
-            _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
+            _chalk.Default($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
             if (inputComponent is ProjectComponent projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {

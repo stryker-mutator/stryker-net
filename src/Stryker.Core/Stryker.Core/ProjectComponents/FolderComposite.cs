@@ -46,7 +46,7 @@ namespace Stryker.Core.ProjectComponents
                 if (!string.IsNullOrEmpty(Name))
                 {
                     DisplayFolder(depth, this);
-                    depth += 2;
+                    depth++;
                 }
 
                 foreach (var child in Children)
