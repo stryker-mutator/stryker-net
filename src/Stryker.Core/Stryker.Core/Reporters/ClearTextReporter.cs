@@ -17,8 +17,8 @@ namespace Stryker.Core.Reporters
         private const string ContinueLine = "│   ";
         private const string NoLine = "    ";
         private const string BranchLine = "├── ";
-        private const string FinalBranchLine = "└── "; 
-        
+        private const string FinalBranchLine = "└── ";
+
         private readonly IChalk _chalk;
         private readonly StrykerOptions _options;
 
@@ -49,29 +49,40 @@ namespace Stryker.Core.Reporters
             reportComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
+                var continuationLines = ParentContinuationLines(current);
+
                 var stringBuilder = new StringBuilder();
-                for (var i = 1; i < depth; i++)
+                foreach (var item in continuationLines.SkipLast(1))
                 {
-                    stringBuilder.Append(ContinueLine);
+                    stringBuilder.Append(item ? ContinueLine : NoLine);
                 }
 
-                _chalk.Default($"{stringBuilder}{BranchLine}{current.Name}"); 
+                var folderLines = string.Empty;
+                if (continuationLines.Count > 0)
+                {
+                    folderLines = continuationLines.Last() ? BranchLine : FinalBranchLine;
+                }
+
+                _chalk.Default($"{stringBuilder}{folderLines}{current.Name}");
                 DisplayComponent(current);
             };
 
             reportComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
             {
                 // show depth
+                var continuationLines = ParentContinuationLines(current);
+
                 var stringBuilder = new StringBuilder();
-                for (var i = 1; i < depth; i++)
+                foreach (var item in continuationLines.SkipLast(1))
                 {
-                    stringBuilder.Append(ContinueLine);
+                    stringBuilder.Append(item ? ContinueLine : NoLine);
                 }
 
-                _chalk.Default($"{stringBuilder}{BranchLine}{current.Name}");
+                _chalk.Default($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{current.Name}");
                 DisplayComponent(current);
 
-                stringBuilder.Append(ContinueLine);
+                stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
+
                 var prefix = stringBuilder.ToString();
 
                 foreach (var mutant in current.TotalMutants)
@@ -102,9 +113,26 @@ namespace Stryker.Core.Reporters
 
             // print empty line for readability
             _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
-            
+
             // start recursive invocation of handlers
             reportComponent.Display(1);
+        }
+
+        private static List<bool> ParentContinuationLines(IReadOnlyInputComponent current)
+        {
+            var continuationLines = new List<bool>();
+
+            var node = (ProjectComponent)current;
+            while (node.Parent != null)
+            {
+                continuationLines.Add(node.Parent.Children.Last() != node);
+
+                node = node.Parent;
+            }
+
+            continuationLines.Reverse();
+
+            return continuationLines;
         }
 
         private void DisplayComponent(IReadOnlyInputComponent inputComponent)

@@ -34,6 +34,7 @@ namespace Stryker.Core.ProjectComponents
 
         public override void Add(ProjectComponent component)
         {
+            component.Parent = this;
             Children.Add(component);
         }
 
