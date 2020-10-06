@@ -20,6 +20,7 @@ The full list of Stryker.NET configuration options are:
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
+- [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
 <!-- /TOC -->
 
 ## Use a config file
@@ -364,9 +365,9 @@ dotnet stryker -gs "development"
 
 Default: `master`
 
-This feature works based on file diffs, which means that all changed filles will have all of its possible mutants mutated.
+This feature works based on file diffs, which means that only changed files will be mutated.
 
-Also note that for changes on test files all mutants being tested in that file will be mutated.
+Also note that for changes on test files all mutants covered by tests in that file will be mutated.
 
 ## EXPERIMENTAL: Dashboard Compare
 Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
@@ -408,6 +409,10 @@ dotnet stryker -compare -bsl disk
 ```
 Defaut `"disk"`
 
+## Configurating Dashboard location
+
+See: [Dashboard Reporter Settings](/docs/Reporters.md#dashboard-reporter)
+
 ## Configuring Azure File Storage
 When using Azure File Storage as baseline storage location you are required to provide the following values.
 
@@ -441,17 +446,6 @@ or
 dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
 ```
 
+## Using dashboard compare in a pull request pipeline
 
-## Configuring Dashboard Compare on pull requests
-When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
-
-1.  Enable --dashboard-compare.
-2. Set --dashboard-version to the name of the source branch for your pull request.
-3. Set --dashboard-fallback-version to the name of the target branch for your pull request.
-4. Set --git-source to the name of the target branch of your pull request.
-
-```
-dotnet stryker --dashboard-compare --git-source master --dashboard-version development
-dotnet stryker -compare -source master -version development
-
-```
+See: [Using stryker in pipelines](/docs/Stryker-in-pipeline.md)
