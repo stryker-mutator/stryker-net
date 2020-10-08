@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// <summary>
     /// Handle const declarations.
     /// </summary>
-    class ConstLocalDeclarationOrchestrator : StatementSpecificOrchestrator<LocalDeclarationStatementSyntax>
+    internal class ConstLocalDeclarationOrchestrator : StatementSpecificOrchestrator<LocalDeclarationStatementSyntax>
     {
         protected override bool CanHandle(LocalDeclarationStatementSyntax t)
         {
