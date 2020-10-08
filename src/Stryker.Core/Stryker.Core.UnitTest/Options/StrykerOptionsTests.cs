@@ -2,6 +2,7 @@
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -157,6 +158,16 @@ namespace Stryker.Core.UnitTest.Options
             options.Thresholds.High.ShouldBe(60);
             options.Thresholds.Low.ShouldBe(60);
             options.Thresholds.Break.ShouldBe(50);
+        }
+
+        [Fact]
+        public void ShouldValidateMutationLevel()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(mutationLevel: "gibberish");
+            });
+            ex.Details.ShouldBe($"The given mutation level(gibberish) is invalid. Valid options are: [{ string.Join(", ", Enum.GetValues(typeof(MutationLevel)))}]");
         }
 
         [Fact]
