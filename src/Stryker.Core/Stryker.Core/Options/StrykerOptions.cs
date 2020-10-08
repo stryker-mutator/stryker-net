@@ -179,7 +179,8 @@ namespace Stryker.Core.Options
             }
             else
             {
-                throw new StrykerInputException(ErrorMessage, $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{string.Join(", ", Enum.GetValues(typeof(MutationLevel)))}]");
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{ string.Join(", ", (IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))) }]");
             }
         }
 
@@ -265,11 +266,11 @@ namespace Stryker.Core.Options
 
         private OptimizationFlags ValidateMode(string mode)
         {
-            switch (mode)
+            switch (mode.ToLower())
             {
-                case "perTestInIsolation":
+                case "pertestinisolation":
                     return OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest;
-                case "perTest":
+                case "pertest":
                     return OptimizationFlags.CoverageBasedTest;
                 case "all":
                     return OptimizationFlags.SkipUncoveredMutants;
@@ -279,7 +280,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest or perTestInIsolation].");
+                        $"Incorrect coverageAnalysis option ({mode}). The options are [Off, All, PerTest or PerTestInIsolation].");
             }
         }
 
@@ -346,7 +347,7 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
+                    $"These reporter values are incorrect: {string.Join(", ", invalidReporters)}. Valid reporter options are [{string.Join(", ", (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)))}]");
             }
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
             yield break;
@@ -375,7 +376,8 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    throw new StrykerInputException(ErrorMessage, $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException(ErrorMessage,
+                        $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
@@ -398,7 +400,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect log level {levelText}. The log level options are [Error, Warning, Info, Debug, Trace]");
+                        $"Incorrect log level ({levelText}). The log level options are [{string.Join(", ", (IEnumerable<LogEventLevel>)Enum.GetValues(typeof(LogEventLevel)))}]");
             }
         }
 
@@ -508,7 +510,8 @@ namespace Stryker.Core.Options
             }
             else
             {
-                throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(", ", (IEnumerable<TestRunner>)Enum.GetValues(typeof(TestRunner)))}]");
             }
         }
 
@@ -541,7 +544,7 @@ namespace Stryker.Core.Options
             else
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
         }
 
