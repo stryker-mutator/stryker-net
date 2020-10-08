@@ -114,7 +114,7 @@ namespace Stryker.Core.Options
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = ValidateExcludedMutations(excludedMutations);
+            ExcludedMutations = ValidateExcludedMutations(excludedMutations).ToList();
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
@@ -353,9 +353,9 @@ namespace Stryker.Core.Options
             yield break;
         }
 
-        private IEnumerable<Mutator> ValidateExcludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExcludedMutations(string[] excludedMutations)
         {
-            if (excludedMutations == null)
+            if (excludedMutations == null || !excludedMutations.Any())
             {
                 yield break;
             }
@@ -377,7 +377,7 @@ namespace Stryker.Core.Options
                 else
                 {
                     throw new StrykerInputException(ErrorMessage,
-                        $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                        $"Invalid excluded mutation ({excludedMutation}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
