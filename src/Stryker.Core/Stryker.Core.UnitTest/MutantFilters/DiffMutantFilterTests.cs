@@ -1,13 +1,10 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Moq;
+﻿using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
@@ -355,55 +352,36 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void FilterMutantsForStatusNotRunReturnsAllMutantsWithStatusNotRun()
+        public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
             // Arrange 
-            var baselineProvider = new Mock<IBaselineProvider>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
 
-            baselineProvider.Setup(x => x.Load(It.IsAny<string>())).ReturnsAsync(JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith()));
-
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IGitInfoProvider>();
-
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+            var options = new StrykerOptions();
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
                 ChangedFiles = new List<string>()
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
-
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+            var target = new DiffMutantFilter(options, diffProvider.Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
 
             var mutants = new List<Mutant>
             {
                 new Mutant()
                 {
                     Id = 1,
-                    ResultStatus = MutantStatus.NotRun,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 },
                 new Mutant()
                 {
                     Id = 2,
-                    ResultStatus = MutantStatus.NotRun,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 },
                 new Mutant()
                 {
                     Id = 3,
-                    ResultStatus = MutantStatus.Killed,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 }
             };
 
@@ -411,7 +389,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
             // Assert
-            results.Count().ShouldBe(3);
+            results.Count().ShouldBe(0);
+            mutants.ShouldAllBe(m => m.ResultStatus == MutantStatus.Ignored);
+            mutants.ShouldAllBe(m => m.ResultStatusReason == "File not changed");
         }
 
         [Fact]
