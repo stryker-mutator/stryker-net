@@ -94,6 +94,11 @@ namespace Stryker.Core.DashboardCompare
                 _logger.LogInformation("With upstream branch canonical name: {UpstreamBranchCanonicalName}", branch.UpstreamBranchCanonicalName);
                 try
                 {
+                    if (branch.UpstreamBranchCanonicalName.Contains(_options.GitDiffTarget))
+                    {
+                        sourceBranch = branch;
+                        break;
+                    }
                     if (branch.CanonicalName.Contains(_options.GitDiffTarget))
                     {
                         sourceBranch = branch;
