@@ -21,7 +21,7 @@ jobs:
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(Build.SourceBranchName) --git-source $(Build.SourceBranchName)
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source ${{ coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch']) }}
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source $(System.PullRequest.TargetBranch)
   - task: PublishMutationReport@0		
     inputs:		
       reportPattern: '${{ parameters.workingDirectory }}/**/mutation-report.html'
