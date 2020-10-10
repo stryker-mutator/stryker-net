@@ -10,7 +10,7 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version 0.19.0-alpha.175 --add-source $(AzureArtifactFeedUri)
+      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version 0.19.0-alpha.177 --add-source $(AzureArtifactFeedUri)
       includeNuGetOrg: true
   - task: Powershell@2
     displayName: Run Stryker on ${{ parameters.projectName }}
@@ -21,7 +21,7 @@ jobs:
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(Build.SourceBranchName) --git-source $(Build.SourceBranchName)
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['cleartext', 'html']" --diff
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff
   - task: PublishMutationReport@0		
     inputs:		
       reportPattern: '${{ parameters.workingDirectory }}/**/mutation-report.html'
