@@ -88,6 +88,10 @@ namespace Stryker.Core.DashboardCompare
             Branch sourceBranch = null;
             foreach (var branch in Repository.Branches)
             {
+                _logger.LogInformation("Found canonical branch: {CanonicalName}", branch.CanonicalName);
+                _logger.LogInformation("With friendly name: {FriendlyName}", branch.FriendlyName);
+                _logger.LogInformation("With remote name: {RemoteName}", branch.RemoteName);
+                _logger.LogInformation("With upstream branch canonical name: {UpstreamBranchCanonicalName}", branch.UpstreamBranchCanonicalName);
                 try
                 {
                     if (branch.CanonicalName.Contains(_options.GitDiffTarget))
