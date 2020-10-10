@@ -57,13 +57,7 @@ namespace Stryker.Core.DashboardCompare
 
         public Commit DetermineCommit()
         {
-            var commit = GetCommit();
-
-            if (commit == null)
-            {
-                CreateLocalBranchForGitDiffTarget();
-                commit = GetCommit();
-            }
+            var commit = GetTargetCommit();
 
             if (commit == null)
             {
@@ -83,9 +77,9 @@ namespace Stryker.Core.DashboardCompare
             return new Repository(RepositoryPath);
         }
 
-        private Commit GetCommit()
+        private Commit GetTargetCommit()
         {
-            Branch sourceBranch = null;
+            Branch targetBranch = null;
 
             _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.GitDiffTarget);
             foreach (var branch in Repository.Branches)
@@ -95,19 +89,19 @@ namespace Stryker.Core.DashboardCompare
                     if (branch.UpstreamBranchCanonicalName.Contains(_options.GitDiffTarget))
                     {
                         _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
-                        sourceBranch = branch;
+                        targetBranch = branch;
                         break;
                     }
                     if (branch.CanonicalName.Contains(_options.GitDiffTarget))
                     {
                         _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
-                        sourceBranch = branch;
+                        targetBranch = branch;
                         break;
                     }
                     if (branch.FriendlyName.Contains(_options.GitDiffTarget))
                     {
                         _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
-                        sourceBranch = branch;
+                        targetBranch = branch;
                         break;
                     }
                 }
@@ -117,9 +111,9 @@ namespace Stryker.Core.DashboardCompare
                 }
             }
 
-            if (sourceBranch != null)
+            if (targetBranch != null)
             {
-                return sourceBranch.Tip;
+                return targetBranch.Tip;
             }
 
             // It's a commit!
@@ -129,32 +123,12 @@ namespace Stryker.Core.DashboardCompare
 
                 if (commit != null)
                 {
-                    _logger.LogDebug($"Found commit {commit.Sha} for branch {_options.GitDiffTarget}");
+                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.GitDiffTarget}");
                     return commit;
                 }
             }
 
             return null;
-        }
-
-        private void CreateLocalBranchForGitDiffTarget()
-        {
-            try
-            {
-                var currentCommit = Repository.Head.Tip;
-
-                _logger.LogDebug("Creating branch {0} with committish dashboard-compare/{0}", _options.GitDiffTarget);
-                var targetBranch = Repository.CreateBranch(_options.GitDiffTarget, $"dashboard-compare/{_options.GitDiffTarget}");
-                _logger.LogDebug("Checking out branch {0}", _options.GitDiffTarget);
-                Commands.Checkout(Repository, targetBranch);
-
-                _logger.LogDebug("Checking out cached commit {0}", currentCommit.Sha);
-                Commands.Checkout(Repository, currentCommit);
-            }
-            catch
-            {
-                // Do nothing, Checkout is already done
-            }
         }
     }
 }
