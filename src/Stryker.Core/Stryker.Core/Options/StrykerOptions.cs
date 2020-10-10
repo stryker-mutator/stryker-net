@@ -290,8 +290,8 @@ namespace Stryker.Core.Options
                 }
                 catch (IOException e)
                 {
-                    _logger.LogError("Could't create gitignore because of error {error}", e.Message);
-                    _logger.LogDebug("Couldn't create gitignore file at {0}, probably because it already exists", gitignorePath);
+                    _logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
+                        "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
                 }
             }
 
