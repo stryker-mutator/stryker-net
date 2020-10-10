@@ -22,6 +22,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.Dots, new ConsoleDotProgressReporter() },
                 { Reporter.Progress, CreateProgressReporter() },
                 { Reporter.ClearText, new ClearTextReporter(options) },
+                { Reporter.ClearTextTree, new ClearTextTreeReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
                 { Reporter.Dashboard, new DashboardReporter(options)},

@@ -37,11 +37,12 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is HtmlReporter);
             result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             result.Reporters.ShouldContain(r => r is ClearTextReporter);
+            result.Reporters.ShouldContain(r => r is ClearTextTreeReporter);
             result.Reporters.ShouldContain(r => r is ProgressReporter);
             result.Reporters.ShouldContain(r => r is DashboardReporter);
             result.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            result.Reporters.Count().ShouldBe(7);
+            result.Reporters.Count().ShouldBe(8);
         }
 
         [Fact]
