@@ -86,26 +86,27 @@ namespace Stryker.Core.DashboardCompare
         private Commit GetCommit()
         {
             Branch sourceBranch = null;
+
+            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.GitDiffTarget);
             foreach (var branch in Repository.Branches)
             {
-                _logger.LogInformation("Found canonical branch: {CanonicalName}", branch.CanonicalName);
-                _logger.LogInformation("With friendly name: {FriendlyName}", branch.FriendlyName);
-                _logger.LogInformation("With remote name: {RemoteName}", branch.RemoteName);
-                _logger.LogInformation("With upstream branch canonical name: {UpstreamBranchCanonicalName}", branch.UpstreamBranchCanonicalName);
                 try
                 {
                     if (branch.UpstreamBranchCanonicalName.Contains(_options.GitDiffTarget))
                     {
+                        _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
                         sourceBranch = branch;
                         break;
                     }
                     if (branch.CanonicalName.Contains(_options.GitDiffTarget))
                     {
+                        _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
                         sourceBranch = branch;
                         break;
                     }
                     if (branch.FriendlyName.Contains(_options.GitDiffTarget))
                     {
+                        _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
                         sourceBranch = branch;
                         break;
                     }
