@@ -22,7 +22,7 @@ namespace Stryker.Core.DiffProviders
         {
             var diffResult = new DiffResult()
             {
-                ChangedFiles = new Collection<string>(),
+                SourceFilesChanged = new Collection<string>(),
                 TestFilesChanged = new Collection<string>()
             };
 
@@ -45,7 +45,7 @@ namespace Stryker.Core.DiffProviders
                 }
                 else
                 {
-                    diffResult.ChangedFiles.Add(diffPath);
+                    diffResult.SourceFilesChanged.Add(diffPath);
                 }
             }
             return diffResult;

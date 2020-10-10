@@ -46,13 +46,20 @@ namespace Stryker.Core.MutantFilters
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles?.Count);
+                _logger.LogInformation("{0} files changed", _diffResult.SourceFilesChanged?.Count);
 
-                if (_diffResult.ChangedFiles != null)
+                if (_diffResult.SourceFilesChanged != null)
                 {
-                    foreach (var changedFile in _diffResult.ChangedFiles)
+                    foreach (var changedFile in _diffResult.SourceFilesChanged)
                     {
                         _logger.LogInformation("Changed file {0}", changedFile);
+                    }
+                }
+                if (_diffResult.TestFilesChanged != null)
+                {
+                    foreach (var changedFile in _diffResult.TestFilesChanged)
+                    {
+                        _logger.LogInformation("Changed test file {0}", changedFile);
                     }
                 }
             }
@@ -85,7 +92,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // If the diff result flags this file as modified, we want to run all mutants again
-            if (_diffResult.ChangedFiles.Contains(file.FullPath))
+            if (_diffResult.SourceFilesChanged.Contains(file.FullPath))
             {
                 _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
                 return SetMutantStatusForFileChanged(mutants);
