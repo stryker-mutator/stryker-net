@@ -101,8 +101,8 @@ All mutants have been tested, and your mutation score has been calculated
 ┌─────────────┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐
 │ File        │  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
 ├─────────────┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
-│ All files   │   100,00 │        1 │         0 │          0 │        0 │       0 │
-│ SomeFile.cs │   100,00 │        1 │         0 │          0 │        0 │       0 │
+│ All files   │   {100:N2} │        1 │         0 │          0 │        0 │       0 │
+│ SomeFile.cs │   {100:N2} │        1 │         0 │          0 │        0 │       0 │
 └─────────────┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘
 ");
             chalkMock.Verify(x => x.Green(It.IsAny<string>()), Times.Exactly(2));
@@ -153,8 +153,8 @@ All mutants have been tested, and your mutation score has been calculated
 ┌─────────────┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐
 │ File        │  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
 ├─────────────┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
-│ All files   │     0,00 │        0 │         0 │          1 │        0 │       0 │
-│ SomeFile.cs │     0,00 │        0 │         0 │          1 │        0 │       0 │
+│ All files   │     {0:N2} │        0 │         0 │          1 │        0 │       0 │
+│ SomeFile.cs │     {0:N2} │        0 │         0 │          1 │        0 │       0 │
 └─────────────┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘
 ");
             // All percentages should be red and the [Survived] too
