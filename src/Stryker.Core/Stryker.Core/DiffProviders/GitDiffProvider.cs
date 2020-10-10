@@ -39,11 +39,13 @@ namespace Stryker.Core.DiffProviders
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
 
-                diffResult.ChangedFiles.Add(diffPath);
-
                 if (diffPath.StartsWith(_options.BasePath))
                 {
                     diffResult.TestFilesChanged.Add(diffPath);
+                }
+                else
+                {
+                    diffResult.ChangedFiles.Add(diffPath);
                 }
             }
             return diffResult;
