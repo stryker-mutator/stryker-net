@@ -43,11 +43,10 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: not(failed())
+  condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
-    condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
     dependsOn: []
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
