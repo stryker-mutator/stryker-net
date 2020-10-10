@@ -10,7 +10,7 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version 0.19.0-alpha.118 --add-source $(MygetFeedUri)
+      arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version 0.19.0-alpha.208 --add-source $(MygetFeedUri)
       includeNuGetOrg: true
   - task: Powershell@2
     displayName: Run Stryker on ${{ parameters.projectName }}
@@ -19,9 +19,9 @@ jobs:
       targetType: 'inline'
       pwsh: true
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(Build.SourceBranchName) --git-source $(Build.SourceBranchName)
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l debug --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(Build.SourceBranchName) --git-source $(Build.SourceBranchName)
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(System.PullRequest.SourceBranch) --git-source $(System.PullRequest.TargetBranch) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l debug --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(System.PullRequest.SourceBranch) --git-source $(System.PullRequest.TargetBranch) --dashboard-fallback-version $(System.PullRequest.TargetBranch)
   - task: PublishMutationReport@0		
     inputs:		
       reportPattern: '${{ parameters.workingDirectory }}/**/mutation-report.html'
