@@ -395,42 +395,70 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void FilterMutantsFiltersAll_WhenNoTestsChanged_CompareToDashboardDisabled_AndFileNotCahnged()
+        public void FilterMutants_MergesResetMutants_WhenDashboardCompareOn()
         {
             // Arrange 
-            var baselineProvider = new Mock<IBaselineProvider>();
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            baselineProvider.Setup(x =>
-            x.Load(It.IsAny<string>())
-            ).Returns(
-                Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
-                    ));
+            var target = new DiffMutantFilter(options, new Mock<IDiffProvider>().Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
 
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IGitInfoProvider>();
-
-            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
-
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var targetMutants = new List<Mutant>
             {
-                ChangedFiles = new List<string>(),
-            });
-
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-
-            var mutants = new List<Mutant>
-            {
-                new Mutant(),
-                new Mutant(),
                 new Mutant()
+                {
+                    Id = 1,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 2,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.NotRun,
+                    ResultStatusReason = "B"
+                },
+                new Mutant()
+                {
+                    Id = 3,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.NotRun,
+                    ResultStatusReason = "B"
+                }
+            };
+
+            var sourceMutants = new List<Mutant>
+            {
+                new Mutant()
+                {
+                    Id = 2,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 3,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 4,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                }
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+            var results = target.MergeMutantLists(targetMutants, sourceMutants);
 
             // Assert
-            results.Count().ShouldBe(0);
+            results.Count().ShouldBe(4);
+            results.ShouldAllBe(m => m.ResultStatus == MutantStatus.Ignored);
+            results.ShouldAllBe(m => m.ResultStatusReason == "A");
         }
 
         [Fact]

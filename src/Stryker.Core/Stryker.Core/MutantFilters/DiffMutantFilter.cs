@@ -268,11 +268,11 @@ namespace Stryker.Core.MutantFilters
 
         /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
         /// If the targetMutants already contain a member with the same Id. The results are updated.
-        private IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> targetMutants, IEnumerable<Mutant> updateMutants)
+        internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
         {
-            foreach (var targetMutant in targetMutants)
+            foreach (var targetMutant in target)
             {
-                if (updateMutants.Any(updateMutant => updateMutant.Id == targetMutant.Id))
+                if (source.Any(updateMutant => updateMutant.Id == targetMutant.Id))
                 {
                     continue;
                 }
@@ -280,17 +280,18 @@ namespace Stryker.Core.MutantFilters
                 yield return targetMutant;
             }
 
-            foreach (var updateMutant in updateMutants)
+            foreach (var sourceMutant in source)
             {
-                if (targetMutants.SingleOrDefault(targetMutant => targetMutant.Id == updateMutant.Id) is var targetMutant && targetMutant is { })
+                if (target.SingleOrDefault(targetMutant => targetMutant.Id == sourceMutant.Id) is var targetMutant && targetMutant is { })
                 {
-                    targetMutant.ResultStatus = updateMutant.ResultStatus;
-                    targetMutant.ResultStatusReason = updateMutant.ResultStatusReason;
+                    targetMutant.ResultStatus = sourceMutant.ResultStatus;
+                    targetMutant.ResultStatusReason = sourceMutant.ResultStatusReason;
 
                     yield return targetMutant;
+                    continue;
                 }
 
-                yield return updateMutant;
+                yield return sourceMutant;
             }
         }
     }
