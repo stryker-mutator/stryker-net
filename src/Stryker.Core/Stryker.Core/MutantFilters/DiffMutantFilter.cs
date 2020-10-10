@@ -61,7 +61,7 @@ namespace Stryker.Core.MutantFilters
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
-            IEnumerable<Mutant> filteredMutants = new List<Mutant>();
+            IEnumerable<Mutant> filteredMutants;
 
             // If the dashboard feature is turned on we first filter based on previous results
             if (options.CompareToDashboard)
