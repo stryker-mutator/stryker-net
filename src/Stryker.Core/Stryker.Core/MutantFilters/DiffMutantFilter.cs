@@ -74,7 +74,7 @@ namespace Stryker.Core.MutantFilters
                 }
 
                 // Updates all the mutants in this file with their counterpart's result in the report of the previous run
-                filteredMutants = UpdateMutantsWithBaselineStatus(mutants, file);
+                UpdateMutantsWithBaselineStatus(mutants, file);
             }
 
             // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
@@ -111,7 +111,7 @@ namespace Stryker.Core.MutantFilters
             return filteredMutants;
         }
 
-        private IEnumerable<Mutant> UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
 
@@ -132,8 +132,6 @@ namespace Stryker.Core.MutantFilters
                     SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                 }
             }
-
-            return mutants.Where(m => m.ResultStatus == MutantStatus.NotRun);
         }
 
         private static void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
