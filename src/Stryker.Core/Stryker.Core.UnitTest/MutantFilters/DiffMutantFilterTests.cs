@@ -391,7 +391,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Assert
             results.Count().ShouldBe(0);
             mutants.ShouldAllBe(m => m.ResultStatus == MutantStatus.Ignored);
-            mutants.ShouldAllBe(m => m.ResultStatusReason == "File not changed");
+            mutants.ShouldAllBe(m => m.ResultStatusReason == "Mutant not changed compared to target commit");
         }
 
         [Fact]
