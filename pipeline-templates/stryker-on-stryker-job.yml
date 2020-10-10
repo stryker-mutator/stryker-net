@@ -19,7 +19,7 @@ jobs:
       targetType: 'inline'
       pwsh: true
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source $(Build.SourceBranch) 
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l debug --reporters "['cleartext', 'html']" --diff --git-source $(Build.SourceBranch) 
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source $(System.PullRequest.TargetBranch)
   - task: PublishMutationReport@0		
