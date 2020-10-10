@@ -290,8 +290,9 @@ namespace Stryker.Core.Options
                     using var file = _fileSystem.File.CreateText(gitignorePath);
                     file.WriteLine("*");
                 }
-                catch (IOException)
+                catch (IOException e)
                 {
+                    _logger.LogError("Could't create gitignore because of error {error}", e.Message);
                     _logger.LogDebug("Couldn't create gitignore file at {0}, probably because it already exists", gitignorePath);
                 }
             }
