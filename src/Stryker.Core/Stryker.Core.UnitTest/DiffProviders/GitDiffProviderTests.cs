@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -95,7 +95,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedFiles.Count().ShouldBe(1);
             res.TestFilesChanged.Count().ShouldBe(0);
         }
-
 
         [Fact]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()

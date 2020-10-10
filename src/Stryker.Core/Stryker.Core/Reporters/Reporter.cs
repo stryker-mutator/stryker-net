@@ -8,6 +8,7 @@
         Dots,
         ConsoleProgressDots,
         ClearText,
+        ClearTextTree,
         ConsoleReport,
         Json,
         Html,
