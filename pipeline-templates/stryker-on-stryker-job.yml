@@ -19,7 +19,7 @@ jobs:
       targetType: 'inline'
       pwsh: true
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        script: $(Agent.BuildDirectory)/tools/dotnet-stryker -l trace --reporters "['dashboard', 'html']" --dashboard-api-key $(Stryker.Dashboard.Api.Key) -compare -bsl Dashboard --dashboard-version $(Build.SourceBranchName) --git-source $(Build.SourceBranchName)
+        script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source $(Build.SourceBranch) 
       ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
         script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['cleartext', 'html']" --diff --git-source $(System.PullRequest.TargetBranch)
   - task: PublishMutationReport@0		
