@@ -114,8 +114,8 @@ The levels are as follows:
 | String Literals and Constants | Standard |
 | Bitwise Operators | Standard |
 | Linq Methods | Standard |
+| Checked Statements | Standard |
 | Regex | Advanced |
-| Checked Statements | Complete |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 

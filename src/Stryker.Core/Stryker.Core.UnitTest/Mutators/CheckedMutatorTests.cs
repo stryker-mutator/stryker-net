@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Mutators
         public void ShouldBeMutationlevelComplete()
         {
             var target = new CheckedMutator();
-            target.MutationLevel.ShouldBe(MutationLevel.Complete);
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
         [Theory]
