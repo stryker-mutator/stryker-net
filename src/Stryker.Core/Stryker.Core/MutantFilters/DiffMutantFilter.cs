@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Clients;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Logging;
@@ -20,219 +20,139 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-        private readonly IDashboardClient _dashboardClient;
-        private readonly IGitInfoProvider _branchProvider;
+        private readonly IBaselineProvider _baselineProvider;
+        private readonly IGitInfoProvider _gitInfoProvider;
+        private readonly ILogger<DiffMutantFilter> _logger;
 
         private readonly IStrykerOptions _options;
 
         private readonly JsonReport _baseline;
 
-        private readonly ILogger<DiffMutantFilter> _logger;
-
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(IStrykerOptions options = null, IDiffProvider diffProvider = null, IDashboardClient dashboardClient = null, IGitInfoProvider branchProvider = null)
+        public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
-            _dashboardClient = dashboardClient ?? new DashboardClient(options);
-            _branchProvider = branchProvider ?? new GitInfoProvider(options);
             _options = options;
+            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
+            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
 
             if (options.CompareToDashboard)
             {
-                _baseline = GetBaseline().Result;
+                _baseline = GetBaselineAsync().Result;
             }
 
             _diffResult = diffProvider.ScanDiff();
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles.Count);
-                foreach (var changedFile in _diffResult.ChangedFiles)
+                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles?.Count);
+
+                if (_diffResult.ChangedFiles != null)
                 {
-                    _logger.LogInformation("Changed file {0}", changedFile);
+                    foreach (var changedFile in _diffResult.ChangedFiles)
+                    {
+                        _logger.LogInformation("Changed file {0}", changedFile);
+                    }
                 }
             }
         }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)
         {
+            // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
+            IEnumerable<Mutant> filteredMutants;
+
+            // If the dashboard feature is turned on we first filter based on previous results
             if (options.CompareToDashboard)
             {
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
                 {
-                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline", file.RelativePathToProjectFile);
+                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePathToProjectFile);
                     return mutants;
                 }
 
-                // Updates all the mutants in this file with their counterpart's result in the report of the previous run.
-                UpdateMutantsWithBaseline(mutants, file);
+                // Updates all the mutants in this file with their counterpart's result in the report of the previous run
+                UpdateMutantsWithBaselineStatus(mutants, file);
             }
 
-            // We check if the tests have changed, if this is the case we should run all mutants. Otherwise we start filtering.
-            if (!_diffResult.TestsChanged)
+            // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
+            if (_diffResult.TestFilesChanged is { } && _diffResult.TestFilesChanged.Any(x => !x.EndsWith(".cs")))
             {
-
-                if (_diffResult.ChangedFiles.Contains(file.FullPath))
-                {
-                    _logger.LogDebug("returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
-                    // If the diffresult flags this file as modified. We want to run all mutants again.
-                    return SetMutantStatusForFileChanged(mutants);
-                }
-
-                if (_options.CompareToDashboard)
-                {
-                    // When using the compare to dashboard feature. 
-                    // Some mutants mutants have no certain result because we couldn't say with certainty which mutant on the dashboard belonged to it. 
-                    //These mutants have to be reset and tested.
-                    _logger.LogDebug("Running mutants for which we couldn't determine status on file {0}", file.RelativePathToProjectFile);
-                    return ReturnMutantsWithStatusNotRun(mutants);
-                }
-                _logger.LogDebug("Filtered all mutants because file {0} hasn't changed", file.RelativePathToProjectFile);
-                // If tests haven't changed and neither the file has changed or the compare feature is being used, we are not interested in the mutants of this file and thus can be filtered out completely.
-                return Enumerable.Empty<Mutant>();
+                _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
+                return SetMutantStatusForNonCSharpFileChanged(mutants);
             }
 
-            _logger.LogDebug("Running all mmutants in {0} because tests have changed", file.RelativePathToProjectFile);
-            // If tests are changed, return all mutants with status set to NotRun. We cannot guarantee the result.
-            return ResetMutantStatus(mutants);
-
-        }
-
-        private IEnumerable<Mutant> ReturnMutantsWithStatusNotRun(IEnumerable<Mutant> mutants)
-        {
-            var unclearMutants = new List<Mutant>();
-            foreach (var mutant in mutants)
+            // If the diff result flags this file as modified, we want to run all mutants again
+            if (_diffResult.ChangedFiles.Contains(file.FullPath))
             {
-                if (mutant.ResultStatus == MutantStatus.NotRun)
-                {
-                    unclearMutants.Add(mutant);
-                }
-            }
-
-            return unclearMutants;
-        }
-
-        private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
-        {
-            foreach (var mutant in mutants)
-            {
-                mutant.ResultStatus = MutantStatus.NotRun;
-                mutant.ResultStatusReason = "File changed since last commit.";
-            }
-            return mutants;
-        }
-
-        private IEnumerable<Mutant> ResetMutantStatus(IEnumerable<Mutant> mutants)
-        {
-            // Set mutant status to not run because tests changed and all mutants must run again.
-            foreach (var mutant in mutants)
-            {
-                mutant.ResultStatus = MutantStatus.NotRun;
-            }
-
-            return mutants;
-        }
-
-        private async Task<JsonReport> GetBaseline()
-        {
-            var branchName = _branchProvider.GetCurrentBranchName();
-
-            var baselineLocation = $"dashboard-compare/{branchName}";
-
-            var report = await _dashboardClient.PullReport(baselineLocation);
-
-            if (report == null)
-            {
-                _logger.LogInformation("We could not locate a baseline for project {0}, now trying fallback Version {1}", _options.DashboardReporterOptions.ProjectName, _options.DashboardReporterOptions.FallbackVersion);
-
-                return await GetFallbackBaseline();
-            }
-
-            _logger.LogInformation("Found report of project {0} using version {1} ", _options.DashboardReporterOptions.ProjectName, branchName);
-
-            return report;
-        }
-
-        private async Task<JsonReport> GetFallbackBaseline()
-        {
-            var report = await _dashboardClient.PullReport(_options.DashboardReporterOptions.FallbackVersion);
-
-            if (report == null)
-            {
-                _logger.LogInformation("We could not locate a baseline for project using fallback version. Now running a complete test to establish a baseline.");
-                return null;
+                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
+                return SetMutantStatusForFileChanged(mutants);
             }
             else
             {
-                _logger.LogInformation("Found report of project {0} using version {1}", _options.DashboardReporterOptions.ProjectName, _options.DashboardReporterOptions.FallbackVersion);
-
-                return report;
+                filteredMutants = SetNotRunMutantsToIgnored(mutants);
             }
+
+            // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
+            if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any())
+            {
+                filteredMutants = ResetMutantStatusForChangedTests(mutants);
+            }
+
+            // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
+            if (_options.CompareToDashboard)
+            {
+                var mutantsNotRun = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
+                filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);
+            }
+
+            return filteredMutants;
         }
 
-        private void UpdateMutantsWithBaseline(IEnumerable<Mutant> mutants, FileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
-            foreach (var baselineFile in _baseline.Files)
+            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
+
+            if (baselineFile is { } && baselineFile.Value is { })
             {
-                var filePath = FilePathUtils.NormalizePathSeparators(baselineFile.Key);
-
-                if (filePath == file.RelativePath)
+                foreach (var baselineMutant in baselineFile.Value.Mutants)
                 {
-                    foreach (var baselineMutant in baselineFile.Value.Mutants)
+                    var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
+
+                    if (string.IsNullOrEmpty(baselineMutantSourceCode))
                     {
-                        var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
-
-                        IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
-
-                        if (matchingMutants.Count() == 1)
-                        {
-                            UpdateMutantStatusWithBaseline(baselineMutant, matchingMutants.First());
-                        }
-                        else
-                        {
-                            UpdateMutantsForStatusUnclear(matchingMutants);
-                        }
+                        _logger.LogWarning("Unable to find mutant span in original baseline source code. This indicates a bug in stryker. Please report this on github.");
+                        continue;
                     }
+
+                    IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
+
+                    SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                 }
             }
+        }
 
-            var mutantGroups = mutants
-                .GroupBy(x => x.ResultStatusReason)
-                .OrderBy(x => x.Key);
-
-            foreach (var skippedMutantGroup in mutantGroups)
+        private static void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
+        {
+            if (matchingMutants.Count() == 1)
             {
-                _logger.LogInformation("{0} mutants got status {1}. Reason: {2}", skippedMutantGroup.Count(),
-                    skippedMutantGroup.First().ResultStatus, skippedMutantGroup.Key);
+                matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+                matchingMutants.First().ResultStatusReason = "Result based on previous run";
+            }
+            else
+            {
+                foreach (var matchingMutant in matchingMutants)
+                {
+                    matchingMutant.ResultStatus = MutantStatus.NotRun;
+                    matchingMutant.ResultStatusReason = "Result based on previous run was inconclusive";
+                }
             }
         }
 
-        private void UpdateMutantStatusWithBaseline(JsonMutant baselineMutant, Mutant matchingMutants)
-        {
-            matchingMutants.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-            matchingMutants.ResultStatusReason = "Result based on previous run.";
-        }
-
-        private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
-        {
-            return mutants.Where(x =>
-                x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
-                x.Mutation.DisplayName == baselineMutant.MutatorName);
-        }
-
-        private void UpdateMutantsForStatusUnclear(IEnumerable<Mutant> matchingMutants)
-        {
-            foreach (var matchingMutant in matchingMutants)
-            {
-                matchingMutant.ResultStatus = MutantStatus.NotRun;
-                matchingMutant.ResultStatusReason = "Could not determine the correct mutant status";
-            }
-        }
-
-        private string GetMutantSourceCode(string source, JsonMutant baselineMutant)
+        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
 
@@ -242,10 +162,136 @@ namespace Stryker.Core.MutantFilters
             LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
 
             var textSpan = tree.GetText().Lines.GetTextSpan(span);
+            var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));
+            return originalNode?.ToString();
 
-            return tree.GetRoot().DescendantNodes(textSpan)
-                .First(n => textSpan.Equals(n.Span)).ToString();
 
+        }
+
+        private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
+        {
+            return mutants.Where(x =>
+                x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
+                x.Mutation.DisplayName == baselineMutant.MutatorName);
+        }
+
+        private async Task<JsonReport> GetBaselineAsync()
+        {
+            var branchName = _gitInfoProvider.GetCurrentBranchName();
+
+            var baselineLocation = $"dashboard-compare/{branchName}";
+
+            var report = await _baselineProvider.Load(baselineLocation);
+
+            if (report == null)
+            {
+                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.DashboardReporterOptions.FallbackVersion);
+
+                return await GetFallbackBaselineAsync();
+            }
+
+            _logger.LogInformation("Found baseline report for current branch {0}", branchName);
+
+            return report;
+        }
+
+        private async Task<JsonReport> GetFallbackBaselineAsync()
+        {
+            var report = await _baselineProvider.Load(_options.DashboardReporterOptions.FallbackVersion);
+
+            if (report == null)
+            {
+                _logger.LogInformation("We could not locate a baseline report for the current branch or fallback version. Now running a complete test to establish a baseline.");
+                return null;
+            }
+
+            _logger.LogInformation("Found fallback report using version {0}", _options.DashboardReporterOptions.FallbackVersion);
+
+            return report;
+        }
+
+        private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun))
+            {
+                mutant.ResultStatus = MutantStatus.Ignored;
+                mutant.ResultStatusReason = "Mutant not changed compared to target commit";
+            }
+
+            return new List<Mutant>();
+        }
+
+        private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "Mutant changed compared to target commit";
+            }
+
+            return mutants;
+        }
+
+        private IEnumerable<Mutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+                mutant.ResultStatusReason = "Non-CSharp files in test project were changed";
+            }
+
+            return mutants;
+        }
+
+        private IEnumerable<Mutant> ResetMutantStatusForChangedTests(IEnumerable<Mutant> mutants)
+        {
+            var filteredMutants = new List<Mutant>();
+
+            foreach (var mutant in mutants)
+            {
+                var coveringTests = mutant.CoveringTests.Tests;
+
+                if (coveringTests.Any(coveringTest => _diffResult.TestFilesChanged.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                    || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
+                {
+                    mutant.ResultStatus = MutantStatus.NotRun;
+                    mutant.ResultStatusReason = "One or more covering tests changed";
+
+                    filteredMutants.Add(mutant);
+                    break;
+                }
+            }
+
+            return filteredMutants;
+        }
+
+        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
+        /// If the targetMutants already contain a member with the same Id. The results are updated.
+        internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
+        {
+            foreach (var targetMutant in target)
+            {
+                if (source.Any(updateMutant => updateMutant.Id == targetMutant.Id))
+                {
+                    continue;
+                }
+
+                yield return targetMutant;
+            }
+
+            foreach (var sourceMutant in source)
+            {
+                if (target.SingleOrDefault(targetMutant => targetMutant.Id == sourceMutant.Id) is var targetMutant && targetMutant is { })
+                {
+                    targetMutant.ResultStatus = sourceMutant.ResultStatus;
+                    targetMutant.ResultStatusReason = sourceMutant.ResultStatusReason;
+
+                    yield return targetMutant;
+                    continue;
+                }
+
+                yield return sourceMutant;
+            }
         }
     }
 }

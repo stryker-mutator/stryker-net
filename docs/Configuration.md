@@ -6,6 +6,7 @@ The full list of Stryker.NET configuration options are:
 - [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
+- [Mutation level](#mutation-level)
 - [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
@@ -20,6 +21,7 @@ The full list of Stryker.NET configuration options are:
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
+- [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
 <!-- /TOC -->
 
 ## Use a config file
@@ -30,7 +32,6 @@ Example `stryker-config.json` file:
 {
     "stryker-config":
     {
-        "test-runner": "vstest",
         "reporters": [
             "progress",
             "html"
@@ -56,7 +57,11 @@ Example `stryker-config.json` file:
             "*Log*",
             "ToString",
             "*HashCode*"
-        ]
+        ],
+        "dashboard-compare": true,
+        "baseline-storage-location": "AzureFileStorage",
+        "azure-storage-url": "https://storageaccount.file.core.windows.net/sharename",
+        "azure-storage-sas": "<SAS>"
     }
 }
 ```
@@ -86,6 +91,33 @@ When Stryker finds two or more project references inside your test project, it n
 dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
 ```
+
+## Mutation level
+Stryker support multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
+
+The levels are as follows:
+- Basic
+- Standard (Default)
+- Advanced
+- Complete
+
+| Mutations| Level| 
+| ------------- | ------------- | 
+| Arithmetic Operators | Basic|
+| Block (not yet implemented) | Basic|
+| Equality Operators | Standard |
+| Boolean Literals | Standard|
+| Assignment statements | Standard |
+| Collection initializer | Standard |
+| Unary Operators | Standard |
+| Update Operators | Standard |
+| String Literals and Constants | Standard |
+| Bitwise Operators | Standard |
+| Linq Methods | Standard |
+| Checked Statements | Standard |
+| Regex | Advanced |
+| Advanced Linq Methods (not yet implemented) | Complete |
+| Advanced Regex (not yet implemented) | Complete |
 
 ## Specify testrunner
 Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
@@ -361,9 +393,12 @@ dotnet stryker -gs "development"
 
 Default: `master`
 
+This feature works based on file diffs, which means that only changed files will be mutated.
 
-## Dashboard Compare
-Dashboard compare lets you save your mutation result in [the stryker dashboard](https://dashboard.stryker-mutator.io). On subsequent test runs only changed mutants, or mutants for which a covering unit test has been changed, will be tested. Unchanged mutants will get the status from the dashboard in order to provide a full report.
+Also note that for changes on test files all mutants covered by tests in that file will be mutated.
+
+## EXPERIMENTAL: Dashboard Compare
+Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
 
 ```
 dotnet stryker --dashboard-compare
@@ -374,30 +409,71 @@ Default `"off"`
 
 This feature automatically enables the --diff feature.
 
-## Fallback version
-When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to download a report when we cannot find one for your current source version.  If you don't specify a value for fallback version, we will use --git-source as the fallback version.When we are unable to find a fallback version we will do a complete mutation testrun. 
+This feature is experimental. Results can contain slight false postives and false negatives.
 
-For example:
-You use a development branch and you use feature branches that merge back to development. Your fallback version would be development. 
-You start a pull request to merge your finished feature back into development. Since this is a new feature and a new pull request, you will not yet have a report for your feature branch and the fallback version is used instead.
-Since your feature branch is branched off of development, a report for development will be fairly up-to-date with your feature branch, and you will only have to test the new mutations added in your feature branch. All other mutants can be skipped, because we have an up-to-date report for the development branch.
+## Fallback version
+When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
 
 ```
 dotnet stryker --dashboard-compare --dashboard-fallback-version master
 dotnet stryker -compare -fallback-version master
 ```
-Default: `--git-source`
+Default: value provided to --git-source or null
 
-## Configuring Dashboard Compare on pull requests
-When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
+## Baseline Storage location
+Sets the storage location for the baseline used by --dashboard-compare. By default this is set to disk, when the dashboard reporter is enabled this is automatically set to Stryker Dashboard.
 
-1. Enable --dashboard-compare.
-2. Set --dashboard-version to the name of the source branch for your pull request.
-3. Set --git-source to the name of the target branch of your pull request.
-4. (Optionally) Set a --dashboard-fallback-version. When you do not set a fallback version we will use --git-source as fallback. Since the source branch should be based on the target branche, this fallback baseline should be fairly up to date.
+Supported storage locations are:
+
+| Storage location | Option | Description |
+|------------------|--------|-------------|
+| Disk             | Disk   | Saves the baseline to the `StrykerOutput` folder|
+| Stryker Dashboard| Dashboard | Saves the baseline to Stryker Dashboard |
+| Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
 
 ```
-dotnet stryker --dashboard-compare --git-source master --dashboard-version development
-dotnet stryker -compare -source master -version development
+dotnet stryker --dashboard-compare --baseline-storage-location disk
+dotnet stryker -compare -bsl disk
+```
+Defaut `"disk"`
+
+## Configurating Dashboard location
+
+See: [Dashboard Reporter Settings](/docs/Reporters.md#dashboard-reporter)
+
+## Configuring Azure File Storage
+When using Azure File Storage as baseline storage location you are required to provide the following values.
+
+### Azure File Storage URL
+This is the url to your Azure File Storage. The URL should look something like this:
 
 ```
+https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
+Providing a subfolder is optional, we store the baseline in a `StrykerOutput` subfolder.
+
+```
+-storage url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+--azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
+```
+
+### Shared Access Signature (SAS)
+For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+
+```
+-storage-sas <STORAGE_SAS>
+--azure-storage-sas <STORAGE_SAS>
+```
+
+The complete configuration would look like this:
+```
+dotnet stryker --dashboard-compare --baseline-storage-location AzureFileStorage --azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-storage-sas STORAGE_SAS
+
+or
+
+dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
+```
+
+## Using dashboard compare in a pull request pipeline
+
+See: [Using stryker in pipelines](/docs/Stryker-in-pipeline.md)

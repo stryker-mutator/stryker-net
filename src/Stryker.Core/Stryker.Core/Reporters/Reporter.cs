@@ -8,9 +8,11 @@
         Dots,
         ConsoleProgressDots,
         ClearText,
+        ClearTextTree,
         ConsoleReport,
         Json,
         Html,
-        Dashboard
+        Dashboard,
+        Baseline
     }
 }

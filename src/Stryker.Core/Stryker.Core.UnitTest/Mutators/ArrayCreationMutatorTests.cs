@@ -2,13 +2,19 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
     public class ArrayCreationMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new ArrayCreationMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Fact]
         public void ShouldRemoveValuesFromArrayCreation()
         {

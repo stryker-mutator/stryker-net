@@ -2,6 +2,7 @@ using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
+using Stryker.Core.Baseline;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -473,6 +474,23 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--mutation-level")]
+        [InlineData("-level")]
+        public void ShouldSetMutationLevelWhenPassed(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "advanced" });
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MutationLevel == MutationLevel.Advanced), It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
         [InlineData("--dashboard-compare", "--dashboard-version project")]
         [InlineData("-compare", "-version project")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
@@ -578,6 +596,62 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "development" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitSource == "development"),
+                It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
+        [InlineData("--baseline-storage-location disk")]
+        [InlineData("-bsl disk")]
+        public void ShouldSetDiskBaselineProviderWhenSpecified(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
+                It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
+        [InlineData("--baseline-storage-location dashboard")]
+        [InlineData("-bsl dashboard")]
+        public void ShouldSetDashboardBaselineProviderWhenSpecified(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Dashboard),
+                It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+
+        [Fact]
+        public void ShouldSetDiskBaselineProviderWhenNotSpecifiedAndNoDashboardReporterSpecified()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
     }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -11,8 +10,10 @@ namespace Stryker.Core.Mutants
         int Id { get; }
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
+        string ResultStatusReason { get; }
         ITestListDescription CoveringTests { get; }
         string LongName { get; }
+        int? Line { get; }
     }
 
     /// <summary>
@@ -38,8 +39,10 @@ namespace Stryker.Core.Mutants
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
         public string LongName =>
-            $"{Mutation?.DisplayName} on line {Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
+            $"{Mutation?.DisplayName} on line {Line}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
 
+        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+        
         public bool IsStaticValue { get; set; }
 
         public void AnalyzeTestRun(ITestListDescription failedTests, ITestListDescription resultRanTests, ITestListDescription timedOutTests)

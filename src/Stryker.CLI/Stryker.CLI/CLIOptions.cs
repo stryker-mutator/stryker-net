@@ -1,5 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -109,10 +110,22 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-compare",
             ArgumentShortName = "-compare",
-            ArgumentDescription = $@"Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
+            ArgumentDescription = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "dashboard-diff-compare"
+            JsonKey = "dashboard-compare"
 
+        };
+
+
+        public static readonly CLIOption<string> BaselineStorageLocation = new CLIOption<string>
+        {
+            ArgumentName = "--baseline-storage-location",
+            ArgumentShortName = "-bsl <storageLocation>",
+            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(_defaultOptions.BaselineProvider, (IEnumerable<BaselineProvider>)Enum.GetValues(_defaultOptions.BaselineProvider.GetType())) }]
+                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.",
+            ValueType = CommandOptionType.SingleValue,
+            DefaultValue = _defaultOptions.BaselineProvider.ToString(),
+            JsonKey = "baseline-storage-location"
         };
 
         public static readonly CLIOption<string> GitSource = new CLIOption<string>
@@ -315,6 +328,38 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentDescription = $"Specify what test projects should run on the project under test.",
             DefaultValue = _defaultOptions.TestProjects,
             JsonKey = "test-projects"
+        };
+
+        public static readonly CLIOption<string> AzureSAS = new CLIOption<string>
+        {
+            ArgumentName = "--azure-storage-sas",
+            ArgumentShortName = "-sas <azure-sas-key>",
+            ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
+            DefaultValue = null,
+            JsonKey = "azure-storage-sas"
+        };
+
+        public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
+        {
+            ArgumentName = "--azure-storage-url",
+            ArgumentShortName = "-storage-url <url>",
+            ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+                                    The url should look something like this: 
+
+                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+
+                                    Note, the url might be different depending of where your file storage is hosted.",
+            DefaultValue = null,
+            JsonKey = "azure-storage-url"
+        };
+
+        public static readonly CLIOption<string> MutationLevel = new CLIOption<string>
+        {
+            ArgumentName = "--mutation-level",
+            ArgumentShortName = "-level",
+            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
+            DefaultValue = _defaultOptions.MutationLevel.ToString(),
+            JsonKey = "mutation-level"
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

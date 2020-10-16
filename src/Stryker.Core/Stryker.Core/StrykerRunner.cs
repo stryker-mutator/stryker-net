@@ -53,8 +53,6 @@ namespace Stryker.Core
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            CreateOutputDirWithGitignore(options);
-
             var reporters = _reporterFactory.Create(options);
 
             SetupLogging(options, initialLogMessages);
@@ -114,16 +112,6 @@ namespace Stryker.Core
                 // log duration
                 stopwatch.Stop();
                 _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
-            }
-        }
-
-        private void CreateOutputDirWithGitignore(StrykerOptions options)
-        {
-            _fileSystem.Directory.CreateDirectory(options.OutputPath);
-            _fileSystem.File.Create(Path.Combine(options.OutputPath, ".gitignore")).Close();
-            using (var file = _fileSystem.File.CreateText(Path.Combine(options.OutputPath, ".gitignore")))
-            {
-                file.WriteLine("*");
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\");
+            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger<StrykerOptions>());
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
@@ -28,7 +29,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoProvider.VerifyNoOtherCalls();
         }
-
 
         /**
          * Libgit2sharp has most of its contructors sealed. 
@@ -75,7 +75,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -92,9 +92,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             // Assert
             res.ChangedFiles.Count().ShouldBe(1);
-            res.TestsChanged.ShouldBeFalse();
+            res.TestFilesChanged.Count().ShouldBe(0);
         }
-
 
         [Fact]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()

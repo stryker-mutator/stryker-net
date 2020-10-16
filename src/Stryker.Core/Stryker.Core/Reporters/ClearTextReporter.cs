@@ -4,13 +4,12 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Reporters
 {
     /// <summary>
-    /// The default reporter, prints a simple progress and end result.
+    /// The clear text reporter, prints a table with results.
     /// </summary>
     public class ClearTextReporter : IReporter
     {
@@ -40,77 +39,83 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
-            // setup display handlers
-            reportComponent.DisplayFolder = (int depth, IReadOnlyInputComponent current) =>
+            var files = new List<FileLeaf>();
+
+            FolderComposite rootFolder = null;
+
+            reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
             {
-                // show depth
-                _chalk.Default($"{new string('-', depth)} {Path.DirectorySeparatorChar}{Path.GetFileName(current.Name)} ");
-                DisplayComponent(current);
+                rootFolder ??= (FolderComposite)current;
             };
 
-            reportComponent.DisplayFile = (int depth, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
             {
-                // show depth
-                _chalk.Default($"{new string('-', depth)} {current.Name} ");
-                DisplayComponent(current);
-                foreach (var mutant in current.TotalMutants)
-                {
-                    if (mutant.ResultStatus == MutantStatus.Killed ||
-                    mutant.ResultStatus == MutantStatus.Timeout)
-                    {
-                        _chalk.Green($"[{mutant.ResultStatus}] ");
-                    }
-                    else if (mutant.ResultStatus == MutantStatus.NoCoverage)
-                    {
-                        _chalk.Yellow($"[{mutant.ResultStatus}] ");
-                    }
-                    else
-                    {
-                        _chalk.Red($"[{mutant.ResultStatus}] ");
-                    }
-                    _chalk.Default(mutant.LongName + Environment.NewLine);
-                }
+                var fileLeaf = (FileLeaf)current;
+
+                files.Add((FileLeaf)current);
             };
 
             // print empty line for readability
             _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
+
             // start recursive invocation of handlers
-            reportComponent.Display(1);
+            reportComponent.Display(0);
+
+            var filePathLength = Math.Max(9, files.Max(f => f.RelativePathToProjectFile?.Length ?? 0) + 1);
+
+            _chalk.Default($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐{Environment.NewLine}");
+            _chalk.Default($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │{Environment.NewLine}");
+            _chalk.Default($"├─{new string('─', filePathLength)}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤{Environment.NewLine}");
+
+            DisplayComponent(rootFolder, filePathLength);
+
+            foreach (var file in files)
+            {
+                DisplayComponent(file, filePathLength);
+            }
+
+            _chalk.Default($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘{Environment.NewLine}");
         }
 
-        private void DisplayComponent(IReadOnlyInputComponent inputComponent)
+        private void DisplayComponent(ProjectComponent inputComponent, int filePathLength)
         {
+            _chalk.Default($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
+
             var mutationScore = inputComponent.GetMutationScore();
-            // Convert the threshold integer values to decimal values
 
-            _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
-
-            if (inputComponent is ProjectComponent projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is FileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
-                _chalk.DarkGray($"(Excluded)");
+                _chalk.DarkGray("Excluded");
             }
             else if (double.IsNaN(mutationScore))
             {
-                _chalk.DarkGray($"(N/A)");
+                _chalk.DarkGray("     N/A");
             }
             else
             {
-                // print the score as a percentage
-                string scoreText = string.Format("({0:P2})", mutationScore);
-                if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
+                var scoreText = $"{mutationScore * 100:N2}".PadLeft(8);
+
+                var checkHealth = inputComponent.CheckHealth(_options.Thresholds);
+                if (checkHealth is Health.Good)
                 {
                     _chalk.Green(scoreText);
                 }
-                else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Warning)
+                else if (checkHealth is Health.Warning)
                 {
                     _chalk.Yellow(scoreText);
                 }
-                else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Danger)
+                else if (checkHealth is Health.Danger)
                 {
                     _chalk.Red(scoreText);
                 }
             }
-            _chalk.Default($"]{Environment.NewLine}");
+
+            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
+            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
+            _chalk.Default($" │ {inputComponent.TotalMutants.Count() - inputComponent.DetectedMutants.Count(),10}");
+            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
+            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
+            _chalk.Default($" │{Environment.NewLine}");
         }
     }
 }

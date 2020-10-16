@@ -1,11 +1,14 @@
-﻿using Microsoft.CodeAnalysis.Text;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -39,7 +42,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void Constructor_WithIncorrectLoglevelArgument_ShouldThrowStrykerInputException()
+        public void ShouldValidateLoglevel()
         {
             var logLevel = "incorrect";
 
@@ -49,6 +52,7 @@ namespace Stryker.Core.UnitTest.Options
             });
 
             ex.Message.ShouldBe("The value for one of your settings is not correct. Try correcting or removing them.");
+            ex.Details.ShouldBe($"Incorrect log level ({logLevel}). The log level options are [Verbose, Debug, Information, Warning, Error, Fatal]");
         }
 
         [Fact]
@@ -114,6 +118,16 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
+        public void ShouldValidateExcludedMutation()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(excludedMutations: new[] { "gibberish" });
+            });
+            ex.Details.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
+        }
+
+        [Fact]
         public void ShouldValidateOptimisationMode()
         {
             var options = new StrykerOptions(coverageAnalysis: "perTestInIsolation");
@@ -133,7 +147,7 @@ namespace Stryker.Core.UnitTest.Options
             {
                 new StrykerOptions(coverageAnalysis: "gibberish");
             });
-            ex.Details.ShouldBe($"Incorrect coverageAnalysis option gibberish. The options are [off, all, perTest or perTestInIsolation].");
+            ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
         }
 
         [Theory]
@@ -160,46 +174,76 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
+        public void ShouldValidateMutationLevel()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(mutationLevel: "gibberish");
+            });
+            ex.Details.ShouldBe($"The given mutation level (gibberish) is invalid. Valid options are: [Basic, Standard, Advanced, Complete]");
+        }
+
+        [Fact]
+        public void ShouldValidateLanguageVersion()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(languageVersion: "gibberish");
+            });
+            ex.Details.ShouldBe($"The given c# language version (gibberish) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+        }
+
+        [Fact]
+        public void ShouldValidateCoverageAnalysis()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(coverageAnalysis: "gibberish");
+            });
+            ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
+        }
+
+        [Fact]
         public void ShouldValidateTestRunner()
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 var options = new StrykerOptions(testRunner: "gibberish");
             });
-            ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
+            ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [VsTest, DotnetTest]");
         }
 
         [Fact]
         public void ProjectVersionCannotBeEmpty()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
         }
 
         [Fact]
         public void ProjectVersionCannotBeNull()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
+                .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
         }
 
         [Fact]
         public void FallbackVersionCannotBeProjectVersion()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
 
             Should.Throw<StrykerInputException>(act)
-                .Message.ShouldBe("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
+                .Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
         }
 
         [Fact]
         public void ShouldNotThrowInputExceptionWhenSetCorrectly()
         {
-            Action act = () => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
 
             Should.NotThrow(act);
         }
@@ -211,6 +255,38 @@ namespace Stryker.Core.UnitTest.Options
 
             options.GitSource.ShouldBe("development");
             options.DashboardReporterOptions.FallbackVersion.ShouldBe("development");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_AzureSAS_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("A Shared Access Signature is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: "AZURE_SAS", baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Throw_Exception_When_Azure_Storage_url_and_SAS_null()
+        {
+            static void act() => new StrykerOptions(azureFileStorageUrl: null, azureSAS: null, baselineStorageLocation: "AzureFileStorage");
+
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe(@"A Shared Access Signature is required when Azure File Storage is enabled!The url pointing to your file storage is required when Azure File Storage is enabled!");
+        }
+
+        [Fact]
+        public void Should_Normalize_SAS()
+        {
+            var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
+
+            target.AzureSAS.ShouldBe("SAS");
         }
     }
 }

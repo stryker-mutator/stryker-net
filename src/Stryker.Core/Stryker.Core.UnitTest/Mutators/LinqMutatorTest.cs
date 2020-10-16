@@ -48,6 +48,13 @@ namespace TestApplication
             return memberAccessExpression;
         }
 
+        [Fact]
+        public void ShouldBeMutationlevelAdvanced()
+        {
+            var target = new LinqMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         /// <summary>
         ///     Test method to check for correct mutation of different Linq Expression Mutations
         /// </summary>
@@ -77,6 +84,8 @@ namespace TestApplication
         [InlineData(LinqExpression.AsEnumerable, LinqExpression.Reverse)]
         [InlineData(LinqExpression.Union, LinqExpression.Intersect)]
         [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
+        [InlineData(LinqExpression.Concat, LinqExpression.Except)]
+        [InlineData(LinqExpression.Except, LinqExpression.Concat)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();

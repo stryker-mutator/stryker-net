@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class ObjectCreationMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new ObjectCreationMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData("new List<int> { 1, 3 }")]
         [InlineData("new Collection<int> { 1, 3 }")]

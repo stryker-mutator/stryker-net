@@ -1,7 +1,10 @@
 ﻿using Buildalyzer;
 using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -32,9 +35,9 @@ namespace Stryker.Core.Initialisation
 
     public enum Framework
     {
-        NetClassic,
-        NetCore,
-        NetStandard,
+        DotNetClassic,
+        DotNet,
+        DotNetStandard,
         Unknown
     };
 }

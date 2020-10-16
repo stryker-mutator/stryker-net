@@ -22,24 +22,27 @@ namespace Stryker.Core.DiffProviders
             var diffResult = new DiffResult()
             {
                 ChangedFiles = new Collection<string>(),
-                TestsChanged = false
+                TestFilesChanged = new Collection<string>()
             };
 
             // A git repository has been detected, calculate the diff to filter
             var commit = _gitInfoProvider.DetermineCommit();
+            var repository = _gitInfoProvider.Repository;
 
             if (commit == null)
             {
                 throw new Stryker.Core.Exceptions.StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
-            foreach (var patchChanges in _gitInfoProvider.Repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+            foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
-                diffResult.ChangedFiles.Add(diffPath);
-                if (diffPath.StartsWith(_options.BasePath) && diffPath.EndsWith(".cs"))
+                
+                diffResult.ChangedFiles.Add(diffPath);    
+                
+                if (diffPath.StartsWith(_options.BasePath))
                 {
-                    diffResult.TestsChanged = true;
+                    diffResult.TestFilesChanged.Add(diffPath);
                 }
             }
             return diffResult;

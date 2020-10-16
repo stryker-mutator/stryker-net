@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Shouldly;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
@@ -42,13 +43,14 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is JsonReporter);
-            broadcastReporter.Reporters.ShouldContain(r => r is HtmlReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ClearTextTreeReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            broadcastReporter.Reporters.Count().ShouldBe(6);
+            broadcastReporter.Reporters.Count().ShouldBe(8);
         }
 
         [Fact]

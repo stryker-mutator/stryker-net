@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
+using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -21,6 +22,8 @@ namespace Stryker.Core.Options
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
+        public BaselineProvider BaselineProvider { get; }
+
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -43,6 +46,11 @@ namespace Stryker.Core.Options
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
         public DashboardReporterOptions DashboardReporterOptions { get; }
+        public MutationLevel MutationLevel { get; }
+
+        public string AzureSAS { get; }
+        public string AzureFileStorageUrl { get; set; }
+        public string FallbackVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
@@ -81,7 +89,11 @@ namespace Stryker.Core.Options
             string moduleName = null,
             string projectVersion = null,
             string fallbackVersion = null,
-            IEnumerable<string> testProjects = null)
+            string baselineStorageLocation = null,
+            string azureSAS = null,
+            string azureFileStorageUrl = null,
+            IEnumerable<string> testProjects = null,
+            string mutationLevel = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -89,11 +101,12 @@ namespace Stryker.Core.Options
             var outputPath = ValidateOutputPath(basePath);
             IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
+            CompareToDashboard = compareToDashboard;
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = ValidateExcludedMutations(excludedMutations);
+            ExcludedMutations = ValidateExcludedMutations(excludedMutations).ToList();
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
@@ -108,7 +121,12 @@ namespace Stryker.Core.Options
             CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
+            DashboardUrl = dashboardUrl;
             DashboardReporterOptions = ValidateDashboardReporter(dashboardApiKey, projectName, moduleName, projectVersion, fallbackVersion, dashboardUrl);
+            ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
+            BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
+            (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
+            MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
         }
 
         public StrykerProjectOptions ToProjectOptions(string basePath = null, string projectUnderTest = null, IEnumerable<string> testProjects = null)
@@ -137,6 +155,52 @@ namespace Stryker.Core.Options
                 gitSource: GitSource,
                 testProjects: testProjects ?? TestProjects,
                 compareToDashboard: CompareToDashboard);
+        }
+
+        private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)
+        {
+            if (BaselineProvider != BaselineProvider.AzureFileStorage)
+            {
+                return (null, null);
+            }
+
+            var errorStrings = new StringBuilder();
+
+            if (azureSAS == null)
+            {
+                errorStrings.Append("A Shared Access Signature is required when Azure File Storage is enabled!");
+            }
+
+            if (azureFileStorageUrl == null)
+            {
+                errorStrings.Append("The url pointing to your file storage is required when Azure File Storage is enabled!");
+            }
+
+            if (errorStrings.Length > 0)
+            {
+                throw new StrykerInputException(errorStrings.ToString());
+            }
+
+            // Normalize the SAS
+            if (azureSAS.StartsWith("?sv="))
+            {
+                azureSAS = azureSAS.Replace("?sv=", "");
+            }
+
+            return (azureSAS, azureFileStorageUrl);
+        }
+
+        private MutationLevel ValidateMutationLevel(string mutationLevel)
+        {
+            if (Enum.TryParse(mutationLevel, true, out MutationLevel result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{ string.Join(", ", (IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))) }]");
+            }
         }
 
         private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion, string dashboardUrl)
@@ -190,25 +254,23 @@ namespace Stryker.Core.Options
                 fallbackVersion = gitSource;
             }
 
-            if (!CompareToDashboard)
+            if (CompareToDashboard)
             {
-                return (projectVersion, null, gitSource);
-            }
+                var errorStrings = new StringBuilder();
+                if (string.IsNullOrEmpty(projectVersion))
+                {
+                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+                }
 
-            var errorStrings = new StringBuilder();
-            if (string.IsNullOrEmpty(projectVersion))
-            {
-                errorStrings.Append("When the compare to dashboard feature is enabled, projectVersion cannot be null, please provide a projectVersion");
-            }
+                if (fallbackVersion == projectVersion)
+                {
+                    errorStrings.Append("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
+                }
 
-            if (fallbackVersion == projectVersion)
-            {
-                errorStrings.Append("Fallback version cannot be set to the same value as the projectVersion, please provide a different fallback version");
-            }
-
-            if (errorStrings.Length > 0)
-            {
-                throw new StrykerInputException(errorStrings.ToString());
+                if (errorStrings.Length > 0)
+                {
+                    throw new StrykerInputException(errorStrings.ToString());
+                }
             }
 
             return (projectVersion, fallbackVersion, gitSource);
@@ -224,11 +286,11 @@ namespace Stryker.Core.Options
 
         private OptimizationFlags ValidateMode(string mode)
         {
-            switch (mode)
+            switch (mode.ToLower())
             {
-                case "perTestInIsolation":
+                case "pertestinisolation":
                     return OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest;
-                case "perTest":
+                case "pertest":
                     return OptimizationFlags.CoverageBasedTest;
                 case "all":
                     return OptimizationFlags.SkipUncoveredMutants;
@@ -238,7 +300,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest or perTestInIsolation].");
+                        $"Incorrect coverageAnalysis option ({mode}). The options are [Off, All, PerTest or PerTestInIsolation].");
             }
         }
 
@@ -252,6 +314,21 @@ namespace Stryker.Core.Options
             var outputPath = Path.Combine(basePath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             _fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
+            // Create output dir with gitignore
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, "StrykerOutput", ".gitignore"));
+            if (!_fileSystem.File.Exists(gitignorePath))
+            {
+                try
+                {
+                    _fileSystem.File.WriteAllText(gitignorePath, "*");
+                }
+                catch (IOException e)
+                {
+                    _logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
+                        "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
+                }
+            }
+
             return outputPath;
         }
 
@@ -264,6 +341,13 @@ namespace Stryker.Core.Options
                     yield return reporter;
                 }
                 yield break;
+            }
+
+            if (CompareToDashboard)
+            {
+                var reportersList = reporters.ToList();
+                reportersList.Add("Baseline");
+                reporters = reportersList.ToArray();
             }
 
             IList<string> invalidReporters = new List<string>();
@@ -282,15 +366,15 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
+                    $"These reporter values are incorrect: {string.Join(", ", invalidReporters)}. Valid reporter options are [{string.Join(", ", (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)))}]");
             }
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
             yield break;
         }
 
-        private IEnumerable<Mutator> ValidateExcludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExcludedMutations(string[] excludedMutations)
         {
-            if (excludedMutations == null)
+            if (excludedMutations == null || !excludedMutations.Any())
             {
                 yield break;
             }
@@ -311,7 +395,8 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    throw new StrykerInputException(ErrorMessage, $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException(ErrorMessage,
+                        $"Invalid excluded mutation ({excludedMutation}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
@@ -334,7 +419,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect log level {levelText}. The log level options are [Error, Warning, Info, Debug, Trace]");
+                        $"Incorrect log level ({levelText}). The log level options are [{string.Join(", ", (IEnumerable<LogEventLevel>)Enum.GetValues(typeof(LogEventLevel)))}]");
             }
         }
 
@@ -392,8 +477,8 @@ namespace Stryker.Core.Options
         {
             var filesToInclude = new List<FilePattern>();
 
-            filePatterns = filePatterns ?? Array.Empty<string>();
-            filesToExclude = filesToExclude ?? Array.Empty<string>();
+            filePatterns ??= Array.Empty<string>();
+            filesToExclude ??= Array.Empty<string>();
 
             if (!filePatterns.Any())
             {
@@ -444,7 +529,8 @@ namespace Stryker.Core.Options
             }
             else
             {
-                throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(", ", (IEnumerable<TestRunner>)Enum.GetValues(typeof(TestRunner)))}]");
             }
         }
 
@@ -477,8 +563,26 @@ namespace Stryker.Core.Options
             else
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
+        }
+
+        private BaselineProvider ValidateBaselineProvider(string baselineStorageLocation)
+        {
+            var normalizedLocation = baselineStorageLocation?.ToLower() ?? "";
+
+            if (string.IsNullOrEmpty(normalizedLocation) && Reporters.Any(x => x == Reporter.Dashboard))
+            {
+                return BaselineProvider.Dashboard;
+            }
+
+            return normalizedLocation switch
+            {
+                "disk" => BaselineProvider.Disk,
+                "dashboard" => BaselineProvider.Dashboard,
+                "azurefilestorage" => BaselineProvider.AzureFileStorage,
+                _ => BaselineProvider.Disk,
+            };
         }
     }
 }

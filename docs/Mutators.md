@@ -128,6 +128,8 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `AsEnumerable()`     | `Reverse()`           |
 | `Union()`            | `Intersect()`         |
 | `Intersect()`        | `Union()`             |
+| `Concat()`           | `Except()`            |
+| `Except()`           | `Concat()`            |
 
 `* Sum() was mutated to Count() in previous versions; this change reduces compilation errors.`
 
