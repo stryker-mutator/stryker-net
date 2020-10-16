@@ -4,7 +4,7 @@ namespace Stryker.Core.Baseline
 {
     public static class BaselineProviderFactory
     {
-        public static IBaselineProvider Create(StrykerOptions options)
+        public static IBaselineProvider Create(IStrykerOptions options)
         {
             return options.BaselineProvider switch
             {

@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,9 +15,9 @@ namespace Stryker.Core.CoverageAnalysis
         private readonly MutationTestInput _input;
         private readonly ILogger<CoverageAnalyser> _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
-        public CoverageAnalyser(StrykerOptions options, IMutationTestExecutor mutationTestExecutor, MutationTestInput input)
+        public CoverageAnalyser(IStrykerOptions options, IMutationTestExecutor mutationTestExecutor, MutationTestInput input)
         {
             _input = input;
             _mutationTestExecutor = mutationTestExecutor;
@@ -31,7 +32,7 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 _logger.LogInformation($"Capture mutant coverage using '{_options.OptimizationMode}' mode.");
 
-                var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes;
+                var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes();
                 var mutantsToScan =
                     _input.ProjectInfo.ProjectContents.Mutants
                         .Where(x => x.ResultStatus == MutantStatus.NotRun)

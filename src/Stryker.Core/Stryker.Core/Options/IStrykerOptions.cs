@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
@@ -32,5 +33,9 @@ namespace Stryker.Core.Options
         IEnumerable<string> TestProjects { get; set; }
         TestRunner TestRunner { get; set; }
         Threshold Thresholds { get; }
+        string AzureSAS { get; }
+        string AzureFileStorageUrl { get; set; }
+        BaselineProvider BaselineProvider { get; }
+        MutationLevel MutationLevel { get; }
     }
 }

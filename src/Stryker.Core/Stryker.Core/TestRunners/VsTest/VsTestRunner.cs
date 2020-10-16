@@ -83,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private bool CantUseStrykerDataCollector()
         {
             return _projectInfo.TestProjectAnalyzerResults.Select(x => x.TargetFrameworkAndVersion()).Any(t =>
-                t.Framework == Framework.DotNet && t.TargetFrameworkAndVersion.version.Major < 2);
+                t.Framework == Framework.DotNet && t.Version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)

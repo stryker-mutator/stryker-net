@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
@@ -33,6 +34,10 @@ namespace Stryker.Core.Options
         public IEnumerable<string> TestProjects { get; set; }
         public DashboardReporterOptions DashboardReporterOptions { get; }
         public bool CompareToDashboard { get; }
+        public string AzureSAS { get; }
+        public string AzureFileStorageUrl { get; set; }
+        public BaselineProvider BaselineProvider { get; }
+        public MutationLevel MutationLevel { get; }
 
         public StrykerProjectOptions(
             string basePath = null,
@@ -57,7 +62,11 @@ namespace Stryker.Core.Options
             string gitSource = null,
             DashboardReporterOptions dashboardReporterOptions = null,
             IEnumerable<string> testProjects = null,
-            bool compareToDashboard = false)
+            bool compareToDashboard = false,
+            string azureSAS = null,
+            string azureFileStorageUrl = null,
+            BaselineProvider baselineProvider = BaselineProvider.Disk,
+            MutationLevel mutationLevel = MutationLevel.Standard)
         {
             IgnoredMethods = ignoredMethods;
             BasePath = basePath;
@@ -82,6 +91,10 @@ namespace Stryker.Core.Options
             TestProjects = testProjects;
             DashboardReporterOptions = dashboardReporterOptions;
             CompareToDashboard = compareToDashboard;
+            AzureSAS = azureSAS;
+            AzureFileStorageUrl = azureFileStorageUrl;
+            BaselineProvider = baselineProvider;
+            MutationLevel = mutationLevel;
         }
     }
 }

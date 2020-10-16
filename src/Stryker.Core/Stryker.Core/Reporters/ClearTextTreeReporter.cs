@@ -20,9 +20,9 @@ namespace Stryker.Core.Reporters
         private const string FinalBranchLine = "└── ";
 
         private readonly IChalk _chalk;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
-        public ClearTextTreeReporter(StrykerOptions strykerOptions, IChalk chalk = null)
+        public ClearTextTreeReporter(IStrykerOptions strykerOptions, IChalk chalk = null)
         {
             _options = strykerOptions;
             _chalk = chalk ?? new Chalk();
@@ -33,7 +33,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // This reporter does not report during the testrun
         }

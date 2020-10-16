@@ -12,11 +12,11 @@ namespace Stryker.Core.Reporters.Html
 {
     public class HtmlReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly IChalk _chalk;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
+        public HtmlReporter(IStrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();

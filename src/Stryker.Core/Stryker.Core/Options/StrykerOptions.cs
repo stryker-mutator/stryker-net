@@ -23,7 +23,6 @@ namespace Stryker.Core.Options
         public string SolutionPath { get; }
         public string OutputPath { get; }
         public BaselineProvider BaselineProvider { get; }
-
         public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
         public bool DevMode { get; }
@@ -47,7 +46,6 @@ namespace Stryker.Core.Options
         public IEnumerable<string> TestProjects { get; set; }
         public DashboardReporterOptions DashboardReporterOptions { get; }
         public MutationLevel MutationLevel { get; }
-
         public string AzureSAS { get; }
         public string AzureFileStorageUrl { get; set; }
         public string FallbackVersion { get; }
@@ -121,9 +119,7 @@ namespace Stryker.Core.Options
             CompareToDashboard = compareToDashboard;
             GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
-            DashboardUrl = dashboardUrl;
-            DashboardReporterOptions = ValidateDashboardReporter(dashboardApiKey, projectName, moduleName, projectVersion, fallbackVersion, dashboardUrl);
-            ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
+            DashboardReporterOptions = ValidateDashboardReporter(dashboardApiKey, projectName, !Reporters.Contains(Reporter.Dashboard) ? null : moduleName, projectVersion, fallbackVersion, dashboardUrl);
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
             MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());

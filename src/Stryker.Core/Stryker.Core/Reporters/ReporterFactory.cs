@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
@@ -20,7 +21,7 @@ namespace Stryker.Core.Reporters
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {

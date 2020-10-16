@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
+using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -95,6 +96,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
+            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
@@ -108,15 +110,15 @@ namespace Stryker.Core.UnitTest.MutationTest
                 });
             var options = new StrykerProjectOptions(devMode: true, excludedMutations: new List<Mutator> { });
 
-
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
                 fileSystem,
-                options,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
+                coverageAnalyzerMock.Object,
+                options);
 
             // start mutation process
             target.Mutate();
@@ -181,6 +183,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
+            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent>()));
@@ -206,8 +209,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
                 fileSystem,
-                options,
-                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }));
+                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }),
+                coverageAnalyzerMock.Object,
+                options);
 
             // start mutation process
             target.Mutate();
@@ -259,6 +263,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
+            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
@@ -283,8 +288,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 orchestratorMock.Object,
                 compilingProcessMock.Object,
                 fileSystem,
-                options,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
+                coverageAnalyzerMock.Object,
+                options);
 
             target.Mutate();
 
