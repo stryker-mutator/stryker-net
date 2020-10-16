@@ -17,7 +17,7 @@ namespace Stryker.Core.Helpers
                 ConversionOperatorDeclarationSyntax _ => null,
                 DestructorDeclarationSyntax _ => null,
                 MethodDeclarationSyntax method => method.ReturnType,
-                OperatorDeclarationSyntax oper => oper.ReturnType,
+                OperatorDeclarationSyntax operator => operator.ReturnType,
                 _ => null
             };
         }
