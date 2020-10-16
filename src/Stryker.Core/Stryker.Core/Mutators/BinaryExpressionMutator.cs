@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutators
     {
         private readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate;
 
+        public override MutationLevel MutationLevel => MutationLevel.Basic;
+
         public BinaryExpressionMutator()
         {
             _kindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>

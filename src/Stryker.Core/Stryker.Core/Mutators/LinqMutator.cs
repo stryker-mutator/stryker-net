@@ -10,12 +10,13 @@ namespace Stryker.Core.Mutators
     /// <summary> Mutator Implementation for LINQ Mutations </summary>
     public class LinqMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
+
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
        /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static HashSet<LinqExpression> RequireArguments { get; }
 
-        /// <summary> Constructor for the <see cref="LinqMutator"/> </summary>
         static LinqMutator()
         {
             KindsToMutate = new Dictionary<LinqExpression, LinqExpression>
@@ -60,7 +61,6 @@ namespace Stryker.Core.Mutators
                 LinqExpression.Intersect
             };
         }
-
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {

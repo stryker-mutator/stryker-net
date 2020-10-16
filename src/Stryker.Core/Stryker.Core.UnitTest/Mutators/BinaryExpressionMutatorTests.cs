@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class BinaryExpressionMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelBasic()
+        {
+            var target = new BinaryExpressionMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Basic);
+        }
+
         [Theory]
         [InlineData(Mutator.Arithmetic, SyntaxKind.AddExpression, SyntaxKind.SubtractExpression)]
         [InlineData(Mutator.Arithmetic, SyntaxKind.SubtractExpression, SyntaxKind.AddExpression)]
