@@ -34,6 +34,7 @@ namespace Stryker.Core.ProjectComponents
 
         public override void Add(ProjectComponent<FileLeaf, SyntaxTree> component)
         {
+            component.Parent = this;
             Children.Add(component);
         }
 
@@ -42,11 +43,11 @@ namespace Stryker.Core.ProjectComponents
             // only walk this branch of the tree if there are MutatedSyntaxTrees, otherwise we have nothing to display.
             if (MutatedSyntaxTrees.Any())
             {
-                // do not display root node
+                DisplayFolder(depth, this);
+
                 if (!string.IsNullOrEmpty(Name))
                 {
-                    DisplayFolder(depth, this);
-                    depth += 2;
+                    depth++;
                 }
 
                 foreach (var child in Children)

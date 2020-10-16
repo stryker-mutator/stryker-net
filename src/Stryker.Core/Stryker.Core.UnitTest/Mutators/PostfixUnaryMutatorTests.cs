@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class PostfixUnaryMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new PostfixUnaryMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData(SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression)]
         [InlineData(SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression)]

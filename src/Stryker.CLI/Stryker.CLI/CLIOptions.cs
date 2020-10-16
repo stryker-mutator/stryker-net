@@ -353,6 +353,15 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "azure-storage-url"
         };
 
+        public static readonly CLIOption<string> MutationLevel = new CLIOption<string>
+        {
+            ArgumentName = "--mutation-level",
+            ArgumentShortName = "-level",
+            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
+            DefaultValue = _defaultOptions.MutationLevel.ToString(),
+            JsonKey = "mutation-level"
+        };
+
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
         {
             return FormatOptionsString(new List<T> { @default }, options, new List<Y>());

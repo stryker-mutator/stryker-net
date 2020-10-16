@@ -8,6 +8,8 @@ namespace Stryker.Core.Mutators
 {
     public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
+
         private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
         {
             {SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression},

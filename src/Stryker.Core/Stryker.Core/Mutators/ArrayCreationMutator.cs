@@ -8,6 +8,8 @@ namespace Stryker.Core.Mutators
 {
     public class ArrayCreationMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
+
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
             if (node is StackAllocArrayCreationExpressionSyntax stackAllocArray && stackAllocArray.Initializer?.Expressions != null && stackAllocArray.Initializer.Expressions.Count > 0)

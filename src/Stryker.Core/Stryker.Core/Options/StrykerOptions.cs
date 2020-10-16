@@ -52,6 +52,7 @@ namespace Stryker.Core.Options
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
+        public MutationLevel MutationLevel { get; }
 
         public string AzureSAS { get; }
 
@@ -99,7 +100,8 @@ namespace Stryker.Core.Options
             string baselineStorageLocation = null,
             string azureSAS = null,
             string azureFileStorageUrl = null,
-            IEnumerable<string> testProjects = null)
+            IEnumerable<string> testProjects = null,
+            string mutationLevel = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -112,7 +114,7 @@ namespace Stryker.Core.Options
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
             AdditionalTimeoutMS = additionalTimeoutMS;
-            ExcludedMutations = ValidateExcludedMutations(excludedMutations);
+            ExcludedMutations = ValidateExcludedMutations(excludedMutations).ToList();
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
             ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
@@ -133,6 +135,7 @@ namespace Stryker.Core.Options
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
+            MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
         }
 
         private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)
@@ -166,8 +169,19 @@ namespace Stryker.Core.Options
             }
 
             return (azureSAS, azureFileStorageUrl);
+        }
 
-
+        private MutationLevel ValidateMutationLevel(string mutationLevel)
+        {
+            if (Enum.TryParse(mutationLevel, true, out MutationLevel result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{ string.Join(", ", (IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))) }]");
+            }
         }
 
         private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
@@ -252,11 +266,11 @@ namespace Stryker.Core.Options
 
         private OptimizationFlags ValidateMode(string mode)
         {
-            switch (mode)
+            switch (mode.ToLower())
             {
-                case "perTestInIsolation":
+                case "pertestinisolation":
                     return OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest;
-                case "perTest":
+                case "pertest":
                     return OptimizationFlags.CoverageBasedTest;
                 case "all":
                     return OptimizationFlags.SkipUncoveredMutants;
@@ -266,7 +280,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect coverageAnalysis option {mode}. The options are [off, all, perTest or perTestInIsolation].");
+                        $"Incorrect coverageAnalysis option ({mode}). The options are [Off, All, PerTest or PerTestInIsolation].");
             }
         }
 
@@ -286,13 +300,12 @@ namespace Stryker.Core.Options
             {
                 try
                 {
-                    using var _ = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
-                    using var file = _fileSystem.File.CreateText(gitignorePath);
-                    file.WriteLine("*");
+                    _fileSystem.File.WriteAllText(gitignorePath, "*");
                 }
-                catch (IOException)
+                catch (IOException e)
                 {
-                    _logger.LogDebug("Couldn't create gitignore file at {0}, probably because it already exists", gitignorePath);
+                    _logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
+                        "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
                 }
             }
 
@@ -333,15 +346,15 @@ namespace Stryker.Core.Options
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(",", invalidReporters)}. Valid reporter options are [{string.Join(",", (Reporter[])Enum.GetValues(typeof(Reporter)))}]");
+                    $"These reporter values are incorrect: {string.Join(", ", invalidReporters)}. Valid reporter options are [{string.Join(", ", (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)))}]");
             }
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
             yield break;
         }
 
-        private IEnumerable<Mutator> ValidateExcludedMutations(IEnumerable<string> excludedMutations)
+        private IEnumerable<Mutator> ValidateExcludedMutations(string[] excludedMutations)
         {
-            if (excludedMutations == null)
+            if (excludedMutations == null || !excludedMutations.Any())
             {
                 yield break;
             }
@@ -362,7 +375,8 @@ namespace Stryker.Core.Options
                 }
                 else
                 {
-                    throw new StrykerInputException(ErrorMessage, $"Invalid excluded mutation '{excludedMutation}' " + $"The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                    throw new StrykerInputException(ErrorMessage,
+                        $"Invalid excluded mutation ({excludedMutation}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                 }
             }
         }
@@ -385,7 +399,7 @@ namespace Stryker.Core.Options
                 default:
                     throw new StrykerInputException(
                         ErrorMessage,
-                        $"Incorrect log level {levelText}. The log level options are [Error, Warning, Info, Debug, Trace]");
+                        $"Incorrect log level ({levelText}). The log level options are [{string.Join(", ", (IEnumerable<LogEventLevel>)Enum.GetValues(typeof(LogEventLevel)))}]");
             }
         }
 
@@ -495,7 +509,8 @@ namespace Stryker.Core.Options
             }
             else
             {
-                throw new StrykerInputException(ErrorMessage, $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
+                throw new StrykerInputException(ErrorMessage,
+                    $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(", ", (IEnumerable<TestRunner>)Enum.GetValues(typeof(TestRunner)))}]");
             }
         }
 
@@ -528,7 +543,7 @@ namespace Stryker.Core.Options
             else
             {
                 throw new StrykerInputException(ErrorMessage,
-                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(",", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
             }
         }
 

@@ -49,6 +49,8 @@ namespace Stryker.Core.ProjectComponents
 
         public Display DisplayFolder { get; set; }
 
+        public FolderComposite Parent { get; set; }
+
         public abstract void Display(int depth);
 
         /// <summary>

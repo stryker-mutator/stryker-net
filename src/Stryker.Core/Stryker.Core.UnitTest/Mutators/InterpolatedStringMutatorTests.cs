@@ -14,6 +14,13 @@ namespace Stryker.Core.UnitTest.Mutators
             return SyntaxFactory.ParseExpression(expression) as InterpolatedStringExpressionSyntax;
         }
 
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new InterpolatedStringMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData("$\"foo\"")]
         [InlineData("$@\"foo\"")]
