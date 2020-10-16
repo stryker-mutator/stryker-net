@@ -69,7 +69,7 @@ namespace Stryker.CLI
             var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
             var diffParam = CreateOption(app, CLIOptions.Diff);
             var diffCompareToDashboard = CreateOption(app, CLIOptions.DashboardCompare);
-            var gitSourceParam = CreateOption(app, CLIOptions.GitSource);
+            var gitDiffTargetParam = CreateOption(app, CLIOptions.GitDiffTarget);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
             var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
             var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
@@ -113,7 +113,7 @@ namespace Stryker.CLI
                     languageVersion: languageVersion,
                     diff: diffParam,
                     diffCompareToDashboard: diffCompareToDashboard,
-                    gitSource: gitSourceParam,
+                    gitDiffTarget: gitDiffTargetParam,
                     testProjects: testProjectsParam,
                     baselineStorageLocation: baselineStorageLocation,
                     azureFileStorageUrl: azureFileStorageUrl,

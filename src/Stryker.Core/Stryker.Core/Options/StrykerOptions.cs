@@ -34,7 +34,7 @@ namespace Stryker.Core.Options
         public bool DiffEnabled { get; }
         public bool CompareToDashboard { get; }
 
-        public string GitSource { get; }
+        public string GitDiffTarget { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -90,7 +90,7 @@ namespace Stryker.Core.Options
             string languageVersion = "latest",
             bool diff = false,
             bool compareToDashboard = false,
-            string gitSource = "master",
+            string gitDiffTarget = "master",
             string dashboardApiKey = null,
             string dashboardUrl = "https://dashboard.stryker-mutator.io",
             string projectName = null,
@@ -127,12 +127,12 @@ namespace Stryker.Core.Options
             OptimizationMode = coverageAnalysis;
             DiffEnabled = diff;
             CompareToDashboard = compareToDashboard;
-            GitSource = ValidateGitSource(gitSource);
+            GitDiffTarget = ValidateGitDiffTarget(gitDiffTarget);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
-            (ProjectVersion, FallbackVersion, GitSource) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitSource);
-            ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
+            (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitDiffTarget);
+            ModuleName = moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
             MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
@@ -218,20 +218,20 @@ namespace Stryker.Core.Options
             return (dashboadApiKey, projectName);
         }
 
-        private string ValidateGitSource(string gitSource)
+        private string ValidateGitDiffTarget(string gitDiffTarget)
         {
-            if (string.IsNullOrEmpty(gitSource))
+            if (string.IsNullOrEmpty(gitDiffTarget))
             {
-                throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
+                throw new StrykerInputException("GitDiffTarget may not be empty, please provide a valid git branch name");
             }
-            return gitSource;
+            return gitDiffTarget;
         }
 
-        private (string ProjectVersion, string FallbackVersion, string GitSource) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource)
+        private (string ProjectVersion, string FallbackVersion) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitDiffTarget)
         {
             if (string.IsNullOrEmpty(fallbackVersion))
             {
-                fallbackVersion = gitSource;
+                fallbackVersion = gitDiffTarget;
             }
 
             if (CompareToDashboard)
@@ -253,7 +253,7 @@ namespace Stryker.Core.Options
                 }
             }
 
-            return (projectVersion, fallbackVersion, gitSource);
+            return (projectVersion, fallbackVersion);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
