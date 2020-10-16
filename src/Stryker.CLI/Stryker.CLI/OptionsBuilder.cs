@@ -55,7 +55,8 @@ namespace Stryker.CLI
             CommandOption testProjects,
             CommandOption baselineStorageLocation,
             CommandOption azureSAS,
-            CommandOption azureFileStorageUrl)
+            CommandOption azureFileStorageUrl,
+            CommandOption mutationLevel)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -106,11 +107,11 @@ namespace Stryker.CLI
                 diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) || GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
                 compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
                 gitDiffTarget: GetOption(gitDiffTarget.Value(), CLIOptions.GitDiffTarget),
-                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects),
                 baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation),
                 azureSAS: GetOption(azureSAS.Value(), CLIOptions.AzureSAS),
-                azureFileStorageUrl: GetOption(azureFileStorageUrl.Value(), CLIOptions.AzureFileStorageUrl)
-                );
+                azureFileStorageUrl: GetOption(azureFileStorageUrl.Value(), CLIOptions.AzureFileStorageUrl),
+                mutationLevel: GetOption(mutationLevel.Value(), CLIOptions.MutationLevel),
+                testProjects: GetOption(testProjects.Value(), CLIOptions.TestProjects));
         }
 
         private T GetOption<V, T>(V cliValue, CLIOption<T> option)

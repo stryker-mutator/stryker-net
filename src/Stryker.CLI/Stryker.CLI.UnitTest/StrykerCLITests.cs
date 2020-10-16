@@ -475,6 +475,23 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--mutation-level")]
+        [InlineData("-level")]
+        public void ShouldSetMutationLevelWhenPassed(string argName)
+        {
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, "advanced" });
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MutationLevel == MutationLevel.Advanced), It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
         [InlineData("--dashboard-compare", "--dashboard-version project")]
         [InlineData("-compare", "-version project")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)

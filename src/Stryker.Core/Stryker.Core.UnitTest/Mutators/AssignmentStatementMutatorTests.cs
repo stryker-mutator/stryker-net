@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class AssignmentStatementMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new AssignmentExpressionMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData(SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression)]
         [InlineData(SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression)]

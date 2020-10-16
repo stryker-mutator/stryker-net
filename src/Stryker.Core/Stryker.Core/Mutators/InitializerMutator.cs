@@ -7,6 +7,8 @@ namespace Stryker.Core.Mutators
 {
     public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
+
         public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node)
         {
             if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax)
