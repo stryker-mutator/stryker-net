@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+- name: Chat with the team
+  url: https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM
+  about: Join us on slack if you want to chat with the stryker team or other users.
+- name: Ask a Question
+  url: https://github.com/stryker-mutator/stryker-net/discussions/category_choices
+  about: Please ask and answer questions here.

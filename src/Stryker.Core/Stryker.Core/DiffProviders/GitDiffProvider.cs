@@ -1,20 +1,15 @@
 ﻿using LibGit2Sharp;
 using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Stryker.Core.DiffProviders
 {
-    using System.Text.RegularExpressions;
-
     public class GitDiffProvider : IDiffProvider
     {
         private readonly StrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
-        private static readonly Regex StrykerGeneratedFiles = new Regex(@"^.*[\/\\]?StrykerOutput[\/\\].*$", RegexOptions.Compiled);
 
         public GitDiffProvider(StrykerOptions options, IGitInfoProvider gitInfoProvider = null)
         {
@@ -39,13 +34,11 @@ namespace Stryker.Core.DiffProviders
                 throw new Stryker.Core.Exceptions.StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
-            foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.Index | DiffTargets.WorkingDirectory))
+            foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
-                if (!StrykerGeneratedFiles.IsMatch(diffPath))
-                {
-                    diffResult.ChangedFiles.Add(diffPath);    
-                }
+                
+                diffResult.ChangedFiles.Add(diffPath);    
                 
                 if (diffPath.StartsWith(_options.BasePath))
                 {

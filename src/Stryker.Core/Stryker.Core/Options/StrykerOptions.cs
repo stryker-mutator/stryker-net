@@ -300,13 +300,12 @@ namespace Stryker.Core.Options
             {
                 try
                 {
-                    using var _ = _fileSystem.File.Create(gitignorePath, 1, FileOptions.Asynchronous);
-                    using var file = _fileSystem.File.CreateText(gitignorePath);
-                    file.WriteLine("*");
+                    _fileSystem.File.WriteAllText(gitignorePath, "*");
                 }
-                catch (IOException)
+                catch (IOException e)
                 {
-                    _logger.LogDebug("Couldn't create gitignore file at {0}, probably because it already exists", gitignorePath);
+                    _logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
+                        "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
                 }
             }
 
