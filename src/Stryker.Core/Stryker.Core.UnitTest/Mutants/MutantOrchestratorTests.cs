@@ -408,7 +408,7 @@ if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = Method(true); ; i--)
         public void ShouldMutateExpressionBodiedStaticConstructor()
         {
             string source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
-            string expected = @"static Test()  {if(StrykerNamespace.MutantControl.IsActive(0)){!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(1)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(2)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}";
+            string expected = @"static Test() {using(new StrykerNamespace.MutantContext()){if(StrykerNamespace.MutantControl.IsActive(0)){!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(1)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(2)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -601,8 +601,8 @@ static Mutator_Flag_MutatedStatics()
         private static bool NoWorries => (StrykerNamespace.MutantControl.IsActive(1)?true:false);
         private static bool NoWorriesGetter
         {
-            get {using(new StrykerNamespace.MutantContext()){ return (StrykerNamespace.MutantControl.IsActive(2)?true:false); }
-}        }
+            get {return (StrykerNamespace.MutantControl.IsActive(2)?true:false); }
+        }
 
 static Mutator_Flag_MutatedStatics()
 {using(new StrykerNamespace.MutantContext())        {

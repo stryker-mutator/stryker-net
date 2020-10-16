@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Serilog;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrators;
 using ILogger = Microsoft.Extensions.Logging.ILogger;

@@ -91,7 +91,7 @@ namespace Stryker.Core.Mutants
                 return InstrumentEngines[engine].RemoveInstrumentation(nodeToRemove);
             }
 
-            throw new InvalidOperationException($"Unable to remove any injection from this node: {nodeToRemove}");
+            throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}' ");
         }
 
         /// <summary>
