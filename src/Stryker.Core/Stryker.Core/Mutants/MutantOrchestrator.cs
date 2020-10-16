@@ -111,7 +111,8 @@ namespace Stryker.Core.Mutants
             var mutation = Mutate(currentNode, mutationContext);
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {
-                Log.Error($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count+mutationContext.StatementLevelControlledMutations.Count}");
+                // some mutants where not injected for some reason, they should be reviewed to understand why.
+                Logger.LogError($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count+mutationContext.StatementLevelControlledMutations.Count}");
             }
             // mark remaining mutants as CompileError
             foreach (var mutant in mutationContext.StatementLevelControlledMutations.Union(mutationContext.BlockLevelControlledMutations))
