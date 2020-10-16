@@ -92,8 +92,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.SourceFilesChanged.Count().ShouldBe(1);
-            res.TestFilesChanged.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
         }
 
         [Fact]
