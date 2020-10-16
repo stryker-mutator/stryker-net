@@ -1,25 +1,25 @@
-﻿using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FolderComposite : ProjectComponent<FileLeaf, SyntaxTree>
+    public class FolderCompositeFsharp : ProjectComponent<FileLeafFsharp, ParsedInput>
     {
-        private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
-        public ICollection<ProjectComponent<FileLeaf, SyntaxTree>> Children { get; set; } = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>();
+        private readonly IList<ParsedInput> _compilationSyntaxTrees = new List<ParsedInput>();
+        public ICollection<ProjectComponent<FileLeafFsharp, ParsedInput>> Children { get; set; } = new Collection<ProjectComponent<FileLeafFsharp, ParsedInput>>();
 
         /// <summary>
         /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
         /// </summary>
         /// <param name="syntaxTree"></param>
-        public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
+        public void AddCompilationSyntaxTree(ParsedInput syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
 
-        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.CompilationSyntaxTrees));
-        public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
+        public override IEnumerable<ParsedInput> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.CompilationSyntaxTrees));
+        public override IEnumerable<ParsedInput> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
 
         public override IEnumerable<Mutant> Mutants
         {
@@ -27,12 +27,12 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotImplementedException();
         }
 
-        public override IEnumerable<FileLeaf> GetAllFiles()
+        public override IEnumerable<FileLeafFsharp> GetAllFiles()
         {
             return Children.SelectMany(x => x.GetAllFiles());
         }
 
-        public override void Add(ProjectComponent<FileLeaf, SyntaxTree> component)
+        public override void Add(ProjectComponent<FileLeafFsharp, ParsedInput> component)
         {
             Children.Add(component);
         }

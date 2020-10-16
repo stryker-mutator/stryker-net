@@ -1,12 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ProjectComponent : IReadOnlyInputComponent
+    public abstract class ProjectComponent<T, U> : IReadOnlyInputComponent
     {
         public string Name { get; set; }
         public string FullPath { get; set; }
@@ -36,11 +38,11 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// All syntax trees that should be a part of the compilation
         /// </summary>
-        public abstract IEnumerable<SyntaxTree> CompilationSyntaxTrees { get; }
+        public abstract IEnumerable<U> CompilationSyntaxTrees { get; }
         /// <summary>
         /// Only those syntax trees that were changed by the mutation process
         /// </summary>
-        public abstract IEnumerable<SyntaxTree> MutatedSyntaxTrees { get; }
+        public abstract IEnumerable<U> MutatedSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
@@ -80,7 +82,10 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
-        public abstract void Add(ProjectComponent component);
-        public abstract IEnumerable<FileLeaf> GetAllFiles();
+        public abstract void Add(ProjectComponent<T, U> component);
+        public abstract IEnumerable<T> GetAllFiles();
+
+        public Type getT() => typeof(T);
+        public Type getU() => typeof(U);
     }
 }

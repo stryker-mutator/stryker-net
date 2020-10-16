@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Initialisation
 {
-    public class FolderCompositeCache
+    public class FolderCompositeCache<T>
     {
         private FolderCompositeCache()
         {
 
         }
 
-        private static FolderCompositeCache _instance;
+        private static FolderCompositeCache<T> _instance;
         private static object _lockObj = new object();
 
-        public static FolderCompositeCache Instance
+        public static FolderCompositeCache<T> Instance
         {
             get
             {
@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation
                 {
                     if (_instance == null)
                     {
-                        _instance = new FolderCompositeCache();
+                        _instance = new FolderCompositeCache<T>();
                     }
 
                     return _instance;
@@ -29,6 +29,6 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public Dictionary<string, FolderComposite> Cache { get; set; }
+        public Dictionary<string, T> Cache { get; set; }
     }
 }

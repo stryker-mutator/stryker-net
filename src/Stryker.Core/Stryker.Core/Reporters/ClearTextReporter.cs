@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Mutants;
+﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
@@ -85,7 +86,7 @@ namespace Stryker.Core.Reporters
 
             _chalk.Default($"[{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent is ProjectComponent projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ProjectComponent<FileLeaf, SyntaxTree> projectComponent && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _chalk.DarkGray($"(Excluded)");
             }
