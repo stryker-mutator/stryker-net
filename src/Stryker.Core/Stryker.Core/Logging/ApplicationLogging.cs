@@ -1,27 +1,29 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using System.Collections.Generic;
 using System.IO;
+using LibGitLogLevel = LibGit2Sharp.LogLevel;
+using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Stryker.Core.Logging
 {
-    using LibGit2Sharp;
 
-    using Serilog.Events;
 
-    using MSLogLevel = LogLevel;
+
 
     public static class ApplicationLogging
     {
-        private static readonly Dictionary<LogLevel, MSLogLevel> LogLevelMap = new Dictionary<LogLevel, MSLogLevel>
+        private static readonly Dictionary<LibGitLogLevel, MSLogLevel> LogLevelMap = new Dictionary<LibGitLogLevel, MSLogLevel>
                                                                                    {
-                                                                                       { LogLevel.None, MSLogLevel.None },
-                                                                                       { LogLevel.Debug, MSLogLevel.Debug },
-                                                                                       { LogLevel.Trace, MSLogLevel.Trace },
-                                                                                       { LogLevel.Info, MSLogLevel.Information },
-                                                                                       { LogLevel.Warning, MSLogLevel.Warning },
-                                                                                       { LogLevel.Fatal, MSLogLevel.Critical },
-                                                                                       { LogLevel.Error, MSLogLevel.Error }
+                                                                                       { LibGitLogLevel.None, MSLogLevel.None },
+                                                                                       { LibGitLogLevel.Debug, MSLogLevel.Debug },
+                                                                                       { LibGitLogLevel.Trace, MSLogLevel.Trace },
+                                                                                       { LibGitLogLevel.Info, MSLogLevel.Information },
+                                                                                       { LibGitLogLevel.Warning, MSLogLevel.Warning },
+                                                                                       { LibGitLogLevel.Fatal, MSLogLevel.Critical },
+                                                                                       { LibGitLogLevel.Error, MSLogLevel.Error }
                                                                                    };
 
         private static ILoggerFactory _factory = null;
@@ -51,7 +53,7 @@ namespace Stryker.Core.Logging
             if (options.LogLevel < LogEventLevel.Information)
             {
                 var libGit2SharpLogger = LoggerFactory.CreateLogger(nameof(LibGit2Sharp));
-                GlobalSettings.LogConfiguration = new LogConfiguration(LogLevel.Info, (level, message) => libGit2SharpLogger.Log(LogLevelMap[level], message));
+                GlobalSettings.LogConfiguration = new LogConfiguration(LibGitLogLevel.Info, (level, message) => libGit2SharpLogger.Log(LogLevelMap[level], message));
             }
         }
 
