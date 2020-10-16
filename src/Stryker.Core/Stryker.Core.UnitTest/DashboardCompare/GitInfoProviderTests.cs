@@ -247,6 +247,10 @@ namespace Stryker.Core.UnitTest.DashboardCompare
                 .SetupGet(x => x.CanonicalName)
                 .Returns("origin/master");
 
+            branchMock
+                .SetupGet(x => x.UpstreamBranchCanonicalName)
+                .Returns("refs/heads/master");
+
             branchMock.SetupGet(x => x.Tip).Returns(commitMock.Object);
 
             branchCollectionMock
@@ -290,6 +294,58 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             branchMock
                 .SetupGet(x => x.CanonicalName)
                 .Returns("origin/master");
+
+            branchMock
+                .SetupGet(x => x.UpstreamBranchCanonicalName)
+                .Returns("refs/heads/master");
+
+            branchMock.SetupGet(x => x.Tip).Returns(commitMock.Object);
+
+            branchCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Branch>)new List<Branch>
+                {
+                 branchMock.Object
+                }).GetEnumerator());
+
+            repositoryMock
+                .SetupGet(x => x.Branches)
+                .Returns(branchCollectionMock.Object);
+
+            var target = new GitInfoProvider(options, repositoryMock.Object);
+
+            // Act
+            var res = target.DetermineCommit();
+
+            // Assert
+            res.ShouldNotBeNull();
+            res.ShouldBe(commitMock.Object);
+
+            repositoryMock.Verify();
+        }
+
+        [Fact]
+        public void ReturnsTip_When_Upstream_Branch_Canonical_Name_Is_GitSource()
+        {
+            // Arrange
+            var options = new StrykerOptions(gitDiffTarget: "refs/heads/master", diff: true);
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
+
+            var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+            var branchMock = new Mock<Branch>();
+            var commitMock = new Mock<Commit>();
+
+            branchMock
+                .SetupGet(x => x.FriendlyName)
+                .Returns("master");
+
+            branchMock
+                .SetupGet(x => x.CanonicalName)
+                .Returns("origin/master");
+
+            branchMock
+                .SetupGet(x => x.UpstreamBranchCanonicalName)
+                .Returns("refs/heads/master");
 
             branchMock.SetupGet(x => x.Tip).Returns(commitMock.Object);
 
