@@ -10,6 +10,13 @@ namespace Stryker.Core.UnitTest.Mutators
     public class RegexMutatorTest
     {
         [Fact]
+        public void ShouldBeMutationlevelAdvanced()
+        {
+            var target = new RegexMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Advanced);
+        }
+
+        [Fact]
         public void ShouldMutateStringLiteralInRegexConstructor()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;

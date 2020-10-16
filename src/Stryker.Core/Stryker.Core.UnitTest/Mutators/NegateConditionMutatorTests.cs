@@ -10,6 +10,12 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class NegateConditionMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new NegateConditionMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
 
         /// <summary>
         ///     Generator for different Linqexpressions
