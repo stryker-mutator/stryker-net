@@ -7,6 +7,8 @@ namespace Stryker.Core.Mutators
 {
     public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
     {
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
+
         private static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new Dictionary<SyntaxKind, SyntaxKind>
         {
             {SyntaxKind.TrueLiteralExpression, SyntaxKind.FalseLiteralExpression },

@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class StringMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new StringMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData("", "Stryker was here!")]
         [InlineData("foo", "")]

@@ -1,18 +1,22 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xunit;
 using Shouldly;
+using Stryker.Core.Mutators;
+using System.Linq;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
     public class CheckedMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelComplete()
+        {
+            var target = new CheckedMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData(SyntaxKind.CheckedExpression, "4 + 2", SyntaxKind.AddExpression)]
         public void ShouldMutate(SyntaxKind original, string expression, SyntaxKind expected)
