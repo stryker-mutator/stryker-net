@@ -52,7 +52,7 @@ namespace TestApplication
         public void ShouldBeMutationlevelAdvanced()
         {
             var target = new LinqMutator();
-            target.MutationLevel.ShouldBe(MutationLevel.Advanced);
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
         /// <summary>
