@@ -286,7 +286,7 @@ namespace Stryker.Core.MutationTest
             }
 
             var skippedMutants = _input.ProjectInfo.ProjectContents.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
-            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatus);
+            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
             {
