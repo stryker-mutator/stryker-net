@@ -167,8 +167,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>(),
-                TestFilesChanged = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>(),
+                ChangedTestFiles = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
@@ -195,7 +195,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myFile
                 }
@@ -227,11 +227,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myTest
                 },
-                TestFilesChanged = new Collection<string>() {
+                ChangedTestFiles = new Collection<string>() {
                     myTest
                 }
             });
@@ -361,7 +361,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>()
+                ChangedSourceFiles = new List<string>()
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
@@ -481,8 +481,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>(),
-                TestFilesChanged = new List<string> { "C:/testfile.cs" }
+                ChangedSourceFiles = new List<string>(),
+                ChangedTestFiles = new List<string> { "C:/testfile.cs" }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
@@ -516,7 +516,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProviderMock = new Mock<IBaselineProvider>();
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "config.json" } };
+            var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
             diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
 
             baselineProviderMock.Setup(x =>
