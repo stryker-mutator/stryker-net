@@ -56,7 +56,8 @@ namespace Stryker.CLI
             CommandOption baselineStorageLocation,
             CommandOption azureSAS,
             CommandOption azureFileStorageUrl,
-            CommandOption mutationLevel)
+            CommandOption mutationLevel,
+            CommandOption dashboardCompareFileExcludePatterns)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -81,6 +82,7 @@ namespace Stryker.CLI
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 dashboardApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
                 dashboardUrl: GetOption(dashboardUrl.Value(), CLIOptions.DashboardUrlOption),
+                diffIgnoreFiles: GetOption(dashboardCompareFileExcludePatterns.Value(), CLIOptions.DiffIgnoreFiles),
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
                 projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),

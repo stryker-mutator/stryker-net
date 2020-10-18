@@ -76,6 +76,7 @@ namespace Stryker.CLI
             var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
             var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);
             var mutationLevelParam = CreateOption(app, CLIOptions.MutationLevel);
+            var dashboardCompareFileExcludePatterns = CreateOption(app, CLIOptions.DiffIgnoreFiles);
 
             app.HelpOption("--help | -h | -?");
 
@@ -118,7 +119,8 @@ namespace Stryker.CLI
                     baselineStorageLocation: baselineStorageLocation,
                     azureFileStorageUrl: azureFileStorageUrl,
                     azureSAS: azureSAS,
-                    mutationLevel: mutationLevelParam);
+                    mutationLevel: mutationLevelParam,
+                    dashboardCompareFileExcludePatterns: dashboardCompareFileExcludePatterns);
 
                 RunStryker(options);
                 return ExitCode;
