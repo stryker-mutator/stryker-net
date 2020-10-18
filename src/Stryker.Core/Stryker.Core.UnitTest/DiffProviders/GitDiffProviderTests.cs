@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListofFiles()
         {
             // Arrange
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -85,7 +85,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
@@ -138,12 +138,12 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffExcludeFiles()
+        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { "C://Users/JohnDoe/Project/Tests/Test.cs" };
+            var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/Tests/Test.cs" };
 
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -178,7 +178,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns(FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests/Test.cs"));
+                .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Test.cs"));
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -198,7 +198,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
@@ -210,12 +210,12 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffExcludeFiles_Single_Asterisk()
+        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { "C://Users/JohnDoe/Project/*/Test.cs" };
+            var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/*/Test.cs" };
 
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -270,7 +270,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("C:/Path/To/Repo"));
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
@@ -282,13 +282,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffExcludeFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
             var diffIgnoreFiles = new string[1];
             diffIgnoreFiles[0] = "**/Test.cs";
 
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -323,7 +323,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns(FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests/Test.cs"));
+                .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Test.cs"));
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -343,7 +343,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("C:/Path/To/Repo"));
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
@@ -355,13 +355,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingFilesInDiffExcludeFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListofFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
             var diffIgnoreFiles = new string[1];
             diffIgnoreFiles[0] = "**/file.cs";
 
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
+            var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -371,7 +371,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
             var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
             var patchEntryChangesGitIgnoreMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesTestResultsMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
 
             // Setup of mocks
             commitMock
@@ -393,18 +392,13 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesMock
                 .SetupGet(x => x.Path)
-                .Returns("C://Users/JohnDoe/Project/file.cs");
-
-            patchEntryChangesTestResultsMock
-                .SetupGet(x => x.Path)
-                .Returns($@"{basePath}/StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
+                .Returns("/c/Users/JohnDoe/Project/file.cs");
 
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
                                                               {
-                                                                  patchEntryChangesMock.Object,
-                                                                  patchEntryChangesTestResultsMock.Object
+                                                                  patchEntryChangesMock.Object
                                                               }).GetEnumerator());
 
             repositoryMock
@@ -417,7 +411,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
