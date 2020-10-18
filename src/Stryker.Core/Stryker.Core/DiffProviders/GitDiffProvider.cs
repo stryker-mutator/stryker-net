@@ -5,7 +5,6 @@ using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -61,7 +60,7 @@ namespace Stryker.Core.DiffProviders
 
         private void RemoveFilteredOutFiles(DiffResult diffResult)
         {
-            foreach(FilePattern filePattern in _options.DiffIgnoreFiles)
+            foreach (FilePattern filePattern in _options.DiffIgnoreFiles)
             {
                 diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
                 diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
