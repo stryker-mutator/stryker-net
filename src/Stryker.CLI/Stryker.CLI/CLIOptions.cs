@@ -125,8 +125,7 @@ namespace Stryker.CLI
             This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
             
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
-            Use '!' at the start of a pattern to exclude all matched files.
-            Example: ['**/*Assets.json','!**/favicon.ico']",
+            Example: ['**/*Assets.json','**/favicon.ico']",
             DefaultValue = null,
             JsonKey = "diff-ignore-files"
         };

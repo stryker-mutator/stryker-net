@@ -21,6 +21,7 @@ The full list of Stryker.NET configuration options are:
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
+- [Exclude files from git diff](#diff-ignore-files)
 - [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
 <!-- /TOC -->
 
@@ -382,6 +383,21 @@ dotnet stryker -diff
 ```
 
 Default: `false`
+
+## Diff
+Allows to specify an array of C# files which should be ignored if present in the diff.
+Any not ignored files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
+            
+Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+Example: ['**/*Assets.json','**/favicon.ico']
+
+```
+dotnet stryker --diff-ignore-files ['**/*.ts']
+dotnet stryker -diff-ignore-files ['**/*.ts']
+```
+
+Default: ``
 
 ## Git source
 Sets the source branch to compare with the current code on file system, used for calculating the difference when --diff is enabled.
