@@ -144,11 +144,11 @@ namespace Stryker.CLI
 
         public static readonly CLIOption<string> GitDiffTarget = new CLIOption<string>
         {
-            ArgumentName = "--git-source",
-            ArgumentShortName = "-gs <branchName>",
-            ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
+            ArgumentName = "--git-diff-target",
+            ArgumentShortName = "-gdt <commitish>",
+            ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
             DefaultValue = _defaultOptions.GitDiffTarget,
-            JsonKey = "git-source"
+            JsonKey = "git-diff-target"
         };
 
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
