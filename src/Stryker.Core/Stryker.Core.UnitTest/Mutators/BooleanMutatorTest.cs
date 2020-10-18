@@ -9,6 +9,13 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class BooleanMutatorTest
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new BooleanMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Theory]
         [InlineData(SyntaxKind.TrueLiteralExpression, SyntaxKind.FalseLiteralExpression)]
         [InlineData(SyntaxKind.FalseLiteralExpression, SyntaxKind.TrueLiteralExpression)]

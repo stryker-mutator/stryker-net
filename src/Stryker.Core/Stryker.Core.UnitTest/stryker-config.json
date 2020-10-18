@@ -1,17 +1,11 @@
 {
-    "stryker-config":
-    {
-        "reporters": [
-            "cleartext",
-            "progress",
-            "html"
-        ],
-        "log-level": "info",
-        "timeout-ms": 20000,
-        "mutate": [
-            "!/Testing/"
-        ],
-        "excluded-mutations": [
-        ]
-    }
+  "stryker-config": {
+    "mutate": [
+      "!/Testing/"
+    ],
+    "dashboard-project": "github.com/stryker-mutator/stryker-net",
+    "dashboard-version": "master",
+    "dashboard-fallback-version": "master",
+    "dashboard-module": "core"
+  }
 }

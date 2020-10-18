@@ -8,7 +8,6 @@ using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
@@ -171,8 +170,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>(),
-                TestFilesChanged = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>(),
+                ChangedTestFiles = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
@@ -199,7 +198,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myFile
                 }
@@ -231,11 +230,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myTest
                 },
-                TestFilesChanged = new Collection<string>() {
+                ChangedTestFiles = new Collection<string>() {
                     myTest
                 }
             });
@@ -356,55 +355,36 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void FilterMutantsForStatusNotRunReturnsAllMutantsWithStatusNotRun()
+        public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
             // Arrange 
-            var baselineProvider = new Mock<IBaselineProvider>();
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
 
-            baselineProvider.Setup(x => x.Load(It.IsAny<string>())).ReturnsAsync(JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith()));
-
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IGitInfoProvider>();
-
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+            var options = new StrykerOptions();
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>()
+                ChangedSourceFiles = new List<string>()
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
-
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+            var target = new DiffMutantFilter(options, diffProvider.Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
 
             var mutants = new List<Mutant>
             {
                 new Mutant()
                 {
                     Id = 1,
-                    ResultStatus = MutantStatus.NotRun,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 },
                 new Mutant()
                 {
                     Id = 2,
-                    ResultStatus = MutantStatus.NotRun,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 },
                 new Mutant()
                 {
                     Id = 3,
-                    ResultStatus = MutantStatus.Killed,
-                    Mutation = mutation
+                    Mutation = new Mutation()
                 }
             };
 
@@ -412,46 +392,76 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
             // Assert
-            results.Count().ShouldBe(3);
+            results.Count().ShouldBe(0);
+            mutants.ShouldAllBe(m => m.ResultStatus == MutantStatus.Ignored);
+            mutants.ShouldAllBe(m => m.ResultStatusReason == "Mutant not changed compared to target commit");
         }
 
         [Fact]
-        public void FilterMutantsFiltersAll_WhenNoTestsChanged_CompareToDashboardDisabled_AndFileNotCahnged()
+        public void FilterMutants_MergesResetMutants_WhenDashboardCompareOn()
         {
             // Arrange 
-            var baselineProvider = new Mock<IBaselineProvider>();
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            baselineProvider.Setup(x =>
-            x.Load(It.IsAny<string>())
-            ).Returns(
-                Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
-                    ));
+            var target = new DiffMutantFilter(options, new Mock<IDiffProvider>().Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
 
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var branchProvider = new Mock<IGitInfoProvider>();
-
-            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
-
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var targetMutants = new List<Mutant>
             {
-                ChangedFiles = new List<string>(),
-            });
-
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-
-            var mutants = new List<Mutant>
-            {
-                new Mutant(),
-                new Mutant(),
                 new Mutant()
+                {
+                    Id = 1,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 2,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.NotRun,
+                    ResultStatusReason = "B"
+                },
+                new Mutant()
+                {
+                    Id = 3,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.NotRun,
+                    ResultStatusReason = "B"
+                }
+            };
+
+            var sourceMutants = new List<Mutant>
+            {
+                new Mutant()
+                {
+                    Id = 2,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 3,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                },
+                new Mutant()
+                {
+                    Id = 4,
+                    Mutation = new Mutation(),
+                    ResultStatus = MutantStatus.Ignored,
+                    ResultStatusReason = "A"
+                }
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+            var results = target.MergeMutantLists(targetMutants, sourceMutants);
 
             // Assert
-            results.Count().ShouldBe(0);
+            results.Count().ShouldBe(4);
+            results.ShouldAllBe(m => m.ResultStatus == MutantStatus.Ignored);
+            results.ShouldAllBe(m => m.ResultStatusReason == "A");
         }
 
         [Fact]
@@ -474,8 +484,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>(),
-                TestFilesChanged = new List<string> { "C:/testfile.cs" }
+                ChangedSourceFiles = new List<string>(),
+                ChangedTestFiles = new List<string> { "C:/testfile.cs" }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
@@ -497,6 +507,37 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             results.Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
+        {
+            // Arrange
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var diffProviderMock = new Mock<IDiffProvider>();
+            var baselineProviderMock = new Mock<IBaselineProvider>();
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
+            diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
+
+            baselineProviderMock.Setup(x =>
+                x.Load(It.IsAny<string>())
+                ).Returns(
+                    Task.FromResult(
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         ));
+
+            var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+
+            var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
+
+            // Act
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }, options);
+
+            // Assert
+            result.ShouldBe(mutants);
         }
     }
 }

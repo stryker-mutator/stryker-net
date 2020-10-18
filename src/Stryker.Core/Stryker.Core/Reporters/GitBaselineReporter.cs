@@ -20,10 +20,11 @@ namespace Stryker.Core.Reporters
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
+
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
-            var projectVersion = _gitInfoProvider.GetCurrentBranchName() ?? _options.ProjectVersion;
+            var projectVersion = _gitInfoProvider.GetCurrentBranchName();
             var baselineVersion = $"dashboard-compare/{projectVersion}";
 
             _baselineProvider.Save(mutationReport, baselineVersion).Wait();

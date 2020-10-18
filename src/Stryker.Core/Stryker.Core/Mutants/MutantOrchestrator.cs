@@ -124,7 +124,7 @@ namespace Stryker.Core.Mutants
         {
             foreach (var mutator in Mutators)
             {
-                foreach (var mutation in mutator.Mutate(current))
+                foreach (var mutation in mutator.Mutate(current, _options))
                 {
                     var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,

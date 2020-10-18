@@ -1,11 +1,14 @@
-﻿using Microsoft.CodeAnalysis.Text;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -39,7 +42,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void Constructor_WithIncorrectLoglevelArgument_ShouldThrowStrykerInputException()
+        public void ShouldValidateLoglevel()
         {
             var logLevel = "incorrect";
 
@@ -49,6 +52,7 @@ namespace Stryker.Core.UnitTest.Options
             });
 
             ex.Message.ShouldBe("The value for one of your settings is not correct. Try correcting or removing them.");
+            ex.Details.ShouldBe($"Incorrect log level ({logLevel}). The log level options are [Verbose, Debug, Information, Warning, Error, Fatal]");
         }
 
         [Fact]
@@ -108,9 +112,19 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(gitSource: "");
+                var options = new StrykerOptions(gitDiffTarget: "");
             });
-            ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
+            ex.Message.ShouldBe("GitDiffTarget may not be empty, please provide a valid git branch name");
+        }
+
+        [Fact]
+        public void ShouldValidateExcludedMutation()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(excludedMutations: new[] { "gibberish" });
+            });
+            ex.Details.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
         }
 
         [Fact]
@@ -133,7 +147,7 @@ namespace Stryker.Core.UnitTest.Options
             {
                 new StrykerOptions(coverageAnalysis: "gibberish");
             });
-            ex.Details.ShouldBe($"Incorrect coverageAnalysis option gibberish. The options are [off, all, perTest or perTestInIsolation].");
+            ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
         }
 
         [Theory]
@@ -160,13 +174,43 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
+        public void ShouldValidateMutationLevel()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(mutationLevel: "gibberish");
+            });
+            ex.Details.ShouldBe($"The given mutation level (gibberish) is invalid. Valid options are: [Basic, Standard, Advanced, Complete]");
+        }
+
+        [Fact]
+        public void ShouldValidateLanguageVersion()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(languageVersion: "gibberish");
+            });
+            ex.Details.ShouldBe($"The given c# language version (gibberish) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+        }
+
+        [Fact]
+        public void ShouldValidateCoverageAnalysis()
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(coverageAnalysis: "gibberish");
+            });
+            ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
+        }
+
+        [Fact]
         public void ShouldValidateTestRunner()
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 var options = new StrykerOptions(testRunner: "gibberish");
             });
-            ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [{string.Join(",", Enum.GetValues(typeof(TestRunner)))}]");
+            ex.Details.ShouldBe($"The given test runner (gibberish) is invalid. Valid options are: [VsTest, DotnetTest]");
         }
 
         [Fact]
@@ -207,9 +251,9 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldSetFallbackToGitSourceWhenNullAndCompareEnabled()
         {
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitDiffTarget: "development");
 
-            options.GitSource.ShouldBe("development");
+            options.GitDiffTarget.ShouldBe("development");
             options.FallbackVersion.ShouldBe("development");
         }
 

@@ -6,6 +6,7 @@ The full list of Stryker.NET configuration options are:
 - [Config file](#use-a-config-file)
 - [Solution path (required .NET Framework)](#solution-path)
 - [Project file (required on some projects)](#project-file)
+- [Mutation level](#mutation-level)
 - [Test runner](#specify-testrunner)
 - [Timeout time](#timeout-time)
 - [Reporters](#reporters)
@@ -20,6 +21,7 @@ The full list of Stryker.NET configuration options are:
 - [Abort testrun on test failure](#abort-test-on-fail)
 - [Diff based file exclusion](#diff)
 - [Git diff source](#git-source)
+- [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
 <!-- /TOC -->
 
 ## Use a config file
@@ -89,6 +91,33 @@ When Stryker finds two or more project references inside your test project, it n
 dotnet stryker --project-file SomeProjectName.csproj
 dotnet stryker -p SomeProjectName.csproj
 ```
+
+## Mutation level
+Stryker support multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
+
+The levels are as follows:
+- Basic
+- Standard (Default)
+- Advanced
+- Complete
+
+| Mutations| Level| 
+| ------------- | ------------- | 
+| Arithmetic Operators | Basic|
+| Block (not yet implemented) | Basic|
+| Equality Operators | Standard |
+| Boolean Literals | Standard|
+| Assignment statements | Standard |
+| Collection initializer | Standard |
+| Unary Operators | Standard |
+| Update Operators | Standard |
+| String Literals and Constants | Standard |
+| Bitwise Operators | Standard |
+| Linq Methods | Standard |
+| Checked Statements | Standard |
+| Regex | Advanced |
+| Advanced Linq Methods (not yet implemented) | Complete |
+| Advanced Regex (not yet implemented) | Complete |
 
 ## Specify testrunner
 Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
@@ -364,9 +393,9 @@ dotnet stryker -gs "development"
 
 Default: `master`
 
-This feature works based on file diffs, which means that all changed filles will have all of its possible mutants mutated.
+This feature works based on file diffs, which means that only changed files will be mutated.
 
-Also note that for changes on test files all mutants being tested in that file will be mutated.
+Also note that for changes on test files all mutants covered by tests in that file will be mutated.
 
 ## EXPERIMENTAL: Dashboard Compare
 Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
@@ -408,6 +437,10 @@ dotnet stryker -compare -bsl disk
 ```
 Defaut `"disk"`
 
+## Configurating Dashboard location
+
+See: [Dashboard Reporter Settings](/docs/Reporters.md#dashboard-reporter)
+
 ## Configuring Azure File Storage
 When using Azure File Storage as baseline storage location you are required to provide the following values.
 
@@ -441,17 +474,6 @@ or
 dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
 ```
 
+## Using dashboard compare in a pull request pipeline
 
-## Configuring Dashboard Compare on pull requests
-When configuring the --dashboard-compare feature on pull requests please provide the following configurations.
-
-1.  Enable --dashboard-compare.
-2. Set --dashboard-version to the name of the source branch for your pull request.
-3. Set --dashboard-fallback-version to the name of the target branch for your pull request.
-4. Set --git-source to the name of the target branch of your pull request.
-
-```
-dotnet stryker --dashboard-compare --git-source master --dashboard-version development
-dotnet stryker -compare -source master -version development
-
-```
+See: [Using stryker in pipelines](/docs/Stryker-in-pipeline.md)

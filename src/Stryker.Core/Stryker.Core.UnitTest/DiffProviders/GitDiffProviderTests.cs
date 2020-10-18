@@ -31,6 +31,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoProvider.VerifyNoOtherCalls();
         }
 
+
         /**
          * Libgit2sharp has most of its contructors sealed. 
          * Because of that we are unable to make the repository mock return a explicit object and are only able to use mocks.
@@ -40,7 +41,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -76,7 +77,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -92,8 +93,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.ChangedFiles.Count().ShouldBe(1);
-            res.TestFilesChanged.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
         }
         
         [Theory]
@@ -154,7 +155,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                                                               }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -177,7 +178,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()
         {
-            var options = new StrykerOptions(gitSource: "branch");
+            var options = new StrykerOptions(gitDiffTarget: "branch");
 
             var repositoryMock = new Mock<IRepository>();
             var branchCollectionMock = new Mock<BranchCollection>();
@@ -509,7 +510,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
                                                               }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock

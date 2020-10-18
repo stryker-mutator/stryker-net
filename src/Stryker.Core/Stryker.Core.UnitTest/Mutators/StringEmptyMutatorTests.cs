@@ -1,15 +1,21 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
     public class StringEmptyMutatorTests
     {
+        [Fact]
+        public void ShouldBeMutationlevelStandard()
+        {
+            var target = new StringEmptyMutator();
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
         [Fact]
         public void ShouldMutateLowercaseString()
         {

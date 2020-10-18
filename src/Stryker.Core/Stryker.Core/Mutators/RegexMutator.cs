@@ -16,6 +16,8 @@ namespace Stryker.Core.Mutators
         private const string PatternArgumentName = "pattern";
         private ILogger Logger { get; }
 
+        public override MutationLevel MutationLevel => MutationLevel.Advanced;
+
         public RegexMutator()
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();

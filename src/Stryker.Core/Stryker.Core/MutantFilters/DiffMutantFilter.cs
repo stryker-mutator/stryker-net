@@ -46,23 +46,29 @@ namespace Stryker.Core.MutantFilters
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedFiles?.Count);
+                _logger.LogInformation("{0} files changed", _diffResult.ChangedSourceFiles?.Count ?? 0 + _diffResult.ChangedTestFiles?.Count ?? 0);
 
-                if (_diffResult.ChangedFiles != null)
+                if (_diffResult.ChangedSourceFiles != null)
                 {
-                    foreach (var changedFile in _diffResult.ChangedFiles)
+                    foreach (var changedFile in _diffResult.ChangedSourceFiles)
                     {
                         _logger.LogInformation("Changed file {0}", changedFile);
+                    }
+                }
+                if (_diffResult.ChangedTestFiles != null)
+                {
+                    foreach (var changedFile in _diffResult.ChangedTestFiles)
+                    {
+                        _logger.LogInformation("Changed test file {0}", changedFile);
                     }
                 }
             }
         }
 
-
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
-            var filteredMutants = new List<Mutant>();
+            IEnumerable<Mutant> filteredMutants;
 
             // If the dashboard feature is turned on we first filter based on previous results
             if (options.CompareToDashboard)
@@ -78,19 +84,29 @@ namespace Stryker.Core.MutantFilters
                 UpdateMutantsWithBaselineStatus(mutants, file);
             }
 
+            // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
+            if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.EndsWith(".cs")))
+            {
+                _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
+                return SetMutantStatusForNonCSharpFileChanged(mutants);
+            }
+
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedFiles != null && _diffResult.ChangedFiles.Contains(file.FullPath))
             {
                 _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
                 return SetMutantStatusForFileChanged(mutants);
             }
-
+            else
+            {
+                filteredMutants = SetNotRunMutantsToIgnored(mutants);
+            }
 
             // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
             // Only check for changed c# files. Other files have already been handled.
             if (_diffResult.TestFilesChanged != null && _diffResult.TestFilesChanged.Any(file => file.EndsWith(".cs")))
             {
-                filteredMutants = ResetMutantStatusForChangedTests(mutants).ToList();
+                filteredMutants = ResetMutantStatusForChangedTests(mutants);
             }
 
             // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
@@ -102,7 +118,6 @@ namespace Stryker.Core.MutantFilters
 
             return filteredMutants;
         }
-
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
         {
@@ -202,12 +217,23 @@ namespace Stryker.Core.MutantFilters
             return report;
         }
 
+        private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
+        {
+            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun))
+            {
+                mutant.ResultStatus = MutantStatus.Ignored;
+                mutant.ResultStatusReason = "Mutant not changed compared to target commit";
+            }
+
+            return new List<Mutant>();
+        }
+
         private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
         {
             foreach (var mutant in mutants)
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
-                mutant.ResultStatusReason = "File changed since last commit.";
+                mutant.ResultStatusReason = "Mutant changed compared to target commit";
             }
 
             return mutants;
@@ -218,7 +244,7 @@ namespace Stryker.Core.MutantFilters
             foreach (var mutant in mutants)
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
-                mutant.ResultStatusReason = "Non-CSharp files in test project were changed.";
+                mutant.ResultStatusReason = "Non-CSharp files in test project were changed";
             }
 
             return mutants;
@@ -232,7 +258,7 @@ namespace Stryker.Core.MutantFilters
             {
                 var coveringTests = mutant.CoveringTests.Tests;
 
-                if (coveringTests.Any(coveringTest => _diffResult.TestFilesChanged.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                if (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
                     || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
@@ -248,22 +274,31 @@ namespace Stryker.Core.MutantFilters
 
         /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
         /// If the targetMutants already contain a member with the same Id. The results are updated.
-        private List<Mutant> MergeMutantLists(List<Mutant> targetMutants, IEnumerable<Mutant> updateMutants)
+        internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
         {
-            foreach (var mutant in updateMutants)
+            foreach (var targetMutant in target)
             {
-                if (targetMutants.SingleOrDefault(targetMutant => targetMutant.Id == mutant.Id) is var targetMutant && targetMutant is { })
+                if (source.Any(updateMutant => updateMutant.Id == targetMutant.Id))
                 {
-                    targetMutant.ResultStatus = mutant.ResultStatus;
-                    targetMutant.ResultStatusReason = mutant.ResultStatusReason;
+                    continue;
                 }
-                else
-                {
-                    targetMutants.Add(mutant);
-                }
+
+                yield return targetMutant;
             }
 
-            return targetMutants;
+            foreach (var sourceMutant in source)
+            {
+                if (target.SingleOrDefault(targetMutant => targetMutant.Id == sourceMutant.Id) is var targetMutant && targetMutant is { })
+                {
+                    targetMutant.ResultStatus = sourceMutant.ResultStatus;
+                    targetMutant.ResultStatusReason = sourceMutant.ResultStatusReason;
+
+                    yield return targetMutant;
+                    continue;
+                }
+
+                yield return sourceMutant;
+            }
         }
     }
 }
