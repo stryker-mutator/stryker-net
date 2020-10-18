@@ -582,9 +582,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--git-source")]
-        [InlineData("-gs")]
-        public void ShouldSetGitSourceWhenPassed(string argName)
+        [InlineData("--git-diff-target")]
+        [InlineData("-gdt")]
+        public void ShouldSetGitDiffTargetWhenPassed(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions();
