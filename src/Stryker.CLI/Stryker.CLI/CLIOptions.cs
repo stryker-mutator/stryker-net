@@ -119,8 +119,8 @@ namespace Stryker.CLI
         public static readonly CLIOption<string[]> DiffIgnoreFiles = new CLIOption<string[]>
         {
             ArgumentName = "--diff-ignore-files",
-            ArgumentShortName = "-compare-excluded",
-            ArgumentDescription = @"Allows to specify an array of non-C# files that you want to exclude from testing.
+            ArgumentShortName = "-diffignorefiles",
+            ArgumentDescription = @"Allows to specify an array of C# files which should be ignored if present in the diff.
              Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
             This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
             
@@ -128,7 +128,7 @@ namespace Stryker.CLI
             Use '!' at the start of a pattern to exclude all matched files.
             Example: ['**/*Assets.json','!**/favicon.ico']",
             DefaultValue = null,
-            JsonKey = "dashboard-compare-excluded-non-source-files"
+            JsonKey = "diff-ignore-files"
         };
 
 
