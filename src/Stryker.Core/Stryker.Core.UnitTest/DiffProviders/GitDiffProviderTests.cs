@@ -179,7 +179,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns($"C://Users/JohnDoe/Project/Tests/Test.cs");
+                .Returns(FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests/Test.cs"));
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -251,7 +251,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns($"{basePath}/Test.cs");
+                .Returns(FilePathUtils.NormalizePathSeparators($"{basePath}/Test.cs"));
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -271,7 +271,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("C:/Path/To/Repo"));
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
@@ -324,7 +324,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns($"C://Users/JohnDoe/Project/Tests/Test.cs");
+                .Returns(FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests/Test.cs"));
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -344,7 +344,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
+            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("C:/Path/To/Repo"));
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
             // Act
