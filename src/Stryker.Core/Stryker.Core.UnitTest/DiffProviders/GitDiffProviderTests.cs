@@ -96,84 +96,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedTestFiles.Count().ShouldBe(0);
         }
 
-        [Theory]
-        [InlineData(@"\")]
-        [InlineData(@"/")]
-        public void ScanDiffReturnsListofFiles_ExcludingStrykerGeneratedFiles_IfAny(string pathDelimiter)
-        {
-            // Arrange
-            var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
-
-            var gitInfoMock = new Mock<IGitInfoProvider>();
-            var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
-            var commitMock = new Mock<Commit>(MockBehavior.Loose);
-            var branchMock = new Mock<Branch>(MockBehavior.Strict);
-            var patchMock = new Mock<Patch>(MockBehavior.Strict);
-            var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesGitIgnoreMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesTestResultsMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-
-            // Setup of mocks
-            commitMock
-                .SetupGet(x => x.Tree)
-                .Returns(new Mock<Tree>(MockBehavior.Loose).Object);
-
-            branchMock
-                .SetupGet(x => x.Tip)
-                .Returns(commitMock.Object);
-
-            branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
-
-            branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
-
-            repositoryMock
-                .Setup(x => x.Branches.GetEnumerator())
-                .Returns(new List<Branch> { branchMock.Object }.GetEnumerator())
-                .Verifiable();
-
-            patchEntryChangesMock
-                .SetupGet(x => x.Path)
-                .Returns("file.cs");
-
-            patchEntryChangesGitIgnoreMock
-                .SetupGet(x => x.Path)
-                .Returns($"StrykerOutput{pathDelimiter}.gitignore");
-
-            patchEntryChangesTestResultsMock
-                .SetupGet(x => x.Path)
-                .Returns($@"StrykerOutput{pathDelimiter}2020-09-04.19-29-19{pathDelimiter}logs{pathDelimiter}VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
-
-            patchMock
-                .Setup(x => x.GetEnumerator())
-                .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
-                                                              {
-                                                                  patchEntryChangesMock.Object,
-                                                                  patchEntryChangesGitIgnoreMock.Object,
-                                                                  patchEntryChangesTestResultsMock.Object
-                                                              }).GetEnumerator());
-
-            repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
-                .Returns(patchMock.Object);
-
-            repositoryMock
-                .Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
-
-            gitInfoMock.Setup(x => x.DetermineCommit()).Returns(commitMock.Object);
-
-            gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("C:/Path/To/Repo");
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
-
-            // Act
-            var res = target.ScanDiff();
-
-            // Assert
-            res.ChangedSourceFiles.Count().ShouldBe(1);
-            res.ChangedTestFiles.Count().ShouldBe(0);
-        }
-
         [Fact]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()
         {
@@ -232,7 +154,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
             var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
             var patchEntryChangesGitIgnoreMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesTestResultsMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
 
             // Setup of mocks
             commitMock
@@ -243,8 +164,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Tip)
                 .Returns(commitMock.Object);
 
+            branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("origin/branch");
             branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
-
             branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
 
             repositoryMock
@@ -260,22 +181,16 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Path)
                 .Returns($"C://Users/JohnDoe/Project/Tests/Test.cs");
 
-
-            patchEntryChangesTestResultsMock
-                .SetupGet(x => x.Path)
-                .Returns($@"StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
-
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
-                                                              {
-                                                                  patchEntryChangesMock.Object,
-                                                                  patchEntryChangesGitIgnoreMock.Object,
-                                                                  patchEntryChangesTestResultsMock.Object
-                                                              }).GetEnumerator());
+                {
+                    patchEntryChangesMock.Object,
+                    patchEntryChangesGitIgnoreMock.Object
+                }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -299,8 +214,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffExcludeFiles_Single_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new string[1];
-            diffIgnoreFiles[0] = "C://Users/JohnDoe/Project/*/Test.cs";
+            var diffIgnoreFiles = new[] { "C://Users/JohnDoe/Project/*/Test.cs" };
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
@@ -312,7 +226,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
             var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
             var patchEntryChangesGitIgnoreMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesTestResultsMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
 
             // Setup of mocks
             commitMock
@@ -323,8 +236,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Tip)
                 .Returns(commitMock.Object);
 
+            branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("origin/branch");
             branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
-
             branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
 
             repositoryMock
@@ -338,24 +251,18 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
-                .Returns($"C://Users/JohnDoe/Project/Tests/Test.cs");
-
-
-            patchEntryChangesTestResultsMock
-                .SetupGet(x => x.Path)
-                .Returns($@"StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
+                .Returns($"{basePath}/Test.cs");
 
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
-                                                              {
-                                                                  patchEntryChangesMock.Object,
-                                                                  patchEntryChangesGitIgnoreMock.Object,
-                                                                  patchEntryChangesTestResultsMock.Object
-                                                              }).GetEnumerator());
+                {
+                    patchEntryChangesMock.Object,
+                    patchEntryChangesGitIgnoreMock.Object
+                }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -392,7 +299,6 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var patchMock = new Mock<Patch>(MockBehavior.Strict);
             var patchEntryChangesMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
             var patchEntryChangesGitIgnoreMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
-            var patchEntryChangesTestResultsMock = new Mock<PatchEntryChanges>(MockBehavior.Strict);
 
             // Setup of mocks
             commitMock
@@ -403,8 +309,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Tip)
                 .Returns(commitMock.Object);
 
+            branchMock.SetupGet(x => x.UpstreamBranchCanonicalName).Returns("origin/branch");
             branchMock.SetupGet(x => x.CanonicalName).Returns("refs/heads/branch");
-
             branchMock.SetupGet(x => x.FriendlyName).Returns("branch");
 
             repositoryMock
@@ -420,22 +326,16 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Path)
                 .Returns($"C://Users/JohnDoe/Project/Tests/Test.cs");
 
-
-            patchEntryChangesTestResultsMock
-                .SetupGet(x => x.Path)
-                .Returns($@"StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
-
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
-                                                              {
-                                                                  patchEntryChangesMock.Object,
-                                                                  patchEntryChangesGitIgnoreMock.Object,
-                                                                  patchEntryChangesTestResultsMock.Object
-                                                              }).GetEnumerator());
+                {
+                    patchEntryChangesMock.Object,
+                    patchEntryChangesGitIgnoreMock.Object
+                }).GetEnumerator());
 
             repositoryMock
-                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.Index | DiffTargets.WorkingDirectory))
+                .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
                 .Returns(patchMock.Object);
 
             repositoryMock
@@ -498,7 +398,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             patchEntryChangesTestResultsMock
                 .SetupGet(x => x.Path)
-                .Returns($@"StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
+                .Returns($@"{basePath}/StrykerOutput/2020-09-04.19-29-19/logs/VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
 
             patchMock
                 .Setup(x => x.GetEnumerator())
