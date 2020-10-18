@@ -1,5 +1,4 @@
-﻿using DotNet.Globbing;
-using LibGit2Sharp;
+﻿using LibGit2Sharp;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -96,7 +95,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedSourceFiles.Count().ShouldBe(1);
             res.ChangedTestFiles.Count().ShouldBe(0);
         }
-        
+
         [Theory]
         [InlineData(@"\")]
         [InlineData(@"/")]
@@ -104,7 +103,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -136,15 +135,15 @@ namespace Stryker.Core.UnitTest.DiffProviders
             patchEntryChangesMock
                 .SetupGet(x => x.Path)
                 .Returns("file.cs");
-            
+
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
                 .Returns($"StrykerOutput{pathDelimiter}.gitignore");
-            
+
             patchEntryChangesTestResultsMock
                 .SetupGet(x => x.Path)
                 .Returns($@"StrykerOutput{pathDelimiter}2020-09-04.19-29-19{pathDelimiter}logs{pathDelimiter}VsTest-log.host.20-09-04_19-29-59_93106_7.txt");
-            
+
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
@@ -171,8 +170,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.ChangedFiles.Count().ShouldBe(1);
-            res.TestFilesChanged.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
         }
 
         [Fact]
@@ -224,7 +223,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             diffIgnoreFiles[0] = "C://Users/JohnDoe/Project/Tests/Test.cs";
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -292,8 +291,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.TestFilesChanged.Count().ShouldBe(0);
-            res.ChangedFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -304,7 +303,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             diffIgnoreFiles[0] = "C://Users/JohnDoe/Project/*/Test.cs";
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -372,8 +371,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.TestFilesChanged.Count().ShouldBe(0);
-            res.ChangedFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -384,7 +383,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             diffIgnoreFiles[0] = "**/Test.cs";
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -452,8 +451,8 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.TestFilesChanged.Count().ShouldBe(0);
-            res.ChangedFiles.Count().ShouldBe(1);
+            res.ChangedTestFiles.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -464,7 +463,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             diffIgnoreFiles[0] = "**/file.cs";
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitSource: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
+            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -526,7 +525,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var res = target.ScanDiff();
 
             // Assert
-            res.ChangedFiles.Count().ShouldBe(0);
+            res.ChangedSourceFiles.Count().ShouldBe(0);
         }
     }
 }

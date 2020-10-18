@@ -134,7 +134,7 @@ namespace Stryker.Core.Options
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
-            (ProjectVersion, FallbackVersion, GitDiffTarget) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitDiffTarget);
+            (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitDiffTarget);
             DiffIgnoreFiles = ValidateDiffIgnoreFiles(diffIgnoreFiles);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
@@ -237,8 +237,6 @@ namespace Stryker.Core.Options
             {
                 fallbackVersion = gitDiffTarget;
             }
-
-            var excludedFiles = new List<FilePattern>();
 
             if (CompareToDashboard)
             {
