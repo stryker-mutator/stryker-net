@@ -141,8 +141,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffExcludeFiles()
         {
             // Arrange
-            var diffIgnoreFiles = new string[1];
-            diffIgnoreFiles[0] = "C://Users/JohnDoe/Project/Tests/Test.cs";
+            var diffIgnoreFiles = new[] { "C://Users/JohnDoe/Project/Tests/Test.cs" };
 
             var basePath = FilePathUtils.NormalizePathSeparators("C://Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);

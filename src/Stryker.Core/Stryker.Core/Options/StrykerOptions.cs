@@ -267,7 +267,7 @@ namespace Stryker.Core.Options
             {
                 foreach (var pattern in diffIgnoreFiles)
                 {
-                    mappedDiffIgnoreFiles.Add(FilePattern.Parse(pattern));
+                    mappedDiffIgnoreFiles.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
             }
             return mappedDiffIgnoreFiles;
@@ -506,7 +506,7 @@ namespace Stryker.Core.Options
 
             foreach (var includePattern in filePatterns)
             {
-                filesToInclude.Add(FilePattern.Parse(includePattern));
+                filesToInclude.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(includePattern)));
             }
 
             if (filesToInclude.All(f => f.IsExclude))
