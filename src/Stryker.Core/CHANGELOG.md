@@ -1,3 +1,24 @@
+# [0.20.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.19.0...stryker@0.20.0) (2020-10-19)
+
+
+### Bug Fixes
+
+* **diff compare:** allow canonical branch name as diff target ([#1210](https://github.com/stryker-mutator/stryker-net/issues/1210)) ([0b9659f](https://github.com/stryker-mutator/stryker-net/commit/0b9659faee9af47584cfc53d807380a6edf48a02))
+* **git diff:** exclude stryker generated files ([#1199](https://github.com/stryker-mutator/stryker-net/issues/1199)) ([4c1a749](https://github.com/stryker-mutator/stryker-net/commit/4c1a7495d8649d448fd280bc4f77ef59c14681b8))
+* **git diff filter:** Gitignore was incorrectly placed causing strykeroutput to show in diff filter ([#1235](https://github.com/stryker-mutator/stryker-net/issues/1235)) ([fa88bda](https://github.com/stryker-mutator/stryker-net/commit/fa88bda5d30c0e844b67157c22688df0e4e86dca))
+* **git diff filter:** Set mutants for unchanged files to Ignored if they have status NotRun ([#1243](https://github.com/stryker-mutator/stryker-net/issues/1243)) ([29219e4](https://github.com/stryker-mutator/stryker-net/commit/29219e4011c8df8681d16af64259793e6f9098b6))
+
+
+### Features
+
+* support .net5 and newer targetframeworks ([#1213](https://github.com/stryker-mutator/stryker-net/issues/1213)) ([92b3253](https://github.com/stryker-mutator/stryker-net/commit/92b32532ce502d7fd523bf9517ca09139e1dea0d))
+* **clear text reporter:** Table report for clear text reporter ([#1242](https://github.com/stryker-mutator/stryker-net/issues/1242)) ([e19332d](https://github.com/stryker-mutator/stryker-net/commit/e19332d5822b2d51a6e959b442fe1e103a8e4de8))
+* **cleartext reporter:** Improve directory structure of cleartext console report ([#1239](https://github.com/stryker-mutator/stryker-net/issues/1239)) ([5cb522b](https://github.com/stryker-mutator/stryker-net/commit/5cb522b7240a0052a6bd954937a8e576897b1863))
+* **Dashboard Compare:** Add git diff file ignore ([#1206](https://github.com/stryker-mutator/stryker-net/issues/1206)) ([72d1473](https://github.com/stryker-mutator/stryker-net/commit/72d14731c8e2fb9147d665101b1ed75bebc03203))
+* **Mutation levels:** Add mutation levels ([#987](https://github.com/stryker-mutator/stryker-net/issues/987)) ([2f0543e](https://github.com/stryker-mutator/stryker-net/commit/2f0543e9c86415c705eb89e90d2f9585f51cc03b))
+
+
+
 # [0.19.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.18.0...stryker@0.19.0) (2020-09-04)
 
 
