@@ -112,9 +112,9 @@ namespace Stryker.Core.UnitTest.Options
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                var options = new StrykerOptions(gitSource: "");
+                var options = new StrykerOptions(gitDiffTarget: "");
             });
-            ex.Message.ShouldBe("GitSource may not be empty, please provide a valid git branch name");
+            ex.Message.ShouldBe("GitDiffTarget may not be empty, please provide a valid git branch name");
         }
 
         [Fact]
@@ -251,9 +251,9 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldSetFallbackToGitSourceWhenNullAndCompareEnabled()
         {
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitDiffTarget: "development");
 
-            options.GitSource.ShouldBe("development");
+            options.GitDiffTarget.ShouldBe("development");
             options.FallbackVersion.ShouldBe("development");
         }
 

@@ -6,7 +6,7 @@
     "log-file": "true",
     "log-level": "trace",
     "reporters": [
-      "All"
+      "Json"
     ],
     "solution-path": "../FullFrameworkApp.sln"
   }
