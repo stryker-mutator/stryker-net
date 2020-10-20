@@ -20,10 +20,10 @@ namespace Stryker.Core.UnitTest.Options
 
         [Theory]
         [InlineData(1, 1, "Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.")]
-        [InlineData(2, 2, "Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.")]
-        [InlineData(4, 4, "Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.")]
-        [InlineData(8, 8, "Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.")]
-        [InlineData(16, 16, "Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.")]
+        [InlineData(2, 2, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.")]
+        [InlineData(4, 4, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.")]
+        [InlineData(8, 8, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.")]
+        [InlineData(16, 16, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.")]
         public void WhenGivenValueIsPassedAsMaxConcurrentTestRunnersParam_ExpectedValueShouldBeSet_ExpectedMessageShouldBeLogged(int given, int expected, string logMessage)
         {
             var mockLogger = new MockLogger();
