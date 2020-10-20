@@ -7,10 +7,10 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FolderCompositeFsharp : ProjectComponent<FileLeafFsharp, ParsedInput>
+    public class FolderCompositeFsharp : ProjectComponent<ParsedInput>
     {
         private readonly IList<ParsedInput> _compilationSyntaxTrees = new List<ParsedInput>();
-        public ICollection<ProjectComponent<FileLeafFsharp, ParsedInput>> Children { get; set; } = new Collection<ProjectComponent<FileLeafFsharp, ParsedInput>>();
+        public ICollection<ProjectComponent<ParsedInput>> Children { get; set; } = new Collection<ProjectComponent<ParsedInput>>();
 
         /// <summary>
         /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
@@ -27,12 +27,12 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotImplementedException();
         }
 
-        public override IEnumerable<FileLeafFsharp> GetAllFiles()
+        public override IEnumerable<IFileLeaf<ParsedInput>> GetAllFiles()
         {
             return Children.SelectMany(x => x.GetAllFiles());
         }
 
-        public override void Add(ProjectComponent<FileLeafFsharp, ParsedInput> component)
+        public override void Add(ProjectComponent<ParsedInput> component)
         {
             Children.Add(component);
         }

@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -264,8 +264,8 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(3);
-            var mutatedFile = ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(3);
+            var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
 
             var node = ((CompilationUnitSyntax)mutatedFile.GetRoot()).AttributeLists
                 .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
@@ -308,7 +308,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -373,7 +373,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(3);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(3);
         }
 
         [Fact]
@@ -427,7 +427,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -506,7 +506,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -622,7 +622,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            var allFiles = ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles();
+            var allFiles = ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles();
 
             allFiles.Count().ShouldBe(3);
             allFiles.ShouldContain(f => f.Name == "Shared.cs");
@@ -1076,7 +1076,7 @@ Please specify a test project name filter that results in one project.
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -1117,7 +1117,7 @@ Please specify a test project name filter that results in one project.
             });
             var result = target.ResolveInput(options);
 
-            ((ProjectComponent<FileLeaf, SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(1);
+            ((ProjectComponent<SyntaxTree>)result.ProjectContents).GetAllFiles().Count().ShouldBe(1);
         }
 
         #region FindProjectUnderTest

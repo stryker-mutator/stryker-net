@@ -32,7 +32,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly ProjectComponent<FileLeaf, SyntaxTree> _projectInfo;
+        private readonly IReadOnlyInputComponent _projectInfo;
         private readonly ILogger _logger;
         private readonly IMutantFilter _mutantFilter;
         private readonly IMutationTestExecutor _mutationTestExecutor;
@@ -52,7 +52,7 @@ namespace Stryker.Core.MutationTest
             ICoverageAnalyser coverageAnalyser = null)
         {
             _input = mutationTestInput;
-            _projectInfo = (ProjectComponent<FileLeaf, SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
+            _projectInfo = mutationTestInput.ProjectInfo.ProjectContents;
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
@@ -70,7 +70,7 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             // Mutate source files
-            foreach (var file in _projectInfo.GetAllFiles())
+            foreach (FileLeaf file in ((ProjectComponent<SyntaxTree>)_projectInfo).GetAllFiles())
             {
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
@@ -96,7 +96,7 @@ namespace Stryker.Core.MutationTest
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
+            var compileResult = _compilingProcess.Compile(((ProjectComponent<SyntaxTree>)_projectInfo).CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
 
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
@@ -285,9 +285,9 @@ namespace Stryker.Core.MutationTest
 
         public void FilterMutants()
         {
-            foreach (var file in _projectInfo.GetAllFiles())
+            foreach (var file in ((ProjectComponent<SyntaxTree>)_projectInfo).GetAllFiles())
             {
-                _mutantFilter.FilterMutants(file.Mutants, file, _options);
+                _mutantFilter.FilterMutants(file.Mutants, (FileLeaf)file, _options);
             }
 
             var skippedMutants = _projectInfo.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);

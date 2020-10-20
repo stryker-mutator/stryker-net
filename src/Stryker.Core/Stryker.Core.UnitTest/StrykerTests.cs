@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                             new FileLeaf() {
                                 Name = "SomeFile.cs",
                                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }

@@ -78,7 +78,7 @@ namespace Stryker.Core.Reporters
             _chalk.Default($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘{Environment.NewLine}");
         }
 
-        private void DisplayComponent(ProjectComponent<FileLeaf, SyntaxTree> inputComponent, int filePathLength)
+        private void DisplayComponent(ProjectComponent<SyntaxTree> inputComponent, int filePathLength)
         {
             _chalk.Default($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
 

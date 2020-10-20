@@ -7,10 +7,10 @@ using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FolderComposite : ProjectComponent<FileLeaf, SyntaxTree>
+    public class FolderComposite : ProjectComponent<SyntaxTree>
     {
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
-        public ICollection<ProjectComponent<FileLeaf, SyntaxTree>> Children { get; set; } = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>();
+        public ICollection<ProjectComponent<SyntaxTree>> Children { get; set; } = new Collection<ProjectComponent<SyntaxTree>>();
 
         /// <summary>
         /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
@@ -27,12 +27,12 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotImplementedException();
         }
 
-        public override IEnumerable<FileLeaf> GetAllFiles()
+        public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
         {
             return Children.SelectMany(x => x.GetAllFiles());
         }
 
-        public override void Add(ProjectComponent<FileLeaf, SyntaxTree> component)
+        public override void Add(ProjectComponent<SyntaxTree> component)
         {
             component.Parent = this;
             Children.Add(component);

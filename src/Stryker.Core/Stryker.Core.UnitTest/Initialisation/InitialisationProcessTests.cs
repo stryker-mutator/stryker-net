@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>
+                        Children = new Collection<ProjectComponent<SyntaxTree>>
                         {
                             new FileLeaf
                             {
@@ -97,7 +97,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = new FolderComposite
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>
+                        Children = new Collection<ProjectComponent<SyntaxTree>>
                         {
                             new FileLeaf
                             {

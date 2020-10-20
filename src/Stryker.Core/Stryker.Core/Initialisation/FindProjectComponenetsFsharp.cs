@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using static FSharp.Compiler.SyntaxTree.ParsedInput;
+using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Initialisation
 {
@@ -99,7 +100,7 @@ namespace Stryker.Core.Initialisation
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
-                    FSharp.Compiler.SyntaxTree.ParsedImplFileInput syntaxTree = ((ImplFile)result.ParseTree.Value).Item;
+                    ImplFile syntaxTree = (ImplFile)result.ParseTree.Value;
 
                     //// don't mutate auto generated code
                     //if (syntaxTree.IsGenerated())
@@ -129,7 +130,7 @@ namespace Stryker.Core.Initialisation
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
         private FolderCompositeFsharp GetOrBuildFolderComposite(IDictionary<string, FolderCompositeFsharp> cache, string targetFolder, string projectUnderTestDir,
-            string projectRoot, ProjectComponent<FileLeafFsharp, FSharp.Compiler.SyntaxTree.ParsedInput> inputFiles)
+            string projectRoot, ProjectComponent<ParsedInput> inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
             {
@@ -176,7 +177,7 @@ namespace Stryker.Core.Initialisation
             return (FolderCompositeFsharp)cache[targetFolder];
         }
 
-        //private FSharpOption<FSharp.Compiler.SyntaxTree.ParsedInput> InjectMutationLabel(FSharpOption<FSharp.Compiler.SyntaxTree.ParsedInput> syntaxTree)
+        //private FSharpOption<ParsedInput> InjectMutationLabel(FSharpOption<ParsedInput> syntaxTree)
         //{
         //    var root = syntaxTree.GetRoot();
 
@@ -350,7 +351,7 @@ namespace Stryker.Core.Initialisation
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
-                    FSharp.Compiler.SyntaxTree.ParsedImplFileInput syntaxTree = ((ImplFile)result.ParseTree.Value).Item;
+                    ImplFile syntaxTree = (ImplFile)result.ParseTree.Value;
 
                     //// don't mutate auto generated code
                     //if (syntaxTree.IsGenerated())

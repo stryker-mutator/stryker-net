@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = Path.Combine(FilesystemRoot, "ExampleProject"),
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                             inputFile,
                         }
                     },
@@ -102,7 +102,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
 
             // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
@@ -130,7 +130,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
-            reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Once);
+            reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Once);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = Path.Combine(FilesystemRoot, "ExampleProject"),
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                             inputFile,
                         }
                     },
@@ -196,7 +196,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
 
             // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
@@ -263,7 +263,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                             new FileLeaf
                             {
                                 Name = "SomeFile.cs",
@@ -292,7 +292,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()));
             compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
                 .Returns(new CompilingProcessResult()
                 {
@@ -339,7 +339,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>()
+                        Children = new Collection<ProjectComponent<SyntaxTree>>()
                         {
                             new FileLeaf()
                             {
@@ -354,7 +354,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
             var runnerMock = new Mock<ITestRunner>();
@@ -377,7 +377,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 2), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Once);
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                             new FileLeaf() {
                                 Name = "SomeFile.cs",
                                 Mutants = new Collection<Mutant>() { mutant, otherMutant }
@@ -426,7 +426,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
             var runnerMock = new Mock<ITestRunner>();
@@ -449,7 +449,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.Is<IList<Mutant>>(y => y.Count == 1), It.IsAny<IEnumerable<TestDescription>>()), Times.Once);
             executorMock.Verify(x => x.Test(new List<Mutant> { otherMutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Once);
         }
 
         [Fact]
@@ -464,7 +464,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>()
+                        Children = new Collection<ProjectComponent<SyntaxTree>>()
                         {
                             new FileLeaf() {
                                 Name = "SomeFile.cs",
@@ -477,7 +477,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
             var runnerMock = new Mock<ITestRunner>();
@@ -501,7 +501,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(mutant), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Once);
             testResult.MutationScore.ShouldBe(double.NaN);
         }
 
@@ -516,7 +516,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                         new FileLeaf() {
                             Name = "SomeFile.cs",
                             Mutants = new Collection<Mutant>() { }
@@ -528,7 +528,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
@@ -550,7 +550,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Never);
             testResult.MutationScore.ShouldBe(double.NaN);
         }
 
@@ -567,7 +567,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<FileLeaf, SyntaxTree>>() {
+                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
                         new FileLeaf() {
                             Name = "SomeFile.cs",
                             Mutants = new Collection<Mutant>() { mutant, mutant2 }
@@ -579,7 +579,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()));
 
             var runnerMock = new Mock<ITestRunner>();
@@ -603,7 +603,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>(), It.IsAny<IEnumerable<TestDescription>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<FileLeaf, SyntaxTree>>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<ProjectComponent<SyntaxTree>>()), Times.Once);
             testResult.MutationScore.ShouldBe(double.NaN);
         }
     }

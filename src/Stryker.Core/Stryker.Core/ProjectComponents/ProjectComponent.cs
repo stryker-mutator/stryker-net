@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ProjectComponent<T, U> : IReadOnlyInputComponent
+    public abstract class ProjectComponent<T> : IReadOnlyInputComponent
     {
         public string Name { get; set; }
         public string FullPath { get; set; }
@@ -38,11 +38,11 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// All syntax trees that should be a part of the compilation
         /// </summary>
-        public abstract IEnumerable<U> CompilationSyntaxTrees { get; }
+        public abstract IEnumerable<T> CompilationSyntaxTrees { get; }
         /// <summary>
         /// Only those syntax trees that were changed by the mutation process
         /// </summary>
-        public abstract IEnumerable<U> MutatedSyntaxTrees { get; }
+        public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
 
         // These delegates will get invoked while walking the tree during Display();
         public Display DisplayFile { get; set; }
@@ -84,10 +84,7 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
-        public abstract void Add(ProjectComponent<T, U> component);
-        public abstract IEnumerable<T> GetAllFiles();
-
-        public Type getT() => typeof(T);
-        public Type getU() => typeof(U);
+        public abstract void Add(ProjectComponent<T> component);
+        public abstract IEnumerable<IFileLeaf<T>> GetAllFiles();
     }
 }

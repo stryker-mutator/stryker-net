@@ -262,7 +262,7 @@ namespace Stryker.Core.Initialisation
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
         private FolderComposite GetOrBuildFolderComposite(IDictionary<string, FolderComposite> cache, string targetFolder, string projectUnderTestDir,
-            string projectRoot, ProjectComponent<FileLeaf, SyntaxTree> inputFiles)
+            string projectRoot, ProjectComponent<SyntaxTree> inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
             {

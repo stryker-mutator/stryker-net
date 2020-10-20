@@ -135,7 +135,7 @@ namespace Stryker.Core.Reporters
         {
             var continuationLines = new List<bool>();
 
-            var node = (ProjectComponent<FileLeaf, SyntaxTree>)current;
+            var node = (ProjectComponent<SyntaxTree>)current;
 
             if (node.Parent != null)
             {
@@ -167,7 +167,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             _chalk.Default($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent is ProjectComponent<FileLeaf, SyntaxTree> projectComponent && projectComponent.FullPath != null && projectComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ProjectComponent<SyntaxTree> projectComponent && projectComponent.FullPath != null && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _chalk.DarkGray($"(Excluded)");
             }
