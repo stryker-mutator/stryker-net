@@ -15,13 +15,13 @@ namespace Stryker.Core.Reporters.Html
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _output;
+        private readonly TextWriter _consoleWriter;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter output = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _output = output ?? Console.Out;
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
@@ -31,7 +31,7 @@ namespace Stryker.Core.Reporters.Html
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            _output.Write(Output.Green($"\nYour html report has been generated at: \n " +
+            _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
                 $"{reportPath} \n" +
                 $"You can open it in your browser of choice. \n"));
         }

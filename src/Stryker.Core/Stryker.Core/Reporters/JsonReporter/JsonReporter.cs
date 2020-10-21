@@ -13,13 +13,13 @@ namespace Stryker.Core.Reporters.Json
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _output;
+        private readonly TextWriter _consoleWriter;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter output = null)
+        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _output = output ?? Console.Out;
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
@@ -29,7 +29,7 @@ namespace Stryker.Core.Reporters.Json
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.json");
             WriteReportToJsonFile(reportPath, mutationReport.ToJson());
 
-            _output.Write(Output.Green($"\nYour json report has been generated at: \n " +
+            _consoleWriter.Write(Output.Green($"\nYour json report has been generated at: \n " +
                 $"{reportPath} \n"));
         }
 

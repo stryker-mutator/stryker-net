@@ -21,12 +21,12 @@ namespace Stryker.Core.Reporters
         private const string FinalBranchLine = "└── ";
 
         private readonly StrykerOptions _options;
-        private readonly TextWriter _output;
+        private readonly TextWriter _consoleWriter;
 
-        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter output = null)
+        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
-            _output = output ?? Console.Out;
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
@@ -75,7 +75,7 @@ namespace Stryker.Core.Reporters
 
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    _output.Write($"{stringBuilder}{folderLines}{name}");
+                    _consoleWriter.Write($"{stringBuilder}{folderLines}{name}");
                     DisplayComponent(current);
                 }
             };
@@ -91,7 +91,7 @@ namespace Stryker.Core.Reporters
                     stringBuilder.Append(item ? ContinueLine : NoLine);
                 }
 
-                _output.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{current.Name}");
+                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{current.Name}");
                 DisplayComponent(current);
 
                 stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
@@ -102,32 +102,32 @@ namespace Stryker.Core.Reporters
                 {
                     var isLastMutant = current.TotalMutants.Last() == mutant;
 
-                    _output.Write($"{prefix}{(isLastMutant ? FinalBranchLine : BranchLine)}");
+                    _consoleWriter.Write($"{prefix}{(isLastMutant ? FinalBranchLine : BranchLine)}");
 
                     switch (mutant.ResultStatus)
                     {
                         case MutantStatus.Killed:
                         case MutantStatus.Timeout:
-                            _output.Write(Output.Green($"[{mutant.ResultStatus}]"));
+                            _consoleWriter.Write(Output.Green($"[{mutant.ResultStatus}]"));
                             break;
                         case MutantStatus.NoCoverage:
-                            _output.Write(Output.Yellow($"[{mutant.ResultStatus}]"));
+                            _consoleWriter.Write(Output.Yellow($"[{mutant.ResultStatus}]"));
                             break;
                         default:
-                            _output.Write(Output.Red($"[{mutant.ResultStatus}]"));
+                            _consoleWriter.Write(Output.Red($"[{mutant.ResultStatus}]"));
                             break;
                     }
 
-                    _output.WriteLine($" {mutant.Mutation.DisplayName} on line {mutant.Line}");
-                    _output.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{BranchLine}[-] {mutant.Mutation.OriginalNode}");
-                    _output.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{FinalBranchLine}[+] {mutant.Mutation.ReplacementNode}");
+                    _consoleWriter.WriteLine($" {mutant.Mutation.DisplayName} on line {mutant.Line}");
+                    _consoleWriter.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{BranchLine}[-] {mutant.Mutation.OriginalNode}");
+                    _consoleWriter.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{FinalBranchLine}[+] {mutant.Mutation.ReplacementNode}");
                 }
             };
 
             // print empty line for readability
-            _output.WriteLine();
-            _output.WriteLine();
-            _output.WriteLine("All mutants have been tested, and your mutation score has been calculated");
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
             reportComponent.Display(1);
@@ -167,15 +167,15 @@ namespace Stryker.Core.Reporters
             var mutationScore = inputComponent.GetMutationScore();
 
             // Convert the threshold integer values to decimal values
-            _output.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
+            _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
             if (inputComponent is ProjectComponent projectComponent && projectComponent.FullPath != null && projectComponent.IsComponentExcluded(_options.FilePatterns))
             {
-                _output.Write(Output.BrightBlack("(Excluded)"));
+                _consoleWriter.Write(Output.BrightBlack("(Excluded)"));
             }
             else if (double.IsNaN(mutationScore))
             {
-                _output.Write(Output.BrightBlack("(N/A)"));
+                _consoleWriter.Write(Output.BrightBlack("(N/A)"));
             }
             else
             {
@@ -183,18 +183,18 @@ namespace Stryker.Core.Reporters
                 string scoreText = string.Format("({0:P2})", mutationScore);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
-                    _output.Write(Output.Green(scoreText));
+                    _consoleWriter.Write(Output.Green(scoreText));
                 }
                 else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Warning)
                 {
-                    _output.Write(Output.Yellow(scoreText));
+                    _consoleWriter.Write(Output.Yellow(scoreText));
                 }
                 else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Danger)
                 {
-                    _output.Write(Output.Red(scoreText));
+                    _consoleWriter.Write(Output.Red(scoreText));
                 }
             }
-            _output.WriteLine("]");
+            _consoleWriter.WriteLine("]");
         }
     }
 }

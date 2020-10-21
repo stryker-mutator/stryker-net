@@ -12,11 +12,11 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleDotProgressReporter : IReporter
     {
-        private readonly TextWriter _output;
+        private readonly TextWriter _consoleWriter;
 
-        public ConsoleDotProgressReporter(TextWriter output = null)
+        public ConsoleDotProgressReporter(TextWriter consoleWriter = null)
         {
-            _output = output ?? Console.Out;
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
@@ -30,13 +30,13 @@ namespace Stryker.Core.Reporters
             switch (result.ResultStatus)
             {
                 case MutantStatus.Killed:
-                    _output.Write(".");
+                    _consoleWriter.Write(".");
                     break;
                 case MutantStatus.Survived:
-                    _output.Write(Output.Red("S"));
+                    _consoleWriter.Write(Output.Red("S"));
                     break;
                 case MutantStatus.Timeout:
-                    _output.Write("T");
+                    _consoleWriter.Write("T");
                     break;
             };
         }
