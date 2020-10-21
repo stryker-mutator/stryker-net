@@ -11,24 +11,10 @@ using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
-    public interface ICompilingProcess
-    {
-        /// <summary>
-        /// Compiles the given input onto the memorystream
-        /// </summary>
-        /// <param name="syntaxTrees"></param>
-        /// <param name="ilStream">The memorystream to function as output</param>
-        /// <param name="memoryStream"></param>
-        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream,
-            Stream memoryStream,
-            bool devMode);
-    }
-
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// </summary>
-    public class CompilingProcess : ICompilingProcess
+    public class CompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;

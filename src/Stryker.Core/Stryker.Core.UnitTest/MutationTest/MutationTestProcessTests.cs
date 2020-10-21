@@ -1,9 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
+using Stryker.Core.LanguageFactory;
+using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -49,13 +52,13 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SourceCode = SourceFile,
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
-
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectAnalyzerResult>();
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
                     TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                        new ProjectAnalyzerResult(logger, null)
                         {
                             AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
                             Properties = new Dictionary<string, string>()
@@ -65,7 +68,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             }
                         }
                     },
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
+                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(logger, null)
                     {
                         AssemblyPath = "/bin/Debug/netcoreapp2.1/TestName.dll",
                         Properties = new Dictionary<string, string>()
@@ -99,18 +102,12 @@ namespace Stryker.Core.UnitTest.MutationTest
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
 
             // setup mocks
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), true))
-                .Returns(new CompilingProcessResult()
-                {
-                    Success = true
-                });
             var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
 
 
@@ -118,10 +115,10 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
-                compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
+                language: Language.Csharp);
 
             // start mutation process
             target.Mutate();
@@ -192,7 +189,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
 
             // setup mocks
@@ -200,11 +196,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), true))
-                .Returns(new CompilingProcessResult()
-                {
-                    Success = true
-                });
             mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
             mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<FileLeaf>(), It.IsAny<StrykerOptions>()))
                 .Returns((IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions o) => mutants.Take(1));
@@ -217,10 +208,10 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
-                compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }));
+                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }),
+                language: Language.Csharp);
 
             // start mutation process
             target.Mutate();
@@ -281,7 +272,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
@@ -293,21 +283,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ProjectComponent<SyntaxTree>>()));
-            compilingProcessMock.Setup(x => x.Compile(It.IsAny<IEnumerable<SyntaxTree>>(), It.IsAny<MemoryStream>(), It.IsAny<MemoryStream>(), It.IsAny<bool>()))
-                .Returns(new CompilingProcessResult()
-                {
-                    Success = true
-                });
 
             var options = new StrykerOptions();
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
-                compilingProcessMock.Object,
                 fileSystem,
                 options,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()));
+                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
+                language: Language.Csharp);
 
             target.Mutate();
 
@@ -371,7 +356,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
+                options: options,
+                language: Language.Csharp);
 
             target.Test(options);
 
@@ -443,7 +429,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
+                options: options,
+                language: Language.Csharp);
 
             target.Test(options);
 
@@ -494,8 +481,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
-
+                options: options,
+                language: LanguageFactory.Language.Csharp);
+            
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
@@ -543,7 +531,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
+                options: options,
+                language: Language.Csharp);
 
             var testResult = target.Test(options);
 
@@ -596,7 +585,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
+                options: options,
+                language: LanguageFactory.Language.Csharp);
 
             var testResult = target.Test(options);
 

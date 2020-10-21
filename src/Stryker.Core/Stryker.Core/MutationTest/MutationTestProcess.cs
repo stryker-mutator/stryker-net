@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.CoverageAnalysis;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -15,6 +16,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Language = Stryker.Core.LanguageFactory.Language;
 
 namespace Stryker.Core.MutationTest
 {
@@ -29,7 +31,6 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        private readonly ICompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
         private readonly IReadOnlyInputComponent _projectInfo;
@@ -39,17 +40,19 @@ namespace Stryker.Core.MutationTest
         private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
+        private readonly Language _language;
         private readonly StrykerOptions _options;
+        private IMutationTestProcessMethod _mutationTestProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
             IMutantOrchestrator orchestrator = null,
-            ICompilingProcess compilingProcess = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            ICoverageAnalyser coverageAnalyser = null)
+            ICoverageAnalyser coverageAnalyser = null,
+            Language language = Language.Undifined)
         {
             _input = mutationTestInput;
             _projectInfo = mutationTestInput.ProjectInfo.ProjectContents;
@@ -57,88 +60,41 @@ namespace Stryker.Core.MutationTest
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
             _orchestrator = orchestrator ?? new MutantOrchestrator(options: _options);
-            _compilingProcess = compilingProcess ?? new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, _input);
+            _language = language;
 
-            _mutantFilter = mutantFilter
-                ?? MutantFilterFactory
-                .Create(options);
+            _mutantFilter = mutantFilter;
+
+            SetupMutationTestProcess();
+        }
+
+        private void SetupMutationTestProcess()
+        {
+
+            if (_language == Language.Csharp)
+            {
+                _mutationTestProcess = new MutationtTestProcessMethod(_input, _orchestrator, _fileSystem, _options, _mutantFilter, _reporter);
+            }
+            else if (_language == Language.Fsharp)
+            {
+                _mutationTestProcess = new MutationTestProcessMethodFsharp(_input, _orchestrator, _fileSystem, _options, _mutantFilter, _reporter);
+            }
+            else
+            {
+                throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given");
+            }
         }
 
         public void Mutate()
         {
-            // Mutate source files
-            foreach (FileLeaf file in ((ProjectComponent<SyntaxTree>)_projectInfo).GetAllFiles())
-            {
-                _logger.LogDebug($"Mutating {file.Name}");
-                // Mutate the syntax tree
-                var mutatedSyntaxTree = _orchestrator.Mutate(file.SyntaxTree.GetRoot());
-                // Add the mutated syntax tree for compilation
-                file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
-                if (_options.DevMode)
-                {
-                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
-                }
-                // Filter the mutants
-                var allMutants = _orchestrator.GetLatestMutantBatch();
-                file.Mutants = allMutants;
-            }
-
-            _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
-
-            CompileMutations();
+            _mutationTestProcess.Mutate();
         }
 
-        private void CompileMutations()
+        public void FilterMutants()
         {
-            using var ms = new MemoryStream();
-            using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
-            // compile the mutated syntax trees
-            var compileResult = _compilingProcess.Compile(((ProjectComponent<SyntaxTree>)_projectInfo).CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
-
-            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
-            {
-                var injectionPath = testProject.TargetDirectory;
-                if (!_fileSystem.Directory.Exists(injectionPath))
-                {
-                    _fileSystem.Directory.CreateDirectory(injectionPath);
-                }
-
-                // inject the mutated Assembly into the test project
-                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
-                ms.Position = 0;
-                ms.CopyTo(fs);
-
-                if (msForSymbols != null)
-                {
-                    // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
-                    msForSymbols.Position = 0;
-                    msForSymbols.CopyTo(symbolDestination);
-                }
-
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
-            }
-
-            // if a rollback took place, mark the rolled back mutants as status:BuildError
-            if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
-            {
-                foreach (var mutant in _projectInfo.Mutants
-                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
-                {
-                    // Ignore compilation errors if the mutation is skipped anyways.
-                    if (mutant.ResultStatus == MutantStatus.Ignored)
-                    {
-                        continue;
-                    }
-
-                    mutant.ResultStatus = MutantStatus.CompileError;
-                    mutant.ResultStatusReason = "Mutant caused compile errors";
-                }
-            }
+            _mutationTestProcess.FilterMutants();
         }
 
         public StrykerRunResult Test(StrykerOptions options)
@@ -283,64 +239,6 @@ namespace Stryker.Core.MutationTest
             _coverageAnalyser.DetermineTestCoverage();
         }
 
-        public void FilterMutants()
-        {
-            foreach (var file in ((ProjectComponent<SyntaxTree>)_projectInfo).GetAllFiles())
-            {
-                _mutantFilter.FilterMutants(file.Mutants, (FileLeaf)file, _options);
-            }
 
-            var skippedMutants = _projectInfo.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
-            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
-
-            foreach (var skippedMutantGroup in skippedMutantGroups)
-            {
-                _logger.LogInformation(
-                    FormatStatusReasonLogString(skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus),
-                    skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
-            }
-
-            if (skippedMutants.Any())
-            {
-                _logger.LogInformation(
-                    LeftPadAndFormatForMutantCount(skippedMutants.Count(), "total mutants are skipped for the above mentioned reasons"),
-                    skippedMutants.Count());
-            }
-
-            var notRunMutantsWithResultStatusReason = _projectInfo.ReadOnlyMutants
-                .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
-                .GroupBy(x => x.ResultStatusReason);
-
-            foreach (var notRunMutantReason in notRunMutantsWithResultStatusReason)
-            {
-                _logger.LogInformation(
-                    LeftPadAndFormatForMutantCount(notRunMutantReason.Count(), "mutants will be tested because: {1}"),
-                    notRunMutantReason.Count(),
-                    notRunMutantReason.Key);
-            }
-
-            var notRunCount = _projectInfo.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
-            _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
-
-            _reporter.OnMutantsCreated(_projectInfo);
-        }
-
-        private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
-        {
-            // Pad for status CompileError length
-            var padForResultStatusLength = 13 - resultStatus.ToString().Length;
-
-            var formattedString = LeftPadAndFormatForMutantCount(mutantCount, "mutants got status {1}.");
-            formattedString += "Reason: {2}".PadLeft(11 + padForResultStatusLength);
-
-            return formattedString;
-        }
-
-        private string LeftPadAndFormatForMutantCount(int mutantCount, string logString)
-        {
-            // Pad for max 5 digits mutant amount
-            var padLengthForMutantCount = 5 - mutantCount.ToString().Length;
-            return "{0} " + logString.PadLeft(logString.Length + padLengthForMutantCount);
-        }
     }
 }

@@ -10,6 +10,7 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Language = Stryker.Core.LanguageFactory.Language;
 
 namespace Stryker.Core
 {
@@ -24,12 +25,14 @@ namespace Stryker.Core
         private IInitialisationProcess _initialisationProcess;
         private MutationTestInput _input;
         private IMutationTestProcess _mutationTestProcess;
+        private Language _language;
 
         public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IReporter reporter = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
             _reporter = reporter;
+            _language = Language.Undifined;
         }
 
         /// <summary>
@@ -63,8 +66,9 @@ namespace Stryker.Core
                 }
 
                 _initialisationProcess ??= new InitialisationProcess();
-                _input = _initialisationProcess.Initialize(options);
-
+                var initialyze = _initialisationProcess.Initialize(options);
+                _input = initialyze.Item1;
+                _language = initialyze.Item2;
                 _mutationTestProcess ??= new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,

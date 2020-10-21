@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using Xunit;
+using Language = Stryker.Core.LanguageFactory.Language;
 
 namespace Stryker.Core.UnitTest
 {
@@ -39,7 +40,7 @@ namespace Stryker.Core.UnitTest
                     }
                 },
             };
-            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(mutationTestInput);
+            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns((mutationTestInput, Language.Csharp));
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
             var nbTests = 0;
             initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);

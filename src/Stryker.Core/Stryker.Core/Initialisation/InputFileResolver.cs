@@ -11,13 +11,14 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using Language = Stryker.Core.LanguageFactory.Language;
 
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(StrykerOptions options);
+        (ProjectInfo, Language) ResolveInput(StrykerOptions options);
     }
 
     /// <summary>
@@ -45,10 +46,10 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(StrykerOptions options)
+        public (ProjectInfo, Language) ResolveInput(StrykerOptions options)
         {
             var projectInfo = new ProjectInfo();
-
+            Language language;
             // Determine test projects
             var testProjectFiles = new List<string>();
             string projectUnderTest = null;
@@ -96,22 +97,25 @@ namespace Stryker.Core.Initialisation
             {
                 var projectComponents = new FindProjectComponenetsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
                 inputFiles = projectComponents.GetProjectComponenetsCsharp();
+                language = Language.Csharp;
             }
             else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
             {
-                var projectComponents = new FindProjectComponenetsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);  /*options are (useless || C# default) ?? */
+                var projectComponents = new FindProjectComponenetsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem); 
                 inputFiles = projectComponents.GetProjectComponenetsFsharp();
+                language = Language.Fsharp;
             }
             else
             {
-                throw new StrykerInputException("no valid csproj of fsproj was given");
+                language = Language.Undifined;
+                throw new StrykerInputException("no valid csproj or fsproj was given");
             }
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
 
-            return projectInfo;
+            return (projectInfo, language);
         }
 
         public string FindTestProject(string path)
