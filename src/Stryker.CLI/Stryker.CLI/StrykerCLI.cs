@@ -6,7 +6,6 @@ using Stryker.CLI.NuGet;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 using System;
 using System.IO;
 using System.Reflection;
@@ -162,7 +161,7 @@ namespace Stryker.CLI
         private void PrintStykerASCIIName()
         {
             // Crayon does not support background coloring (yet)
-            Console.WriteLine("\u001b[48;2;232;75;57m" + Output.FromRgb(241, 196, 15).Text(@"
+            Console.WriteLine("\u001b[48;2;183;73;52m" + Output.FromRgb(241, 196, 15).Text(@"
                                                               
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
