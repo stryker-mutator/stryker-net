@@ -108,32 +108,8 @@ namespace Stryker.Core.Reporters.Json
 
         private string GetProjectRoot(IReadOnlyInputComponent component)
         {
-            var firstFile = FindFirstFileLeaf(component);
-
-            if (firstFile?.FullPath != null && firstFile?.RelativePathToProjectFile != null)
-            {
-                return firstFile?.FullPath.Substring(0, firstFile.FullPath.Length - firstFile.RelativePathToProjectFile.Length);
-            }
-
-            return null;
-        }
-
-        private FileLeaf FindFirstFileLeaf(IReadOnlyInputComponent component)
-        {
-            if (component is FolderComposite folder)
-            {
-                foreach (var child in folder.Children)
-                {
-                    var fileLeaf = FindFirstFileLeaf(child);
-                    if (fileLeaf != null)
-                    {
-                        return fileLeaf;
-                    }
-                }
-            }
-            else if (component is FileLeaf file)
-            {
-                return file;
+            if (component is FolderComposite folder) {
+                return folder.Children.OfType<FolderComposite>().FirstOrDefault().FullPath;
             }
 
             return null;

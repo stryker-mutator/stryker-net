@@ -129,7 +129,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent);
 
-            report.ProjectRoot.ShouldBe("/home/user/src/1/");
+            report.ProjectRoot.ShouldBe("/home/user/src/1");
         }
 
         [Fact]

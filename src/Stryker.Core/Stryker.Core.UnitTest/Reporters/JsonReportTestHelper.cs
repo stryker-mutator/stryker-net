@@ -28,7 +28,13 @@ namespace Stryker.Core.UnitTest.Reporters
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
-                var addedFolder = new FolderComposite { Name = $"{i}", RelativePath = $"src/{i}" };
+                var addedFolder = new FolderComposite
+                {
+                    Name = $"{i}", 
+                    RelativePath = $"src/{i}",
+                    FullPath = $"/home/user/src/{i}",
+                    RelativePathToProjectFile = $"{i}"
+                };
                 folder.Add(addedFolder);
 
                 for (var y = 0; y <= 4; y++)

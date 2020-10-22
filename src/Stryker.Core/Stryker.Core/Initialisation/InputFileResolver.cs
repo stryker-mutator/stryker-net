@@ -143,8 +143,8 @@ namespace Stryker.Core.Initialisation
             var rootFolderComposite = new FolderComposite()
             {
                 Name = string.Empty,
-                FullPath = projectRoot,
-                RelativePath = string.Empty,
+                FullPath = projectUnderTestDir,
+                RelativePath = Path.GetRelativePath(projectRoot, projectUnderTestDir),
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
             };
             var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
@@ -265,7 +265,7 @@ namespace Stryker.Core.Initialisation
                 {
                     // we have not scanned this folder yet
                     var sub = Path.GetFileName(folder);
-                    var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, sub);
+                    var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, folder);
                     var newComposite = new FolderComposite
                     {
                         Name = sub,
