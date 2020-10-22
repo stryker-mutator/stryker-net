@@ -1,9 +1,10 @@
-﻿using Stryker.Core.Mutants;
+﻿using Crayon;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Stryker.Core.Reporters
@@ -13,13 +14,13 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly IChalk _chalk;
         private readonly StrykerOptions _options;
+        private readonly TextWriter _consoleWriter;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, IChalk chalk = null)
+        public ClearTextReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
-            _chalk = chalk ?? new Chalk();
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
@@ -56,16 +57,18 @@ namespace Stryker.Core.Reporters
             };
 
             // print empty line for readability
-            _chalk.Default($"{Environment.NewLine}{Environment.NewLine}All mutants have been tested, and your mutation score has been calculated{Environment.NewLine}");
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
             reportComponent.Display(0);
 
             var filePathLength = Math.Max(9, files.Max(f => f.RelativePathToProjectFile?.Length ?? 0) + 1);
 
-            _chalk.Default($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐{Environment.NewLine}");
-            _chalk.Default($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │{Environment.NewLine}");
-            _chalk.Default($"├─{new string('─', filePathLength)}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤{Environment.NewLine}");
+            _consoleWriter.WriteLine($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
+            _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
+            _consoleWriter.WriteLine($"├─{new string('─', filePathLength)}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤");
 
             DisplayComponent(rootFolder, filePathLength);
 
@@ -74,22 +77,22 @@ namespace Stryker.Core.Reporters
                 DisplayComponent(file, filePathLength);
             }
 
-            _chalk.Default($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘{Environment.NewLine}");
+            _consoleWriter.WriteLine($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
         }
 
         private void DisplayComponent(ProjectComponent inputComponent, int filePathLength)
         {
-            _chalk.Default($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
+            _consoleWriter.Write($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
 
             var mutationScore = inputComponent.GetMutationScore();
 
             if (inputComponent is FileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
-                _chalk.DarkGray("Excluded");
+                _consoleWriter.Write(Output.BrightBlack("Excluded"));
             }
             else if (double.IsNaN(mutationScore))
             {
-                _chalk.DarkGray("     N/A");
+                _consoleWriter.Write(Output.BrightBlack("     N/A"));
             }
             else
             {
@@ -98,24 +101,24 @@ namespace Stryker.Core.Reporters
                 var checkHealth = inputComponent.CheckHealth(_options.Thresholds);
                 if (checkHealth is Health.Good)
                 {
-                    _chalk.Green(scoreText);
+                    _consoleWriter.Write(Output.Green(scoreText));
                 }
                 else if (checkHealth is Health.Warning)
                 {
-                    _chalk.Yellow(scoreText);
+                    _consoleWriter.Write(Output.Yellow(scoreText));
                 }
                 else if (checkHealth is Health.Danger)
                 {
-                    _chalk.Red(scoreText);
+                    _consoleWriter.Write(Output.Red(scoreText));
                 }
             }
 
-            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
-            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
-            _chalk.Default($" │ {inputComponent.TotalMutants.Count() - inputComponent.DetectedMutants.Count(),10}");
-            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
-            _chalk.Default($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
-            _chalk.Default($" │{Environment.NewLine}");
+            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
+            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
+            _consoleWriter.Write($" │ {inputComponent.TotalMutants.Count() - inputComponent.DetectedMutants.Count(),10}");
+            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
+            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
+            _consoleWriter.WriteLine($" │");
         }
     }
 }
