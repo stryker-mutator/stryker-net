@@ -123,6 +123,16 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
+        public void JsonReport_ShouldContainTheProjectRoot()
+        {
+            var folderComponent = JsonReportTestHelper.CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+
+            report.ProjectRoot.ShouldBe("/home/user/src/1/");
+        }
+
+        [Fact]
         public void JsonReport_BuildReportReturnsSingletonJsonReport()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();

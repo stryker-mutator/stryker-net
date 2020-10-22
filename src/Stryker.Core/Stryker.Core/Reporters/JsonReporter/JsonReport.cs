@@ -11,6 +11,7 @@ namespace Stryker.Core.Reporters.Json
     {
         public string SchemaVersion { get; } = "1.3";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
+        public string ProjectRoot { get; }
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
@@ -30,6 +31,8 @@ namespace Stryker.Core.Reporters.Json
 
             Thresholds.Add("high", _options.Thresholds.High);
             Thresholds.Add("low", _options.Thresholds.Low);
+
+            ProjectRoot = GetProjectRoot(mutationReport);
 
             Merge(Files, GenerateReportComponents(mutationReport));
         }
@@ -101,6 +104,39 @@ namespace Stryker.Core.Reporters.Json
         private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
         {
             from.ToList().ForEach(x => to[x.Key] = x.Value);
+        }
+
+        private string GetProjectRoot(IReadOnlyInputComponent component)
+        {
+            var firstFile = FindFirstFileLeaf(component);
+
+            if (firstFile?.FullPath != null && firstFile?.RelativePathToProjectFile != null)
+            {
+                return firstFile?.FullPath.Substring(0, firstFile.FullPath.Length - firstFile.RelativePathToProjectFile.Length);
+            }
+
+            return null;
+        }
+
+        private FileLeaf FindFirstFileLeaf(IReadOnlyInputComponent component)
+        {
+            if (component is FolderComposite folder)
+            {
+                foreach (var child in folder.Children)
+                {
+                    var fileLeaf = FindFirstFileLeaf(child);
+                    if (fileLeaf != null)
+                    {
+                        return fileLeaf;
+                    }
+                }
+            }
+            else if (component is FileLeaf file)
+            {
+                return file;
+            }
+
+            return null;
         }
     }
 }

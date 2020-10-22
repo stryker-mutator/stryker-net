@@ -38,6 +38,8 @@ namespace Stryker.Core.UnitTest.Reporters
                     {
                         Name = $"SomeFile{y}.cs",
                         RelativePath = $"src/{i}/SomeFile{y}.cs",
+                        FullPath = $"/home/user/src/{i}/SomeFile{y}.cs",
+                        RelativePathToProjectFile = $"SomeFile{y}.cs",
                         Mutants = m,
                         SourceCode = "void M(){ int i = 0 + 8; }"
                     });
