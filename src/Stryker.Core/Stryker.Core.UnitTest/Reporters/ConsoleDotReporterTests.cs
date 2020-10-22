@@ -1,36 +1,38 @@
-﻿using Moq;
-using Shouldly;
+﻿using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
-using Stryker.Core.Testing;
+using System.IO;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
     public class ConsoleDotReporterTests
     {
-
         [Theory]
         [InlineData(MutantStatus.Killed, ".", "default")]
         [InlineData(MutantStatus.Survived, "S", "red")]
         [InlineData(MutantStatus.Timeout, "T", "default")]
         public void ConsoleDotReporter_ShouldPrintRightCharOnMutation(MutantStatus givenStatus, string expectedOutput, string color)
         {
-            string output = "";
-            var chalkMock = new Mock<IChalk>(MockBehavior.Strict);
-            chalkMock.Setup(x => x.Red(It.IsAny<string>())).Callback((string text) => { output += text; });
-            chalkMock.Setup(x => x.Default(It.IsAny<string>())).Callback((string text) => { output += text; });
-            var target = new ConsoleDotProgressReporter(chalkMock.Object);
+            var textWriter = new StringWriter();
+            var target = new ConsoleDotProgressReporter(textWriter);
 
             target.OnMutantTested(new Mutant()
             {
                 ResultStatus = givenStatus
             });
+            
             if (color == "default")
-                chalkMock.Verify(x => x.Default(It.IsAny<string>()));
+            {
+                textWriter.AnyForegroundColorSpanCount().ShouldBe(0);
+            }
+
             if (color == "red")
-                chalkMock.Verify(x => x.Red(It.IsAny<string>()));
-            output.ShouldBe(expectedOutput);
+            {
+                textWriter.RedSpanCount().ShouldBe(1);
+            }
+
+            textWriter.RemoveAnsi().ShouldBe(expectedOutput);
         }
     }
 }
