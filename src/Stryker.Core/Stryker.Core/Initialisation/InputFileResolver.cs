@@ -101,12 +101,10 @@ namespace Stryker.Core.Initialisation
             else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
             {
                 language = Language.Fsharp;
-                throw new StrykerInputException("no valid csproj was given");
             }
             else
             {
                 language = Language.Undifined;
-                throw new StrykerInputException("no valid csproj was given");
             }
             projectInfo.ProjectContents = inputFiles;
 

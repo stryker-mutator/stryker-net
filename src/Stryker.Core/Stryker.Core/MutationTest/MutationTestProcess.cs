@@ -46,7 +46,7 @@ namespace Stryker.Core.MutationTest
             StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
-            Language language = Language.Undifined)
+            Language language = Language.Csharp)
         {
             _input = mutationTestInput;
             _projectInfo = mutationTestInput.ProjectInfo.ProjectContents;
