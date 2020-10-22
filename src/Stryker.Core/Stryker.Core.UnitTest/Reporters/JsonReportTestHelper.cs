@@ -30,10 +30,10 @@ namespace Stryker.Core.UnitTest.Reporters
             {
                 var addedFolder = new FolderComposite
                 {
-                    Name = $"{i}", 
-                    RelativePath = $"src/{i}",
-                    FullPath = $"/home/user/src/{i}",
-                    RelativePathToProjectFile = $"{i}"
+                    Name = $"{i}",
+                    RelativePath = $"{i}",
+                    FullPath = $"/home/user/src/project/{i}",
+                    RelativePathToProjectFile = "."
                 };
                 folder.Add(addedFolder);
 
@@ -43,8 +43,8 @@ namespace Stryker.Core.UnitTest.Reporters
                     addedFolder.Add(new FileLeaf()
                     {
                         Name = $"SomeFile{y}.cs",
-                        RelativePath = $"src/{i}/SomeFile{y}.cs",
-                        FullPath = $"/home/user/src/{i}/SomeFile{y}.cs",
+                        RelativePath = $"{i}/SomeFile{y}.cs",
+                        FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
                         RelativePathToProjectFile = $"SomeFile{y}.cs",
                         Mutants = m,
                         SourceCode = "void M(){ int i = 0 + 8; }"
