@@ -64,19 +64,7 @@ namespace Stryker.Core.MutationTest
 
         private void SetupMutationTestProcess(IMutantFilter mutantFilter)
         {
-
-            if (_language == Language.Csharp)
-            {
-                _mutationTestProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
-            }
-            else if (_language == Language.Fsharp)
-            {
-                throw new GeneralStrykerException("no valid language detected || no valid csproj");
-            }
-            else
-            {
-                throw new GeneralStrykerException("no valid language detected || no valid csproj was given");
-            }
+            _mutationTestProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
         }
 
         public void Mutate()
