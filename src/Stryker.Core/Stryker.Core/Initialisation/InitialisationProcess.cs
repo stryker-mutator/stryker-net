@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options);
+        (MutationTestInput, Language) Initialize(StrykerOptions options);
         int InitialTest(StrykerOptions option, out int nbTests);
     }
 
@@ -37,10 +37,10 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options)
+        public (MutationTestInput, Language) Initialize(StrykerOptions options)
         {
-            // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options);
+            // resolve project infov
+            var (projectInfo, language) = _inputFileResolver.ResolveInput(options);
 
             // initial build
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
                 TestRunner = _testRunner
             };
 
-            return input;
+            return (input, language);
         }
 
         public int InitialTest(StrykerOptions options, out int nbTests)

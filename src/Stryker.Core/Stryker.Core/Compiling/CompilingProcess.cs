@@ -11,24 +11,10 @@ using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
-    public interface ICompilingProcess
-    {
-        /// <summary>
-        /// Compiles the given input onto the memorystream
-        /// </summary>
-        /// <param name="syntaxTrees"></param>
-        /// <param name="ilStream">The memorystream to function as output</param>
-        /// <param name="memoryStream"></param>
-        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream,
-            Stream memoryStream,
-            bool devMode);
-    }
-
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// </summary>
-    public class CompilingProcess : ICompilingProcess
+    public class CompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
@@ -59,7 +45,7 @@ namespace Stryker.Core.Compiling
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
-                syntaxTrees: trees, 
+                syntaxTrees: trees,
                 options: compilationOptions,
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult;
@@ -81,7 +67,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt - 1, devMode, retryCount);
             }
 
             if (emitResult.Success)
@@ -134,7 +120,7 @@ namespace Stryker.Core.Compiling
                     true, // Important!
                     false,
                     null,
-                    null), 
+                    null),
                 options: emitOptions);
 
             LogEmitResult(emitResult);

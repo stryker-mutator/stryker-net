@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FileLeaf : ProjectComponent
+    public class FileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {
         public string SourceCode { get; set; }
 
@@ -13,6 +13,7 @@ namespace Stryker.Core.ProjectComponents
         /// The original unmutated syntaxtree
         /// </summary>
         public SyntaxTree SyntaxTree { get; set; }
+
         /// <summary>
         /// The mutated syntax tree
         /// </summary>
@@ -21,6 +22,7 @@ namespace Stryker.Core.ProjectComponents
         public override IEnumerable<Mutant> Mutants { get; set; }
 
         public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
+
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
 
         public override void Display(int depth)
@@ -28,13 +30,13 @@ namespace Stryker.Core.ProjectComponents
             DisplayFile(depth, this);
         }
 
-        public override void Add(ProjectComponent component)
+        public override void Add(ProjectComponent<SyntaxTree> component)
         {
             // no children can be added to a file instance
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<FileLeaf> GetAllFiles()
+        public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
         {
             yield return this;
         }
