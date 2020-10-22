@@ -161,8 +161,7 @@ namespace Stryker.CLI
         private void PrintStykerASCIIName()
         {
             // Crayon does not support background coloring (yet)
-            Console.WriteLine("\u001b[48;2;183;73;52m" + Output.FromRgb(241, 196, 15).Text(@"
-                                                              
+            Console.WriteLine(Output.FromRgb(241, 196, 15).Text(@"
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
@@ -171,7 +170,6 @@ namespace Stryker.CLI
  |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    
                    __/ |                                      
                   |___/                                       
-                                                              
 "));
             Console.WriteLine();
         }
