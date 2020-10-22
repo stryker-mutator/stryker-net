@@ -1,12 +1,12 @@
-﻿using System.IO;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 SyntaxTriviaList.Empty);
 
             var mutant = new Mutant
-                { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
+            { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
 
             var sut = new FilePatternMutantFilter();
 

@@ -9,7 +9,7 @@ namespace Stryker.RegexMutators.Mutators
     /// Implementing this class is not obligatory for mutators.
     /// </summary>
     /// <typeparam name="T">The type of RegexNode to cast to</typeparam>
-    public abstract class RegexMutatorBase <T>
+    public abstract class RegexMutatorBase<T>
         where T : RegexNode
     {
         public IEnumerable<RegexMutation> Mutate(RegexNode node, RegexNode root)

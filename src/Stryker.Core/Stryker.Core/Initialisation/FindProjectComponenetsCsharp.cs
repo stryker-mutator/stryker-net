@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
@@ -8,13 +10,11 @@ using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
-using System.IO.Abstractions;
-using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -266,7 +266,7 @@ namespace Stryker.Core.Initialisation
         {
             if (cache.ContainsKey(targetFolder))
             {
-                return (FolderComposite)cache[targetFolder];
+                return cache[targetFolder];
             }
 
             var folder = targetFolder;
@@ -301,12 +301,12 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    ((FolderComposite)cache[folder]).Add(subDir);
+                    cache[folder].Add(subDir);
                     break;
                 }
             }
 
-            return (FolderComposite)cache[targetFolder];
+            return cache[targetFolder];
         }
 
         private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)

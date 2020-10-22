@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using System;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal abstract class NodeSpecificOrchestrator<T>:INodeMutator where T: SyntaxNode
+    internal abstract class NodeSpecificOrchestrator<T> : INodeMutator where T : SyntaxNode
     {
         public Type ManagedType => typeof(T);
 

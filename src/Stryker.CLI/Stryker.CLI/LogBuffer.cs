@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using System;
+using System.Collections.Generic;
 
 namespace Stryker.CLI
 {

@@ -41,9 +41,7 @@ namespace Stryker.Core.Initialisation
         public (MutationTestInput, Language) Initialize(StrykerOptions options)
         {
             // resolve project infov
-            var tuple = _inputFileResolver.ResolveInput(options);
-            var projectInfo = tuple.Item1;
-            Language language = tuple.Item2;
+            var (projectInfo, language) = _inputFileResolver.ResolveInput(options);
 
             // initial build
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();

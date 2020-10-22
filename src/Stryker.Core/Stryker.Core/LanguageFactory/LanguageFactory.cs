@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.LanguageFactory
+﻿namespace Stryker.Core.LanguageFactory
 {
     public enum Language
     {
@@ -13,6 +9,6 @@ namespace Stryker.Core.LanguageFactory
 
     public class LanguageFactory
     {
-       
+
     }
 }

@@ -27,7 +27,7 @@ namespace Stryker.Core.TestRunners
             ITestListDescription timedOutTests,
             string message)
         {
-            return new TestRunResult(ranTests, failedTest, timedOutTests, message){SessionTimedOut = true};
+            return new TestRunResult(ranTests, failedTest, timedOutTests, message) {SessionTimedOut = true};
         }
 
         public ITestListDescription FailingTests { get; set; }

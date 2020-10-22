@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.MutationTest
+﻿namespace Stryker.Core.MutationTest
 {
     interface IMutationTestProcessMethod
     {

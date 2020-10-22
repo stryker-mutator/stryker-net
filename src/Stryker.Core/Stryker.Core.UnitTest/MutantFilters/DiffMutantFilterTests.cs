@@ -1,7 +1,4 @@
-﻿using DotNet.Globbing;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Moq;
+﻿using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;

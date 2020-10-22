@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class StaticPropertyOrchestrator: NodeSpecificOrchestrator<PropertyDeclarationSyntax>
+    internal class StaticPropertyOrchestrator : NodeSpecificOrchestrator<PropertyDeclarationSyntax>
     {
         protected override bool CanHandle(PropertyDeclarationSyntax t)
         {

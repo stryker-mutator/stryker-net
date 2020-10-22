@@ -8,18 +8,16 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 
 namespace Stryker.Core.MutationTest
 {
     class MutationtTestProcessMethod : IMutationTestProcessMethod
     {
 
-        private readonly ProjectComponent<SyntaxTree>  _projectInfo;
+        private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
         private readonly StrykerOptions _options;
         private readonly CompilingProcess _compilingProcess;

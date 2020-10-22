@@ -1,14 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ProjectComponent<T> : IReadOnlyInputComponent
+    public abstract class ProjectComponent<T> : IProjectComponent
     {
         public string Name { get; set; }
         public string FullPath { get; set; }

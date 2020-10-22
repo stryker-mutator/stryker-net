@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 using static FSharp.Compiler.SyntaxTree;

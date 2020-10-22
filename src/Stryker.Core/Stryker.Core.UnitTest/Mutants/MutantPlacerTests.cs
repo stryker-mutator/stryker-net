@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var result = MutantPlacer.PlaceWithIfStatement(originalNode, mutatedNode, id);
 
-            result.ToFullString().ShouldBeSemantically("if ("+CodeInjection.HelperNamespace+".MutantControl.IsActive("+id+@"))
+            result.ToFullString().ShouldBeSemantically("if (" + CodeInjection.HelperNamespace + ".MutantControl.IsActive(" + id + @"))
             {
                 1 - 8;
             } else {

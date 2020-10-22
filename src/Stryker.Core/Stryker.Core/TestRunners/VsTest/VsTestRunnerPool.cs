@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using System;
@@ -10,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -40,7 +40,7 @@ namespace Stryker.Core.TestRunners.VsTest
             });
         }
 
-        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
+        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
@@ -104,7 +104,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             });
 
-            return new TestRunResult (true);
+            return new TestRunResult(true);
         }
 
         private VsTestRunner TakeRunner()

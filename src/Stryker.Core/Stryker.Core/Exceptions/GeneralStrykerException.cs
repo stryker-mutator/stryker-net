@@ -9,7 +9,7 @@ namespace Stryker.Core.Exceptions
     public class GeneralStrykerException : Exception
     {
         public string Details { get; }
-        
+
         public GeneralStrykerException(string message)
             : base(message)
         {
@@ -34,7 +34,8 @@ namespace Stryker.Core.Exceptions
             if (!string.IsNullOrEmpty(Details))
             {
                 builder.AppendLine(Details);
-            } else if (InnerException != null)
+            }
+            else if (InnerException != null)
             {
                 builder.AppendLine(Details);
             }

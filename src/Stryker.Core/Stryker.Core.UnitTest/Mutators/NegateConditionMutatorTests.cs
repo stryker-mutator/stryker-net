@@ -1,9 +1,9 @@
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -56,7 +56,7 @@ namespace TestApplication
             var node = GenerateExpressions(method);
 
             var result = target.ApplyMutations(node).ToList();
-            
+
             var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.ToString().ShouldBe("!(Method())");
             mutation.DisplayName.ShouldBe("Negate expression");
@@ -72,7 +72,7 @@ namespace TestApplication
 
             var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
             var result = target.ApplyMutations(expressionSyntax.Condition).ToList();
-            
+
             result.ShouldBeEmpty();
         }
     }

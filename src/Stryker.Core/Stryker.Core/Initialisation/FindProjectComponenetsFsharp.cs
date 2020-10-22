@@ -134,7 +134,7 @@ namespace Stryker.Core.Initialisation
         {
             if (cache.ContainsKey(targetFolder))
             {
-                return (FolderCompositeFsharp)cache[targetFolder];
+                return cache[targetFolder];
             }
 
             var folder = targetFolder;
@@ -169,12 +169,12 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    ((FolderCompositeFsharp)cache[folder]).Add(subDir);
+                    (cache[folder]).Add(subDir);
                     break;
                 }
             }
 
-            return (FolderCompositeFsharp)cache[targetFolder];
+            return cache[targetFolder];
         }
 
         //private FSharpOption<ParsedInput> InjectMutationLabel(FSharpOption<ParsedInput> syntaxTree)

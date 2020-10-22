@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
-        public IReadOnlyInputComponent ProjectContents { get; set; }
+        public IProjectComponent ProjectContents { get; set; }
 
         public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {

@@ -11,7 +11,7 @@ namespace Stryker.Core.Testing
         void DarkGray(string text);
         void Default(string text);
     }
-    
+
     public class Chalk : IChalk
     {
         public void Red(string text)

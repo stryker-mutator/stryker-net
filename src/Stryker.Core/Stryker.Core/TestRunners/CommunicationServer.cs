@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Stryker.Core.InjectedHelpers.Coverage;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
-using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker.DataCollector
 {
@@ -16,7 +16,7 @@ namespace Stryker.DataCollector
         {
             this.Client = client;
         }
-    } 
+    }
 
     public delegate void MessageReceived(object sender, string args);
 
@@ -60,7 +60,7 @@ namespace Stryker.DataCollector
                 _listener = new NamedPipeServerStream(PipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous|PipeOptions.WriteThrough);
+                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.WriteThrough);
                 _listener.BeginWaitForConnection(OnConnect, null);
             }
         }

@@ -13,7 +13,6 @@ namespace Stryker.Core.ProjectComponents
         IEnumerable<IReadOnlyMutant> ReadOnlyMutants { get; }
         IEnumerable<IReadOnlyMutant> TotalMutants { get; }
         IEnumerable<IReadOnlyMutant> DetectedMutants { get; }
-        IEnumerable<Mutant> Mutants { get; set; }
         /// <summary>
         /// The display handlers are an exception to the readonly rule
         /// </summary>

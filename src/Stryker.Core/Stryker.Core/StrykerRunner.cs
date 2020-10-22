@@ -66,14 +66,15 @@ namespace Stryker.Core
                 }
 
                 _initialisationProcess ??= new InitialisationProcess();
-                var initialyze = _initialisationProcess.Initialize(options);
-                _input = initialyze.Item1;
-                _language = initialyze.Item2;
+
+                (_input, _language) = _initialisationProcess.Initialize(options);
+
                 _mutationTestProcess ??= new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
-                    options: options);
+                    options: options,
+                    language: _language);
 
                 // initial test
                 _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);

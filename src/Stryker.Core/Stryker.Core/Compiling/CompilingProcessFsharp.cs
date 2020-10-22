@@ -1,11 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Compiling

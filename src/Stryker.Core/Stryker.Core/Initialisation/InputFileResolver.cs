@@ -92,7 +92,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("**** Buildalyzer properties. ****");
             }
 
-            IReadOnlyInputComponent inputFiles;
+            IProjectComponent inputFiles;
             if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".csproj"))                           /*C#*/
             {
                 var projectComponents = new FindProjectComponenetsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
@@ -101,7 +101,7 @@ namespace Stryker.Core.Initialisation
             }
             else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
             {
-                var projectComponents = new FindProjectComponenetsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem); 
+                var projectComponents = new FindProjectComponenetsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
                 inputFiles = projectComponents.GetProjectComponenetsFsharp();
                 language = Language.Fsharp;
             }

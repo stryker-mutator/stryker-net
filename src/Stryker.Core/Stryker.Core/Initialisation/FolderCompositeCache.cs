@@ -1,5 +1,4 @@
-﻿using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Stryker.Core.Initialisation
 {

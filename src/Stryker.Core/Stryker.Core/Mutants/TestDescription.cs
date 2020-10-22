@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.Mutants
 {
@@ -53,7 +51,7 @@ namespace Stryker.Core.Mutants
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && Equals((TestDescription) obj);
+            return obj.GetType() == this.GetType() && Equals((TestDescription)obj);
         }
 
         public override int GetHashCode()

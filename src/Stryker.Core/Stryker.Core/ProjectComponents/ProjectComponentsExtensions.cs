@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Core.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {

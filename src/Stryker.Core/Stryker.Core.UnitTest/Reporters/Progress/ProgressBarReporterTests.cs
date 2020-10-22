@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             return 10L;
         }
     }
-    
+
     public class ProgressBarReporterTests
     {
         private readonly Mock<IConsoleOneLineLogger> _testsProgressLogger;
@@ -100,12 +100,13 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             {
                 _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
                 It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
-            } else
+            }
+            else
             {
                 _testsProgressLogger.Verify(x => x.StartLog(It.IsAny<string>(),
                 It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
             }
-            
+
         }
     }
 }

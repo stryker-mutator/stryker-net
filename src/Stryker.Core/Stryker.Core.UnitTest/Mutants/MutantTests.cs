@@ -1,11 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
-using Moq;
+﻿using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -57,7 +54,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
             timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);
-            coveringTestsMock.Setup(x => x.GetList()).Returns(new List<TestDescription>() { new TestDescription(Guid.NewGuid().ToString(), "test", null)} as IReadOnlyList<TestDescription>);
+            coveringTestsMock.Setup(x => x.GetList()).Returns(new List<TestDescription>() { new TestDescription(Guid.NewGuid().ToString(), "test", null) });
             coveringTestsMock.Setup(x => x.IsEveryTest).Returns(coversEveryTest);
             coveringTestsMock.Setup(x => x.ContainsAny(It.IsAny<IReadOnlyList<TestDescription>>())).Returns(coveringTestsContainTimedoutTests);
 

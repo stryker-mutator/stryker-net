@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using System.Collections.Generic;
 
 namespace Stryker.Core.MutantFilters
 {

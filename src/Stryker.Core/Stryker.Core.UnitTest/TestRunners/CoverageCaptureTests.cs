@@ -1,5 +1,4 @@
 ﻿using Shouldly;
-using Stryker.DataCollector;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -33,7 +32,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void CanParseConfiguration()
         {
-            var referenceConf="<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";
+            var referenceConf = "<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";
             var node = new XmlDocument();
 
             node.LoadXml(referenceConf);

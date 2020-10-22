@@ -15,7 +15,7 @@ namespace Stryker.Core.Reporters.Progress
         public void Start()
         {
             _watch = new Stopwatch();
-           _watch.Start();
+            _watch.Start();
         }
 
         public long GetElapsedMillisecond()

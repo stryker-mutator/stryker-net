@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class InterpolatedStringMutator: MutatorBase<InterpolatedStringExpressionSyntax>, IMutator
+    public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressionSyntax>, IMutator
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 

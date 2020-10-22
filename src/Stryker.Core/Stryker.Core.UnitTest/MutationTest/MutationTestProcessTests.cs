@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.Compiling;
 using Stryker.Core.Initialisation;
 using Stryker.Core.LanguageFactory;
 using Stryker.Core.Logging;
@@ -483,7 +482,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 mutantFilter: mutantFilterMock.Object,
                 options: options,
                 language: LanguageFactory.Language.Csharp);
-            
+
             var testResult = target.Test(options);
 
             executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);

@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace Stryker.DataCollector
 {
     [DataCollectorFriendlyName("StrykerCoverage")]
     [DataCollectorTypeUri("https://stryker-mutator.io/")]
-    public class CoverageCollector: InProcDataCollection
+    public class CoverageCollector : InProcDataCollection
     {
         private IDataCollectionSink _dataSink;
         private bool _coverageOn;
@@ -28,7 +28,7 @@ namespace Stryker.DataCollector
 
         private MethodInfo _getCoverageData;
 
-        private const string TemplateForConfiguration = 
+        private const string TemplateForConfiguration =
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
@@ -42,7 +42,7 @@ namespace Stryker.DataCollector
             // ReSharper disable once PossibleNullReferenceException
             var uri = (typeof(CoverageCollector).GetTypeInfo().GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
                 DataCollectorTypeUriAttribute).TypeUri;
-            var line= $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
+            var line = $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
             var configuration = new StringBuilder();
             configuration.Append("<Parameters>");
             if (needCoverage)
@@ -51,15 +51,15 @@ namespace Stryker.DataCollector
             }
             if (mutantTestsMap != null)
             {
-                foreach ( var entry in mutantTestsMap)
+                foreach (var entry in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key,  entry.Value == null ? "" : string.Join(",", entry.Value));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key, entry.Value == null ? "" : string.Join(",", entry.Value));
                 }
             }
 
             configuration.Append($"<MutantControl  name='{helpNameSpace}.MutantControl'/>");
             configuration.Append("</Parameters>");
-            
+
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
@@ -80,7 +80,7 @@ namespace Stryker.DataCollector
 
         // called before any test is run
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
-        {            
+        {
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
             // scan loaded assembly, just in case the test assembly is already loaded
@@ -139,7 +139,7 @@ namespace Stryker.DataCollector
             node.LoadXml(configuration);
 
             var testMapping = node.SelectNodes("//Parameters/Mutant");
-            if (testMapping !=null)
+            if (testMapping != null)
             {
                 for (var i = 0; i < testMapping.Count; i++)
                 {

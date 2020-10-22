@@ -45,7 +45,7 @@ namespace Stryker.Core.Compiling
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
-                syntaxTrees: trees, 
+                syntaxTrees: trees,
                 options: compilationOptions,
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult;
@@ -67,7 +67,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt - 1, devMode, retryCount);
             }
 
             if (emitResult.Success)
@@ -120,7 +120,7 @@ namespace Stryker.Core.Compiling
                     true, // Important!
                     false,
                     null,
-                    null), 
+                    null),
                 options: emitOptions);
 
             LogEmitResult(emitResult);

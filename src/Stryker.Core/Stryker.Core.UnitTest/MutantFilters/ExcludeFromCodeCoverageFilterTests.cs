@@ -1,10 +1,10 @@
-using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -60,7 +60,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
+
         [Fact]
         public static void OnClass()
         {
@@ -83,7 +83,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
+
         [Fact]
         public static void Not()
         {
@@ -105,7 +105,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             results.ShouldContain(mutant);
         }
-        
+
         [Theory]
         [InlineData("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute")]
         [InlineData("ExcludeFromCodeCoverageAttribute")]
@@ -131,8 +131,8 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
-        
+
+
         private static Mutant Create(string source, string search)
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();

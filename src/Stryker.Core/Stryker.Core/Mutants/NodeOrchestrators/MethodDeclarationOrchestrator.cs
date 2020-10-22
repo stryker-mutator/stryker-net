@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         internal override SyntaxNode OrchestrateMutation(MethodDeclarationSyntax node, MutationContext context)
         {
-            var mutatedNode = (MethodDeclarationSyntax) context.MutateNodeAndChildren(node);
+            var mutatedNode = (MethodDeclarationSyntax)context.MutateNodeAndChildren(node);
 
             if (mutatedNode.Body == null)
             {

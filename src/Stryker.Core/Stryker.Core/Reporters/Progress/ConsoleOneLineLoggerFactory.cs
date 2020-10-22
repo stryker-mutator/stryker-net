@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Core;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.Reporters.Progress
 {

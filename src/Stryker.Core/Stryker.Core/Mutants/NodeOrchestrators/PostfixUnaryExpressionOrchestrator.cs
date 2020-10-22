@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class PostfixUnaryExpressionOrchestrator: NodeSpecificOrchestrator<PostfixUnaryExpressionSyntax>
+    internal class PostfixUnaryExpressionOrchestrator : NodeSpecificOrchestrator<PostfixUnaryExpressionSyntax>
     {
         protected override bool CanHandle(PostfixUnaryExpressionSyntax t)
         {

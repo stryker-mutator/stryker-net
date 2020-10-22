@@ -3,12 +3,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Compiling;
+using Stryker.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Stryker.Core.Exceptions;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -41,7 +41,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                 .First();
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
-                    ifStatement, 
+                    ifStatement,
                     ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
@@ -60,7 +60,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                 var compileResult = compiler.Emit(ms);
 
                 var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
-                
+
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
@@ -131,7 +131,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics,false, false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -224,7 +224,7 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
@@ -322,18 +322,18 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeFalse();
                 rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,false);
+                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
                 rollbackedResult = fixedCompilation.Compilation.Emit(ms);
                 rollbackedResult.Success.ShouldBeTrue();
                 // validate that only mutation 8 and 7 were rollbacked
-                fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 ,6});
+                fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
             }
         }
 
@@ -430,19 +430,19 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-                
+
                 rollbackedResult.Success.ShouldBeFalse();
                 rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,false);
+                fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
                 rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
                 // validate that only mutation 8 and 7 were rollbacked
-                fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 ,6});
+                fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
             }
         }
 
@@ -532,13 +532,13 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var compileResult = compiler.Emit(ms);
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-                
+
                 rollbackedResult.Success.ShouldBeFalse();
                 rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-                Should.Throw<StrykerCompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
+                Should.Throw<StrykerCompilationException>(() => { target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true); });
             }
         }
 
@@ -573,7 +573,7 @@ namespace ExampleProject
                 .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
-                    ifStatement, 
+                    ifStatement,
                     ifStatement.WithAdditionalAnnotations(new SyntaxAnnotation("MutationIf", "1"))
                 ).SyntaxTree;
 
@@ -592,12 +592,12 @@ namespace ExampleProject
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
-                
+                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
-                
+
                 // validate that only one of the compile errors marked the mutation as rollbacked.
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
             }

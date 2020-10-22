@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -18,12 +18,12 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             {
                 return context.EnterStatic().MutateNodeAndChildren(node);
             }
-            var trackedConstructor = node.TrackNodes((SyntaxNode) node.Body ?? node.ExpressionBody);
+            var trackedConstructor = node.TrackNodes((SyntaxNode)node.Body ?? node.ExpressionBody);
             if (node.ExpressionBody != null)
             {
                 var bodyBlock =
                     SyntaxFactory.Block(SyntaxFactory.ExpressionStatement(node.ExpressionBody.Expression));
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.MutateNodeAndChildren(bodyBlock));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)context.MutateNodeAndChildren(bodyBlock));
                 trackedConstructor = trackedConstructor.Update(
                     trackedConstructor.AttributeLists,
                     trackedConstructor.Modifiers,
@@ -36,7 +36,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             }
             else if (node.Body != null)
             {
-                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax) context.MutateNodeAndChildren(node.Body));
+                var markedBlock = MutantPlacer.PlaceStaticContextMarker((BlockSyntax)context.MutateNodeAndChildren(node.Body));
                 trackedConstructor =
                     trackedConstructor.ReplaceNode(trackedConstructor.GetCurrentNode(node.Body), markedBlock);
             }

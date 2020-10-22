@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
@@ -16,20 +15,20 @@ namespace Stryker.Core.Mutants
         private const string MutationHelper = "Helper";
         private const string HelperId = "-1";
 
-        public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf, MutationHelper};
+        public static IEnumerable<string> MutationMarkers => new[] { MutationConditional, MutationIf, MutationHelper };
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-            SyntaxFactory.Block( 
+            SyntaxFactory.Block(
                 SyntaxFactory.UsingStatement(null, SyntaxFactory.ParseExpression(CodeInjection.StaticMarker), block));
 
 
-        public static BlockSyntax AsBlock(StatementSyntax input) =>  (input is BlockSyntax block) ? block : SyntaxFactory.Block(input);
+        public static BlockSyntax AsBlock(StatementSyntax input) => (input is BlockSyntax block) ? block : SyntaxFactory.Block(input);
 
         public static IfStatementSyntax PlaceWithIfStatement(StatementSyntax original, StatementSyntax mutated, int mutantId) =>
             SyntaxFactory.IfStatement(
                     condition: GetBinaryExpression(mutantId),
                     statement: AsBlock(mutated),
-                    @else: SyntaxFactory.ElseClause( AsBlock(original)))
+                    @else: SyntaxFactory.ElseClause(AsBlock(original)))
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIf, mutantId.ToString()));
 
@@ -62,9 +61,9 @@ namespace Stryker.Core.Mutants
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationConditional, mutantId.ToString()));
 
         // us this method to annotate injected helper code. I.e. any injected code that is NOT a mutation but provides some infrastructure for the mutant to run
-        public static T AnnotateHelper<T>(T node) where T:SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
+        public static T AnnotateHelper<T>(T node) where T : SyntaxNode => node.WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper, HelperId));
 
-        private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized) => 
+        private static SyntaxNode RemoveByConditionalExpression(ParenthesizedExpressionSyntax parenthesized) =>
             parenthesized.Expression is ConditionalExpressionSyntax conditional ? conditional.WhenFalse : null;
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
-        private static ExpressionSyntax GetBinaryExpression(int mutantId) => 
+        private static ExpressionSyntax GetBinaryExpression(int mutantId) =>
             SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression.Replace("ID", mutantId.ToString()));
     }
 }

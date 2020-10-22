@@ -14,7 +14,7 @@ namespace Stryker.RegexMutators.Mutators
         private RegexMutation CharacterClassNegation(CharacterClassNode node, RegexNode root)
         {
             var span = node.GetSpan();
-            var replacementNode = node.Subtraction == null ?  new CharacterClassNode(node.CharacterSet, !node.Negated) : new CharacterClassNode(node.CharacterSet, node.Subtraction, !node.Negated);
+            var replacementNode = node.Subtraction == null ? new CharacterClassNode(node.CharacterSet, !node.Negated) : new CharacterClassNode(node.CharacterSet, node.Subtraction, !node.Negated);
             return new RegexMutation
             {
                 OriginalNode = node,

@@ -1,12 +1,6 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.ProjectComponents
+﻿namespace Stryker.Core.ProjectComponents
 {
-    public interface IFileLeaf<T> : IReadOnlyInputComponent
+    public interface IFileLeaf<T> : IProjectComponent
     {
         public T SyntaxTree { get; set; }
 
