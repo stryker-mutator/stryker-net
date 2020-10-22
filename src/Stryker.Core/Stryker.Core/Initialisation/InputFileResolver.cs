@@ -90,11 +90,9 @@ namespace Stryker.Core.Initialisation
 
                 _logger.LogInformation("**** Buildalyzer properties. ****");
             }
-
-            IProjectComponent inputFiles;
-
+            
             var projectComponents = new FindProjectComponenetsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
-            inputFiles = projectComponents.GetProjectComponenetsCsharp();
+            IProjectComponent inputFiles = projectComponents.GetProjectComponenetsCsharp();
 
             if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".csproj"))                           /*C#*/
             {

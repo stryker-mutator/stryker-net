@@ -36,7 +36,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly Language _language;
         private readonly StrykerOptions _options;
-        private IMutationTestProcessMethod _mutationTestProcess;
+        private IMutationProcess _mutationTestProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -67,7 +67,7 @@ namespace Stryker.Core.MutationTest
 
             if (_language == Language.Csharp)
             {
-                _mutationTestProcess = new MutationtTestProcessMethod(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationTestProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else if (_language == Language.Fsharp)
             {

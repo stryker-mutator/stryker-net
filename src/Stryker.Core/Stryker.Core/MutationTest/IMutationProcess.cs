@@ -1,6 +1,6 @@
 ﻿namespace Stryker.Core.MutationTest
 {
-    interface IMutationTestProcessMethod
+    interface IMutationProcess
     {
         public void Mutate();
 
