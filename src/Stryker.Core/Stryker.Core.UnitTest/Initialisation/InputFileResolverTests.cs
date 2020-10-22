@@ -811,9 +811,9 @@ Please specify a test project name filter that results in one project.
         public void ShouldSelectCorrectProjectUnderTest_WhenTestProjectsAreGiven()
         {
             // Arrange
-            var basePath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder");
+            var basePath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject");
             var testProjectPath = Path.Combine(_filesystemRoot, "ExampleProject", "TestProjectFolder", "TestProject.csproj");
-            var projectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj");
+            var projectUnderTestPath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject", "ExampleProject.csproj");
             var projectUnderTestNameFilter = "ExampleProject.csproj";
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>

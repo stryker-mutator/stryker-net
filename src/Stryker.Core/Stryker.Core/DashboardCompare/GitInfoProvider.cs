@@ -24,7 +24,7 @@ namespace Stryker.Core.DashboardCompare
             _repositoryPath = repositoryPath;
             _options = options;
 
-            if (!options.DiffEnabled)
+            if (!options.DiffOptions.DiffEnabled)
             {
                 return;
             }
@@ -71,11 +71,11 @@ namespace Stryker.Core.DashboardCompare
         {
             try
             {
-                var branch = Repository.CreateBranch(_options.GitSource, $"origin/{_options.GitSource}");
+                var branch = Repository.CreateBranch(_options.DiffOptions.GitSource, $"origin/{_options.DiffOptions.GitSource}");
 
                 Commands.Checkout(Repository, branch);
 
-                var currentBranch = Repository.CreateBranch(_options.DashboardReporterOptions.ProjectVersion, $"origin/{_options.DashboardReporterOptions.ProjectVersion}");
+                var currentBranch = Repository.CreateBranch(_options.DiffOptions.ProjectVersion, $"origin/{_options.DiffOptions.ProjectVersion}");
 
                 Commands.Checkout(Repository, currentBranch);
             }
@@ -97,7 +97,7 @@ namespace Stryker.Core.DashboardCompare
 
             if (commit == null)
             {
-                throw new StrykerInputException($"No Branch or commit found with given source {_options.GitSource}. Please provide a different --git-source or remove this option.");
+                throw new StrykerInputException($"No Branch or commit found with given source {_options.DiffOptions.GitSource}. Please provide a different --git-source or remove this option.");
             }
 
             return commit;
@@ -111,7 +111,7 @@ namespace Stryker.Core.DashboardCompare
             {
                 try
                 {
-                    if (branch.CanonicalName == _options.GitSource || branch.FriendlyName == _options.GitSource)
+                    if (branch.CanonicalName == _options.DiffOptions.GitSource || branch.FriendlyName == _options.DiffOptions.GitSource)
                     {
                         sourceBranch = branch;
                         break;
@@ -128,9 +128,9 @@ namespace Stryker.Core.DashboardCompare
                 return sourceBranch.Tip;
             }
 
-            if (_options.GitSource.Length == 40)
+            if (_options.DiffOptions.GitSource.Length == 40)
             {
-                var commit = Repository.Lookup(new ObjectId(_options.GitSource)) as Commit;
+                var commit = Repository.Lookup(new ObjectId(_options.DiffOptions.GitSource)) as Commit;
 
                 if (commit != null)
                 {

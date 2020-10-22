@@ -14,13 +14,10 @@ namespace Stryker.Core.Options
         int AdditionalTimeoutMS { get; }
         string BasePath { get; }
         int ConcurrentTestrunners { get; }
-        DashboardReporterOptions DashboardReporterOptions { get; }
+        DiffOptions DiffOptions { get; }
         bool DevMode { get; }
-        bool DiffEnabled { get; }
-        public bool CompareToDashboard { get; }
         IEnumerable<Mutator> ExcludedMutations { get; }
         IEnumerable<FilePattern> FilePatterns { get; }
-        string GitSource { get; }
         IEnumerable<Regex> IgnoredMethods { get; }
         LanguageVersion LanguageVersion { get; }
         LogOptions LogOptions { get; }

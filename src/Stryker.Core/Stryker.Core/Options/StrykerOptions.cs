@@ -20,6 +20,7 @@ namespace Stryker.Core.Options
     public class StrykerOptions : IStrykerOptions
     {
         public string BasePath { get; }
+        public DiffOptions DiffOptions { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
         public BaselineProvider BaselineProvider { get; }
@@ -30,9 +31,6 @@ namespace Stryker.Core.Options
         /// The user can pass a filter to match the project under test from multiple project references
         /// </summary>
         public string ProjectUnderTestNameFilter { get; }
-        public bool DiffEnabled { get; }
-        public bool CompareToDashboard { get; }
-        public string GitSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -44,15 +42,14 @@ namespace Stryker.Core.Options
         public OptimizationFlags Optimizations { get; }
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
-        public DashboardReporterOptions DashboardReporterOptions { get; }
         public MutationLevel MutationLevel { get; }
         public string AzureSAS { get; }
         public string AzureFileStorageUrl { get; set; }
-        public string FallbackVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private bool _compareToDashboard;
 
         public StrykerOptions(
             ILogger logger = null,
@@ -95,11 +92,11 @@ namespace Stryker.Core.Options
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
+            _compareToDashboard = compareToDashboard;
 
             var outputPath = ValidateOutputPath(basePath);
             IgnoredMethods = ValidateIgnoredMethods(ignoredMethods ?? Array.Empty<string>());
             BasePath = basePath;
-            CompareToDashboard = compareToDashboard;
             OutputPath = outputPath;
             Reporters = ValidateReporters(reporters);
             ProjectUnderTestNameFilter = projectUnderTestNameFilter;
@@ -115,11 +112,18 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
-            DiffEnabled = diff;
-            CompareToDashboard = compareToDashboard;
-            GitSource = ValidateGitSource(gitSource);
             TestProjects = ValidateTestProjects(testProjects);
-            DashboardReporterOptions = ValidateDashboardReporter(dashboardApiKey, projectName, !Reporters.Contains(Reporter.Dashboard) ? null : moduleName, projectVersion, fallbackVersion, dashboardUrl);
+            DiffOptions = new DiffOptions(
+                hasDashboardReporter: Reporters.Contains(Reporter.Dashboard),
+                compareToDashboard: compareToDashboard,
+                diff: diff,
+                gitSource: gitSource,
+                dashboardApiKey: dashboardApiKey,
+                projectName: projectName,
+                moduleName: moduleName,
+                projectVersion: projectVersion,
+                fallbackVersion: fallbackVersion,
+                dashboardUrl: dashboardUrl);
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
             MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
@@ -131,7 +135,7 @@ namespace Stryker.Core.Options
                 basePath: basePath ?? BasePath,
                 outputPath: OutputPath,
                 reporters: Reporters,
-                dashboardReporterOptions: DashboardReporterOptions,
+                diffOptions: DiffOptions,
                 projectUnderTestNameFilter: ProjectUnderTestNameFilter,
                 projectUnderTest: projectUnderTest,
                 additionalTimeoutMS: AdditionalTimeoutMS,
@@ -147,10 +151,7 @@ namespace Stryker.Core.Options
                 thresholds: Thresholds,
                 filePatterns: FilePatterns,
                 languageVersion: LanguageVersion,
-                diff: DiffEnabled,
-                gitSource: GitSource,
-                testProjects: testProjects ?? TestProjects,
-                compareToDashboard: CompareToDashboard);
+                testProjects: testProjects ?? TestProjects);
         }
 
         private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)
@@ -197,79 +198,6 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(ErrorMessage,
                     $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{ string.Join(", ", (IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))) }]");
             }
-        }
-
-        private DashboardReporterOptions ValidateDashboardReporter(string dashboadApiKey, string projectName, string moduleName, string projectVersion, string fallbackVersion, string dashboardUrl)
-        {
-            var defaultOptions = new DashboardReporterOptions(null, null, null, null, null, null);
-            if (!Reporters.Contains(Reporter.Dashboard))
-            {
-                return defaultOptions;
-            }
-
-            var errorStrings = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(dashboadApiKey))
-            {
-                var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
-                if (!string.IsNullOrWhiteSpace(environmentApiKey))
-                {
-                    dashboadApiKey = environmentApiKey;
-                }
-                else
-                {
-                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {defaultOptions.DashboardUrl}");
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(projectName))
-            {
-                errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
-            }
-
-            if (errorStrings.Length > 0)
-            {
-                throw new StrykerInputException(errorStrings.ToString());
-            }
-
-            return new DashboardReporterOptions(dashboadApiKey, projectName, moduleName, projectVersion, fallbackVersion, dashboardUrl);
-        }
-
-        private string ValidateGitSource(string gitSource)
-        {
-            if (string.IsNullOrEmpty(gitSource))
-            {
-                throw new StrykerInputException("GitSource may not be empty, please provide a valid git branch name");
-            }
-            return gitSource;
-        }
-
-        private (string ProjectVersion, string FallbackVersion, string GitSource) ValidateCompareToDashboard(string projectVersion, string fallbackVersion, string gitSource)
-        {
-            if (string.IsNullOrEmpty(fallbackVersion))
-            {
-                fallbackVersion = gitSource;
-            }
-
-            if (CompareToDashboard)
-            {
-                var errorStrings = new StringBuilder();
-                if (string.IsNullOrEmpty(projectVersion))
-                {
-                    errorStrings.Append("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
-                }
-
-                if (fallbackVersion == projectVersion)
-                {
-                    errorStrings.Append("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
-                }
-
-                if (errorStrings.Length > 0)
-                {
-                    throw new StrykerInputException(errorStrings.ToString());
-                }
-            }
-
-            return (projectVersion, fallbackVersion, gitSource);
         }
 
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns)
@@ -339,7 +267,7 @@ namespace Stryker.Core.Options
                 yield break;
             }
 
-            if (CompareToDashboard)
+            if (_compareToDashboard)
             {
                 var reportersList = reporters.ToList();
                 reportersList.Add("Baseline");

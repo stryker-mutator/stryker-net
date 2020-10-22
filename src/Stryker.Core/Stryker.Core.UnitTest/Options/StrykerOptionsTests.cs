@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions();
 
-            options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+            options.DiffOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
 
         [Theory]
@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.Options
                 {
                     new StrykerOptions(reporters: new string[] { "Dashboard" });
                 });
-                ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DashboardReporterOptions.DashboardUrl}");
+                ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DiffOptions.DashboardUrl}");
                 ex.Message.ShouldContain($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
             }
             finally
@@ -216,7 +216,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ProjectVersionCannotBeEmpty()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: string.Empty);
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
@@ -225,7 +225,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ProjectVersionCannotBeNull()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
@@ -234,7 +234,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void FallbackVersionCannotBeProjectVersion()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
@@ -243,7 +243,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldNotThrowInputExceptionWhenSetCorrectly()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
 
             Should.NotThrow(act);
         }
@@ -253,8 +253,8 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitSource: "development");
 
-            options.GitSource.ShouldBe("development");
-            options.DashboardReporterOptions.FallbackVersion.ShouldBe("development");
+            options.DiffOptions.GitSource.ShouldBe("development");
+            options.DiffOptions.FallbackVersion.ShouldBe("development");
         }
 
         [Fact]

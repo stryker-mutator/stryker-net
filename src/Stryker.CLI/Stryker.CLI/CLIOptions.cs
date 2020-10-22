@@ -133,7 +133,7 @@ namespace Stryker.CLI
             ArgumentName = "--git-source",
             ArgumentShortName = "-gs <branchName>",
             ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
-            DefaultValue = _defaultOptions.GitSource,
+            DefaultValue = _defaultOptions.DiffOptions.GitSource,
             JsonKey = "git-source"
         };
 
@@ -270,7 +270,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardReporterOptions.DashboardUrl}",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DiffOptions.DashboardUrl}",
             DefaultValue = null,
             JsonKey = "dashboard-api-key"
         };
@@ -317,7 +317,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
             ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
-            DefaultValue = _defaultOptions.DashboardReporterOptions.DashboardUrl,
+            DefaultValue = _defaultOptions.DiffOptions.DashboardUrl,
             JsonKey = "dashboard-url"
         };
 

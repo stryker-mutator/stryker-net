@@ -32,8 +32,7 @@ namespace Stryker.Core.Options
         public OptimizationFlags Optimizations { get; }
         public string OptimizationMode { get; set; }
         public IEnumerable<string> TestProjects { get; set; }
-        public DashboardReporterOptions DashboardReporterOptions { get; }
-        public bool CompareToDashboard { get; }
+        public DiffOptions DiffOptions { get; }
         public string AzureSAS { get; }
         public string AzureFileStorageUrl { get; set; }
         public BaselineProvider BaselineProvider { get; }
@@ -58,11 +57,9 @@ namespace Stryker.Core.Options
             TestRunner testRunner = TestRunner.VsTest,
             string solutionPath = null,
             LanguageVersion languageVersion = LanguageVersion.Latest,
-            bool diff = false,
             string gitSource = null,
-            DashboardReporterOptions dashboardReporterOptions = null,
+            DiffOptions diffOptions = null,
             IEnumerable<string> testProjects = null,
-            bool compareToDashboard = false,
             string azureSAS = null,
             string azureFileStorageUrl = null,
             BaselineProvider baselineProvider = BaselineProvider.Disk,
@@ -86,11 +83,9 @@ namespace Stryker.Core.Options
             LanguageVersion = languageVersion;
             OptimizationMode = optimizationMode;
             Optimizations = optimizations;
-            DiffEnabled = diff;
             GitSource = gitSource;
             TestProjects = testProjects;
-            DashboardReporterOptions = dashboardReporterOptions;
-            CompareToDashboard = compareToDashboard;
+            DiffOptions = diffOptions ?? new DiffOptions();
             AzureSAS = azureSAS;
             AzureFileStorageUrl = azureFileStorageUrl;
             BaselineProvider = baselineProvider;

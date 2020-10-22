@@ -36,7 +36,7 @@ namespace Stryker.Core.Reporters
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
 
-            if (_options.CompareToDashboard)
+            if (_options.DiffOptions.CompareToDashboard)
             {
                 Task.WaitAll(UploadHumanReadableReport(mutationReport), UploadBaseline(mutationReport));
             }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Reporters
 
         private async Task UploadHumanReadableReport(JsonReport mutationReport)
         {
-            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.DashboardReporterOptions.ProjectVersion);
+            var reportUrl = await _dashboardClient.PublishReport(mutationReport.ToJson(), _options.DiffOptions.ProjectVersion);
 
             if (reportUrl != null)
             {

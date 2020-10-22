@@ -470,7 +470,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            actualOptions.DiffEnabled.ShouldBeTrue();
+            actualOptions.DiffOptions.DiffEnabled.ShouldBeTrue();
         }
 
         [Theory]
@@ -510,7 +510,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.CompareToDashboard.ShouldBeTrue();
+            options.DiffOptions.CompareToDashboard.ShouldBeTrue();
         }
 
         [Theory]
@@ -533,7 +533,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DiffEnabled.ShouldBeTrue();
+            options.DiffOptions.DiffEnabled.ShouldBeTrue();
         }
 
         [Theory]
@@ -552,11 +552,11 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName });
+            target.Run(new string[] { argName, "--reporters", "['dashboard']", "--dashboard-project", "test", "--dashboard-api-key", "test" });
 
             mock.VerifyAll();
 
-            options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://www.example.com/");
+            options.DiffOptions.DashboardUrl.ShouldBe("https://www.example.com/");
         }
 
         [Fact]
@@ -573,11 +573,11 @@ namespace Stryker.CLI.UnitTest
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { });
+            target.Run(new string[] { "--reporters", "['dashboard']", "--dashboard-project", "test", "--dashboard-api-key", "test" });
 
             mock.VerifyAll();
 
-            options.DashboardReporterOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+            options.DiffOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
 
         [Theory]
@@ -595,7 +595,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "development" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitSource == "development"),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffOptions.GitSource == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 

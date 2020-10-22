@@ -36,7 +36,7 @@ namespace Stryker.Core.MutantFilters
                     new ExcludeFromCodeCoverageFilter()
                 };
 
-            if (options.DiffEnabled)
+            if (options.DiffOptions.DiffEnabled)
             {
                 enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, baselineProvider: _baselineProvider, gitInfoProvider: _gitInfoProvider));
             }
