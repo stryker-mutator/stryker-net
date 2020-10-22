@@ -438,7 +438,7 @@ namespace Stryker.Core.Options
 
             if (maxConcurrentTestRunners > safeProcessorCount)
             {
-                _logger?.LogWarning("Using {0} testrunners which is more than reccomended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
+                _logger?.LogWarning("Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
             if (maxConcurrentTestRunners == 1)
