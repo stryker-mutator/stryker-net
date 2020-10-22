@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
 using Shouldly;
 using Stryker.DataCollector;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -63,4 +63,3 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
     }
 }
-    

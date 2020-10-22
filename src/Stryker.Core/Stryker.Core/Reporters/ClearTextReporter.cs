@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Mutants;
+﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Testing;
@@ -77,7 +78,7 @@ namespace Stryker.Core.Reporters
             _chalk.Default($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘{Environment.NewLine}");
         }
 
-        private void DisplayComponent(ProjectComponent inputComponent, int filePathLength)
+        private void DisplayComponent(ProjectComponent<SyntaxTree> inputComponent, int filePathLength)
         {
             _chalk.Default($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
 

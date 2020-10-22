@@ -1,14 +1,14 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Compiling
 {
@@ -16,7 +16,7 @@ namespace Stryker.Core.Compiling
     {
         RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
-    
+
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>
@@ -35,14 +35,14 @@ namespace Stryker.Core.Compiling
         {
             // match the diagnostics with their syntax trees
             var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
-            
+
             foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
             {
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
             }
 
             // remove the broken mutations from the syntax trees
-            foreach(var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
+            foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
                 var originalTree = syntaxTreeMap.Key;
                 if (devMode)
@@ -71,7 +71,8 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return new RollbackProcessResult() {
+            return new RollbackProcessResult()
+            {
                 Compilation = compiler,
                 RollbackedIds = RolledBackIds
             };
@@ -82,7 +83,7 @@ namespace Stryker.Core.Compiling
             for (var node = startNode; node != null; node = node.Parent)
             {
                 var id = ExtractMutationIfAndId(node);
-                if (id != null) 
+                if (id != null)
                 {
                     return (node, id.Value);
                 }
@@ -107,7 +108,7 @@ namespace Stryker.Core.Compiling
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            for(var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
+            for (var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
                 if (currentNode.Kind() == SyntaxKind.MethodDeclaration || currentNode.Kind() == SyntaxKind.GetAccessorDeclaration || currentNode.Kind() == SyntaxKind.SetAccessorDeclaration)
                 {
@@ -118,7 +119,7 @@ namespace Stryker.Core.Compiling
             return null;
         }
 
-        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IDictionary<SyntaxNode, int> scan)
         {
             var id = ExtractMutationIfAndId(node);
             if (id != null)

@@ -1,11 +1,11 @@
 ﻿using Moq;
+using Shouldly;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Linq;
-using Shouldly;
-using Stryker.Core.Mutants;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             string path = FilePathUtils.NormalizePathSeparators("c://test");
             var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new[] { "C://test//mytest.dll" });
 
-            var result = target.RunAll(null, new Mutant(){Id =  1}, null);
+            var result = target.RunAll(null, new Mutant() { Id = 1 }, null);
 
             Assert.Equal(0, result.FailingTests.Count);
             processMock.Verify(m => m.Start(

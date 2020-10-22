@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators

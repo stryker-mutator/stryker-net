@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class ForStatementOrchestrator: NodeSpecificOrchestrator<ForStatementSyntax>
+    internal class ForStatementOrchestrator : NodeSpecificOrchestrator<ForStatementSyntax>
     {
         internal override SyntaxNode OrchestrateMutation(ForStatementSyntax forStatement, MutationContext context)
         {

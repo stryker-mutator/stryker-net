@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -67,7 +67,7 @@ namespace Stryker.Core.Mutants
                     {
                         // the mutations can be controlled by conditional operator
                         mutatedNode = node.TrackNodes(expression.ChildNodes());
-                        mutatedNode = _mainOrchestrator.PlaceMutantWithinConditionalControls(expression, (ExpressionSyntax) mutatedNode, 
+                        mutatedNode = _mainOrchestrator.PlaceMutantWithinConditionalControls(expression, (ExpressionSyntax)mutatedNode,
                             _mainOrchestrator.GenerateMutantsForNode(node, this));
                     }
                     else
@@ -105,12 +105,12 @@ namespace Stryker.Core.Mutants
 
         public MutationContext EnterStatic()
         {
-            return new MutationContext(_mainOrchestrator) { InStaticValue =  true};
+            return new MutationContext(_mainOrchestrator) { InStaticValue = true };
         }
 
         private MutationContext Clone()
         {
-            return new MutationContext(_mainOrchestrator){InStaticValue = InStaticValue};
+            return new MutationContext(_mainOrchestrator) { InStaticValue = InStaticValue };
         }
     }
 }

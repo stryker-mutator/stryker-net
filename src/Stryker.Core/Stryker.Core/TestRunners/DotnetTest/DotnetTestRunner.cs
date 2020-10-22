@@ -1,15 +1,15 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.InjectedHelpers.Coverage;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.DataCollector;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Stryker.Core.InjectedHelpers.Coverage;
 
 namespace Stryker.Core.TestRunners
 {
@@ -43,7 +43,7 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
-            var envVars = mutant == null ? null : 
+            var envVars = mutant == null ? null :
                 new Dictionary<string, string>
             {
                 { "ActiveMutation", mutant.Id.ToString() }
@@ -61,7 +61,7 @@ namespace Stryker.Core.TestRunners
                 {
                     mutant.ResultStatus = MutantStatus.Timeout;
                 }
-                return TestRunResult.TimedOut(emptyList,  emptyList, TestListDescription.EveryTest(), "time out");
+                return TestRunResult.TimedOut(emptyList, emptyList, TestListDescription.EveryTest(), "time out");
             }
         }
 
@@ -119,7 +119,7 @@ namespace Stryker.Core.TestRunners
             var collector = new CoverageCollector();
             collector.SetLogger(message => _logger.LogTrace(message));
             var coverageEnvironment = new Dictionary<string, string>();
-            coverageEnvironment["Coverage"]= $"pipe:{_server.PipeName}";
+            coverageEnvironment["Coverage"] = $"pipe:{_server.PipeName}";
 
             var result = LaunchTestProcess(null, coverageEnvironment);
 

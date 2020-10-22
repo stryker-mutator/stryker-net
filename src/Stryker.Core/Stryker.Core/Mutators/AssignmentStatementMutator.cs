@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
@@ -28,7 +28,7 @@ namespace Stryker.Core.Mutators
             var assignmentKind = node.Kind();
             if (KindsToMutate.TryGetValue(assignmentKind, out var targetAssignmentKinds))
             {
-                if (node.Kind() == SyntaxKind.AddAssignmentExpression 
+                if (node.Kind() == SyntaxKind.AddAssignmentExpression
                     && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
                 {
                     yield break;

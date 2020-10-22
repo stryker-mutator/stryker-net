@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest
                 var expectedLines = expected.ToString().Split(Environment.NewLine);
                 for (var i = 0; i < actuaLines.Length; i++)
                 {
-                    if (expectedLines.Length<=i)
+                    if (expectedLines.Length <= i)
                     {
                         isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect: nothing{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
                     }

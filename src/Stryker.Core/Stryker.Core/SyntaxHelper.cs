@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Linq;
 
 namespace Stryker.Core
 {
@@ -38,7 +38,7 @@ namespace Stryker.Core
                     return false;
                 }
                 return true;
-            } ).Any(predicate);
+            }).Any(predicate);
         }
 
         public static bool CanBeMutated(SyntaxNode node)

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis.Text;
+﻿using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.ProjectComponents;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
 
         [Theory]
         [InlineData(new int[0], new int[0], new int[0])]
-        [InlineData(new[] { 5, 15 }, new[] { 5, 10 }, new [] { 10, 15 })]
+        [InlineData(new[] { 5, 15 }, new[] { 5, 10 }, new[] { 10, 15 })]
         [InlineData(new[] { 5, 25 }, new[] { 5, 10, 10, 15 }, new[] { 15, 25 })]
         [InlineData(new[] { 5, 25 }, new[] { 5, 10, 15, 25 }, new[] { 10, 15 })]
         [InlineData(new[] { 5, 25 }, new[] { 5, 10, 15, 20 }, new[] { 10, 15, 20, 25 })]

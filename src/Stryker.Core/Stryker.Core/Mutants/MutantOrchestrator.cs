@@ -1,15 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants.NodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Helpers;
-using Stryker.Core.Mutants.NodeOrchestrators;
 
 namespace Stryker.Core.Mutants
 {
@@ -93,7 +93,7 @@ namespace Stryker.Core.Mutants
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();
-            return (IReadOnlyCollection<Mutant>) tempMutants;
+            return (IReadOnlyCollection<Mutant>)tempMutants;
         }
 
         /// <summary>

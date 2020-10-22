@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -234,7 +234,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new []{ "M.ctor" });
+            var options = new StrykerOptions(ignoredMethods: new[] { "M.ctor" });
 
             var sut = new IgnoredMethodMutantFilter();
 

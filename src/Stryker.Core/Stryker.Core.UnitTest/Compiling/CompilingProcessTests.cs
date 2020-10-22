@@ -45,7 +45,7 @@ namespace ExampleProject
                         },
                         Resources = new List<ResourceDescription>()
                     },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> { 
+                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
                         new ProjectAnalyzerResult(null, null)
                         {
                             Properties = new Dictionary<string, string>()
@@ -129,7 +129,7 @@ namespace ExampleProject
             {
                 Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false, false),
                 Times.AtLeast(2));
         }
 

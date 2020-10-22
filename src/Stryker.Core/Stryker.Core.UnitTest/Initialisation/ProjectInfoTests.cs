@@ -1,10 +1,9 @@
-﻿using Shouldly;
+﻿using Microsoft.CodeAnalysis;
+using Shouldly;
 using Stryker.Core.Initialisation;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -30,7 +29,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
             target.GetInjectionPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
         }
-        
+
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
