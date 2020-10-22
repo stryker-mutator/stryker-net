@@ -18,7 +18,7 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    class FindProjectComponenetsCsharp
+    class FindProjectComponentsCsharp
     {
         private ProjectInfo _projectInfo;
         private StrykerOptions _options;
@@ -26,7 +26,7 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public FindProjectComponenetsCsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FindProjectComponentsCsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;

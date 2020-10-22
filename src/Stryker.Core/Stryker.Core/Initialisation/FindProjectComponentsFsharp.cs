@@ -20,7 +20,7 @@ using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Initialisation
 {
-    internal class FindProjectComponenetsFsharp
+    internal class FindProjectComponentsFsharp
     {
         private ProjectInfo _projectInfo;
         private StrykerOptions _options;
@@ -28,7 +28,7 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public FindProjectComponenetsFsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FindProjectComponentsFsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;

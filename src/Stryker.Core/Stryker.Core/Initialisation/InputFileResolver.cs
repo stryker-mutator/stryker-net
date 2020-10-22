@@ -95,13 +95,13 @@ namespace Stryker.Core.Initialisation
             IProjectComponent inputFiles;
             if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".csproj"))                           /*C#*/
             {
-                var projectComponents = new FindProjectComponenetsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
+                var projectComponents = new FindProjectComponentsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
                 inputFiles = projectComponents.GetProjectComponenetsCsharp();
                 language = Language.Csharp;
             }
             else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
             {
-                var projectComponents = new FindProjectComponenetsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
+                var projectComponents = new FindProjectComponentsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
                 inputFiles = projectComponents.GetProjectComponenetsFsharp();
                 language = Language.Fsharp;
             }
