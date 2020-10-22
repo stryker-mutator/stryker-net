@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Stryker.Core.MutationTest
 {
-    class MutationProcess : IMutationTestProcessMethod
+    class MutationProcess : IMutationProcess
     {
 
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
