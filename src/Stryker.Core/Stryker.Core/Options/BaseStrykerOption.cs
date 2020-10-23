@@ -10,7 +10,7 @@
 		public abstract StrykerOption Type { get; }
 		public abstract string Name { get; }
 		public abstract string HelpText { get; }
-		public abstract T Value { get; protected set; }
+		public T Value { get; protected set; }
 		public abstract T DefaultValue { get; }
 
 		protected abstract void Validate(params string[] parameters);
