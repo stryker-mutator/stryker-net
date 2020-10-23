@@ -2,7 +2,7 @@
 using Stryker.Core.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {

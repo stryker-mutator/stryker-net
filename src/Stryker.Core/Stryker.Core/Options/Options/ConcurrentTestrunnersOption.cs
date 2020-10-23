@@ -25,15 +25,15 @@ namespace Stryker.Core.Options.Options
 
             if (maxConcurrentTestRunners > safeProcessorCount)
             {
-                logger?.LogWarning("Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
+                logger.LogWarning("Using {maxConcurrentTestRunners} testrunners which is more than recommended {safeProcessorCount} for normal system operation. This can have an impact on performance.", maxConcurrentTestRunners, safeProcessorCount);
             }
 
             if (maxConcurrentTestRunners == 1)
             {
-                logger?.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.");
+                logger.LogWarning("Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.");
             }
 
-            Value = maxConcurrentTestRunners.GetValueOrDefault();
+            Value = maxConcurrentTestRunners.Value;
         }
 
         public override StrykerOption Type => StrykerOption.ConcurrentTestrunners;

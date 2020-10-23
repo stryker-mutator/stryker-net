@@ -2,9 +2,9 @@
 {
     class DiffEnabledOption : BaseStrykerOption<bool>
     {
-        public DiffEnabledOption(bool diffEabled)
+        public DiffEnabledOption(bool diffEnabled)
         {
-            Value = diffEabled;
+            Value = diffEnabled;
         }
 
         public override StrykerOption Type => StrykerOption.DiffEnabled;

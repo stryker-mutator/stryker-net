@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options.Options
@@ -11,7 +9,7 @@ namespace Stryker.Core.Options.Options
         public IgnoredMethodsOption(string[] ignoredMethods)
         {
             var list = new List<Regex>();
-            foreach (var methodPattern in ignoredMethods.Where(x => !string.IsNullOrEmpty(x)))
+            foreach (var methodPattern in ignoredMethods.Where(x => !string.IsNullOrWhiteSpace(x)))
             {
                 list.Add(new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase));
             }

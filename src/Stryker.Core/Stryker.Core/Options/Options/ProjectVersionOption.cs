@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Options
         {
             if (dashboardCompareEnabled)
             {
-                if (string.IsNullOrEmpty(projectVersion))
+                if (string.IsNullOrWhiteSpace(projectVersion))
                 {
                     throw new StrykerInputException("When the compare to dashboard feature is enabled the projectversion is required. Please provide a project version");
                 }
@@ -24,7 +24,7 @@ namespace Stryker.Core.Options.Options
 
             if (reporters.Contains(Reporter.Dashboard))
             {
-                if (string.IsNullOrEmpty(projectVersion))
+                if (string.IsNullOrWhiteSpace(projectVersion))
                 {
                     throw new StrykerInputException("When the dashboard reporter is enabled the projectversion is required. Please provide a project version");
                 }

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.Options.Options
+﻿namespace Stryker.Core.Options.Options
 {
     class DevModeOption : BaseStrykerOption<bool>
     {
-        public DevModeOption(bool devmode)
+        public DevModeOption(bool devMode)
         {
-            Value = devmode;
+            Value = devMode;
         }
 
         public override StrykerOption Type => StrykerOption.DevMode;

@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Options
         {
             if (dashboardCompareEnabled)
             {
-                if (string.IsNullOrEmpty(apiKey))
+                if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     throw new StrykerInputException("When the compare to dashboard feature is enabled an api key required.");
                 }
@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Options
 
             if (reporters.Contains(Reporter.Dashboard))
             {
-                if (string.IsNullOrEmpty(apiKey))
+                if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     throw new StrykerInputException("When the dashboard reporter is enabled an api key is required.");
                 }

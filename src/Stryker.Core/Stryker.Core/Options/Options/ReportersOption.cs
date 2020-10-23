@@ -3,12 +3,11 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Stryker.Core.Options.Options
 {
-	public class ReportersOption : BaseStrykerOption<IEnumerable<Reporter>>
-	{
+    public class ReportersOption : BaseStrykerOption<IEnumerable<Reporter>>
+    {
         public ReportersOption(bool compareToDashboard, string[] reporters)
         {
             var list = new List<Reporter>();
@@ -49,8 +48,8 @@ namespace Stryker.Core.Options.Options
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
             Value = list;
         }
-		public override StrykerOption Type => StrykerOption.Reporters;
-		public override string HelpText => "Sets the reporter";
-		public override IEnumerable<Reporter> DefaultValue => null;
-	}
+        public override StrykerOption Type => StrykerOption.Reporters;
+        public override string HelpText => "Sets the reporter";
+        public override IEnumerable<Reporter> DefaultValue => null;
+    }
 }

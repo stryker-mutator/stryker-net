@@ -13,7 +13,7 @@
 		DiffEnabled,
 		CompareToDashboard,
 		GitDiffTarget,
-		AdditionalTimeoutMS,
+		AdditionalTimeoutMs,
 		ExcludedMutations,
 		IgnoredMethods,
 		ConcurrentTestrunners,
