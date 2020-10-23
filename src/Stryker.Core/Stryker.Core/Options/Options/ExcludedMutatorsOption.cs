@@ -38,7 +38,7 @@ namespace Stryker.Core.Options.Options
             }
         }
 
-        public override StrykerOption Type => StrykerOption.ExcludedMutations;
+        public override StrykerOption Type => StrykerOption.ExcludedMutators;
         public override string HelpText => @"The given mutators will be excluded for this mutation testrun.";
         public override IEnumerable<Mutator> DefaultValue => Enumerable.Empty<Mutator>();
     }

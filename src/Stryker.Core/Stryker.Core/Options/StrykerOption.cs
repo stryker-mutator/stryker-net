@@ -14,7 +14,7 @@
         CompareToDashboard,
         GitDiffTarget,
         AdditionalTimeoutMs,
-        ExcludedMutations,
+        ExcludedMutators,
         IgnoredMethods,
         ConcurrentTestrunners,
         Thresholds,
