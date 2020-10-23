@@ -2,7 +2,7 @@
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Introduction.md
 ---
 
-Welcome to the Stryker for .NET documentation. Stryker for C# is also known as Stryker.NET or stryker-net.
+Welcome to the documentation for Stryker for .NET. Also known as Stryker.NET or stryker-net.
 
 ### Stryker.NET
 
