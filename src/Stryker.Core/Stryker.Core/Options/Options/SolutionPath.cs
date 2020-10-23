@@ -1,10 +1,13 @@
 ﻿using Stryker.Core.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Stryker.Core.Options
+namespace Stryker.Core.Options.Options
 {
-	public class BasePathOption : BaseStrykerOption<string>
+	class SolutionPath : BaseStrykerOption<string>
 	{
-		public BasePathOption(string basePath) : base(basePath)
+		public SolutionPath(string basePath, string solutionPath) : base(basePath, solutionPath)
 		{
 
 		}
@@ -13,7 +16,7 @@ namespace Stryker.Core.Options
 		public override string Name => "BasePath";
 		public override string HelpText => "";
 		public override string Value { get => Value; protected set => Value = value; }
-		public override string DefaultValue => "";
+		public override string DefaultValue => null;
 
 		protected override void Validate(params string[] parameters)
 		{
