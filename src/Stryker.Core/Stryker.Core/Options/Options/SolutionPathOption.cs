@@ -4,7 +4,7 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Options
 {
-	class SolutionPathOption : BaseStrykerOption<string>
+	public class SolutionPathOption : BaseStrykerOption<string>
 	{
 
 		public SolutionPathOption(string basePath, string solutionPath, IFileSystem fileSystem) : base(basePath, solutionPath)
@@ -17,7 +17,6 @@ namespace Stryker.Core.Options.Options
 		}
 
 		public override StrykerOption Type => StrykerOption.BasePath;
-		public override string Name => nameof(SolutionPathOption);
 		public override string HelpText => "";
 		public override string DefaultValue => null;
 

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-	class BaselineProviderOption : BaseStrykerOption<BaselineProvider>
+	public class BaselineProviderOption : BaseStrykerOption<BaselineProvider>
 	{
 		BaselineProviderOption(IEnumerable<Reporter> reporters, string baselineProviderLocation) : base(baselineProviderLocation)
 		{
@@ -30,13 +30,8 @@ namespace Stryker.Core.Options.Options
 		}
 
 		public override StrykerOption Type => StrykerOption.BaselineProvider;
-
-		public override string Name => nameof(BaselineProviderOption);
-
 		public override string HelpText => "";
-
 		public override BaselineProvider DefaultValue => BaselineProvider.Disk;
-
 		protected override void Validate(params string[] parameters)
 		{
 
