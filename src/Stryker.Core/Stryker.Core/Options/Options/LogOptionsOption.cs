@@ -39,7 +39,7 @@ namespace Stryker.Core.Options.Options
         }
 
         public override StrykerOption Type => StrykerOption.LogOptions;
-        public override string HelpText => "";
+        public override string HelpText => "Sets the console output logging level";
         public override LogOptions DefaultValue => new LogOptions(LogEventLevel.Information, false, "");
     }
 }

@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Options
         }
 
         public override StrykerOption Type => StrykerOption.IgnoredMethods;
-        public override string HelpText => "";
+        public override string HelpText => "Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
         public override IEnumerable<Regex> DefaultValue => null;
     }
 }

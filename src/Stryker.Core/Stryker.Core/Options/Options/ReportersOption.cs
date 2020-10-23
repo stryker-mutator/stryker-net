@@ -50,7 +50,7 @@ namespace Stryker.Core.Options.Options
             Value = list;
         }
 		public override StrykerOption Type => StrykerOption.Reporters;
-		public override string HelpText => "";
+		public override string HelpText => "Sets the reporter";
 		public override IEnumerable<Reporter> DefaultValue => null;
 	}
 }

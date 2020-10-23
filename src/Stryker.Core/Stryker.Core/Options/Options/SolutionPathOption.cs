@@ -29,7 +29,8 @@ namespace Stryker.Core.Options.Options
 		}
 
 		public override StrykerOption Type => StrykerOption.BasePath;
-		public override string HelpText => "";
+		public override string HelpText => @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
+    .net framework but can optionally be used for .net core. Path can be relative from test project or full path.";
 		public override string DefaultValue => null;
 	}
 }

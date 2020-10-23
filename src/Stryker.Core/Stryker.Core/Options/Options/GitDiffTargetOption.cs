@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Options
         }
 
         public override StrykerOption Type => StrykerOption.GitDiffTarget;
-        public override string HelpText => "";
+        public override string HelpText => "Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when diff is enabled. Default: master";
         public override string DefaultValue => "master";
     }
 }

@@ -28,7 +28,8 @@ namespace Stryker.Core.Options.Options
         }
 
         public override StrykerOption Type => StrykerOption.Thresholds;
-        public override string HelpText => "";
+        public override string HelpText => @"Set the thresholds depending the minimum, Lower bound and the preferred mutation score threshold.
+    Anything below the minimum score will return a non-zero exit code.";
         public override Threshold DefaultValue => new Threshold(80, 60, 0);
     }
 }

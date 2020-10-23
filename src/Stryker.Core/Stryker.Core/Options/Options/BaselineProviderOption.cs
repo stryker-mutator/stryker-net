@@ -30,7 +30,7 @@ namespace Stryker.Core.Options.Options
 		}
 
 		public override StrykerOption Type => StrykerOption.BaselineProvider;
-		public override string HelpText => "";
+		public override string HelpText => "Allows to choose a storage location.When using the azure file storage, make sure to configure the 'shared access storage' and 'storage url' options.";
 		public override BaselineProvider DefaultValue => BaselineProvider.Disk;
 	}
 }
