@@ -31,7 +31,7 @@
         ProjectVersion,
         MutationLevel,
         DiffIgnoreFilePatterns,
-        AzureSAS,
+        AzureFileStorageUrl,
         AzureFileStorageSas,
         FallbackVersion,
     }

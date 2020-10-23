@@ -24,7 +24,7 @@ namespace Stryker.Core.Options.Options
             }
         }
 
-        public override StrykerOption Type => StrykerOption.AzureFileStorageSas;
+        public override StrykerOption Type => StrykerOption.AzureFileStorageUrl;
 
         public override string HelpText => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
