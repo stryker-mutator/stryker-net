@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Json
     {
         public string SchemaVersion { get; } = "1.3";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public string ProjectRoot { get; }
+        public string SolutionRoot { get; }
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
@@ -32,7 +32,7 @@ namespace Stryker.Core.Reporters.Json
             Thresholds.Add("high", _options.Thresholds.High);
             Thresholds.Add("low", _options.Thresholds.Low);
 
-            ProjectRoot = GetProjectRoot(mutationReport);
+            SolutionRoot = GetSolutionRoot(mutationReport);
 
             Merge(Files, GenerateReportComponents(mutationReport));
         }
@@ -106,7 +106,7 @@ namespace Stryker.Core.Reporters.Json
             from.ToList().ForEach(x => to[x.Key] = x.Value);
         }
 
-        private string GetProjectRoot(IReadOnlyInputComponent component)
+        private string GetSolutionRoot(IReadOnlyInputComponent component)
         {
             if (component is FolderComposite folder) {
                 return folder.Children.OfType<FolderComposite>().FirstOrDefault().FullPath;
