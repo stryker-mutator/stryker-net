@@ -30,7 +30,7 @@
 		ModuleName,
 		ProjectVersion,
 		MutationLevel,
-		DiffIgnoreFiles,
+		DiffIgnoreFilePatterns,
 		AzureSAS,
 		AzureFileStorageSas,
 		FallbackVersion,
