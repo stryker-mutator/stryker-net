@@ -92,7 +92,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // If the diff result flags this file as modified, we want to run all mutants again
-            if (_diffResult.ChangedSourceFiles.Contains(file.FullPath))
+            if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
             {
                 _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
                 return SetMutantStatusForFileChanged(mutants);
@@ -103,7 +103,8 @@ namespace Stryker.Core.MutantFilters
             }
 
             // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
-            if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any())
+            // Only check for changed c# files. Other files have already been handled.
+            if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any(file => file.EndsWith(".cs")))
             {
                 filteredMutants = ResetMutantStatusForChangedTests(mutants);
             }

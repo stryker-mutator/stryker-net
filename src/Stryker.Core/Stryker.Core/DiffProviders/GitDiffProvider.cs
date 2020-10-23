@@ -4,6 +4,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -52,7 +53,18 @@ namespace Stryker.Core.DiffProviders
                     diffResult.ChangedSourceFiles.Add(diffPath);
                 }
             }
+            RemoveFilteredOutFiles(diffResult);
+
             return diffResult;
+        }
+
+        private void RemoveFilteredOutFiles(DiffResult diffResult)
+        {
+            foreach (FilePattern filePattern in _options.DiffIgnoreFiles)
+            {
+                diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
+                diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
+            }
         }
     }
 }

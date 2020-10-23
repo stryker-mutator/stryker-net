@@ -21,6 +21,12 @@
           "System.Reflection.TypeExtensions": "4.6.0"
         }
       },
+      "Crayon": {
+        "type": "Direct",
+        "requested": "[1.2.48, )",
+        "resolved": "1.2.48",
+        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
+      },
       "DotNet.Glob": {
         "type": "Direct",
         "requested": "[3.1.0, )",
@@ -108,9 +114,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.76, )",
-        "resolved": "2.1.76",
-        "contentHash": "hrC3MLBsT2i4798p43Ng6Oq9SGaawxofz6WvbPI9vxtdGSSoHQ12PWem5kMyyvB7a12a1UImdgLGhq+0+vkiKw==",
+        "requested": "[2.1.113, )",
+        "resolved": "2.1.113",
+        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }

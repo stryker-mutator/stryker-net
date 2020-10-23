@@ -102,6 +102,11 @@
           "System.Xml.XmlDocument": "4.3.0"
         }
       },
+      "Crayon": {
+        "type": "Transitive",
+        "resolved": "1.2.48",
+        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
+      },
       "DotNet.Glob": {
         "type": "Transitive",
         "resolved": "3.1.0",
@@ -416,8 +421,8 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Transitive",
-        "resolved": "2.1.76",
-        "contentHash": "hrC3MLBsT2i4798p43Ng6Oq9SGaawxofz6WvbPI9vxtdGSSoHQ12PWem5kMyyvB7a12a1UImdgLGhq+0+vkiKw==",
+        "resolved": "2.1.113",
+        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -1642,13 +1647,14 @@
           "McMaster.Extensions.CommandLineUtils": "3.0.0",
           "Microsoft.Extensions.Configuration.Binder": "3.1.9",
           "NuGet.Versioning": "5.5.0",
-          "stryker": "0.19.0"
+          "stryker": "0.20.0"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
           "Buildalyzer": "3.0.1",
+          "Crayon": "1.2.48",
           "DotNet.Glob": "3.1.0",
           "LibGit2Sharp": "0.26.2",
           "Microsoft.CodeAnalysis.CSharp": "3.7.0",
@@ -1659,15 +1665,15 @@
           "Microsoft.TestPlatform.ObjectModel": "16.7.1",
           "Microsoft.TestPlatform.Portable": "16.7.1",
           "Microsoft.TestPlatform.TranslationLayer": "16.7.1",
-          "Microsoft.Web.LibraryManager.Build": "2.1.76",
+          "Microsoft.Web.LibraryManager.Build": "2.1.113",
           "Mono.Cecil": "0.11.3",
           "Newtonsoft.Json": "12.0.3",
           "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
-          "Stryker.RegexMutators": "1.0.0",
+          "Stryker.DataCollector": "0.20.0",
+          "Stryker.RegexMutators": "0.20.0",
           "System.IO.Abstractions": "12.2.7"
         }
       },

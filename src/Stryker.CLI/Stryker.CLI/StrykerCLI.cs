@@ -1,11 +1,11 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using Crayon;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Stryker.CLI.NuGet;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 using System;
 using System.IO;
 using System.Reflection;
@@ -76,6 +76,7 @@ namespace Stryker.CLI
             var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
             var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);
             var mutationLevelParam = CreateOption(app, CLIOptions.MutationLevel);
+            var dashboardCompareFileExcludePatterns = CreateOption(app, CLIOptions.DiffIgnoreFiles);
 
             app.HelpOption("--help | -h | -?");
 
@@ -118,7 +119,8 @@ namespace Stryker.CLI
                     baselineStorageLocation: baselineStorageLocation,
                     azureFileStorageUrl: azureFileStorageUrl,
                     azureSAS: azureSAS,
-                    mutationLevel: mutationLevelParam);
+                    mutationLevel: mutationLevelParam,
+                    dashboardCompareFileExcludePatterns: dashboardCompareFileExcludePatterns);
 
                 RunStryker(options);
                 return ExitCode;
@@ -146,12 +148,11 @@ namespace Stryker.CLI
                 var thresholdBreak = (double)options.Thresholds.Break / 100;
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
-                new Chalk().Red(string.Format(@"
- The mutation score is lower than the configured break threshold of {0:P0}.
- If you're running in a CI environment, this means your pipeline will now fail.", thresholdBreak));
+                Console.WriteLine(Output.Red($@"
+ The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.
+ If you're running in a CI environment, this means your pipeline will now fail."));
 
-                Console.WriteLine(Environment.NewLine);
-                new Chalk().Green(" Looks like you've got some work to do :)");
+                Console.WriteLine(Output.Green(" Looks like you've got some work to do :)"));
 
                 ExitCode = 1;
             }
@@ -159,29 +160,27 @@ namespace Stryker.CLI
 
         private void PrintStykerASCIIName()
         {
-            new Chalk().Default(@"
-   _____ _              _               _   _ ______ _______ 
-  / ____| |            | |             | \ | |  ____|__   __|
- | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |   
-  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |   
-  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |   
- |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|   
-                   __/ |                                   
-                  |___/                                    
-");
-            Console.WriteLine(Environment.NewLine);
+            // Crayon does not support background coloring (yet)
+            Console.WriteLine(Output.FromRgb(241, 196, 15).Text(@"
+   _____ _              _               _   _ ______ _______  
+  / ____| |            | |             | \ | |  ____|__   __| 
+ | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
+  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |    
+  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |    
+ |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    
+                   __/ |                                      
+                  |___/                                       
+"));
+            Console.WriteLine();
         }
 
         private async Task PrintStrykerVersionInformationAsync()
         {
-            var chalk = new Chalk();
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
 
-            Console.Write(" Version: ");
-            chalk.Green($"{currentVersion}");
-            Console.WriteLine(" (beta)");
+            Console.WriteLine($" Version: {Output.Green(currentVersion.ToString())} (beta)");
             Console.WriteLine();
 
             var nugetInfo = await StrykerNugetFeedInfo.Create();
@@ -189,7 +188,7 @@ namespace Stryker.CLI
 
             if (latestVersion != null && latestVersion != currentVersion)
             {
-                chalk.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker` {Environment.NewLine}");
+                Console.WriteLine(Output.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
                 Console.WriteLine();
             }
         }

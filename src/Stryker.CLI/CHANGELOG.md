@@ -1,3 +1,19 @@
+# [0.20.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.19.0...dotnet-stryker@0.20.0) (2020-10-19)
+
+
+### Bug Fixes
+
+* **diff compare:** allow canonical branch name as diff target ([#1210](https://github.com/stryker-mutator/stryker-net/issues/1210)) ([0b9659f](https://github.com/stryker-mutator/stryker-net/commit/0b9659faee9af47584cfc53d807380a6edf48a02))
+
+
+### Features
+
+* **Dashboard Compare:** Add git diff file ignore ([#1206](https://github.com/stryker-mutator/stryker-net/issues/1206)) ([72d1473](https://github.com/stryker-mutator/stryker-net/commit/72d14731c8e2fb9147d665101b1ed75bebc03203))
+* **diff compare:** Rename parameter git source to git diff target ([#1262](https://github.com/stryker-mutator/stryker-net/issues/1262)) ([b373144](https://github.com/stryker-mutator/stryker-net/commit/b3731446822be02b638f11e14b0083fe14530649))
+* **Mutation levels:** Add mutation levels ([#987](https://github.com/stryker-mutator/stryker-net/issues/987)) ([2f0543e](https://github.com/stryker-mutator/stryker-net/commit/2f0543e9c86415c705eb89e90d2f9585f51cc03b))
+
+
+
 # [0.19.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.18.0...dotnet-stryker@0.19.0) (2020-09-04)
 
 

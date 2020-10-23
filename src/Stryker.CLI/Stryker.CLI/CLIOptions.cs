@@ -116,6 +116,20 @@ namespace Stryker.CLI
 
         };
 
+        public static readonly CLIOption<string[]> DiffIgnoreFiles = new CLIOption<string[]>
+        {
+            ArgumentName = "--diff-ignore-files",
+            ArgumentShortName = "-diffignorefiles",
+            ArgumentDescription = @"Allows to specify an array of C# files which should be ignored if present in the diff.
+             Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+            This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
+            
+            Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+            Example: ['**/*Assets.json','**/favicon.ico']",
+            DefaultValue = null,
+            JsonKey = "diff-ignore-files"
+        };
+
 
         public static readonly CLIOption<string> BaselineStorageLocation = new CLIOption<string>
         {
@@ -130,11 +144,11 @@ namespace Stryker.CLI
 
         public static readonly CLIOption<string> GitDiffTarget = new CLIOption<string>
         {
-            ArgumentName = "--git-source",
-            ArgumentShortName = "-gs <branchName>",
-            ArgumentDescription = @"Sets the source branch to compare with the current codebase, used for calculating the difference when --diff is enabled.",
+            ArgumentName = "--git-diff-target",
+            ArgumentShortName = "-gdt <commitish>",
+            ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
             DefaultValue = _defaultOptions.GitDiffTarget,
-            JsonKey = "git-source"
+            JsonKey = "git-diff-target"
         };
 
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
