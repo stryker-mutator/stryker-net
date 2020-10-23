@@ -1,29 +1,8 @@
+---
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Configuration.md
+---
+
 For .NET Core projects Stryker.NET can be run without any configuration. On .NET Framework projects the solution path is required.
-
-The full list of Stryker.NET configuration options are:
-
-<!-- TOC -->
-- [Config file](#use-a-config-file)
-- [Solution path (required .NET Framework)](#solution-path)
-- [Project file (required on some projects)](#project-file)
-- [Mutation level](#mutation-level)
-- [Test runner](#specify-testrunner)
-- [Timeout time](#timeout-time)
-- [Reporters](#reporters)
-- [Test projects](#test-projects)
-- [Logging to console](#logging-to-console)
-- [Excluding mutations](#excluding-mutations)
-- [Excluding files (deprecated)](#excluding-files)
-- [Mutate](#mutate)
-- [Ignore methods](#ignore-methods)
-- [Custom tresholds](#custom-thresholds)
-- [Coverage analysis](#coverage-analysis)
-- [Abort testrun on test failure](#abort-test-on-fail)
-- [Diff based file exclusion](#diff)
-- [Git diff source](#git-source)
-- [Exclude files from git diff](#diff-ignore-files)
-- [EXPERIMENTAL: Dashboard compare](#experimental-dashboard-compare)
-<!-- /TOC -->
 
 ## Use a config file
 When using Stryker in a team we recomend using a config file. This way you ensure all team members use the same settings to run Stryker. The settings will also be picked up in pipelines. To use a config file create a file called `stryker-config.json` in the folder you run Stryker and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
@@ -152,7 +131,7 @@ dotnet stryker --reporters "['html', 'progress']"
 dotnet stryker -r "['html', 'progress']"
 ```
 
-You can find a list of all available reporters and what output they produce in the [reporter docs](/docs/Reporters.md)
+You can find a list of all available reporters and what output they produce in the [reporter docs](./Reporters.md)
 
 Default: `"['html', 'progress']"`
 
@@ -455,7 +434,7 @@ Defaut `"disk"`
 
 ## Configurating Dashboard location
 
-See: [Dashboard Reporter Settings](/docs/Reporters.md#dashboard-reporter)
+See: [Dashboard Reporter Settings](./Reporters.md#dashboard-reporter)
 
 ## Configuring Azure File Storage
 When using Azure File Storage as baseline storage location you are required to provide the following values.
@@ -492,4 +471,4 @@ dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.
 
 ## Using dashboard compare in a pull request pipeline
 
-See: [Using stryker in pipelines](/docs/Stryker-in-pipeline.md)
+See: [Using stryker in pipelines](./Stryker-in-pipeline.md)

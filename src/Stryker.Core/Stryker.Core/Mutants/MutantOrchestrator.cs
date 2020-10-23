@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -8,8 +7,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.NodeOrchestrators;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
@@ -48,7 +49,7 @@ namespace Stryker.Core.Mutants
         public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
         {
             _options = options;
-            Mutators = mutators ?? new List<IMutator>()
+            Mutators = mutators ?? new List<IMutator>
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
@@ -72,16 +73,18 @@ namespace Stryker.Core.Mutants
 
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
-                new ForStatementOrchestrator(),
-                new AssignmentStatementOrchestrator(),
-                new PostfixUnaryExpressionOrchestrator(),
-                new StaticFieldDeclarationOrchestrator(),
-                new StaticConstructorOrchestrator(),
-                new StaticPropertyOrchestrator(),
-                new ArrayInitializerOrchestrator(),
-                new MethodDeclarationOrchestrator(),
-                new ConstLocalDeclarationOrchestrator(),
-                new SyntaxNodeOrchestrator()
+                new ForStatementOrchestrator(this),
+                new AssignmentStatementOrchestrator(this),
+                new PostfixUnaryExpressionOrchestrator(this),
+                new StaticFieldDeclarationOrchestrator(this),
+                new StaticConstructorOrchestrator(this),
+                new ArrayInitializerOrchestrator(this),
+                new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
+                new ConstLocalDeclarationOrchestrator(this),
+                new StatementSpecificOrchestrator<StatementSyntax>(this),
+                new BlockOrchestrator(this),
+                new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
+                new SyntaxNodeOrchestrator(this)
             });
         }
 
@@ -103,7 +106,20 @@ namespace Stryker.Core.Mutants
         /// <returns>Mutated node</returns>
         public SyntaxNode Mutate(SyntaxNode currentNode)
         {
-            return Mutate(currentNode, new MutationContext(this));
+            var mutationContext = new MutationContext(this);
+            var mutation = Mutate(currentNode, mutationContext);
+            if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
+            {
+                // some mutants where not injected for some reason, they should be reviewed to understand why.
+                Logger.LogError($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count+mutationContext.StatementLevelControlledMutations.Count}");
+            }
+            // mark remaining mutants as CompileError
+            foreach (var mutant in mutationContext.StatementLevelControlledMutations.Union(mutationContext.BlockLevelControlledMutations))
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
+            }
+            return mutation;
         }
 
         // recursive version
@@ -120,8 +136,9 @@ namespace Stryker.Core.Mutants
             return nodeHandler.Mutate(currentNode, context);
         }
 
-        internal IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode current, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
+            var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)
             {
                 foreach (var mutation in mutator.Mutate(current, _options))
@@ -157,27 +174,11 @@ namespace Stryker.Core.Mutants
 
                     Mutants.Add(newMutant);
                     MutantCount++;
-                    yield return newMutant;
+                    mutations.Add(newMutant);
                 }
             }
-        }
 
-        internal StatementSyntax PlaceMutantWithinIfControls(in StatementSyntax node, in StatementSyntax mutated, IEnumerable<Mutant> mutationsControlledByIfs)
-        {
-            var syntax = node;
-            return mutationsControlledByIfs.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithIfStatement(current, InjectMutation(syntax, mutant), mutant.Id));
-        }
-
-        internal ExpressionSyntax PlaceMutantWithinConditionalControls(in ExpressionSyntax node, in ExpressionSyntax mutated, IEnumerable<Mutant> expressionMutations)
-        {
-            var syntax = node;
-            return expressionMutations.Aggregate(mutated, (current, mutant) => MutantPlacer.PlaceWithConditionalExpression(current, InjectMutation(syntax, mutant), mutant.Id));
-        }
-
-        // inject the mutation within the control structure
-        private T InjectMutation<T>(in T node, Mutant mutant) where T : SyntaxNode
-        {
-            return node.ReplaceNode(mutant.Mutation.OriginalNode, mutant.Mutation.ReplacementNode);
+            return mutations;
         }
     }
 }
