@@ -1,21 +1,5 @@
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
-
-<!-- TOC -->
-- [Arithmetic Operators](#arithmetic-operators)
-- [Equality Operators](#equality-operators)
-- [Boolean Literals](#boolean-literals)
-- [Assignment statements](#assignment-statements)
-- [Collection initialization](#collection-initialization)
-- [Unary Operators](#unary-operators)
-- [Update Operators](#update-operators)
-- [Checked Statements](#checked-statements)
-- [Linq Methods](#linq-methods)
-- [String Literals and Constants](#string-literals-and-constants)
-- [Bitwise Operators](#bitwise-operators)
-- [Regular Expressions](#regular-expressions)
-<!-- /TOC -->
-
 ## Arithmetic Operators
 | Original | Mutated | 
 | ------------- | ------------- | 

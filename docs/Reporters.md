@@ -1,14 +1,5 @@
 Stryker supports a variety of reporters. Enabled reporters will be activated during and after your Stryker run. 
 
-<!-- TOC -->
-- [Html reporter](#html-reporter)
-- [Dashboard reporter](#dashboard-reporter)
-- [Console reporter](#console-reporter)
-- [Progress reporter](#progress-reporter)
-- [Console dots reporter](#console-dots-reporter)
-- [Json reporter](#json-reporter)
-<!-- /TOC -->
-
 The default reporters are:
 
 ```
