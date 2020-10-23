@@ -32,7 +32,7 @@
 		MutationLevel,
 		DiffIgnoreFiles,
 		AzureSAS,
-		AzureFileStorageUrl,
+		AzureFileStorageSas,
 		FallbackVersion,
 	}
 }
