@@ -13,6 +13,7 @@
         Json,
         Html,
         Dashboard,
-        Baseline
+        Baseline,
+        Status
     }
 }
