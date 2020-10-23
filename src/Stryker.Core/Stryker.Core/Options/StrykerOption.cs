@@ -1,0 +1,38 @@
+﻿namespace Stryker.Core.Options
+{
+	public enum StrykerOption
+	{
+		BasePath,
+		SolutionPath,
+		OutputPath,
+		BaselineProvider,
+		Reporters,
+		LogOptions,
+		DevMode,
+		ProjectUnderTestNameFilter,
+		DiffEnabled,
+		CompareToDashboard,
+		GitDiffTarget,
+		AdditionalTimeoutMS,
+		ExcludedMutations,
+		IgnoredMethods,
+		ConcurrentTestrunners,
+		Thresholds,
+		TestRunner,
+		FilePatterns,
+		LanguageVersion,
+		Optimizations,
+		OptimizationMode,
+		TestProjects,
+		DashboardUrl,
+		DashboardApiKey,
+		ProjectName,
+		ModuleName,
+		ProjectVersion,
+		MutationLevel,
+		DiffIgnoreFiles,
+		AzureSAS,
+		AzureFileStorageUrl,
+		FallbackVersion,
+	}
+}
