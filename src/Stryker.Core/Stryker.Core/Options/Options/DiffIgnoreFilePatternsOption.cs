@@ -5,12 +5,12 @@ namespace Stryker.Core.Options.Options
 {
     public class DiffIgnoreFilePatternsOption : BaseStrykerOption<IEnumerable<FilePattern>>
     {
-        public DiffIgnoreFilePatternsOption(IEnumerable<string> diffIgnores)
+        public DiffIgnoreFilePatternsOption(IEnumerable<string> filePatterns)
         {
-            var diffIgnoreFilePatterns = new List<FilePattern>();
-            if (diffIgnores != null)
+            if (filePatterns is { })
             {
-                foreach (var pattern in diffIgnores)
+                var diffIgnoreFilePatterns = new List<FilePattern>();
+                foreach (var pattern in filePatterns)
                 {
                     diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
                 }

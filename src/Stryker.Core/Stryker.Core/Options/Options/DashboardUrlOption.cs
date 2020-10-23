@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Options
     {
         public DashboardUrlOption(string url)
         {
-            if (!string.IsNullOrWhiteSpace(url))
+            if (url is { })
             {
                 if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
                 {
@@ -16,8 +16,6 @@ namespace Stryker.Core.Options.Options
 
                 Value = url;
             }
-
-            Value = DefaultValue;
         }
 
         public override StrykerOption Type => StrykerOption.DashboardUrl;

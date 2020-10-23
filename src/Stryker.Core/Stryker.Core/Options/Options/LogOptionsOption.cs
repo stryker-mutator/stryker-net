@@ -1,45 +1,41 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
     public class LogOptionsOption : BaseStrykerOption<LogOptions>
     {
-        readonly LogEventLevel _logEventLevel;
-
-        public LogOptionsOption(string logLevel, bool logToFile, string outputPath)
+        public LogOptionsOption(string logLevel, bool? logToFile, string outputPath)
         {
-            switch (logLevel?.ToLower() ?? "")
+            if (logToFile is { })
             {
-                case "error":
-                    _logEventLevel = LogEventLevel.Error;
-                    break;
-                case "warning":
-                    _logEventLevel = LogEventLevel.Warning;
-                    break;
-                case "info":
-                case "":
-                    _logEventLevel = LogEventLevel.Information;
-                    break;
-                case "debug":
-                    _logEventLevel = LogEventLevel.Debug;
-                    break;
-                case "trace":
-                    _logEventLevel = LogEventLevel.Verbose;
-                    break;
-                default:
-                    throw new StrykerInputException(
-                        ErrorMessage,
-                        $"Incorrect log level ({logLevel}). The log level options are [{string.Join(", ", (IEnumerable<LogEventLevel>)Enum.GetValues(typeof(LogEventLevel)))}]");
+                if (outputPath.IsNullOrEmptyInput())
+                {
+                    throw new StrykerInputException("Output path must be set if log to file is enabled");
+                }
+
+                Value = new LogOptions(Value.LogLevel, logToFile.Value, outputPath);
             }
-            Value = new LogOptions(_logEventLevel, logToFile, outputPath);
+
+            if (logLevel is { })
+            {
+                var logEventLevel = logLevel.ToLower() switch
+                {
+                    "error" => LogEventLevel.Error,
+                    "warning" => LogEventLevel.Warning,
+                    "info" => LogEventLevel.Information,
+                    "debug" => LogEventLevel.Debug,
+                    "trace" => LogEventLevel.Verbose,
+                    _ => throw new StrykerInputException($"Incorrect log level ({logLevel}).")
+                };
+
+                Value = new LogOptions(logEventLevel, Value.LogToFile, Value.OutputPath);
+            }
         }
 
         public override StrykerOption Type => StrykerOption.LogOptions;
         public override string HelpText => "Sets the console output logging level";
-        public override LogOptions DefaultValue => new LogOptions(LogEventLevel.Information, false, "");
+        public override LogOptions DefaultValue => new LogOptions(LogEventLevel.Information, logToFile: false, null);
     }
 }

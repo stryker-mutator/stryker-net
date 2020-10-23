@@ -1,23 +1,23 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    class LanguageVersionOption : BaseStrykerOption<LanguageVersion>
+    public class LanguageVersionOption : BaseStrykerOption<LanguageVersion>
     {
         public LanguageVersionOption(string languageVersion)
         {
-            if (Enum.TryParse(languageVersion, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)
+            if (languageVersion is { })
             {
-                Value = result;
-            }
-            else
-            {
-                throw new StrykerInputException(ErrorMessage,
-                    $"The given c# language version ({languageVersion}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+                if (Enum.TryParse(languageVersion, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)
+                {
+                    Value = result;
+                }
+                else
+                {
+                    throw new StrykerInputException($"The given c# language version ({languageVersion}) is invalid.");
+                }
             }
         }
 

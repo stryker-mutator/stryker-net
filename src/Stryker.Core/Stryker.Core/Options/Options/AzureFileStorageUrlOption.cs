@@ -8,17 +8,20 @@ namespace Stryker.Core.Options.Options
     {
         public AzureFileStorageUrlOption(string azureFileStorageUrl, BaselineProvider baselineProvider)
         {
-            if (baselineProvider == BaselineProvider.AzureFileStorage && azureFileStorageUrl == null)
+            if (baselineProvider == BaselineProvider.AzureFileStorage)
             {
-                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled.");
-            }
+                if (azureFileStorageUrl is null)
+                {
+                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
+                }
 
-            if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
-            {
-                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
-            }
+                if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
+                {
+                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
+                }
 
-            Value = azureFileStorageUrl;
+                Value = azureFileStorageUrl;
+            }
         }
 
         public override StrykerOption Type => StrykerOption.AzureFileStorageSas;
@@ -29,7 +32,5 @@ namespace Stryker.Core.Options.Options
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
 
                                     Note, the url might be different depending of where your file storage is hosted.";
-
-        public override string DefaultValue => null;
     }
 }

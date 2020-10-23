@@ -8,31 +8,37 @@ namespace Stryker.Core.Options.Options
 {
     public class ReportersOption : BaseStrykerOption<IEnumerable<Reporter>>
     {
-        public ReportersOption(bool compareToDashboard, string[] reporters)
+        public ReportersOption(IEnumerable<string> chosenReporters, bool compareToDashboard)
         {
-            var list = new List<Reporter>();
-            if (reporters == null)
+            var reporters = new List<Reporter>();
+
+            if (chosenReporters is null)
             {
-                foreach (var reporter in new[] { Reporter.Progress, Reporter.Html })
+                foreach (var reporter in DefaultValue)
                 {
-                    list.Add(reporter);
+                    reporters.Add(reporter);
                 }
-                Value = list;
-                return;
-            }
-            if (compareToDashboard)
-            {
-                var reportersList = reporters.ToList();
-                reportersList.Add("Baseline");
-                reporters = reportersList.ToArray();
             }
 
+            ValidateChosenReporters(chosenReporters, reporters);
+
+            if (compareToDashboard)
+            {
+                reporters.Add(Reporter.Baseline);
+            }
+
+            Value = reporters;
+        }
+
+        private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, List<Reporter> reporters)
+        {
             IList<string> invalidReporters = new List<string>();
-            foreach (var reporter in reporters)
+
+            foreach (var reporter in chosenReporters)
             {
                 if (Enum.TryParse(reporter, true, out Reporter result))
                 {
-                    list.Add(result);
+                    reporters.Add(result);
                 }
                 else
                 {
@@ -41,15 +47,12 @@ namespace Stryker.Core.Options.Options
             }
             if (invalidReporters.Any())
             {
-                throw new StrykerInputException(
-                    ErrorMessage,
-                    $"These reporter values are incorrect: {string.Join(", ", invalidReporters)}. Valid reporter options are [{string.Join(", ", (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)))}]");
+                throw new StrykerInputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
             }
-            // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
-            Value = list;
         }
+
         public override StrykerOption Type => StrykerOption.Reporters;
-        public override string HelpText => "Sets the reporter";
-        public override IEnumerable<Reporter> DefaultValue => null;
+        public override string HelpText => "Choose the reporters to enable.";
+        public override IEnumerable<Reporter> DefaultValue => new[] { Reporter.Progress, Reporter.Html };
     }
 }

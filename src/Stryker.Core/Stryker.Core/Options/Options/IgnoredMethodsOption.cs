@@ -4,20 +4,23 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options.Options
 {
-    class IgnoredMethodsOption : BaseStrykerOption<IEnumerable<Regex>>
+    public class IgnoredMethodsOption : BaseStrykerOption<IEnumerable<Regex>>
     {
-        public IgnoredMethodsOption(string[] ignoredMethods)
+        public IgnoredMethodsOption(IEnumerable<string> ignoredMethods)
         {
-            var list = new List<Regex>();
-            foreach (var methodPattern in ignoredMethods.Where(x => !string.IsNullOrWhiteSpace(x)))
+            if (ignoredMethods is { })
             {
-                list.Add(new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase));
+                var ignoredMethodPatterns = new List<Regex>();
+                foreach (var methodPattern in ignoredMethods.Where(pattern => !string.IsNullOrWhiteSpace(pattern)))
+                {
+                    ignoredMethodPatterns.Add(new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase));
+                }
+                Value = ignoredMethodPatterns;
             }
-            Value = list;
         }
 
         public override StrykerOption Type => StrykerOption.IgnoredMethods;
         public override string HelpText => "Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
-        public override IEnumerable<Regex> DefaultValue => null;
+        public override IEnumerable<Regex> DefaultValue => Enumerable.Empty<Regex>();
     }
 }

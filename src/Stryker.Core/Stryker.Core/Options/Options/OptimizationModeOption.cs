@@ -1,14 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Stryker.Core.Exceptions;
+using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    class OptimizationModeOption : BaseStrykerOption<string>
+    public class OptimizationModeOption : BaseStrykerOption<string>
     {
         public OptimizationModeOption(string coverageAnalysis)
         {
-            Value = coverageAnalysis;
+            if (!new[] { "off", "all", "pertest", "pertestinisolation" }.Contains(coverageAnalysis))
+            {
+                throw new StrykerInputException($"Incorrect coverageAnalysis option ({coverageAnalysis}).");
+            }
+
+            Value = coverageAnalysis is { } ? coverageAnalysis : DefaultValue;
         }
 
         public override StrykerOption Type => StrykerOption.OptimizationMode;

@@ -63,7 +63,7 @@ namespace Stryker.Core.ProjectComponents
             return killedCount / totalCount;
         }
 
-        public Health CheckHealth(Threshold threshold)
+        public Health CheckHealth(Thresholds threshold)
         {
             var mutationScore = GetMutationScore();
             if (double.IsNaN(mutationScore))

@@ -4,13 +4,16 @@ namespace Stryker.Core.Options.Options
 {
     class AdditionalTimeoutMsOption : BaseStrykerOption<int>
     {
-        public AdditionalTimeoutMsOption(int additionalTimeoutMs)
+        public AdditionalTimeoutMsOption(int? additionalTimeoutMs)
         {
-            if (additionalTimeoutMs < 0)
+            if (additionalTimeoutMs is { })
             {
-                throw new StrykerInputException("Timeout cannot be negative");
+                if (additionalTimeoutMs < 0)
+                {
+                    throw new StrykerInputException("Timeout cannot be negative");
+                }
+                Value = additionalTimeoutMs.Value;
             }
-            Value = additionalTimeoutMs;
         }
 
         public override StrykerOption Type => StrykerOption.AdditionalTimeoutMs;

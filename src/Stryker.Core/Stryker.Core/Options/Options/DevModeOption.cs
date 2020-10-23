@@ -2,9 +2,9 @@
 {
     class DevModeOption : BaseStrykerOption<bool>
     {
-        public DevModeOption(bool devMode)
+        public DevModeOption(bool? devMode)
         {
-            Value = devMode;
+            Value = devMode ?? DefaultValue;
         }
 
         public override StrykerOption Type => StrykerOption.DevMode;

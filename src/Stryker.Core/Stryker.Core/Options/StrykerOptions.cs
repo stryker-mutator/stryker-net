@@ -39,7 +39,7 @@ namespace Stryker.Core.Options
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
         public int ConcurrentTestrunners { get; }
-        public Threshold Thresholds { get; }
+        public Thresholds Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<FilePattern> FilePatterns { get; }
         public LanguageVersion LanguageVersion { get; }
@@ -449,7 +449,7 @@ namespace Stryker.Core.Options
             return maxConcurrentTestRunners.GetValueOrDefault();
         }
 
-        private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
+        private Thresholds ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
             List<int> thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
             if (thresholdList.Any(x => x > 100 || x < 0))
@@ -467,7 +467,7 @@ namespace Stryker.Core.Options
                     "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
             }
 
-            return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
+            return new Thresholds(thresholdHigh, thresholdLow, thresholdBreak);
         }
 
         private IEnumerable<FilePattern> ValidateFilePatterns(string[] filePatterns, string[] filesToExclude)

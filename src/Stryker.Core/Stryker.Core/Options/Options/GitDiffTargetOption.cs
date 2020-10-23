@@ -4,17 +4,18 @@ namespace Stryker.Core.Options.Options
 {
     class GitDiffTargetOption : BaseStrykerOption<string>
     {
-        public GitDiffTargetOption(string gitDiffTarget)
+        public GitDiffTargetOption(string gitDiffTarget, bool diffEnabled)
         {
-            if (string.IsNullOrEmpty(gitDiffTarget))
+            if (diffEnabled && gitDiffTarget.IsNullOrEmptyInput())
             {
-                throw new StrykerInputException("GitDiffTarget may not be empty, please provide a valid git branch name");
+                throw new StrykerInputException("The git diff target cannot be empty when the diff feature is enabled");
             }
-            Value = gitDiffTarget;
+
+            Value = gitDiffTarget ?? DefaultValue;
         }
 
         public override StrykerOption Type => StrykerOption.GitDiffTarget;
-        public override string HelpText => "Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when diff is enabled. Default: master";
+        public override string HelpText => "Sets the source commitish to compare with the current codebase, used for calculating the difference when diff is enabled.";
         public override string DefaultValue => "master";
     }
 }

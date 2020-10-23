@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             };
 
             file.GetMutationScore().ShouldBe(1);
-            file.CheckHealth(new Threshold(high: 100, low: 50, @break: 0)).ShouldBe(Health.Good);
+            file.CheckHealth(new Thresholds(high: 100, low: 50, @break: 0)).ShouldBe(Health.Good);
         }
 
         [Fact]
@@ -42,8 +42,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             };
 
             file.GetMutationScore().ShouldBe(0);
-            file.CheckHealth(new Threshold(high: 80, low: 1, @break: 0)).ShouldBe(Health.Danger);
-            file.CheckHealth(new Threshold(high: 80, low: 0, @break: 0)).ShouldBe(Health.Warning);
+            file.CheckHealth(new Thresholds(high: 80, low: 1, @break: 0)).ShouldBe(Health.Danger);
+            file.CheckHealth(new Thresholds(high: 80, low: 0, @break: 0)).ShouldBe(Health.Warning);
         }
 
         [Fact]
@@ -62,9 +62,9 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             };
 
             file.GetMutationScore().ShouldBe(0.5);
-            file.CheckHealth(new Threshold(high: 80, low: 60, @break: 0)).ShouldBe(Health.Danger);
-            file.CheckHealth(new Threshold(high: 80, low: 50, @break: 0)).ShouldBe(Health.Warning);
-            file.CheckHealth(new Threshold(high: 50, low: 49, @break: 0)).ShouldBe(Health.Good);
+            file.CheckHealth(new Thresholds(high: 80, low: 60, @break: 0)).ShouldBe(Health.Danger);
+            file.CheckHealth(new Thresholds(high: 80, low: 50, @break: 0)).ShouldBe(Health.Warning);
+            file.CheckHealth(new Thresholds(high: 50, low: 49, @break: 0)).ShouldBe(Health.Good);
         }
     }
 }

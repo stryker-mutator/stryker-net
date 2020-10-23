@@ -1,7 +1,6 @@
 ﻿using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using System;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
@@ -9,14 +8,16 @@ namespace Stryker.Core.Options.Options
     {
         public MutationLevelOption(string mutationLevel)
         {
-            if (Enum.TryParse(mutationLevel, true, out MutationLevel level))
+            if (mutationLevel is { })
             {
-                Value = level;
-            }
-            else
-            {
-                throw new StrykerInputException(ErrorMessage,
-                    $"The given mutation level ({mutationLevel}) is invalid. Valid options are: [{ string.Join(", ", (IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))) }]");
+                if (Enum.TryParse(mutationLevel, true, out MutationLevel level))
+                {
+                    Value = level;
+                }
+                else
+                {
+                    throw new StrykerInputException($"The given mutation level ({mutationLevel}) is invalid.");
+                }
             }
         }
 

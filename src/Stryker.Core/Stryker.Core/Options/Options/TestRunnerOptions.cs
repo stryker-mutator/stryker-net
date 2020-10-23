@@ -1,23 +1,25 @@
 ﻿using Stryker.Core.Exceptions;
 using Stryker.Core.TestRunners;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Stryker.Core.Options.Options
 {
+    // Deprecated, might be removed soon
     class TestRunnerOptions : BaseStrykerOption<TestRunner>
     {
         public TestRunnerOptions(string testRunner)
         {
-            if (Enum.TryParse(testRunner, true, out TestRunner result))
+            if (testRunner is { })
             {
-                Value = result;
-            }
-            else
-            {
-                throw new StrykerInputException(ErrorMessage,
-                    $"The given test runner ({testRunner}) is invalid. Valid options are: [{string.Join(", ", (IEnumerable<TestRunner>)Enum.GetValues(typeof(TestRunner)))}]");
+                if (Enum.TryParse(testRunner, true, out TestRunner result))
+                {
+                    Value = result;
+                    return;
+                }
+                else
+                {
+                    throw new StrykerInputException($"The given test runner ({testRunner}) is invalid.");
+                }
             }
         }
 

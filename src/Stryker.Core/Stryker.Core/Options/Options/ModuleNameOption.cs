@@ -6,18 +6,18 @@ namespace Stryker.Core.Options.Options
     {
         public ModuleNameOption(string moduleName)
         {
-            if (moduleName == "")
+            if (moduleName is { })
             {
-                throw new StrykerInputException("Module name cannot be empty. Either fill the option or leave it out.");
+                if (moduleName.IsEmptyInput())
+                {
+                    throw new StrykerInputException("Module name cannot be empty. Either fill the option or leave it out.");
+                }
+                Value = moduleName;
             }
-
-            Value = moduleName;
         }
 
         public override StrykerOption Type => StrykerOption.ModuleName;
 
         public override string HelpText => "Module name used by reporters. Usually a project in your solution would be a module.";
-
-        public override string DefaultValue => null;
     }
 }
