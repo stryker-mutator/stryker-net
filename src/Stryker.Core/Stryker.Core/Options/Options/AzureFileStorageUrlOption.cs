@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Options
         {
             if (baselineProvider == BaselineProvider.AzureFileStorage && azureFileStorageUrl == null)
             {
-                throw new StrykerInputException("The url pointing to your file storage is required when Azure File Storage is enabled.");
+                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled.");
             }
         }
 
