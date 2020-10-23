@@ -9,12 +9,7 @@ namespace Stryker.Core.Options.Options
         {
             if (baselineProvider == BaselineProvider.AzureFileStorage)
             {
-                if (azureFileStorageSas == null)
-                {
-                    throw new StrykerInputException("The azure file storage shared access signature is required when the azure file storage baseline location is chosen.");
-                }
-
-                Value = azureFileStorageSas;
+                Value = azureFileStorageSas ?? throw new StrykerInputException("The azure file storage shared access signature is required when the azure file storage baseline location is chosen.");
 
                 // Normalize the SAS
                 if (azureFileStorageSas.StartsWith("?sv="))
