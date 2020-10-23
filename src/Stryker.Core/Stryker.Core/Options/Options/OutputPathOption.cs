@@ -5,7 +5,7 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Options
 {
-	class OutputPathOption : BaseStrykerOption<string>
+	public class OutputPathOption : BaseStrykerOption<string>
 	{
         public OutputPathOption(string basepath, IFileSystem fileSystem, ILogger logger) : base(basepath)
 		{
@@ -29,7 +29,6 @@ namespace Stryker.Core.Options.Options
         }
 
 		public override StrykerOption Type => StrykerOption.OutputPath;
-		public override string Name => nameof(OutputPathOption);
 		public override string HelpText => "";
 		public override string DefaultValue => "";
 		protected override void Validate(params string[] parameters)

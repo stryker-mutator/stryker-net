@@ -8,7 +8,7 @@
 		}
 
 		public abstract StrykerOption Type { get; }
-		public abstract string Name { get; }
+		public string Name => GetType().Name;
 		public abstract string HelpText { get; }
 		public T Value { get; protected set; }
 		public abstract T DefaultValue { get; }

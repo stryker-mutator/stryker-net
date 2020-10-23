@@ -10,7 +10,6 @@ namespace Stryker.Core.Options.Options
 		}
 
 		public override StrykerOption Type => StrykerOption.BasePath;
-		public override string Name => nameof(BasePathOption);
 		public override string HelpText => "";
 		public override string DefaultValue => "";
 
