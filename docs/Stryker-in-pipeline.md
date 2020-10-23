@@ -1,5 +1,6 @@
 ---
 title: Installing Stryker in pipelines
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Stryker-in-pipeline.md
 ---
 
 When running stryker in your pipeline there are some things to take into consideration

@@ -1,3 +1,7 @@
+---
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Reporters.md
+---
+
 Stryker supports a variety of reporters. Enabled reporters will be activated during and after your Stryker run. 
 
 The default reporters are:
