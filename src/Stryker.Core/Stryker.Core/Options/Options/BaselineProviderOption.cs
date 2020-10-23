@@ -9,7 +9,7 @@ namespace Stryker.Core.Options.Options
 {
 	public class BaselineProviderOption : BaseStrykerOption<BaselineProvider>
 	{
-		BaselineProviderOption(IEnumerable<Reporter> reporters, string baselineProviderLocation) : base(baselineProviderLocation)
+		public BaselineProviderOption(IEnumerable<Reporter> reporters, string baselineProviderLocation)
 		{
 			var normalizedLocation = baselineProviderLocation?.ToLower() ?? "";
 
@@ -32,9 +32,5 @@ namespace Stryker.Core.Options.Options
 		public override StrykerOption Type => StrykerOption.BaselineProvider;
 		public override string HelpText => "";
 		public override BaselineProvider DefaultValue => BaselineProvider.Disk;
-		protected override void Validate(params string[] parameters)
-		{
-
-		}
 	}
 }
