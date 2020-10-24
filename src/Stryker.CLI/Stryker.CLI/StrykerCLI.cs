@@ -38,7 +38,8 @@ namespace Stryker.CLI
                 Name = "Stryker",
                 FullName = "Stryker: Stryker mutator for .Net",
                 Description = "Stryker mutator for .Net",
-                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
+                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run",
+                HelpTextGenerator = new GroupedHelpTextGenerator()
             };
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
@@ -202,9 +203,25 @@ namespace Stryker.CLI
                 ? $"(deprecated:{option.DeprecatedMessage})" + option.ArgumentDescription
                 : option.ArgumentDescription;
 
-            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
-                description,
-                option.ValueType);
+            var commandOption = new CategoryCommandOption($"{option.ArgumentName} | {option.ArgumentShortName}", option.ValueType, option.Category)
+            {
+                Description = description
+            };
+
+            app.Options.Add(commandOption);
+
+            return commandOption;
+        }
+    }
+
+    public class CategoryCommandOption : CommandOption
+    {
+        public OptionCategory Category { get; private set; }
+
+        public CategoryCommandOption(string template, CommandOptionType optionType, OptionCategory category) :
+            base(template, optionType)
+        {
+            this.Category = category;
         }
     }
 }

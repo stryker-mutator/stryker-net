@@ -60,7 +60,8 @@ namespace Stryker.CLI
     Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
             DefaultValue = _defaultOptions.DevMode,
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "dev-mode"
+            JsonKey = "dev-mode",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<int> AdditionalTimeoutMS = new CLIOption<int>
@@ -69,7 +70,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-t <ms>",
             ArgumentDescription = $"Stryker calculates a timeout based on the time the testrun takes before the mutations| Options {_defaultOptions.AdditionalTimeoutMS}",
             DefaultValue = _defaultOptions.AdditionalTimeoutMS,
-            JsonKey = "timeout-ms"
+            JsonKey = "timeout-ms",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<string[]> ExcludedMutations = new CLIOption<string[]>
@@ -78,7 +80,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-em <mutators>",
             ArgumentDescription = @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']",
-            JsonKey = "excluded-mutations"
+            JsonKey = "excluded-mutations",
+            Category = OptionCategory.Mutation
         };
 
         public static readonly CLIOption<string[]> IgnoreMethods = new CLIOption<string[]>
@@ -86,7 +89,8 @@ namespace Stryker.CLI
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
             ArgumentDescription = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']",
-            JsonKey = "ignore-methods"
+            JsonKey = "ignore-methods",
+            Category = OptionCategory.Mutation
         };
 
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
@@ -94,7 +98,8 @@ namespace Stryker.CLI
             ArgumentName = "--project-file",
             ArgumentShortName = "-p <projectFileName>",
             ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
-            JsonKey = "project-file"
+            JsonKey = "project-file",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<bool> Diff = new CLIOption<bool>
@@ -103,7 +108,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-diff",
             ArgumentDescription = @"Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "diff"
+            JsonKey = "diff",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<bool> DashboardCompare = new CLIOption<bool>
@@ -112,8 +118,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-compare",
             ArgumentDescription = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "dashboard-compare"
-
+            JsonKey = "dashboard-compare",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string[]> DiffIgnoreFiles = new CLIOption<string[]>
@@ -127,7 +133,8 @@ namespace Stryker.CLI
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
             Example: ['**/*Assets.json','**/favicon.ico']",
             DefaultValue = null,
-            JsonKey = "diff-ignore-files"
+            JsonKey = "diff-ignore-files",
+            Category = OptionCategory.Execution
         };
 
 
@@ -139,7 +146,8 @@ namespace Stryker.CLI
                                      When using the azure file storage, make sure to configure the -sas and -storage-url options.",
             ValueType = CommandOptionType.SingleValue,
             DefaultValue = _defaultOptions.BaselineProvider.ToString(),
-            JsonKey = "baseline-storage-location"
+            JsonKey = "baseline-storage-location",
+            Category = OptionCategory.Storage
         };
 
         public static readonly CLIOption<string> GitDiffTarget = new CLIOption<string>
@@ -148,7 +156,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-gdt <commitish>",
             ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
             DefaultValue = _defaultOptions.GitDiffTarget,
-            JsonKey = "git-diff-target"
+            JsonKey = "git-diff-target",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<string> CoverageAnalysis = new CLIOption<string>
@@ -161,7 +170,8 @@ namespace Stryker.CLI
     - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
     - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
-            JsonKey = "coverage-analysis"
+            JsonKey = "coverage-analysis",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<bool> AbortTestOnFail = new CLIOption<bool>
@@ -171,7 +181,8 @@ namespace Stryker.CLI
             DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill),
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "abort-test-on-fail"
+            JsonKey = "abort-test-on-fail",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<bool> DisableTestingMix = new CLIOption<bool>
@@ -181,7 +192,8 @@ namespace Stryker.CLI
             DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.DisableTestMix),
             ArgumentDescription = @"Test each mutation in an isolated test run.",
             ValueType = CommandOptionType.NoValue,
-            JsonKey = "disable-testing-mix-mutations"
+            JsonKey = "disable-testing-mix-mutations",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<int> MaxConcurrentTestRunners = new CLIOption<int>
@@ -198,7 +210,8 @@ namespace Stryker.CLI
         - You're running on a shared server
         - You are running stryker in the background while doing other work",
             DefaultValue = _defaultOptions.ConcurrentTestrunners,
-            JsonKey = "max-concurrent-test-runners"
+            JsonKey = "max-concurrent-test-runners",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<int> ThresholdBreak = new CLIOption<int>
@@ -207,7 +220,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-tb <thresholdBreak>",
             ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {_defaultOptions.Thresholds.Break} (default)",
             DefaultValue = _defaultOptions.Thresholds.Break,
-            JsonKey = "threshold-break"
+            JsonKey = "threshold-break",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<int> ThresholdLow = new CLIOption<int>
@@ -216,7 +230,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-tl <thresholdLow>",
             ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {_defaultOptions.Thresholds.Low} (default)",
             DefaultValue = _defaultOptions.Thresholds.Low,
-            JsonKey = "threshold-low"
+            JsonKey = "threshold-low",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<int> ThresholdHigh = new CLIOption<int>
@@ -225,7 +240,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-th <thresholdHigh>",
             ArgumentDescription = $"Set the preferred mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
             DefaultValue = _defaultOptions.Thresholds.High,
-            JsonKey = "threshold-high"
+            JsonKey = "threshold-high",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<string[]> FilesToExclude = new CLIOption<string[]>
@@ -236,7 +252,8 @@ namespace Stryker.CLI
             DefaultValue = null,
             JsonKey = "files-to-exclude",
             IsDeprecated = true,
-            DeprecatedMessage = "Use '--mutate' instead."
+            DeprecatedMessage = "Use '--mutate' instead.",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<string[]> Mutate = new CLIOption<string[]>
@@ -250,6 +267,7 @@ namespace Stryker.CLI
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']",
             DefaultValue = null,
             JsonKey = "mutate",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<string> SolutionPath = new CLIOption<string>
@@ -259,7 +277,8 @@ namespace Stryker.CLI
             ArgumentDescription = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
     .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
             DefaultValue = null,
-            JsonKey = "solution-path"
+            JsonKey = "solution-path",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<string> TestRunner = new CLIOption<string>
@@ -268,7 +287,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-tr <testRunner>",
             ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
             DefaultValue = _defaultOptions.TestRunner.ToString(),
-            JsonKey = "test-runner"
+            JsonKey = "test-runner",
+            Category = OptionCategory.Execution
         };
 
         public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
@@ -277,7 +297,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-lv <csharp-version-name>",
             ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
             DefaultValue = _defaultOptions.LanguageVersion.ToString(),
-            JsonKey = "language-version"
+            JsonKey = "language-version",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
@@ -286,7 +307,8 @@ namespace Stryker.CLI
             ArgumentShortName = "-dk <api-key>",
             ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
             DefaultValue = null,
-            JsonKey = "dashboard-api-key"
+            JsonKey = "dashboard-api-key",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string> DashboardProjectNameOption = new CLIOption<string>
@@ -296,7 +318,8 @@ namespace Stryker.CLI
             ArgumentDescription = @"The organizational name for your project. Required when dashboard reporter is turned on.
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.",
             DefaultValue = null,
-            JsonKey = "dashboard-project"
+            JsonKey = "dashboard-project",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string> DashboardModuleNameOption = new CLIOption<string>
@@ -305,7 +328,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-module <name>",
             ArgumentDescription = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.",
             DefaultValue = null,
-            JsonKey = "dashboard-module"
+            JsonKey = "dashboard-module",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string> DashboardProjectVersionOption = new CLIOption<string>
@@ -314,7 +338,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-version <version>",
             ArgumentDescription = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
             DefaultValue = null,
-            JsonKey = "dashboard-version"
+            JsonKey = "dashboard-version",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string> DashboardFallbackVersionOption = new CLIOption<string>
@@ -323,7 +348,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-fallback-version <version>",
             ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. When you don't specify a fallback version, --git-source will be used as fallback version. Example: If the current branch is based on the master branch, set 'master' as the fallback version",
             DefaultValue = null,
-            JsonKey = "dashboard-fallback-version"
+            JsonKey = "dashboard-fallback-version",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<string> DashboardUrlOption = new CLIOption<string>
@@ -332,7 +358,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-url <dashboard-url>",
             ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
             DefaultValue = _defaultOptions.DashboardUrl,
-            JsonKey = "dashboard-url"
+            JsonKey = "dashboard-url",
+            Category = OptionCategory.Dashboard
         };
 
         public static readonly CLIOption<IEnumerable<string>> TestProjects = new CLIOption<IEnumerable<string>>
@@ -341,7 +368,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-tp",
             ArgumentDescription = $"Specify what test projects should run on the project under test.",
             DefaultValue = _defaultOptions.TestProjects,
-            JsonKey = "test-projects"
+            JsonKey = "test-projects",
+            Category = OptionCategory.Build
         };
 
         public static readonly CLIOption<string> AzureSAS = new CLIOption<string>
@@ -350,7 +378,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-sas <azure-sas-key>",
             ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
             DefaultValue = null,
-            JsonKey = "azure-storage-sas"
+            JsonKey = "azure-storage-sas",
+            Category = OptionCategory.Storage
         };
 
         public static readonly CLIOption<string> AzureFileStorageUrl = new CLIOption<string>
@@ -364,7 +393,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
 
                                     Note, the url might be different depending of where your file storage is hosted.",
             DefaultValue = null,
-            JsonKey = "azure-storage-url"
+            JsonKey = "azure-storage-url",
+            Category = OptionCategory.Storage
         };
 
         public static readonly CLIOption<string> MutationLevel = new CLIOption<string>
@@ -373,7 +403,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentShortName = "-level",
             ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
             DefaultValue = _defaultOptions.MutationLevel.ToString(),
-            JsonKey = "mutation-level"
+            JsonKey = "mutation-level",
+            Category = OptionCategory.Mutation
         };
 
         private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)

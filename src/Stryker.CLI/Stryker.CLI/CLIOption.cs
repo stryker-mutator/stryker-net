@@ -12,5 +12,6 @@ namespace Stryker.CLI
         public bool IsDeprecated { get; set; }
         public string DeprecatedMessage { get; set; }
         public CommandOptionType ValueType { get; set; } = CommandOptionType.SingleValue;
+        public OptionCategory Category { get; set; } = OptionCategory.Generic;
     }
 }
