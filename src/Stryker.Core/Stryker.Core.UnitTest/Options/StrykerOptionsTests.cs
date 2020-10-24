@@ -1,15 +1,11 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -66,22 +62,6 @@ namespace Stryker.Core.UnitTest.Options
             });
 
             ex.Details.ShouldNotBeNullOrEmpty();
-        }
-
-        [Theory]
-        [InlineData("./MyFolder/MyFile.cs", "MyFolder/MyFile.cs")]
-        [InlineData("./MyFolder", "MyFolder/*.*")]
-        [InlineData("C:/MyFolder/MyFile.cs", "C:/MyFolder/MyFile.cs")]
-        public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
-        {
-            // Act
-            var result = new StrykerOptions(filesToExclude: new[] { fileToExclude });
-
-            // Assert
-            var pattern = result.FilePatterns.Last();
-            Path.GetFullPath(pattern.Glob.ToString()).ShouldBe(Path.GetFullPath(expectedFilePattern));
-            pattern.TextSpans.ShouldContain(TextSpan.FromBounds(0, int.MaxValue));
-            pattern.IsExclude.ShouldBeTrue();
         }
 
         [Fact]

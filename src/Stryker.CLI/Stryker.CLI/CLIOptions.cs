@@ -1,14 +1,8 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Stryker.CLI
 {
@@ -26,8 +20,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(ReportersOption.DefaultValue, (IEnumerable<Reporter>)Enum.GetValues(ReportersOption.DefaultValue.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
-    This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
+            ArgumentDescription = ReportersOption.HelpText,
             DefaultValue = ReportersOption.DefaultValue.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
@@ -36,7 +29,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--log-level",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]",
+            ArgumentDescription = LogOptionsOption.HelpText,
             DefaultValue = "info",
             JsonKey = "log-level"
         };
@@ -45,8 +38,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
-            ArgumentDescription = "Makes the logger write to a file (Logging to file always uses loglevel trace)",
-            DefaultValue = false,
+            ArgumentDescription = LogOptionsOption.HelpText,
+            DefaultValue = LogOptionsOption.DefaultValue.LogToFile,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
@@ -55,8 +48,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dev-mode",
             ArgumentShortName = "-dev",
-            ArgumentDescription = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
-    Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
+            ArgumentDescription = DevModeOption.HelpText,
             DefaultValue = DevModeOption.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dev-mode"
@@ -66,25 +58,26 @@ namespace Stryker.CLI
         {
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
-            ArgumentDescription = $"Stryker calculates a timeout based on the time the testrun takes before the mutations| Options {AdditionalTimeoutMsOption.DefaultValue}",
+            ArgumentDescription = AdditionalTimeoutMsOption.HelpText,
             DefaultValue = AdditionalTimeoutMsOption.DefaultValue,
             JsonKey = "timeout-ms"
         };
 
-        public static readonly CLIOption<string[]> ExcludedMutations = new CLIOption<string[]>
+        public static readonly CLIOption<IEnumerable<string>> ExcludedMutations = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--excluded-mutations",
             ArgumentShortName = "-em <mutators>",
-            ArgumentDescription = @"The given mutators will be excluded for this mutation testrun.
-    This argument takes a json array as value. Example: ['string', 'logical']",
+            ArgumentDescription = ExcludedMutatorsOption.HelpText,
+            DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "excluded-mutations"
         };
 
-        public static readonly CLIOption<string[]> IgnoreMethods = new CLIOption<string[]>
+        public static readonly CLIOption<IEnumerable<string>> IgnoreMethods = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
-            ArgumentDescription = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']",
+            ArgumentDescription = IgnoredMethodsOption.HelpText,
+            DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "ignore-methods"
         };
 
@@ -92,7 +85,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--project-file",
             ArgumentShortName = "-p <projectFileName>",
-            ArgumentDescription = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""",
+            ArgumentDescription = ProjectUnderTestNameFilterOption.HelpText,
+            DefaultValue = ProjectUnderTestNameFilterOption.DefaultValue,
             JsonKey = "project-file"
         };
 
@@ -100,7 +94,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--diff",
             ArgumentShortName = "-diff",
-            ArgumentDescription = @"Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.",
+            ArgumentDescription = DiffEnabledOption.HelpText,
+            DefaultValue = DiffEnabledOption.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "diff"
         };
@@ -109,23 +104,19 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-compare",
             ArgumentShortName = "-compare",
-            ArgumentDescription = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with {Diff.ArgumentName}",
+            ArgumentDescription = CompareToDashboardOption.HelpText,
+            DefaultValue = CompareToDashboardOption.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dashboard-compare"
 
         };
 
-        public static readonly CLIOption<string[]> DiffIgnoreFiles = new CLIOption<string[]>
+        public static readonly CLIOption<IEnumerable<string>> DiffIgnoreFiles = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--diff-ignore-files",
             ArgumentShortName = "-diffignorefiles",
-            ArgumentDescription = @"Allows to specify an array of C# files which should be ignored if present in the diff.
-             Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
-            This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
-            
-            Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
-            Example: ['**/*Assets.json','**/favicon.ico']",
-            DefaultValue = null,
+            ArgumentDescription = DiffIgnoreFilePatternsOption.HelpText,
+            DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "diff-ignore-files"
         };
 
@@ -134,9 +125,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--baseline-storage-location",
             ArgumentShortName = "-bsl <storageLocation>",
-            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(BaselineProviderOption.DefaultValue, (IEnumerable<BaselineProvider>)Enum.GetValues(BaselineProviderOption.DefaultValue.GetType())) }]
-                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.",
-            ValueType = CommandOptionType.SingleValue,
+            ArgumentDescription = BaselineProviderOption.HelpText,
             DefaultValue = BaselineProviderOption.DefaultValue.ToString(),
             JsonKey = "baseline-storage-location"
         };
@@ -145,7 +134,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--git-diff-target",
             ArgumentShortName = "-gdt <commitish>",
-            ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
+            ArgumentDescription = GitDiffTargetOption.HelpText,
             DefaultValue = GitDiffTargetOption.DefaultValue,
             JsonKey = "git-diff-target"
         };
@@ -154,12 +143,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
+            ArgumentDescription = OptimizationModeOption.HelpText,
             DefaultValue = OptimizationModeOption.DefaultValue,
-            ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
-    - off: coverage data is not captured.
-    - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
-    - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
-    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.",
             JsonKey = "coverage-analysis"
         };
 
@@ -167,8 +152,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
+            ArgumentDescription = OptimizationsOption.HelpText,
             DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.AbortTestOnKill),
-            ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
         };
@@ -177,8 +162,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--disable-testing-mix-mutations",
             ArgumentShortName = "-tmm",
+            ArgumentDescription = OptimizationsOption.HelpText,
             DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.DisableTestMix),
-            ArgumentDescription = @"Test each mutation in an isolated test run.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "disable-testing-mix-mutations"
         };
@@ -187,15 +172,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--max-concurrent-test-runners",
             ArgumentShortName = "-c <integer>",
-            ArgumentDescription = @"Mutation testing is time consuming. 
-    By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
-    This setting allows you to override this default behavior.
-
-    Reasons you might want to lower this setting:
-                                                                 
-        - Your test runner starts a browser (another CPU-intensive process)
-        - You're running on a shared server
-        - You are running stryker in the background while doing other work",
+            ArgumentDescription = ConcurrentTestrunnersOption.HelpText,
             DefaultValue = ConcurrentTestrunnersOption.DefaultValue,
             JsonKey = "max-concurrent-test-runners"
         };
@@ -204,7 +181,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
-            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {ThresholdsOption.DefaultValue.Break} (default)",
+            ArgumentDescription = ThresholdsOption.HelpText,
             DefaultValue = ThresholdsOption.DefaultValue.Break,
             JsonKey = "threshold-break"
         };
@@ -213,7 +190,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
-            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {ThresholdsOption.DefaultValue.Low} (default)",
+            ArgumentDescription = ThresholdsOption.HelpText,
             DefaultValue = ThresholdsOption.DefaultValue.Low,
             JsonKey = "threshold-low"
         };
@@ -222,32 +199,17 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the preferred mutation score threshold. | {ThresholdsOption.DefaultValue.High} (default)",
+            ArgumentDescription = ThresholdsOption.HelpText,
             DefaultValue = ThresholdsOption.DefaultValue.High,
             JsonKey = "threshold-high"
         };
 
-        public static readonly CLIOption<string[]> FilesToExclude = new CLIOption<string[]>
-        {
-            ArgumentName = "--files-to-exclude",
-            ArgumentShortName = "-fte <files-to-exclude>",
-            ArgumentDescription = "Set files to exclude for mutation. Example: ['C:/ExampleProject/Example.cs','C:/ExampleProject/Example2.cs']",
-            DefaultValue = null,
-            JsonKey = "files-to-exclude",
-            IsDeprecated = true,
-            DeprecatedMessage = "Use '--mutate' instead."
-        };
-
-        public static readonly CLIOption<string[]> Mutate = new CLIOption<string[]>
+        public static readonly CLIOption<IEnumerable<string>> Mutate = new CLIOption<IEnumerable<string>>
         {
             ArgumentName = "--mutate",
             ArgumentShortName = "-m <file-patterns>",
-            ArgumentDescription = @"Allows to specify file that should in- or excluded for the mutations.
-    Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
-    Use '!' at the start of a pattern to exclude all matched files.
-    Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
-    Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']",
-            DefaultValue = null,
+            ArgumentDescription = MutateOption.HelpText,
+            DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "mutate",
         };
 
@@ -255,9 +217,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--solution-path",
             ArgumentShortName = "-s <path>",
-            ArgumentDescription = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
-    .net framework but can optionally be used for .net core. Path can be relative from test project or full path.",
-            DefaultValue = null,
+            ArgumentDescription = SolutionPathOption.HelpText,
+            DefaultValue = SolutionPathOption.DefaultValue,
             JsonKey = "solution-path"
         };
 
@@ -265,7 +226,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr <testRunner>",
-            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(TestRunnerOption.DefaultValue, (IEnumerable<TestRunner>)Enum.GetValues(TestRunnerOption.DefaultValue.GetType())) }",
+            ArgumentDescription = TestRunnerOption.HelpText,
             DefaultValue = TestRunnerOption.DefaultValue.ToString(),
             JsonKey = "test-runner"
         };
@@ -274,7 +235,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--language-version",
             ArgumentShortName = "-lv <csharp-version-name>",
-            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(LanguageVersionOption.DefaultValue, ((IEnumerable<LanguageVersion>)Enum.GetValues(LanguageVersionOption.DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
+            ArgumentDescription = LanguageVersionOption.HelpText,
             DefaultValue = LanguageVersionOption.DefaultValue.ToString(),
             JsonKey = "language-version"
         };
@@ -283,8 +244,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {DashboardApiKeyOption.DefaultValue}",
-            DefaultValue = null,
+            ArgumentDescription = DashboardApiKeyOption.HelpText,
+            DefaultValue = DashboardApiKeyOption.DefaultValue,
             JsonKey = "dashboard-api-key"
         };
 
@@ -292,9 +253,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-project",
             ArgumentShortName = "-project <name>",
-            ArgumentDescription = @"The organizational name for your project. Required when dashboard reporter is turned on.
-For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.",
-            DefaultValue = null,
+            ArgumentDescription = ProjectNameOption.HelpText,
+            DefaultValue = ProjectNameOption.DefaultValue,
             JsonKey = "dashboard-project"
         };
 
@@ -302,8 +262,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-module",
             ArgumentShortName = "-module <name>",
-            ArgumentDescription = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.",
-            DefaultValue = null,
+            ArgumentDescription = ModuleNameOption.HelpText,
+            DefaultValue = ModuleNameOption.DefaultValue,
             JsonKey = "dashboard-module"
         };
 
@@ -311,8 +271,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-version",
             ArgumentShortName = "-version <version>",
-            ArgumentDescription = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.",
-            DefaultValue = null,
+            ArgumentDescription = ProjectVersionOption.HelpText,
+            DefaultValue = ProjectVersionOption.DefaultValue,
             JsonKey = "dashboard-version"
         };
 
@@ -320,8 +280,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-fallback-version",
             ArgumentShortName = "-fallback-version <version>",
-            ArgumentDescription = $"Project version used as a fallback when no report could be found based on Git information for the Compare feature in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing. When you don't specify a fallback version, --git-source will be used as fallback version. Example: If the current branch is based on the master branch, set 'master' as the fallback version",
-            DefaultValue = null,
+            ArgumentDescription = FallbackVersionOption.HelpText,
+            DefaultValue = FallbackVersionOption.DefaultValue,
             JsonKey = "dashboard-fallback-version"
         };
 
@@ -329,7 +289,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
-            ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
+            ArgumentDescription = DashboardUrlOption.HelpText,
             DefaultValue = DashboardUrlOption.DefaultValue,
             JsonKey = "dashboard-url"
         };
@@ -338,7 +298,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--test-projects",
             ArgumentShortName = "-tp",
-            ArgumentDescription = $"Specify what test projects should run on the project under test.",
+            ArgumentDescription = TestProjectsOption.HelpText,
             DefaultValue = TestProjectsOption.DefaultValue,
             JsonKey = "test-projects"
         };
@@ -347,8 +307,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--azure-storage-sas",
             ArgumentShortName = "-sas <azure-sas-key>",
-            ArgumentDescription = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview",
-            DefaultValue = null,
+            ArgumentDescription = AzureFileStorageSasOption.HelpText,
+            DefaultValue = AzureFileStorageSasOption.DefaultValue,
             JsonKey = "azure-storage-sas"
         };
 
@@ -356,13 +316,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--azure-storage-url",
             ArgumentShortName = "-storage-url <url>",
-            ArgumentDescription = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
-                                    The url should look something like this: 
-
-                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
-
-                                    Note, the url might be different depending of where your file storage is hosted.",
-            DefaultValue = null,
+            ArgumentDescription = AzureFileStorageUrlOption.HelpText,
+            DefaultValue = AzureFileStorageUrlOption.DefaultValue,
             JsonKey = "azure-storage-url"
         };
 
@@ -370,37 +325,37 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--mutation-level",
             ArgumentShortName = "-level",
-            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(MutationLevelOption.DefaultValue, (IEnumerable<LanguageVersion>)Enum.GetValues(MutationLevelOption.DefaultValue.GetType())) }",
+            ArgumentDescription = MutationLevelOption.HelpText,
             DefaultValue = MutationLevelOption.DefaultValue.ToString(),
             JsonKey = "mutation-level"
         };
 
-        private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
-        {
-            return FormatOptionsString(new List<T> { @default }, options, new List<Y>());
-        }
+        //private static string FormatOptionsString<T, Y>(T @default, IEnumerable<Y> options)
+        //{
+        //    return FormatOptionsString(new List<T> { @default }, options, new List<Y>());
+        //}
 
-        private static string FormatOptionsString<T, Y>(IEnumerable<T> @default, IEnumerable<Y> options, IEnumerable<Y> deprecated)
-        {
-            StringBuilder optionsString = new StringBuilder();
+        //private static string FormatOptionsString<T, Y>(IEnumerable<T> @default, IEnumerable<Y> options, IEnumerable<Y> deprecated)
+        //{
+        //    StringBuilder optionsString = new StringBuilder();
 
-            optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
-            string nonDefaultOptions = string.Join(
-            ", ",
-            options
-            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
-            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
+        //    optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
+        //    string nonDefaultOptions = string.Join(
+        //    ", ",
+        //    options
+        //    .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
+        //    .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
 
-            string deprecatedOptions = "";
-            if (deprecated.Any())
-            {
-                deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
-            }
+        //    string deprecatedOptions = "";
+        //    if (deprecated.Any())
+        //    {
+        //        deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
+        //    }
 
-            optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
-            optionsString.Append(" ]");
+        //    optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+        //    optionsString.Append(" ]");
 
-            return optionsString.ToString();
-        }
+        //    return optionsString.ToString();
+        //}
     }
 }

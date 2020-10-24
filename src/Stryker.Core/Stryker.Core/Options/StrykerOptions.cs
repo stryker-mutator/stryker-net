@@ -61,11 +61,11 @@ namespace Stryker.Core.Options
             ILogger logger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
-            string[] reporters = null,
+            IEnumerable<string> reporters = null,
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 5000,
-            string[] excludedMutations = null,
-            string[] ignoredMethods = null,
+            IEnumerable<string> excludedMutations = null,
+            IEnumerable<string> ignoredMethods = null,
             string logLevel = "info",
             bool logToFile = false,
             bool devMode = false,
@@ -76,8 +76,7 @@ namespace Stryker.Core.Options
             int thresholdHigh = 80,
             int thresholdLow = 60,
             int thresholdBreak = 0,
-            string[] filesToExclude = null,
-            string[] mutate = null,
+            IEnumerable<string> mutate = null,
             string testRunner = "vstest",
             string solutionPath = null,
             string languageVersion = "latest",
@@ -95,7 +94,7 @@ namespace Stryker.Core.Options
             string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null,
             string mutationLevel = null,
-            string[] diffIgnoreFiles = null)
+            IEnumerable<string> diffIgnoreFiles = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
