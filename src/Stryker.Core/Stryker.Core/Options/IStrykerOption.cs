@@ -4,7 +4,5 @@
     {
         StrykerOption Type { get; }
         T Value { get; }
-        T DefaultValue { get; }
-        string HelpText { get; }
     }
 }

@@ -5,6 +5,13 @@ namespace Stryker.Core.Options.Options
 {
     public class AzureFileStorageSasOption : BaseStrykerOption<string>
     {
+        static AzureFileStorageSasOption()
+        {
+            HelpText = "The Shared Access Signature for Azure File Storage, required when azure file storage baseline  is chosen is selected. \nFor more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
+        }
+
+        public override StrykerOption Type => StrykerOption.AzureFileStorageSas;
+
         public AzureFileStorageSasOption(string azureFileStorageSas, BaselineProvider baselineProvider)
         {
             if (baselineProvider == BaselineProvider.AzureFileStorage)
@@ -23,9 +30,5 @@ namespace Stryker.Core.Options.Options
                 }
             }
         }
-
-        public override StrykerOption Type => StrykerOption.AzureFileStorageSas;
-
-        public override string HelpText => "The Shared Access Signature for Azure File Storage, required when azure file storage baseline  is chosen is selected. \nFor more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
     }
 }

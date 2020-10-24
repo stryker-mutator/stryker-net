@@ -3,8 +3,8 @@
     public abstract class BaseStrykerOption<T> : IStrykerOption<T>
     {
         public abstract StrykerOption Type { get; }
-        public abstract string HelpText { get; }
-        public virtual T DefaultValue { get; } = default;
+        public static string HelpText { get; protected set; } = string.Empty;
+        public static T DefaultValue { get; protected set; } = default;
 
         private T _value = default;
         /// <summary>
@@ -14,7 +14,7 @@
         {
             get
             {
-                return _value.Equals(default) ? DefaultValue : _value;
+                return _value?.Equals(default) ?? false ? DefaultValue : _value;
             }
             protected set
             {
