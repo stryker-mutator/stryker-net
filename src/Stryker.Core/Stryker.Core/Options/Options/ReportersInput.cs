@@ -6,57 +6,49 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    public class ReportersInput : SimpleStrykerInput<IEnumerable<Reporter>>
+    public class ReportersInput : ComplexStrykerInput<IEnumerable<Reporter>, IEnumerable<string>>
     {
         static ReportersInput()
         {
             HelpText = "Choose the reporters to enable.";
-            DefaultValue = new[] { Reporter.Progress, Reporter.Html };
+            DefaultInput = new List<string>() { "Reporter.Progress", "Reporter.Html" };
+            DefaultValue = new ReportersInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.Reporters;
 
-        public ReportersInput(IEnumerable<string> chosenReporters, bool compareToDashboard)
+        public ReportersInput(IEnumerable<string> chosenReporters)
         {
             var reporters = new List<Reporter>();
-
-            if (chosenReporters is null)
+            if (chosenReporters != null)
             {
-                foreach (var reporter in DefaultValue)
+                IList<string> invalidReporters = new List<string>();
+
+                foreach (var reporter in chosenReporters)
                 {
-                    reporters.Add(reporter);
+                    if (Enum.TryParse(reporter, true, out Reporter result))
+                    {
+                        reporters.Add(result);
+                    }
+                    else
+                    {
+                        invalidReporters.Add(reporter);
+                    }
                 }
+                if (invalidReporters.Any())
+                {
+                    throw new StrykerInputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
+                }
+
+                Value = reporters;
             }
-
-            ValidateChosenReporters(chosenReporters, reporters);
-
-            if (compareToDashboard)
-            {
-                reporters.Add(Reporter.Baseline);
-            }
-
-            Value = reporters;
         }
 
-        private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, List<Reporter> reporters)
+        public IEnumerable<Reporter> ReportersList(bool compareToDashboard)
         {
-            IList<string> invalidReporters = new List<string>();
-
-            foreach (var reporter in chosenReporters)
-            {
-                if (Enum.TryParse(reporter, true, out Reporter result))
-                {
-                    reporters.Add(result);
-                }
-                else
-                {
-                    invalidReporters.Add(reporter);
-                }
-            }
-            if (invalidReporters.Any())
-            {
-                throw new StrykerInputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
-            }
+            var list = new List<Reporter>(Value);
+            if (compareToDashboard) { list.Add(Reporter.Baseline); }
+            return list;
         }
     }
 }

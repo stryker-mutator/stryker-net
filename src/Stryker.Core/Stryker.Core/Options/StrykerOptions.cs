@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
@@ -78,9 +79,12 @@ namespace Stryker.Core.Options
             string testRunner = "vstest",
 
             int? maxConcurrentTestRunners = null,
-
-            IEnumerable<string> reporters = null,
             string projectUnderTestNameFilter = "",
+            IEnumerable<string> testProjects = null,
+
+            bool compareToDashboard = false,
+            IEnumerable<string> reporters = null,
+
             IEnumerable<string> excludedMutations = null,
             IEnumerable<string> ignoredMethods = null,
             bool devMode = false,
@@ -89,7 +93,6 @@ namespace Stryker.Core.Options
             bool disableSimultaneousTesting = false,
             IEnumerable<string> mutate = null,
             bool diff = false,
-            bool compareToDashboard = false,
             string gitDiffTarget = "master",
             string dashboardApiKey = null,
             string dashboardUrl = "https://dashboard.stryker-mutator.io",
@@ -100,7 +103,6 @@ namespace Stryker.Core.Options
             string baselineStorageLocation = null,
             string azureSAS = null,
             string azureFileStorageUrl = null,
-            IEnumerable<string> testProjects = null,
             IEnumerable<string> diffIgnoreFiles = null)
         {
             _logger = logger;
@@ -128,12 +130,13 @@ namespace Stryker.Core.Options
             TestRunner = new TestRunnerInput(testRunner).Value;
 
             ConcurrentTestrunners = new ConcurrentTestrunnersInput(_logger, maxConcurrentTestRunners).Value;
-            /* --- */
             ProjectUnderTestNameFilter = new ProjectUnderTestNameFilterInput(projectUnderTestNameFilter).Value;
             TestProjects = new TestProjectsInput(testProjects).Value;
 
             CompareToDashboard = new CompareToDashboardInput(compareToDashboard).Value;
-            Reporters = new ReportersInput(reporters, CompareToDashboard).Value;
+            var reportersList = new ReportersInput(reporters);
+            Reporters = reportersList.ReportersList(CompareToDashboard);
+            /* --- */
             BaselineProvider = new BaselineProviderInput(baselineStorageLocation, Reporters.Contains(Reporter.Dashboard)).Value;
             AzureFileStorageUrl = new AzureFileStorageUrlInput(azureFileStorageUrl, BaselineProvider).Value;
             AzureSAS = new AzureFileStorageSasInput(azureSAS, BaselineProvider).Value;
