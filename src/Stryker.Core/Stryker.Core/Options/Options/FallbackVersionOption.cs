@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         public FallbackVersionOption(string fallbackVersion, string gitDiffTarget)
         {
-            if (fallbackVersion.IsEmptyInput())
+            if (fallbackVersion.IsNullOrEmptyInput())
             {
                 throw new StrykerInputException($"Fallback version cannot be empty. Either fill the option or leave it out.");
             }

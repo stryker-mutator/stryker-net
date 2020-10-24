@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Options
         {
             if (projectUnderTestNameFilter is { })
             {
-                if (projectUnderTestNameFilter.IsEmptyInput())
+                if (projectUnderTestNameFilter.IsNullOrEmptyInput())
                 {
                     throw new StrykerInputException("Project under test name filter cannot be empty.");
                 }

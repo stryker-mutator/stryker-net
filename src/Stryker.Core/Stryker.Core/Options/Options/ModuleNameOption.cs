@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Options
         {
             if (moduleName is { })
             {
-                if (moduleName.IsEmptyInput())
+                if (moduleName.IsNullOrEmptyInput())
                 {
                     throw new StrykerInputException("Module name cannot be empty. Either fill the option or leave it out.");
                 }
