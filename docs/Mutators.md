@@ -170,3 +170,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `abc{5,8}` | `abc{5,9}` |
 | `abc{5,}` | `abc{4,}` | 
 | `abc{5,}` | `abc{6,}` |
+| `(?=abc)` | `(?!abc)` |
+| `(?!abc)` | `(?=abc)` |
+| `(?<=abc)` | `(?<!abc)` |
+| `(?<!abc)` | `(?<=abc)` |
