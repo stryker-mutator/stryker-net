@@ -19,7 +19,7 @@
         ConcurrentTestrunners,
         Thresholds,
         TestRunner,
-        FilePatterns,
+        Mutate,
         LanguageVersion,
         Optimizations,
         OptimizationMode,
