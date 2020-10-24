@@ -4,12 +4,13 @@ using System;
 
 namespace Stryker.Core.Options.Options
 {
-    public class LanguageVersionInput : SimpleStrykerInput<LanguageVersion>
+    public class LanguageVersionInput : ComplexStrykerInput<LanguageVersion, string>
     {
         static LanguageVersionInput()
         {
             HelpText = "Set the c# version used to compile.";
-            DefaultValue = LanguageVersion.Latest;
+            DefaultInput = "latest";
+            DefaultValue = new LanguageVersionInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.LanguageVersion;

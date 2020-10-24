@@ -5,12 +5,13 @@ using System;
 namespace Stryker.Core.Options.Options
 {
     // Deprecated, might be removed soon
-    public class TestRunnerInput : SimpleStrykerInput<TestRunner>
+    public class TestRunnerInput : ComplexStrykerInput<TestRunner, string>
     {
         static TestRunnerInput()
         {
             HelpText = "Choose which testrunner should be used to run your tests.";
-            DefaultValue = TestRunner.VsTest;
+            DefaultInput = "vstest";
+            DefaultValue = new TestRunnerInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.TestRunner;

@@ -73,19 +73,21 @@ namespace Stryker.Core.Options
             int thresholdLow = 60,
             int thresholdBreak = 0,
 
+            int additionalTimeoutMS = 5000,
+            string languageVersion = "latest",
+            string testRunner = "vstest",
+
+            int? maxConcurrentTestRunners = null,
+
             IEnumerable<string> reporters = null,
             string projectUnderTestNameFilter = "",
-            int additionalTimeoutMS = 5000,
             IEnumerable<string> excludedMutations = null,
             IEnumerable<string> ignoredMethods = null,
             bool devMode = false,
             string coverageAnalysis = "perTest",
             bool abortTestOnFail = true,
             bool disableSimultaneousTesting = false,
-            int? maxConcurrentTestRunners = null,
             IEnumerable<string> mutate = null,
-            string testRunner = "vstest",
-            string languageVersion = "latest",
             bool diff = false,
             bool compareToDashboard = false,
             string gitDiffTarget = "master",
@@ -124,8 +126,9 @@ namespace Stryker.Core.Options
             AdditionalTimeoutMS = new AdditionalTimeoutMsInput(additionalTimeoutMS).Value;
             LanguageVersion = new LanguageVersionInput(languageVersion).Value;
             TestRunner = new TestRunnerInput(testRunner).Value;
-            ConcurrentTestrunners = new ConcurrentTestrunnersInput(_logger, maxConcurrentTestRunners).Value;
 
+            ConcurrentTestrunners = new ConcurrentTestrunnersInput(_logger, maxConcurrentTestRunners).Value;
+            /* --- */
             ProjectUnderTestNameFilter = new ProjectUnderTestNameFilterInput(projectUnderTestNameFilter).Value;
             TestProjects = new TestProjectsInput(testProjects).Value;
 
