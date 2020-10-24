@@ -17,14 +17,16 @@ New features are welcome! Either as requests or proposals.
 #### Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
 
-#### Example: Steps to run Stryker on Stryker
+#### Example: Steps to run Stryker.NET on a local project
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
 *	Open `Stryker.CLI.sln`
 *	On `Stryker.CLI` open `properties > Debug`
 *	Create a new Debug profile
 *	Set `Launch` as `Project` 
-*	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\stryker-net\src\Stryker.Core\Stryker.Core.UnitTest)`
+*	Set `WorkingDirectory` as your local installation dir, pointing to a UnitTest project `example: (C:\Repos\MyProject\src\MyProject\MyProject.UnitTest)`
 *	Run the program with `Stryker.CLI` as the startup project with the newly created Debug profile
+
+\* Running Stryker on itself doesn't work as the assemblies will be in use by Visual Studio. You can clone Stryker another time to use as a test project.
 
 #### Compiler Platform SDK
 We advise to use the [.NET Compiler Platform SDK](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.NETCompilerPlatformSDK) during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators. 
