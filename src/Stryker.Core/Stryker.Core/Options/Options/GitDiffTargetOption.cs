@@ -2,7 +2,7 @@
 
 namespace Stryker.Core.Options.Options
 {
-    class GitDiffTargetOption : BaseStrykerOption<string>
+    public class GitDiffTargetOption : BaseStrykerOption<string>
     {
         static GitDiffTargetOption()
         {

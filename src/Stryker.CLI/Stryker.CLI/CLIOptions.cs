@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System;
@@ -13,8 +14,6 @@ namespace Stryker.CLI
 {
     public static class CLIOptions
     {
-        private static readonly StrykerOptions _defaultOptions = new StrykerOptions();
-
         public static readonly CLIOption<string> ConfigFilePath = new CLIOption<string>
         {
             ArgumentName = "--config-file-path",
@@ -27,9 +26,9 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(_defaultOptions.Reporters, (IEnumerable<Reporter>)Enum.GetValues(_defaultOptions.Reporters.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
+            ArgumentDescription = $@"Sets the reporter | { FormatOptionsString(ReportersOption.DefaultValue, (IEnumerable<Reporter>)Enum.GetValues(ReportersOption.DefaultValue.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
     This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']",
-            DefaultValue = _defaultOptions.Reporters.Select(r => r.ToString()).ToArray(),
+            DefaultValue = ReportersOption.DefaultValue.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
 
@@ -47,7 +46,7 @@ namespace Stryker.CLI
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
             ArgumentDescription = "Makes the logger write to a file (Logging to file always uses loglevel trace)",
-            DefaultValue = _defaultOptions.LogOptions.LogToFile,
+            DefaultValue = false,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
@@ -58,7 +57,7 @@ namespace Stryker.CLI
             ArgumentShortName = "-dev",
             ArgumentDescription = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
     Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks",
-            DefaultValue = _defaultOptions.DevMode,
+            DefaultValue = DevModeOption.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dev-mode"
         };
@@ -67,8 +66,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
-            ArgumentDescription = $"Stryker calculates a timeout based on the time the testrun takes before the mutations| Options {_defaultOptions.AdditionalTimeoutMS}",
-            DefaultValue = _defaultOptions.AdditionalTimeoutMS,
+            ArgumentDescription = $"Stryker calculates a timeout based on the time the testrun takes before the mutations| Options {AdditionalTimeoutMsOption.DefaultValue}",
+            DefaultValue = AdditionalTimeoutMsOption.DefaultValue,
             JsonKey = "timeout-ms"
         };
 
@@ -135,10 +134,10 @@ namespace Stryker.CLI
         {
             ArgumentName = "--baseline-storage-location",
             ArgumentShortName = "-bsl <storageLocation>",
-            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(_defaultOptions.BaselineProvider, (IEnumerable<BaselineProvider>)Enum.GetValues(_defaultOptions.BaselineProvider.GetType())) }]
+            ArgumentDescription = $@"Allows to choose a storage location | Options[{FormatOptionsString(BaselineProviderOption.DefaultValue, (IEnumerable<BaselineProvider>)Enum.GetValues(BaselineProviderOption.DefaultValue.GetType())) }]
                                      When using the azure file storage, make sure to configure the -sas and -storage-url options.",
             ValueType = CommandOptionType.SingleValue,
-            DefaultValue = _defaultOptions.BaselineProvider.ToString(),
+            DefaultValue = BaselineProviderOption.DefaultValue.ToString(),
             JsonKey = "baseline-storage-location"
         };
 
@@ -147,7 +146,7 @@ namespace Stryker.CLI
             ArgumentName = "--git-diff-target",
             ArgumentShortName = "-gdt <commitish>",
             ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
-            DefaultValue = _defaultOptions.GitDiffTarget,
+            DefaultValue = GitDiffTargetOption.DefaultValue,
             JsonKey = "git-diff-target"
         };
 
@@ -155,7 +154,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
-            DefaultValue = _defaultOptions.OptimizationMode,
+            DefaultValue = OptimizationModeOption.DefaultValue,
             ArgumentDescription = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
     - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
@@ -168,7 +167,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
-            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill),
+            DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.AbortTestOnKill),
             ArgumentDescription = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
@@ -178,7 +177,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--disable-testing-mix-mutations",
             ArgumentShortName = "-tmm",
-            DefaultValue = _defaultOptions.Optimizations.HasFlag(OptimizationFlags.DisableTestMix),
+            DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.DisableTestMix),
             ArgumentDescription = @"Test each mutation in an isolated test run.",
             ValueType = CommandOptionType.NoValue,
             JsonKey = "disable-testing-mix-mutations"
@@ -197,7 +196,7 @@ namespace Stryker.CLI
         - Your test runner starts a browser (another CPU-intensive process)
         - You're running on a shared server
         - You are running stryker in the background while doing other work",
-            DefaultValue = _defaultOptions.ConcurrentTestrunners,
+            DefaultValue = ConcurrentTestrunnersOption.DefaultValue,
             JsonKey = "max-concurrent-test-runners"
         };
 
@@ -205,8 +204,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
-            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {_defaultOptions.Thresholds.Break} (default)",
-            DefaultValue = _defaultOptions.Thresholds.Break,
+            ArgumentDescription = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {ThresholdsOption.DefaultValue.Break} (default)",
+            DefaultValue = ThresholdsOption.DefaultValue.Break,
             JsonKey = "threshold-break"
         };
 
@@ -214,8 +213,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
-            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {_defaultOptions.Thresholds.Low} (default)",
-            DefaultValue = _defaultOptions.Thresholds.Low,
+            ArgumentDescription = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {ThresholdsOption.DefaultValue.Low} (default)",
+            DefaultValue = ThresholdsOption.DefaultValue.Low,
             JsonKey = "threshold-low"
         };
 
@@ -223,8 +222,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = $"Set the preferred mutation score threshold. | {_defaultOptions.Thresholds.High} (default)",
-            DefaultValue = _defaultOptions.Thresholds.High,
+            ArgumentDescription = $"Set the preferred mutation score threshold. | {ThresholdsOption.DefaultValue.High} (default)",
+            DefaultValue = ThresholdsOption.DefaultValue.High,
             JsonKey = "threshold-high"
         };
 
@@ -266,30 +265,30 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr <testRunner>",
-            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(_defaultOptions.TestRunner, (IEnumerable<TestRunner>)Enum.GetValues(_defaultOptions.TestRunner.GetType())) }",
-            DefaultValue = _defaultOptions.TestRunner.ToString(),
+            ArgumentDescription = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(TestRunnerOption.DefaultValue, (IEnumerable<TestRunner>)Enum.GetValues(TestRunnerOption.DefaultValue.GetType())) }",
+            DefaultValue = TestRunnerOption.DefaultValue.ToString(),
             JsonKey = "test-runner"
         };
 
-        public static readonly CLIOption<string> LanguageVersionOption = new CLIOption<string>
+        public static readonly CLIOption<string> LangVersion = new CLIOption<string>
         {
             ArgumentName = "--language-version",
             ArgumentShortName = "-lv <csharp-version-name>",
-            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(_defaultOptions.LanguageVersion, ((IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.LanguageVersion.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
-            DefaultValue = _defaultOptions.LanguageVersion.ToString(),
+            ArgumentDescription = $"Set the c# version used to compile. | { FormatOptionsString(LanguageVersionOption.DefaultValue, ((IEnumerable<LanguageVersion>)Enum.GetValues(LanguageVersionOption.DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }",
+            DefaultValue = LanguageVersionOption.DefaultValue.ToString(),
             JsonKey = "language-version"
         };
 
-        public static readonly CLIOption<string> DashboardApiKeyOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardApiKey = new CLIOption<string>
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {DashboardApiKeyOption.DefaultValue}",
             DefaultValue = null,
             JsonKey = "dashboard-api-key"
         };
 
-        public static readonly CLIOption<string> DashboardProjectNameOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardProjectName = new CLIOption<string>
         {
             ArgumentName = "--dashboard-project",
             ArgumentShortName = "-project <name>",
@@ -299,7 +298,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-project"
         };
 
-        public static readonly CLIOption<string> DashboardModuleNameOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardModuleName = new CLIOption<string>
         {
             ArgumentName = "--dashboard-module",
             ArgumentShortName = "-module <name>",
@@ -308,7 +307,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-module"
         };
 
-        public static readonly CLIOption<string> DashboardProjectVersionOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardProjectVersion = new CLIOption<string>
         {
             ArgumentName = "--dashboard-version",
             ArgumentShortName = "-version <version>",
@@ -317,7 +316,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-version"
         };
 
-        public static readonly CLIOption<string> DashboardFallbackVersionOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardFallbackVersion = new CLIOption<string>
         {
             ArgumentName = "--dashboard-fallback-version",
             ArgumentShortName = "-fallback-version <version>",
@@ -326,12 +325,12 @@ For example: Your project might be called 'consumer-loans' and it might contains
             JsonKey = "dashboard-fallback-version"
         };
 
-        public static readonly CLIOption<string> DashboardUrlOption = new CLIOption<string>
+        public static readonly CLIOption<string> DashboardUrl = new CLIOption<string>
         {
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
             ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
-            DefaultValue = _defaultOptions.DashboardUrl,
+            DefaultValue = DashboardUrlOption.DefaultValue,
             JsonKey = "dashboard-url"
         };
 
@@ -340,7 +339,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentName = "--test-projects",
             ArgumentShortName = "-tp",
             ArgumentDescription = $"Specify what test projects should run on the project under test.",
-            DefaultValue = _defaultOptions.TestProjects,
+            DefaultValue = TestProjectsOption.DefaultValue,
             JsonKey = "test-projects"
         };
 
@@ -371,8 +370,8 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             ArgumentName = "--mutation-level",
             ArgumentShortName = "-level",
-            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(_defaultOptions.MutationLevel, (IEnumerable<LanguageVersion>)Enum.GetValues(_defaultOptions.MutationLevel.GetType())) }",
-            DefaultValue = _defaultOptions.MutationLevel.ToString(),
+            ArgumentDescription = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(MutationLevelOption.DefaultValue, (IEnumerable<LanguageVersion>)Enum.GetValues(MutationLevelOption.DefaultValue.GetType())) }",
+            DefaultValue = MutationLevelOption.DefaultValue.ToString(),
             JsonKey = "mutation-level"
         };
 

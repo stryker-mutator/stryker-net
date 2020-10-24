@@ -43,11 +43,11 @@ namespace Stryker.CLI
 
             var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
             var reporterParam = CreateOption(app, CLIOptions.Reporters);
-            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKeyOption);
-            var dashboardUrlParam = CreateOption(app, CLIOptions.DashboardUrlOption);
-            var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectNameOption);
-            var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleNameOption);
-            var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersionOption);
+            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKey);
+            var dashboardUrlParam = CreateOption(app, CLIOptions.DashboardUrl);
+            var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectName);
+            var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleName);
+            var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersion);
             var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
             var devMode = CreateOption(app, CLIOptions.DevMode);
             var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
@@ -66,12 +66,12 @@ namespace Stryker.CLI
             var mutateParam = CreateOption(app, CLIOptions.Mutate);
             var testRunner = CreateOption(app, CLIOptions.TestRunner);
             var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
-            var languageVersion = CreateOption(app, CLIOptions.LanguageVersionOption);
+            var languageVersion = CreateOption(app, CLIOptions.LangVersion);
             var diffParam = CreateOption(app, CLIOptions.Diff);
             var diffCompareToDashboard = CreateOption(app, CLIOptions.DashboardCompare);
             var gitDiffTargetParam = CreateOption(app, CLIOptions.GitDiffTarget);
             var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
-            var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersionOption);
+            var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersion);
             var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
             var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
             var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);

@@ -1,6 +1,6 @@
 ﻿namespace Stryker.Core.Options.Options
 {
-    class DevModeOption : BaseStrykerOption<bool>
+    public class DevModeOption : BaseStrykerOption<bool>
     {
         static DevModeOption()
         {
