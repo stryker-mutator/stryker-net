@@ -21,6 +21,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("Progress", typeof(ProgressReporter))]
         [InlineData("Dots", typeof(ConsoleDotProgressReporter))]
         [InlineData("ClearText", typeof(ClearTextReporter))]
+        [InlineData("Status", typeof(StatusReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
             BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }));
@@ -41,8 +42,9 @@ namespace Stryker.Core.UnitTest.Reporters
             result.Reporters.ShouldContain(r => r is ProgressReporter);
             result.Reporters.ShouldContain(r => r is DashboardReporter);
             result.Reporters.ShouldContain(r => r is GitBaselineReporter);
+            result.Reporters.ShouldContain(r => r is StatusReporter);
 
-            result.Reporters.Count().ShouldBe(8);
+            result.Reporters.Count().ShouldBe(9);
         }
 
         [Fact]
