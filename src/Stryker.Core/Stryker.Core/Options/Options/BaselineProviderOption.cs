@@ -1,20 +1,17 @@
 ﻿using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Reporters;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
     public class BaselineProviderOption : BaseStrykerOption<BaselineProvider>
     {
-        public BaselineProviderOption(string baselineProviderLocation, IEnumerable<Reporter> reporters)
+        public BaselineProviderOption(string baselineProviderLocation, bool dashboardReporterEnabled)
         {
-            if (baselineProviderLocation is null && reporters.Contains(Reporter.Dashboard))
+            if (baselineProviderLocation is null && dashboardReporterEnabled)
             {
                 Value = BaselineProvider.Dashboard;
             }
-            else
+            else if (baselineProviderLocation is { })
             {
                 Value = baselineProviderLocation.ToLower() switch
                 {

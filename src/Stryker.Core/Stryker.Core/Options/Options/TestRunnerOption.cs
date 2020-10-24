@@ -5,7 +5,7 @@ using System;
 namespace Stryker.Core.Options.Options
 {
     // Deprecated, might be removed soon
-    class TestRunnerOption : BaseStrykerOption<TestRunner>
+    public class TestRunnerOption : BaseStrykerOption<TestRunner>
     {
         public TestRunnerOption(string testRunner)
         {
