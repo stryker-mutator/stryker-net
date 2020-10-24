@@ -6,31 +6,32 @@ namespace Stryker.Core.Options.Options
 {
     public class AzureFileStorageUrlOption : BaseStrykerOption<string>
     {
-        public AzureFileStorageUrlOption(string azureFileStorageUrl, BaselineProvider baselineProvider)
+        static AzureFileStorageUrlOption()
         {
-            if (baselineProvider == BaselineProvider.AzureFileStorage)
-            {
-                if (azureFileStorageUrl is null)
-                {
-                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
-                }
-
-                if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
-                {
-                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
-                }
-
-                Value = azureFileStorageUrl;
-            }
+            HelpText = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+                                    The url should look something like this: 
+                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+                                    Note, the url might be different depending of where your file storage is hosted.";
         }
 
         public override StrykerOption Type => StrykerOption.AzureFileStorageUrl;
 
-        public override string HelpText => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
-                                    The url should look something like this: 
+    public AzureFileStorageUrlOption(string azureFileStorageUrl, BaselineProvider baselineProvider)
+    {
+        if (baselineProvider == BaselineProvider.AzureFileStorage)
+        {
+            if (azureFileStorageUrl is null)
+            {
+                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
+            }
 
-                                    https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+            if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
+            {
+                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
+            }
 
-                                    Note, the url might be different depending of where your file storage is hosted.";
+            Value = azureFileStorageUrl;
+        }
+    }
     }
 }

@@ -5,6 +5,20 @@ namespace Stryker.Core.Options.Options
 {
     public class DiffIgnoreFilePatternsOption : BaseStrykerOption<IEnumerable<FilePattern>>
     {
+        static DiffIgnoreFilePatternsOption()
+        {
+            HelpText = @"Allows to specify an array of C# files which should be ignored if present in the diff.
+             Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+            This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
+            
+            Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
+            Example: ['**/*Assets.json','**/favicon.ico']";
+
+            DefaultValue = Enumerable.Empty<FilePattern>();
+        }
+
+        public override StrykerOption Type => StrykerOption.DiffIgnoreFilePatterns;
+
         public DiffIgnoreFilePatternsOption(IEnumerable<string> filePatterns)
         {
             if (filePatterns is { })
@@ -18,16 +32,5 @@ namespace Stryker.Core.Options.Options
                 Value = diffIgnoreFilePatterns;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.DiffIgnoreFilePatterns;
-
-        public override string HelpText => @"Allows to specify an array of C# files which should be ignored if present in the diff.
-             Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
-            This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
-            
-            Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
-            Example: ['**/*Assets.json','**/favicon.ico']";
-
-        public override IEnumerable<FilePattern> DefaultValue => Enumerable.Empty<FilePattern>();
     }
 }
