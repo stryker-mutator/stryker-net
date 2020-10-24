@@ -4,6 +4,14 @@ namespace Stryker.Core.Options.Options
 {
     class GitDiffTargetOption : BaseStrykerOption<string>
     {
+        static GitDiffTargetOption()
+        {
+            HelpText = "Sets the source commitish to compare with the current codebase, used for calculating the difference when diff is enabled.";
+            DefaultValue = "master";
+        }
+
+        public override StrykerOption Type => StrykerOption.GitDiffTarget;
+
         public GitDiffTargetOption(string gitDiffTarget, bool diffEnabled)
         {
             if (diffEnabled && gitDiffTarget.IsNullOrEmptyInput())
@@ -13,9 +21,5 @@ namespace Stryker.Core.Options.Options
 
             Value = gitDiffTarget ?? DefaultValue;
         }
-
-        public override StrykerOption Type => StrykerOption.GitDiffTarget;
-        public override string HelpText => "Sets the source commitish to compare with the current codebase, used for calculating the difference when diff is enabled.";
-        public override string DefaultValue => "master";
     }
 }

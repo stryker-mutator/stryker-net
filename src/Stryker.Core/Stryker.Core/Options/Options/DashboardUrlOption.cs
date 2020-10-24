@@ -5,6 +5,14 @@ namespace Stryker.Core.Options.Options
 {
     public class DashboardUrlOption : BaseStrykerOption<string>
     {
+        static DashboardUrlOption()
+        {
+            HelpText = "The url to the stryker dashboard. If you're not using the official hosted stryker dashboard, provide the private url here.";
+            DefaultValue = "https://dashboard.stryker-mutator.io";
+        }
+
+        public override StrykerOption Type => StrykerOption.DashboardUrl;
+
         public DashboardUrlOption(string url)
         {
             if (url is { })
@@ -17,11 +25,5 @@ namespace Stryker.Core.Options.Options
                 Value = url;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.DashboardUrl;
-
-        public override string HelpText => "The url to the stryker dashboard. If you're not using the official hosted stryker dashboard, provide the private url here.";
-
-        public override string DefaultValue => "https://dashboard.stryker-mutator.io";
     }
 }

@@ -6,6 +6,12 @@ namespace Stryker.Core.Options.Options
 {
     public class IgnoredMethodsOption : BaseStrykerOption<IEnumerable<Regex>>
     {
+        static IgnoredMethodsOption()
+        {
+            HelpText = "Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
+            DefaultValue = Enumerable.Empty<Regex>();
+        }
+
         public IgnoredMethodsOption(IEnumerable<string> ignoredMethods)
         {
             if (ignoredMethods is { })
@@ -20,7 +26,5 @@ namespace Stryker.Core.Options.Options
         }
 
         public override StrykerOption Type => StrykerOption.IgnoredMethods;
-        public override string HelpText => "Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
-        public override IEnumerable<Regex> DefaultValue => Enumerable.Empty<Regex>();
     }
 }

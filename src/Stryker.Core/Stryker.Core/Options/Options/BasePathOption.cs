@@ -5,6 +5,13 @@ namespace Stryker.Core.Options.Options
 {
     public class BasePathOption : BaseStrykerOption<string>
     {
+        static BasePathOption()
+        {
+        HelpText = string.Empty;
+        }
+
+        public override StrykerOption Type => StrykerOption.BasePath;
+
         public BasePathOption(IFileSystem fileSystem, string basePath)
         {
             if (basePath.IsNullOrEmptyInput())
@@ -19,8 +26,5 @@ namespace Stryker.Core.Options.Options
 
             Value = basePath;
         }
-
-        public override StrykerOption Type => StrykerOption.BasePath;
-        public override string HelpText => string.Empty;
     }
 }

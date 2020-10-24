@@ -8,6 +8,14 @@ namespace Stryker.Core.Options.Options
 {
     public class ExcludedMutatorsOption : BaseStrykerOption<IEnumerable<Mutator>>
     {
+        static ExcludedMutatorsOption()
+        {
+            HelpText = @"The given mutators will be excluded for this mutation testrun.";
+            DefaultValue = Enumerable.Empty<Mutator>();
+        }
+
+        public override StrykerOption Type => StrykerOption.ExcludedMutators;
+
         public ExcludedMutatorsOption(IEnumerable<string> mutatorsToExclude)
         {
             if (mutatorsToExclude is { } && mutatorsToExclude.Any())
@@ -37,9 +45,5 @@ namespace Stryker.Core.Options.Options
                 Value = excludedMutators;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.ExcludedMutators;
-        public override string HelpText => @"The given mutators will be excluded for this mutation testrun.";
-        public override IEnumerable<Mutator> DefaultValue => Enumerable.Empty<Mutator>();
     }
 }

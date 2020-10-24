@@ -5,6 +5,14 @@ namespace Stryker.Core.Options.Options
 {
     public class BaselineProviderOption : BaseStrykerOption<BaselineProvider>
     {
+        static BaselineProviderOption()
+        {
+            HelpText = "Allows to choose a storage location for the baseline reports";
+            DefaultValue = BaselineProvider.Disk;
+        }
+
+        public override StrykerOption Type => StrykerOption.BaselineProvider;
+
         public BaselineProviderOption(string baselineProviderLocation, bool dashboardReporterEnabled)
         {
             if (baselineProviderLocation is null && dashboardReporterEnabled)
@@ -22,9 +30,5 @@ namespace Stryker.Core.Options.Options
                 };
             }
         }
-
-        public override StrykerOption Type => StrykerOption.BaselineProvider;
-        public override string HelpText => "Allows to choose a storage location for the baseline reports";
-        public override BaselineProvider DefaultValue => BaselineProvider.Disk;
     }
 }
