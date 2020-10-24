@@ -134,7 +134,7 @@ namespace Stryker.Core.Options
             DiffIgnoreFiles = new DiffIgnoreFilePatternsOption(diffIgnoreFiles).Value;
 
             FallbackVersion = new FallbackVersionOption(fallbackVersion, gitDiffTarget).Value;
-            ProjectVersion = new ProjectVersionOption(projectVersion, FallbackVersion, CompareToDashboard, Reporters.Contains(Reporter.Dashboard)).Value;
+            ProjectVersion = new ProjectVersionOption(projectVersion, FallbackVersion, dashboardEnabled, CompareToDashboard).Value;
             ModuleName = new ModuleNameOption(moduleName).Value;
 
             FilePatterns = new MutateOption(mutate).Value;

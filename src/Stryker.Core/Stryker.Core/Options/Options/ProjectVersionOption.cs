@@ -4,7 +4,7 @@ namespace Stryker.Core.Options.Options
 {
     public class ProjectVersionOption : BaseStrykerOption<string>
     {
-        public ProjectVersionOption(string projectVersion, string fallbackVersion, bool dashboardCompareEnabled, bool dashboardEnabled)
+        public ProjectVersionOption(string projectVersion, string fallbackVersion, bool dashboardEnabled, bool dashboardCompareEnabled)
         {
             if (dashboardEnabled)
             {
@@ -13,12 +13,9 @@ namespace Stryker.Core.Options.Options
                     throw new StrykerInputException("When the stryker dashboard is enabled the projectversion is required. Please provide a project version.");
                 }
 
-                if (dashboardCompareEnabled)
+                if (dashboardCompareEnabled && fallbackVersion == projectVersion)
                 {
-                    if (fallbackVersion == projectVersion)
-                    {
-                        throw new StrykerInputException("Project version cannot be the same as the fallback version. Please provide a different version for either of them.");
-                    }
+                    throw new StrykerInputException("Project version cannot be the same as the fallback version. Please provide a different version for either of them.");
                 }
 
                 Value = projectVersion;
