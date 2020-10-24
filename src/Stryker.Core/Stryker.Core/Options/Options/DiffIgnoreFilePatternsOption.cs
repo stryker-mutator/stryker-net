@@ -12,7 +12,7 @@ namespace Stryker.Core.Options.Options
                 var diffIgnoreFilePatterns = new List<FilePattern>();
                 foreach (var pattern in filePatterns)
                 {
-                    diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
+                    diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern), spansEnabled: false));
                 }
 
                 Value = diffIgnoreFilePatterns;
