@@ -7,23 +7,17 @@ namespace Stryker.Core.Options.Options
     {
         public BasePathOption(IFileSystem fileSystem, string basePath)
         {
-            if (!basePath.IsNullOrEmptyInput())
-            {
-                Value = basePath;
-            }
-            else
+            if (basePath.IsNullOrEmptyInput())
             {
                 throw new StrykerInputException("Base path cannot be null.");
             }
 
-            if (fileSystem.Directory.Exists(Value))  // validate base path is valid path
-            {
-                return;
-            }
-            else
+            if (!fileSystem.Directory.Exists(Value))  // validate base path is valid path
             {
                 throw new StrykerInputException("Base path does not exist.");
             }
+
+            Value = basePath;
         }
 
         public override StrykerOption Type => StrykerOption.BasePath;
