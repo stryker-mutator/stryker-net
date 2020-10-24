@@ -8,6 +8,14 @@ namespace Stryker.Core.Options.Options
 {
     public class ReportersOption : BaseStrykerOption<IEnumerable<Reporter>>
     {
+        static ReportersOption()
+        {
+            HelpText = "Choose the reporters to enable.";
+            DefaultValue = new[] { Reporter.Progress, Reporter.Html };
+        }
+
+        public override StrykerOption Type => StrykerOption.Reporters;
+
         public ReportersOption(IEnumerable<string> chosenReporters, bool compareToDashboard)
         {
             var reporters = new List<Reporter>();
@@ -50,9 +58,5 @@ namespace Stryker.Core.Options.Options
                 throw new StrykerInputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
             }
         }
-
-        public override StrykerOption Type => StrykerOption.Reporters;
-        public override string HelpText => "Choose the reporters to enable.";
-        public override IEnumerable<Reporter> DefaultValue => new[] { Reporter.Progress, Reporter.Html };
     }
 }

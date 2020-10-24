@@ -6,6 +6,15 @@ namespace Stryker.Core.Options.Options
     // This does not work because of the helptext
     public class ThresholdsOption : BaseStrykerOption<Thresholds>
     {
+        static ThresholdsOption()
+        {
+            HelpText = @"Set the thresholds depending the minimum, Lower bound and the preferred mutation score threshold.
+    Anything below the minimum score will return a non-zero exit code.";
+            DefaultValue = new Thresholds(80, 60, 0);
+        }
+
+        public override StrykerOption Type => StrykerOption.Thresholds;
+
         public ThresholdsOption(int? high, int? low, int? @break)
         {
             if (high is { })
@@ -32,10 +41,5 @@ namespace Stryker.Core.Options.Options
                 throw new StrykerInputException("The values of your thresholds are incorrect. Change threshold break to the lowest and threshold high to the highest value");
             }
         }
-
-        public override StrykerOption Type => StrykerOption.Thresholds;
-        public override string HelpText => @"Set the thresholds depending the minimum, Lower bound and the preferred mutation score threshold.
-    Anything below the minimum score will return a non-zero exit code.";
-        public override Thresholds DefaultValue => new Thresholds(80, 60, 0);
     }
 }

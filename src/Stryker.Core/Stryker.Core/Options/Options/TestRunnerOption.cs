@@ -7,6 +7,14 @@ namespace Stryker.Core.Options.Options
     // Deprecated, might be removed soon
     public class TestRunnerOption : BaseStrykerOption<TestRunner>
     {
+        static TestRunnerOption()
+        {
+            HelpText = "Choose which testrunner should be used to run your tests.";
+            DefaultValue = TestRunner.VsTest;
+        }
+
+        public override StrykerOption Type => StrykerOption.TestRunner;
+
         public TestRunnerOption(string testRunner)
         {
             if (testRunner is { })
@@ -21,9 +29,5 @@ namespace Stryker.Core.Options.Options
                 }
             }
         }
-
-        public override StrykerOption Type => StrykerOption.TestRunner;
-        public override string HelpText => "Choose which testrunner should be used to run your tests.";
-        public override TestRunner DefaultValue => TestRunner.VsTest;
     }
 }

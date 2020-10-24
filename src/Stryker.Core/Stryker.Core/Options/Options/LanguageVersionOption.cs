@@ -6,6 +6,14 @@ namespace Stryker.Core.Options.Options
 {
     public class LanguageVersionOption : BaseStrykerOption<LanguageVersion>
     {
+        static LanguageVersionOption()
+        {
+            HelpText = "Set the c# version used to compile.";
+            DefaultValue = LanguageVersion.Latest;
+        }
+
+        public override StrykerOption Type => StrykerOption.LanguageVersion;
+
         public LanguageVersionOption(string languageVersion)
         {
             if (languageVersion is { })
@@ -20,9 +28,5 @@ namespace Stryker.Core.Options.Options
                 }
             }
         }
-
-        public override StrykerOption Type => StrykerOption.LanguageVersion;
-        public override string HelpText => "Set the c# version used to compile.";
-        public override LanguageVersion DefaultValue => LanguageVersion.Latest;
     }
 }

@@ -4,6 +4,13 @@ namespace Stryker.Core.Options.Options
 {
     public class ModuleNameOption : BaseStrykerOption<string>
     {
+        static ModuleNameOption()
+        {
+            HelpText = "Module name used by reporters. Usually a project in your solution would be a module.";
+        }
+
+        public override StrykerOption Type => StrykerOption.ModuleName;
+
         public ModuleNameOption(string moduleName)
         {
             if (moduleName is { })
@@ -15,9 +22,5 @@ namespace Stryker.Core.Options.Options
                 Value = moduleName;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.ModuleName;
-
-        public override string HelpText => "Module name used by reporters. Usually a project in your solution would be a module.";
     }
 }

@@ -8,6 +8,13 @@ namespace Stryker.Core.Options.Options
 {
     public class OutputPathOption : BaseStrykerOption<string>
     {
+        static OutputPathOption()
+        {
+            HelpText = string.Empty;
+        }
+
+        public override StrykerOption Type => StrykerOption.OutputPath;
+
         public OutputPathOption(ILogger logger, IFileSystem fileSystem, string basepath)
         {
             if (basepath.IsNullOrEmptyInput())
@@ -35,8 +42,5 @@ namespace Stryker.Core.Options.Options
             }
             Value = outputPath;
         }
-
-        public override StrykerOption Type => StrykerOption.OutputPath;
-        public override string HelpText => string.Empty;
     }
 }

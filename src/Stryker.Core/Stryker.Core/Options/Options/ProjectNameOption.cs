@@ -4,6 +4,14 @@ namespace Stryker.Core.Options.Options
 {
     public class ProjectNameOption : BaseStrykerOption<string>
     {
+        static ProjectNameOption()
+        {
+            HelpText = "The project name for the stryker dashboard. Required when the stryker dashboard is used. Often the name of your solution or repository.";
+
+        }
+
+        public override StrykerOption Type => StrykerOption.ProjectName;
+
         public ProjectNameOption(string projectName, bool dashboardEnabled)
         {
             if (dashboardEnabled)
@@ -16,9 +24,5 @@ namespace Stryker.Core.Options.Options
                 Value = projectName;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.ProjectName;
-
-        public override string HelpText => "The project name for the stryker dashboard. Required when the stryker dashboard is used. Often the name of your solution or repository.";
     }
 }

@@ -4,6 +4,13 @@ namespace Stryker.Core.Options.Options
 {
     public class OptimizationsOption : BaseStrykerOption<OptimizationFlags>
     {
+        static OptimizationsOption()
+        {
+            HelpText = @"Sets the OptimizationFlags depending on the 'Optimization Mode', 'Abort Test On Fail' and 'Disable Testing Mix'";
+            DefaultValue = OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill;
+        }
+        public override StrykerOption Type => StrykerOption.Optimizations;
+
         public OptimizationsOption(string coverageAnalysis, bool abortTestOnFail, bool disableSimultaneousTesting)
         {
             var optimization = coverageAnalysis.ToLower() switch
@@ -20,9 +27,5 @@ namespace Stryker.Core.Options.Options
 
             Value = optimization;
         }
-
-        public override StrykerOption Type => StrykerOption.Optimizations;
-        public override string HelpText => @"Sets the OptimizationFlags depending on the 'Optimization Mode', 'Abort Test On Fail' and 'Disable Testing Mix'";
-        public override OptimizationFlags DefaultValue => OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill;
     }
 }

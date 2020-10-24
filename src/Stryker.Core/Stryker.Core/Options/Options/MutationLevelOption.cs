@@ -6,6 +6,14 @@ namespace Stryker.Core.Options.Options
 {
     public class MutationLevelOption : BaseStrykerOption<MutationLevel>
     {
+        static MutationLevelOption()
+        {
+            HelpText = "Specifies which mutations will be placed in your project";
+            DefaultValue = MutationLevel.Standard;
+        }
+
+        public override StrykerOption Type => StrykerOption.MutationLevel;
+
         public MutationLevelOption(string mutationLevel)
         {
             if (mutationLevel is { })
@@ -20,11 +28,5 @@ namespace Stryker.Core.Options.Options
                 }
             }
         }
-
-        public override StrykerOption Type => StrykerOption.MutationLevel;
-
-        public override string HelpText => "Specifies which mutations will be placed in your project";
-
-        public override MutationLevel DefaultValue => MutationLevel.Standard;
     }
 }

@@ -6,6 +6,14 @@ namespace Stryker.Core.Options.Options
 {
     public class LogOptionsOption : BaseStrykerOption<LogOptions>
     {
+        static LogOptionsOption()
+        {
+            HelpText = "Sets the console output logging level";
+            DefaultValue = new LogOptions(LogEventLevel.Information, logToFile: false, null);
+        }
+
+        public override StrykerOption Type => StrykerOption.LogOptions;
+
         public LogOptionsOption(string logLevel, bool? logToFile, string outputPath)
         {
             if (logToFile is { })
@@ -33,9 +41,5 @@ namespace Stryker.Core.Options.Options
                 Value = new LogOptions(logEventLevel, Value.LogToFile, Value.OutputPath);
             }
         }
-
-        public override StrykerOption Type => StrykerOption.LogOptions;
-        public override string HelpText => "Sets the console output logging level";
-        public override LogOptions DefaultValue => new LogOptions(LogEventLevel.Information, logToFile: false, null);
     }
 }

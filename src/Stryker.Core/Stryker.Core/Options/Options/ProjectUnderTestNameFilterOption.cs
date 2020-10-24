@@ -4,6 +4,13 @@ namespace Stryker.Core.Options.Options
 {
     public class ProjectUnderTestNameFilterOption : BaseStrykerOption<string>
     {
+        static ProjectUnderTestNameFilterOption()
+        {
+            HelpText = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""";
+        }
+
+        public override StrykerOption Type => StrykerOption.ProjectUnderTestNameFilter;
+
         public ProjectUnderTestNameFilterOption(string projectUnderTestNameFilter)
         {
             if (projectUnderTestNameFilter is { })
@@ -16,8 +23,5 @@ namespace Stryker.Core.Options.Options
                 Value = projectUnderTestNameFilter;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.ProjectUnderTestNameFilter;
-        public override string HelpText => @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""";
     }
 }

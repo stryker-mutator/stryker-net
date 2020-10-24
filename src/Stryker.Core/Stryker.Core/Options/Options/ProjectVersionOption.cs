@@ -4,6 +4,15 @@ namespace Stryker.Core.Options.Options
 {
     public class ProjectVersionOption : BaseStrykerOption<string>
     {
+        static ProjectVersionOption()
+        {
+
+            HelpText = "Project version for uploading to stryker dashboard. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.";
+
+        }
+
+        public override StrykerOption Type => StrykerOption.ProjectVersion;
+
         public ProjectVersionOption(string projectVersion, string fallbackVersion, bool dashboardEnabled, bool dashboardCompareEnabled)
         {
             if (dashboardEnabled)
@@ -21,9 +30,5 @@ namespace Stryker.Core.Options.Options
                 Value = projectVersion;
             }
         }
-
-        public override StrykerOption Type => StrykerOption.ProjectVersion;
-
-        public override string HelpText => "Project version for uploading to stryker dashboard. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.";
     }
 }
