@@ -15,14 +15,12 @@ namespace Stryker.Core.Reporters
     {
         private readonly StrykerOptions _options;
         private readonly ILogger<StatusReporter> _logger;
-        private readonly TextWriter _consoleWriter;
 
 
-        public StatusReporter(StrykerOptions strykerOptions, ILogger<StatusReporter> logger = null, TextWriter consoleWriter = null)
+        public StatusReporter(StrykerOptions strykerOptions, ILogger<StatusReporter> logger = null)
         {
             _options = strykerOptions;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StatusReporter>();
-            _consoleWriter = consoleWriter ?? Console.Out;
         }
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
