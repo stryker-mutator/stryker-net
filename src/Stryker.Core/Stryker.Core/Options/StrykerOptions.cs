@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using Stryker.Core.Baseline;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -61,24 +62,29 @@ namespace Stryker.Core.Options
             ILogger logger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
+            string solutionPath = null,
+
+            string logLevel = "info",
+            bool logToFile = false,
+
+            string mutationLevel = null,
+
+            int thresholdHigh = 80,
+            int thresholdLow = 60,
+            int thresholdBreak = 0,
+
             IEnumerable<string> reporters = null,
             string projectUnderTestNameFilter = "",
             int additionalTimeoutMS = 5000,
             IEnumerable<string> excludedMutations = null,
             IEnumerable<string> ignoredMethods = null,
-            string logLevel = "info",
-            bool logToFile = false,
             bool devMode = false,
             string coverageAnalysis = "perTest",
             bool abortTestOnFail = true,
             bool disableSimultaneousTesting = false,
             int? maxConcurrentTestRunners = null,
-            int thresholdHigh = 80,
-            int thresholdLow = 60,
-            int thresholdBreak = 0,
             IEnumerable<string> mutate = null,
             string testRunner = "vstest",
-            string solutionPath = null,
             string languageVersion = "latest",
             bool diff = false,
             bool compareToDashboard = false,
@@ -93,55 +99,62 @@ namespace Stryker.Core.Options
             string azureSAS = null,
             string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null,
-            string mutationLevel = null,
             IEnumerable<string> diffIgnoreFiles = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
 
-            DevMode = new DevModeOption(devMode).Value;
+            DevMode = new DevModeInput(devMode).Value;
 
-            BasePath = new BasePathOption(_fileSystem, basePath).Value;
-            SolutionPath = new SolutionPathOption(_fileSystem, solutionPath).Value;
-            OutputPath = new OutputPathOption(_logger, _fileSystem, BasePath).Value;
-            LogOptions = new LogOptionsOption(logLevel, logToFile, OutputPath).Value;
+            BasePath = new BasePathInput(_fileSystem, basePath).Value;
+            SolutionPath = new SolutionPathInput(_fileSystem, solutionPath).Value;
+            OutputPath = new OutputPathInput(_logger, _fileSystem, BasePath).Value;
 
-            MutationLevel = new MutationLevelOption(mutationLevel).Value;
-            Thresholds = new ThresholdsOption(thresholdHigh, thresholdLow, thresholdBreak).Value;
-            AdditionalTimeoutMS = new AdditionalTimeoutMsOption(additionalTimeoutMS).Value;
-            LanguageVersion = new LanguageVersionOption(languageVersion).Value;
-            TestRunner = new TestRunnerOption(testRunner).Value;
-            ConcurrentTestrunners = new ConcurrentTestrunnersOption(_logger, maxConcurrentTestRunners).Value;
+            LogEventLevel LogOptionLevel = new LogOptionLevelInput(logLevel).Value;
+            bool LogOptionToFile = new LogOptionToFileInput(logToFile, OutputPath).Value;
+            LogOptions = new LogOptions(LogOptionLevel, LogOptionToFile, OutputPath);
 
-            ProjectUnderTestNameFilter = new ProjectUnderTestNameFilterOption(projectUnderTestNameFilter).Value;
-            TestProjects = new TestProjectsOption(testProjects).Value;
+            MutationLevel = new MutationLevelInput(mutationLevel).Value;
 
-            CompareToDashboard = new CompareToDashboardOption(compareToDashboard).Value;
-            Reporters = new ReportersOption(reporters, CompareToDashboard).Value;
-            BaselineProvider = new BaselineProviderOption(baselineStorageLocation, Reporters.Contains(Reporter.Dashboard)).Value;
-            AzureFileStorageUrl = new AzureFileStorageUrlOption(azureFileStorageUrl, BaselineProvider).Value;
-            AzureSAS = new AzureFileStorageSasOption(azureSAS, BaselineProvider).Value;
+            var highTreshhold = new ThresholdsHighInput(thresholdHigh, thresholdLow).Value;
+            var lowTreshhold = new ThresholdsLowInput(thresholdHigh, thresholdLow).Value;
+            var breakTreshhold = new ThresholdsBreakInput(thresholdBreak).Value;
+            Thresholds = new Thresholds(highTreshhold, lowTreshhold, breakTreshhold)
+
+            AdditionalTimeoutMS = new AdditionalTimeoutMsInput(additionalTimeoutMS).Value;
+            LanguageVersion = new LanguageVersionInput(languageVersion).Value;
+            TestRunner = new TestRunnerInput(testRunner).Value;
+            ConcurrentTestrunners = new ConcurrentTestrunnersInput(_logger, maxConcurrentTestRunners).Value;
+
+            ProjectUnderTestNameFilter = new ProjectUnderTestNameFilterInput(projectUnderTestNameFilter).Value;
+            TestProjects = new TestProjectsInput(testProjects).Value;
+
+            CompareToDashboard = new CompareToDashboardInput(compareToDashboard).Value;
+            Reporters = new ReportersInput(reporters, CompareToDashboard).Value;
+            BaselineProvider = new BaselineProviderInput(baselineStorageLocation, Reporters.Contains(Reporter.Dashboard)).Value;
+            AzureFileStorageUrl = new AzureFileStorageUrlInput(azureFileStorageUrl, BaselineProvider).Value;
+            AzureSAS = new AzureFileStorageSasInput(azureSAS, BaselineProvider).Value;
 
             var dashboardEnabled = CompareToDashboard || Reporters.Contains(Reporter.Dashboard);
 
-            DashboardUrl = new DashboardUrlOption(dashboardUrl).Value;
-            DashboardApiKey = new DashboardApiKeyOption(dashboardApiKey, dashboardEnabled).Value;
-            ProjectName = new ProjectNameOption(projectName, dashboardEnabled).Value;
+            DashboardUrl = new DashboardUrlInput(dashboardUrl).Value;
+            DashboardApiKey = new DashboardApiKeyInput(dashboardApiKey, dashboardEnabled).Value;
+            ProjectName = new ProjectNameInput(projectName, dashboardEnabled).Value;
 
-            DiffEnabled = new DiffEnabledOption(diff).Value;
-            GitDiffTarget = new GitDiffTargetOption(gitDiffTarget, DiffEnabled).Value;
-            DiffIgnoreFiles = new DiffIgnoreFilePatternsOption(diffIgnoreFiles).Value;
+            DiffEnabled = new DiffEnabledInput(diff).Value;
+            GitDiffTarget = new GitDiffTargetInput(gitDiffTarget, DiffEnabled).Value;
+            DiffIgnoreFiles = new DiffIgnoreFilePatternsInput(diffIgnoreFiles).Value;
 
-            FallbackVersion = new FallbackVersionOption(fallbackVersion, gitDiffTarget).Value;
-            ProjectVersion = new ProjectVersionOption(projectVersion, FallbackVersion, dashboardEnabled, CompareToDashboard).Value;
-            ModuleName = new ModuleNameOption(moduleName).Value;
+            FallbackVersion = new FallbackVersionInput(fallbackVersion, gitDiffTarget).Value;
+            ProjectVersion = new ProjectVersionInput(projectVersion, FallbackVersion, dashboardEnabled, CompareToDashboard).Value;
+            ModuleName = new ModuleNameInput(moduleName).Value;
 
-            FilePatterns = new MutateOption(mutate).Value;
-            IgnoredMethods = new IgnoredMethodsOption(ignoredMethods).Value;
-            ExcludedMutations = new ExcludedMutatorsOption(excludedMutations).Value;
+            FilePatterns = new MutateInput(mutate).Value;
+            IgnoredMethods = new IgnoredMethodsInput(ignoredMethods).Value;
+            ExcludedMutations = new ExcludedMutatorsInput(excludedMutations).Value;
 
-            OptimizationMode = new OptimizationModeOption(coverageAnalysis).Value;
-            Optimizations = new OptimizationsOption(OptimizationMode, abortTestOnFail, disableSimultaneousTesting).Value;
+            OptimizationMode = new OptimizationModeInput(coverageAnalysis).Value;
+            Optimizations = new OptimizationsInput(OptimizationMode, abortTestOnFail, disableSimultaneousTesting).Value;
         }
     }
 }

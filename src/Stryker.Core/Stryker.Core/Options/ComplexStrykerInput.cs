@@ -2,7 +2,7 @@
 {
     public abstract class ComplexStrykerInput<T, Y>
     {
-        public abstract StrykerOption Type { get; }
+        public abstract StrykerInput Type { get; }
         public static string HelpText { get; protected set; } = string.Empty;
         public static T DefaultValue { get; protected set; } = default;
 

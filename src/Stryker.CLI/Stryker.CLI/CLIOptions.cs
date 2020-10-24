@@ -20,8 +20,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--reporters",
             ArgumentShortName = "-r <reporters>",
-            ArgumentDescription = ReportersOption.HelpText,
-            DefaultValue = ReportersOption.DefaultValue.Select(r => r.ToString()).ToArray(),
+            ArgumentDescription = ReportersInput.HelpText,
+            DefaultValue = ReportersInput.DefaultValue.Select(r => r.ToString()).ToArray(),
             JsonKey = "reporters"
         };
 
@@ -29,7 +29,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--log-level",
             ArgumentShortName = "-l <logLevel>",
-            ArgumentDescription = LogOptionsOption.HelpText,
+            ArgumentDescription = LogOptionLevelInput.HelpText,
             DefaultValue = "info",
             JsonKey = "log-level"
         };
@@ -38,8 +38,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
-            ArgumentDescription = LogOptionsOption.HelpText,
-            DefaultValue = LogOptionsOption.DefaultValue.LogToFile,
+            ArgumentDescription = LogOptionLevelInput.HelpText,
+            DefaultValue = LogOptionLevelInput.DefaultValue.LogToFile,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
@@ -48,8 +48,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dev-mode",
             ArgumentShortName = "-dev",
-            ArgumentDescription = DevModeOption.HelpText,
-            DefaultValue = DevModeOption.DefaultValue,
+            ArgumentDescription = DevModeInput.HelpText,
+            DefaultValue = DevModeInput.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dev-mode"
         };
@@ -58,8 +58,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--timeout-ms",
             ArgumentShortName = "-t <ms>",
-            ArgumentDescription = AdditionalTimeoutMsOption.HelpText,
-            DefaultValue = AdditionalTimeoutMsOption.DefaultValue,
+            ArgumentDescription = AdditionalTimeoutMsInput.HelpText,
+            DefaultValue = AdditionalTimeoutMsInput.DefaultValue,
             JsonKey = "timeout-ms"
         };
 
@@ -67,7 +67,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--excluded-mutations",
             ArgumentShortName = "-em <mutators>",
-            ArgumentDescription = ExcludedMutatorsOption.HelpText,
+            ArgumentDescription = ExcludedMutatorsInput.HelpText,
             DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "excluded-mutations"
         };
@@ -76,8 +76,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
-            ArgumentDescription = IgnoredMethodsOption.HelpText,
-            DefaultValue = IgnoredMethodsOption.DefaultInput,
+            ArgumentDescription = IgnoredMethodsInput.HelpText,
+            DefaultValue = IgnoredMethodsInput.DefaultInput,
             JsonKey = "ignore-methods"
         };
 
@@ -85,8 +85,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--project-file",
             ArgumentShortName = "-p <projectFileName>",
-            ArgumentDescription = ProjectUnderTestNameFilterOption.HelpText,
-            DefaultValue = ProjectUnderTestNameFilterOption.DefaultValue,
+            ArgumentDescription = ProjectUnderTestNameFilterInput.HelpText,
+            DefaultValue = ProjectUnderTestNameFilterInput.DefaultValue,
             JsonKey = "project-file"
         };
 
@@ -94,8 +94,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--diff",
             ArgumentShortName = "-diff",
-            ArgumentDescription = DiffEnabledOption.HelpText,
-            DefaultValue = DiffEnabledOption.DefaultValue,
+            ArgumentDescription = DiffEnabledInput.HelpText,
+            DefaultValue = DiffEnabledInput.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "diff"
         };
@@ -104,8 +104,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-compare",
             ArgumentShortName = "-compare",
-            ArgumentDescription = CompareToDashboardOption.HelpText,
-            DefaultValue = CompareToDashboardOption.DefaultValue,
+            ArgumentDescription = CompareToDashboardInput.HelpText,
+            DefaultValue = CompareToDashboardInput.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "dashboard-compare"
 
@@ -115,7 +115,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--diff-ignore-files",
             ArgumentShortName = "-diffignorefiles",
-            ArgumentDescription = DiffIgnoreFilePatternsOption.HelpText,
+            ArgumentDescription = DiffIgnoreFilePatternsInput.HelpText,
             DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "diff-ignore-files"
         };
@@ -125,8 +125,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--baseline-storage-location",
             ArgumentShortName = "-bsl <storageLocation>",
-            ArgumentDescription = BaselineProviderOption.HelpText,
-            DefaultValue = BaselineProviderOption.DefaultValue.ToString(),
+            ArgumentDescription = BaselineProviderInput.HelpText,
+            DefaultValue = BaselineProviderInput.DefaultValue.ToString(),
             JsonKey = "baseline-storage-location"
         };
 
@@ -134,8 +134,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--git-diff-target",
             ArgumentShortName = "-gdt <commitish>",
-            ArgumentDescription = GitDiffTargetOption.HelpText,
-            DefaultValue = GitDiffTargetOption.DefaultValue,
+            ArgumentDescription = GitDiffTargetInput.HelpText,
+            DefaultValue = GitDiffTargetInput.DefaultValue,
             JsonKey = "git-diff-target"
         };
 
@@ -143,8 +143,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--coverage-analysis",
             ArgumentShortName = "-ca <mode>",
-            ArgumentDescription = OptimizationModeOption.HelpText,
-            DefaultValue = OptimizationModeOption.DefaultValue,
+            ArgumentDescription = OptimizationModeInput.HelpText,
+            DefaultValue = OptimizationModeInput.DefaultValue,
             JsonKey = "coverage-analysis"
         };
 
@@ -152,8 +152,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--abort-test-on-fail",
             ArgumentShortName = "-atof",
-            ArgumentDescription = OptimizationsOption.HelpText,
-            DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.AbortTestOnKill),
+            ArgumentDescription = OptimizationsInput.HelpText,
+            DefaultValue = OptimizationsInput.DefaultValue.HasFlag(OptimizationFlags.AbortTestOnKill),
             ValueType = CommandOptionType.NoValue,
             JsonKey = "abort-test-on-fail"
         };
@@ -162,8 +162,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--disable-testing-mix-mutations",
             ArgumentShortName = "-tmm",
-            ArgumentDescription = OptimizationsOption.HelpText,
-            DefaultValue = OptimizationsOption.DefaultValue.HasFlag(OptimizationFlags.DisableTestMix),
+            ArgumentDescription = OptimizationsInput.HelpText,
+            DefaultValue = OptimizationsInput.DefaultValue.HasFlag(OptimizationFlags.DisableTestMix),
             ValueType = CommandOptionType.NoValue,
             JsonKey = "disable-testing-mix-mutations"
         };
@@ -172,8 +172,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--max-concurrent-test-runners",
             ArgumentShortName = "-c <integer>",
-            ArgumentDescription = ConcurrentTestrunnersOption.HelpText,
-            DefaultValue = ConcurrentTestrunnersOption.DefaultValue,
+            ArgumentDescription = ConcurrentTestrunnersInput.HelpText,
+            DefaultValue = ConcurrentTestrunnersInput.DefaultValue,
             JsonKey = "max-concurrent-test-runners"
         };
 
@@ -181,8 +181,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
-            ArgumentDescription = ThresholdsOption.HelpText,
-            DefaultValue = ThresholdsOption.DefaultValue.Break,
+            ArgumentDescription = ThresholdsHighInput.HelpText,
+            DefaultValue = ThresholdsHighInput.DefaultValue.Break,
             JsonKey = "threshold-break"
         };
 
@@ -190,8 +190,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
-            ArgumentDescription = ThresholdsOption.HelpText,
-            DefaultValue = ThresholdsOption.DefaultValue.Low,
+            ArgumentDescription = ThresholdsHighInput.HelpText,
+            DefaultValue = ThresholdsHighInput.DefaultValue.Low,
             JsonKey = "threshold-low"
         };
 
@@ -199,8 +199,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
-            ArgumentDescription = ThresholdsOption.HelpText,
-            DefaultValue = ThresholdsOption.DefaultValue.High,
+            ArgumentDescription = ThresholdsHighInput.HelpText,
+            DefaultValue = ThresholdsHighInput.DefaultValue.High,
             JsonKey = "threshold-high"
         };
 
@@ -208,7 +208,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--mutate",
             ArgumentShortName = "-m <file-patterns>",
-            ArgumentDescription = MutateOption.HelpText,
+            ArgumentDescription = MutateInput.HelpText,
             DefaultValue = Enumerable.Empty<string>(),
             JsonKey = "mutate",
         };
@@ -217,8 +217,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--solution-path",
             ArgumentShortName = "-s <path>",
-            ArgumentDescription = SolutionPathOption.HelpText,
-            DefaultValue = SolutionPathOption.DefaultValue,
+            ArgumentDescription = SolutionPathInput.HelpText,
+            DefaultValue = SolutionPathInput.DefaultValue,
             JsonKey = "solution-path"
         };
 
@@ -226,8 +226,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-runner",
             ArgumentShortName = "-tr <testRunner>",
-            ArgumentDescription = TestRunnerOption.HelpText,
-            DefaultValue = TestRunnerOption.DefaultValue.ToString(),
+            ArgumentDescription = TestRunnerInput.HelpText,
+            DefaultValue = TestRunnerInput.DefaultValue.ToString(),
             JsonKey = "test-runner"
         };
 
@@ -235,8 +235,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--language-version",
             ArgumentShortName = "-lv <csharp-version-name>",
-            ArgumentDescription = LanguageVersionOption.HelpText,
-            DefaultValue = LanguageVersionOption.DefaultValue.ToString(),
+            ArgumentDescription = LanguageVersionInput.HelpText,
+            DefaultValue = LanguageVersionInput.DefaultValue.ToString(),
             JsonKey = "language-version"
         };
 
@@ -244,8 +244,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = DashboardApiKeyOption.HelpText,
-            DefaultValue = DashboardApiKeyOption.DefaultValue,
+            ArgumentDescription = DashboardApiKeyInput.HelpText,
+            DefaultValue = DashboardApiKeyInput.DefaultValue,
             JsonKey = "dashboard-api-key"
         };
 
@@ -253,8 +253,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-project",
             ArgumentShortName = "-project <name>",
-            ArgumentDescription = ProjectNameOption.HelpText,
-            DefaultValue = ProjectNameOption.DefaultValue,
+            ArgumentDescription = ProjectNameInput.HelpText,
+            DefaultValue = ProjectNameInput.DefaultValue,
             JsonKey = "dashboard-project"
         };
 
@@ -262,8 +262,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-module",
             ArgumentShortName = "-module <name>",
-            ArgumentDescription = ModuleNameOption.HelpText,
-            DefaultValue = ModuleNameOption.DefaultValue,
+            ArgumentDescription = ModuleNameInput.HelpText,
+            DefaultValue = ModuleNameInput.DefaultValue,
             JsonKey = "dashboard-module"
         };
 
@@ -271,8 +271,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-version",
             ArgumentShortName = "-version <version>",
-            ArgumentDescription = ProjectVersionOption.HelpText,
-            DefaultValue = ProjectVersionOption.DefaultValue,
+            ArgumentDescription = ProjectVersionInput.HelpText,
+            DefaultValue = ProjectVersionInput.DefaultValue,
             JsonKey = "dashboard-version"
         };
 
@@ -280,8 +280,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-fallback-version",
             ArgumentShortName = "-fallback-version <version>",
-            ArgumentDescription = FallbackVersionOption.HelpText,
-            DefaultValue = FallbackVersionOption.DefaultValue,
+            ArgumentDescription = FallbackVersionInput.HelpText,
+            DefaultValue = FallbackVersionInput.DefaultValue,
             JsonKey = "dashboard-fallback-version"
         };
 
@@ -289,8 +289,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
-            ArgumentDescription = DashboardUrlOption.HelpText,
-            DefaultValue = DashboardUrlOption.DefaultValue,
+            ArgumentDescription = DashboardUrlInput.HelpText,
+            DefaultValue = DashboardUrlInput.DefaultValue,
             JsonKey = "dashboard-url"
         };
 
@@ -298,8 +298,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--test-projects",
             ArgumentShortName = "-tp",
-            ArgumentDescription = TestProjectsOption.HelpText,
-            DefaultValue = TestProjectsOption.DefaultValue,
+            ArgumentDescription = TestProjectsInput.HelpText,
+            DefaultValue = TestProjectsInput.DefaultValue,
             JsonKey = "test-projects"
         };
 
@@ -307,8 +307,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--azure-storage-sas",
             ArgumentShortName = "-sas <azure-sas-key>",
-            ArgumentDescription = AzureFileStorageSasOption.HelpText,
-            DefaultValue = AzureFileStorageSasOption.DefaultValue,
+            ArgumentDescription = AzureFileStorageSasInput.HelpText,
+            DefaultValue = AzureFileStorageSasInput.DefaultValue,
             JsonKey = "azure-storage-sas"
         };
 
@@ -316,8 +316,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--azure-storage-url",
             ArgumentShortName = "-storage-url <url>",
-            ArgumentDescription = AzureFileStorageUrlOption.HelpText,
-            DefaultValue = AzureFileStorageUrlOption.DefaultValue,
+            ArgumentDescription = AzureFileStorageUrlInput.HelpText,
+            DefaultValue = AzureFileStorageUrlInput.DefaultValue,
             JsonKey = "azure-storage-url"
         };
 
@@ -325,8 +325,8 @@ namespace Stryker.CLI
         {
             ArgumentName = "--mutation-level",
             ArgumentShortName = "-level",
-            ArgumentDescription = MutationLevelOption.HelpText,
-            DefaultValue = MutationLevelOption.DefaultValue.ToString(),
+            ArgumentDescription = MutationLevelInput.HelpText,
+            DefaultValue = MutationLevelInput.DefaultValue.ToString(),
             JsonKey = "mutation-level"
         };
 
