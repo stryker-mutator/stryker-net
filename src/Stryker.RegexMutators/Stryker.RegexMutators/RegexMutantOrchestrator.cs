@@ -26,6 +26,8 @@ namespace Stryker.RegexMutators
                 { typeof(QuantifierNode), new List<IRegexMutator> { new QuantifierRemovalMutator() } },
                 { typeof(CharacterClassNode), new List<IRegexMutator> { new CharacterClassNegationMutator() } },
                 { typeof(CharacterClassShorthandNode), new List<IRegexMutator> { new CharacterClassShorthandNegationMutator() } },
+                { typeof(QuantifierNOrMoreNode), new List<IRegexMutator> { new QuantifierUnlimitedQuantityMutator() } },
+                { typeof(QuantifierNMNode), new List<IRegexMutator> { new QuantifierQuantityMutator() } },
             };
         }
 
