@@ -14,7 +14,6 @@ namespace Stryker.Core.Options.Options
                 if (Enum.TryParse(testRunner, true, out TestRunner result))
                 {
                     Value = result;
-                    return;
                 }
                 else
                 {
