@@ -6,17 +6,22 @@ using System.Linq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Reporters
 {
     public class StatusReporter : IReporter
     {
         private readonly StrykerOptions _options;
+        private readonly ILogger<StatusReporter> _logger;
         private readonly TextWriter _consoleWriter;
 
-        public StatusReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
+
+        public StatusReporter(StrykerOptions strykerOptions, ILogger<StatusReporter> logger = null, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StatusReporter>();
             _consoleWriter = consoleWriter ?? Console.Out;
         }
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
@@ -26,17 +31,38 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
         {
+            var skippedMutants = reportComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+
+            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
+
+            foreach (var skippedMutantGroup in skippedMutantGroups)
+            {
+                _logger.LogInformation(
+                    FormatStatusReasonLogString(skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus),
+                    skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
+            }
+
+            if (skippedMutants.Any())
+            {
+                _logger.LogInformation(
+                    LeftPadAndFormatForMutantCount(skippedMutants.Count(), "total mutants are skipped for the above mentioned reasons"),
+                    skippedMutants.Count());
+            }
+
             var notRunMutantsWithResultStatusReason = reportComponent.ReadOnlyMutants
                 .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
                 .GroupBy(x => x.ResultStatusReason);
 
             foreach (var notRunMutantReason in notRunMutantsWithResultStatusReason)
             {
-                _consoleWriter.WriteLine(LeftPadAndFormatForMutantCount(notRunMutantReason.Count(), "mutants will be tested because: {1}"));
+                _logger.LogInformation(
+                    LeftPadAndFormatForMutantCount(notRunMutantReason.Count(), "mutants will be tested because: {1}"),
+                    notRunMutantReason.Count(),
+                    notRunMutantReason.Key);
             }
 
             var notRunCount = reportComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
-            _consoleWriter.WriteLine(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"));
+            _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
@@ -46,18 +72,7 @@ namespace Stryker.Core.Reporters
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
         {
-            var skippedMutantGroups = mutantsToBeTested.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
-
-            foreach (var skippedMutantGroup in skippedMutantGroups)
-            {
-                _consoleWriter.WriteLine(FormatStatusReasonLogString(skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus));
-            }
-
-            if (mutantsToBeTested.Any())
-            {
-                _consoleWriter.WriteLine(LeftPadAndFormatForMutantCount(mutantsToBeTested.Count(), "total mutants are skipped for the above mentioned reasons"));
-            }
-
+            // This reporter does not report during the testrun
         }
 
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
