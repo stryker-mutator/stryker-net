@@ -4,12 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options.Options
 {
-    public class IgnoredMethodsOption : BaseStrykerOption<IEnumerable<Regex>>
+    public class IgnoredMethodsOption : ComplexStrykerInput<IEnumerable<Regex>, IEnumerable<string>>
     {
         static IgnoredMethodsOption()
         {
             HelpText = "Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
-            DefaultValue = Enumerable.Empty<Regex>();
+            DefaultInput = Enumerable.Empty<string>();
+            DefaultValue = new IgnoredMethodsOption(DefaultInput).Value;
         }
 
         public IgnoredMethodsOption(IEnumerable<string> ignoredMethods)

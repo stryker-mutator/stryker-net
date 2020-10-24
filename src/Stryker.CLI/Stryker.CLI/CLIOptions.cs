@@ -77,7 +77,7 @@ namespace Stryker.CLI
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
             ArgumentDescription = IgnoredMethodsOption.HelpText,
-            DefaultValue = Enumerable.Empty<string>(),
+            DefaultValue = IgnoredMethodsOption.DefaultInput,
             JsonKey = "ignore-methods"
         };
 

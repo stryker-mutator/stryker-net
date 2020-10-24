@@ -2,7 +2,7 @@
 
 namespace Stryker.Core.Options.Options
 {
-    public class AdditionalTimeoutMsOption : BaseStrykerOption<int>
+    public class AdditionalTimeoutMsOption : SimpleStrykerInput<int>
     {
         static AdditionalTimeoutMsOption()
         {
