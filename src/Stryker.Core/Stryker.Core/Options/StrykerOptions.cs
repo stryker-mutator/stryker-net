@@ -119,7 +119,7 @@ namespace Stryker.Core.Options
             var highTreshhold = new ThresholdsHighInput(thresholdHigh, thresholdLow).Value;
             var lowTreshhold = new ThresholdsLowInput(thresholdHigh, thresholdLow).Value;
             var breakTreshhold = new ThresholdsBreakInput(thresholdBreak).Value;
-            Thresholds = new Thresholds(highTreshhold, lowTreshhold, breakTreshhold)
+            Thresholds = new Thresholds(highTreshhold, lowTreshhold, breakTreshhold);
 
             AdditionalTimeoutMS = new AdditionalTimeoutMsInput(additionalTimeoutMS).Value;
             LanguageVersion = new LanguageVersionInput(languageVersion).Value;

@@ -1,4 +1,4 @@
-﻿susing Stryker.Core.Exceptions;
+﻿using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Options
 {
