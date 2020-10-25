@@ -3,7 +3,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Options
 {
-    public class BaselineProviderInput : SimpleStrykerInput<BaselineProvider>
+    public class BaselineProviderInput : ComplexStrykerInput<BaselineProvider, string>
     {
         static BaselineProviderInput()
         {

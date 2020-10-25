@@ -18,46 +18,52 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+
+        public bool DevMode { get; }
+
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
-        public BaselineProvider BaselineProvider { get; }
 
-        public IEnumerable<Reporter> Reporters { get; }
         public LogOptions LogOptions { get; }
-        public bool DevMode { get; }
+        public MutationLevel MutationLevel { get; }
+        public Thresholds Thresholds { get; }
 
-        public string ProjectUnderTestNameFilter { get; }
-        public bool DiffEnabled { get; }
-        public bool CompareToDashboard { get; }
-        public string GitDiffTarget { get; }
         public int AdditionalTimeoutMS { get; }
+        public LanguageVersion LanguageVersion { get; }
+        public TestRunner TestRunner { get; set; }
+
+        public int ConcurrentTestrunners { get; }
+        public string ProjectUnderTestNameFilter { get; }
+        public IEnumerable<string> TestProjects { get; }
+
+        public bool CompareToDashboard { get; }
+        public IEnumerable<Reporter> Reporters { get; }
+
+        public BaselineProvider BaselineProvider { get; }
+        public string AzureFileStorageUrl { get; }
+        public string AzureSAS { get; }
+
+        public bool DiffEnabled { get; }
+        public string GitDiffTarget { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
-        public int ConcurrentTestrunners { get; }
-        public Thresholds Thresholds { get; }
-        public TestRunner TestRunner { get; set; }
         public IEnumerable<FilePattern> FilePatterns { get; }
-        public LanguageVersion LanguageVersion { get; }
         public OptimizationFlags Optimizations { get; }
         public string OptimizationMode { get; }
-        public IEnumerable<string> TestProjects { get; }
 
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
         public string ProjectName { get; }
         public string ModuleName { get; }
         public string ProjectVersion { get; }
-        public MutationLevel MutationLevel { get; }
 
         public IEnumerable<FilePattern> DiffIgnoreFiles { get; }
 
-        public string AzureSAS { get; }
-        public string AzureFileStorageUrl { get; }
         public string FallbackVersion { get; }
 
-        private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
 
         public StrykerOptions(
             ILogger logger = null,
@@ -85,6 +91,10 @@ namespace Stryker.Core.Options
             bool compareToDashboard = false,
             IEnumerable<string> reporters = null,
 
+            string baselineStorageLocation = null,
+            string azureFileStorageUrl = null,
+            string azureSAS = null,
+
             IEnumerable<string> excludedMutations = null,
             IEnumerable<string> ignoredMethods = null,
             bool devMode = false,
@@ -100,9 +110,6 @@ namespace Stryker.Core.Options
             string moduleName = null,
             string projectVersion = null,
             string fallbackVersion = null,
-            string baselineStorageLocation = null,
-            string azureSAS = null,
-            string azureFileStorageUrl = null,
             IEnumerable<string> diffIgnoreFiles = null)
         {
             _logger = logger;
@@ -136,10 +143,10 @@ namespace Stryker.Core.Options
             CompareToDashboard = new CompareToDashboardInput(compareToDashboard).Value;
             var reportersList = new ReportersInput(reporters);
             Reporters = reportersList.ReportersList(CompareToDashboard);
-            /* --- */
             BaselineProvider = new BaselineProviderInput(baselineStorageLocation, Reporters.Contains(Reporter.Dashboard)).Value;
             AzureFileStorageUrl = new AzureFileStorageUrlInput(azureFileStorageUrl, BaselineProvider).Value;
             AzureSAS = new AzureFileStorageSasInput(azureSAS, BaselineProvider).Value;
+            /* --- */
 
             var dashboardEnabled = CompareToDashboard || Reporters.Contains(Reporter.Dashboard);
 

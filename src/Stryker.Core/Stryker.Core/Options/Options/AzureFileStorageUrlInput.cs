@@ -16,22 +16,22 @@ namespace Stryker.Core.Options.Options
 
         public override StrykerInput Type => StrykerInput.AzureFileStorageUrl;
 
-    public AzureFileStorageUrlInput(string azureFileStorageUrl, BaselineProvider baselineProvider)
-    {
-        if (baselineProvider == BaselineProvider.AzureFileStorage)
+        public AzureFileStorageUrlInput(string azureFileStorageUrl, BaselineProvider baselineProvider)
         {
-            if (azureFileStorageUrl is null)
+            if (baselineProvider == BaselineProvider.AzureFileStorage)
             {
-                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
-            }
+                if (azureFileStorageUrl is null)
+                {
+                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
+                }
 
-            if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
-            {
-                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
-            }
+                if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
+                {
+                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
+                }
 
-            Value = azureFileStorageUrl;
+                Value = azureFileStorageUrl;
+            }
         }
-    }
     }
 }
