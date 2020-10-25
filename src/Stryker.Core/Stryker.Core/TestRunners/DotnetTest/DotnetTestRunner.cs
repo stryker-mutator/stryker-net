@@ -15,7 +15,7 @@ namespace Stryker.Core.TestRunners
 {
     public class DotnetTestRunner : ITestRunner
     {
-        private readonly OptimizationFlags _flags;
+        private readonly OptimizationModes _flags;
         private readonly string _projectFile;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
@@ -25,7 +25,7 @@ namespace Stryker.Core.TestRunners
         private readonly object _lck = new object();
         private string _lastMessage;
 
-        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationFlags flags, IEnumerable<string> testBinariesPaths)
+        public DotnetTestRunner(string path, IProcessExecutor processProxy, OptimizationModes flags, IEnumerable<string> testBinariesPaths)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DotnetTestRunner>();
             _flags = flags;
@@ -98,8 +98,8 @@ namespace Stryker.Core.TestRunners
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseUnloadAppDomain, bool cantUsePipe)
         {
-            if (!_flags.HasFlag(OptimizationFlags.SkipUncoveredMutants) &&
-                !_flags.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (!_flags.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+                !_flags.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return new TestRunResult(true);
             }

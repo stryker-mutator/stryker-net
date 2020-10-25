@@ -111,17 +111,17 @@ namespace Stryker.Core.UnitTest.Options
         public void ShouldValidateOptimisationMode()
         {
             var options = new StrykerOptions(coverageAnalysis: "perTestInIsolation");
-            options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest).ShouldBeTrue();
-            options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest).ShouldBeTrue();
+            options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+            options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
 
             options = new StrykerOptions();
-            options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest).ShouldBeTrue();
+            options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
 
             options = new StrykerOptions(coverageAnalysis: "all");
-            options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants).ShouldBeTrue();
+            options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
 
             options = new StrykerOptions(coverageAnalysis: "off");
-            options.Optimizations.HasFlag(OptimizationFlags.NoOptimization).ShouldBeTrue();
+            options.Optimizations.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {

@@ -1,6 +1,6 @@
 ﻿namespace Stryker.Core.Options.Inputs
 {
-    class SimultaneousTestingInput : ComplexStrykerInput<bool, OptimizationFlags>
+    class SimultaneousTestingInput : ComplexStrykerInput<bool, OptimizationModes>
     {
         static SimultaneousTestingInput()
         {
@@ -11,9 +11,9 @@
 
         public override StrykerInput Type => StrykerInput.DisableSimultaneousTesting;
 
-        public SimultaneousTestingInput(OptimizationFlags optimizationFlag, bool disableSimultaneousTesting)
+        public SimultaneousTestingInput(OptimizationModes optimizationFlag, bool disableSimultaneousTesting)
         {
-            optimizationFlag |= disableSimultaneousTesting ? OptimizationFlags.DisableTestMix : OptimizationFlags.NoOptimization;
+            optimizationFlag |= disableSimultaneousTesting ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
             Value = optimizationFlag;
         }
     }

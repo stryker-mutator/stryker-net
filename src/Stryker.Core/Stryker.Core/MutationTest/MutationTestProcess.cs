@@ -159,7 +159,7 @@ namespace Stryker.Core.MutationTest
             }
 
             var mutantsToTest = mutantsNotRun;
-            if (_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 var testCount = _mutationTestExecutor.TestRunner.DiscoverNumberOfTests();
                 var toTest = mutantsNotRun.Sum(x => x.MustRunAgainstAllTests ? testCount : x.CoveringTests.Count);
@@ -169,7 +169,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
-            else if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants))
+            else if (_options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants))
             {
                 var total = viableMutantsCount;
                 var toTest = mutantsToTest.Count();
@@ -194,7 +194,7 @@ namespace Stryker.Core.MutationTest
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs,
                             (testedMutants, failedTests, ranTests, timedOutTest) =>
                             {
-                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationModes.AbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
                                     mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -236,7 +236,7 @@ namespace Stryker.Core.MutationTest
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
 
-            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (_options.Optimizations.HasFlag(OptimizationModes.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }

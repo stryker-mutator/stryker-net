@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun successful");
 
             var path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new[] { "C://test//mytest.dll" });
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationModes.NoOptimization, new[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null, null);
 
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed", 1);
 
             var path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new[] { "C://test//mytest.dll" });
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationModes.NoOptimization, new[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null, null);
 
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way", -100);
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new[] { "C://test//mytest.dll" });
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationModes.NoOptimization, new[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, null, null);
 
@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             processMock.SetupProcessMockToReturn("Testrun failed other way");
 
             string path = FilePathUtils.NormalizePathSeparators("c://test");
-            var target = new DotnetTestRunner(path, processMock.Object, OptimizationFlags.NoOptimization, new[] { "C://test//mytest.dll" });
+            var target = new DotnetTestRunner(path, processMock.Object, OptimizationModes.NoOptimization, new[] { "C://test//mytest.dll" });
 
             var result = target.RunAll(null, new Mutant(){Id =  1}, null);
 

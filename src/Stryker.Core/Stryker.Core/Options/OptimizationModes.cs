@@ -4,7 +4,7 @@ namespace Stryker.Core.Options
 {
     // Optimization options 
     [Flags]
-    public enum OptimizationFlags
+    public enum OptimizationModes
     {
         NoOptimization = 0,
         SkipUncoveredMutants = 1,

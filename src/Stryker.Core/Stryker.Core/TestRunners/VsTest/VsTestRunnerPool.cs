@@ -16,14 +16,14 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : IMultiTestRunner
     {
-        private readonly OptimizationFlags _flags;
+        private readonly OptimizationModes _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly ICollection<TestCase> _discoveredTests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
-        public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, OptimizationModes flags, ProjectInfo projectInfo)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
@@ -63,8 +63,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
-            var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
-            if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            var needCoverage = _flags.HasFlag(OptimizationModes.CoverageBasedTest) || _flags.HasFlag(OptimizationModes.SkipUncoveredMutants);
+            if (needCoverage && _flags.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 return CaptureCoveragePerIsolatedTests(mutants, cantUseAppDomain, cantUsePipe);
             }
