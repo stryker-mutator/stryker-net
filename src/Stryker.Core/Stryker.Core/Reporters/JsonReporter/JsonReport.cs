@@ -109,7 +109,7 @@ namespace Stryker.Core.Reporters.Json
         private string GetProjectRoot(IReadOnlyInputComponent component)
         {
             if (component is FolderComposite folder) {
-                return folder.Children.OfType<FolderComposite>().FirstOrDefault().FullPath;
+                return folder.Children.OfType<FolderComposite>().FirstOrDefault(s => s.RelativePathToProjectFile == ".")?.FullPath;
             }
 
             return null;
