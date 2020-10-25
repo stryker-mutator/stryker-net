@@ -1,4 +1,8 @@
-﻿namespace Stryker.Core.Options
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Stryker.Core.Options
 {
     public abstract class ComplexStrykerInput<T, Y>
     {
@@ -37,6 +41,34 @@
             {
                 _value = value;
             }
+        }
+
+        public static string FormatOptionsString(Y @default, IEnumerable<T> options)
+        {
+            return FormatOptionsString(new List<Y> { @default }, options, new List<T>());
+        }
+
+        public static string FormatOptionsString<U,V>(IEnumerable<U> @default, IEnumerable<V> options, IEnumerable<V> deprecated)
+        {
+            StringBuilder optionsString = new StringBuilder();
+
+            optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
+            string nonDefaultOptions = string.Join(
+            ", ",
+            options
+            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
+            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
+
+            string deprecatedOptions = "";
+            if (deprecated.Any())
+            {
+                deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
+            }
+
+            optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+            optionsString.Append(" ]");
+
+            return optionsString.ToString();
         }
     }
 }

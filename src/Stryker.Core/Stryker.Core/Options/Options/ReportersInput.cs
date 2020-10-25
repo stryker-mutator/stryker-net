@@ -10,7 +10,8 @@ namespace Stryker.Core.Options.Options
     {
         static ReportersInput()
         {
-            HelpText = "Choose the reporters to enable.";
+            HelpText = $@"Sets the reporter | { FormatOptionsString<string, Reporter>(DefaultInput, (IEnumerable<Reporter>)Enum.GetValues(DefaultValue.First().GetType()), new List<Reporter> { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport }) }]
+    This argument takes a json array as a value. Example: ['{ Reporter.Progress }', '{ Reporter.Html }']";
             DefaultInput = new List<string>() { "Reporter.Progress", "Reporter.Html" };
             DefaultValue = new ReportersInput(DefaultInput).Value;
         }

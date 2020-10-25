@@ -1,5 +1,7 @@
 ﻿using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
+using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
@@ -7,7 +9,8 @@ namespace Stryker.Core.Options.Options
     {
         static BaselineProviderInput()
         {
-            HelpText = "Allows to choose a storage location for the baseline reports";
+            HelpText = $@"Allows to choose a storage location | Options[{FormatOptionsString(DefaultInput, (IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())) }]
+                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.";
             DefaultValue = BaselineProvider.Disk;
         }
 

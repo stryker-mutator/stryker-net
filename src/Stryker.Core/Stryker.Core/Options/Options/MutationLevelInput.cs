@@ -1,6 +1,8 @@
-﻿using Stryker.Core.Exceptions;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
@@ -8,7 +10,7 @@ namespace Stryker.Core.Options.Options
     {
         static MutationLevelInput()
         {
-            HelpText = "Specifies which mutations will be placed in your project";
+            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(DefaultInput, (IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())) }";
             DefaultValue = MutationLevel.Standard;
         }
 

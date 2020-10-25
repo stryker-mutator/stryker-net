@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Options
     {
         static LogOptionToFileInput()
         {
-            HelpText = "Sets the console output logging level";
+            HelpText = "Makes the logger write to a file (Logging to file always uses loglevel trace)";
             DefaultValue = false;
         }
 

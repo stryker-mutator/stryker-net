@@ -46,28 +46,32 @@ namespace Stryker.Core.Options
         public string AzureFileStorageUrl { get; }
         public string AzureSAS { get; }
 
-        public bool DiffEnabled { get; }
-        public string GitDiffTarget { get; }
-        public IEnumerable<Mutator> ExcludedMutations { get; }
-        public IEnumerable<Regex> IgnoredMethods { get; }
-        public IEnumerable<FilePattern> FilePatterns { get; }
-        public OptimizationFlags Optimizations { get; }
-        public string OptimizationMode { get; }
-
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
         public string ProjectName { get; }
-        public string ModuleName { get; }
-        public string ProjectVersion { get; }
 
+        public bool DiffEnabled { get; }
+        public string GitDiffTarget { get; }
         public IEnumerable<FilePattern> DiffIgnoreFiles { get; }
 
         public string FallbackVersion { get; }
+        public string ProjectVersion { get; }
+        public string ModuleName { get; }
+
+        public IEnumerable<FilePattern> FilePatterns { get; }
+        public IEnumerable<Regex> IgnoredMethods { get; }
+        public IEnumerable<Mutator> ExcludedMutations { get; }
+
+        public string OptimizationMode { get; }
+        public OptimizationFlags Optimizations { get; }
 
 
         public StrykerOptions(
             ILogger logger = null,
             IFileSystem fileSystem = null,
+
+            bool devMode = false,
+
             string basePath = "",
             string solutionPath = null,
 
@@ -95,22 +99,25 @@ namespace Stryker.Core.Options
             string azureFileStorageUrl = null,
             string azureSAS = null,
 
-            IEnumerable<string> excludedMutations = null,
-            IEnumerable<string> ignoredMethods = null,
-            bool devMode = false,
-            string coverageAnalysis = "perTest",
-            bool abortTestOnFail = true,
-            bool disableSimultaneousTesting = false,
-            IEnumerable<string> mutate = null,
+            string dashboardUrl = "https://dashboard.stryker-mutator.io",
+            string dashboardApiKey = null,
+            string projectName = null,
+
             bool diff = false,
             string gitDiffTarget = "master",
-            string dashboardApiKey = null,
-            string dashboardUrl = "https://dashboard.stryker-mutator.io",
-            string projectName = null,
-            string moduleName = null,
-            string projectVersion = null,
+            IEnumerable<string> diffIgnoreFiles = null,
+
             string fallbackVersion = null,
-            IEnumerable<string> diffIgnoreFiles = null)
+            string projectVersion = null,
+            string moduleName = null,
+
+            IEnumerable<string> mutate = null,
+            IEnumerable<string> ignoredMethods = null,
+            IEnumerable<string> excludedMutations = null,
+
+            string coverageAnalysis = "perTest",
+            bool abortTestOnFail = true,
+            bool disableSimultaneousTesting = false)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -146,7 +153,6 @@ namespace Stryker.Core.Options
             BaselineProvider = new BaselineProviderInput(baselineStorageLocation, Reporters.Contains(Reporter.Dashboard)).Value;
             AzureFileStorageUrl = new AzureFileStorageUrlInput(azureFileStorageUrl, BaselineProvider).Value;
             AzureSAS = new AzureFileStorageSasInput(azureSAS, BaselineProvider).Value;
-            /* --- */
 
             var dashboardEnabled = CompareToDashboard || Reporters.Contains(Reporter.Dashboard);
 
@@ -158,7 +164,7 @@ namespace Stryker.Core.Options
             GitDiffTarget = new GitDiffTargetInput(gitDiffTarget, DiffEnabled).Value;
             DiffIgnoreFiles = new DiffIgnoreFilePatternsInput(diffIgnoreFiles).Value;
 
-            FallbackVersion = new FallbackVersionInput(fallbackVersion, gitDiffTarget).Value;
+            FallbackVersion = new FallbackVersionInput(fallbackVersion, GitDiffTarget).Value;
             ProjectVersion = new ProjectVersionInput(projectVersion, FallbackVersion, dashboardEnabled, CompareToDashboard).Value;
             ModuleName = new ModuleNameInput(moduleName).Value;
 
@@ -167,7 +173,9 @@ namespace Stryker.Core.Options
             ExcludedMutations = new ExcludedMutatorsInput(excludedMutations).Value;
 
             OptimizationMode = new OptimizationModeInput(coverageAnalysis).Value;
-            Optimizations = new OptimizationsInput(OptimizationMode, abortTestOnFail, disableSimultaneousTesting).Value;
+            var OptimizationFlag = new OptimizationsInput(OptimizationMode).Value;
+            OptimizationFlag = new AbortOnFailInput(OptimizationFlag, abortTestOnFail).Value;
+            Optimizations = new SimultaneousTestingInput(OptimizationFlag, disableSimultaneousTesting).Value;
         }
     }
 }

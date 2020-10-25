@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
@@ -8,7 +10,7 @@ namespace Stryker.Core.Options.Options
     {
         static LanguageVersionInput()
         {
-            HelpText = "Set the c# version used to compile.";
+            HelpText = $"Set the c# version used to compile. | { FormatOptionsString(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }";
             DefaultInput = "latest";
             DefaultValue = new LanguageVersionInput(DefaultInput).Value;
         }

@@ -6,9 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         static ProjectVersionInput()
         {
-
-            HelpText = "Project version for uploading to stryker dashboard. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.";
-
+            HelpText = $"Project version used in reporters. Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.";
         }
 
         public override StrykerInput Type => StrykerInput.ProjectVersion;

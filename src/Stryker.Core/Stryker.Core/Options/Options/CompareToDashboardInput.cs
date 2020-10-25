@@ -4,7 +4,7 @@
     {
         static CompareToDashboardInput()
         {
-            HelpText = "EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with Diff Enabled";
+            HelpText = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with --diff";
         }
 
         public override StrykerInput Type => StrykerInput.CompareToDashboard;

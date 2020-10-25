@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    public class DiffIgnoreFilePatternsInput : SimpleStrykerInput<IEnumerable<FilePattern>>
+    public class DiffIgnoreFilePatternsInput : ComplexStrykerInput<IEnumerable<FilePattern>, IEnumerable<string>>
     {
         static DiffIgnoreFilePatternsInput()
         {
@@ -13,8 +13,7 @@ namespace Stryker.Core.Options.Options
             
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
             Example: ['**/*Assets.json','**/favicon.ico']";
-
-            DefaultValue = Enumerable.Empty<FilePattern>();
+            DefaultValue = new DiffIgnoreFilePatternsInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.DiffIgnoreFilePatterns;
@@ -30,6 +29,10 @@ namespace Stryker.Core.Options.Options
                 }
 
                 Value = diffIgnoreFilePatterns;
+            }
+            else
+            {
+                Value = Enumerable.Empty<FilePattern>();
             }
         }
     }

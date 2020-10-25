@@ -6,8 +6,8 @@ namespace Stryker.Core.Options.Options
     {
         static ProjectNameInput()
         {
-            HelpText = "The project name for the stryker dashboard. Required when the stryker dashboard is used. Often the name of your solution or repository.";
-
+            HelpText = @"The organizational name for your project. Required when dashboard reporter is turned on.
+For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.";
         }
 
         public override StrykerInput Type => StrykerInput.ProjectName;

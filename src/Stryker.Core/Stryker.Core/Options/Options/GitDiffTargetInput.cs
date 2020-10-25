@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         static GitDiffTargetInput()
         {
-            HelpText = "Sets the source commitish to compare with the current codebase, used for calculating the difference when diff is enabled.";
+            HelpText = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master";
             DefaultValue = "master";
         }
 

@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Options
     {
         static DashboardUrlInput()
         {
-            HelpText = "The url to the stryker dashboard. If you're not using the official hosted stryker dashboard, provide the private url here.";
+            HelpText = $"Provide an alternative root url for Stryker Dashboard.";
             DefaultValue = "https://dashboard.stryker-mutator.io";
         }
 

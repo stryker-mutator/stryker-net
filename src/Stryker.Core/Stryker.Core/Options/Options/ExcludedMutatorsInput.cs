@@ -6,12 +6,13 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    public class ExcludedMutatorsInput : SimpleStrykerInput<IEnumerable<Mutator>>
+    public class ExcludedMutatorsInput : ComplexStrykerInput<IEnumerable<Mutator>, IEnumerable<string>>
     {
         static ExcludedMutatorsInput()
         {
-            HelpText = @"The given mutators will be excluded for this mutation testrun.";
-            DefaultValue = Enumerable.Empty<Mutator>();
+            HelpText = @"The given mutators will be excluded for this mutation testrun.
+    This argument takes a json array as value. Example: ['string', 'logical']";
+            DefaultValue = new ExcludedMutatorsInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.ExcludedMutators;
@@ -43,6 +44,10 @@ namespace Stryker.Core.Options.Options
                 }
 
                 Value = excludedMutators;
+            }
+            else
+            {
+                Value = Enumerable.Empty<Mutator>();
             }
         }
     }

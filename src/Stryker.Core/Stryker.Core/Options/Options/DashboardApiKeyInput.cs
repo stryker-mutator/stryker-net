@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         static DashboardApiKeyInput()
         {
-            HelpText = $"The api key for the stryker dashboard. You can get your key here: https://dashboard.stryker-mutator.io/.";
+            HelpText = $"Api key for dashboard reporter. You can get your key here: {DashboardUrlInput.DefaultValue}";
         }
 
         public override StrykerInput Type => StrykerInput.DashboardApiKey;

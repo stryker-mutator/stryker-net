@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Options
     {
         static TestProjectsInput()
         {
-            HelpText = "Specify which test projects should run on the project under test.";
+            HelpText = $"Specify what test projects should run on the project under test.";
             DefaultValue = Enumerable.Empty<string>();
         }
 

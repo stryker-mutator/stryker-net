@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         static ModuleNameInput()
         {
-            HelpText = "Module name used by reporters. Usually a project in your solution would be a module.";
+            HelpText = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.";
         }
 
         public override StrykerInput Type => StrykerInput.ModuleName;

@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Options
     {
         static AdditionalTimeoutMsInput()
         {
-            HelpText = "Stryker calculates a timeout based on the total unit test runtime before mutation plus a buffer in case a mutation increases the runtime for a unit test. To prevent infinite loops stryker cancels the testrun if it runs longer than the timeout value. If you experience a lot of timeout you might need to increase the timeout value.";
+            HelpText = $"Stryker calculates a timeout based on the time the testrun takes before the mutations | Options {DefaultValue}";
             DefaultValue = 5000;
         }
 

@@ -8,10 +8,9 @@ namespace Stryker.Core.Options.Options
     {
         static ConcurrentTestrunnersInput()
         {
-        HelpText = @"Mutation testing is time consuming. 
+            HelpText = @"Mutation testing is time consuming. 
     By default Stryker tries to make the most of your CPU, by spawning as many test runners as you have CPU cores.
     This setting allows you to override this default behavior.
-
     Reasons you might want to lower this setting:
                                                                  
         - Your test runner starts a browser (another CPU-intensive process)

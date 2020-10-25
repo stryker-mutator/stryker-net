@@ -3,17 +3,17 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    public class MutateInput : SimpleStrykerInput<IEnumerable<FilePattern>>
+    public class MutateInput : ComplexStrykerInput<IEnumerable<FilePattern>, IEnumerable<string>>
     {
         static MutateInput()
         {
-            HelpText = @"Allows to specify file that should in- or excluded from mutating.
+            HelpText = @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
     Use '!' at the start of a pattern to exclude all matched files.
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
 
-            DefaultValue = new[] { FilePattern.Parse("**/*") };
+            DefaultValue = new MutateInput(DefaultInput).Value;
         }
 
         public override StrykerInput Type => StrykerInput.Mutate;
@@ -34,6 +34,10 @@ namespace Stryker.Core.Options.Options
                     // If there are only exclude patterns, we add a pattern that matches every file.
                     filesToInclude.Add(FilePattern.Parse("**/*"));
                 }
+            }
+            else
+            {
+                Value = new List<FilePattern>() { FilePattern.Parse("**/*") };
             }
         }
     }

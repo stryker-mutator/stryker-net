@@ -42,5 +42,7 @@
         AzureFileStorageUrl,
         AzureFileStorageSas,
         FallbackVersion,
+        SimultaneousTesting,
+        AbortOnFail,
     }
 }

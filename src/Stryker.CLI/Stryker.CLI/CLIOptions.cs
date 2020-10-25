@@ -39,7 +39,7 @@ namespace Stryker.CLI
             ArgumentName = "--log-file",
             ArgumentShortName = "-f",
             ArgumentDescription = LogOptionLevelInput.HelpText,
-            DefaultValue = LogOptionLevelInput.DefaultValue.LogToFile,
+            DefaultValue = LogOptionToFileInput.DefaultValue,
             ValueType = CommandOptionType.NoValue,
             JsonKey = "log-file"
         };
@@ -182,7 +182,7 @@ namespace Stryker.CLI
             ArgumentName = "--threshold-break",
             ArgumentShortName = "-tb <thresholdBreak>",
             ArgumentDescription = ThresholdsHighInput.HelpText,
-            DefaultValue = ThresholdsHighInput.DefaultValue.Break,
+            DefaultValue = ThresholdsBreakInput.DefaultValue,
             JsonKey = "threshold-break"
         };
 
@@ -191,7 +191,7 @@ namespace Stryker.CLI
             ArgumentName = "--threshold-low",
             ArgumentShortName = "-tl <thresholdLow>",
             ArgumentDescription = ThresholdsHighInput.HelpText,
-            DefaultValue = ThresholdsHighInput.DefaultValue.Low,
+            DefaultValue = ThresholdsLowInput.DefaultValue,
             JsonKey = "threshold-low"
         };
 
@@ -200,7 +200,7 @@ namespace Stryker.CLI
             ArgumentName = "--threshold-high",
             ArgumentShortName = "-th <thresholdHigh>",
             ArgumentDescription = ThresholdsHighInput.HelpText,
-            DefaultValue = ThresholdsHighInput.DefaultValue.High,
+            DefaultValue = ThresholdsHighInput.DefaultValue,
             JsonKey = "threshold-high"
         };
 

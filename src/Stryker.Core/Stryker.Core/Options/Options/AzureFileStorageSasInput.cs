@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Options
     {
         static AzureFileStorageSasInput()
         {
-            HelpText = "The Shared Access Signature for Azure File Storage, required when azure file storage baseline  is chosen is selected. \nFor more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
+            HelpText = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
         }
 
         public override StrykerInput Type => StrykerInput.AzureFileStorageSas;

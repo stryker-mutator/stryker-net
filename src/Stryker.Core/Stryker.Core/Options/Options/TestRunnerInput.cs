@@ -1,6 +1,7 @@
 ﻿using Stryker.Core.Exceptions;
 using Stryker.Core.TestRunners;
 using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
@@ -9,7 +10,7 @@ namespace Stryker.Core.Options.Options
     {
         static TestRunnerInput()
         {
-            HelpText = "Choose which testrunner should be used to run your tests.";
+            HelpText = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(DefaultInput, (IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())) }";
             DefaultInput = "vstest";
             DefaultValue = new TestRunnerInput(DefaultInput).Value;
         }
