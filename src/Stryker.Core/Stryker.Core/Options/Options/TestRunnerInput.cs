@@ -6,11 +6,11 @@ using System.Collections.Generic;
 namespace Stryker.Core.Options.Options
 {
     // Deprecated, might be removed soon
-    public class TestRunnerInput : ComplexStrykerInput<TestRunner, string>
+    public class TestRunnerInput : ComplexStrykerInput<string, TestRunner>
     {
         static TestRunnerInput()
         {
-            HelpText = $"Choose which testrunner should be used to run your tests. | { FormatOptionsString(DefaultInput, (IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())) }";
+            HelpText = $"Choose which testrunner should be used to run your tests. | { FormatOptions(DefaultInput, (IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())) }";
             DefaultInput = "vstest";
             DefaultValue = new TestRunnerInput(DefaultInput).Value;
         }

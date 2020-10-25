@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options.Options
 {
-    public class IgnoredMethodsInput : ComplexStrykerInput<IEnumerable<Regex>, IEnumerable<string>>
+    public class IgnoredMethodsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Regex>>
     {
         static IgnoredMethodsInput()
         {

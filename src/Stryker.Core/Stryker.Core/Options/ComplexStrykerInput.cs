@@ -4,20 +4,24 @@ using System.Text;
 
 namespace Stryker.Core.Options
 {
-    public abstract class ComplexStrykerInput<T, Y>
+    public abstract class ComplexStrykerInput<TInput, TValue>
     {
         public abstract StrykerInput Type { get; }
-        public static string HelpText { get; protected set; } = string.Empty;
-        public static T DefaultValue { get; protected set; } = default;
 
-        private static Y _defaultInput = default;
-        public static Y DefaultInput
+        public TInput StaticDefaultInput => DefaultInput;
+        public string StaticHelptext => HelpText;
+
+        public static string HelpText { get; protected set; } = string.Empty;
+        public static TValue DefaultValue { get; protected set; } = default;
+
+        private static TInput _defaultInput = default;
+        public static TInput DefaultInput
         {
             get
             {
-                if (_defaultInput is null && DefaultValue is Y defaultValueAsY)
+                if (_defaultInput is null && DefaultValue is TInput defaultValueAsTInput)
                 {
-                    return defaultValueAsY;
+                    return defaultValueAsTInput;
                 }
                 return _defaultInput;
             }
@@ -27,11 +31,11 @@ namespace Stryker.Core.Options
             }
         }
 
-        private T _value = default;
+        private TValue _value = default;
         /// <summary>
         /// The value of the option. Returns <see cref="DefaultValue"/> if current value equals <code>default(T)</code>
         /// </summary>
-        public T Value
+        public TValue Value
         {
             get
             {
@@ -43,12 +47,12 @@ namespace Stryker.Core.Options
             }
         }
 
-        public static string FormatOptionsString(Y @default, IEnumerable<T> options)
+        public static string FormatOptions(TInput @default, IEnumerable<TValue> options)
         {
-            return FormatOptionsString(new List<Y> { @default }, options, new List<T>());
+            return FormatOptions(new List<TInput> { @default }, options, new List<TValue>());
         }
 
-        public static string FormatOptionsString<U,V>(IEnumerable<U> @default, IEnumerable<V> options, IEnumerable<V> deprecated)
+        public static string FormatOptions(IEnumerable<TInput> @default, IEnumerable<TValue> options, IEnumerable<TValue> deprecated)
         {
             StringBuilder optionsString = new StringBuilder();
 

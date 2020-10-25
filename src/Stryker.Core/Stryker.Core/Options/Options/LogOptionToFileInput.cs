@@ -1,6 +1,4 @@
-﻿using Serilog.Events;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
+﻿using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Options
 {
@@ -23,7 +21,7 @@ namespace Stryker.Core.Options.Options
                     throw new StrykerInputException("Output path must be set if log to file is enabled");
                 }
 
-                Value = (bool)logToFile;
+                Value = logToFile.Value;
             }
         }
     }

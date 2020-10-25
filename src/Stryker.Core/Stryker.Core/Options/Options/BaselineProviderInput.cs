@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
-    public class BaselineProviderInput : ComplexStrykerInput<BaselineProvider, string>
+    public class BaselineProviderInput : ComplexStrykerInput<string, BaselineProvider>
     {
         static BaselineProviderInput()
         {
-            HelpText = $@"Allows to choose a storage location | Options[{FormatOptionsString(DefaultInput, (IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())) }]
+            HelpText = $@"Allows to choose a storage location | Options[{FormatOptions(DefaultInput, (IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())) }]
                                      When using the azure file storage, make sure to configure the -sas and -storage-url options.";
             DefaultValue = BaselineProvider.Disk;
         }

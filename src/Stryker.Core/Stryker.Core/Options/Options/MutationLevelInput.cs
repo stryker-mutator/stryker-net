@@ -1,16 +1,15 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Exceptions;
+﻿using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Options.Options
 {
-    public class MutationLevelInput : ComplexStrykerInput<MutationLevel, string>
+    public class MutationLevelInput : ComplexStrykerInput<string, MutationLevel>
     {
         static MutationLevelInput()
         {
-            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptionsString(DefaultInput, (IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())) }";
+            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, (IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())) }";
             DefaultValue = MutationLevel.Standard;
         }
 

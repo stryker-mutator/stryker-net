@@ -1,10 +1,9 @@
 ﻿using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.Options.Options
 {
-    public class LogOptionLevelInput : ComplexStrykerInput<LogEventLevel, string>
+    public class LogOptionLevelInput : ComplexStrykerInput<string, LogEventLevel>
     {
         static LogOptionLevelInput()
         {

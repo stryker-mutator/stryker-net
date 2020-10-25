@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Options
         DefaultValue = Math.Max(Environment.ProcessorCount / 2, 1);
     }
 
-        public override StrykerInput Type => StrykerInput.ConcurrentTestrunners;
+        public override StrykerInput Type => StrykerInput.Concurrency;
 
         public ConcurrentTestrunnersInput(ILogger logger, int? maxConcurrentTestRunners)
         {

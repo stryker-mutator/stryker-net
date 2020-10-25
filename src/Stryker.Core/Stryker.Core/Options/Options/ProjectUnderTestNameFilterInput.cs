@@ -9,7 +9,7 @@ namespace Stryker.Core.Options.Options
             HelpText = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""";
         }
 
-        public override StrykerInput Type => StrykerInput.ProjectUnderTestNameFilter;
+        public override StrykerInput Type => StrykerInput.ProjectUnderTestName;
 
         public ProjectUnderTestNameFilterInput(string projectUnderTestNameFilter)
         {

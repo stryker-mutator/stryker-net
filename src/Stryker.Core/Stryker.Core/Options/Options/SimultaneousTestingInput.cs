@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.Options.Options
+﻿namespace Stryker.Core.Options.Options
 {
-    class SimultaneousTestingInput : ComplexStrykerInput<OptimizationFlags, bool>
+    class SimultaneousTestingInput : ComplexStrykerInput<bool, OptimizationFlags>
     {
         static SimultaneousTestingInput()
         {
             HelpText = @"Test each mutation in an isolated test run.";
             DefaultInput = false;
-            DefaultValue = new SimultaneousTestingInput(AbortOnFailInput.DefaultValue, DefaultInput).Value;
+            DefaultValue = new SimultaneousTestingInput(AbortTestOnFailInput.DefaultValue, DefaultInput).Value;
         }
 
-        public override StrykerInput Type => StrykerInput.SimultaneousTesting;
+        public override StrykerInput Type => StrykerInput.DisableSimultaneousTesting;
 
         public SimultaneousTestingInput(OptimizationFlags optimizationFlag, bool disableSimultaneousTesting)
         {

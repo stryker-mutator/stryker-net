@@ -2,11 +2,12 @@
 {
     public enum StrykerInput
     {
+        None,
         DevMode,
 
         BasePath,
-        SolutionPath,
         OutputPath,
+        SolutionPath,
 
         LogOptionToFileInput,
         LogOptionLevelInput,
@@ -19,14 +20,14 @@
 
         BaselineProvider,
         Reporters,
-        ProjectUnderTestNameFilter,
+        ProjectUnderTestName,
         DiffEnabled,
-        CompareToDashboard,
+        DashboardCompareEnabled,
         GitDiffTarget,
         AdditionalTimeoutMs,
         ExcludedMutators,
         IgnoredMethods,
-        ConcurrentTestrunners,
+        Concurrency,
         TestRunner,
         Mutate,
         LanguageVersion,
@@ -42,7 +43,7 @@
         AzureFileStorageUrl,
         AzureFileStorageSas,
         FallbackVersion,
-        SimultaneousTesting,
-        AbortOnFail,
+        AbortTestOnFail,
+        DisableSimultaneousTesting,
     }
 }

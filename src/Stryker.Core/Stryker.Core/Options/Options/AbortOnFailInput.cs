@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stryker.Core.Options.Options
+﻿namespace Stryker.Core.Options.Options
 {
-    class AbortOnFailInput : ComplexStrykerInput<OptimizationFlags, bool>
+    public class AbortTestOnFailInput : ComplexStrykerInput<bool, OptimizationFlags>
     {
-        static AbortOnFailInput()
+        static AbortTestOnFailInput()
         {
             HelpText = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.";
             DefaultInput = true;
-            DefaultValue = new AbortOnFailInput(OptimizationsInput.DefaultValue, DefaultInput).Value;
+            DefaultValue = new AbortTestOnFailInput(OptimizationsInput.DefaultValue, DefaultInput).Value;
         }
 
-        public override StrykerInput Type => StrykerInput.AbortOnFail;
+        public override StrykerInput Type => StrykerInput.AbortTestOnFail;
 
-        public AbortOnFailInput(OptimizationFlags optimizationFlag, bool abortTestOnFail)
+        public AbortTestOnFailInput(OptimizationFlags optimizationFlag, bool abortTestOnFail)
         {
             optimizationFlag |= abortTestOnFail ? OptimizationFlags.AbortTestOnKill : OptimizationFlags.NoOptimization;
             Value = optimizationFlag;

@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Options
 {
-    public class LanguageVersionInput : ComplexStrykerInput<LanguageVersion, string>
+    public class LanguageVersionInput : ComplexStrykerInput<string, LanguageVersion>
     {
         static LanguageVersionInput()
         {
-            HelpText = $"Set the c# version used to compile. | { FormatOptionsString(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }";
+            HelpText = $"Set the c# version used to compile. | { FormatOptions(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }";
             DefaultInput = "latest";
             DefaultValue = new LanguageVersionInput(DefaultInput).Value;
         }
