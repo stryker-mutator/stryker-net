@@ -6,15 +6,15 @@
         {
             HelpText = @"Test each mutation in an isolated test run.";
             DefaultInput = false;
-            DefaultValue = new DisableSimultaneousTestingInput(AbortTestOnFailInput.DefaultValue, DefaultInput).Value;
+            DefaultValue = new DisableSimultaneousTestingInput(DefaultInput, OptimizationsInput.DefaultValue).Value;
         }
 
         public override StrykerInput Type => StrykerInput.DisableSimultaneousTesting;
 
-        public DisableSimultaneousTestingInput(OptimizationModes optimizationFlag, bool disableSimultaneousTesting)
+        public DisableSimultaneousTestingInput(bool disableSimultaneousTesting, OptimizationModes optimizationModes)
         {
-            optimizationFlag |= disableSimultaneousTesting ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
-            Value = optimizationFlag;
+            optimizationModes |= disableSimultaneousTesting ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
+            Value = optimizationModes;
         }
     }
 }

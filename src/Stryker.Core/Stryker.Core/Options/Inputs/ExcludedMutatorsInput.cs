@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ExcludedMutatorsInput : ComplexStrykerInput<IEnumerable<Mutator>, IEnumerable<string>>
+    public class ExcludedMutatorsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Mutator>>
     {
         static ExcludedMutatorsInput()
         {
@@ -44,10 +44,6 @@ namespace Stryker.Core.Options.Inputs
                 }
 
                 Value = excludedMutators;
-            }
-            else
-            {
-                Value = Enumerable.Empty<Mutator>();
             }
         }
     }

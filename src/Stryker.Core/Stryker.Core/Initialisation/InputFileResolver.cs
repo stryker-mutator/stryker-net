@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.InjectedHelpers;
@@ -7,7 +8,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +16,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Initialisation
 {
@@ -210,23 +209,23 @@ namespace Stryker.Core.Initialisation
         {
             var root = syntaxTree.GetRoot();
 
-            var myAttribute = ((CompilationUnitSyntax) root).AttributeLists
+            var myAttribute = ((CompilationUnitSyntax)root).AttributeLists
                 .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
-                                                                     && ((QualifiedNameSyntax) n.Name).Right
+                                                                     && ((QualifiedNameSyntax)n.Name).Right
                                                                      .Kind() == SyntaxKind.IdentifierName
-                                                                     && (string)((IdentifierNameSyntax) ((QualifiedNameSyntax) n.Name).Right)
+                                                                     && (string)((IdentifierNameSyntax)((QualifiedNameSyntax)n.Name).Right)
                                                                      .Identifier.Value == "AssemblyTitleAttribute");
             var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
             var newLabel = string.Empty;
             if (labelNode != null && labelNode.Kind() == SyntaxKind.StringLiteralExpression)
             {
-                var literal = (LiteralExpressionSyntax) labelNode;
+                var literal = (LiteralExpressionSyntax)labelNode;
                 newLabel = $"Mutated {literal.Token.Value}";
             }
 
             if (myAttribute != null)
             {
-                var newAttribute = myAttribute.ReplaceNode(labelNode, 
+                var newAttribute = myAttribute.ReplaceNode(labelNode,
                     SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newLabel)));
                 root = root.ReplaceNode(myAttribute, newAttribute);
                 return root.SyntaxTree;
@@ -239,7 +238,7 @@ namespace Stryker.Core.Initialisation
         {
             foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
-                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32,  options: cSharpParseOptions));
+                rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions));
             }
         }
 
@@ -506,17 +505,6 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
-            }
-
-            // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.DotNetClassic &&
-                options.TestRunner != TestRunner.VsTest &&
-                (!testProject.Properties.ContainsKey("IsTestProject") ||
-                (testProject.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(testProject.Properties["IsTestProject"])))))
-            {
-                _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
-                options.TestRunner = TestRunner.VsTest;
             }
         }
 

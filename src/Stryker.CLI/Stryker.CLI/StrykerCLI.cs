@@ -7,7 +7,6 @@ using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using System;
-using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -40,85 +39,14 @@ namespace Stryker.CLI
                 Description = "Stryker mutator for .Net",
                 ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
             };
+            app.HelpOption();
 
-            var configFilePathParam = CreateOption(app, CLIOptions.ConfigFilePath);
-            var reporterParam = CreateOption(app, CLIOptions.Reporters);
-            var dashboardApiKeyParam = CreateOption(app, CLIOptions.DashboardApiKey);
-            var dashboardUrlParam = CreateOption(app, CLIOptions.DashboardUrl);
-            var reportersProjectNameParam = CreateOption(app, CLIOptions.DashboardProjectName);
-            var reportersModuleNameParam = CreateOption(app, CLIOptions.DashboardModuleName);
-            var reportersProjectVersionParam = CreateOption(app, CLIOptions.DashboardProjectVersion);
-            var logConsoleParam = CreateOption(app, CLIOptions.LogLevel);
-            var devMode = CreateOption(app, CLIOptions.DevMode);
-            var coverageAnalysis = CreateOption(app, CLIOptions.CoverageAnalysis);
-            var abortTestOnFailParam = CreateOption(app, CLIOptions.AbortTestOnFail);
-            var disableSimultaneousTesting = CreateOption(app, CLIOptions.DisableTestingMix);
-            var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
-            var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
-            var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
-            var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
-            var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
-            var maxConcurrentTestRunnersParam = CreateOption(app, CLIOptions.MaxConcurrentTestRunners);
-            var thresholdHighParam = CreateOption(app, CLIOptions.ThresholdHigh);
-            var thresholdLowParam = CreateOption(app, CLIOptions.ThresholdLow);
-            var thresholdBreakParam = CreateOption(app, CLIOptions.ThresholdBreak);
-            var mutateParam = CreateOption(app, CLIOptions.Mutate);
-            var testRunner = CreateOption(app, CLIOptions.TestRunner);
-            var solutionPathParam = CreateOption(app, CLIOptions.SolutionPath);
-            var languageVersion = CreateOption(app, CLIOptions.LangVersion);
-            var diffParam = CreateOption(app, CLIOptions.Diff);
-            var diffCompareToDashboard = CreateOption(app, CLIOptions.DashboardCompare);
-            var gitDiffTargetParam = CreateOption(app, CLIOptions.GitDiffTarget);
-            var testProjectsParam = CreateOption(app, CLIOptions.TestProjects);
-            var fallbackVersionParam = CreateOption(app, CLIOptions.DashboardFallbackVersion);
-            var baselineStorageLocation = CreateOption(app, CLIOptions.BaselineStorageLocation);
-            var azureSAS = CreateOption(app, CLIOptions.AzureSAS);
-            var azureFileStorageUrl = CreateOption(app, CLIOptions.AzureFileStorageUrl);
-            var mutationLevelParam = CreateOption(app, CLIOptions.MutationLevel);
-            var dashboardCompareFileExcludePatterns = CreateOption(app, CLIOptions.DiffIgnoreFiles);
-
-            app.HelpOption("--help | -h | -?");
+            CliOptionsParser.RegisterCliOptions(app);
 
             app.OnExecute(() =>
             {
                 // app started
-                var options = new OptionsBuilder(_logBuffer).Build(
-                    basePath: Directory.GetCurrentDirectory(),
-                    reporter: reporterParam,
-                    dashboardApiKey: dashboardApiKeyParam,
-                    dashboardUrl: dashboardUrlParam,
-                    reportersProjectName: reportersProjectNameParam,
-                    fallbackVersion: fallbackVersionParam,
-                    reportersModuleName: reportersModuleNameParam,
-                    reportersProjectVersion: reportersProjectVersionParam,
-                    projectUnderTestNameFilter: projectNameParam,
-                    additionalTimeoutMS: timeoutParam,
-                    excludedMutations: excludedMutationsParam,
-                    ignoreMethods: ignoreMethodsParam,
-                    logLevel: logConsoleParam,
-                    logToFile: fileLogParam,
-                    devMode: devMode,
-                    coverageAnalysis: coverageAnalysis,
-                    abortTestOnFail: abortTestOnFailParam,
-                    configFilePath: configFilePathParam,
-                    disableSimultaneousTesting: disableSimultaneousTesting,
-                    maxConcurrentTestRunners: maxConcurrentTestRunnersParam,
-                    thresholdHigh: thresholdHighParam,
-                    thresholdLow: thresholdLowParam,
-                    thresholdBreak: thresholdBreakParam,
-                    filePatterns: mutateParam,
-                    testRunner: testRunner,
-                    solutionPath: solutionPathParam,
-                    languageVersion: languageVersion,
-                    diff: diffParam,
-                    diffCompareToDashboard: diffCompareToDashboard,
-                    gitDiffTarget: gitDiffTargetParam,
-                    testProjects: testProjectsParam,
-                    baselineStorageLocation: baselineStorageLocation,
-                    azureFileStorageUrl: azureFileStorageUrl,
-                    azureSAS: azureSAS,
-                    mutationLevel: mutationLevelParam,
-                    dashboardCompareFileExcludePatterns: dashboardCompareFileExcludePatterns);
+                var options = new OptionsBuilder(_logBuffer).Build(args, app);
 
                 RunStryker(options);
                 return ExitCode;
@@ -189,20 +117,6 @@ namespace Stryker.CLI
                 Console.WriteLine(Output.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
                 Console.WriteLine();
             }
-        }
-
-        /// <summary>
-        /// Simplify app option creation to prevent code duplication
-        /// </summary>
-        private CommandOption CreateOption<T>(CommandLineApplication app, CLIOption<T> option)
-        {
-            var description = option.IsDeprecated
-                ? $"(deprecated:{option.DeprecatedMessage})" + option.ArgumentDescription
-                : option.ArgumentDescription;
-
-            return app.Option($"{option.ArgumentName} | {option.ArgumentShortName}",
-                description,
-                option.ValueType);
         }
     }
 }

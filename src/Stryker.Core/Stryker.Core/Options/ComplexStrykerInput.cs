@@ -52,6 +52,11 @@ namespace Stryker.Core.Options
             return FormatOptions(new List<TInput> { defaultInputs }, new List<TInput> { input });
         }
 
+        protected static string FormatOptions(TInput defaultInputs, IEnumerable<TInput> inputs)
+        {
+            return FormatOptions(new List<TInput> { defaultInputs }, inputs);
+        }
+
         protected static string FormatOptions<To>(IEnumerable<To> defaultInputs, IEnumerable<To> allInputs)
         {
             StringBuilder optionsString = new StringBuilder();

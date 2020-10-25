@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static LanguageVersionInput()
         {
-            HelpText = $"Set the c# version used to compile. | { FormatOptions(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1)) }";
+            HelpText = $"Set the c# version used to compile. | { FormatOptions(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1).Select(x => x.ToString())) }";
             DefaultInput = "latest";
             DefaultValue = new LanguageVersionInput(DefaultInput).Value;
         }

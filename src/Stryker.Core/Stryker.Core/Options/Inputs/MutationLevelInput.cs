@@ -2,6 +2,7 @@
 using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -9,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static MutationLevelInput()
         {
-            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, (IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())) }";
+            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, ((IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
             DefaultValue = MutationLevel.Standard;
         }
 

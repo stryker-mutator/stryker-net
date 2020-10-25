@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DiffIgnoreFilePatternsInput : ComplexStrykerInput<IEnumerable<FilePattern>, IEnumerable<string>>
+    public class DiffIgnoreFilePatternsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<FilePattern>>
     {
         static DiffIgnoreFilePatternsInput()
         {
@@ -29,10 +28,6 @@ namespace Stryker.Core.Options.Inputs
                 }
 
                 Value = diffIgnoreFilePatterns;
-            }
-            else
-            {
-                Value = Enumerable.Empty<FilePattern>();
             }
         }
     }
