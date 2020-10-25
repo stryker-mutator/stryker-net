@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static ExcludedMutatorsInput()
         {
-            HelpText = @"The given mutators will be excluded for this mutation testrun.
+            Description = @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";
             DefaultValue = new ExcludedMutatorsInput(DefaultInput).Value;
         }

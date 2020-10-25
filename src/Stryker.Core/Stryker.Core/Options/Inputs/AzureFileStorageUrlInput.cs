@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static AzureFileStorageUrlInput()
         {
-            HelpText = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+            Description = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
                                     Note, the url might be different depending of where your file storage is hosted.";

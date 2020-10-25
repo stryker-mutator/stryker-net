@@ -6,16 +6,16 @@ namespace Stryker.Core.Options
 {
     public abstract class ComplexStrykerInput<TInput, TValue>
     {
+        public string HelpText => Description + HelpOptions;
+
         public abstract StrykerInput Type { get; }
+        public virtual TValue DefaultValue { get; } = default;
 
-        public TInput StaticDefaultInput => DefaultInput;
-        public string StaticHelptext => HelpText;
+        protected abstract string Description { get; }
+        protected abstract string HelpOptions { get; }
 
-        public static string HelpText { get; protected set; } = string.Empty;
-        public static TValue DefaultValue { get; protected set; } = default;
-
-        private static TInput _defaultInput = default;
-        public static TInput DefaultInput
+        private TInput _defaultInput = default;
+        public TInput DefaultInput
         {
             get
             {
@@ -47,28 +47,22 @@ namespace Stryker.Core.Options
             }
         }
 
-        protected static string FormatOptions(TInput defaultInputs, TInput input)
-        {
-            return FormatOptions(new List<TInput> { defaultInputs }, new List<TInput> { input });
-        }
+        protected string FormatHelpOptions(string defaultInputs, string allowedInput) => FormatHelpOptions(new List<string> { defaultInputs }, new List<string> { allowedInput });
 
-        protected static string FormatOptions(TInput defaultInputs, IEnumerable<TInput> inputs)
-        {
-            return FormatOptions(new List<TInput> { defaultInputs }, inputs);
-        }
+        protected string FormatHelpOptions(string defaultInputs, IEnumerable<string> allowedInputs) => FormatHelpOptions(new List<string> { defaultInputs }, allowedInputs);
 
-        protected static string FormatOptions<To>(IEnumerable<To> defaultInputs, IEnumerable<To> allInputs)
+        protected string FormatHelpOptions(IEnumerable<string> defaultInputs, IEnumerable<string> allowedInputs)
         {
             StringBuilder optionsString = new StringBuilder();
 
-            optionsString.Append($"Options[ (default)[ {string.Join(", ", defaultInputs)} ], ");
+            optionsString.Append($" | [default = ( {string.Join(", ", defaultInputs)} )], ");
             string nonDefaultOptions = string.Join(
             ", ",
-            allInputs
+            allowedInputs
             .Where(o => !defaultInputs.Any(d => d.ToString() == o.ToString())));
 
             optionsString.Append(string.Join(", ", nonDefaultOptions));
-            optionsString.Append(" ]");
+            //optionsString.Append(" ]");
 
             return optionsString.ToString();
         }

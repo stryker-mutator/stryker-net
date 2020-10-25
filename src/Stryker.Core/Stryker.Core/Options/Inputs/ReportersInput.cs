@@ -12,7 +12,7 @@ namespace Stryker.Core.Options.Inputs
         {
             DefaultInput = new List<string>() { "Progress", "Html" };
             DefaultValue = new ReportersInput(DefaultInput, CompareToDashboardInput.DefaultInput).Value;
-            HelpText = $"Choose the reporters to enable. | {FormatOptions(DefaultInput, (IEnumerable<string>)Enum.GetValues(DefaultValue.First().GetType()))}";
+            Description = $"Choose the reporters to enable. | {FormatOptions(DefaultInput, (IEnumerable<string>)Enum.GetValues(DefaultValue.First().GetType()))}";
         }
 
         public override StrykerInput Type => StrykerInput.Reporters;

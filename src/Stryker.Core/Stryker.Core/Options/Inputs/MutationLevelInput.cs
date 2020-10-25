@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static MutationLevelInput()
         {
-            HelpText = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, ((IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
+            Description = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, ((IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
             DefaultValue = MutationLevel.Standard;
         }
 

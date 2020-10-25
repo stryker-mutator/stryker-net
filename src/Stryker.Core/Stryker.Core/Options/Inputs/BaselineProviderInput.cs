@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static BaselineProviderInput()
         {
-            HelpText = $@"Allows to choose a storage location | Options[{FormatOptions(DefaultInput, ((IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }]
+            Description = $@"Allows to choose a storage location | Options[{FormatOptions(DefaultInput, ((IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }]
                                      When using the azure file storage, make sure to configure the -sas and -storage-url options.";
             DefaultValue = BaselineProvider.Disk;
         }

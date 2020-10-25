@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static SolutionPathInput()
         {
-            HelpText = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
+            Description = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
     .net framework but can optionally be used for .net core. Path can be relative from test project or full path.";
         }
 

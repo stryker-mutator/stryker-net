@@ -1,24 +1,27 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class LanguageVersionInput : ComplexStrykerInput<string, LanguageVersion>
     {
-        static LanguageVersionInput()
-        {
-            HelpText = $"Set the c# version used to compile. | { FormatOptions(DefaultInput, ((IEnumerable<LanguageVersion>)Enum.GetValues(DefaultValue.GetType())).Where(l => l != LanguageVersion.CSharp1).Select(x => x.ToString())) }";
-            DefaultInput = "latest";
-            DefaultValue = new LanguageVersionInput(DefaultInput).Value;
-        }
-
         public override StrykerInput Type => StrykerInput.LanguageVersion;
+
+        public override LanguageVersion DefaultValue => new LanguageVersionInput(DefaultInput).Value;
+        protected override string Description => $"Set the c# version used to compile.";
+        protected override string HelpOptions => FormatHelpOptions(DefaultInput, Enum.GetNames(DefaultValue.GetType()).Where(l => LanguageVersion.CSharp1.ToString() != l));
+
+
+        public LanguageVersionInput() : this(null)
+        {
+        }
 
         public LanguageVersionInput(string languageVersion)
         {
+            DefaultInput = "latest";
+
             if (languageVersion is { })
             {
                 if (Enum.TryParse(languageVersion, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)

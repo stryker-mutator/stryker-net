@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static DashboardApiKeyInput()
         {
-            HelpText = $"Api key for dashboard reporter. You can get your key here: {DashboardUrlInput.DefaultValue}";
+            Description = $"Api key for dashboard reporter. You can get your key here: {DashboardUrlInput.DefaultValue}";
         }
 
         public override StrykerInput Type => StrykerInput.DashboardApiKey;

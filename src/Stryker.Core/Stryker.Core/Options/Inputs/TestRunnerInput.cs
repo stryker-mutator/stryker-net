@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static TestRunnerInput()
         {
-            HelpText = $"Choose which testrunner should be used to run your tests. | { FormatOptions(DefaultInput, ((IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
+            Description = $"Choose which testrunner should be used to run your tests. | { FormatOptions(DefaultInput, ((IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
             DefaultInput = "vstest";
             DefaultValue = new TestRunnerInput(DefaultInput).Value;
         }

@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static MutateInput()
         {
-            HelpText = @"Allows to specify file that should in- or excluded for the mutations.
+            Description = @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
     Use '!' at the start of a pattern to exclude all matched files.
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.

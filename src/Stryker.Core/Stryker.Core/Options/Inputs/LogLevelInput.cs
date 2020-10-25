@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static LogLevelInput()
         {
-            HelpText = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]";
+            Description = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]";
             DefaultInput = "info";
             DefaultValue = new LogLevelInput(DefaultInput).Value;
         }

@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static ProjectNameInput()
         {
-            HelpText = @"The organizational name for your project. Required when dashboard reporter is turned on.
+            Description = @"The organizational name for your project. Required when dashboard reporter is turned on.
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.";
         }
 

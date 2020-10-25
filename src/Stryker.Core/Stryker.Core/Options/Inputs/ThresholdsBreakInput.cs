@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static ThresholdsBreakInput()
         {
-            HelpText = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {DefaultValue} (default)";
+            Description = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {DefaultValue} (default)";
             DefaultValue = 0;
         }
 

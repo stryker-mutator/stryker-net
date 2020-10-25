@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static IgnoredMethodsInput()
         {
-            HelpText = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
+            Description = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
             DefaultInput = Enumerable.Empty<string>();
             DefaultValue = new IgnoredMethodsInput(DefaultInput).Value;
         }

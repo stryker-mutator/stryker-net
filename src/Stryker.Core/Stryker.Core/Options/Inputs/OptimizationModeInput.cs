@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static OptimizationModeInput()
         {
-            HelpText = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+            Description = @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
     - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
     - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.

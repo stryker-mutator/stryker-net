@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static ThresholdsLowInput()
         {
-            HelpText = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {DefaultValue} (default)";
+            Description = $"Set the lower bound of the mutation score threshold. It will not fail the test. | {DefaultValue} (default)";
             DefaultValue = 60;
         }
 

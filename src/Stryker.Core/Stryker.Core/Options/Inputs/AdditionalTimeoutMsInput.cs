@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static AdditionalTimeoutMsInput()
         {
-            HelpText = $"Stryker calculates a timeout based on the time the testrun takes before the mutations | Options {DefaultValue}";
+            Description = $"Stryker calculates a timeout based on the time the testrun takes before the mutations | Options {DefaultValue}";
             DefaultValue = 5000;
         }
 

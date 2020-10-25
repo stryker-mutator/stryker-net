@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static OptimizationsInput()
         {
-            HelpText = @"Sets the OptimizationFlags depending on the 'Optimization Mode', 'Abort Test On Fail' and 'Disable Testing Mix'";
+            Description = @"Sets the OptimizationFlags depending on the 'Optimization Mode', 'Abort Test On Fail' and 'Disable Testing Mix'";
             DefaultValue = OptimizationModes.CoverageBasedTest | OptimizationModes.AbortTestOnKill | 0;
         }
 

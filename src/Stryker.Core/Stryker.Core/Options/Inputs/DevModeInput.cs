@@ -4,7 +4,7 @@
     {
         static DevModeInput()
         {
-            HelpText = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
+            Description = @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back
     Setting this flag makes stryker not remove the mutations but rather break on failed rollbacks";
             DefaultValue = false;
         }

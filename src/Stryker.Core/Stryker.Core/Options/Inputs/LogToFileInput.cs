@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static LogToFileInput()
         {
-            HelpText = "Makes the logger write to a file (Logging to file always uses loglevel trace)";
+            Description = "Makes the logger write to a file (Logging to file always uses loglevel trace)";
             DefaultValue = false;
         }
 

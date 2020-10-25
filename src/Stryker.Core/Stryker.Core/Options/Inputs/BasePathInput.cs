@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static BasePathInput()
         {
-            HelpText = string.Empty;
+            Description = string.Empty;
         }
 
         public override StrykerInput Type => StrykerInput.BasePath;

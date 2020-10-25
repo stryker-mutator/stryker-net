@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
     {
         static ThresholdsHighInput()
         {
-            HelpText = $"Set the preferred mutation score threshold. | {DefaultValue} (default)";
+            Description = $"Set the preferred mutation score threshold. | {DefaultValue} (default)";
             DefaultValue = 80;
         }
 

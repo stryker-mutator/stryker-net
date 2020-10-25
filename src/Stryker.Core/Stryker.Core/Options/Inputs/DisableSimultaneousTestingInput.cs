@@ -4,7 +4,7 @@
     {
         static DisableSimultaneousTestingInput()
         {
-            HelpText = @"Test each mutation in an isolated test run.";
+            Description = @"Test each mutation in an isolated test run.";
             DefaultInput = false;
             DefaultValue = new DisableSimultaneousTestingInput(DefaultInput, OptimizationsInput.DefaultValue).Value;
         }
