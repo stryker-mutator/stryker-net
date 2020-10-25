@@ -2,17 +2,17 @@
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LogOptionToFileInput : SimpleStrykerInput<bool>
+    public class LogToFileInput : SimpleStrykerInput<bool>
     {
-        static LogOptionToFileInput()
+        static LogToFileInput()
         {
             HelpText = "Makes the logger write to a file (Logging to file always uses loglevel trace)";
             DefaultValue = false;
         }
 
-        public override StrykerInput Type => StrykerInput.LogOptionToFileInput;
+        public override StrykerInput Type => StrykerInput.LogToFile;
 
-        public LogOptionToFileInput(bool? logToFile, string outputPath)
+        public LogToFileInput(bool? logToFile, string outputPath)
         {
             if (logToFile is { })
             {

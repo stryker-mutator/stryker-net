@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class MutateInput : ComplexStrykerInput<IEnumerable<FilePattern>, IEnumerable<string>>
+    public class MutateInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<FilePattern>>
     {
         static MutateInput()
         {

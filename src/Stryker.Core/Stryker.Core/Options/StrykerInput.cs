@@ -9,8 +9,8 @@
         OutputPath,
         SolutionPath,
 
-        LogOptionToFileInput,
-        LogOptionLevelInput,
+        LogToFile,
+        LogLevel,
 
         MutationLevel,
 

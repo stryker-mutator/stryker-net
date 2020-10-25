@@ -47,29 +47,22 @@ namespace Stryker.Core.Options
             }
         }
 
-        public static string FormatOptions(TInput @default, IEnumerable<TValue> options)
+        protected static string FormatOptions(TInput defaultInputs, TInput input)
         {
-            return FormatOptions(new List<TInput> { @default }, options, new List<TValue>());
+            return FormatOptions(new List<TInput> { defaultInputs }, new List<TInput> { input });
         }
 
-        public static string FormatOptions(IEnumerable<TInput> @default, IEnumerable<TValue> options, IEnumerable<TValue> deprecated)
+        protected static string FormatOptions<To>(IEnumerable<To> defaultInputs, IEnumerable<To> allInputs)
         {
             StringBuilder optionsString = new StringBuilder();
 
-            optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
+            optionsString.Append($"Options[ (default)[ {string.Join(", ", defaultInputs)} ], ");
             string nonDefaultOptions = string.Join(
             ", ",
-            options
-            .Where(o => !@default.Any(d => d.ToString() == o.ToString()))
-            .Where(o => !deprecated.Any(d => d.ToString() == o.ToString())));
+            allInputs
+            .Where(o => !defaultInputs.Any(d => d.ToString() == o.ToString())));
 
-            string deprecatedOptions = "";
-            if (deprecated.Any())
-            {
-                deprecatedOptions = "(deprecated) " + string.Join(", (deprecated) ", options.Where(o => deprecated.Any(d => d.ToString() == o.ToString())));
-            }
-
-            optionsString.Append(string.Join(", ", nonDefaultOptions, deprecatedOptions));
+            optionsString.Append(string.Join(", ", nonDefaultOptions));
             optionsString.Append(" ]");
 
             return optionsString.ToString();

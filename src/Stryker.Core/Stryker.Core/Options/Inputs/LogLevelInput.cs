@@ -3,18 +3,18 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LogOptionLevelInput : ComplexStrykerInput<string, LogEventLevel>
+    public class LogLevelInput : ComplexStrykerInput<string, LogEventLevel>
     {
-        static LogOptionLevelInput()
+        static LogLevelInput()
         {
             HelpText = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]";
             DefaultInput = "info";
-            DefaultValue = new LogOptionLevelInput(DefaultInput).Value;
+            DefaultValue = new LogLevelInput(DefaultInput).Value;
         }
 
-        public override StrykerInput Type => StrykerInput.LogOptionLevelInput;
+        public override StrykerInput Type => StrykerInput.LogLevel;
 
-        public LogOptionLevelInput(string logLevel)
+        public LogLevelInput(string logLevel)
         {
             if (logLevel is { })
             {
