@@ -18,7 +18,7 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    class FindProjectComponentsCsharp
+    public class FindProjectComponentsCsharp
     {
         private ProjectInfo _projectInfo;
         private StrykerOptions _options;
