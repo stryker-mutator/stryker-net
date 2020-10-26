@@ -6,7 +6,7 @@
         {
             Description = @"Test each mutation in an isolated test run.";
             DefaultInput = false;
-            DefaultValue = new DisableSimultaneousTestingInput(DefaultInput, OptimizationsInput.DefaultValue).Value;
+            DefaultValue = new DisableSimultaneousTestingInput(DefaultInput, OptimizationModeInput.DefaultValue).Value;
         }
 
         public override StrykerInput Type => StrykerInput.DisableSimultaneousTesting;

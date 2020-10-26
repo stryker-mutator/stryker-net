@@ -6,7 +6,6 @@
         DevMode,
 
         BasePath,
-        OutputPath,
         SolutionPath,
 
         LogToFile,
@@ -31,8 +30,11 @@
         TestRunner,
         Mutate,
         LanguageVersion,
-        Optimizations,
+
         OptimizationMode,
+        AbortTestOnFail,
+        DisableSimultaneousTesting,
+
         TestProjects,
         DashboardUrl,
         DashboardApiKey,
@@ -43,7 +45,5 @@
         AzureFileStorageUrl,
         AzureFileStorageSas,
         FallbackVersion,
-        AbortTestOnFail,
-        DisableSimultaneousTesting,
     }
 }

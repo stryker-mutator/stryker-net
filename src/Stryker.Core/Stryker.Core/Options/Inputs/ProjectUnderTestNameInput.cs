@@ -2,16 +2,13 @@
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectUnderTestNameFilterInput : SimpleStrykerInput<string>
+    public class ProjectUnderTestNameInput : SimpleStrykerInput<string>
     {
-        static ProjectUnderTestNameFilterInput()
-        {
-            Description = @"Used for matching the project references when finding the project to mutate. Example: ""ExampleProject.csproj""";
-        }
-
         public override StrykerInput Type => StrykerInput.ProjectUnderTestName;
 
-        public ProjectUnderTestNameFilterInput(string projectUnderTestNameFilter)
+        protected override string Description => @"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj""";
+
+        public ProjectUnderTestNameInput(string projectUnderTestNameFilter)
         {
             if (projectUnderTestNameFilter is { })
             {

@@ -8,35 +8,24 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ReportersInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Reporter>>
     {
-        static ReportersInput()
-        {
-            DefaultInput = new List<string>() { "Progress", "Html" };
-            DefaultValue = new ReportersInput(DefaultInput, CompareToDashboardInput.DefaultInput).Value;
-            Description = $"Choose the reporters to enable. | {FormatOptions(DefaultInput, (IEnumerable<string>)Enum.GetValues(DefaultValue.First().GetType()))}";
-        }
-
         public override StrykerInput Type => StrykerInput.Reporters;
+        public override IEnumerable<string> DefaultInput => new List<string>() { "Progress", "Html" };
+        public override IEnumerable<Reporter> DefaultValue => new ReportersInput(DefaultInput).Value;
 
-        public ReportersInput(IEnumerable<string> chosenReporters, bool compareToDashboard)
+        protected override string Description => "Reporters inform about various stages in the mutation testrun.";
+        protected override string HelpOptions => FormatEnumHelpOptions(DefaultInput);
+
+        public ReportersInput() { }
+        public ReportersInput(IEnumerable<string> chosenReporters)
         {
-            var reporters = new List<Reporter>();
-
-            if (chosenReporters is null)
+            if (chosenReporters is { })
             {
-                foreach (var reporter in DefaultValue)
-                {
-                    reporters.Add(reporter);
-                }
+                var reporters = new List<Reporter>();
+
+                ValidateChosenReporters(chosenReporters, reporters);
+
+                Value = reporters;
             }
-
-            ValidateChosenReporters(chosenReporters, reporters);
-
-            if (compareToDashboard)
-            {
-                reporters.Add(Reporter.Baseline);
-            }
-
-            Value = reporters;
         }
 
         private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, List<Reporter> reporters)

@@ -6,7 +6,7 @@
         {
             Description = @"Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.";
             DefaultInput = true;
-            DefaultValue = new AbortTestOnFailInput(DefaultInput, OptimizationsInput.DefaultValue).Value;
+            DefaultValue = new AbortTestOnFailInput(DefaultInput, OptimizationModeInput.DefaultValue).Value;
         }
 
         public override StrykerInput Type => StrykerInput.AbortTestOnFail;

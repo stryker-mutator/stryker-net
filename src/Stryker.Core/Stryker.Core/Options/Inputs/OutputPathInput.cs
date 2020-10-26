@@ -8,12 +8,8 @@ namespace Stryker.Core.Options.Inputs
 {
     public class OutputPathInput : SimpleStrykerInput<string>
     {
-        static OutputPathInput()
-        {
-            Description = string.Empty;
-        }
-
-        public override StrykerInput Type => StrykerInput.OutputPath;
+        public override StrykerInput Type => StrykerInput.None;
+        protected override string Description => string.Empty;
 
         public OutputPathInput(ILogger logger, IFileSystem fileSystem, string basepath)
         {

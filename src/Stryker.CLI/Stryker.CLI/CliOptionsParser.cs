@@ -70,7 +70,7 @@ namespace Stryker.CLI
             AddCliOption(StrykerInput.Mutate, "mutate", "m", MutateInput.HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
             AddCliOption(StrykerInput.SolutionPath, "solution-path", "s", SolutionPathInput.HelpText, argumentHint: "file-path");
-            AddCliOption(StrykerInput.ProjectUnderTestName, "project-file", "p", ProjectUnderTestNameFilterInput.HelpText, argumentHint: "project-name");
+            AddCliOption(StrykerInput.ProjectUnderTestName, "project-file", "p", ProjectUnderTestNameInput.HelpText, argumentHint: "project-name");
             AddCliOption(StrykerInput.MutationLevel, "mutation-level", "level", MutationLevelInput.HelpText);
 
             AddCliOption(StrykerInput.LogToFile, "log-file", "f", LogToFileInput.HelpText, optionType: CommandOptionType.NoValue);

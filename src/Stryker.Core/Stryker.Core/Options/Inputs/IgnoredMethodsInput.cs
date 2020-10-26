@@ -6,12 +6,10 @@ namespace Stryker.Core.Options.Inputs
 {
     public class IgnoredMethodsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Regex>>
     {
-        static IgnoredMethodsInput()
-        {
-            Description = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']";
-            DefaultInput = Enumerable.Empty<string>();
-            DefaultValue = new IgnoredMethodsInput(DefaultInput).Value;
-        }
+        public override StrykerInput Type => StrykerInput.IgnoredMethods;
+        public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
+
+        protected override string Description => @"Ignore mutations on method parameters.";
 
         public IgnoredMethodsInput(IEnumerable<string> ignoredMethods)
         {
@@ -25,7 +23,5 @@ namespace Stryker.Core.Options.Inputs
                 Value = ignoredMethodPatterns;
             }
         }
-
-        public override StrykerInput Type => StrykerInput.IgnoredMethods;
     }
 }

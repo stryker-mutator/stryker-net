@@ -6,6 +6,7 @@ namespace Stryker.Core.Options.Inputs
     public class ThresholdBreakInput : ComplexStrykerInput<string, int>
     {
         public override StrykerInput Type => StrykerInput.ThresholdBreak;
+        public override string DefaultInput => DefaultValue.ToString();
         public override int DefaultValue => 0;
 
         protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";

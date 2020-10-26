@@ -5,14 +5,12 @@ namespace Stryker.Core.Options.Inputs
 {
     public class SolutionPathInput : SimpleStrykerInput<string>
     {
-        static SolutionPathInput()
-        {
-            Description = @"Full path to your solution file. The solution file is needed to build the project and resolve dependencies for
-    .net framework but can optionally be used for .net core. Path can be relative from test project or full path.";
-        }
+        public override StrykerInput Type => StrykerInput.SolutionPath;
 
-        public override StrykerInput Type => StrykerInput.BasePath;
+        protected override string Description => "Full path to your solution file. Required on dotnet framework.";
+        protected override string HelpOptions => "";
 
+        public SolutionPathInput() { }
         public SolutionPathInput(IFileSystem fileSystem, string solutionPath)
         {
             if (solutionPath is { })

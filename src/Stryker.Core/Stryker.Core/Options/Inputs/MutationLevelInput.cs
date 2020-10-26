@@ -1,20 +1,17 @@
 ﻿using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class MutationLevelInput : ComplexStrykerInput<string, MutationLevel>
     {
-        static MutationLevelInput()
-        {
-            Description = $"Specifies what mutations will be placed in your project. | { FormatOptions(DefaultInput, ((IEnumerable<MutationLevel>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
-            DefaultValue = MutationLevel.Standard;
-        }
-
         public override StrykerInput Type => StrykerInput.MutationLevel;
+        public override string DefaultInput => DefaultValue.ToString();
+        public override MutationLevel DefaultValue => MutationLevel.Standard;
+
+        protected override string Description => "Specify which mutation levels to place. Every higher level includes the mutations from the lower levels.";
+        protected override string HelpOptions => FormatEnumHelpOptions();
 
         public MutationLevelInput(string mutationLevel)
         {

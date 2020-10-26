@@ -1,23 +1,20 @@
 ﻿using Stryker.Core.Exceptions;
 using Stryker.Core.TestRunners;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     // Deprecated, might be removed soon
     public class TestRunnerInput : ComplexStrykerInput<string, TestRunner>
     {
-        static TestRunnerInput()
-        {
-            Description = $"Choose which testrunner should be used to run your tests. | { FormatOptions(DefaultInput, ((IEnumerable<TestRunner>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }";
-            DefaultInput = "vstest";
-            DefaultValue = new TestRunnerInput(DefaultInput).Value;
-        }
-
         public override StrykerInput Type => StrykerInput.TestRunner;
+        public override string DefaultInput => "vstest";
+        public override TestRunner DefaultValue => new TestRunnerInput(DefaultInput).Value;
 
+        protected override string Description => "Choose which testrunner should be used to run your tests.";
+        protected override string HelpOptions => FormatEnumHelpOptions();
+
+        public TestRunnerInput() { }
         public TestRunnerInput(string testRunner)
         {
             if (testRunner is { })

@@ -6,11 +6,13 @@ namespace Stryker.Core.Options.Inputs
     public class ThresholdHighInput : ComplexStrykerInput<string, int>
     {
         public override StrykerInput Type => StrykerInput.ThresholdHigh;
+        public override string DefaultInput => DefaultValue.ToString();
         public override int DefaultValue => 80;
 
         protected override string Description => "Minimum good mutation score. Must be higher than or equal to threshold low.";
         protected override string HelpOptions => FormatHelpOptions("0 - 100");
 
+        public ThresholdHighInput() { }
         public ThresholdHighInput(string highInput, int low)
         {
             if (highInput is { })
