@@ -19,7 +19,7 @@ namespace Stryker.Core.Compiling
         {
             _input = input;
             _rollbackProcess = rollbackProcess;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CompilingProcess>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CompilingProcessFsharp>();
         }
 
         private string AssemblyName =>
