@@ -4,6 +4,6 @@
     {
         public void Mutate();
 
-        public void FilterMutants();
+        void FilterMutants();
     }
 }
