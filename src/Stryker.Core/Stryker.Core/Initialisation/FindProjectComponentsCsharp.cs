@@ -26,7 +26,7 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public FindProjectComponentsCsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
