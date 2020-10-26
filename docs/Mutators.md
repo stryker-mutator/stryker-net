@@ -164,3 +164,9 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `abc{5}` | `abc` |
 | `abc{5,}` | `abc` |
 | `abc{5,8}` | `abc` |
+| `abc{5,8}` | `abc{4,8}` |
+| `abc{5,8}` | `abc{6,8}` |
+| `abc{5,8}` | `abc{5,7}` |
+| `abc{5,8}` | `abc{5,9}` |
+| `abc{5,}` | `abc{4,}` | 
+| `abc{5,}` | `abc{6,}` |
