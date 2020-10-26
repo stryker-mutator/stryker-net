@@ -49,6 +49,11 @@
           "System.Runtime.Loader": "4.0.0"
         }
       },
+      "Crayon": {
+        "type": "Transitive",
+        "resolved": "1.2.48",
+        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
+      },
       "FSharp.Core": {
         "type": "Transitive",
         "resolved": "4.6.2",
@@ -1089,6 +1094,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
+          "Crayon": "1.2.48",
           "DotNet.Glob": "3.1.0",
           "FSharp.Compiler.Service": "37.0.0",
           "LibGit2Sharp": "0.26.2",

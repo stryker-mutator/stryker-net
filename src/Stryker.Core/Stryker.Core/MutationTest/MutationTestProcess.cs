@@ -37,7 +37,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly Language _language;
         private readonly StrykerOptions _options;
-        private IMutationTestProcessMethod _mutationTestProcess;
+        private IMutationProcess _mutationTestProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,

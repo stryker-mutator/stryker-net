@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Crayon;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker.Core.Reporters
 {
@@ -16,15 +17,14 @@ namespace Stryker.Core.Reporters
         private readonly StrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
-        private readonly IChalk _chalk;
+        private readonly TextWriter _consoleWriter;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, IChalk chalk = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
-            _chalk = chalk ?? new Chalk();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
@@ -36,14 +36,15 @@ namespace Stryker.Core.Reporters
             if (reportUrl != null)
             {
                 _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUrl);
-                _chalk.Green($"Your stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice.");
+                _consoleWriter.Write(Output.Green($"Your stryker report has been uploaded to: \n {reportUrl} \nYou can open it in your browser of choice."));
             }
             else
             {
                 _logger.LogError("Uploading to stryker dashboard failed...");
             }
 
-            Console.WriteLine(Environment.NewLine);
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine();
         }
 
         public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)

@@ -1,8 +1,9 @@
-﻿using Stryker.Core.Mutants;
+﻿using Crayon;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.Testing;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -14,13 +15,13 @@ namespace Stryker.Core.Reporters.Html
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly IChalk _chalk;
+        private readonly TextWriter _consoleWriter;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _chalk = chalk ?? new Chalk();
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
         public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
@@ -30,9 +31,9 @@ namespace Stryker.Core.Reporters.Html
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            _chalk.Green($"\nYour html report has been generated at: \n " +
+            _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
                 $"{reportPath} \n" +
-                $"You can open it in your browser of choice. \n");
+                $"You can open it in your browser of choice. \n"));
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

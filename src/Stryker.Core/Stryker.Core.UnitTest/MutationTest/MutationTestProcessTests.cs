@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.LanguageFactory;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -481,7 +480,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
                 options: options,
-                language: LanguageFactory.Language.Csharp);
+                language: Language.Csharp);
 
             var testResult = target.Test(options);
 
@@ -585,7 +584,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
                 options: options,
-                language: LanguageFactory.Language.Csharp);
+                language: Language.Csharp);
 
             var testResult = target.Test(options);
 

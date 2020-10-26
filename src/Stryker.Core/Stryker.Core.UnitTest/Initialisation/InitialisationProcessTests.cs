@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                             }
                         }
                     }
-                }, LanguageFactory.Language.Csharp));
+                }, Language.Csharp));
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Returns(999);
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
@@ -105,7 +105,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                             }
                         }
                     }
-                }, LanguageFactory.Language.Csharp));
+                }, Language.Csharp));
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());

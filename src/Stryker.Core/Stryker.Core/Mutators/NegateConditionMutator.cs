@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Stryker.Core.Mutators
 {
@@ -16,6 +17,12 @@ namespace Stryker.Core.Mutators
             if (node is IsPatternExpressionSyntax)
             {
                 // we can't mutate IsPatternExpression without breaking build
+                yield break;
+            }
+
+            // we don't mutate expressions that can be mutated by binary expression mutator
+            if (WillBeMutatedByOtherMutators(node))
+            {
                 yield break;
             }
 
@@ -51,6 +58,24 @@ namespace Stryker.Core.Mutators
                     Type = Mutator.Boolean
                 };
             }
+        }
+
+        private static bool WillBeMutatedByOtherMutators(ExpressionSyntax node)
+        {
+            if (node.Kind() == SyntaxKind.LogicalNotExpression)
+            {
+                return true;
+            }
+            if (node is ParenthesizedExpressionSyntax parenthesized)
+            {
+                return WillBeMutatedByOtherMutators(parenthesized.Expression);
+            }
+
+            if (node is BinaryExpressionSyntax binary)
+            {
+                return binary.Kind() == SyntaxKind.EqualsExpression || binary.Kind() == SyntaxKind.NotEqualsExpression;
+            }
+            return false;
         }
 
         private static PrefixUnaryExpressionSyntax NegateCondition(ExpressionSyntax expressionSyntax)

@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v3.1": {
+      "Crayon": {
+        "type": "Direct",
+        "requested": "[1.2.48, )",
+        "resolved": "1.2.48",
+        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
+      },
       "DotNet.Glob": {
         "type": "Direct",
         "requested": "[3.1.0, )",
