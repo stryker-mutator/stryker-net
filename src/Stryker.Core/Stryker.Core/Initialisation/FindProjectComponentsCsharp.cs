@@ -35,7 +35,7 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem;
         }
 
-        public FolderComposite GetProjectComponenetsCsharp()
+        public FolderComposite GetProjectComponentsCsharp()
         {
             FolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
