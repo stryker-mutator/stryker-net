@@ -138,7 +138,7 @@ namespace Stryker.Core.Reporters
         {
             var continuationLines = new List<bool>();
 
-            var node = (ProjectComponent<SyntaxTree>)current;
+            var node = (IReadOnlyInputComponent)current;
 
             if (node.Parent != null)
             {
