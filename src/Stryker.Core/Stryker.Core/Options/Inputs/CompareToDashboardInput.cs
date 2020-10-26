@@ -7,7 +7,7 @@
             Description = $@"EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with --diff";
         }
 
-        public override StrykerInput Type => StrykerInput.DashboardCompareEnabled;
+        public override StrykerInput Type => StrykerInput.DashboardCompare;
 
         public CompareToDashboardInput(bool? compareToDashboard)
         {

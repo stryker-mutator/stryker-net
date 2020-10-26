@@ -14,15 +14,15 @@
 
         MutationLevel,
 
-        ThresholdsHigh,
-        ThresholdsLow,
-        ThresholdsBreak,
+        ThresholdHigh,
+        ThresholdLow,
+        ThresholdBreak,
 
         BaselineProvider,
         Reporters,
         ProjectUnderTestName,
-        DiffEnabled,
-        DashboardCompareEnabled,
+        DiffCompare,
+        DashboardCompare,
         GitDiffTarget,
         AdditionalTimeoutMs,
         ExcludedMutators,

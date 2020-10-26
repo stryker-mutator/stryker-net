@@ -1,29 +1,33 @@
 ﻿using Stryker.Core.Exceptions;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdsBreakInput : SimpleStrykerInput<int>
+    public class ThresholdsBreakInput : ComplexStrykerInput<string, int>
     {
-        static ThresholdsBreakInput()
+        public override StrykerInput Type => StrykerInput.ThresholdBreak;
+        public override int DefaultValue => 0;
+
+        protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";
+        protected override string HelpOptions => FormatHelpOptions("0 - 99");
+
+        public ThresholdsBreakInput() { }
+        public ThresholdsBreakInput(string inputBreak, int low)
         {
-            Description = $"Set the minimum mutation score threshold. Anything below this score will return a non-zero exit code. | {DefaultValue} (default)";
-            DefaultValue = 0;
-        }
-
-        public override StrykerInput Type => StrykerInput.ThresholdsBreak;
-
-        public ThresholdsBreakInput(int? @break)
-        {
-            if (@break is { })
+            if (inputBreak is { })
             {
-                Value = (int)@break;
-            }
+                var @break = int.Parse(inputBreak);
+                if (@break > 99 || @break < 0)
+                {
+                    throw new StrykerInputException("Threshold break must be between 0 and 99.");
+                }
 
-            if (@break > 100 || @break < 0)
-            {
-                throw new StrykerInputException("The thresholds must be between 0 and 100.");
+                if (@break <= low)
+                {
+                    throw new StrykerInputException($"Threshold break must be less than threshold high. Current low: {low}, break: {@break}");
+                }
+
+                Value = @break;
             }
         }
     }

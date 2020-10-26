@@ -1,35 +1,32 @@
 ﻿using Stryker.Core.Exceptions;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdsHighInput : SimpleStrykerInput<int>
+    public class ThresholdsHighInput : ComplexStrykerInput<string, int>
     {
-        static ThresholdsHighInput()
+        public override StrykerInput Type => StrykerInput.ThresholdHigh;
+        public override int DefaultValue => 80;
+
+        protected override string Description => "Minimum good mutation score. Must be higher than or equal to threshold low.";
+        protected override string HelpOptions => FormatHelpOptions("0 - 100");
+
+        public ThresholdsHighInput(string highInput, int low)
         {
-            Description = $"Set the preferred mutation score threshold. | {DefaultValue} (default)";
-            DefaultValue = 80;
-        }
-
-        public override StrykerInput Type => StrykerInput.ThresholdsHigh;
-
-        public ThresholdsHighInput(int? high, int? low)
-        {
-            if (high is { })
+            if (highInput is { })
             {
-                Value = (int)high;
-            }
+                var high = int.Parse(highInput);
+                if (high > 100 || high < 0)
+                {
+                    throw new StrykerInputException("Threshold high must be between 0 and 100.");
+                }
 
-            if (high > 100 || high < 0)
-            {
-                throw new StrykerInputException("The thresholds must be between 0 and 100.");
-            }
+                if (low > high)
+                {
+                    throw new StrykerInputException($"Threshold high must be higher than or equal to threshold low. Current high: {high}, low: {low}");
+                }
 
-            // ThresholdLow and ThresholdHigh can be the same value
-            if (low > high)
-            {
-                throw new StrykerInputException("The values of your thresholds are incorrect. The lowwer bound is currently higher than the lower bound");
+                Value = high;
             }
         }
     }

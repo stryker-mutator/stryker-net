@@ -19,7 +19,7 @@ namespace Stryker.CLI
     public static class CliOptionsParser
     {
         private static readonly IDictionary<string, CliOption> _cliOptions = new Dictionary<string, CliOption>();
-        private static CliOption _configOption;
+        private static readonly CliOption _configOption;
 
         static CliOptionsParser()
         {
@@ -64,30 +64,29 @@ namespace Stryker.CLI
 
         private static void PrepareCliOptions()
         {
-            AddCliOption(StrykerInput.DevMode, "--dev-mode", "-dev", DevModeInput.HelpText, optionType: CommandOptionType.NoValue);
+            AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdsBreakInput().HelpText, argumentHint: "number");
+            AddCliOption(StrykerInput.DevMode, "dev-mode", "dev", DevModeInput.HelpText, optionType: CommandOptionType.NoValue);
 
-            AddCliOption(StrykerInput.Mutate, "--mutate", "-m", MutateInput.HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
+            AddCliOption(StrykerInput.Mutate, "mutate", "m", MutateInput.HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
-            AddCliOption(StrykerInput.SolutionPath, "--solution-path", "-s", SolutionPathInput.HelpText, argumentHint: "file-path");
-            AddCliOption(StrykerInput.ProjectUnderTestName, "--project-file", "-p", ProjectUnderTestNameFilterInput.HelpText, argumentHint: "project-name");
-            AddCliOption(StrykerInput.MutationLevel, "--mutation-level", "-level", MutationLevelInput.HelpText);
+            AddCliOption(StrykerInput.SolutionPath, "solution-path", "s", SolutionPathInput.HelpText, argumentHint: "file-path");
+            AddCliOption(StrykerInput.ProjectUnderTestName, "project-file", "p", ProjectUnderTestNameFilterInput.HelpText, argumentHint: "project-name");
+            AddCliOption(StrykerInput.MutationLevel, "mutation-level", "level", MutationLevelInput.HelpText);
 
-            AddCliOption(StrykerInput.LogToFile, "--log-file", "-f", LogToFileInput.HelpText, optionType: CommandOptionType.NoValue);
-            AddCliOption(StrykerInput.LogLevel, "--log-level", "-l", LogLevelInput.HelpText);
-            AddCliOption(StrykerInput.Reporters, "--reporter", "-r", ReportersInput.HelpText, optionType: CommandOptionType.MultipleValue);
+            AddCliOption(StrykerInput.LogToFile, "log-file", "f", LogToFileInput.HelpText, optionType: CommandOptionType.NoValue);
+            AddCliOption(StrykerInput.LogLevel, "log-level", "l", LogLevelInput.HelpText);
+            AddCliOption(StrykerInput.Reporters, "reporter", "r", ReportersInput.HelpText, optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerInput.DiffEnabled, "--diff", "-diff", DiffEnabledInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            //RegisterCliOption(app, CLIOptions.GitDiffTarget); // Replaced by combined option! ^
-            AddCliOption(StrykerInput.DashboardCompareEnabled, "--dashboard-compare", "-compare",
-                CompareToDashboardInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerInput.DiffCompare, "diff", "diff", DiffEnabledInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerInput.DashboardCompare, "dashboard-compare", "compare", CompareToDashboardInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
-            AddCliOption(StrykerInput.DashboardApiKey, "--dashboard-api-key", "-dk", DashboardApiKeyInput.HelpText);
-            AddCliOption(StrykerInput.AzureFileStorageSas, "--azure-storage-sas", "-sas", AzureFileStorageSasInput.HelpText);
+            AddCliOption(StrykerInput.DashboardApiKey, "dashboard-api-key", "dk", DashboardApiKeyInput.HelpText);
+            AddCliOption(StrykerInput.AzureFileStorageSas, "azure-storage-sas", "sas", AzureFileStorageSasInput.HelpText);
 
-            AddCliOption(StrykerInput.ProjectVersion, "--dashboard-version", "-dv", ProjectVersionInput.HelpText);
-            AddCliOption(StrykerInput.FallbackVersion, "--fallback-version", "-fv", FallbackVersionInput.HelpText, argumentHint: "comittish");
+            AddCliOption(StrykerInput.ProjectVersion, "dashboard-version", "dv", ProjectVersionInput.HelpText);
+            AddCliOption(StrykerInput.FallbackVersion, "fallback-version", "fv", FallbackVersionInput.HelpText, argumentHint: "comittish");
 
-            AddCliOption(StrykerInput.Concurrency, "--concurrency", "-c", ConcurrentTestrunnersInput.HelpText, argumentHint: "number");
+            AddCliOption(StrykerInput.Concurrency, "concurrency", "c", ConcurrentTestrunnersInput.HelpText, argumentHint: "number");
         }
 
         private static void RegisterCliOption(CommandLineApplication app, CliOption option)
@@ -108,8 +107,8 @@ namespace Stryker.CLI
             var cliOption = new CliOption
             {
                 InputType = inputType,
-                ArgumentName = argumentName,
-                ArgumentShortName = argumentShortName,
+                ArgumentName = $"--{argumentName}",
+                ArgumentShortName = $"-{argumentShortName}",
                 Description = description,
                 OptionType = optionType,
                 ArgumentHint = argumentHint

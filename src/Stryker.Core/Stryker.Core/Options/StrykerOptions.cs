@@ -82,7 +82,7 @@ namespace Stryker.Core.Options
             return inputType switch
             {
                 StrykerInput.DevMode => SetDevMode(enabled),
-                StrykerInput.DashboardCompareEnabled => SetCompareToDashboard(enabled),
+                StrykerInput.DashboardCompare => SetCompareToDashboard(enabled),
                 StrykerInput.LogToFile => SetLogToFile(enabled),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature.")
             };
@@ -98,8 +98,8 @@ namespace Stryker.Core.Options
         {
             return inputType switch
             {
-                StrykerInput.DiffEnabled => SetDiff(enabled, value),
-                StrykerInput.DashboardCompareEnabled => SetCompareToDashboard(enabled, value),
+                StrykerInput.DiffCompare => SetDiff(enabled, value),
+                StrykerInput.DashboardCompare => SetCompareToDashboard(enabled, value),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature with value.")
             };
         }
@@ -114,6 +114,7 @@ namespace Stryker.Core.Options
         {
             return inputType switch
             {
+                StrykerInput.ThresholdBreak => SetThresholdBreak(value),
                 StrykerInput.SolutionPath => SetSolutionPath(value),
                 StrykerInput.ProjectUnderTestName => SetProjectUnderTestName(value),
                 StrykerInput.MutationLevel => SetMutationLevel(value),
@@ -183,6 +184,11 @@ namespace Stryker.Core.Options
         }
 
         // single value
+        private StrykerOptions SetThresholdBreak(string value)
+        {
+            Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdsBreakInput(value, Thresholds.Low).Value);
+        }
+
         private StrykerOptions SetConcurrency(string value)
         {
             return this;
