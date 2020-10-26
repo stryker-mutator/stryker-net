@@ -75,7 +75,7 @@ csharp_space_between_square_brackets = false
 # Wrap options
 # @see: https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#wrap-options
 csharp_preserve_single_line_blocks = true
-csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_statements = false
 
 # CSharp styling options
 # @see: https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/language-rules#c-style-rules
@@ -115,7 +115,7 @@ dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async.style
 dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async.symbols = async_members
 
 dotnet_naming_rule.const_declarations_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.const_declarations_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.const_declarations_should_be_pascal_case.style = camel_case
 dotnet_naming_rule.const_declarations_should_be_pascal_case.symbols = const_declarations
 
 dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i.severity = suggestion
@@ -181,6 +181,18 @@ dotnet_naming_symbols.public_and_protected_declarations.applicable_accessibiliti
 dotnet_naming_symbols.static_readonly_declarations.required_modifiers = static, readonly
 
 dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+
+# Private fields are camelCase and start with _
+dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.severity = suggestion
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_fields.required_modifiers = readonly
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
 
 # Include directives sort options
 dotnet_separate_import_directive_groups = false
