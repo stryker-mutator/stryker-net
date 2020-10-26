@@ -14,7 +14,7 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
-    class MutationTestProcessMethodFsharp : IMutationTestProcessMethod
+    class MutationTestProcessMethodFsharp : IMutationProcess
     {
         private readonly ProjectComponent<ParsedInput> _projectInfo;
         private readonly ILogger _logger;
