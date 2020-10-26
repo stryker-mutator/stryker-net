@@ -1,20 +1,27 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class StaticFieldDeclarationOrchestrator : NodeSpecificOrchestrator<FieldDeclarationSyntax>
+    internal class StaticFieldDeclarationOrchestrator: NodeSpecificOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
     {
         protected override bool CanHandle(FieldDeclarationSyntax t)
         {
             return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
         }
 
-        internal override SyntaxNode OrchestrateMutation(FieldDeclarationSyntax node, MutationContext context)
+        protected override BaseFieldDeclarationSyntax OrchestrateChildrenMutation(FieldDeclarationSyntax node, MutationContext context)
         {
-            return context.EnterStatic().MutateNodeAndChildren(node);
+            using var newContext = context.EnterStatic();
+            // we need to signal we are in a static field
+            return base.OrchestrateChildrenMutation(node, newContext);
+        }
+
+        public StaticFieldDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

@@ -1,12 +1,19 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class SyntaxNodeOrchestrator : NodeSpecificOrchestrator<SyntaxNode>
+    internal class SyntaxNodeOrchestrator: NodeSpecificOrchestrator<SyntaxNode, SyntaxNode>
     {
-        internal override SyntaxNode OrchestrateMutation(SyntaxNode node, MutationContext context)
+        // we don't mutate this node
+        protected override IEnumerable<Mutant> GenerateMutationForNode(SyntaxNode node, MutationContext context)
         {
-            return context.MutateNodeAndChildren(node);
+            return Enumerable.Empty<Mutant>();
+        }
+
+        public SyntaxNodeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

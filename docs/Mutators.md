@@ -1,20 +1,8 @@
+---
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Mutators.md
+---
+
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
-
-
-<!-- TOC -->
-- [Arithmetic Operators](#arithmetic-operators)
-- [Equality Operators](#equality-operators)
-- [Boolean Literals](#boolean-literals)
-- [Assignment statements](#assignment-statements)
-- [Collection initialization](#collection-initialization)
-- [Unary Operators](#unary-operators)
-- [Update Operators](#update-operators)
-- [Checked Statements](#checked-statements)
-- [Linq Methods](#linq-methods)
-- [String Literals and Constants](#string-literals-and-constants)
-- [Bitwise Operators](#bitwise-operators)
-- [Regular Expressions](#regular-expressions)
-<!-- /TOC -->
 
 ## Arithmetic Operators
 | Original | Mutated | 
@@ -176,3 +164,9 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `abc{5}` | `abc` |
 | `abc{5,}` | `abc` |
 | `abc{5,8}` | `abc` |
+| `abc{5,8}` | `abc{4,8}` |
+| `abc{5,8}` | `abc{6,8}` |
+| `abc{5,8}` | `abc{5,7}` |
+| `abc{5,8}` | `abc{5,9}` |
+| `abc{5,}` | `abc{4,}` | 
+| `abc{5,}` | `abc{6,}` |
