@@ -5,6 +5,7 @@ using Stryker.Core.InjectedHelpers;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.Instrumentation;
+using System;
 
 namespace Stryker.Core.Mutants
 {
