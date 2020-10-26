@@ -59,19 +59,9 @@ namespace Stryker.Core.Reporters
 
         private static ProgressReporter CreateProgressReporter()
         {
-            var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
-            var progressBarReporter =
-                new ProgressBarReporter(consoleOneLineLoggerFactory.Create(), new StopWatchProvider());
-            var mutantKilledLogger = consoleOneLineLoggerFactory.Create();
-            var mutantSurvivedLogger = consoleOneLineLoggerFactory.Create();
-            var mutantTimeoutLogger = consoleOneLineLoggerFactory.Create();
+            var progressBarReporter = new ProgressBarReporter(new ProgressBar(), new StopWatchProvider());
 
-            var mutantsResultReporter = new MutantsResultReporter(
-                mutantKilledLogger,
-                mutantSurvivedLogger,
-                mutantTimeoutLogger);
-
-            return new ProgressReporter(mutantsResultReporter, progressBarReporter);
+            return new ProgressReporter(progressBarReporter);
         }
     }
 }

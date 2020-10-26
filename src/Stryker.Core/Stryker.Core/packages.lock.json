@@ -176,6 +176,15 @@
           "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
         }
       },
+      "ShellProgressBar": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "I8v2iSu3++wWsEl1FO0ardLUKuf9xlEPm2QV4Lg6e7jWfLUU6D5gz1XflZOOiH+MatNP9en8w4C9rEbu/UTHeg==",
+        "dependencies": {
+          "System.Text.Encoding.CodePages": "4.0.1"
+        }
+      },
       "System.IO.Abstractions": {
         "type": "Direct",
         "requested": "[12.2.7, )",
