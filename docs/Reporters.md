@@ -1,13 +1,8 @@
-Stryker supports a variety of reporters. Enabled reporters will be activated during and after your Stryker run. 
+---
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Reporters.md
+---
 
-<!-- TOC -->
-- [Html reporter](#html-reporter)
-- [Dashboard reporter](#dashboard-reporter)
-- [Console reporter](#console-reporter)
-- [Progress reporter](#progress-reporter)
-- [Console dots reporter](#console-dots-reporter)
-- [Json reporter](#json-reporter)
-<!-- /TOC -->
+Stryker supports a variety of reporters. Enabled reporters will be activated during and after your Stryker run. 
 
 The default reporters are:
 

@@ -57,16 +57,10 @@ namespace Stryker.Core.InjectedHelpers
 
         private static string GetSourceFromResource(string sourceResourceName)
         {
-            string helper;
-            using (var stream = typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName))
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    helper = reader.ReadToEnd();
-                }
-            }
+            using var stream = typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName);
+            using var reader = new StreamReader(stream);
 
-            return helper;
+            return reader.ReadToEnd();
         }
     }
 }

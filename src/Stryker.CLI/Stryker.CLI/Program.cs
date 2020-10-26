@@ -1,6 +1,6 @@
-﻿using Stryker.Core;
+﻿using Crayon;
+using Stryker.Core;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Testing;
 using System;
 
 namespace Stryker.CLI
@@ -17,7 +17,7 @@ namespace Stryker.CLI
             }
             catch (StrykerInputException strEx)
             {
-                new Chalk().Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
+                Output.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
                 Console.WriteLine(strEx.ToString());
                 return 1;
             }
