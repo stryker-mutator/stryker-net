@@ -1,6 +1,5 @@
 ﻿using Crayon;
-using Stryker.Core.Mutants;
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
