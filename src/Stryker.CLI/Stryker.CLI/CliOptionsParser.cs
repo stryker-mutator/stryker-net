@@ -64,7 +64,7 @@ namespace Stryker.CLI
 
         private static void PrepareCliOptions()
         {
-            AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdsBreakInput().HelpText, argumentHint: "number");
+            AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "number");
             AddCliOption(StrykerInput.DevMode, "dev-mode", "dev", DevModeInput.HelpText, optionType: CommandOptionType.NoValue);
 
             AddCliOption(StrykerInput.Mutate, "mutate", "m", MutateInput.HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");

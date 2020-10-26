@@ -186,7 +186,8 @@ namespace Stryker.Core.Options
         // single value
         private StrykerOptions SetThresholdBreak(string value)
         {
-            Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdsBreakInput(value, Thresholds.Low).Value);
+            Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdBreakInput(value, Thresholds.Low).Value);
+            return this;
         }
 
         private StrykerOptions SetConcurrency(string value)

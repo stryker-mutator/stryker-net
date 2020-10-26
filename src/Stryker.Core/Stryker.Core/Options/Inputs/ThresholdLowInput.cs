@@ -3,7 +3,7 @@
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdsLowInput : SimpleStrykerInput<int>
+    public class ThresholdLowInput : SimpleStrykerInput<int>
     {
         public override StrykerInput Type => StrykerInput.ThresholdLow;
         public override int DefaultValue => 60;
@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Minimum acceptable mutation score. Must be less than or equal to threshold high and more than threshold break.";
         protected override string HelpOptions => FormatHelpOptions("0 - 100");
 
-        public ThresholdsLowInput(string lowInput, int @break, int high)
+        public ThresholdLowInput(string lowInput, int @break, int high)
         {
             if (lowInput is { })
             {
