@@ -4,6 +4,6 @@
     {
         public T SyntaxTree { get; set; }
 
-        public T MutatedSyntaxTree { get; set; }
+        T MutatedSyntaxTree { get; set; }
     }
 }
