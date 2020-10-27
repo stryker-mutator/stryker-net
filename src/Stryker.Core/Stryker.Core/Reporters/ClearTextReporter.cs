@@ -1,5 +1,4 @@
 ﻿using Crayon;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -52,8 +51,6 @@ namespace Stryker.Core.Reporters
 
             reportComponent.DisplayFile = (int _, IReadOnlyProjectComponent current) =>
             {
-                var fileLeaf = (ReadOnlyFileLeaf)current;
-
                 files.Add((ReadOnlyFileLeaf)current);
             };
 
