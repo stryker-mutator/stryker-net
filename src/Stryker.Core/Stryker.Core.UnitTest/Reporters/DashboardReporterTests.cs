@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
 
             // Act
-            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase());
 
             // Assert
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"), Times.Once);

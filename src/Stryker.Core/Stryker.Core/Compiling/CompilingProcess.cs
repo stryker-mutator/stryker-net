@@ -13,7 +13,7 @@ namespace Stryker.Core.Compiling
 {
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
-    /// </summary>
+    /// Compiles the given input onto the memorystream
     public class CompilingProcess
     {
         private readonly MutationTestInput _input;
@@ -32,12 +32,12 @@ namespace Stryker.Core.Compiling
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
 
         /// <summary>
+        /// Compiles the given input onto the memorystream
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
-        /// </summary>
         /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
-        /// <param name="devMode"></param>
+        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;

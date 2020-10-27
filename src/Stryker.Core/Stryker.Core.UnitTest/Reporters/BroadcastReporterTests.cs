@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyInputComponent>()));
 
-            var exampleInputComponent = new FileLeaf();
+            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyInputComponent>()));
 
-            var exampleInputComponent = new FileLeaf();
+            var exampleInputComponent = new FileLeaf().ToReadOnlyBase();
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyInputComponent>()));
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
-            var exampleInputComponent = new FileLeaf();
+            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var reporters = new Collection<IReporter>() { };
 
-            var exampleInputComponent = new FileLeaf();
+            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
             var exampleMutant = new Mutant();
 
             var target = new BroadcastReporter(reporters);

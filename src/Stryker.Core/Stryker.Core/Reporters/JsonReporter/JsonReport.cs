@@ -70,11 +70,11 @@ namespace Stryker.Core.Reporters.Json
         private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
-            if (component is FolderComposite folder)
+            if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
             }
-            else if (component is FileLeaf file)
+            else if (component is ReadOnlyFileLeaf file)
             {
                 Merge(files, GenerateFileReportComponents(file));
             }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(FolderComposite folderComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
             foreach (var child in folderComponent.Children)
@@ -93,7 +93,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(FileLeaf fileComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }

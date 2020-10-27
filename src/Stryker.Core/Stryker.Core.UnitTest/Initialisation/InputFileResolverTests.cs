@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -264,8 +264,8 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(3);
-            var mutatedFile = ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
+            var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
 
             var node = ((CompilationUnitSyntax)mutatedFile.GetRoot()).AttributeLists
                 .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
@@ -308,7 +308,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -373,7 +373,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(3);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
 
         [Fact]
@@ -427,7 +427,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -506,7 +506,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(4);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
         [Fact]
@@ -622,7 +622,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            var allFiles = ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles();
+            var allFiles = result.ProjectContents.GetAllFiles();
 
             allFiles.Count().ShouldBe(3);
             allFiles.ShouldContain(f => f.Name == "Shared.cs");
@@ -713,7 +713,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((FolderComposite)result.Item1.ProjectContents).Children.Count.ShouldBe(1);
+            ((FolderComposite)result.ProjectContents).Children.Count.ShouldBe(1);
         }
 
         [Fact]
@@ -734,7 +734,7 @@ using System.Reflection;
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
@@ -765,7 +765,7 @@ $@"Expected exactly one .csproj file, found more than one:
 Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -781,7 +781,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }
@@ -797,7 +797,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
         }
@@ -812,7 +812,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
             exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
         }
 
@@ -827,7 +827,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
@@ -843,7 +843,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot,
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot,
                 FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder"))));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
@@ -893,7 +893,7 @@ Please specify a test project name filter that results in one project.
             // Act
             var target = new InputFileResolver(fileSystem, projectFileReaderMock);
 
-            var actual = target.ResolveInput(options).Item1;
+            var actual = target.ResolveInput(options);
 
             // Assert
             actual.ProjectUnderTestAnalyzerResult.ProjectFilePath.ShouldBe(projectUnderTestPath);
@@ -1076,7 +1076,7 @@ Please specify a test project name filter that results in one project.
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(2);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
         [Fact]
@@ -1117,7 +1117,7 @@ Please specify a test project name filter that results in one project.
             });
             var result = target.ResolveInput(options);
 
-            ((ProjectComponent<SyntaxTree>)result.Item1.ProjectContents).GetAllFiles().Count().ShouldBe(1);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
 
         #region FindProjectUnderTest
