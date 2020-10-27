@@ -74,7 +74,7 @@ csharp_space_between_square_brackets = false
 
 # Wrap options
 # @see: https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#wrap-options
-csharp_preserve_single_line_blocks = false
+csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
 
 # CSharp styling options
@@ -182,14 +182,13 @@ dotnet_naming_symbols.static_readonly_declarations.required_modifiers = static, 
 
 dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
 
-# Private fields are camelCase and start with _
-dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
-dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
+# Private members are camelCase and start with _
+dotnet_naming_rule.private_members_with_underscore.symbols  = private_members
+dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
 dotnet_naming_rule.private_members_with_underscore.severity = suggestion
 
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
-dotnet_naming_symbols.private_fields.required_modifiers = readonly
+dotnet_naming_symbols.private_members.applicable_kinds           = field
+dotnet_naming_symbols.private_members.applicable_accessibilities = private
 
 dotnet_naming_style.prefix_underscore.capitalization = camel_case
 dotnet_naming_style.prefix_underscore.required_prefix = _
