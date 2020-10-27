@@ -33,7 +33,7 @@ namespace Stryker.Core.MutationTest
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
-        private IMutationProcess _mutationTestProcess;
+        private IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -59,17 +59,17 @@ namespace Stryker.Core.MutationTest
 
         private void SetupMutationTestProcess(IMutantFilter mutantFilter)
         {
-            _mutationTestProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
         }
 
         public void Mutate()
         {
-            _mutationTestProcess.Mutate();
+            _mutationProcess.Mutate();
         }
 
         public void FilterMutants()
         {
-            _mutationTestProcess.FilterMutants();
+            _mutationProcess.FilterMutants();
         }
 
         public StrykerRunResult Test(StrykerOptions options)
