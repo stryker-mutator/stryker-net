@@ -11,8 +11,15 @@
             Please use a latest version of an evergreen browser (Firefox, Chrome, Safari, Opera, etc).
         </mutation-test-report-app>
         <script>
-            document.querySelector('mutation-test-report-app').report =
-            ##REPORT_JSON##;
+            const app = document.querySelector('mutation-test-report-app');
+
+            app.report = ##REPORT_JSON##;
+
+            function updateTheme() {
+              document.body.style.backgroundColor = app.theme === 'dark' ? '#222' : '#fff';
+            }
+            app.addEventListener('theme-changed', updateTheme);
+            updateTheme();
         </script>
     </body>
 </html>
