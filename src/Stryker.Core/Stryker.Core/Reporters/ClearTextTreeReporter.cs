@@ -138,7 +138,7 @@ namespace Stryker.Core.Reporters
         {
             var continuationLines = new List<bool>();
 
-            var node = (IReadOnlyInputComponent)current;
+            var node = current;
 
             if (node.Parent != null)
             {
@@ -153,7 +153,7 @@ namespace Stryker.Core.Reporters
                     {
                         continuationLines.Add(node.Parent.Children.Last() != node);
 
-                        node = node.Parent;
+                        node = ((FolderComposite)node.Parent).ToReadOnlyBase();
                     }
 
                     continuationLines.Reverse();
@@ -170,7 +170,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent is ProjectComponent<SyntaxTree> projectComponent && projectComponent.FullPath != null && projectComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent.FullPath != null && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _consoleWriter.Write(Output.BrightBlack("(Excluded)"));
             }

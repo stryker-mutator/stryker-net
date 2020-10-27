@@ -3,26 +3,40 @@ using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ProjectComponent<T> : IProjectComponent
+    public abstract class ReadOnlyProjectComponent : IReadOnlyInputComponent
     {
-        public string Name { get; set; }
-        public string FullPath { get; set; }
+        private readonly IProjectComponent _projectComponent;
+
+        public ReadOnlyProjectComponent(IProjectComponent projectComponent)
+        {
+            _projectComponent = projectComponent;
+            Name = projectComponent.Name;
+            FullPath = projectComponent.FullPath;
+            RelativePath = projectComponent.RelativePath;
+            RelativePathToProjectFile = projectComponent.RelativePathToProjectFile;
+            Mutants = projectComponent.Mutants;
+            Parent = projectComponent.Parent;
+        }
+
+        public string Name { get; }
+        public string FullPath { get; }
 
         /// <summary>
         /// Gets or sets the path relative to the virtual project root.
         /// Includes the project folder.
         /// </summary>
-        public string RelativePath { get; set; }
+        public string RelativePath { get; }
 
         /// <summary>
         /// Gets or sets the path relative to the .csproj file.
         /// </summary>
-        public string RelativePathToProjectFile { get; set; }
+        public string RelativePathToProjectFile { get; }
 
-        public abstract IEnumerable<Mutant> Mutants { get; set; }
+        public IEnumerable<IReadOnlyMutant> Mutants { get; }
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
             ReadOnlyMutants.Where(m =>
@@ -33,18 +47,14 @@ namespace Stryker.Core.ProjectComponents
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
 
-        /// <summary>
-        /// All syntax trees that should be a part of the compilation
-        /// </summary>
-        public abstract IEnumerable<T> CompilationSyntaxTrees { get; }
-        /// <summary>
-        /// Only those syntax trees that were changed by the mutation process
-        /// </summary>
-        public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
+        // These delegates will get invoked while walking the tree during Display();
+        public Display DisplayFile { get; set; }
 
-        public FolderComposite Parent { get; set; }
-        IParentComponent IProjectComponent.Parent { get => Parent; set => Parent = (FolderComposite)value; }
+        public Display DisplayFolder { get; set; }
 
+        public abstract void Display(int depth);
+
+        public IParentComponent Parent { get; }
 
         /// <summary>
         /// Returns the mutation score for this folder / file
@@ -77,9 +87,5 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
-        public abstract void Add(ProjectComponent<T> component);
-
-        public abstract IReadOnlyInputComponent ToReadOnlyBase();
-        public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }
 }

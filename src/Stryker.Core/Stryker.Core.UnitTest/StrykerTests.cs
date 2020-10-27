@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest
                     ProjectContents = new FolderComposite()
                     {
                         Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent<SyntaxTree>>() {
+                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
                             new FileLeaf() {
                                 Name = "SomeFile.cs",
                                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest
                     }
                 },
             };
-            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns((mutationTestInput, Language.Csharp));
+            initialisationMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(mutationTestInput);
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
             var nbTests = 0;
             initialisationMock.Setup(x => x.InitialTest(options, out nbTests)).Returns(0);

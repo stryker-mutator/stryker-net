@@ -1,4 +1,5 @@
-﻿using Stryker.Core.Mutants;
+﻿using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 
@@ -9,7 +10,13 @@ namespace Stryker.Core.ProjectComponents
     /// </summary>
     public interface IReadOnlyInputComponent
     {
+        IEnumerable<IReadOnlyMutant> Mutants { get; }
+        IParentComponent Parent { get; }
+        string RelativePath { get; }
+        string RelativePathToProjectFile { get; }
+        string FullPath { get; }
         string Name { get; }
+
         IEnumerable<IReadOnlyMutant> ReadOnlyMutants { get; }
         IEnumerable<IReadOnlyMutant> TotalMutants { get; }
         IEnumerable<IReadOnlyMutant> DetectedMutants { get; }
@@ -17,10 +24,9 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// The display handlers are an exception to the readonly rule
         /// </summary>
-        Display DisplayFile { get; set; }
+        Display DisplayFile { get; set;  }
         Display DisplayFolder { get; set; }
-
-        void Display(int depth);
+        public void Display(int depth);
 
         double GetMutationScore();
 

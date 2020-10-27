@@ -18,13 +18,18 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    public class FindProjectComponentsCsharp
+    public interface IProjectComponentsBuilder
     {
-        private ProjectInfo _projectInfo;
-        private StrykerOptions _options;
-        private string[] _foldersToExclude;
-        private ILogger _logger;
-        private IFileSystem _fileSystem;
+        IProjectComponent BuildProjectComponents();
+    }
+
+    public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
+    {
+        private readonly ProjectInfo _projectInfo;
+        private readonly StrykerOptions _options;
+        private readonly string[] _foldersToExclude;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
@@ -35,7 +40,7 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem;
         }
 
-        public FolderComposite GetProjectComponentsCsharp()
+        public IProjectComponent BuildProjectComponents()
         {
             FolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
@@ -68,7 +73,6 @@ namespace Stryker.Core.Initialisation
 
             return inputFiles;
         }
-
 
         private FolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
         {
@@ -133,7 +137,6 @@ namespace Stryker.Core.Initialisation
                     folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
                     continue; // Don't add the file to the folderComposite as we're not reporting on the file
                 }
-
 
                 file.SyntaxTree = syntaxTree;
                 folderComposite.Add(file);

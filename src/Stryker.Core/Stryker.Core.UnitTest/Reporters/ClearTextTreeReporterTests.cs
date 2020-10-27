@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 Mutants = new Collection<Mutant>() { }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -79,7 +79,7 @@ RootFolder [0/0 (N/A)]
                 ResultStatus = MutantStatus.Killed, Mutation = mutation } }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -125,7 +125,7 @@ RootFolder [1/1 ({1:P2})]
                 ResultStatus = MutantStatus.Survived, Mutation = mutation } }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -179,7 +179,7 @@ RootFolder [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.RedSpanCount().ShouldBe(4);
         }
@@ -222,7 +222,7 @@ RootFolder [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.YellowSpanCount().ShouldBe(2);
         }
@@ -261,7 +261,7 @@ RootFolder [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.GreenSpanCount().ShouldBe(3);
         }

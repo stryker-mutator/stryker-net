@@ -41,20 +41,20 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
         {
-            var files = new List<FileLeaf>();
+            var files = new List<ReadOnlyFileLeaf>();
 
-            FolderComposite rootFolder = null;
+            ReadOnlyFolderComposite rootFolder = null;
 
             reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
             {
-                rootFolder ??= (FolderComposite)current;
+                rootFolder ??= (ReadOnlyFolderComposite)current;
             };
 
             reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
             {
-                var fileLeaf = (FileLeaf)current;
+                var fileLeaf = (ReadOnlyFileLeaf)current;
 
-                files.Add((FileLeaf)current);
+                files.Add((ReadOnlyFileLeaf)current);
             };
 
             // print empty line for readability
@@ -81,13 +81,13 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
         }
 
-        private void DisplayComponent(ProjectComponent<SyntaxTree> inputComponent, int filePathLength)
+        private void DisplayComponent(IReadOnlyInputComponent inputComponent, int filePathLength)
         {
             _consoleWriter.Write($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent is FileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _consoleWriter.Write(Output.BrightBlack("Excluded"));
             }

@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -17,7 +16,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        (ProjectInfo, Language) ResolveInput(StrykerOptions options);
+        ProjectInfo ResolveInput(StrykerOptions options);
     }
 
     /// <summary>
@@ -32,6 +31,7 @@ namespace Stryker.Core.Initialisation
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
+        public IProjectComponentsBuilder ProjectComponentsBuilder;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
@@ -45,10 +45,9 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public (ProjectInfo, Language) ResolveInput(StrykerOptions options)
+        public ProjectInfo ResolveInput(StrykerOptions options)
         {
             var projectInfo = new ProjectInfo();
-            Language language;
             // Determine test projects
             var testProjectFiles = new List<string>();
             string projectUnderTest = null;
@@ -90,28 +89,15 @@ namespace Stryker.Core.Initialisation
 
                 _logger.LogInformation("**** Buildalyzer properties. ****");
             }
-            
-            var projectComponents = new FindProjectComponentsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
-            IProjectComponent inputFiles = projectComponents.GetProjectComponenetsCsharp();
 
-            if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".csproj"))                           /*C#*/
-            {
-                language = Language.Csharp;
-            }
-            else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
-            {
-                language = Language.Fsharp;
-            }
-            else
-            {
-                language = Language.Undifined;
-            }
+            ProjectComponentsBuilder = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
+            IProjectComponent inputFiles = ProjectComponentsBuilder.BuildProjectComponents();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
 
-            return (projectInfo, language);
+            return projectInfo;
         }
 
         public string FindTestProject(string path)
@@ -122,29 +108,9 @@ namespace Stryker.Core.Initialisation
             return projectFile;
         }
 
-        public string FindProjectUnderTest(IEnumerable<ProjectAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        private string FindProjectFile(string path)
         {
-            IEnumerable<string> projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
-
-            string projectUnderTestPath;
-
-            if (string.IsNullOrEmpty(projectUnderTestNameFilter))
-            {
-                projectUnderTestPath = DetermineProjectUnderTestWithoutNameFilter(projectReferences);
-            }
-            else
-            {
-                projectUnderTestPath = DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
-            }
-
-            _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
-
-            return projectUnderTestPath;
-        }
-
-        public string FindProjectFile(string path)
-        {
-            if (_fileSystem.File.Exists(path) && (_fileSystem.Path.HasExtension(".csproj") || _fileSystem.Path.HasExtension(".fsproj")))
+            if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
             {
                 return path;
             }
@@ -152,7 +118,7 @@ namespace Stryker.Core.Initialisation
             string[] projectFiles;
             try
             {
-                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.ToLower().EndsWith("csproj") || file.ToLower().EndsWith("fsproj")).ToArray();
+                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.ToLower().EndsWith("csproj")).ToArray();
             }
             catch (DirectoryNotFoundException)
             {
@@ -182,6 +148,25 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
+        public string FindProjectUnderTest(IEnumerable<ProjectAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        {
+            IEnumerable<string> projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
+
+            string projectUnderTestPath;
+
+            if (string.IsNullOrEmpty(projectUnderTestNameFilter))
+            {
+                projectUnderTestPath = DetermineProjectUnderTestWithoutNameFilter(projectReferences);
+            }
+            else
+            {
+                projectUnderTestPath = DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
+            }
+
+            _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
+
+            return projectUnderTestPath;
+        }
 
         private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerOptions options)
         {
