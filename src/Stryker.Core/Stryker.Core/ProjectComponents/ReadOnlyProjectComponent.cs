@@ -22,7 +22,7 @@ namespace Stryker.Core.ProjectComponents
         public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m => m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
         public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants.Where(m => m.ResultStatus == MutantStatus.Killed || m.ResultStatus == MutantStatus.Timeout);
 
-        public ReadOnlyProjectComponent(IProjectComponent projectComponent)
+        protected ReadOnlyProjectComponent(IProjectComponent projectComponent)
         {
             _projectComponent = projectComponent;
         }
