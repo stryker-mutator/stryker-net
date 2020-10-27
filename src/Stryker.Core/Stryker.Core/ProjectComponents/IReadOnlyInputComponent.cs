@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
@@ -8,7 +9,7 @@ namespace Stryker.Core.ProjectComponents
     /// <summary>
     /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify components.
     /// </summary>
-    public interface IReadOnlyInputComponent
+    public interface IReadOnlyInputComponent : IEquatable<IReadOnlyInputComponent>
     {
         IEnumerable<IReadOnlyMutant> Mutants { get; }
         IParentComponent Parent { get; }
@@ -34,4 +35,5 @@ namespace Stryker.Core.ProjectComponents
     }
 
     public delegate void Display(int depth, IReadOnlyInputComponent current);
+
 }

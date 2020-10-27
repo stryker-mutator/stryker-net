@@ -142,7 +142,7 @@ namespace Stryker.Core.Reporters
 
             if (node.Parent != null)
             {
-                var isRootFile = node.RelativePath == node.RelativePathToProjectFile;
+                var isRootFile = (node.RelativePath == node.RelativePathToProjectFile);
                 if (isRootFile)
                 {
                     continuationLines.Add(true);
@@ -151,7 +151,7 @@ namespace Stryker.Core.Reporters
                 {
                     while (node.Parent != null)
                     {
-                        continuationLines.Add(node.Parent.Children.Last() != node);
+                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyBase().Equals(node));
 
                         node = ((FolderComposite)node.Parent).ToReadOnlyBase();
                     }

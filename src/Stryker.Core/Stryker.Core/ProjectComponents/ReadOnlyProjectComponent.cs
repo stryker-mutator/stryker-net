@@ -2,6 +2,7 @@
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
@@ -87,5 +88,16 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
+        public bool Equals([AllowNull] IReadOnlyInputComponent other)
+        {
+            if (other != null)
+            {
+                if(RelativePath.Equals(other.RelativePath)
+                    && FullPath.Equals(other.FullPath)
+                    && Name.Equals(other.Name))
+                { return false; }
+            }
+            return true;
+        }
     }
 }
