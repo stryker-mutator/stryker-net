@@ -51,7 +51,7 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             // Mutate source files
-            foreach (FileLeaf file in _projectInfo.GetAllFiles())
+            foreach (var file in _projectInfo.GetAllFiles().Cast<FileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
