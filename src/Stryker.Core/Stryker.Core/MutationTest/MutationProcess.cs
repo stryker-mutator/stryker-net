@@ -160,7 +160,7 @@ namespace Stryker.Core.MutationTest
             var notRunCount = _projectInfo.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
             _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
 
-            _reporter.OnMutantsCreated(_projectInfo.ToReadOnlyBase());
+            _reporter.OnMutantsCreated(_projectInfo.ToReadOnlyInputComponent());
         }
 
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)

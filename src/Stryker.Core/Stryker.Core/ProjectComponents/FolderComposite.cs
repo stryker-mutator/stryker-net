@@ -54,7 +54,7 @@ namespace Stryker.Core.ProjectComponents
             return new ReadOnlyFolderComposite(this, MutatedSyntaxTrees.Any(), Children);
         }
 
-        public override IReadOnlyInputComponent ToReadOnlyBase()
+        public override IReadOnlyInputComponent ToReadOnlyInputComponent()
         {
             return ToReadOnly();
         }

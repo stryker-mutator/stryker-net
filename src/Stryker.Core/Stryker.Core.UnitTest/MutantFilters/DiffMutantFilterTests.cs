@@ -474,7 +474,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             x.Load(It.IsAny<string>())
             ).Returns(
                 Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase())
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -526,7 +526,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 x.Load(It.IsAny<string>())
                 ).Returns(
                     Task.FromResult(
-                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase())
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                          ));
 
             var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);

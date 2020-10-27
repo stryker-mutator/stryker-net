@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyInputComponent>()));
 
-            var exampleInputComponent = new FileLeaf().ToReadOnlyBase();
+            var exampleInputComponent = new FileLeaf().ToReadOnlyInputComponent();
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()

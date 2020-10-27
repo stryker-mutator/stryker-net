@@ -151,9 +151,9 @@ namespace Stryker.Core.Reporters
                 {
                     while (node.Parent != null)
                     {
-                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyBase().Equals(node));
+                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyInputComponent().Equals(node));
 
-                        node = ((FolderComposite)node.Parent).ToReadOnlyBase();
+                        node = ((FolderComposite)node.Parent).ToReadOnlyInputComponent();
                     }
 
                     continuationLines.Reverse();

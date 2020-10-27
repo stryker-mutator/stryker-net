@@ -162,11 +162,11 @@ namespace Stryker.Core.MutationTest
                     });
             }
 
-            _reporter.OnAllMutantsTested(_projectInfo.ToReadOnlyBase());
+            _reporter.OnAllMutantsTested(_projectInfo.ToReadOnlyInputComponent());
 
             _mutationTestExecutor.TestRunner.Dispose();
 
-            return new StrykerRunResult(options, _projectInfo.ToReadOnlyBase().GetMutationScore());
+            return new StrykerRunResult(options, _projectInfo.ToReadOnlyInputComponent().GetMutationScore());
         }
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)

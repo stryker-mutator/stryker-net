@@ -36,7 +36,7 @@ namespace Stryker.Core.ProjectComponents
             return new ReadOnlyFileLeaf(this);
         }
 
-        public override IReadOnlyInputComponent ToReadOnlyBase()
+        public override IReadOnlyInputComponent ToReadOnlyInputComponent()
         {
             return ToReadOnly();
         }

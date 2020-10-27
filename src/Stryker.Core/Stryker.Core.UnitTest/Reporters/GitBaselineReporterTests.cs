@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var target = new GitBaselineReporter(options, baselineProvider.Object, gitInfoProvider.Object);
 
-            target.OnAllMutantsTested(readOnlyInputComponent.Object.ToReadOnlyBase());
+            target.OnAllMutantsTested(readOnlyInputComponent.Object.ToReadOnlyInputComponent());
 
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "dashboard-compare/new-feature")), Times.Once);
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "new-feature")), Times.Never);

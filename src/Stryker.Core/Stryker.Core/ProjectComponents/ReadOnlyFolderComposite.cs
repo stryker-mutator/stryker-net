@@ -19,7 +19,7 @@ namespace Stryker.Core.ProjectComponents
             var convertedChildren = new Collection<IReadOnlyInputComponent>();
             foreach(var child in children)
             {
-                convertedChildren.Add(child.ToReadOnlyBase());
+                convertedChildren.Add(child.ToReadOnlyInputComponent());
             }
             Children = convertedChildren;
         }

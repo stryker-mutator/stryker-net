@@ -79,7 +79,7 @@ namespace Stryker.Core.ProjectComponents
 
         public abstract void Add(ProjectComponent<T> component);
 
-        public abstract IReadOnlyInputComponent ToReadOnlyBase();
+        public abstract IReadOnlyInputComponent ToReadOnlyInputComponent();
         public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }
 }

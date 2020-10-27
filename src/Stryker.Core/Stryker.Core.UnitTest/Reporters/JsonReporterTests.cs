@@ -105,7 +105,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyBase());
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
 
             report.ShouldSatisfyAllConditions(
                 () => report.Thresholds.ShouldContainKey("high"),
@@ -117,7 +117,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyBase());
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
 
             report.Files.Count.ShouldBeGreaterThan(0);
         }
@@ -128,8 +128,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
             var options = new StrykerOptions();
 
-            var firstReport = JsonReport.Build(options, folderComponent.ToReadOnlyBase());
-            var secondReport = JsonReport.Build(options, folderComponent.ToReadOnlyBase());
+            var firstReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
+            var secondReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
 
             secondReport.ShouldBe(firstReport);
         }
@@ -141,7 +141,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new JsonReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }

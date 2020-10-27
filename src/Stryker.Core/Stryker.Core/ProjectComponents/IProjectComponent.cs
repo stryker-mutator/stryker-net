@@ -12,7 +12,7 @@ namespace Stryker.Core.ProjectComponents
         public string RelativePathToProjectFile { get; set; }
         public string FullPath { get; set; }
 
-        IReadOnlyInputComponent ToReadOnlyBase();
+        IReadOnlyInputComponent ToReadOnlyInputComponent();
 
         public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }
