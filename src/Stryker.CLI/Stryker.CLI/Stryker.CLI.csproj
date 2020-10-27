@@ -39,4 +39,8 @@
   <ItemGroup>
     <None Include="..\..\..\LICENS*" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\.editorconfig" Link="Properties\.editorconfig" />
+  </ItemGroup>
 </Project>
