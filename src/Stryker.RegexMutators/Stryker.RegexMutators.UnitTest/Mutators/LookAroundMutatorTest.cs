@@ -11,7 +11,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
     public class LookAroundMutatorTest
     {
         [Fact]
-        public void FlipsPositiveLookAheadToNegativeLookAhead()
+        public void FlipsPositiveLookBehindToNegativeLookBehind()
         {
             // Arrange
             var foo = new List<RegexNode>
@@ -20,32 +20,20 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
                 new CharacterNode('o'), 
                 new CharacterNode('o')
             };
-            var lookaroundGroupNode = new LookaroundGroupNode(true, true, foo);
+            var lookaroundGroupNode = new LookaroundGroupNode(false, true, foo);
             var rootNode = new ConcatenationNode(lookaroundGroupNode);
             var target = new LookAroundMutator();
 
-            var expectedResults = new List<string>
-            {
-                "(?!foo)",
-                "(?<=foo)"
-            };
-
             // Act
-            var mutations = target.ApplyMutations(lookaroundGroupNode, rootNode).ToList();
+            var result = target.ApplyMutations(lookaroundGroupNode, rootNode).ToList();
 
             // Assert
-            var index = 0;
-            var originalQuantifier = "(?=foo)";
-            foreach (var mutation in mutations)
-            {
-                mutation.OriginalNode.ShouldBe(lookaroundGroupNode);
-                mutation.ReplacementNode.ToString().ShouldBe(expectedResults[index]);
-                mutation.ReplacementPattern.ShouldBe(expectedResults[index]);
-                mutation.DisplayName.ShouldBe("Regex greedy quantifier quantity mutation");
-                mutation.Description.ShouldBe($"Quantifier \"{originalQuantifier}\" was replaced with \"{expectedResults[index]}\" at offset 0.");
-                index++;
-            }
-            mutations.Count.ShouldBe(2);
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.OriginalNode.ShouldBe(lookaroundGroupNode);
+            mutation.ReplacementNode.ToString().ShouldBe("(?<!foo)");
+            mutation.ReplacementPattern.ShouldBe("(?<!foo)");
+            mutation.DisplayName.ShouldBe("Regex greedy quantifier quantity mutation");
+            mutation.Description.ShouldBe("Quantifier \"(?<=foo)\" was replaced with \"(?<!foo)\" at offset 0.");
         }
         
         [Fact]
@@ -62,28 +50,16 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             var rootNode = new ConcatenationNode(lookaroundGroupNode);
             var target = new LookAroundMutator();
 
-            var expectedResults = new List<string>
-            {
-                "(?=foo)",
-                "(?<!foo)"
-            };
-
             // Act
-            var mutations = target.ApplyMutations(lookaroundGroupNode, rootNode).ToList();
+            var result = target.ApplyMutations(lookaroundGroupNode, rootNode).ToList();
 
             // Assert
-            var index = 0;
-            var originalQuantifier = "(?!foo)";
-            foreach (var mutation in mutations)
-            {
-                mutation.OriginalNode.ShouldBe(lookaroundGroupNode);
-                mutation.ReplacementNode.ToString().ShouldBe(expectedResults[index]);
-                mutation.ReplacementPattern.ShouldBe(expectedResults[index]);
-                mutation.DisplayName.ShouldBe("Regex greedy quantifier quantity mutation");
-                mutation.Description.ShouldBe($"Quantifier \"{originalQuantifier}\" was replaced with \"{expectedResults[index]}\" at offset 0.");
-                index++;
-            }
-            mutations.Count.ShouldBe(2);
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.OriginalNode.ShouldBe(lookaroundGroupNode);
+            mutation.ReplacementNode.ToString().ShouldBe("(?=foo)");
+            mutation.ReplacementPattern.ShouldBe("(?=foo)");
+            mutation.DisplayName.ShouldBe("Regex greedy quantifier quantity mutation");
+            mutation.Description.ShouldBe("Quantifier \"(?!foo)\" was replaced with \"(?=foo)\" at offset 0.");
         }
     }
 }

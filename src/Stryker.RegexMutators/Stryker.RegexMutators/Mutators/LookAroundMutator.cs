@@ -8,15 +8,9 @@ namespace Stryker.RegexMutators.Mutators
     {
         public override IEnumerable<RegexMutation> ApplyMutations(LookaroundGroupNode node, RegexNode root)
         {
-            yield return FlipLookAround(node, root, node.Lookahead, ! node.Possitive);
-            yield return FlipLookAround(node, root, ! node.Lookahead, node.Possitive);
-        }
+            var replacementNode = new LookaroundGroupNode(node.Lookahead, !node.Possitive, node.ChildNodes);
 
-        private RegexMutation FlipLookAround(LookaroundGroupNode node, RegexNode root, bool lookAhead, bool positive)
-        {
-            var replacementNode = new LookaroundGroupNode(lookAhead, positive, node.ChildNodes);
-
-            return new RegexMutation
+            yield return new RegexMutation
             {
                 OriginalNode = node,
                 ReplacementNode = replacementNode,
