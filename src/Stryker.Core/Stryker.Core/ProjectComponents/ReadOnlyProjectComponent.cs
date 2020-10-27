@@ -15,29 +15,23 @@ namespace Stryker.Core.ProjectComponents
         public ReadOnlyProjectComponent(IProjectComponent projectComponent)
         {
             _projectComponent = projectComponent;
-            Name = projectComponent.Name;
-            FullPath = projectComponent.FullPath;
-            RelativePath = projectComponent.RelativePath;
-            RelativePathToProjectFile = projectComponent.RelativePathToProjectFile;
-            Mutants = projectComponent.Mutants;
-            Parent = projectComponent.Parent;
         }
 
-        public string Name { get; }
-        public string FullPath { get; }
+        public string Name => _projectComponent.Name;
+        public string FullPath => _projectComponent.FullPath;
 
         /// <summary>
         /// Gets or sets the path relative to the virtual project root.
         /// Includes the project folder.
         /// </summary>
-        public string RelativePath { get; }
+        public string RelativePath => _projectComponent.RelativePath;
 
         /// <summary>
         /// Gets or sets the path relative to the .csproj file.
         /// </summary>
-        public string RelativePathToProjectFile { get; }
+        public string RelativePathToProjectFile => _projectComponent.RelativePathToProjectFile;
 
-        public IEnumerable<IReadOnlyMutant> Mutants { get; }
+        public IEnumerable<IReadOnlyMutant> Mutants => _projectComponent.Mutants;
         public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
         public IEnumerable<IReadOnlyMutant> TotalMutants =>
             ReadOnlyMutants.Where(m =>
@@ -55,7 +49,7 @@ namespace Stryker.Core.ProjectComponents
 
         public abstract void Display(int depth);
 
-        public IParentComponent Parent { get; }
+        public IParentComponent Parent => _projectComponent.Parent;
 
         /// <summary>
         /// Returns the mutation score for this folder / file
