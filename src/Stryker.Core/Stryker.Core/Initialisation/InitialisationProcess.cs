@@ -39,7 +39,7 @@ namespace Stryker.Core.Initialisation
 
         public MutationTestInput Initialize(StrykerOptions options)
         {
-            // resolve project infov
+            // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
