@@ -51,6 +51,11 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectAnalyzerResult>();
+            var folder = new FolderComposite()
+            {
+                Name = Path.Combine(FilesystemRoot, "ExampleProject")
+            };
+            folder.Add(inputFile);
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -75,13 +80,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "TestName" }
                         }
                     },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = Path.Combine(FilesystemRoot, "ExampleProject"),
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                            inputFile,
-                        }
-                    },
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -137,6 +136,13 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
 
+
+            var folder = new FolderComposite()
+            {
+                Name = Path.Combine(FilesystemRoot, "ExampleProject")
+            };
+            folder.Add(inputFile);
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -161,13 +167,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "TestName" },
                         }
                     },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = Path.Combine(FilesystemRoot, "ExampleProject"),
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                            inputFile,
-                        }
-                    },
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -223,6 +223,18 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf
+            {
+                Name = "SomeFile.cs",
+                SourceCode = SourceFile,
+                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -247,18 +259,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "ExampleProject" }
                         }
                     },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                            new FileLeaf
-                            {
-                                Name = "SomeFile.cs",
-                                SourceCode = SourceFile,
-                                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
-                            }
-                        }
-                    }
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -303,6 +304,18 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant = new Mutant { Id = 1, MustRunAgainstAllTests = true };
             var otherMutant = new Mutant { Id = 2, MustRunAgainstAllTests = true };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                SourceCode = SourceFile,
+                Mutants = new List<Mutant>() { mutant, otherMutant }
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -316,19 +329,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>()
-                        {
-                            new FileLeaf()
-                            {
-                                Name = "SomeFile.cs",
-                                SourceCode = SourceFile,
-                                Mutants = new List<Mutant>() { mutant, otherMutant }
-                            }
-                        }
-                    }
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -366,6 +367,17 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant = new Mutant { Id = 1, ResultStatus = MutantStatus.Survived };
             var otherMutant = new Mutant { Id = 2, ResultStatus = MutantStatus.NotRun };
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>() { mutant, otherMutant }
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -390,17 +402,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" }
                         }
                     },
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                            new FileLeaf() {
-                                Name = "SomeFile.cs",
-                                Mutants = new Collection<Mutant>() { mutant, otherMutant }
-                            }
-                        }
-                    },
-
+                    ProjectContents = folder
                 },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };
@@ -437,21 +439,22 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>() { mutant }
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>()
-                        {
-                            new FileLeaf() {
-                                Name = "SomeFile.cs",
-                                Mutants = new Collection<Mutant>() { mutant }
-                            }
-                        }
-                    },
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -489,20 +492,22 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void ShouldNotTest_WhenThereAreNoMutationsAtAll()
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>() { }
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                        new FileLeaf() {
-                            Name = "SomeFile.cs",
-                            Mutants = new Collection<Mutant>() { }
-                        }
-                    }
-                    },
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };
@@ -540,20 +545,22 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored };
             var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new FolderComposite()
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf()
+            {
+                Name = "SomeFile.cs",
+                Mutants = new Collection<Mutant>() { mutant, mutant2 }
+            });
+
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot",
-                        ChildrenTyped = new Collection<ProjectComponent<SyntaxTree>>() {
-                        new FileLeaf() {
-                            Name = "SomeFile.cs",
-                            Mutants = new Collection<Mutant>() { mutant, mutant2 }
-                        }
-                    }
-                    },
+                    ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies
             };

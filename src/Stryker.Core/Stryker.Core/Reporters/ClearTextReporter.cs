@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             // This reporter does not report during the testrun
         }
@@ -39,18 +39,18 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var files = new List<ReadOnlyFileLeaf>();
 
             ReadOnlyFolderComposite rootFolder = null;
 
-            reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFolder = (int _, IReadOnlyProjectComponent current) =>
             {
                 rootFolder ??= (ReadOnlyFolderComposite)current;
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (int _, IReadOnlyProjectComponent current) =>
             {
                 var fileLeaf = (ReadOnlyFileLeaf)current;
 
@@ -81,7 +81,7 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
         }
 
-        private void DisplayComponent(IReadOnlyInputComponent inputComponent, int filePathLength)
+        private void DisplayComponent(IReadOnlyProjectComponent inputComponent, int filePathLength)
         {
             _consoleWriter.Write($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
 
@@ -114,11 +114,11 @@ namespace Stryker.Core.Reporters
                 }
             }
 
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
             _consoleWriter.Write($" │ {inputComponent.TotalMutants.Count() - inputComponent.DetectedMutants.Count(),10}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
             _consoleWriter.WriteLine($" │");
         }
     }

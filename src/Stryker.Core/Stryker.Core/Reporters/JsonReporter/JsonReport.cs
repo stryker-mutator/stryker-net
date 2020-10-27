@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters.Json
 
         }
 
-        private JsonReport(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             _options = options;
 
@@ -34,7 +34,7 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyInputComponent mutationReport)
+        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             // This should really only happen in unit tests.
             // We need this construct because in a unit test
@@ -67,7 +67,7 @@ namespace Stryker.Core.Reporters.Json
             return ToJson().Replace("<", "<\" + \"");
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
+        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
             if (component is ReadOnlyFolderComposite folder)

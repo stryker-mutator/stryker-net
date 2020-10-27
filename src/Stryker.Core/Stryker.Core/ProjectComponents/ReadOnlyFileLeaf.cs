@@ -1,13 +1,12 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-
-namespace Stryker.Core.ProjectComponents
+﻿namespace Stryker.Core.ProjectComponents
 {
     public class ReadOnlyFileLeaf : ReadOnlyProjectComponent
     {
         private readonly FileLeaf _projectComponent;
 
-        public ReadOnlyFileLeaf( FileLeaf projectComponent) : base(projectComponent)
+        public string SourceCode => _projectComponent.SourceCode;
+
+        public ReadOnlyFileLeaf(FileLeaf projectComponent) : base(projectComponent)
         {
             _projectComponent = projectComponent;
         }
@@ -17,6 +16,5 @@ namespace Stryker.Core.ProjectComponents
             DisplayFile(depth, this);
         }
 
-        public string SourceCode => _projectComponent.SourceCode;
     }
 }

@@ -5,14 +5,17 @@ namespace Stryker.Core.ProjectComponents
 {
     public interface IProjectComponent
     {
-        public string Name { get; set; }
-        IEnumerable<Mutant> Mutants { get; set; }
-        IParentComponent Parent { get; set; }
-        public string RelativePath { get; set; }
-        public string RelativePathToProjectFile { get; set; }
-        public string FullPath { get; set; }
+        string Name { get; set; }
 
-        IReadOnlyInputComponent ToReadOnlyInputComponent();
+        string FullPath { get; set; }
+        string RelativePath { get; set; }
+        string RelativePathToProjectFile { get; set; }
+
+        IParentComponent Parent { get; set; }
+
+        IEnumerable<Mutant> Mutants { get; set; }
+
+        IReadOnlyProjectComponent ToReadOnlyInputComponent();
 
         public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }

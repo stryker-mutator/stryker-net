@@ -273,7 +273,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -309,7 +309,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 

@@ -18,7 +18,7 @@ namespace Stryker.Core.Reporters
             Reporters = reporters;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent inputComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent inputComponent)
         {
             foreach (var reporter in Reporters)
             {
@@ -45,7 +45,7 @@ namespace Stryker.Core.Reporters
             }
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent)
         {
             foreach (var reporter in Reporters)
             {

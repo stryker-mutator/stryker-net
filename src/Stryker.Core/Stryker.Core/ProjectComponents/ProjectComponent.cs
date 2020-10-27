@@ -1,6 +1,5 @@
 ﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,26 +9,16 @@ namespace Stryker.Core.ProjectComponents
     {
         public string Name { get; set; }
         public string FullPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path relative to the virtual project root.
-        /// Includes the project folder.
-        /// </summary>
         public string RelativePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path relative to the .csproj file.
-        /// </summary>
         public string RelativePathToProjectFile { get; set; }
 
+        public IParentComponent Parent { get; set; }
+
         public abstract IEnumerable<Mutant> Mutants { get; set; }
-        public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
-        public IEnumerable<IReadOnlyMutant> TotalMutants =>
-            ReadOnlyMutants.Where(m =>
+        public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m =>
                 m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
 
-        public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(
-            m =>
+        public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants.Where(m =>
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
 
@@ -42,9 +31,11 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
 
-        public FolderComposite Parent { get; set; }
-        IParentComponent IProjectComponent.Parent { get => Parent; set => Parent = (FolderComposite)value; }
+        public abstract void Add(ProjectComponent<T> component);
 
+        public abstract IReadOnlyProjectComponent ToReadOnlyInputComponent();
+
+        public abstract IEnumerable<IProjectComponent> GetAllFiles();
 
         /// <summary>
         /// Returns the mutation score for this folder / file
@@ -76,10 +67,5 @@ namespace Stryker.Core.ProjectComponents
                 _ => Health.Danger
             };
         }
-
-        public abstract void Add(ProjectComponent<T> component);
-
-        public abstract IReadOnlyInputComponent ToReadOnlyInputComponent();
-        public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }
 }
