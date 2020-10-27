@@ -65,7 +65,7 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
-        public bool Equals([AllowNull] IReadOnlyProjectComponent other)
+        public virtual bool Equals([AllowNull] IReadOnlyProjectComponent other)
         {
             return other is { }
                 && RelativePath.Equals(other.RelativePath)
