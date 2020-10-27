@@ -27,7 +27,7 @@ namespace Stryker.Core.ProjectComponents
             _projectComponent = projectComponent;
         }
 
-        // These delegates will get invoked while walking the tree during Display();
+        // These delegates will get invoked while walking the tree during Display
         public Display DisplayFile { get; set; }
 
         public Display DisplayFolder { get; set; }
