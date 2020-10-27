@@ -1,17 +1,16 @@
-﻿using System;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
+using System;
+using System.Linq;
 
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
     /// Injects 'return' statement at the end of a method
     /// </summary>
-    internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
+    internal class EndingReturnEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
         public EndingReturnEngine(string markerId) : base(markerId, "EndingReturnEngine")
         {

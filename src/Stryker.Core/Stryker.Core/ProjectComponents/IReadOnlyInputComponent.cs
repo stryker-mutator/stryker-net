@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,7 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// The display handlers are an exception to the readonly rule
         /// </summary>
-        Display DisplayFile { get; set;  }
+        Display DisplayFile { get; set; }
         Display DisplayFolder { get; set; }
         public void Display(int depth);
 

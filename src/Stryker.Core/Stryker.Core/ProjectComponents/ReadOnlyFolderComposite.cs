@@ -1,8 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -17,7 +14,7 @@ namespace Stryker.Core.ProjectComponents
             _folderComposite = folderComposite;
             _hasSyntaxTree = hasSyntaxTree;
             var convertedChildren = new Collection<IReadOnlyInputComponent>();
-            foreach(var child in children)
+            foreach (var child in children)
             {
                 convertedChildren.Add(child.ToReadOnlyBase());
             }

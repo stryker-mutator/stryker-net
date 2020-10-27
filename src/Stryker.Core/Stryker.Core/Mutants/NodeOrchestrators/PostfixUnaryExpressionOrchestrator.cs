@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class PostfixUnaryExpressionOrchestrator: ExpressionSpecificOrchestrator<PostfixUnaryExpressionSyntax>
+    internal class PostfixUnaryExpressionOrchestrator : ExpressionSpecificOrchestrator<PostfixUnaryExpressionSyntax>
     {
         protected override bool CanHandle(PostfixUnaryExpressionSyntax t)
         {

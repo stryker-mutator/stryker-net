@@ -1,14 +1,14 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using System;
 
 namespace Stryker.Core.Instrumentation
 {
     internal class ExpressionToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
-        public T ConvertToBody<T>(T method) where T: BaseMethodDeclarationSyntax
+        public T ConvertToBody<T>(T method) where T : BaseMethodDeclarationSyntax
         {
             if (method.ExpressionBody == null || method.Body != null)
             {

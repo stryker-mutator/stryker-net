@@ -1,11 +1,11 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 
 namespace Stryker.Core.Instrumentation
 {
-    class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
+    class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     {
         public IfInstrumentationEngine(string annotation) : base(annotation, "IfInstrumentation")
         {
@@ -13,8 +13,8 @@ namespace Stryker.Core.Instrumentation
 
         public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
         {
-            return SyntaxFactory.IfStatement(condition, 
-                AsBlock(mutatedNode), 
+            return SyntaxFactory.IfStatement(condition,
+                AsBlock(mutatedNode),
                 SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
         }
 

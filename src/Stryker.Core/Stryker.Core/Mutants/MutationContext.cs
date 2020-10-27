@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    internal class MutationContext: IDisposable
+    internal class MutationContext : IDisposable
     {
         private readonly MutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;
@@ -34,12 +34,12 @@ namespace Stryker.Core.Mutants
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
         public bool HasBlockLevelMutant => BlockLevelControlledMutations.Count > 0;
-        
+
         public bool HasStatementLevelMutant => StatementLevelControlledMutations.Count > 0 || HasBlockLevelMutant;
 
         public MutationContext EnterStatic()
         {
-            return new MutationContext(this) {InStaticValue = true};
+            return new MutationContext(this) { InStaticValue = true };
         }
 
         public MutationContext Clone()

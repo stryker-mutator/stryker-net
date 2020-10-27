@@ -2,10 +2,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
-using System.Collections.Generic;
-using System.Linq;
 using Stryker.Core.Instrumentation;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -26,10 +26,10 @@ namespace Stryker.Core.Mutants
         private static readonly EndingReturnEngine endingReturnEngine;
         private static ExpressionSyntax _binaryExpression;
         private static SyntaxNode _placeHolderNode;
-        
+
         private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
-        public static IEnumerable<string> MutationMarkers => new[] { MutationMarker, MutationHelper};
+        public static IEnumerable<string> MutationMarkers => new[] { MutationMarker, MutationHelper };
 
         static MutantPlacer()
         {
@@ -54,35 +54,35 @@ namespace Stryker.Core.Mutants
             InstrumentEngines.Add(engine.InstrumentEngineID, engine);
         }
 
-        public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax =>
+        public static T ConvertExpressionToBody<T>(T method) where T : BaseMethodDeclarationSyntax =>
             ExpressionEngine.ConvertToBody(method)
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node);
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
+        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
             StaticEngine.PlaceStaticContextMarker(block).
             WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
             IEnumerable<(int mutantId, StatementSyntax mutated)> mutations)
         {
-            return mutations.Aggregate(original, (syntaxNode, mutation) => 
+            return mutations.Aggregate(original, (syntaxNode, mutation) =>
                 IfEngine.InjectIf(GetBinaryExpression(mutation.mutantId), syntaxNode, mutation.mutated)
-                // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
+                    // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.mutantId.ToString())));
         }
 
-        public static ExpressionSyntax PlaceExpressionControlledMutations( 
-            ExpressionSyntax modified, 
+        public static ExpressionSyntax PlaceExpressionControlledMutations(
+            ExpressionSyntax modified,
             IEnumerable<(int id, ExpressionSyntax mutation)> mutations)
         {
-            return mutations.Aggregate(modified, (current, mutation) => 
+            return mutations.Aggregate(modified, (current, mutation) =>
                 ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
                     // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.id.ToString())));
         }
-        
+
         public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
         {
             var engine = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault()?.GetAnnotations(Injector).First().Data;

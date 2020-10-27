@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var collector = new CoverageCollector();
 
-            var mutantMap = new Dictionary<int, IList<string>>() {[0] = new List<string>()};
+            var mutantMap = new Dictionary<int, IList<string>>() { [0] = new List<string>() };
 
             var start = new TestSessionStartArgs
             {

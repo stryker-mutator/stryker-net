@@ -1,18 +1,18 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 
 namespace Stryker.Core.Instrumentation
 {
     internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
 
-        public ConditionalInstrumentationEngine(string marker): base(marker, "ConditionalInstrumentation")
+        public ConditionalInstrumentationEngine(string marker) : base(marker, "ConditionalInstrumentation")
         {
         }
 
-        public  ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
+        public ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
             SyntaxFactory.ParenthesizedExpression(
                     SyntaxFactory.ConditionalExpression(
                         condition: condition,

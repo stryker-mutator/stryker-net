@@ -1,5 +1,4 @@
-﻿using System;
-using RegexParser.Nodes;
+﻿using RegexParser.Nodes;
 using RegexParser.Nodes.QuantifierNodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
@@ -43,7 +42,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             }
             mutations.Count.ShouldBe(2);
         }
-        
+
         [Fact]
         public void ShouldSkipDecrementOnZeroStartValue()
         {

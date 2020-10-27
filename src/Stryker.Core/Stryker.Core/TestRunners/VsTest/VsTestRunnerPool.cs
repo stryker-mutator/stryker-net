@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
@@ -58,7 +58,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
-            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant}, update);
+            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> { mutant }, update);
         }
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)

@@ -1,13 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-
-namespace Stryker.Core.ProjectComponents
+﻿namespace Stryker.Core.ProjectComponents
 {
     public class ReadOnlyFileLeaf : ReadOnlyProjectComponent
     {
         private readonly FileLeaf _projectComponent;
 
-        public ReadOnlyFileLeaf( FileLeaf projectComponent) : base(projectComponent)
+        public ReadOnlyFileLeaf(FileLeaf projectComponent) : base(projectComponent)
         {
             _projectComponent = projectComponent;
         }

@@ -87,7 +87,7 @@ namespace Stryker.Core.Mutators
                 node = conditional.WhenNotNull;
             }
 
-            for (;;)
+            for (; ; )
             {
                 ExpressionSyntax next = null;
                 if (!(node is InvocationExpressionSyntax invocationExpression))

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -9,10 +9,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// Handles statements that have block scope (e.g. curly braces blocks, for/while statements...)
     /// </summary>
     /// <typeparam name="T">Precise type of the statement</typeparam>
-    internal class BlockScopeOrchestrator<T>: StatementSpecificOrchestrator<T> where T: StatementSyntax
+    internal class BlockScopeOrchestrator<T> : StatementSpecificOrchestrator<T> where T : StatementSyntax
     {
         public BlockScopeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {}
+        { }
 
         protected override bool NewContext => true;
 

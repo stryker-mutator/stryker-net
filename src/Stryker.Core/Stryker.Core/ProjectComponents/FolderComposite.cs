@@ -12,20 +12,26 @@ namespace Stryker.Core.ProjectComponents
         ICollection<IProjectComponent> Children { get; set; }
     }
 
-    public class FolderComposite : ProjectComponent<SyntaxTree> , IParentComponent
+    public class FolderComposite : ProjectComponent<SyntaxTree>, IParentComponent
     {
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
-        public ICollection<ProjectComponent<SyntaxTree>> ChildrenTyped { 
-            get {
+        public ICollection<ProjectComponent<SyntaxTree>> ChildrenTyped
+        {
+            get
+            {
                 var returnable = new Collection<ProjectComponent<SyntaxTree>>();
                 foreach (var child in Children)
                 { returnable.Add((ProjectComponent<SyntaxTree>)child); }
                 return returnable;
             }
-            set { var returnable = new Collection<IProjectComponent>(); 
-                foreach (var child in value) 
-                { returnable.Add(child); } 
-                Children = returnable; } }
+            set
+            {
+                var returnable = new Collection<IProjectComponent>();
+                foreach (var child in value)
+                { returnable.Add(child); }
+                Children = returnable;
+            }
+        }
         public ICollection<IProjectComponent> Children { get; set; } = new Collection<IProjectComponent>();
 
         /// <summary>

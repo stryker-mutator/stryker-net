@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// </summary>
     /// <typeparam name="TNode">Roslyn type which represents the C# construct</typeparam>
     /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
-    internal abstract class NodeSpecificOrchestrator<TNode, TBase>:INodeMutator where TBase: SyntaxNode where TNode: TBase
+    internal abstract class NodeSpecificOrchestrator<TNode, TBase> : INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
         protected MutantOrchestrator MutantOrchestrator;
 
@@ -39,7 +39,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <param name="t">Syntax node to be tested</param>
         /// <returns>True if this class can process the provided node.</returns>
         /// <remarks>Default implementation always returns true. You can override this method to have several classes supporting various sub cases for a single node type.</remarks>
-        protected virtual bool CanHandle(TNode t) => t!=null;
+        protected virtual bool CanHandle(TNode t) => t != null;
 
         /// <summary>
         /// Checks if this class will manage a specific node.
@@ -78,7 +78,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <remarks>You need to override this method if you need to ensure mutations are controlled at with 'if' at the statement or block level.</remarks>
         protected virtual MutationContext StoreMutations(TNode node,
             IEnumerable<Mutant> mutations,
-            MutationContext context) =>  context;
+            MutationContext context) => context;
 
         /// <summary>
         /// Mutate children, grandchildren (recursively). 
@@ -89,7 +89,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
         /// skip mutation the children node.</remarks>
         protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
-            node.ReplaceNodes(node.ChildNodes(), 
+            node.ReplaceNodes(node.ChildNodes(),
                 (original, _) => MutantOrchestrator.Mutate(original, context));
 
         /// <summary>

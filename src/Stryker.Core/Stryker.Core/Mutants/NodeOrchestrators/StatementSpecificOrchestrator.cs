@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// General handler for Statements. Remember to inherit from this class when you wand to create a statement specific logic.
     /// </summary>
     /// <typeparam name="T">Statement syntax type. Must inherit from <see cref="StatementSyntax"/></typeparam>
-    internal class StatementSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, StatementSyntax> where T: StatementSyntax
+    internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, StatementSyntax> where T : StatementSyntax
     {
         public StatementSpecificOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context)
         {
             var mutated = MutantPlacer.PlaceStatementControlledMutations(targetNode,
-                context.StatementLevelControlledMutations.Select( m => (m.Id, (sourceNode as StatementSyntax).InjectMutation(m.Mutation))));
+                context.StatementLevelControlledMutations.Select(m => (m.Id, (sourceNode as StatementSyntax).InjectMutation(m.Mutation))));
             context.StatementLevelControlledMutations.Clear();
             return mutated;
         }
