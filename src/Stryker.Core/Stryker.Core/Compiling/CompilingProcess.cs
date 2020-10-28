@@ -11,24 +11,10 @@ using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
-    public interface ICompilingProcess
-    {
-        /// <summary>
-        /// Compiles the given input onto the memorystream
-        /// </summary>
-        /// <param name="syntaxTrees"></param>
-        /// <param name="ilStream">The memorystream to function as output</param>
-        /// <param name="memoryStream"></param>
-        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream,
-            Stream memoryStream,
-            bool devMode);
-    }
-
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
-    /// </summary>
-    public class CompilingProcess : ICompilingProcess
+    /// Compiles the given input onto the memorystream
+    public class CompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
@@ -46,12 +32,12 @@ namespace Stryker.Core.Compiling
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
 
         /// <summary>
+        /// Compiles the given input onto the memorystream
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
-        /// </summary>
         /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
-        /// <param name="devMode"></param>
+        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
@@ -59,7 +45,7 @@ namespace Stryker.Core.Compiling
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
-                syntaxTrees: trees, 
+                syntaxTrees: trees,
                 options: compilationOptions,
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult;
@@ -81,7 +67,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt-1 , devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt - 1, devMode, retryCount);
             }
 
             if (emitResult.Success)
@@ -134,7 +120,7 @@ namespace Stryker.Core.Compiling
                     true, // Important!
                     false,
                     null,
-                    null), 
+                    null),
                 options: emitOptions);
 
             LogEmitResult(emitResult);

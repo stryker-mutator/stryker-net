@@ -184,7 +184,7 @@ namespace Stryker.Core.UnitTest.Clients
                 reporters: reporters
                 );
 
-            var readonlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose).Object;
+            var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
@@ -243,7 +243,7 @@ namespace Stryker.Core.UnitTest.Clients
                 moduleName: "moduleName"
                 );
 
-            var readonlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose).Object;
+            var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 

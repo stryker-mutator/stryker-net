@@ -1,10 +1,12 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
@@ -263,7 +265,7 @@ using System.Reflection;
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
-            var mutatedFile = result.ProjectContents.CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
+            var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
 
             var node = ((CompilationUnitSyntax)mutatedFile.GetRoot()).AttributeLists
                 .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
@@ -711,7 +713,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            result.ProjectContents.Children.Count.ShouldBe(1);
+            ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -732,7 +734,7 @@ using System.Reflection;
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
@@ -763,7 +765,7 @@ $@"Expected exactly one .csproj file, found more than one:
 Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -779,7 +781,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }
@@ -795,7 +797,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
         }
@@ -810,7 +812,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
+            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
             exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
         }
 
@@ -825,7 +827,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
@@ -841,7 +843,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var actual = target.FindProjectFile(Path.Combine(_filesystemRoot,
+            var actual = target.FindTestProject(Path.Combine(_filesystemRoot,
                 FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder"))));
 
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));

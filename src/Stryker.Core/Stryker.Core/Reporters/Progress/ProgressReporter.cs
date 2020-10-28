@@ -16,7 +16,7 @@ namespace Stryker.Core.Reporters.Progress
             _progressBarReporter = progressBarReporter;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
         }
 
@@ -33,7 +33,7 @@ namespace Stryker.Core.Reporters.Progress
             _mutantsResultReporter.ReportMutantTestResult(result);
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
         }
     }

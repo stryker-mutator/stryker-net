@@ -65,7 +65,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;
@@ -119,7 +119,7 @@ namespace Stryker.Core.MutantFilters
             return filteredMutants;
         }
 
-        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
 

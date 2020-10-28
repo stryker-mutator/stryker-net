@@ -11,7 +11,7 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public static class JsonReportTestHelper
     {
-        public static IReadOnlyInputComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
+        public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
             var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
