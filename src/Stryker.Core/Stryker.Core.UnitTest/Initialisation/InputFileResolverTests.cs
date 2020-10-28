@@ -162,7 +162,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))
+                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs")),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -203,7 +204,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))
+                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs")),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -260,7 +262,8 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs"))
+                    SourceFiles = fileSystem.AllFiles.Where(s => s.EndsWith(".cs")),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -304,7 +307,8 @@ using System.Reflection;
                 {
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -369,7 +373,7 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>()
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -423,7 +427,7 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>()
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -502,7 +506,7 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>(),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -557,7 +561,7 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>(),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -618,6 +622,7 @@ using System.Reflection;
                     Properties = new Dictionary<string, string>()
                     {
                         { "SharedDir", "SharedProject" },
+                        { "Language", "C#" }
                     },
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -678,7 +683,7 @@ using System.Reflection;
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>(),
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -708,7 +713,8 @@ using System.Reflection;
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
+                    References = new string[] { "" },
+                    Properties = new Dictionary<string, string>(){ { "Language", "C#" } }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -889,7 +895,8 @@ Please specify a test project name filter that results in one project.
                 {
                     ProjectFilePath = projectUnderTestPath,
                     ProjectReferences = new string[0],
-                    References = new string[0]
+                    References = new string[0],
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
 
             // Act
@@ -918,7 +925,8 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    References = new[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }
+                    References = new[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" },
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -946,7 +954,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFramework = Framework.DotNetClassic,
                     ProjectFilePath = testProjectPath,
-                    Properties = new Dictionary<string, string> { { "IsTestProject", "false" } },
+                    Properties = new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
                     References = new[] { "" }
                 });
 
@@ -974,7 +982,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "netcoreapp2.1",
                     ProjectFilePath = testProjectPath,
-                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "true" } }),
+                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "true" }, { "Language", "C#" } }),
                     References = new[] { "" }
                 });
 
@@ -1004,7 +1012,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "net4.5",
                     ProjectFilePath = testProjectPath,
-                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
+                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>() { { "Language", "C#" } }),
                     References = new[] { "" }
                 });
 
@@ -1033,7 +1041,7 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "net4.5",
                     ProjectFilePath = testProjectPath,
-                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "false" } }),
+                    Properties = new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } }),
                     References = new string[0]
                 });
 
@@ -1072,7 +1080,8 @@ Please specify a test project name filter that results in one project.
                 {
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -1108,7 +1117,8 @@ Please specify a test project name filter that results in one project.
                     ProjectReferences = new List<string>() { "" },
                     TargetFrameworkVersionString = "netcore2.1",
                     ProjectFilePath = Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"),
-                    References = new string[0]
+                    References = new string[0],
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 });
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
