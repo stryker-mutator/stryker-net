@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,10 +42,10 @@ namespace Stryker.Core.Options
 
         protected string FormatHelpOptions(IEnumerable<string> defaultInputs, IEnumerable<string> allowedInputs)
         {
-            StringBuilder optionsString = new StringBuilder();
+            var optionsString = new StringBuilder();
 
             optionsString.Append($" | [default = ( {string.Join(", ", defaultInputs)} )], ");
-            string nonDefaultOptions = string.Join(
+            var nonDefaultOptions = string.Join(
             ", ",
             allowedInputs
             .Where(o => !defaultInputs.Any(d => d.ToString() == o.ToString())));
