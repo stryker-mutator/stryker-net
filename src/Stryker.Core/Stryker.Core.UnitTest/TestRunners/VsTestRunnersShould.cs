@@ -92,7 +92,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
                 {
                     AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
-                    TargetFrameworkVersionString = "toto"
+                    TargetFrameworkVersionString = "toto",
+                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
                 },
                 ProjectContents = _mutants
             };

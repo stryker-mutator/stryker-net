@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
@@ -121,8 +121,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectReferences = new List<string>(),
                     TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath
-                });
+                    ProjectFilePath = projectUnderTestPath,
+                    Properties = new Dictionary<string, string>(){ { "Language", "C#" } }
+                })
+            ;
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
