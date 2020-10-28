@@ -71,6 +71,8 @@ You now get a new tab on your build pipeline where you can click through the com
 To install 'Mutation Report Publisher' or for more information go to the [marketplace](https://marketplace.visualstudio.com/items?itemName=stryker-mutator.mutation-report-publisher).
 
 ### Run Stryker .Net
+**Disclaimer**: This is not an official [Stryker Mutator](https://stryker-mutator.io/) extension. 
+
 This is an Azure Devops extension to run mutation testing with Stryker .Net without having to install Stryker yourself. 
 
 In YAML pipelines add the following after the test step:
