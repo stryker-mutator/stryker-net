@@ -1,15 +1,12 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class ModuleNameInput : SimpleStrykerInput<string>
     {
-        static ModuleNameInput()
-        {
-            Description = $"Module name used in reporters when project consists of multiple modules. See project-name for examples.";
-        }
-
         public override StrykerInput Type => StrykerInput.ModuleName;
+
+        protected override string Description => "Module name used by reporters. Usually a project in your solution would be a module.";
 
         public ModuleNameInput(string moduleName)
         {
