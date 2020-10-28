@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 using static FSharp.Compiler.SyntaxTree;
@@ -25,18 +25,22 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<ParsedInput> MutatedSyntaxTrees => new List<ParsedInput> { MutatedSyntaxTree };
 
-        public override void Display(int depth)
-        {
-            DisplayFile(depth, this);
-        }
-
         public override void Add(ProjectComponent<ParsedInput> component)
         {
             // no children can be added to a file instance
             throw new NotImplementedException();
         }
+        public ReadOnlyFileLeaf ToReadOnly()
+        {
+            return new ReadOnlyFileLeaf(this);
+        }
 
-        public override IEnumerable<IFileLeaf<ParsedInput>> GetAllFiles()
+        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
+        {
+            return ToReadOnly();
+        }
+
+        public override IEnumerable<IProjectComponent> GetAllFiles()
         {
             yield return this;
         }

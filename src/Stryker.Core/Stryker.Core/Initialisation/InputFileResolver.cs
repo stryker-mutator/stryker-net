@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using Language = Stryker.Core.LanguageFactory.Language;
 
 
 namespace Stryker.Core.Initialisation
@@ -91,21 +90,16 @@ namespace Stryker.Core.Initialisation
             }
 
             IProjectComponent inputFiles;
-            if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".csproj"))                           /*C#*/
+            if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Csharp)
             {
-                var projectComponents = new FindProjectComponentsCsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
-                inputFiles = projectComponents.GetProjectComponenetsCsharp();
-                language = Language.Csharp;
+                inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             }
-            else if (projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath.EndsWith(".fsproj"))                     /*F#*/
+            else if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Fsharp)
             {
-                var projectComponents = new FindProjectComponentsFsharp(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
-                inputFiles = projectComponents.GetProjectComponenetsFsharp();
-                language = Language.Fsharp;
+                inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             }
             else
             {
-                language = Language.Undifined;
                 throw new StrykerInputException("no valid csproj or fsproj was given");
             }
             projectInfo.ProjectContents = inputFiles;

@@ -1,4 +1,4 @@
-﻿using FSharp.Compiler.SourceCodeServices;
+using FSharp.Compiler.SourceCodeServices;
 using FSharp.Compiler.Text;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
@@ -20,7 +20,7 @@ using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Initialisation
 {
-    internal class FindProjectComponentsFsharp
+    internal class FsharpProjectComponentsBuilder : IProjectComponentsBuilder
     {
         private ProjectInfo _projectInfo;
         private StrykerOptions _options;
@@ -28,7 +28,7 @@ namespace Stryker.Core.Initialisation
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public FindProjectComponentsFsharp(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -37,7 +37,7 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem;
         }
 
-        public FolderCompositeFsharp GetProjectComponenetsFsharp()
+        public IProjectComponent Build()
         {
             FolderCompositeFsharp inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
@@ -405,6 +405,5 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException(message);
                 });
         }
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -18,11 +18,6 @@ using System.Xml.Linq;
 
 namespace Stryker.Core.Initialisation
 {
-    public interface IProjectComponentsBuilder
-    {
-        IProjectComponent Build();
-    }
-
     public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;

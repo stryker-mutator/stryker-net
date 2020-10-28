@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
