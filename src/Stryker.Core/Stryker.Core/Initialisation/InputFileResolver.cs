@@ -1,15 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 
 namespace Stryker.Core.Initialisation
@@ -175,17 +174,6 @@ namespace Stryker.Core.Initialisation
             {
                 throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
-            }
-
-            // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.TargetFramework == Framework.DotNetClassic &&
-                options.TestRunner != TestRunner.VsTest &&
-                (!testProject.Properties.ContainsKey("IsTestProject") ||
-                (testProject.Properties.ContainsKey("IsTestProject") &&
-                !bool.Parse(testProject.Properties["IsTestProject"])))))
-            {
-                _logger.LogWarning($"Testrunner set from {options.TestRunner} to {TestRunner.VsTest} because IsTestProject property not set to true. This is only supported for vstest.");
-                options.TestRunner = TestRunner.VsTest;
             }
         }
 
