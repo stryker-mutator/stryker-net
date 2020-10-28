@@ -1,18 +1,16 @@
-﻿using Serilog.Events;
+using Serilog.Events;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class LogLevelInput : ComplexStrykerInput<string, LogEventLevel>
     {
-        static LogLevelInput()
-        {
-            Description = "Sets the console output logging level | Options [error, warning, info (default), debug, trace]";
-            DefaultInput = "info";
-            DefaultValue = new LogLevelInput(DefaultInput).Value;
-        }
-
         public override StrykerInput Type => StrykerInput.LogLevel;
+        public override string DefaultInput => "info";
+        public override LogEventLevel DefaultValue => new LogLevelInput(DefaultInput).Value;
+
+        protected override string Description => "The loglevel for output to the console.";
+        protected override string HelpOptions => FormatEnumHelpOptions();
 
         public LogLevelInput(string logLevel)
         {
