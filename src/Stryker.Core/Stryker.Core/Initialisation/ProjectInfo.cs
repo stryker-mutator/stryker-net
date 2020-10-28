@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
-        public FolderComposite ProjectContents { get; set; }
+        public IProjectComponent ProjectContents { get; set; }
 
         public string GetInjectionPath(ProjectAnalyzerResult testProject)
         {
@@ -60,6 +60,18 @@ namespace Stryker.Core.Initialisation
         {
             _logger = logger;
             _analyzerResult = analyzerResult;
+        }
+
+        public Language Language { get => ParseLanguage(); }
+
+        private Language ParseLanguage()
+        {
+            return GetPropertyOrDefault("Language") switch
+            {
+                "F#" => Language.Fsharp,
+                "C#" => Language.Csharp,
+                _ => Language.Undefined,
+            };
         }
 
         public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName + ".dll");

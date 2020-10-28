@@ -22,7 +22,7 @@ namespace Stryker.Core.Reporters.Json
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent mutationTree)
         {
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
@@ -42,7 +42,7 @@ namespace Stryker.Core.Reporters.Json
             }
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
         }
 

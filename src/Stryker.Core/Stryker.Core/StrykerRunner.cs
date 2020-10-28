@@ -63,6 +63,7 @@ namespace Stryker.Core
                 }
 
                 _initialisationProcess ??= new InitialisationProcess();
+
                 _input = _initialisationProcess.Initialize(options);
 
                 _mutationTestProcess ??= new MutationTestProcess(
