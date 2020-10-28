@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using System;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// Handles Methods/properties' accessors/constructors and finalizers.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T: BaseMethodDeclarationSyntax
+    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T : BaseMethodDeclarationSyntax
     {
         protected override bool NewContext => true;
 
@@ -38,16 +38,16 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             StatementSyntax mutatedBlock = targetNode.Body;
 
             var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
+                ? (Func<Mutation, StatementSyntax>)((toConvert) =>
+                   SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
 
             mutatedBlock =
                 MutantPlacer.PlaceStatementControlledMutations(mutatedBlock,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
-                        Select( m => (m.Id, converter(m.Mutation))));
-            return targetNode.ReplaceNode(targetNode.Body!, 
+                        Select(m => (m.Id, converter(m.Mutation))));
+            return targetNode.ReplaceNode(targetNode.Body!,
                 SyntaxFactory.Block(mutatedBlock));
         }
 

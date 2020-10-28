@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Stryker.Core.MutationTest
 {
-    class MutationProcess : IMutationProcess
+    public class MutationProcess : IMutationProcess
     {
 
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
@@ -51,7 +51,7 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             // Mutate source files
-            foreach (FileLeaf file in _projectInfo.GetAllFiles())
+            foreach (var file in _projectInfo.GetAllFiles().Cast<FileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
@@ -123,12 +123,12 @@ namespace Stryker.Core.MutationTest
         }
         public void FilterMutants()
         {
-            foreach (var file in (_projectInfo).GetAllFiles())
+            foreach (var file in _projectInfo.GetAllFiles())
             {
-                _mutantFilter.FilterMutants(file.Mutants, (FileLeaf)file, _options);
+                _mutantFilter.FilterMutants(file.Mutants, ((FileLeaf)file).ToReadOnly(), _options);
             }
 
-            var skippedMutants = _projectInfo.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+            var skippedMutants = _projectInfo.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
             var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
 
             foreach (var skippedMutantGroup in skippedMutantGroups)
@@ -145,7 +145,7 @@ namespace Stryker.Core.MutationTest
                     skippedMutants.Count());
             }
 
-            var notRunMutantsWithResultStatusReason = _projectInfo.ReadOnlyMutants
+            var notRunMutantsWithResultStatusReason = _projectInfo.Mutants
                 .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
                 .GroupBy(x => x.ResultStatusReason);
 
@@ -157,10 +157,10 @@ namespace Stryker.Core.MutationTest
                     notRunMutantReason.Key);
             }
 
-            var notRunCount = _projectInfo.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
+            var notRunCount = _projectInfo.Mutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
             _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
 
-            _reporter.OnMutantsCreated(_projectInfo);
+            _reporter.OnMutantsCreated(_projectInfo.ToReadOnlyInputComponent());
         }
 
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)

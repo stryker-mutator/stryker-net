@@ -25,18 +25,23 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
 
-        public override void Display(int depth)
-        {
-            DisplayFile(depth, this);
-        }
-
         public override void Add(ProjectComponent<SyntaxTree> component)
         {
             // no children can be added to a file instance
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
+        public ReadOnlyFileLeaf ToReadOnly()
+        {
+            return new ReadOnlyFileLeaf(this);
+        }
+
+        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
+        {
+            return ToReadOnly();
+        }
+
+        public override IEnumerable<IProjectComponent> GetAllFiles()
         {
             yield return this;
         }

@@ -49,7 +49,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                 .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
-                    ifStatement, 
+                    ifStatement,
                     ifStatement.WithAdditionalAnnotations(GetMutationMarker(1), _ifEngineMarker)
                 ).SyntaxTree;
 
@@ -581,7 +581,7 @@ namespace ExampleProject
                 .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
-                    ifStatement, 
+                    ifStatement,
                     ifStatement.WithAdditionalAnnotations(GetMutationMarker(1), _ifEngineMarker)
                 ).SyntaxTree;
 

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// Handles expressions and sub expressions.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, ExpressionSyntax> where T: ExpressionSyntax
+    internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, ExpressionSyntax> where T : ExpressionSyntax
     {
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
             var result = MutantPlacer.PlaceExpressionControlledMutations(
                 targetNode,
-                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax) sourceNode.InjectMutation(m.Mutation)))) as T;
+                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax)sourceNode.InjectMutation(m.Mutation)))) as T;
             context.ExpressionLevelMutations.Clear();
             return result;
         }

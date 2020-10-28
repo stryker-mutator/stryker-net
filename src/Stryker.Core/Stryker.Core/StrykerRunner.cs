@@ -25,14 +25,12 @@ namespace Stryker.Core
         private IInitialisationProcess _initialisationProcess;
         private MutationTestInput _input;
         private IMutationTestProcess _mutationTestProcess;
-        private Language _language;
 
         public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IReporter reporter = null)
         {
             _initialisationProcess = initialisationProcess;
             _mutationTestProcess = mutationTestProcess;
             _reporter = reporter;
-            _language = Language.Undifined;
         }
 
         /// <summary>
@@ -67,14 +65,13 @@ namespace Stryker.Core
 
                 _initialisationProcess ??= new InitialisationProcess();
 
-                (_input, _language) = _initialisationProcess.Initialize(options);
+                _input = _initialisationProcess.Initialize(options);
 
                 _mutationTestProcess ??= new MutationTestProcess(
                     mutationTestInput: _input,
                     reporter: _reporter,
                     mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
-                    options: options,
-                    language: _language);
+                    options: options);
 
                 // initial test
                 _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);

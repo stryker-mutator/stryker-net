@@ -35,7 +35,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -55,7 +55,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -78,7 +78,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -100,7 +100,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldContain(mutant);
@@ -126,7 +126,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);

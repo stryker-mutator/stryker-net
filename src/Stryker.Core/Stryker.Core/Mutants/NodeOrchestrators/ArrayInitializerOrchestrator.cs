@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -21,6 +21,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         }
 
         public ArrayInitializerOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {}
+        { }
     }
 }

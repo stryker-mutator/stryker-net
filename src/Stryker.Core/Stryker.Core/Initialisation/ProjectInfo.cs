@@ -62,6 +62,18 @@ namespace Stryker.Core.Initialisation
             _analyzerResult = analyzerResult;
         }
 
+        public Language Language { get => ParseLanguage(); }
+
+        private Language ParseLanguage()
+        {
+            return GetPropertyOrDefault("Language") switch
+            {
+                "F#" => Language.Fsharp,
+                "C#" => Language.Csharp,
+                _ => Language.Undefined,
+            };
+        }
+
         public string TargetFileName => GetPropertyOrDefault("TargetFileName", AssemblyName + ".dll");
 
         public string AssemblyName => GetPropertyOrDefault("AssemblyName");

@@ -176,7 +176,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldBeEmpty();
@@ -206,7 +206,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -245,7 +245,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             mutant.CoveringTests.Add(new TestDescription(Guid.NewGuid().ToString(), "name", myTest));
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -270,7 +270,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -306,7 +306,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -335,7 +335,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<FileLeaf>(MockBehavior.Loose);
+            var file = new Mock<ReadOnlyFileLeaf>(new FileLeaf());
 
             var mutants = new List<Mutant>
             {
@@ -386,7 +386,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
+            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -471,7 +471,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             x.Load(It.IsAny<string>())
             ).Returns(
                 Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -500,7 +500,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
 
             // Assert
             results.Count().ShouldBe(1);
@@ -523,7 +523,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 x.Load(It.IsAny<string>())
                 ).Returns(
                     Task.FromResult(
-                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                          ));
 
             var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
@@ -531,7 +531,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
             // Act
-            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }, options);
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
 
             // Assert
             result.ShouldBe(mutants);

@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Reporters
             {
                 ResultStatus = givenStatus
             });
-            
+
             if (color == "default")
             {
                 textWriter.AnyForegroundColorSpanCount().ShouldBe(0);

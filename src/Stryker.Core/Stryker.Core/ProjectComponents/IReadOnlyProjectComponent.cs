@@ -1,5 +1,6 @@
 ﻿using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
@@ -7,10 +8,16 @@ namespace Stryker.Core.ProjectComponents
     /// <summary>
     /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify components.
     /// </summary>
-    public interface IReadOnlyInputComponent
+    public interface IReadOnlyProjectComponent : IEquatable<IReadOnlyProjectComponent>
     {
         string Name { get; }
-        IEnumerable<IReadOnlyMutant> ReadOnlyMutants { get; }
+        string FullPath { get; }
+        string RelativePath { get; }
+        string RelativePathToProjectFile { get; }
+
+        IParentComponent Parent { get; }
+
+        IEnumerable<IReadOnlyMutant> Mutants { get; }
         IEnumerable<IReadOnlyMutant> TotalMutants { get; }
         IEnumerable<IReadOnlyMutant> DetectedMutants { get; }
         /// <summary>
@@ -18,13 +25,13 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         Display DisplayFile { get; set; }
         Display DisplayFolder { get; set; }
-
-        void Display(int depth);
+        public void Display(int depth);
 
         double GetMutationScore();
 
         Health CheckHealth(Threshold threshold);
     }
 
-    public delegate void Display(int depth, IReadOnlyInputComponent current);
+    public delegate void Display(int depth, IReadOnlyProjectComponent current);
+
 }

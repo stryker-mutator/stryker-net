@@ -221,7 +221,7 @@ namespace Stryker.DataCollector
 
         public string RetrieveCoverData()
         {
-            var covered = (IList<int>[]) _getCoverageData.Invoke(null, new object[]{});
+            var covered = (IList<int>[])_getCoverageData.Invoke(null, new object[] { });
             var coverData = string.Join(",", covered[0]) + ";" + string.Join(",", covered[1]);
             return coverData;
         }

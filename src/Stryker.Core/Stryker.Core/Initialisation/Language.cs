@@ -1,9 +1,9 @@
-﻿namespace Stryker.Core
+﻿namespace Stryker.Core.Initialisation
 {
     public enum Language
     {
+        Undefined,
         Csharp,
         Fsharp,
-        Undifined,
     }
 }

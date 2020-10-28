@@ -2,8 +2,8 @@
 {
     interface IMutationProcess
     {
-        public void Mutate();
+        void Mutate();
 
-        public void FilterMutants();
+        void FilterMutants();
     }
 }

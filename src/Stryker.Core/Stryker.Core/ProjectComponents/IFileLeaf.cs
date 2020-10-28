@@ -2,8 +2,8 @@
 {
     public interface IFileLeaf<T> : IProjectComponent
     {
-        public T SyntaxTree { get; set; }
+        T SyntaxTree { get; set; }
 
-        public T MutatedSyntaxTree { get; set; }
+        T MutatedSyntaxTree { get; set; }
     }
 }

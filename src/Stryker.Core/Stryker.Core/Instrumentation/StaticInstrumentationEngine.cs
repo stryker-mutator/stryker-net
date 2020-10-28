@@ -15,7 +15,7 @@ namespace Stryker.Core.Instrumentation
 
         protected override SyntaxNode Revert(BlockSyntax node)
         {
-            if ( node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
+            if (node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
             {
                 return usingStatement.Statement;
             }
@@ -24,7 +24,7 @@ namespace Stryker.Core.Instrumentation
         }
 
         public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-            SyntaxFactory.Block( 
+            SyntaxFactory.Block(
                 SyntaxFactory.UsingStatement(null, _cachedMarker, block)).WithAdditionalAnnotations(Marker);
 
     }

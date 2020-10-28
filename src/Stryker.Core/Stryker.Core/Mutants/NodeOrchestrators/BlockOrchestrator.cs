@@ -16,7 +16,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <remarks>Ensure we returns a block after mutants are injected.</remarks>
         protected override StatementSyntax InjectMutations(BlockSyntax sourceNode, StatementSyntax targetNode, MutationContext context)
         {
-            var mutated= base.InjectMutations(sourceNode, targetNode, context);
+            var mutated = base.InjectMutations(sourceNode, targetNode, context);
             // ensure we still return a block!
             return mutated is BlockSyntax ? mutated : SyntaxFactory.Block(mutated);
         }

@@ -51,7 +51,7 @@ namespace Stryker.Core.TestRunners
             try
             {
                 var result = LaunchTestProcess(timeoutMs, envVars);
-                update?.Invoke(new[] {mutant}, result.RanTests, result.FailingTests, result.TimedOutTests);
+                update?.Invoke(new[] { mutant }, result.RanTests, result.FailingTests, result.TimedOutTests);
                 return result;
             }
             catch (OperationCanceledException)

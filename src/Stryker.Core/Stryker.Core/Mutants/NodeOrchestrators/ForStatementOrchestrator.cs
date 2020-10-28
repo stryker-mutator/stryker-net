@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class ForStatementOrchestrator: BlockScopeOrchestrator<ForStatementSyntax>
+    internal class ForStatementOrchestrator : BlockScopeOrchestrator<ForStatementSyntax>
     {
         /// <inheritdoc/>
         /// `<remarks>The sole benefit of this orchestrator is to provide code ordered mutations for now.</remarks>

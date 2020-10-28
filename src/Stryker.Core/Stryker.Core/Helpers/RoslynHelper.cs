@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using System;
 
 namespace Stryker.Core.Helpers
 {
@@ -29,12 +29,12 @@ namespace Stryker.Core.Helpers
                 MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
                                                     predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
                 OperatorDeclarationSyntax _ => true,
-                ConversionOperatorDeclarationSyntax _=> true,
+                ConversionOperatorDeclarationSyntax _ => true,
                 _ => false
             };
         }
 
-        public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
+        public static T InjectMutation<T>(this T original, Mutation mutation) where T : SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
             {

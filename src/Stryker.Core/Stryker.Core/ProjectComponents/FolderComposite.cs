@@ -2,15 +2,15 @@
 using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FolderComposite : ProjectComponent<SyntaxTree>
+    public class FolderComposite : ProjectComponent<SyntaxTree>, IParentComponent
     {
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
-        public ICollection<ProjectComponent<SyntaxTree>> Children { get; set; } = new Collection<ProjectComponent<SyntaxTree>>();
+        private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();
+        public IEnumerable<IProjectComponent> Children => _children;
 
         /// <summary>
         /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
@@ -18,45 +18,35 @@ namespace Stryker.Core.ProjectComponents
         /// <param name="syntaxTree"></param>
         public void AddCompilationSyntaxTree(SyntaxTree syntaxTree) => _compilationSyntaxTrees.Add(syntaxTree);
 
-        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(Children.SelectMany(c => c.CompilationSyntaxTrees));
-        public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.SelectMany(c => c.MutatedSyntaxTrees);
+        public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => _compilationSyntaxTrees.Union(
+            Children.Cast<ProjectComponent<SyntaxTree>>().SelectMany(c => c.CompilationSyntaxTrees));
+        public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => Children.Cast<ProjectComponent<SyntaxTree>>().SelectMany(c => c.MutatedSyntaxTrees);
 
         public override IEnumerable<Mutant> Mutants
         {
             get => Children.SelectMany(x => x.Mutants);
-            set => throw new NotImplementedException();
-        }
-
-        public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
-        {
-            return Children.SelectMany(x => x.GetAllFiles());
+            set => throw new NotSupportedException("Folders do not contain mutants.");
         }
 
         public override void Add(ProjectComponent<SyntaxTree> component)
         {
             component.Parent = this;
-            Children.Add(component);
+            _children.Add(component);
         }
 
-        public override void Display(int depth)
+        public ReadOnlyFolderComposite ToReadOnly()
         {
-            // only walk this branch of the tree if there are MutatedSyntaxTrees, otherwise we have nothing to display.
-            if (MutatedSyntaxTrees.Any())
-            {
-                DisplayFolder(depth, this);
+            return new ReadOnlyFolderComposite(this, MutatedSyntaxTrees.Any());
+        }
 
-                if (!string.IsNullOrEmpty(Name))
-                {
-                    depth++;
-                }
+        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
+        {
+            return ToReadOnly();
+        }
 
-                foreach (var child in Children)
-                {
-                    child.DisplayFile = DisplayFile;
-                    child.DisplayFolder = DisplayFolder;
-                    child.Display(depth);
-                }
-            }
+        public override IEnumerable<IProjectComponent> GetAllFiles()
+        {
+            return Children.SelectMany(x => x.GetAllFiles());
         }
     }
 }
