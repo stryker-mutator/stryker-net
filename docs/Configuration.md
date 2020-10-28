@@ -100,6 +100,8 @@ The levels are as follows:
 | Advanced Regex (not yet implemented) | Complete |
 
 ## Specify testrunner
+> ⚠ This parameter is deprecated. This option will be removed in version 1.0.  Please submit an issue if you have a use case that requires Dotnet test. 
+
 Stryker supports `dotnet test`, the commandline testrunner and `VsTest`, the visual studio testrunner. 
 VsTest is the default because it offers tight integration with all test frameworks (MsTest, xUnit, NUnit etc).
 Dotnet test can be used if VsTest causes issues for some reason. Please also submit an issue with us if you experience difficulties with VsTest.
