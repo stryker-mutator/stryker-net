@@ -39,10 +39,10 @@ namespace Stryker.Core.MutantFilters
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
                 // Check if the current node is an object creation syntax (constructor invocation).
                 case ObjectCreationExpressionSyntax creation:
-                    {
-                        var methodName = creation.Type + ".ctor";
-                        return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
-                    }
+                {
+                    var methodName = creation.Type + ".ctor";
+                    return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
+                }
             }
 
             // Traverse the tree upwards
