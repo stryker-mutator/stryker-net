@@ -3,7 +3,7 @@
   "defaultProvider": "jsdelivr",
   "libraries": [
     {
-      "library": "mutation-testing-elements@1.3.1",
+      "library": "mutation-testing-elements@1.4.1",
       "files": [
         "dist/mutation-test-elements.js"
       ],

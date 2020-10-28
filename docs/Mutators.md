@@ -140,27 +140,4 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `a^b` | `~(a^b)` |
 
 ## Regular Expressions
-| Original | Mutated |
-| ------------- | ------------- | 
-| `[abc]` | `[^abc]` |
-| `[^abc]` | `[abc]` |
-| `\d` | `\D` |
-| `\D` | `\d` |
-| `\w` | `\W` |
-| `\W` | `\w` |
-| `\s` | `\S` |
-| `\S` | `\s` |
-| `^abc` | `abc` |
-| `abc$` | `abc` |
-| `\Aabc` | `abc` |
-| `abc\Z` | `abc` |
-| `abc\z` | `abc` |
-| `abc\b` | `abc` |
-| `abc\B` | `abc` |
-| `\Gabc` | `abc` |
-| `abc*` | `abc` |
-| `abc?` | `abc` |
-| `abc+` | `abc` |
-| `abc{5}` | `abc` |
-| `abc{5,}` | `abc` |
-| `abc{5,8}` | `abc` |
+For the full list of all available regex mutations, see the [regex mutator docs](./docs/RegexMutators.md).
