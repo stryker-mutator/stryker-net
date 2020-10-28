@@ -66,11 +66,11 @@ namespace Stryker.Core.MutationTest
 
             if (_language == Language.Csharp)
             {
-                _mutationProcess = new MutationtTestProcessMethod(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else if (_language == Language.Fsharp)
             {
-                _mutationProcess = new MutationTestProcessMethodFsharp(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new MutationProcessFsharp(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else
             {

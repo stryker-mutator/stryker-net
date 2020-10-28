@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Stryker.Core.Exceptions;
@@ -10,7 +10,6 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Language = Stryker.Core.LanguageFactory.Language;
 
 namespace Stryker.Core
 {

@@ -8,7 +8,6 @@ using Stryker.Core.Reporters;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using Xunit;
-using Language = Stryker.Core.LanguageFactory.Language;
 
 namespace Stryker.Core.UnitTest
 {
