@@ -4,6 +4,8 @@
     {
         private readonly FileLeaf _projectComponent;
 
+        public string SourceCode => _projectComponent.SourceCode;
+
         public ReadOnlyFileLeaf(FileLeaf projectComponent) : base(projectComponent)
         {
             _projectComponent = projectComponent;
@@ -14,6 +16,5 @@
             DisplayFile(depth, this);
         }
 
-        public string SourceCode => _projectComponent.SourceCode;
     }
 }

@@ -270,7 +270,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -306,7 +306,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -471,7 +471,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             x.Load(It.IsAny<string>())
             ).Returns(
                 Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase())
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -523,7 +523,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 x.Load(It.IsAny<string>())
                 ).Returns(
                     Task.FromResult(
-                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase())
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                          ));
 
             var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);

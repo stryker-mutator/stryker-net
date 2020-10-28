@@ -31,7 +31,6 @@ namespace Stryker.Core.Initialisation
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
-        public IProjectComponentsBuilder ProjectComponentsBuilder;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
         {
@@ -90,8 +89,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("**** Buildalyzer properties. ****");
             }
 
-            ProjectComponentsBuilder = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem);
-            IProjectComponent inputFiles = ProjectComponentsBuilder.BuildProjectComponents();
+            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);

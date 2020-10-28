@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnAllMutantsTested()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyInputComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
 
             var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
             var exampleMutant = new Mutant();
@@ -33,9 +33,9 @@ namespace Stryker.Core.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnMutantsCreated()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyInputComponent>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var exampleInputComponent = new FileLeaf().ToReadOnlyBase();
+            var exampleInputComponent = new FileLeaf().ToReadOnlyInputComponent();
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -73,8 +73,8 @@ namespace Stryker.Core.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeAllReportersInList()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyInputComponent>()));
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyInputComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
             var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());

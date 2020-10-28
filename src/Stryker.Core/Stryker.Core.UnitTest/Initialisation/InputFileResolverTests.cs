@@ -713,7 +713,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 
-            ((FolderComposite)result.ProjectContents).Children.Count.ShouldBe(1);
+            ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
 
         [Fact]

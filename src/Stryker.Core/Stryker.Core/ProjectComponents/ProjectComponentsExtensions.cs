@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Core.Options;
 using System;
@@ -18,7 +17,7 @@ namespace Stryker.Core.ProjectComponents
         /// <param name="projectComponent">The file to check.</param>
         /// <param name="filePatterns">The file patters to check with.</param>
         /// <returns>If any parts of the file are included <c>false</c>; otherwise <c>true</c>.</returns>
-        public static bool IsComponentExcluded(this IReadOnlyInputComponent projectComponent, IEnumerable<FilePattern> filePatterns)
+        public static bool IsComponentExcluded(this IReadOnlyProjectComponent projectComponent, IEnumerable<FilePattern> filePatterns)
         {
             var includePattern = filePatterns.Where(x => !x.IsExclude).ToList();
             var excludePattern = filePatterns.Where(x => x.IsExclude).ToList();

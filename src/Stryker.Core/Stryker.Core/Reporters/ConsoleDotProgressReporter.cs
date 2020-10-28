@@ -19,7 +19,7 @@ namespace Stryker.Core.Reporters
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
+        public void OnMutantsCreated(IReadOnlyProjectComponent inputComponent) { }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> m, IEnumerable<TestDescription> t)
         {
@@ -41,6 +41,6 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent) { }
     }
 }

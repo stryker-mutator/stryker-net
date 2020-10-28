@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -7,27 +7,19 @@ namespace Stryker.Core.ProjectComponents
     {
 
         private readonly FolderComposite _folderComposite;
-        private bool _hasSyntaxTree;
+        private readonly bool _belongsToProject;
 
-        public ReadOnlyFolderComposite(FolderComposite folderComposite, bool hasSyntaxTree, ICollection<IProjectComponent> children) : base(folderComposite)
+        public IEnumerable<IReadOnlyProjectComponent> Children => _folderComposite.Children.Select(child => child.ToReadOnlyInputComponent());
+        public ReadOnlyFolderComposite(FolderComposite folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
         {
             _folderComposite = folderComposite;
-            _hasSyntaxTree = hasSyntaxTree;
-            var convertedChildren = new Collection<IReadOnlyInputComponent>();
-            foreach (var child in children)
-            {
-                convertedChildren.Add(child.ToReadOnlyBase());
-            }
-            Children = convertedChildren;
+            _belongsToProject = belongsToProjectUnderTest;
         }
-
-        public ICollection<IReadOnlyInputComponent> Children { get; }
-
 
         public override void Display(int depth)
         {
-            // only walk this branch of the tree if there are MutatedSyntaxTrees, otherwise we have nothing to display.
-            if (_hasSyntaxTree)
+            // only walk this branch of the tree if it belongs to the source project, otherwise we have nothing to display.
+            if (_belongsToProject)
             {
                 DisplayFolder(depth, this);
 

@@ -10,7 +10,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private static FolderCompositeCache<T> _instance;
-        private static object _lockObj = new object();
+        private static readonly object _lockObj = new object();
 
         public static FolderCompositeCache<T> Instance
         {

@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new HtmlReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new HtmlReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new HtmlReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyBase());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;

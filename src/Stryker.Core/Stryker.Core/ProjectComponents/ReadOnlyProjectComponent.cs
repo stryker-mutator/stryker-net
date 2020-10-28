@@ -6,48 +6,33 @@ using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ReadOnlyProjectComponent : IReadOnlyInputComponent
+    public abstract class ReadOnlyProjectComponent : IReadOnlyProjectComponent
     {
         private readonly IProjectComponent _projectComponent;
 
-        public ReadOnlyProjectComponent(IProjectComponent projectComponent)
+        public string Name => _projectComponent.Name;
+
+        public string FullPath => _projectComponent.FullPath;
+        public string RelativePath => _projectComponent.RelativePath;
+        public string RelativePathToProjectFile => _projectComponent.RelativePathToProjectFile;
+
+        public IParentComponent Parent => _projectComponent.Parent;
+
+        public IEnumerable<IReadOnlyMutant> Mutants => _projectComponent.Mutants;
+        public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m => m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
+        public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants.Where(m => m.ResultStatus == MutantStatus.Killed || m.ResultStatus == MutantStatus.Timeout);
+
+        protected ReadOnlyProjectComponent(IProjectComponent projectComponent)
         {
             _projectComponent = projectComponent;
         }
 
-        public string Name => _projectComponent.Name;
-        public string FullPath => _projectComponent.FullPath;
-
-        /// <summary>
-        /// Gets or sets the path relative to the virtual project root.
-        /// Includes the project folder.
-        /// </summary>
-        public string RelativePath => _projectComponent.RelativePath;
-
-        /// <summary>
-        /// Gets or sets the path relative to the .csproj file.
-        /// </summary>
-        public string RelativePathToProjectFile => _projectComponent.RelativePathToProjectFile;
-
-        public IEnumerable<IReadOnlyMutant> Mutants => _projectComponent.Mutants;
-        public IEnumerable<IReadOnlyMutant> ReadOnlyMutants => Mutants;
-        public IEnumerable<IReadOnlyMutant> TotalMutants =>
-            ReadOnlyMutants.Where(m =>
-                m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
-
-        public IEnumerable<IReadOnlyMutant> DetectedMutants => ReadOnlyMutants.Where(
-            m =>
-                m.ResultStatus == MutantStatus.Killed ||
-                m.ResultStatus == MutantStatus.Timeout);
-
-        // These delegates will get invoked while walking the tree during Display();
+        // These delegates will get invoked while walking the tree during Display
         public Display DisplayFile { get; set; }
 
         public Display DisplayFolder { get; set; }
 
         public abstract void Display(int depth);
-
-        public IParentComponent Parent => _projectComponent.Parent;
 
         /// <summary>
         /// Returns the mutation score for this folder / file
@@ -80,16 +65,12 @@ namespace Stryker.Core.ProjectComponents
             };
         }
 
-        public bool Equals([AllowNull] IReadOnlyInputComponent other)
+        public virtual bool Equals([AllowNull] IReadOnlyProjectComponent other)
         {
-            if (other != null)
-            {
-                if (RelativePath.Equals(other.RelativePath)
-                    && FullPath.Equals(other.FullPath)
-                    && Name.Equals(other.Name))
-                { return false; }
-            }
-            return true;
+            return other is { }
+                && RelativePath.Equals(other.RelativePath)
+                && FullPath.Equals(other.FullPath)
+                && Name.Equals(other.Name);
         }
     }
 }

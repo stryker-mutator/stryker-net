@@ -21,7 +21,7 @@ namespace Stryker.Core.Reporters
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
             var projectVersion = _gitInfoProvider.GetCurrentBranchName();
@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters
             _baselineProvider.Save(mutationReport, baselineVersion).Wait();
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             // For implementing interface
         }

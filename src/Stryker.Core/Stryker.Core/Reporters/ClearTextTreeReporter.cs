@@ -1,5 +1,4 @@
 ﻿using Crayon;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -30,7 +29,7 @@ namespace Stryker.Core.Reporters
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             // This reporter does not report during the testrun
         }
@@ -45,12 +44,12 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var rootFolderProcessed = false;
 
             // setup display handlers
-            reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFolder = (int _, IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -81,7 +80,7 @@ namespace Stryker.Core.Reporters
                 }
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (int _, IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -134,7 +133,7 @@ namespace Stryker.Core.Reporters
             reportComponent.Display(1);
         }
 
-        private static List<bool> ParentContinuationLines(IReadOnlyInputComponent current)
+        private static List<bool> ParentContinuationLines(IReadOnlyProjectComponent current)
         {
             var continuationLines = new List<bool>();
 
@@ -142,7 +141,7 @@ namespace Stryker.Core.Reporters
 
             if (node.Parent != null)
             {
-                var isRootFile = (node.RelativePath == node.RelativePathToProjectFile);
+                var isRootFile = node.RelativePath == node.RelativePathToProjectFile;
                 if (isRootFile)
                 {
                     continuationLines.Add(true);
@@ -151,9 +150,9 @@ namespace Stryker.Core.Reporters
                 {
                     while (node.Parent != null)
                     {
-                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyBase().Equals(node));
+                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyInputComponent() == node);
 
-                        node = ((FolderComposite)node.Parent).ToReadOnlyBase();
+                        node = node.Parent.ToReadOnlyInputComponent();
                     }
 
                     continuationLines.Reverse();
@@ -163,7 +162,7 @@ namespace Stryker.Core.Reporters
             return continuationLines;
         }
 
-        private void DisplayComponent(IReadOnlyInputComponent inputComponent)
+        private void DisplayComponent(IReadOnlyProjectComponent inputComponent)
         {
             var mutationScore = inputComponent.GetMutationScore();
 

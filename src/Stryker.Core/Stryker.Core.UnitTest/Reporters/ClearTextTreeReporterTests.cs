@@ -75,8 +75,10 @@ RootFolder [0/0 (N/A)]
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
-                Mutants = new Collection<Mutant>() { new Mutant() {
-                ResultStatus = MutantStatus.Killed, Mutation = mutation } }
+                Mutants = new Collection<Mutant>() { new Mutant()
+                {
+                    ResultStatus = MutantStatus.Killed, Mutation = mutation }
+                }
             });
 
             target.OnAllMutantsTested(folder.ToReadOnly());

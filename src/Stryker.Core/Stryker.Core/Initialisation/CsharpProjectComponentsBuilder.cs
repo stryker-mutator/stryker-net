@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectComponentsBuilder
     {
-        IProjectComponent BuildProjectComponents();
+        IProjectComponent Build();
     }
 
     public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
@@ -40,7 +40,7 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem;
         }
 
-        public IProjectComponent BuildProjectComponents()
+        public IProjectComponent Build()
         {
             FolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
