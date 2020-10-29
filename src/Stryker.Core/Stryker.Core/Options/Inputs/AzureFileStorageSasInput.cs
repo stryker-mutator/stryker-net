@@ -1,16 +1,13 @@
-﻿using Stryker.Core.Baseline;
+using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class AzureFileStorageSasInput : SimpleStrykerInput<string>
     {
-        static AzureFileStorageSasInput()
-        {
-            Description = $"The Shared Access Signature for Azure File Storage, only needed when the azure baseline provider is selected. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
-        }
-
         public override StrykerInput Type => StrykerInput.AzureFileStorageSas;
+
+        protected override string Description => "A Shared Access Signature for Azure File Storage is required when azure file storage is used for dashboard compare. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview";
 
         public AzureFileStorageSasInput(string azureFileStorageSas, BaselineProvider baselineProvider)
         {
@@ -18,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (string.IsNullOrWhiteSpace(azureFileStorageSas))
                 {
-                    throw new StrykerInputException("The azure file storage shared access signature is required when azure file storage baseline is selected.");
+                    throw new StrykerInputException("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
                 }
 
                 Value = azureFileStorageSas;
