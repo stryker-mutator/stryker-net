@@ -8,6 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Api key for dashboard reporter.";
 
+        public DashboardApiKeyInput() { }
         public DashboardApiKeyInput(string apiKey, bool dashboardEnabled)
         {
             if (dashboardEnabled)

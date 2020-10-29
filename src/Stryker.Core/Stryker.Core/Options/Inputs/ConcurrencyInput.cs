@@ -4,7 +4,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ConcurrentTestrunnersInput : SimpleStrykerInput<int>
+    public class ConcurrencyInput : SimpleStrykerInput<int>
     {
         public override StrykerInput Type => StrykerInput.Concurrency;
         public override int DefaultValue => Math.Max(Environment.ProcessorCount / 2, 1);
@@ -18,7 +18,8 @@ namespace Stryker.Core.Options.Inputs
         - You're running on a shared server
         - You are running stryker in the background while doing other work";
 
-        public ConcurrentTestrunnersInput(ILogger logger, int? maxConcurrentTestRunners)
+        public ConcurrencyInput() { }
+        public ConcurrencyInput(ILogger logger, int? maxConcurrentTestRunners)
         {
             if (maxConcurrentTestRunners is { })
             {

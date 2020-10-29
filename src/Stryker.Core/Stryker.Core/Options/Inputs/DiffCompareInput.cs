@@ -7,6 +7,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Enables diff compare. Only test changed files.";
 
+        public DiffCompareInput() { }
         public DiffCompareInput(bool? diffEnabled)
         {
             if (diffEnabled is { })

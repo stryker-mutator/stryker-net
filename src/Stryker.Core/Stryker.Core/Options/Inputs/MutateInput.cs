@@ -15,6 +15,7 @@ namespace Stryker.Core.Options.Inputs
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
 
+        public MutateInput() { }
         public MutateInput(IEnumerable<string> mutate)
         {
             if (mutate is { } && mutate.Any())

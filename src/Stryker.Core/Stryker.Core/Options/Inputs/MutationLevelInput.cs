@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Exceptions;
-using Stryker.Core.Mutators;
 using System;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -13,6 +13,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Specify which mutation levels to place. Every higher level includes the mutations from the lower levels.";
         protected override string HelpOptions => FormatEnumHelpOptions();
 
+        public MutationLevelInput() { }
         public MutationLevelInput(string mutationLevel)
         {
             if (mutationLevel is { })

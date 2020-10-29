@@ -9,6 +9,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Makes the logger write to a file. Logging to file always uses loglevel trace.";
 
+        public LogToFileInput() { }
         public LogToFileInput(bool? logToFile, string outputPath)
         {
             if (logToFile is { })

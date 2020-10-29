@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -8,6 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => @"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj""";
 
+        public ProjectUnderTestNameInput() { }
         public ProjectUnderTestNameInput(string projectUnderTestNameFilter)
         {
             if (projectUnderTestNameFilter is { })

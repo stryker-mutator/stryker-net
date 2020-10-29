@@ -7,6 +7,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "EXPERIMENTAL: Enables comparing to results stored in Stryker Dashboard. This feature is only available in combination with --diff";
 
+        public DashboardCompareInput() { }
         public DashboardCompareInput(bool? compareToDashboard)
         {
             if (compareToDashboard is { })

@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -8,6 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Project version used in reporters.";
 
+        public ProjectVersionInput() { }
         public ProjectVersionInput(string projectVersion, string fallbackVersion, bool dashboardEnabled, bool dashboardCompareEnabled)
         {
             if (dashboardEnabled)

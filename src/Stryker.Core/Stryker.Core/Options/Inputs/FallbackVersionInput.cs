@@ -11,6 +11,7 @@ Can be semver, git commit hash, branch name or anything else to indicate what ve
 When you don't specify a fallback version the git diff target will be used as fallback version.
 Example: If the current branch is based on the master branch, set 'master' as the fallback version";
 
+        public FallbackVersionInput() { }
         public FallbackVersionInput(string fallbackVersion, string gitDiffTarget)
         {
             if (fallbackVersion is { } && fallbackVersion.IsNullOrEmptyInput())
