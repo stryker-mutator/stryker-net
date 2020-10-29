@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
     {
         public override StrykerInput Type => StrykerInput.ExcludedMutators;
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
-        public override IEnumerable<Mutator> DefaultValue => Enumerable.Empty<Mutator>();
+        public override IEnumerable<Mutator> DefaultValue => new ExcludedMutatorsInput(DefaultInput).Value;
 
         protected override string Description => @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";
@@ -18,7 +18,7 @@ namespace Stryker.Core.Options.Inputs
 
         public ExcludedMutatorsInput(IEnumerable<string> mutatorsToExclude)
         {
-            if (mutatorsToExclude is { } && mutatorsToExclude.Any())
+            if (mutatorsToExclude is { })
             {
                 var excludedMutators = new List<Mutator>();
 
