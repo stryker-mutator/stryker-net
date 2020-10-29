@@ -16,7 +16,7 @@ namespace Stryker.Core.Options.Inputs
                 throw new StrykerInputException("Base path cannot be null.");
             }
 
-            if (!fileSystem.Directory.Exists(Value))  // validate base path is valid path
+            if (!fileSystem.Directory.Exists(basePath)) // validate base path is valid path
             {
                 throw new StrykerInputException("Base path must exist.");
             }
