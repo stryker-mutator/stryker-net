@@ -12,7 +12,7 @@ namespace Stryker.Core.Options
 
         public string HelpText => Description + HelpOptions;
         protected abstract string Description { get; }
-        protected virtual string HelpOptions { get; } = "";
+        protected virtual string HelpOptions => $" | [default =({ DefaultInput })]";
 
         public abstract TInput DefaultInput { get; }
 
@@ -44,7 +44,7 @@ namespace Stryker.Core.Options
         {
             var optionsString = new StringBuilder();
 
-            optionsString.Append($" | [default = ( {string.Join(", ", defaultInputs)} )], ");
+            optionsString.Append($" | [default = ({string.Join(", ", defaultInputs)})], ");
             var nonDefaultOptions = string.Join(
             ", ",
             allowedInputs

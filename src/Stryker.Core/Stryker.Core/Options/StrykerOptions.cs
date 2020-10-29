@@ -164,14 +164,14 @@ namespace Stryker.Core.Options
 
         private StrykerOptions SetCompareToDashboard(bool? enabled)
         {
-            CompareToDashboard = new CompareToDashboardInput(enabled).Value;
+            CompareToDashboard = new DashboardCompareInput(enabled).Value;
             return this;
         }
 
         // bool with values
         private StrykerOptions SetCompareToDashboard(bool? enabled, string value)
         {
-            CompareToDashboard = new CompareToDashboardInput(enabled).Value;
+            CompareToDashboard = new DashboardCompareInput(enabled).Value;
             GitDiffTarget = new GitDiffTargetInput(value, DiffEnabled).Value;
             return this;
         }
