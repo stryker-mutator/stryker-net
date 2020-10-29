@@ -27,7 +27,7 @@ namespace Stryker.Core.CoverageAnalysis
 
         public void DetermineTestCoverage()
         {
-            if (_options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants) || _options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (_options.OptimizationModes.HasFlag(OptimizationModes.SkipUncoveredMutants) || _options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 _logger.LogInformation($"Capture mutant coverage using '{_options.OptimizationMode}' mode.");
 
@@ -54,7 +54,7 @@ namespace Stryker.Core.CoverageAnalysis
         private void SetCoveringTests(List<Mutant> mutantsToScan)
         {
             // force static mutants to be tested against all tests.
-            if (!_options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+            if (!_options.OptimizationModes.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
                 {
@@ -68,7 +68,7 @@ namespace Stryker.Core.CoverageAnalysis
                     mutant.ResultStatus = MutantStatus.NoCoverage;
                     mutant.ResultStatusReason = "Mutant has no test coverage";
                 }
-                else if (!_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+                else if (!_options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest))
                 {
                     mutant.CoveringTests = TestListDescription.EveryTest();
                 }

@@ -29,7 +29,7 @@ namespace Stryker.Core.Baseline
         public async Task<JsonReport> Load(string version)
         {
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -51,7 +51,7 @@ namespace Stryker.Core.Baseline
         public async Task Save(JsonReport report, string version)
         {
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureFileStorageSas}");
 
             var existingReport = await Load(version);
 
@@ -108,7 +108,7 @@ namespace Stryker.Core.Baseline
         {
             _logger.LogDebug("Creating directory {0}", fileUrl);
 
-            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureFileStorageSas}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -135,7 +135,7 @@ namespace Stryker.Core.Baseline
         {
             _logger.LogDebug("Allocating storage for file {0}", fileUrl);
 
-            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -195,7 +195,7 @@ namespace Stryker.Core.Baseline
 
         private string ToSafeResponseMessage(string responseMessage)
         {
-            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureSAS, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         }
     }
 }

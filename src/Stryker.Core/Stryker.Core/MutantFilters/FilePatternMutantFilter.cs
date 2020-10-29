@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -16,8 +16,8 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
-            var includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
-            var excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();
+            var includePattern = options.Mutate.Where(x => !x.IsExclude).ToList();
+            var excludePattern = options.Mutate.Where(x => x.IsExclude).ToList();
 
             return mutants.Where(IsMutantIncluded);
 

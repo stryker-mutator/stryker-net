@@ -9,6 +9,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "The target commitish to compare with the current codebase when a diff feature is enabled.";
         protected override string HelpOptions => DefaultInput;
 
+        public GitDiffTargetInput() { }
         public GitDiffTargetInput(string gitDiffTarget, bool diffEnabled)
         {
             if (gitDiffTarget is { } && diffEnabled)

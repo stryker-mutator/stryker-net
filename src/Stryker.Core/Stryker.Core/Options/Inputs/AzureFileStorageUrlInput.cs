@@ -13,6 +13,7 @@ namespace Stryker.Core.Options.Inputs
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
                                     Note, the url might be different depending of where your file storage is hosted.";
 
+        public AzureFileStorageUrlInput() { }
         public AzureFileStorageUrlInput(string azureFileStorageUrl, BaselineProvider baselineProvider)
         {
             if (baselineProvider == BaselineProvider.AzureFileStorage)

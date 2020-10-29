@@ -74,16 +74,16 @@ namespace Stryker.CLI.UnitTest
             actualOptions.DevMode.ShouldBe(true);
             actualOptions.AdditionalTimeoutMS.ShouldBe(9999);
             actualOptions.LogOptions.LogLevel.ShouldBe(LogEventLevel.Verbose);
-            actualOptions.ProjectUnderTestNameFilter.ShouldBe("ExampleProject.csproj");
+            actualOptions.ProjectUnderTestName.ShouldBe("ExampleProject.csproj");
             actualOptions.Reporters.ShouldHaveSingleItem();
             actualOptions.Reporters.ShouldContain(Reporter.ConsoleReport);
-            actualOptions.ConcurrentTestrunners.ShouldBe(1);
+            actualOptions.Concurrency.ShouldBe(1);
             actualOptions.Thresholds.Break.ShouldBe(20);
             actualOptions.Thresholds.Low.ShouldBe(30);
             actualOptions.Thresholds.High.ShouldBe(40);
-            actualOptions.FilePatterns.Count().ShouldBe(2);
-            actualOptions.FilePatterns.ShouldContain(filePattern);
-            actualOptions.Optimizations.ShouldBe(OptimizationModes.CoverageBasedTest | OptimizationModes.DisableAbortTestOnKill);
+            actualOptions.Mutate.Count().ShouldBe(2);
+            actualOptions.Mutate.ShouldContain(filePattern);
+            actualOptions.OptimizationModes.ShouldBe(OptimizationModes.CoverageBasedTest | OptimizationModes.DisableAbortTestOnKill);
         }
     }
 }

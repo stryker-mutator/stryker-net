@@ -25,7 +25,7 @@ namespace Stryker.Core.DashboardCompare
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
-            if (!options.DiffEnabled)
+            if (!options.DiffCompareEnabled)
             {
                 return;
             }

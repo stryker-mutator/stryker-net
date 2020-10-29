@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -37,7 +37,7 @@ namespace Stryker.Core.MutantFilters
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
 
-            if (options.CompareToDashboard)
+            if (options.DashboardCompareEnabled)
             {
                 _baseline = GetBaselineAsync().Result;
             }
@@ -71,7 +71,7 @@ namespace Stryker.Core.MutantFilters
             IEnumerable<Mutant> filteredMutants;
 
             // If the dashboard feature is turned on we first filter based on previous results
-            if (options.CompareToDashboard)
+            if (options.DashboardCompareEnabled)
             {
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
@@ -110,7 +110,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
-            if (_options.CompareToDashboard)
+            if (_options.DashboardCompareEnabled)
             {
                 var mutantsNotRun = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
                 filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);

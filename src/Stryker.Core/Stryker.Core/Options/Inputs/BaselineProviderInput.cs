@@ -12,6 +12,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on.";
         protected override string HelpOptions => FormatEnumHelpOptions();
 
+        public BaselineProviderInput() { }
         public BaselineProviderInput(string baselineProviderLocation, bool dashboardReporterEnabled)
         {
             if (baselineProviderLocation is null && dashboardReporterEnabled)

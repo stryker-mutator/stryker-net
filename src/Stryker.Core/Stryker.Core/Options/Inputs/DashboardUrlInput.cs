@@ -10,6 +10,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Alternative url for Stryker Dashboard.";
 
+        public DashboardUrlInput() { }
         public DashboardUrlInput(string url)
         {
             if (url is { })

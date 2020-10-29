@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,6 +11,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => @"Ignore mutations on method parameters.";
 
+        public IgnoredMethodsInput() { }
         public IgnoredMethodsInput(IEnumerable<string> ignoredMethods)
         {
             if (ignoredMethods is { })

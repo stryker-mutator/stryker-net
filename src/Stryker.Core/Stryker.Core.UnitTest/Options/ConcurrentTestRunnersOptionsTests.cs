@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Options
             var mockLogger = new MockLogger();
 
             var options = new StrykerOptions(logger: mockLogger, maxConcurrentTestRunners: given);
-            options.ConcurrentTestrunners.ShouldBe(expected);
+            options.Concurrency.ShouldBe(expected);
 
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
             if (!(logMessage is null) && expected > safeProcessorCount || expected == 1)

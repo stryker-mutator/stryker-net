@@ -16,6 +16,7 @@ namespace Stryker.Core.Options.Inputs
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
             Example: ['**/*Assets.json','**/favicon.ico']";
 
+        public DiffIgnoreFilePatternsInput() { }
         public DiffIgnoreFilePatternsInput(IEnumerable<string> filePatterns)
         {
             if (filePatterns is { })

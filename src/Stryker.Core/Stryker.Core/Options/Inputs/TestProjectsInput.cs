@@ -11,6 +11,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Specify the test projects.";
 
+        public TestProjectsInput() { }
         public TestProjectsInput(IEnumerable<string> paths)
         {
             if (paths is { })

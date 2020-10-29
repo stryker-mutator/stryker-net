@@ -8,6 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Module name used by reporters. Usually a project in your solution would be a module.";
 
+        public ModuleNameInput() { }
         public ModuleNameInput(string moduleName)
         {
             if (moduleName is { })

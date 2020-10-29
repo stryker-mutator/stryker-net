@@ -111,17 +111,17 @@ namespace Stryker.Core.UnitTest.Options
         public void ShouldValidateOptimisationMode()
         {
             var options = new StrykerOptions(coverageAnalysis: "perTestInIsolation");
-            options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-            options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+            options.OptimizationModes.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
 
             options = new StrykerOptions();
-            options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+            options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
 
             options = new StrykerOptions(coverageAnalysis: "all");
-            options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
+            options.OptimizationModes.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
 
             options = new StrykerOptions(coverageAnalysis: "off");
-            options.Optimizations.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
+            options.OptimizationModes.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
 
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
@@ -266,7 +266,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
 
-            target.AzureSAS.ShouldBe("SAS");
+            target.AzureFileStorageSas.ShouldBe("SAS");
         }
     }
 }

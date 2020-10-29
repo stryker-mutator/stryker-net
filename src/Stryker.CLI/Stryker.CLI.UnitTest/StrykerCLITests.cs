@@ -75,8 +75,8 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "['string', 'logical']" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ExcludedMutations.Contains(Mutator.String) &&
-                o.ExcludedMutations.Contains(Mutator.Logical)
+                o.ExcludedMutators.Contains(Mutator.String) &&
+                o.ExcludedMutators.Contains(Mutator.Logical)
             ), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -106,7 +106,7 @@ namespace Stryker.CLI.UnitTest
             {
                 target.Run(new string[] { "-em", $"['{argValue}']" });
 
-                mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutations.Single() == expectedType), It.IsAny<IEnumerable<LogMessage>>()));
+                mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutators.Single() == expectedType), It.IsAny<IEnumerable<LogMessage>>()));
             }
         }
 
@@ -124,7 +124,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "SomeProjectName.csproj" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestNameFilter == "SomeProjectName.csproj"), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestName == "SomeProjectName.csproj"), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -255,7 +255,7 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { argName, "4" });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ConcurrentTestrunners <= 4), It.IsAny<IEnumerable<LogMessage>>()));
+                o.Concurrency <= 4), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -390,7 +390,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.FilePatterns.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Mutate.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -415,7 +415,7 @@ namespace Stryker.CLI.UnitTest
             var secondFileToExclude = FilePattern.Parse("!ExampleDirectory/Recursive.cs");
             var thirdFileToExclude = FilePattern.Parse("!ExampleDirectory/Recursive2.cs");
 
-            var filePatterns = actualOptions.FilePatterns.ToArray();
+            var filePatterns = actualOptions.Mutate.ToArray();
             filePatterns.Count(x => x.IsExclude).ShouldBe(3);
             filePatterns.ShouldContain(firstFileToExclude);
             filePatterns.ShouldContain(secondFileToExclude);
@@ -444,7 +444,7 @@ namespace Stryker.CLI.UnitTest
             var secondFileToExclude = FilePattern.Parse("!**/MySpecialService.cs");
             var thirdFileToExclude = FilePattern.Parse("**/MyOtherService.cs{1..10}{32..45}");
 
-            var filePatterns = actualOptions.FilePatterns.ToArray();
+            var filePatterns = actualOptions.Mutate.ToArray();
             filePatterns.Length.ShouldBe(3);
             filePatterns.ShouldContain(firstFileToExclude);
             filePatterns.ShouldContain(secondFileToExclude);
@@ -471,7 +471,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            actualOptions.DiffEnabled.ShouldBeTrue();
+            actualOptions.DiffCompareEnabled.ShouldBeTrue();
         }
 
         [Theory]
@@ -511,7 +511,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.CompareToDashboard.ShouldBeTrue();
+            options.DashboardCompareEnabled.ShouldBeTrue();
         }
 
         [Theory]
@@ -534,7 +534,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DiffEnabled.ShouldBeTrue();
+            options.DiffCompareEnabled.ShouldBeTrue();
         }
 
         [Theory]
@@ -670,7 +670,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffIgnoreFiles.Count() == 1),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffIgnoreFilePatterns.Count() == 1),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
     }

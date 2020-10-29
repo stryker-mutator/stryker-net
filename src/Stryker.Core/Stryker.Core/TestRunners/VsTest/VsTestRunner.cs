@@ -293,7 +293,7 @@ namespace Stryker.Core.TestRunners.VsTest
                             ? new List<int>()
                             : parts[0].Split(',').Select(int.Parse).ToList();
                         // we identify mutants that are part of static code, unless we performed pertest capture
-                        var staticMutants = (string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+                        var staticMutants = (string.IsNullOrEmpty(parts[1]) || _options.OptimizationModes.HasFlag(OptimizationModes.CaptureCoveragePerTest))
                             ? new List<int>()
                             : parts[1].Split(',').Select(int.Parse).ToList();
                         foreach (var mutant in mutants)
@@ -409,7 +409,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
-            var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationModes.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
+            var optionsConcurrentTestrunners = (forCoverage || !_options.OptimizationModes.HasFlag(OptimizationModes.DisableTestMix)) ? 1 : _options.Concurrency;
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>

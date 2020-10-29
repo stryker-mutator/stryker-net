@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -9,6 +9,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => @"The organizational name for your project. Required when dashboard reporter is turned on.
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'.";
 
+        public ProjectNameInput() { }
         public ProjectNameInput(string projectName, bool dashboardEnabled)
         {
             if (dashboardEnabled)

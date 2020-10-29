@@ -42,8 +42,8 @@ namespace Stryker.Core.Mutants
         private ILogger Logger { get; }
 
         internal bool MustInjectCoverageLogic =>
-            _options != null && _options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest) &&
-            !_options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest);
+            _options != null && _options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest) &&
+            !_options.OptimizationModes.HasFlag(OptimizationModes.CaptureCoveragePerTest);
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)

@@ -95,7 +95,7 @@ namespace Stryker.Core.MutationTest
             }
 
             var mutantsToTest = mutantsNotRun;
-            if (_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (_options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 var testCount = _mutationTestExecutor.TestRunner.DiscoverNumberOfTests();
                 var toTest = mutantsNotRun.Sum(x => x.MustRunAgainstAllTests ? testCount : x.CoveringTests.Count);
@@ -105,7 +105,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogInformation($"Coverage analysis will reduce run time by discarding {(total - toTest) / (double)total:P1} of tests because they would not change results.");
                 }
             }
-            else if (_options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants))
+            else if (_options.OptimizationModes.HasFlag(OptimizationModes.SkipUncoveredMutants))
             {
                 var total = viableMutantsCount;
                 var toTest = mutantsToTest.Count();
@@ -123,14 +123,14 @@ namespace Stryker.Core.MutationTest
 
                 Parallel.ForEach(
                     mutantGroups,
-                    new ParallelOptions { MaxDegreeOfParallelism = options.ConcurrentTestrunners },
+                    new ParallelOptions { MaxDegreeOfParallelism = options.Concurrency },
                     mutants =>
                     {
                         var testMutants = new HashSet<Mutant>();
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs,
                             (testedMutants, failedTests, ranTests, timedOutTest) =>
                             {
-                                var mustGoOn = options.Optimizations.HasFlag(OptimizationModes.DisableAbortTestOnKill);
+                                var mustGoOn = options.OptimizationModes.HasFlag(OptimizationModes.DisableAbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
                                     mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -172,7 +172,7 @@ namespace Stryker.Core.MutationTest
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
 
-            if (_options.Optimizations.HasFlag(OptimizationModes.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (_options.OptimizationModes.HasFlag(OptimizationModes.DisableTestMix) || !_options.OptimizationModes.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }

@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";
 
-
+        public ExcludedMutatorsInput() { }
         public ExcludedMutatorsInput(IEnumerable<string> mutatorsToExclude)
         {
             if (mutatorsToExclude is { })
