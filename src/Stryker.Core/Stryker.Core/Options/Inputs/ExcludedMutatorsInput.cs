@@ -1,21 +1,20 @@
-﻿using Stryker.Core.Exceptions;
-using Stryker.Core.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class ExcludedMutatorsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Mutator>>
     {
-        static ExcludedMutatorsInput()
-        {
-            Description = @"The given mutators will be excluded for this mutation testrun.
-    This argument takes a json array as value. Example: ['string', 'logical']";
-            DefaultValue = new ExcludedMutatorsInput(DefaultInput).Value;
-        }
-
         public override StrykerInput Type => StrykerInput.ExcludedMutators;
+        public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
+        public override IEnumerable<Mutator> DefaultValue => Enumerable.Empty<Mutator>();
+
+        protected override string Description => @"The given mutators will be excluded for this mutation testrun.
+    This argument takes a json array as value. Example: ['string', 'logical']";
+
 
         public ExcludedMutatorsInput(IEnumerable<string> mutatorsToExclude)
         {
@@ -24,11 +23,11 @@ namespace Stryker.Core.Options.Inputs
                 var excludedMutators = new List<Mutator>();
 
                 // Get all mutatorTypes and their descriptions
-                Dictionary<Mutator, string> typeDescriptions = Enum.GetValues(typeof(Mutator))
+                var typeDescriptions = Enum.GetValues(typeof(Mutator))
                     .Cast<Mutator>()
                     .ToDictionary(x => x, x => x.GetDescription());
 
-                foreach (string mutatorToExclude in mutatorsToExclude)
+                foreach (var mutatorToExclude in mutatorsToExclude)
                 {
                     // Find any mutatorType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
