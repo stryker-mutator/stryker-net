@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var readonlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose).Object;
+            var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var readonlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose).Object;
+            var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
@@ -178,7 +178,7 @@ namespace Stryker.Core.UnitTest.Baseline
 
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var readonlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose).Object;
+            var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
