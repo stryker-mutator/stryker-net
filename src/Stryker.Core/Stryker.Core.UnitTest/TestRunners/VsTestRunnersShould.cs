@@ -524,7 +524,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
                 var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.OptimizationModes);
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.OptimizationMode);
                 // make sure we have 4 mutants
                 _mutants.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));

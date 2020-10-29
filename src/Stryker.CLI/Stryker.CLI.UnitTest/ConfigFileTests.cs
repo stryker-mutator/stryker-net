@@ -83,7 +83,7 @@ namespace Stryker.CLI.UnitTest
             actualOptions.Thresholds.High.ShouldBe(40);
             actualOptions.Mutate.Count().ShouldBe(2);
             actualOptions.Mutate.ShouldContain(filePattern);
-            actualOptions.OptimizationModes.ShouldBe(OptimizationModes.CoverageBasedTest | OptimizationModes.DisableAbortTestOnKill);
+            actualOptions.OptimizationMode.ShouldBe(OptimizationModes.CoverageBasedTest | OptimizationModes.DisableAbortTestOnKill);
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Stryker.Core.Options
         public IEnumerable<Regex> IgnoredMethods { get; private set; } = new IgnoredMethodsInput().Value;
         public IEnumerable<Mutator> ExcludedMutators { get; private set; } = new ExcludedMutatorsInput().Value;
 
-        public OptimizationModes OptimizationModes { get; private set; } = new OptimizationModeInput().Value;
+        public OptimizationModes OptimizationMode { get; private set; } = new OptimizationModeInput().Value;
 
 
         public StrykerOptions(string basePath, ILogger logger = null, IFileSystem fileSystem = null)
