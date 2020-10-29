@@ -1,20 +1,17 @@
-﻿using Stryker.Core.Baseline;
-using Stryker.Core.Exceptions;
 using System;
+using Stryker.Core.Baseline;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class AzureFileStorageUrlInput : SimpleStrykerInput<string>
     {
-        static AzureFileStorageUrlInput()
-        {
-            Description = @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+        public override StrykerInput Type => StrykerInput.AzureFileStorageUrl;
+
+        protected override string Description => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
                                     Note, the url might be different depending of where your file storage is hosted.";
-        }
-
-        public override StrykerInput Type => StrykerInput.AzureFileStorageUrl;
 
         public AzureFileStorageUrlInput(string azureFileStorageUrl, BaselineProvider baselineProvider)
         {
@@ -22,7 +19,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (azureFileStorageUrl is null)
                 {
-                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is enabled");
+                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
                 }
 
                 if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
