@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         Display DisplayFile { get; set; }
         Display DisplayFolder { get; set; }
-        public void Display(int depth);
+        void Display(int depth);
 
         double GetMutationScore();
 

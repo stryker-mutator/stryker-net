@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Linq;
