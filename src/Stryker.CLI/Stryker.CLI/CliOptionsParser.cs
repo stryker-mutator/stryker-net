@@ -77,7 +77,7 @@ namespace Stryker.CLI
             AddCliOption(StrykerInput.LogLevel, "log-level", "l", LogLevelInput.HelpText);
             AddCliOption(StrykerInput.Reporters, "reporter", "r", ReportersInput.HelpText, optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerInput.DiffCompare, "diff", "diff", DiffEnabledInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerInput.DiffCompare, "diff", "diff", DiffCompareInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
             AddCliOption(StrykerInput.DashboardCompare, "dashboard-compare", "compare", CompareToDashboardInput.HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
             AddCliOption(StrykerInput.DashboardApiKey, "dashboard-api-key", "dk", DashboardApiKeyInput.HelpText);

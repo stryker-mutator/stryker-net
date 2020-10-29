@@ -178,7 +178,7 @@ namespace Stryker.Core.Options
 
         private StrykerOptions SetDiff(bool? enabled, string value)
         {
-            DiffEnabled = new DiffEnabledInput(enabled).Value;
+            DiffEnabled = new DiffCompareInput(enabled).Value;
             GitDiffTarget = new GitDiffTargetInput(value, DiffEnabled).Value;
             return this;
         }
