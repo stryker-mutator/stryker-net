@@ -1,25 +1,24 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class GitDiffTargetInput : SimpleStrykerInput<string>
     {
-        static GitDiffTargetInput()
-        {
-            Description = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master";
-            DefaultValue = "master";
-        }
-
         public override StrykerInput Type => StrykerInput.GitDiffTarget;
+        public override string DefaultValue => "master";
+        protected override string Description => "The target commitish to compare with the current codebase when a diff feature is enabled.";
+        protected override string HelpOptions => DefaultInput;
 
         public GitDiffTargetInput(string gitDiffTarget, bool diffEnabled)
         {
-            if (diffEnabled && gitDiffTarget.IsNullOrEmptyInput())
+            if (gitDiffTarget is { } && diffEnabled)
             {
-                throw new StrykerInputException("The git diff target cannot be empty when the diff feature is enabled");
+                if (gitDiffTarget.IsNullOrEmptyInput())
+                {
+                    throw new StrykerInputException("The git diff target cannot be empty when the diff feature is enabled");
+                }
+                Value = gitDiffTarget;
             }
-
-            Value = gitDiffTarget ?? DefaultValue;
         }
     }
 }
