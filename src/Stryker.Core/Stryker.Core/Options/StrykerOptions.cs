@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
@@ -7,9 +10,6 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
@@ -244,7 +244,7 @@ namespace Stryker.Core.Options
 
         private StrykerOptions SetReporters(IEnumerable<string> values)
         {
-            Reporters = new ReportersInput(values, CompareToDashboard).Value;
+            Reporters = new ReportersInput(values).Value;
             return this;
         }
 
