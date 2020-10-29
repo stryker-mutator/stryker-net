@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -6,10 +10,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.MutationTest
 {
@@ -130,7 +130,7 @@ namespace Stryker.Core.MutationTest
                         _mutationTestExecutor.Test(mutants, _input.TimeoutMs,
                             (testedMutants, failedTests, ranTests, timedOutTest) =>
                             {
-                                var mustGoOn = !options.Optimizations.HasFlag(OptimizationModes.AbortTestOnKill);
+                                var mustGoOn = options.Optimizations.HasFlag(OptimizationModes.DisableAbortTestOnKill);
                                 foreach (var mutant in testedMutants)
                                 {
                                     mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -213,7 +213,5 @@ namespace Stryker.Core.MutationTest
         {
             _coverageAnalyser.DetermineTestCoverage();
         }
-
-
     }
 }

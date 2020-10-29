@@ -32,7 +32,7 @@
         LanguageVersion,
 
         OptimizationMode,
-        AbortTestOnFail,
+        DisableAbortTestOnFail,
         DisableSimultaneousTesting,
 
         TestProjects,

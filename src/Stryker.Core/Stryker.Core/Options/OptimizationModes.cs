@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Stryker.Core.Options
 {
@@ -9,7 +9,7 @@ namespace Stryker.Core.Options
         NoOptimization = 0,
         SkipUncoveredMutants = 1,
         CoverageBasedTest = 2,
-        AbortTestOnKill = 4,
+        DisableAbortTestOnKill = 4,
         CaptureCoveragePerTest = 8,
         DisableTestMix = 16
     }

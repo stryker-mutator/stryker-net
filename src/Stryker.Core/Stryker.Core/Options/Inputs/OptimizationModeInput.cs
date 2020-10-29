@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -14,6 +14,7 @@ namespace Stryker.Core.Options.Inputs
     - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.";
 
+        public OptimizationModeInput() { }
         public OptimizationModeInput(string coverageAnalysis)
         {
             if (coverageAnalysis is { })

@@ -411,7 +411,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationModes.AbortTestOnKill);
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationModes.DisableAbortTestOnKill);
 
                 mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
