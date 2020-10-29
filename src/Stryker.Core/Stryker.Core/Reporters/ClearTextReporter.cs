@@ -1,11 +1,11 @@
-﻿using Crayon;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Crayon;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
@@ -84,7 +84,7 @@ namespace Stryker.Core.Reporters
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.Mutate))
             {
                 _consoleWriter.Write(Output.BrightBlack("Excluded"));
             }
