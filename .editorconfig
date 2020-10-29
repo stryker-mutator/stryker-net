@@ -3,7 +3,6 @@ root = true
 
 # Set default behavior to:
 #   UTF-8 encoding,
-#   Unix-style line endings,
 #   a newline ending the file,
 #   4 space indentation,
 #   trimming of trailing whitespace
