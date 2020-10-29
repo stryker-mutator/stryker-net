@@ -18,19 +18,19 @@ namespace Stryker.CLI
 
     public static class CliOptionsParser
     {
-        private static readonly IDictionary<string, CliOption> _cliOptions = new Dictionary<string, CliOption>();
-        private static readonly CliOption _configOption;
+        private static readonly IDictionary<string, CliOption> CliOptions = new Dictionary<string, CliOption>();
+        private static readonly CliOption ConfigOption;
 
         static CliOptionsParser()
         {
-            _configOption = AddCliOption(StrykerInput.None, "--config-file-path", "-cp",
+            ConfigOption = AddCliOption(StrykerInput.None, "--config-file-path", "-cp",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             PrepareCliOptions();
         }
 
         public static void RegisterCliOptions(CommandLineApplication app)
         {
-            foreach (var (_, value) in _cliOptions)
+            foreach (var (_, value) in CliOptions)
             {
                 RegisterCliOption(app, value);
             }
@@ -38,8 +38,8 @@ namespace Stryker.CLI
 
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
         {
-            RegisterCliOption(app, _configOption);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configOption.ArgumentName)?.Value();
+            RegisterCliOption(app, ConfigOption);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value();
         }
 
         public static StrykerOptions EnrichWithCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
@@ -47,7 +47,7 @@ namespace Stryker.CLI
             StrykerOptions enrichedOptions = options;
             foreach (var option in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
-                var inputType = _cliOptions[option.LongName].InputType;
+                var inputType = CliOptions[option.LongName].InputType;
 
                 enrichedOptions = option.OptionType switch
                 {
@@ -114,7 +114,7 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            _cliOptions[argumentName] = cliOption;
+            CliOptions[argumentName] = cliOption;
 
             return cliOption;
         }

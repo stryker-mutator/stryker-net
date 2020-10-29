@@ -1,13 +1,13 @@
-﻿using Crayon;
+using System;
+using Crayon;
 using Stryker.Core;
 using Stryker.Core.Exceptions;
-using System;
 
 namespace Stryker.CLI
 {
     public class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             try
             {
@@ -21,9 +21,9 @@ namespace Stryker.CLI
                 Console.WriteLine(strEx.ToString());
                 return 1;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return 1;
+                throw new StrykerInputException("Something unexpected went wrong.", e.ToString());
             }
         }
     }

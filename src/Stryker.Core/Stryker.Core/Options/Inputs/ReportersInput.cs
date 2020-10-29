@@ -1,8 +1,8 @@
-﻿using Stryker.Core.Exceptions;
-using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -13,7 +13,7 @@ namespace Stryker.Core.Options.Inputs
         public override IEnumerable<Reporter> DefaultValue => new ReportersInput(DefaultInput).Value;
 
         protected override string Description => "Reporters inform about various stages in the mutation testrun.";
-        protected override string HelpOptions => FormatEnumHelpOptions(DefaultInput);
+        protected override string HelpOptions => FormatEnumHelpOptions(DefaultInput, typeof(Reporter));
 
         public ReportersInput() { }
         public ReportersInput(IEnumerable<string> chosenReporters)

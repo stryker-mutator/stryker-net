@@ -9,8 +9,7 @@ namespace Stryker.Core.Options.Inputs
         public override StrykerInput Type => StrykerInput.Concurrency;
         public override int DefaultValue => Math.Max(Environment.ProcessorCount / 2, 1);
 
-        protected override string Description => @"Mutation testing is time consuming. 
-    By default Stryker tries to make the most of your CPU, by spawning as many parallel processes as you have CPU cores.
+        protected override string Description => @"By default Stryker tries to make the most of your CPU, by spawning as many parallel processes as you have CPU cores.
     This setting allows you to override this default behavior.
     Reasons you might want to lower this setting:
                                                                  

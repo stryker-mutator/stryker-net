@@ -12,7 +12,7 @@ namespace Stryker.Core.Options
 
         public string HelpText => Description + HelpOptions;
         protected abstract string Description { get; }
-        protected virtual string HelpOptions => $" | [default =({ DefaultInput })]";
+        protected virtual string HelpOptions => $"{ (DefaultInput is { } ? $" | default: { DefaultInput }" : "") }";
 
         public abstract TInput DefaultInput { get; }
 
@@ -32,8 +32,8 @@ namespace Stryker.Core.Options
             }
         }
 
-        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { DefaultInput.ToString() });
-        protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs) => FormatHelpOptions(defaultInputs, Enum.GetNames(DefaultValue.GetType()).Select(e => e.ToString()));
+        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { DefaultInput.ToString() }, DefaultValue.GetType());
+        protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs, Type enumType) => FormatHelpOptions(defaultInputs, Enum.GetNames(enumType).Select(e => e.ToString()));
 
         protected string FormatHelpOptions(string allowedInput) => FormatHelpOptions(new List<string> { DefaultValue.ToString() }, new List<string> { allowedInput });
         protected string FormatHelpOptions(IEnumerable<string> allowedInputs) => FormatHelpOptions(new List<string> { DefaultValue.ToString() }, allowedInputs);
@@ -44,7 +44,7 @@ namespace Stryker.Core.Options
         {
             var optionsString = new StringBuilder();
 
-            optionsString.Append($" | [default = ({string.Join(", ", defaultInputs)})], ");
+            optionsString.Append($" | default: ({string.Join(", ", defaultInputs)}), ");
             var nonDefaultOptions = string.Join(
             ", ",
             allowedInputs
