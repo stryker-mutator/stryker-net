@@ -1,16 +1,13 @@
-﻿using Stryker.Core.Exceptions;
 using System.IO.Abstractions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class BasePathInput : SimpleStrykerInput<string>
     {
-        static BasePathInput()
-        {
-            Description = string.Empty;
-        }
-
         public override StrykerInput Type => StrykerInput.BasePath;
+
+        protected override string Description => "The path from which stryker is started.";
 
         public BasePathInput(IFileSystem fileSystem, string basePath)
         {
@@ -21,7 +18,7 @@ namespace Stryker.Core.Options.Inputs
 
             if (!fileSystem.Directory.Exists(Value))  // validate base path is valid path
             {
-                throw new StrykerInputException("Base path does not exist.");
+                throw new StrykerInputException("Base path must exist.");
             }
 
             Value = basePath;
