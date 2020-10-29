@@ -1,21 +1,16 @@
-﻿using Stryker.Core.Baseline;
+using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class BaselineProviderInput : ComplexStrykerInput<string, BaselineProvider>
     {
-        static BaselineProviderInput()
-        {
-            Description = $@"Allows to choose a storage location | Options[{FormatOptions(DefaultInput, ((IEnumerable<BaselineProvider>)Enum.GetValues(DefaultValue.GetType())).Select(x => x.ToString())) }]
-                                     When using the azure file storage, make sure to configure the -sas and -storage-url options.";
-            DefaultValue = BaselineProvider.Disk;
-        }
-
         public override StrykerInput Type => StrykerInput.BaselineProvider;
+        public override string DefaultInput => "disk";
+        public override BaselineProvider DefaultValue => new BaselineProviderInput(DefaultInput, false).Value;
+
+        protected override string Description => "Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on.";
+        protected override string HelpOptions => FormatEnumHelpOptions();
 
         public BaselineProviderInput(string baselineProviderLocation, bool dashboardReporterEnabled)
         {
