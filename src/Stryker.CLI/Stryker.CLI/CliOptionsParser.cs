@@ -39,7 +39,7 @@ namespace Stryker.CLI
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
         {
             RegisterCliOption(app, ConfigOption);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value();
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value() ?? "stryker-config.json";
         }
 
         public static StrykerOptions EnrichWithCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
