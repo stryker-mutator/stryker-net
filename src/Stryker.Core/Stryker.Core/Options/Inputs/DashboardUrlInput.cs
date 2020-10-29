@@ -1,17 +1,14 @@
-﻿using Stryker.Core.Exceptions;
 using System;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class DashboardUrlInput : SimpleStrykerInput<string>
     {
-        static DashboardUrlInput()
-        {
-            Description = $"Provide an alternative root url for Stryker Dashboard.";
-            DefaultValue = "https://dashboard.stryker-mutator.io";
-        }
-
         public override StrykerInput Type => StrykerInput.DashboardUrl;
+        public override string DefaultValue => "https://dashboard.stryker-mutator.io";
+
+        protected override string Description => "Alternative url for Stryker Dashboard.";
 
         public DashboardUrlInput(string url)
         {
