@@ -1,15 +1,12 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class DashboardApiKeyInput : SimpleStrykerInput<string>
     {
-        static DashboardApiKeyInput()
-        {
-            Description = $"Api key for dashboard reporter. You can get your key here: {DashboardUrlInput.DefaultValue}";
-        }
-
         public override StrykerInput Type => StrykerInput.DashboardApiKey;
+
+        protected override string Description => "Api key for dashboard reporter.";
 
         public DashboardApiKeyInput(string apiKey, bool dashboardEnabled)
         {
