@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -106,10 +106,10 @@ namespace Stryker.Core.Reporters.Json
             from.ToList().ForEach(x => to[x.Key] = x.Value);
         }
 
-        private string GetProjectRoot(IReadOnlyInputComponent component)
+        private string GetProjectRoot(IReadOnlyProjectComponent component)
         {
-            if (component is FolderComposite folder) {
-                return folder.Children.OfType<FolderComposite>().FirstOrDefault(s => s.RelativePathToProjectFile == ".")?.FullPath;
+            if (component is ReadOnlyFolderComposite folder) {
+                return folder.Children.OfType<ReadOnlyFolderComposite>().FirstOrDefault(s => s.RelativePathToProjectFile == ".")?.FullPath;
             }
 
             return null;
