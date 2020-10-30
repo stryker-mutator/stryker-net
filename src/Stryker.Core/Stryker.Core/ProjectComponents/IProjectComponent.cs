@@ -1,4 +1,4 @@
-using Stryker.Core.Mutants;
+﻿using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
@@ -17,6 +17,6 @@ namespace Stryker.Core.ProjectComponents
 
         IReadOnlyProjectComponent ToReadOnlyInputComponent();
 
-        IEnumerable<IProjectComponent> GetAllFiles();
+        public abstract IEnumerable<IProjectComponent> GetAllFiles();
     }
 }

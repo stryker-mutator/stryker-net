@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -89,19 +89,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("**** Buildalyzer properties. ****");
             }
 
-            IProjectComponent inputFiles;
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Csharp)
-            {
-                inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
-            }
-            else if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Fsharp)
-            {
-                inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
-            }
-            else
-            {
-                throw new StrykerInputException("no valid csproj or fsproj was given");
-            }
+            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
