@@ -1,15 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "1.3";
+        public string SchemaVersion { get; } = "1";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
         public string ProjectRoot { get; }
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
@@ -108,7 +108,8 @@ namespace Stryker.Core.Reporters.Json
 
         private string GetProjectRoot(IReadOnlyProjectComponent component)
         {
-            if (component is ReadOnlyFolderComposite folder) {
+            if (component is ReadOnlyFolderComposite folder)
+            {
                 return folder.Children.OfType<ReadOnlyFolderComposite>().FirstOrDefault(s => s.RelativePathToProjectFile == ".")?.FullPath;
             }
 
