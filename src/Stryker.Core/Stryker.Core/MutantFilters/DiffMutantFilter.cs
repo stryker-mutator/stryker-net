@@ -258,21 +258,21 @@ namespace Stryker.Core.MutantFilters
             {
                 var coveringTests = mutant.CoveringTests.Tests;
 
-                if (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
-                    || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
+                if (coveringTests != null
+                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                        || coveringTests.Any(coveringTest => coveringTest.IsAllTests)))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
                     mutant.ResultStatusReason = "One or more covering tests changed";
 
                     filteredMutants.Add(mutant);
-                    break;
                 }
             }
 
             return filteredMutants;
         }
 
-        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
+        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants.
         /// If the targetMutants already contain a member with the same Id. The results are updated.
         internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
         {
