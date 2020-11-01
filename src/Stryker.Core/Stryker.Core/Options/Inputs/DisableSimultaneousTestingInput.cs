@@ -8,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Test each mutation in an isolated test run.";
 
-
+        public DisableSimultaneousTestingInput() { }
         public DisableSimultaneousTestingInput(bool? disableSimultaneousTesting)
         {
             if (disableSimultaneousTesting is { })

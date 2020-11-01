@@ -8,6 +8,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Disable abort unit testrun as soon as any one unit test fails.";
 
+        public DisableAbortTestOnFailInput() { }
         public DisableAbortTestOnFailInput(bool? disableAbortTestOnFail)
         {
             if (disableAbortTestOnFail is { })

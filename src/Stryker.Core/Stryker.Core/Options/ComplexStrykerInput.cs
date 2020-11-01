@@ -24,7 +24,8 @@ namespace Stryker.Core.Options
         {
             get
             {
-                return _value?.Equals(default) ?? false ? DefaultValue : _value;
+                var hasValue = _value?.Equals(default) ?? true;
+                return hasValue ? DefaultValue : _value;
             }
             protected set
             {
