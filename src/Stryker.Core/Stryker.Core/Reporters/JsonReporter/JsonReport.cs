@@ -45,7 +45,7 @@ namespace Stryker.Core.Reporters.Json
             _report = _options == options ? _report : null;
 
             // If the report was already generated, return the existing report
-            _report = _report ?? new JsonReport(options, mutationReport);
+            _report ??= new JsonReport(options, mutationReport);
 
             return _report;
         }
