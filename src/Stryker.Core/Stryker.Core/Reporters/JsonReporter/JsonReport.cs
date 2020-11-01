@@ -72,7 +72,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
-            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonReportFileComponent>();
             if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -87,7 +87,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
-            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonReportFileComponent>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -101,7 +101,7 @@ namespace Stryker.Core.Reporters.Json
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePathToProjectFile, new JsonReportFileComponent(fileComponent) } };
         }
 
-        private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
+        private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
         {
             from.ToList().ForEach(x => to[x.Key] = x.Value);
         }
