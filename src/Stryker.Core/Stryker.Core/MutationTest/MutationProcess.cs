@@ -125,7 +125,9 @@ namespace Stryker.Core.MutationTest
         {
             foreach (var file in _projectInfo.GetAllFiles())
             {
-                _mutantFilter.FilterMutants(file.Mutants, ((FileLeaf)file).ToReadOnly(), _options);
+                // CompileError is a final status and can not be changed during filtering.
+                var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
+                _mutantFilter.FilterMutants(mutantsToFilter, ((FileLeaf)file).ToReadOnly(), _options);
             }
 
             var skippedMutants = _projectInfo.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
