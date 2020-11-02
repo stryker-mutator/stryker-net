@@ -29,12 +29,12 @@ For this purpose the Interface IProjectComponent is used.
 This enables code to ask for an ```IFileLeaf``` so It can access the elements that do not depend on the language, that being all except the syntaxtrees.
 
 For applications that do need access to the syntaxtrees ```ProjectComponent<T>``` can be used or the specific type, being:
-* ```FolderComponent```
-* ```FileLeaf```
+* ```CsharpFolderComponent```
+* ```CsharpFileLeaf```
 
 OR
-* ```FolderComponentFsharp```
-* ```FileLeafFsharp```
+* ```FsharpFolderComponent```
+* ```FsharpFileLeaf```
 
 ```IFileLeaf<T>``` is needed to have languageagnostic notation for the syntaxtrees.
 
@@ -55,4 +55,7 @@ The variant of ```FolderComponent``` and ```FileLeaf``` all contain the function
 
 ```ToReadOnly()``` returns the ReadOnly varient of said type. ```ToReadOnlyInputComponent()``` does the same, just casted to ```IReadOnlyProjectComponent```.
 
-```ToReadOnly()``` takes the interfaces ```IParentComponent``` and ```IFileLeaf``` as input so the readonly variants do not need to distinguish between FileLeaf and FileLeafFsharp for example. 
+```ToReadOnly()``` takes the interfaces ```IParentComponent``` and ```IFileLeaf``` as input so the readonly variants do not need to distinguish between ```CsharpFileLeaf``` and FsharpFileLeaf for example. 
+
+##### Note
+```FolderComponent``` and ```FileLeaf``` are NOT classes that exist in Stryker.NET only the languagespecific implementations exist!

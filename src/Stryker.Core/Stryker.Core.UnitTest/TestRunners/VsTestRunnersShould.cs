@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
         private readonly Mutant _otherMutant;
-        private readonly FolderComposite _mutants;
+        private readonly CsharpFolderComposite _mutants;
         private readonly Uri _executorUri;
         private readonly TestProperty _coverageProperty;
 
@@ -74,12 +74,12 @@ namespace Stryker.Core.UnitTest.TestRunners
             var firstTest = new TestCase("T0", _executorUri, _testAssemblyPath);
             var secondTest = new TestCase("T1", _executorUri, _testAssemblyPath);
 
-            var content = new FolderComposite();
+            var content = new CsharpFolderComposite();
             _coverageProperty = TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
             _mutants = content;
-            _mutants.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
+            _mutants.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo()
             {
                 TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
@@ -526,7 +526,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
-                _mutants.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
+                _mutants.Add(new CsharpFileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 

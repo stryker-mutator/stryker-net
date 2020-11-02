@@ -26,8 +26,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new TestRunResult(true)); // testrun is successful
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());
-            var projectContents = new FolderComposite();
-            projectContents.Add(new FileLeaf
+            var projectContents = new CsharpFolderComposite();
+            projectContents.Add(new CsharpFileLeaf
             {
                 Name = "SomeFile.cs"
             });
@@ -75,11 +75,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null));
-            var folder = new FolderComposite
+            var folder = new CsharpFolderComposite
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf
+            folder.Add(new CsharpFileLeaf
             {
                 Name = "SomeFile.cs"
             });

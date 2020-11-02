@@ -174,7 +174,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedTestFiles = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
+            var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
 
@@ -204,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
+            var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
 
@@ -241,7 +241,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
             // check the diff result for a file not inside the test project
-            var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
+            var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
 
             var mutant = new Mutant();
 
@@ -257,7 +257,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void GetBaselineCallsFallbackWhenDashboardClientReturnsNull()
         {
-            // Arrange
+            // Arrange 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -293,7 +293,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void GetBaselineDoesNotCallFallbackWhenDashboardClientReturnsReport()
         {
-            // Arrange
+            // Arrange 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -329,7 +329,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailabe()
         {
-            // Arrange
+            // Arrange 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IGitInfoProvider>();
@@ -338,7 +338,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<ReadOnlyFileLeaf>(new FileLeaf());
+            var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
 
             var mutants = new List<Mutant>
             {
@@ -357,7 +357,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
-            // Arrange
+            // Arrange 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
 
             var options = new StrykerOptions();
@@ -389,7 +389,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -400,7 +400,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutants_MergesResetMutants_WhenDashboardCompareOn()
         {
-            // Arrange
+            // Arrange 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
             var target = new DiffMutantFilter(options, new Mock<IDiffProvider>().Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
@@ -467,7 +467,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutants_FiltersNoMutants_IfTestsChanged()
         {
-            // Arrange
+            // Arrange 
             var baselineProvider = new Mock<IBaselineProvider>();
 
             baselineProvider.Setup(x =>
@@ -485,75 +485,28 @@ namespace Stryker.Core.UnitTest.MutantFilters
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
                 ChangedSourceFiles = new List<string>(),
-                ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
-            });
-
-            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
-
-            var testFile1 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name1", "C:/testfile1.cs") });
-            var testFile2 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name2", "C:/testfile2.cs") });
-
-            var expectedToStay1 = new Mutant
-            {
-                CoveringTests = testFile1
-            };
-            var expectedToStay2 = new Mutant
-            {
-                CoveringTests = testFile1
-            };
-            var mutants = new List<Mutant>
-            {
-                expectedToStay1,
-                expectedToStay2,
-                new Mutant
-                {
-                    CoveringTests = testFile2
-                }
-            };
-
-            // Act
-            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
-
-            // Assert
-            results.ShouldBe(new []{expectedToStay1, expectedToStay2});
-        }
-
-        [Fact]
-        public void Should_IgnoreMutants_WithoutCoveringTestsInfo_When_Tests_Have_Changed()
-        {
-            // Arrange
-            var baselineProvider = new Mock<IBaselineProvider>();
-
-            baselineProvider.Setup(x =>
-                x.Load(It.IsAny<string>())
-            ).Returns(
-                Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
-                ));
-
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var gitInfoProvider = new Mock<IGitInfoProvider>();
-
-            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
-
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
-            {
-                ChangedSourceFiles = new List<string>(),
                 ChangedTestFiles = new List<string> { "C:/testfile.cs" }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
 
+            var testDescriptions = new List<TestDescription> { new TestDescription(Guid.NewGuid().ToString(), "name", "C:/testfile.cs") };
+            var testListDescription = new TestListDescription(testDescriptions);
+
             var mutants = new List<Mutant>
             {
+                new Mutant {
+                    CoveringTests = testListDescription
+                },
+                new Mutant(),
                 new Mutant()
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf().ToReadOnly(), options);
 
             // Assert
-            results.ShouldBeEmpty();
+            results.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -581,7 +534,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
             // Act
-            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
+            var result = target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
 
             // Assert
             result.ShouldBe(mutants);

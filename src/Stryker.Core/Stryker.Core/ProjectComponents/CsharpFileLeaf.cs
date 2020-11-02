@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
+    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {
         public string SourceCode { get; set; }
 

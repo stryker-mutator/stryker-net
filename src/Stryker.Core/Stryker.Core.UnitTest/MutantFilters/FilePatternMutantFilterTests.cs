@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             var options = new StrykerOptions(mutate: patterns);
-            var file = new FileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
+            var file = new CsharpFileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span
             var syntaxToken = SyntaxFactory.Identifier(

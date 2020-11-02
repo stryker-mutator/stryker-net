@@ -59,7 +59,7 @@ namespace Stryker.Core.MutationTest
 
         private void SetupMutationTestProcess(IMutantFilter mutantFilter)
         {
-            _mutationProcess = new MutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new CsharpMutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
         }
 
         public void Mutate()

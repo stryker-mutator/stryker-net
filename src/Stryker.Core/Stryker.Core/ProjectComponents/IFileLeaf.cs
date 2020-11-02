@@ -9,5 +9,7 @@ namespace Stryker.Core.ProjectComponents
     public interface IFileLeaf : IProjectComponent
     {
         string SourceCode { get; set; }
+
+        ReadOnlyFileLeaf ToReadOnly();
     }
 }

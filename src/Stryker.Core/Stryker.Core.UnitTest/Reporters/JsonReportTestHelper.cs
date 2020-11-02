@@ -24,17 +24,17 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new FolderComposite { Name = "RootFolder", RelativePath = "src" };
+            var folder = new CsharpFolderComposite { Name = "RootFolder", RelativePath = "src" };
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
-                var addedFolder = new FolderComposite { Name = $"{i}", RelativePath = $"src/{i}" };
+                var addedFolder = new CsharpFolderComposite { Name = $"{i}", RelativePath = $"src/{i}" };
                 folder.Add(addedFolder);
 
                 for (var y = 0; y <= 4; y++)
                 {
                     var m = new Collection<Mutant>();
-                    addedFolder.Add(new FileLeaf()
+                    addedFolder.Add(new CsharpFileLeaf()
                     {
                         Name = $"SomeFile{y}.cs",
                         RelativePath = $"src/{i}/SomeFile{y}.cs",

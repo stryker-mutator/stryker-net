@@ -21,11 +21,11 @@ namespace Stryker.Core.UnitTest
             var fileSystemMock = new MockFileSystem();
             var reporterMock = new Mock<IReporter>(MockBehavior.Loose);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }

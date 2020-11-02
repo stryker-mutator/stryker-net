@@ -44,14 +44,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldCallMutantOrchestratorAndReporter()
         {
-            var inputFile = new FileLeaf()
+            var inputFile = new CsharpFileLeaf()
             {
                 Name = "Recursive.cs",
                 SourceCode = SourceFile,
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectAnalyzerResult>();
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = Path.Combine(FilesystemRoot, "ExampleProject")
             };
@@ -129,7 +129,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void FilterMutantsShouldCallMutantFilters()
         {
-            var inputFile = new FileLeaf()
+            var inputFile = new CsharpFileLeaf()
             {
                 Name = "Recursive.cs",
                 SourceCode = SourceFile,
@@ -137,7 +137,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
 
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = Path.Combine(FilesystemRoot, "ExampleProject")
             };
@@ -230,11 +230,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf
+            folder.Add(new CsharpFileLeaf
             {
                 Name = "SomeFile.cs",
                 SourceCode = SourceFile,
@@ -311,11 +311,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             var otherMutant = new Mutant { Id = 2, MustRunAgainstAllTests = true };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 SourceCode = SourceFile,
@@ -374,11 +374,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             var otherMutant = new Mutant { Id = 2, ResultStatus = MutantStatus.NotRun };
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { mutant, otherMutant }
@@ -446,11 +446,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant = new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { mutant }
@@ -499,11 +499,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { }
@@ -552,11 +552,11 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant2 = new Mutant() { Id = 2, ResultStatus = MutantStatus.CompileError };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "ProjectRoot"
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { mutant, mutant2 }
