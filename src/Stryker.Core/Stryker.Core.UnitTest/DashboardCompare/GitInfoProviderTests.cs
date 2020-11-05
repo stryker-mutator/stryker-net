@@ -277,6 +277,36 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         }
 
         [Fact]
+        public void GetTargetCommit_Does_Not_Throw_NullReferenceException_When_Branch_Is_Null()
+        {
+            // Arrange
+            var options = new StrykerOptions(gitDiffTarget: "origin/master", diff: true);
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
+
+            var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
+            var branchMock = new Mock<Branch>();
+
+            branchCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Branch>)new List<Branch>
+                {
+                 branchMock.Object
+                }).GetEnumerator());
+
+            repositoryMock
+                .SetupGet(x => x.Branches)
+                .Returns(branchCollectionMock.Object);
+
+            var target = new GitInfoProvider(options, repositoryMock.Object);
+
+            // Act
+            void act() => target.DetermineCommit();
+
+            // Assert
+            Should.Throw<StrykerInputException>(act);
+        }
+
+        [Fact]
         public void ReturnsTip_When_Friendly_Name_Is_GitSource()
         {
             // Arrange
