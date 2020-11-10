@@ -1,4 +1,7 @@
-﻿using Crayon;
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -6,9 +9,6 @@ using Stryker.CLI.NuGet;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Stryker.CLI
 {

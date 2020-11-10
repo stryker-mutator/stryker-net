@@ -196,6 +196,7 @@ namespace Stryker.Core.Options
 
         private StrykerOptions SetConcurrency(string value)
         {
+            Concurrency = new ConcurrencyInput(_logger, value).Value;
             return this;
         }
 

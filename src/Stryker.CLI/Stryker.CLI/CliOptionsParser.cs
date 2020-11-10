@@ -42,9 +42,9 @@ namespace Stryker.CLI
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value() ?? "stryker-config.json";
         }
 
-        public static StrykerOptions EnrichWithCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
+        public static StrykerOptions EnrichFromCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
         {
-            StrykerOptions enrichedOptions = options;
+            var enrichedOptions = options;
             foreach (var option in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
                 var inputType = CliOptions[option.LongName].InputType;

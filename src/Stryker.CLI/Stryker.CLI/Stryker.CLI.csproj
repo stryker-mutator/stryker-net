@@ -42,5 +42,7 @@
 
   <ItemGroup>
     <None Include="..\..\..\.editorconfig" Link="Properties\.editorconfig" />
+    <None Include="..\..\Directory.Build.props" Link="Properties\Directory.Build.props" />
+    <None Include="..\..\Directory.Build.targets" Link="Properties\Directory.Build.targets" />
   </ItemGroup>
 </Project>
