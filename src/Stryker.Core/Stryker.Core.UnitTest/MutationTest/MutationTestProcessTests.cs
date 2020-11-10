@@ -180,7 +180,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             });
 
             var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped };
+            var compileErrorMutant = new Mutant() { Mutation = new Mutation(), ResultStatus = MutantStatus.CompileError };
+            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped, compileErrorMutant };
 
             // create mocks
             var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
@@ -194,7 +195,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
+            IEnumerable<Mutant> mutantsPassedToFilter = null;
             mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<ReadOnlyFileLeaf>(), It.IsAny<StrykerOptions>()))
+                .Callback<IEnumerable<Mutant>, ReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
                 .Returns((IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
 
@@ -213,6 +216,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate();
 
             target.FilterMutants();
+
+            // verify that compiler error mutants are not passed to filter
+            mutantsPassedToFilter.ShouldNotContain(compileErrorMutant);
 
             // verify that filtered mutants are skipped
             inputFile.Mutants.ShouldContain(mutantToBeSkipped);
