@@ -39,8 +39,8 @@ namespace Stryker.Core.MutationTest
             _projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new MutantOrchestrator(options: _options);
-            _compilingProcess = new CompilingProcessFsharp(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
+            _compilingProcess = new CompilingProcessFsharp(mutationTestInput, new RollbackProcess(), _fileSystem);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
             _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
@@ -78,31 +78,6 @@ namespace Stryker.Core.MutationTest
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
             var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
-
-            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
-            {
-                var injectionPath = testProject.TargetDirectory;
-                if (!_fileSystem.Directory.Exists(injectionPath))
-                {
-                    _fileSystem.Directory.CreateDirectory(injectionPath);
-                }
-
-                // inject the mutated Assembly into the test project
-                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
-                ms.Position = 0;
-                ms.CopyTo(fs);
-
-                if (msForSymbols != null)
-                {
-                    // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
-                    msForSymbols.Position = 0;
-                    msForSymbols.CopyTo(symbolDestination);
-                }
-
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
-            }
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
             if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
