@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Instrumentation
 {
     internal abstract class BaseEngine<T>: IInstrumentCode where T: SyntaxNode
     {
-
         protected BaseEngine(string markerId, string engineId)
         {
             InstrumentEngineID = engineId;

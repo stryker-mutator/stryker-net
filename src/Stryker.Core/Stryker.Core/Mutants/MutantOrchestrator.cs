@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -78,8 +78,10 @@ namespace Stryker.Core.Mutants
                 new PostfixUnaryExpressionOrchestrator(this),
                 new StaticFieldDeclarationOrchestrator(this),
                 new StaticConstructorOrchestrator(this),
+                new PropertyDeclarationOrchestrator(this),
                 new ArrayInitializerOrchestrator(this),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
+                new AccessorSyntaxOrchestrator(this),
                 new ConstLocalDeclarationOrchestrator(this),
                 new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),

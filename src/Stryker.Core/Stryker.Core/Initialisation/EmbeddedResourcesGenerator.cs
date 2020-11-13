@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using System;
@@ -49,7 +49,7 @@ namespace Stryker.Core.Initialisation
             }
             catch (Exception e)
             {
-                logger.LogWarning(e,
+                logger?.LogWarning(e,
                     $"Original project under test {assemblyPath} could not be loaded. \n" +
                     $"Embedded Resources might be missing.");
 

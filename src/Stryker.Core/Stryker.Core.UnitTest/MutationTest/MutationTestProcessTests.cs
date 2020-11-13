@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -135,7 +135,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SourceCode = SourceFile,
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
-
 
             var folder = new FolderComposite()
             {
