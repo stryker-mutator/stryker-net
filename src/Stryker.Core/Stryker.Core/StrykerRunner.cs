@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
@@ -27,15 +26,13 @@ namespace Stryker.Core
     {
         private readonly IProjectOrchestrator _projectOrchestrator;
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
-        private readonly IFileSystem _fileSystem;
         private ILogger _logger;
         private readonly IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IEnumerable<IMutationTestProcess> mutationTestProcesses = null, IFileSystem fileSystem = null, IReporterFactory reporterFactory = null)
+        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IEnumerable<IMutationTestProcess> mutationTestProcesses = null, IReporterFactory reporterFactory = null)
         {
             _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
             _mutationTestProcesses = mutationTestProcesses ?? new List<IMutationTestProcess>();
-            _fileSystem = fileSystem ?? new FileSystem();
             _reporterFactory = reporterFactory ?? new ReporterFactory();
         }
 
