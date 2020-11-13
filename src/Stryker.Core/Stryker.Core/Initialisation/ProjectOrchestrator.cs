@@ -48,7 +48,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
                 try
                 {
-                    foreach(var project in manager.Projects.Values)
+                    Parallel.ForEach(manager.Projects.Values, project =>
                     {
                         _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFile.Path);
                         var buildResult = project.Build();
@@ -62,7 +62,7 @@ namespace Stryker.Core.Initialisation
                         {
                             _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
                         }
-                    };
+                    });
                 }
                 catch (AggregateException ex)
                 {
