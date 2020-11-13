@@ -1,17 +1,15 @@
-using Buildalyzer;
-using Buildalyzer.Environment;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.Testing;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Buildalyzer;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
+using Stryker.Core.MutationTest;
+using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -65,7 +63,8 @@ namespace Stryker.Core.Initialisation
                             _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
                         }
                     });
-                } catch (AggregateException ex)
+                }
+                catch (AggregateException ex)
                 {
                     throw ex.GetBaseException();
                 }
