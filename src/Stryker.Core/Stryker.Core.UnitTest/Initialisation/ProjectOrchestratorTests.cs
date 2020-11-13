@@ -75,6 +75,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldHaveSingleItem();
         }
 
+        // This test is a bit flaky :/ If it fails, run it again a couple times. Perhaps as single run, run all or debug run.
         [Fact]
         public void ShouldInitializeEachProjectInSolution()
         {
