@@ -34,18 +34,12 @@ namespace Stryker.Core.Compiling
         private string AssemblyName =>
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
 
-        public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, Stream ilStream, Stream memoryStream, bool devMode)
+        public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
-            memoryStream ??= new MemoryStream();
-
-            var syntaxTree = new List<ParsedInput>();
-            foreach (var tree in syntaxTrees)
-            { syntaxTree.Add(tree); }
-
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
-            FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTree);
+            FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees);
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
             var checker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
@@ -78,7 +72,7 @@ namespace Stryker.Core.Compiling
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;
-            var compilationSucces = TryCompilation(checker, trees, pathlist, dependencies, pdblist);
+            (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies, pdblist);
 
             if (compilationSucces)
             {
@@ -94,10 +88,12 @@ namespace Stryker.Core.Compiling
             throw new StrykerCompilationException("Failed to restore build able state.");
         }
 
-        private bool TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies , List<string> pdblist)
+        private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies , List<string> pdblist)
         {
-            Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(checker.Compile(trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile*/pdblist.First(), /*[OptionalArgument] FSharpOption<bool> executable*/false, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
-            return result.Item2 == 0;
+            Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
+                checker.Compile(
+                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile*/pdblist.First(), /*[OptionalArgument] FSharpOption<bool> executable*/false, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
+            return (result.Item2 == 0, result.Item1);
         }
     }
 }
