@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, fileSystem: fileSystemMock, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
 
             target.RunMutationTest(options);
 
@@ -110,7 +110,7 @@ namespace Stryker.Core.UnitTest
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, fileSystem: fileSystemMock, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
 
             var result = target.RunMutationTest(options);
 
