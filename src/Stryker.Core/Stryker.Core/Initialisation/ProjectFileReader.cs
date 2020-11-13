@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath);
+        IAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath);
     }
 
     public class ProjectFileReader : IProjectFileReader
