@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
@@ -16,7 +16,6 @@ namespace Stryker.Core.MutationTest
 {
     public class MutationProcess : IMutationProcess
     {
-
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
         private readonly StrykerOptions _options;
