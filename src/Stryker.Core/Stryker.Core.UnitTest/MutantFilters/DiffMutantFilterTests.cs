@@ -1,4 +1,7 @@
-﻿using Moq;
+﻿using DotNet.Globbing;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
@@ -166,8 +169,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>(),
-                TestFilesChanged = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>(),
+                ChangedTestFiles = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
@@ -175,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldBeEmpty();
@@ -193,7 +196,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myFile
                 }
@@ -204,7 +207,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -225,11 +228,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>()
                 {
                     myTest
                 },
-                TestFilesChanged = new Collection<string>() {
+                ChangedTestFiles = new Collection<string>() {
                     myTest
                 }
             });
@@ -243,7 +246,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             mutant.CoveringTests.Add(new TestDescription(Guid.NewGuid().ToString(), "name", myTest));
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file, options);
+            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -252,7 +255,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void GetBaselineCallsFallbackWhenDashboardClientReturnsNull()
         {
-            // Arrange 
+            // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -268,7 +271,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -288,7 +291,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void GetBaselineDoesNotCallFallbackWhenDashboardClientReturnsReport()
         {
-            // Arrange 
+            // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProvider = new Mock<IGitInfoProvider>();
@@ -304,7 +307,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                reporters: reporters,
                fallbackVersion: "fallback/version");
 
-            var inputComponent = new Mock<IReadOnlyInputComponent>().Object;
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
@@ -324,7 +327,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailabe()
         {
-            // Arrange 
+            // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IGitInfoProvider>();
@@ -333,7 +336,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<FileLeaf>(MockBehavior.Loose);
+            var file = new Mock<ReadOnlyFileLeaf>(new FileLeaf());
 
             var mutants = new List<Mutant>
             {
@@ -352,14 +355,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
-            // Arrange 
+            // Arrange
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
 
             var options = new StrykerOptions();
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>()
+                ChangedSourceFiles = new List<string>()
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
@@ -384,7 +387,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
+            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -395,7 +398,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutants_MergesResetMutants_WhenDashboardCompareOn()
         {
-            // Arrange 
+            // Arrange
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
             var target = new DiffMutantFilter(options, new Mock<IDiffProvider>().Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
@@ -462,14 +465,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void FilterMutants_FiltersNoMutants_IfTestsChanged()
         {
-            // Arrange 
+            // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();
 
             baselineProvider.Setup(x =>
             x.Load(It.IsAny<string>())
             ).Returns(
                 Task.FromResult(
-                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                     ));
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -479,29 +482,76 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedFiles = new List<string>(),
-                TestFilesChanged = new List<string> { "C:/testfile.cs" }
+                ChangedSourceFiles = new List<string>(),
+                ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
 
-            var testDescriptions = new List<TestDescription> { new TestDescription(Guid.NewGuid().ToString(), "name", "C:/testfile.cs") };
-            var testListDescription = new TestListDescription(testDescriptions);
+            var testFile1 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name1", "C:/testfile1.cs") });
+            var testFile2 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name2", "C:/testfile2.cs") });
+
+            var expectedToStay1 = new Mutant
+            {
+                CoveringTests = testFile1
+            };
+            var expectedToStay2 = new Mutant
+            {
+                CoveringTests = testFile1
+            };
+            var mutants = new List<Mutant>
+            {
+                expectedToStay1,
+                expectedToStay2,
+                new Mutant
+                {
+                    CoveringTests = testFile2
+                }
+            };
+
+            // Act
+            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
+
+            // Assert
+            results.ShouldBe(new []{expectedToStay1, expectedToStay2});
+        }
+
+        [Fact]
+        public void Should_IgnoreMutants_WithoutCoveringTestsInfo_When_Tests_Have_Changed()
+        {
+            // Arrange
+            var baselineProvider = new Mock<IBaselineProvider>();
+
+            baselineProvider.Setup(x =>
+                x.Load(It.IsAny<string>())
+            ).Returns(
+                Task.FromResult(
+                    JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
+                ));
+
+            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var gitInfoProvider = new Mock<IGitInfoProvider>();
+
+            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
+
+            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            {
+                ChangedSourceFiles = new List<string>(),
+                ChangedTestFiles = new List<string> { "C:/testfile.cs" }
+            });
+
+            var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
 
             var mutants = new List<Mutant>
             {
-                new Mutant {
-                    CoveringTests = testListDescription
-                },
-                new Mutant(),
                 new Mutant()
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf(), options);
+            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
 
             // Assert
-            results.Count().ShouldBe(1);
+            results.ShouldBeEmpty();
         }
 
         [Fact]
@@ -514,14 +564,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProviderMock = new Mock<IBaselineProvider>();
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var diffResult = new DiffResult() { TestFilesChanged = new List<string> { "config.json" } };
+            var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
             diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
 
             baselineProviderMock.Setup(x =>
                 x.Load(It.IsAny<string>())
                 ).Returns(
                     Task.FromResult(
-                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith())
+                         JsonReport.Build(new StrykerOptions(), JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent())
                          ));
 
             var target = new DiffMutantFilter(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
@@ -529,7 +579,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
             // Act
-            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }, options);
+            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
 
             // Assert
             result.ShouldBe(mutants);

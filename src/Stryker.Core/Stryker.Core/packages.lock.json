@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v3.1": {
       "Buildalyzer": {
         "type": "Direct",
-        "requested": "[3.0.1, )",
-        "resolved": "3.0.1",
-        "contentHash": "WxXxlfoF8O2El7AN4CWshL3+L7em7yAT/MiOX+eySG2dzsdLw1/5z75xEuSOt1kvJtQce3xpIzr+z4g02aJ3wQ==",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "UrKSM5J0nsOB3dJCOyWwJGeAE/ICr3irTJgVjdwn1jy0Yi0cpX9D1BFI6PZbJ7ZTi+H4KoSkVLawosEZMv7RSQ==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.0.1",
+          "Buildalyzer.Logger": "3.1.0",
           "MSBuild.StructuredLogger": "2.1.133",
           "Microsoft.Build": "16.5.0",
           "Microsoft.Build.Framework": "16.5.0",
@@ -20,6 +20,12 @@
           "MsBuildPipeLogger.Server": "1.1.3",
           "System.Reflection.TypeExtensions": "4.6.0"
         }
+      },
+      "Crayon": {
+        "type": "Direct",
+        "requested": "[1.2.48, )",
+        "resolved": "1.2.48",
+        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
       },
       "DotNet.Glob": {
         "type": "Direct",
@@ -108,9 +114,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.76, )",
-        "resolved": "2.1.76",
-        "contentHash": "hrC3MLBsT2i4798p43Ng6Oq9SGaawxofz6WvbPI9vxtdGSSoHQ12PWem5kMyyvB7a12a1UImdgLGhq+0+vkiKw==",
+        "requested": "[2.1.113, )",
+        "resolved": "2.1.113",
+        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -181,8 +187,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "L6Y8hXDTGJUyNivg5DCgH36r/dwknJa5J05iT6IYyQZgOzQLDAWuXODUAaL7FPR2+43cSp0ioja0p/fhDF5Y+g==",
+        "resolved": "3.1.0",
+        "contentHash": "0XwI+BSLS8CXzq5Ek3ksgJidfxkNVIpA7zrO2xfnmUrRrHYrqTWo2bPZ1hACgqCzkIjGz1hX5jga9oRTLXT16Q==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }

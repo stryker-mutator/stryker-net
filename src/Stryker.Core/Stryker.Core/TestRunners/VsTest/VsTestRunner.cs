@@ -119,7 +119,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                     testCases = needAll ? null : mutants.SelectMany(m => m.CoveringTests.GetList()).Distinct().Select(t => _discoveredTests.First(tc => tc.Id.ToString() == t.Guid)).ToList();
 
-                    _logger.LogDebug($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
+                    _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
                                       $"against {(testCases == null ? "all tests." : string.Join(", ", testCases.Select(x => x.FullyQualifiedName)))}.");
                     if (testCases?.Count == 0)
                     {
@@ -170,7 +170,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (ranTests.Count == 0 && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
-                _logger.LogDebug($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
+                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
             }
 
             var message = string.Join(Environment.NewLine,
@@ -283,7 +283,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
-                        _logger.LogDebug($"${RunnerId}: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
+                        _logger.LogDebug($"{RunnerId}: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
                     }
                     else
                     {
@@ -386,7 +386,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
             }
 
-            _logger.LogDebug("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
+            _logger.LogTrace("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
             return traceLevel;
         }
 
@@ -422,7 +422,7 @@ $@"<RunSettings>
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";
-            _logger.LogDebug("VsTest run settings set to: {0}", runSettings);
+            _logger.LogTrace("VsTest run settings set to: {0}", runSettings);
 
             return runSettings;
         }
@@ -446,7 +446,7 @@ $@"<RunSettings>
                 _vsTestConsole = null;
             }
 
-            _logger.LogDebug("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
+            _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
 
             return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
             {

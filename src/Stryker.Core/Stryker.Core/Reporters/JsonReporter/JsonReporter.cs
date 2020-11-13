@@ -1,7 +1,8 @@
-﻿using Stryker.Core.Mutants;
+﻿using Crayon;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Testing;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -12,24 +13,24 @@ namespace Stryker.Core.Reporters.Json
     {
         private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly IChalk _chalk;
+        private readonly TextWriter _consoleWriter;
 
-        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, IChalk chalk = null)
+        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _chalk = chalk ?? new Chalk();
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent mutationTree)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent mutationTree)
         {
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.json");
             WriteReportToJsonFile(reportPath, mutationReport.ToJson());
 
-            _chalk.Green($"\nYour json report has been generated at: \n " +
-                $"{reportPath} \n");
+            _consoleWriter.Write(Output.Green($"\nYour json report has been generated at: \n " +
+                $"{reportPath} \n"));
         }
 
         private void WriteReportToJsonFile(string filePath, string mutationReport)
@@ -41,7 +42,7 @@ namespace Stryker.Core.Reporters.Json
             }
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
         }
 

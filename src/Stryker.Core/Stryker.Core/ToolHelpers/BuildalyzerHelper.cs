@@ -1,4 +1,4 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
@@ -172,6 +172,16 @@ namespace Stryker.Core.ToolHelpers
             {
                 throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
+        }
+
+        public static Language ParseLanguage(this IAnalyzerResult analyzerResult)
+        {
+            return analyzerResult.GetPropertyOrDefault("Language") switch
+            {
+                "F#" => Language.Fsharp,
+                "C#" => Language.Csharp,
+                _ => Language.Undefined,
+            };
         }
 
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)

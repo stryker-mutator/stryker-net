@@ -1,20 +1,22 @@
 steps:
-  - task: CacheBeta@0
-    displayName: 'Cache NuGet packages'
-    inputs:
-      key: nuget | **/packages.lock.json
-      path: $(NUGET_PACKAGES)
+- task: Cache@2
+  displayName: 'Cache NuGet packages'
+  inputs:
+    key: nuget | **/packages.lock.json
+    path: $(NUGET_PACKAGES)
 
-  - task: CacheBeta@0
-    displayName: 'Cache Library Manager libraries (Windows)'
-    inputs:
-      key: libman | **/libman.json
-      path: $(LibManCacheWindows)
-    condition: eq(variables['Agent.OS'], 'Windows_NT')
+- task: Cache@2
+  displayName: 'Cache Library Manager libraries (Windows)'
+  inputs:
+    key:  libman | **/libman.json
+    restoreKeys: libman
+    path: $(LibManCacheWindows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
 
-  - task: CacheBeta@0
-    displayName: 'Cache Libary Manager libraries (macOS, Linux)'
-    inputs:
-      key: libman | **/libman.json
-      path: $(LibManCacheMacLinux)
-    condition: ne(variables['Agent.OS'], 'Windows_NT')
+- task: Cache@2
+  displayName: 'Cache Libary Manager libraries (macOS, Linux)'
+  inputs:
+    key: libman | **/libman.json
+    restoreKeys: libman
+    path: $(LibManCacheMacLinux)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')

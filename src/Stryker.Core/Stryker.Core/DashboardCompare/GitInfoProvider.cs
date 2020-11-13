@@ -5,54 +5,66 @@ using System;
 
 namespace Stryker.Core.DashboardCompare
 {
+    using Logging;
+    using Microsoft.Extensions.Logging;
+    using System.Linq;
+
     public class GitInfoProvider : IGitInfoProvider
     {
         private readonly IStrykerOptions _options;
         private readonly string _repositoryPath;
+        private readonly ILogger<GitInfoProvider> _logger;
+
         public IRepository Repository { get; }
 
-        public string RepositoryPath
-        {
-            get
-            {
-                return _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
-            }
-        }
+        public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
-        public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null)
+        public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
         {
             _repositoryPath = repositoryPath;
             _options = options;
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
             if (!options.DiffOptions.DiffEnabled)
             {
                 return;
             }
 
-            if (repository != null)
-            {
-                Repository = repository;
-            }
-            else
-            {
-                Repository = CreateRepository();
-            }
+            Repository = repository ?? CreateRepository();
         }
 
         public string GetCurrentBranchName()
         {
-            if (Repository?.Branches != null)
+            string branchName = null;
+            if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
             {
-                foreach (var branch in Repository.Branches)
-                {
-                    if (branch.IsCurrentRepositoryHead)
-                    {
-                        return branch.FriendlyName;
-                    }
-                }
+                _logger.LogDebug("{0} identified as current branch", identifiedBranch.FriendlyName);
+                branchName = identifiedBranch.FriendlyName;
             }
 
-            return string.Empty;
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                _logger.LogDebug("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
+                branchName = _options.ProjectVersion;
+            }
+
+            if (string.IsNullOrWhiteSpace(branchName))
+            {
+                throw new StrykerInputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
+            }
+            return branchName;
+        }
+
+        public Commit DetermineCommit()
+        {
+            var commit = GetTargetCommit();
+
+            if (commit == null)
+            {
+                throw new StrykerInputException($"No Branch or commit found with given target {_options.GitDiffTarget}. Please provide a different GitDiffTarget.");
+            }
+
+            return commit;
         }
 
         private IRepository CreateRepository()
@@ -61,59 +73,35 @@ namespace Stryker.Core.DashboardCompare
             {
                 throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
             }
-            else
-            {
-                return new Repository(RepositoryPath);
-            }
+
+            return new Repository(RepositoryPath);
         }
 
-        private void Checkout()
+        private Commit GetTargetCommit()
         {
-            try
-            {
-                var branch = Repository.CreateBranch(_options.DiffOptions.GitSource, $"origin/{_options.DiffOptions.GitSource}");
+            Branch targetBranch = null;
 
-                Commands.Checkout(Repository, branch);
-
-                var currentBranch = Repository.CreateBranch(_options.DiffOptions.ProjectVersion, $"origin/{_options.DiffOptions.ProjectVersion}");
-
-                Commands.Checkout(Repository, currentBranch);
-            }
-            catch
-            {
-                // Do nothing, Checkout is already done
-            }
-        }
-
-        public Commit DetermineCommit()
-        {
-            var commit = GetCommit();
-
-            if (commit == null)
-            {
-                Checkout();
-                commit = GetCommit();
-            }
-
-            if (commit == null)
-            {
-                throw new StrykerInputException($"No Branch or commit found with given source {_options.DiffOptions.GitSource}. Please provide a different --git-source or remove this option.");
-            }
-
-            return commit;
-        }
-
-
-        private Commit GetCommit()
-        {
-            Branch sourceBranch = null;
+            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.GitDiffTarget);
             foreach (var branch in Repository.Branches)
             {
                 try
                 {
-                    if (branch.CanonicalName == _options.DiffOptions.GitSource || branch.FriendlyName == _options.DiffOptions.GitSource)
+                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.GitDiffTarget) ?? false)
                     {
-                        sourceBranch = branch;
+                        _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
+                        targetBranch = branch;
+                        break;
+                    }
+                    if (branch.CanonicalName?.Contains(_options.GitDiffTarget) ?? false)
+                    {
+                        _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
+                        targetBranch = branch;
+                        break;
+                    }
+                    if (branch.FriendlyName?.Contains(_options.GitDiffTarget) ?? false)
+                    {
+                        _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
+                        targetBranch = branch;
                         break;
                     }
                 }
@@ -123,17 +111,19 @@ namespace Stryker.Core.DashboardCompare
                 }
             }
 
-            if (sourceBranch != null)
+            if (targetBranch != null)
             {
-                return sourceBranch.Tip;
+                return targetBranch.Tip;
             }
 
-            if (_options.DiffOptions.GitSource.Length == 40)
+            // It's a commit!
+            if (_options.GitDiffTarget.Length == 40)
             {
-                var commit = Repository.Lookup(new ObjectId(_options.DiffOptions.GitSource)) as Commit;
+                var commit = Repository.Lookup(new ObjectId(_options.GitDiffTarget)) as Commit;
 
                 if (commit != null)
                 {
+                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.GitDiffTarget}");
                     return commit;
                 }
             }

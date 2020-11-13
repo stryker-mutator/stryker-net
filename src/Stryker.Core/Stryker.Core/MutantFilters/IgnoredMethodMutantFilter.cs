@@ -16,7 +16,7 @@ namespace Stryker.Core.MutantFilters
     {
         public string DisplayName => "method filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, IStrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             if (!options.IgnoredMethods.Any())
             {

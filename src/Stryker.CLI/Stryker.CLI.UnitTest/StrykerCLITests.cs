@@ -581,9 +581,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--git-source")]
-        [InlineData("-gs")]
-        public void ShouldSetGitSourceWhenPassed(string argName)
+        [InlineData("--git-diff-target")]
+        [InlineData("-gdt")]
+        public void ShouldSetGitDiffTargetWhenPassed(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions options = new StrykerOptions();
@@ -595,7 +595,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "development" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffOptions.GitSource == "development"),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffOptions.GitDiffTarget == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -637,7 +637,6 @@ namespace Stryker.CLI.UnitTest
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
-
         [Fact]
         public void ShouldSetDiskBaselineProviderWhenNotSpecifiedAndNoDashboardReporterSpecified()
         {
@@ -652,6 +651,25 @@ namespace Stryker.CLI.UnitTest
             target.Run(new string[] { });
 
             mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
+                It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
+        [InlineData("--diff-ignore-files ['**/*.ts']")]
+        [InlineData("-diffignorefiles ['**/*.ts']")]
+        public void ShouldCreateDiffIgnoreGlobFiltersIfSpecified(string argName)
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            StrykerOptions options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName });
+
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffIgnoreFiles.Count() == 1),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
     }

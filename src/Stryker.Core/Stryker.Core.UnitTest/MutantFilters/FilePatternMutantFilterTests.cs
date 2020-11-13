@@ -57,7 +57,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var sut = new FilePatternMutantFilter();
 
             // Act
-            var result = sut.FilterMutants(new[] { mutant }, file, options);
+            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), options);
 
             // Assert
             result.Contains(mutant).ShouldBe(shouldKeepFile);

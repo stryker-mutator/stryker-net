@@ -51,12 +51,13 @@ namespace Stryker.CLI
             CommandOption languageVersion,
             CommandOption diff,
             CommandOption diffCompareToDashboard,
-            CommandOption gitSource,
+            CommandOption gitDiffTarget,
             CommandOption testProjects,
             CommandOption baselineStorageLocation,
             CommandOption azureSAS,
             CommandOption azureFileStorageUrl,
-            CommandOption mutationLevel)
+            CommandOption mutationLevel,
+            CommandOption dashboardCompareFileExcludePatterns)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -81,6 +82,7 @@ namespace Stryker.CLI
                 reporters: GetOption(reporter.Value(), CLIOptions.Reporters),
                 dashboardApiKey: GetOption(dashboardApiKey.Value(), CLIOptions.DashboardApiKeyOption),
                 dashboardUrl: GetOption(dashboardUrl.Value(), CLIOptions.DashboardUrlOption),
+                diffIgnoreFiles: GetOption(dashboardCompareFileExcludePatterns.Value(), CLIOptions.DiffIgnoreFiles),
                 projectName: GetOption(reportersProjectName.Value(), CLIOptions.DashboardProjectNameOption),
                 moduleName: GetOption(reportersModuleName.Value(), CLIOptions.DashboardModuleNameOption),
                 projectVersion: GetOption(reportersProjectVersion.Value(), CLIOptions.DashboardProjectVersionOption),
@@ -106,7 +108,7 @@ namespace Stryker.CLI
                 languageVersion: GetOption(languageVersion.Value(), CLIOptions.LanguageVersionOption),
                 diff: (GetOption(diff.HasValue(), CLIOptions.Diff)) || GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
                 compareToDashboard: GetOption(diffCompareToDashboard.HasValue(), CLIOptions.DashboardCompare),
-                gitSource: GetOption(gitSource.Value(), CLIOptions.GitSource),
+                gitDiffTarget: GetOption(gitDiffTarget.Value(), CLIOptions.GitDiffTarget),
                 baselineStorageLocation: GetOption(baselineStorageLocation.Value(), CLIOptions.BaselineStorageLocation),
                 azureSAS: GetOption(azureSAS.Value(), CLIOptions.AzureSAS),
                 azureFileStorageUrl: GetOption(azureFileStorageUrl.Value(), CLIOptions.AzureFileStorageUrl),

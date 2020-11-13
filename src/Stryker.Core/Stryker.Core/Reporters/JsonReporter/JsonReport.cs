@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters.Json
 
         }
 
-        private JsonReport(IStrykerOptions options, IReadOnlyInputComponent mutationReport)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             _options = options;
 
@@ -34,7 +34,7 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static JsonReport Build(IStrykerOptions options, IReadOnlyInputComponent mutationReport)
+        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             // This should really only happen in unit tests.
             // We need this construct because in a unit test
@@ -67,14 +67,14 @@ namespace Stryker.Core.Reporters.Json
             return ToJson().Replace("<", "<\" + \"");
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyInputComponent component)
+        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
-            if (component is FolderComposite folder)
+            if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
             }
-            else if (component is FileLeaf file)
+            else if (component is ReadOnlyFileLeaf file)
             {
                 Merge(files, GenerateFileReportComponents(file));
             }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(FolderComposite folderComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
             Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
             foreach (var child in folderComponent.Children)
@@ -93,7 +93,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(FileLeaf fileComponent)
+        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }

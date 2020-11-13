@@ -30,14 +30,14 @@ namespace Stryker.Core.MutationTest
         public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
         {
             var forceSingle = false;
-            while(mutantsToTest.Any())
+            while (mutantsToTest.Any())
             {
                 var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
-                Logger.LogDebug(
+                Logger.LogTrace(
                     $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
 
-                var remainingMutants = mutantsToTest.Where( (m) => m.ResultStatus == MutantStatus.NotRun).ToList();
+                var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.NotRun).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
                 {
                     // the test failed to get any conclusive results

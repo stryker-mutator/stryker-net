@@ -7,7 +7,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Xunit;
 
@@ -28,8 +27,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new TestRunResult(true)); // testrun is successful
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());
+            var projectContents = new FolderComposite();
+            projectContents.Add(new FileLeaf
+            {
+                Name = "SomeFile.cs"
+            });
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()))
-                .Returns(new ProjectInfo
+                .Returns((new ProjectInfo
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
@@ -77,6 +81,15 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null));
+            var folder = new FolderComposite
+            {
+                Name = "ProjectRoot"
+            };
+            folder.Add(new FileLeaf
+            {
+                Name = "SomeFile.cs"
+            });
+
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>())).Returns(
                 new ProjectInfo
                 {
@@ -85,18 +98,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
-                    ProjectContents = new FolderComposite
-                    {
-                        Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent>
-                        {
-                            new FileLeaf
-                            {
-                                Name = "SomeFile.cs"
-                            }
-                        }
-                    }
+                    ProjectContents = folder
                 });
+
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());

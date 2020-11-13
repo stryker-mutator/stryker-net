@@ -1,7 +1,9 @@
-﻿using Stryker.Core.Mutants;
+﻿using Crayon;
+using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Testing;
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Stryker.Core.Reporters
 {
@@ -10,14 +12,14 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleDotProgressReporter : IReporter
     {
-        private readonly IChalk _chalk;
+        private readonly TextWriter _consoleWriter;
 
-        public ConsoleDotProgressReporter(IChalk chalk = null)
+        public ConsoleDotProgressReporter(TextWriter consoleWriter = null)
         {
-            _chalk = chalk ?? new Chalk();
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent inputComponent) { }
+        public void OnMutantsCreated(IReadOnlyProjectComponent inputComponent) { }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> m)
         {
@@ -28,17 +30,17 @@ namespace Stryker.Core.Reporters
             switch (result.ResultStatus)
             {
                 case MutantStatus.Killed:
-                    _chalk.Default(".");
+                    _consoleWriter.Write(".");
                     break;
                 case MutantStatus.Survived:
-                    _chalk.Red("S");
+                    _consoleWriter.Write(Output.Red("S"));
                     break;
                 case MutantStatus.Timeout:
-                    _chalk.Default("T");
+                    _consoleWriter.Write("T");
                     break;
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent inputComponent) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent) { }
     }
 }

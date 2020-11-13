@@ -1,10 +1,7 @@
-﻿using Buildalyzer;
-using Stryker.Core.ProjectComponents;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Buildalyzer;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -16,7 +13,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
-        public FolderComposite ProjectContents { get; set; }
+        public IProjectComponent ProjectContents { get; set; }
 
         public string GetInjectionPath(IAnalyzerResult analyzerResult)
         {
