@@ -6,7 +6,7 @@ namespace Stryker.Core.ProjectComponents
     {
         IEnumerable<IProjectComponent> Children { get; }
 
-        void Add(IProjectComponent component);
-        void AddRange(IEnumerable<IProjectComponent> enumerable);
+        void Add(IProjectComponent child);
+        void AddRange(IEnumerable<IProjectComponent> children);
     }
 }
