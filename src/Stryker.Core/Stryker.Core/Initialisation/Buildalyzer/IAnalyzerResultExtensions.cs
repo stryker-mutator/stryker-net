@@ -1,18 +1,17 @@
-using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
 
-namespace Stryker.Core.ToolHelpers
+namespace Stryker.Core.Initialisation.Buildalyzer
 {
-    public static class BuildalyzerHelper
+    public static class IAnalyzerResultExtensions
     {
         public static string GetAssemblyPath(this IAnalyzerResult analyzerResult)
         {

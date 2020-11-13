@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Buildalyzer;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
@@ -15,18 +16,11 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
-        public string GetInjectionPath(IAnalyzerResult analyzerResult)
+        public string GetInjectionFilePath(IAnalyzerResult analyzerResult)
         {
             return Path.Combine(
-                Path.GetDirectoryName(GetAssemblyPath(analyzerResult)), 
-                Path.GetFileName(GetAssemblyPath(ProjectUnderTestAnalyzerResult)));
-        }
-
-        public string GetAssemblyPath(IAnalyzerResult analyzerResult)
-        {
-            return FilePathUtils.NormalizePathSeparators(Path.Combine(
-                FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]),
-                FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"])));
+                Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
+                Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
         }
     }
 

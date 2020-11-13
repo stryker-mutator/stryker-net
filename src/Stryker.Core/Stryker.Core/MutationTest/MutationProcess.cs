@@ -1,16 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using System;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
 
 namespace Stryker.Core.MutationTest
 {
@@ -19,7 +20,7 @@ namespace Stryker.Core.MutationTest
 
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly CompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
@@ -31,7 +32,7 @@ namespace Stryker.Core.MutationTest
         public MutationProcess(MutationTestInput mutationTestInput,
             IMutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
-            StrykerOptions options = null,
+            IStrykerOptions options = null,
 
             IMutantFilter mutantFilter = null,
             IReporter reporter = null)
@@ -81,14 +82,14 @@ namespace Stryker.Core.MutationTest
 
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
-                var injectionPath = testProject.TargetDirectory;
+                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
                 if (!_fileSystem.Directory.Exists(injectionPath))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
                 // inject the mutated Assembly into the test project
-                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                using var fs = _fileSystem.File.Create(injectionPath);
                 ms.Position = 0;
                 ms.CopyTo(fs);
 
@@ -96,7 +97,7 @@ namespace Stryker.Core.MutationTest
                 {
                     // inject the debug symbols into the test project
                     using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }
