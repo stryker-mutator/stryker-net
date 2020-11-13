@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ namespace Stryker.Core.ProjectComponents
     public class FolderComposite : ProjectComponent<SyntaxTree>, IParentComponent
     {
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
-        private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();
+        private readonly List<IProjectComponent> _children = new List<IProjectComponent>();
         public IEnumerable<IProjectComponent> Children => _children;
 
         /// <summary>
@@ -28,10 +28,19 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotSupportedException("Folders do not contain mutants.");
         }
 
-        public override void Add(ProjectComponent<SyntaxTree> component)
+        public void Add(IProjectComponent component)
         {
             component.Parent = this;
             _children.Add(component);
+        }
+
+        public void AddRange(IEnumerable<IProjectComponent> components)
+        {
+            foreach (var component in components)
+            {
+                component.Parent = this;
+            }
+            _children.AddRange(components);
         }
 
         public ReadOnlyFolderComposite ToReadOnly()

@@ -1,4 +1,4 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
@@ -284,7 +284,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--dashboard-api-key",
             ArgumentShortName = "-dk <api-key>",
-            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DiffOptions.DashboardUrl}",
+            ArgumentDescription = $"Api key for dashboard reporter. You can get your key here: {_defaultOptions.DashboardUrl}",
             DefaultValue = null,
             JsonKey = "dashboard-api-key"
         };
@@ -331,7 +331,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             ArgumentName = "--dashboard-url",
             ArgumentShortName = "-url <dashboard-url>",
             ArgumentDescription = $"Provide an alternative root url for Stryker Dashboard.",
-            DefaultValue = _defaultOptions.DiffOptions.DashboardUrl,
+            DefaultValue = _defaultOptions.DashboardUrl,
             JsonKey = "dashboard-url"
         };
 

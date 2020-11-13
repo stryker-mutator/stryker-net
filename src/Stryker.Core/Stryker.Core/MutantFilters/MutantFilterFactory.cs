@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Baseline;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Options;
@@ -36,7 +36,7 @@ namespace Stryker.Core.MutantFilters
                     new ExcludeFromCodeCoverageFilter()
                 };
 
-            if (options.DiffOptions.DiffEnabled)
+            if (options.DiffEnabled)
             {
                 enabledFilters.Add(new DiffMutantFilter(options, _diffProvider, baselineProvider: _baselineProvider, gitInfoProvider: _gitInfoProvider));
             }

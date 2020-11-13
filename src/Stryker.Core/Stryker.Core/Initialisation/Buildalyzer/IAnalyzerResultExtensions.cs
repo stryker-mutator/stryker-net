@@ -124,7 +124,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         public static (bool frameworkSupportsAppDomain, bool frameworkSupportsPipes) CompatibilityModes(this IAnalyzerResult analyzerResult)
         {
-            var (framework, version) = analyzerResult.TargetFrameworkAndVersion();
+            var (framework, version) = analyzerResult.GetTargetFrameworkAndVersion();
 
             bool frameworkSupportsAppDomain = true;
             bool frameworkSupportsPipes = true;
@@ -161,7 +161,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         /// <example>
         /// <c>(Framework.NetCore, 3.0)</c>
         /// </example>
-        public static (Framework Framework, Version Version) TargetFrameworkAndVersion(this IAnalyzerResult analyzerResult)
+        public static (Framework Framework, Version Version) GetTargetFrameworkAndVersion(this IAnalyzerResult analyzerResult)
         {
             try
             {

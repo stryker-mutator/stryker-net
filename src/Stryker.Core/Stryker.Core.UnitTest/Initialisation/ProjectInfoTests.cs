@@ -1,4 +1,4 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Shouldly;
 using Stryker.Core.Initialisation;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Xunit;
 using Xunit.Sdk;
 using Stryker.Core.ToolHelpers;
+using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -117,7 +118,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
 
             string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestName.dll");
-            target.GetAssemblyPath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
+            target.TestProjectAnalyzerResults.FirstOrDefault().GetAssemblyPath().ShouldBe(expectedPath);
         }
     }
 }

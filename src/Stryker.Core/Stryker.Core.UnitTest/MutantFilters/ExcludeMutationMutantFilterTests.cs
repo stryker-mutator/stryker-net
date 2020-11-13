@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var filteredMutants = sut.FilterMutants(
                 new[] { mutant },
                 null,
-                new StrykerProjectOptions(excludedMutations: new[] { excludedMutator }));
+                new StrykerOptions(excludedMutations: new[] { excludedMutator.ToString() }));
 
             // Assert
             if (skipped)

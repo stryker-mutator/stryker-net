@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Serilog.Events;
 using Shouldly;
@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions();
 
-            options.DiffOptions.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
+            options.DashboardUrl.ShouldBe("https://dashboard.stryker-mutator.io");
         }
 
         [Theory]
@@ -75,7 +75,7 @@ namespace Stryker.Core.UnitTest.Options
         public void FilesToExclude_should_be_converted_to_file_patterns(string fileToExclude, string expectedFilePattern)
         {
             // Act
-            var result = new StrykerOptions(filePatterns: new[] { fileToExclude });
+            var result = new StrykerOptions(filesToExclude: new[] { fileToExclude });
 
             // Assert
             var pattern = result.FilePatterns.Last();
@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.Options
                 {
                     new StrykerOptions(reporters: new string[] { "Dashboard" });
                 });
-                ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DiffOptions.DashboardUrl}");
+                ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DashboardUrl}");
                 ex.Message.ShouldContain($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
             }
             finally
@@ -253,8 +253,8 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitDiffTarget: "development");
 
-            options.DiffOptions.GitSource.ShouldBe("development");
-            options.DiffOptions.FallbackVersion.ShouldBe("development");
+            options.GitDiffTarget.ShouldBe("development");
+            options.FallbackVersion.ShouldBe("development");
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -105,7 +105,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IMutationTestProcess PrepareProject(StrykerProjectOptions options, IReporter reporters)
+        private IMutationTestProcess PrepareProject(IStrykerOptions options, IReporter reporters)
         {
             // get a new instance of InitialisationProcess for each project
             var initialisationProcess = _initialisationProcessProvider.Provide();

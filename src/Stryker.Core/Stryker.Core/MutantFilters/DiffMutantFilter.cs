@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -38,7 +38,7 @@ namespace Stryker.Core.MutantFilters
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
 
-            if (options.DiffOptions.CompareToDashboard)
+            if (options.CompareToDashboard)
             {
                 _baseline = GetBaselineAsync().Result;
             }
@@ -72,7 +72,7 @@ namespace Stryker.Core.MutantFilters
             IEnumerable<Mutant> filteredMutants;
 
             // If the dashboard feature is turned on we first filter based on previous results
-            if (options.DiffOptions.CompareToDashboard)
+            if (options.CompareToDashboard)
             {
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
@@ -111,7 +111,7 @@ namespace Stryker.Core.MutantFilters
             }
 
             // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
-            if (_options.DiffOptions.CompareToDashboard)
+            if (_options.CompareToDashboard)
             {
                 var mutantsNotRun = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
                 filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);
@@ -193,7 +193,7 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.DiffOptions.FallbackVersion);
+                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.FallbackVersion);
 
                 return await GetFallbackBaselineAsync();
             }
@@ -205,7 +205,7 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetFallbackBaselineAsync()
         {
-            var report = await _baselineProvider.Load(_options.DiffOptions.FallbackVersion);
+            var report = await _baselineProvider.Load(_options.FallbackVersion);
 
             if (report == null)
             {
@@ -213,7 +213,7 @@ namespace Stryker.Core.MutantFilters
                 return null;
             }
 
-            _logger.LogInformation("Found fallback report using version {0}", _options.DiffOptions.FallbackVersion);
+            _logger.LogInformation("Found fallback report using version {0}", _options.FallbackVersion);
 
             return report;
         }

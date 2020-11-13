@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -82,7 +83,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private bool CantUseStrykerDataCollector()
         {
-            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.TargetFrameworkAndVersion()).Any(t =>
+            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
                 t.Framework == Framework.DotNet && t.Version.Major < 2);
         }
 
@@ -393,7 +394,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, IList<string>> mutantTestsMap)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
-            var targetFramework = projectAnalyzerResult.TargetFrameworkAndVersion().Framework;
+            var targetFramework = projectAnalyzerResult.GetTargetFrameworkAndVersion().Framework;
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, CodeInjection.HelperNamespace) : "";
@@ -457,7 +458,7 @@ $@"<RunSettings>
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetAssemblyPath(testProject)).ToList();
+            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => testProject.GetAssemblyPath()).ToList();
             var testBinariesLocations = new List<string>();
             _sources = new List<string>();
 

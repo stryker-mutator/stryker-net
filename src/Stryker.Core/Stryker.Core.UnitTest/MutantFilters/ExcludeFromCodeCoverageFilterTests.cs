@@ -35,7 +35,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerProjectOptions());
+            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -55,7 +55,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerProjectOptions());
+            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -78,7 +78,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerProjectOptions());
+            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -100,7 +100,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerProjectOptions());
+            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
 
             // Assert
             results.ShouldContain(mutant);
@@ -126,7 +126,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerProjectOptions());
+            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -137,8 +137,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
             var originalNode =
-                baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(search, StringComparison.OrdinalIgnoreCase),
-                    5));
+                baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(search, StringComparison.OrdinalIgnoreCase), 5));
 
             var mutant = new Mutant
             {

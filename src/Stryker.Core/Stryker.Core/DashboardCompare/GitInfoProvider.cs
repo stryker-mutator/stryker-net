@@ -1,4 +1,4 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
@@ -25,7 +25,7 @@ namespace Stryker.Core.DashboardCompare
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
-            if (!options.DiffOptions.DiffEnabled)
+            if (!options.DiffEnabled)
             {
                 return;
             }

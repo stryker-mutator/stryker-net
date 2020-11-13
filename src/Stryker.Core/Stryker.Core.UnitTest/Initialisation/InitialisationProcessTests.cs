@@ -1,5 +1,6 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Mono.Collections.Generic;
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -32,25 +33,26 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 Name = "SomeFile.cs"
             });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()))
-                .Returns((new ProjectInfo
+            var folder = new FolderComposite
+            {
+                Name = "ProjectRoot"
+            };
+            folder.AddRange(new Collection<IProjectComponent>
+                {
+                    new FileLeaf
+                    {
+                        Name = "SomeFile.cs"
+                    }
+                });
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>()))
+                .Returns(new ProjectInfo
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
-                    ProjectContents = new FolderComposite
-                    {
-                        Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent>
-                        {
-                            new FileLeaf
-                            {
-                                Name = "SomeFile.cs"
-                            }
-                        }
-                    }
+                    ProjectContents = folder
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Returns(999);
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
@@ -64,11 +66,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
 
-            var options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
 
             var result = target.Initialize(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<IStrykerOptions>()), Times.Once);
         }
 
         [Fact]
@@ -90,7 +92,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Name = "SomeFile.cs"
             });
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>())).Returns(
                 new ProjectInfo
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -115,12 +117,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
 
             target.Initialize(options);
             Assert.Throws<StrykerInputException>(() => target.InitialTest(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerProjectOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<IStrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
         }

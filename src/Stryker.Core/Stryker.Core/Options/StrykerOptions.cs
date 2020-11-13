@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Stryker.Core.Baseline;
@@ -17,11 +17,12 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerOptions
+    public class StrykerOptions : IStrykerOptions
     {
         public string BasePath { get; }
         public string SolutionPath { get; }
         public string OutputPath { get; }
+        public string ProjectUnderTest { get; }
         public BaselineProvider BaselineProvider { get; }
 
         public IEnumerable<Reporter> Reporters { get; }
@@ -140,6 +141,87 @@ namespace Stryker.Core.Options
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
             MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
+        }
+
+        private StrykerOptions(
+            string basePath,
+            string outputPath,
+            IEnumerable<Reporter> reporters,
+            string projectUnderTestNameFilter,
+            string projectUnderTest,
+            int additionalTimeoutMS,
+            IEnumerable<Mutator> excludedMutations,
+            IEnumerable<Regex> ignoredMethods,
+            LogOptions logOptions,
+            OptimizationFlags optimizations,
+            Threshold thresholds,
+            bool devMode,
+            string optimizationMode,
+            int concurrentTestRunners,
+            IEnumerable<FilePattern> filePatterns,
+            TestRunner testRunner,
+            string solutionPath,
+            LanguageVersion languageVersion,
+            string gitDiffSource,
+            IEnumerable<string> testProjects,
+            string azureSAS,
+            string azureFileStorageUrl,
+            BaselineProvider baselineProvider,
+            MutationLevel mutationLevel)
+        {
+            IgnoredMethods = ignoredMethods;
+            BasePath = basePath;
+            OutputPath = outputPath;
+            Reporters = reporters;
+            ProjectUnderTestNameFilter = projectUnderTestNameFilter;
+            ProjectUnderTest = projectUnderTest;
+            AdditionalTimeoutMS = additionalTimeoutMS;
+            ExcludedMutations = excludedMutations;
+            LogOptions = logOptions;
+            DevMode = devMode;
+            ConcurrentTestrunners = concurrentTestRunners;
+            Thresholds = thresholds;
+            FilePatterns = filePatterns;
+            TestRunner = testRunner;
+            SolutionPath = solutionPath;
+            LanguageVersion = languageVersion;
+            OptimizationMode = optimizationMode;
+            Optimizations = optimizations;
+            GitDiffTarget = gitDiffSource;
+            TestProjects = testProjects;
+            AzureSAS = azureSAS;
+            AzureFileStorageUrl = azureFileStorageUrl;
+            BaselineProvider = baselineProvider;
+            MutationLevel = mutationLevel;
+        }
+
+        public IStrykerOptions ToProjectOptions(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
+        {
+            return new StrykerOptions(
+                basePath,
+                OutputPath,
+                Reporters,
+                ProjectUnderTestNameFilter,
+                ProjectUnderTest,
+                AdditionalTimeoutMS,
+                ExcludedMutations,
+                IgnoredMethods,
+                LogOptions,
+                Optimizations,
+                Thresholds,
+                DevMode,
+                OptimizationMode,
+                ConcurrentTestrunners,
+                FilePatterns,
+                TestRunner,
+                SolutionPath,
+                LanguageVersion,
+                GitDiffTarget,
+                TestProjects,
+                AzureSAS,
+                AzureFileStorageUrl,
+                BaselineProvider,
+                MutationLevel);
         }
 
         private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)

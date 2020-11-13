@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
@@ -17,7 +18,7 @@ namespace Stryker.Core.TestRunners
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(StrykerProjectOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public ITestRunner Create(IStrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _logger.LogInformation("Initializing test runners ({0})", options.TestRunner);
             ITestRunner testRunner;
@@ -26,7 +27,7 @@ namespace Stryker.Core.TestRunners
             {
                 case TestRunner.DotnetTest:
                 default:
-                    testRunner = new DotnetTestRunner(projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath, new ProcessExecutor(), flags, projectInfo.TestProjectAnalyzerResults.Select(x => projectInfo.GetAssemblyPath(x)));
+                    testRunner = new DotnetTestRunner(projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath, new ProcessExecutor(), flags, projectInfo.TestProjectAnalyzerResults.Select(x => x.GetAssemblyPath()));
                     break;
                 case TestRunner.VsTest:
                     testRunner = new VsTestRunnerPool(options, flags, projectInfo);

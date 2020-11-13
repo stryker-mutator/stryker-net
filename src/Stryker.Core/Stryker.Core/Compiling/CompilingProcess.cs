@@ -1,22 +1,26 @@
-﻿using Buildalyzer;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using Stryker.Core.ToolHelpers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Stryker.Core.Compiling
 {
+    public interface ICompilingProcess
+    {
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode);
+    }
+
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// Compiles the given input onto the memorystream
-    public class CompilingProcess
+    public class CompilingProcess : ICompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
@@ -31,7 +35,7 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
+            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         /// <summary>
         /// Compiles the given input onto the memorystream

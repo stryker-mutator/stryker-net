@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Stryker.Core.Exceptions;
@@ -61,14 +62,14 @@ namespace Stryker.Core
             {
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                var rootComponent = new FolderComposite();
+                IParentComponent rootComponent = new FolderComposite();
                 rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
 
-                _logger.LogInformation("{0} mutants ready for test", rootComponent.TotalMutants.Count());
+                _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
                 
                 AnalyseCoverage(options);
-
-                reporters.OnMutantsCreated(rootComponent);
+                var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+                reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
@@ -98,9 +99,9 @@ namespace Stryker.Core
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
-                reporters.OnAllMutantsTested(rootComponent);
+                reporters.OnAllMutantsTested(readOnlyInputComponent);
 
-                return new StrykerRunResult(options, rootComponent.GetMutationScore());
+                return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }
             catch (Exception ex) when (!(ex is StrykerInputException))
             {

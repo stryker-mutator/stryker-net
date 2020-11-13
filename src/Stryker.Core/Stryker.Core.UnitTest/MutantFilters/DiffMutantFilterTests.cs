@@ -1,4 +1,4 @@
-﻿using DotNet.Globbing;
+using DotNet.Globbing;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
@@ -161,7 +161,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldNotMutateUnchangedFiles()
         {
-            var options = new StrykerProjectOptions(diffOptions: new DiffOptions(diff: true));
+            var options = new StrykerOptions(diff: true);
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProvider = new Mock<IGitInfoProvider>();
@@ -187,7 +187,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldOnlyMutateChangedFiles()
         {
-            var options = new StrykerProjectOptions(diffOptions: new DiffOptions(diff: true));
+            var options = new StrykerOptions(diff: true);
 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -218,7 +218,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             string testProjectPath = "C:/MyTests";
-            var options = new StrykerProjectOptions();
+            var options = new StrykerOptions();
 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);

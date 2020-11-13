@@ -1,4 +1,4 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
@@ -44,19 +44,20 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(mutationTestProcessMock.Object);
             mutationTestProcessMock.Setup(x => x.Mutate());
 
+            var components = new Collection<IProjectComponent>() {
+                new FileLeaf() {
+                    Name = "SomeFile.cs",
+                    Mutants = new List<Mutant> { new Mutant { Id = 1 } }
+                }
+            };
+
             mutationTestInput = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
                     ProjectContents = new FolderComposite()
                     {
-                        Name = "ProjectRoot",
-                        Children = new Collection<ProjectComponent>() {
-                            new FileLeaf() {
-                                Name = "SomeFile.cs",
-                                Mutants = new List<Mutant> { new Mutant { Id = 1 } }
-                            }
-                        }
+                        Name = "ProjectRoot"
                     }
                 },
             };
@@ -68,9 +69,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerOptions();
             var target = new ProjectOrchestrator(initialisationProcessProviderMock.Object, mutationTestProcessProviderMock.Object, buildalyzerProviderMock.Object);
 
-            initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerProjectOptions>()))
+            initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<IStrykerOptions>()))
                 .Returns(mutationTestInput);
-            initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerProjectOptions>()))
+            initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>()))
                 .Returns(5);
 
             var result = target.MutateProjects(options, reporterMock.Object);
@@ -97,9 +98,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerOptions(basePath: "C:/MyProject", solutionPath: "C:/MyProject/MyProject.sln");
             var target = new ProjectOrchestrator(initialisationProcessProviderMock.Object, mutationTestProcessProviderMock.Object, buildalyzerProviderMock.Object);
 
-            initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerProjectOptions>()))
+            initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<IStrykerOptions>()))
                 .Returns(mutationTestInput);
-            initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerProjectOptions>()))
+            initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>()))
                 .Returns(5);
             buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects

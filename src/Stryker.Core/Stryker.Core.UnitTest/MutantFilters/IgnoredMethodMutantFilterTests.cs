@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -263,7 +263,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerProjectOptions(ignoredMethods: new[] { new Regex("Fact") });
+            var options = new StrykerOptions(ignoredMethods: new[] { "Fact" });
 
             var sut = new IgnoredMethodMutantFilter();
 

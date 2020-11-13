@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -14,7 +14,6 @@ namespace Stryker.Core.Options
         int AdditionalTimeoutMS { get; }
         string BasePath { get; }
         int ConcurrentTestrunners { get; }
-        DiffOptions DiffOptions { get; }
         bool DevMode { get; }
         IEnumerable<Mutator> ExcludedMutations { get; }
         IEnumerable<FilePattern> FilePatterns { get; }
@@ -34,5 +33,16 @@ namespace Stryker.Core.Options
         string AzureFileStorageUrl { get; set; }
         BaselineProvider BaselineProvider { get; }
         MutationLevel MutationLevel { get; }
+        string ProjectUnderTest { get; }
+        bool DiffEnabled { get; }
+        string GitDiffTarget { get; }
+        string ModuleName { get; }
+        string ProjectName { get; }
+        string ProjectVersion { get; }
+        bool CompareToDashboard { get; }
+        string FallbackVersion { get; }
+        IEnumerable<FilePattern> DiffIgnoreFiles { get; }
+        string DashboardUrl { get; }
+        string DashboardApiKey { get; }
     }
 }

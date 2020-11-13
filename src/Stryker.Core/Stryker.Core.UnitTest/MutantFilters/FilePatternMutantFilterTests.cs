@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             bool shouldKeepFile)
         {
             // Arrange
-            var options = new StrykerOptions(mutate: patterns).ToProjectOptions();
+            var options = new StrykerOptions(mutate: patterns);
             var file = new FileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span

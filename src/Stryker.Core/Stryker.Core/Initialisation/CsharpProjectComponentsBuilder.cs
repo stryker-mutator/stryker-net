@@ -1,14 +1,3 @@
-using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Core.MutantFilters.Extensions;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.MutantFilters.Extensions;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,12 +28,12 @@ namespace Stryker.Core.Initialisation
     public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;
-        private readonly StrykerProjectOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerProjectOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -56,7 +56,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -76,7 +76,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -179,7 +179,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private FolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var rootFolderComposite = new FolderComposite
             {
@@ -260,7 +260,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerProjectOptions options)
+        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.GetDefineConstants());
         }
@@ -301,7 +301,8 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        inputFiles.Add(subDir);
+                        var root = inputFiles as IParentComponent;
+                        root.Add(subDir);
                     }
                 }
                 else
