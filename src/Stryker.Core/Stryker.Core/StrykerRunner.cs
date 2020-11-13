@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO.Abstractions;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,12 +15,6 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
 
 namespace Stryker.Core
 {
@@ -66,7 +65,7 @@ namespace Stryker.Core
                 rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
 
                 _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
-                
+
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
                 reporters.OnMutantsCreated(readOnlyInputComponent);

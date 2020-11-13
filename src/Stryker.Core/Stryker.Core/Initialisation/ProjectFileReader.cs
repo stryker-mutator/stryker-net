@@ -1,10 +1,9 @@
-﻿using Buildalyzer;
-using Buildalyzer.Environment;
+using System.Linq;
+using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
