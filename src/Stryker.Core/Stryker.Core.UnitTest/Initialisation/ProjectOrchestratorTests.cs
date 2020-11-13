@@ -79,6 +79,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldInitializeEachProjectInSolution()
         {
+            // arrange
             var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
             var projectUnderTestAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
             var projectUnderTestAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
@@ -120,8 +121,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testProjectPackagereferenceMock.Object
             });
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
+
+            // act
             var result = target.MutateProjects(options, _reporterMock.Object).ToList();
 
+            // assert
             var mutationTestProcess = result.ShouldHaveSingleItem();
         }
     }

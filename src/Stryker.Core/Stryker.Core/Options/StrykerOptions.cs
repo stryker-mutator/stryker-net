@@ -195,14 +195,14 @@ namespace Stryker.Core.Options
             MutationLevel = mutationLevel;
         }
 
-        public IStrykerOptions ToProjectOptions(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
+        public IStrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
         {
             return new StrykerOptions(
                 basePath,
                 OutputPath,
                 Reporters,
                 ProjectUnderTestNameFilter,
-                ProjectUnderTest,
+                projectUnderTest,
                 AdditionalTimeoutMS,
                 ExcludedMutations,
                 IgnoredMethods,
@@ -217,7 +217,7 @@ namespace Stryker.Core.Options
                 SolutionPath,
                 LanguageVersion,
                 GitDiffTarget,
-                TestProjects,
+                testProjects,
                 AzureSAS,
                 AzureFileStorageUrl,
                 BaselineProvider,
