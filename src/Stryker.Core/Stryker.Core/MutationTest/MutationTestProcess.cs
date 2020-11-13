@@ -42,15 +42,13 @@ namespace Stryker.Core.MutationTest
     public class MutationTestProcess : IMutationTestProcess
     {
         public MutationTestInput Input { get; }
-        private readonly IFileSystem _fileSystem;
         private readonly IProjectComponent _projectContents;
         private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly IMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly IStrykerOptions _options;
-        private IMutationProcess _mutationProcess;
+        private readonly IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -66,12 +64,10 @@ namespace Stryker.Core.MutationTest
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
-            _orchestrator = orchestrator ?? new MutantOrchestrator(options: _options);
-            _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, mutationTestInput);
 
-            _mutationProcess = new MutationProcess(Input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new MutationProcess(Input, orchestrator, fileSystem, _options, mutantFilter, _reporter);
         }
 
         public void Mutate()
