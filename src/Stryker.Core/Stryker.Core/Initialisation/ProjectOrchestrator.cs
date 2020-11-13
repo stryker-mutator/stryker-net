@@ -50,20 +50,19 @@ namespace Stryker.Core.Initialisation
                 _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
                 try
                 {
-                    Parallel.ForEach(manager.Projects, project =>
+                    Parallel.ForEach(manager.Projects.Values, project =>
                     {
-                        _logger.LogDebug("Analysing {projectFilePath}", project.Value.ProjectFile.Path);
-                        var options = new EnvironmentOptions();
-                        var buildResult = project.Value.Build();
+                        _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFile.Path);
+                        var buildResult = project.Build();
                         var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
                         if (projectAnalyzerResult is { })
                         {
                             projectsAnalyzerResults.Add(projectAnalyzerResult);
-                            _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.Value.ProjectFile.Path);
+                            _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.ProjectFile.Path);
                         }
                         else
                         {
-                            _logger.LogWarning("Analysis of project {projectFilePath} failed", project.Value.ProjectFile.Path);
+                            _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
                         }
                     });
                 } catch (AggregateException ex)

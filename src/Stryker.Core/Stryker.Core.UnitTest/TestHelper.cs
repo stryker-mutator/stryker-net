@@ -1,7 +1,6 @@
-﻿using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Moq;
 using System.Collections.Generic;
+using Buildalyzer;
+using Moq;
 
 namespace Stryker.Core.UnitTest
 {

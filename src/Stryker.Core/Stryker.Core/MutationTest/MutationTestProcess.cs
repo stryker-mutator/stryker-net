@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -88,6 +89,10 @@ namespace Stryker.Core.MutationTest
             if (!mutantsToTest.Any())
             {
                 return new StrykerRunResult(_options, double.NaN);
+            }
+            if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.NotRun))
+            {
+                throw new GeneralStrykerException("Only mutants to run should be passed to the mutation test process. If you see this message please report an issue.");
             }
             var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
