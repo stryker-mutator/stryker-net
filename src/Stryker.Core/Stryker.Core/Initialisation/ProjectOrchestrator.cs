@@ -48,7 +48,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
                 try
                 {
-                    Parallel.ForEach(manager.Projects.Values, project =>
+                    foreach(var project in manager.Projects.Values)
                     {
                         _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFile.Path);
                         var buildResult = project.Build();
@@ -62,7 +62,7 @@ namespace Stryker.Core.Initialisation
                         {
                             _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
                         }
-                    });
+                    };
                 }
                 catch (AggregateException ex)
                 {
@@ -87,7 +87,7 @@ namespace Stryker.Core.Initialisation
                         {
                             _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults.ProjectFilePath);
                         }
-                        var projectOptions = options.ToProjectOptions(
+                        var projectOptions = options.Copy(
                             basePath: projectFilePath,
                             projectUnderTest: projectFilePath,
                             testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
@@ -99,7 +99,7 @@ namespace Stryker.Core.Initialisation
             {
                 // mutate a single project
                 _logger.LogInformation("Identifying project to mutate.");
-                yield return PrepareProject(options.ToProjectOptions(options.BasePath, null, null), reporters);
+                yield return PrepareProject(options.Copy(options.BasePath, null, null), reporters);
             }
         }
 
