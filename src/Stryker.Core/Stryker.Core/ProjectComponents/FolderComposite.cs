@@ -1,8 +1,8 @@
-using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -28,19 +28,18 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotSupportedException("Folders do not contain mutants.");
         }
 
-        public void Add(IProjectComponent component)
+        public void Add(IProjectComponent child)
         {
-            component.Parent = this;
-            _children.Add(component);
+            child.Parent = this;
+            _children.Add(child);
         }
 
-        public void AddRange(IEnumerable<IProjectComponent> components)
+        public void AddRange(IEnumerable<IProjectComponent> children)
         {
-            foreach (var component in components)
+            foreach (var child in children)
             {
-                component.Parent = this;
+                Add(child);
             }
-            _children.AddRange(components);
         }
 
         public ReadOnlyFolderComposite ToReadOnly()
