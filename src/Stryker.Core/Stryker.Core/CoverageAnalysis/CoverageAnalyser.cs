@@ -30,8 +30,6 @@ namespace Stryker.Core.CoverageAnalysis
         {
             if (_options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
             {
-                _logger.LogInformation($"Capture mutant coverage using '{_options.OptimizationMode}' mode.");
-
                 var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes();
                 var mutantsToScan =
                     _input.ProjectInfo.ProjectContents.Mutants
