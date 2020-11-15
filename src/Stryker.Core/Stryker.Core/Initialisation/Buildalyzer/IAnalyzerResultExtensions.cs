@@ -134,6 +134,16 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             };
         }
 
+        public static bool IsTestProject(this IAnalyzerResult analyzerResult)
+        {
+            var isTestProject = analyzerResult.GetPropertyOrDefault("IsTestProject", false);
+            var hasTestProjectTypeGuid = analyzerResult
+                .GetPropertyOrDefault("ProjectTypeGuids", "")
+                .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+
+            return isTestProject | hasTestProjectTypeGuid;
+        }
+
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)
         {
             return targetFrameworkVersionString switch
