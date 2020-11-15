@@ -84,7 +84,7 @@ namespace Stryker.Core.MutationTest
         {
             if (!MutantsToTest(mutantsToTest))
             {
-                new StrykerRunResult(_options, double.NaN);
+                return new StrykerRunResult(_options, double.NaN);
             }
 
             TestMutants(mutantsToTest);
