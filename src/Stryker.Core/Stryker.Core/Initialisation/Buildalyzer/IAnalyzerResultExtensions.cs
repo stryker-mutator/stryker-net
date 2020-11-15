@@ -141,7 +141,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 .GetPropertyOrDefault("ProjectTypeGuids", "")
                 .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
 
-            return isTestProject | hasTestProjectTypeGuid;
+            return isTestProject || hasTestProjectTypeGuid;
         }
 
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)
