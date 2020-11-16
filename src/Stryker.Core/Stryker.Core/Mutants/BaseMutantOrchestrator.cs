@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
-using Mono.Collections.Generic;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
