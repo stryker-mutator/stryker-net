@@ -1,4 +1,4 @@
-﻿using FSharp.Compiler;
+using FSharp.Compiler;
 using FSharp.Compiler.SourceCodeServices;
 using FSharp.Compiler.Text;
 using Microsoft.FSharp.Collections;
@@ -21,7 +21,7 @@ namespace fsharpsyntaxtrees
         {
             FSharpChecker fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
 
-            var fullPath = "C:\\Users\\CasparD\\source\\repos\\PictureProjectCopy\\PictureProjectCopy\\Program.fs";
+            var fullPath = Path.GetFullPath("..\\..\\..\\..\\..\\boolMutateTestApp\\boolMutateTestApp\\Program.fs");
             var sourceCode = File.ReadAllText(fullPath);
 
             Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>>  fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(fullPath, SourceText.ofString(sourceCode), null, null, null, null, null, null, null, null, null), null, null);
