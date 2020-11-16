@@ -1,7 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Microsoft.FSharp.Collections;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants.NodeOrchestrators;
@@ -10,6 +11,7 @@ using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using static FSharp.Compiler.SyntaxTree;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
@@ -23,6 +25,7 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <returns>Mutants</returns>
         IReadOnlyCollection<Mutant> GetLatestMutantBatch();
+        FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot);
     }
 
     /// <summary>
@@ -179,6 +182,11 @@ namespace Stryker.Core.Mutants
             }
 
             return mutations;
+        }
+
+        public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
+        {
+            return treeroot;
         }
     }
 }

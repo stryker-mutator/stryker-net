@@ -52,12 +52,16 @@ namespace Stryker.Core.MutationTest
             // Mutate source files
             foreach (FileLeafFsharp file in _projectInfo.GetAllFiles())
             {
+                Console.WriteLine(file.Name);
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
                 var treeroot = ((ParsedInput.ImplFile)file.SyntaxTree).Item.modules;
-                var mutatedSyntaxTree = file; //_orchestrator.Mutate((ParsedInput.ImplFile)file.SyntaxTree).GetRoot());      //getroot for fsharp && _orchestrator.Mutate
+                var mutatedSyntaxTree = _orchestrator.Mutate(treeroot);
                 // Add the mutated syntax tree for compilation
-                file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
+                var tree = (ParsedInput.ImplFile)file.SyntaxTree;
+                var item = tree.Item;
+                var treeToSet = (ParsedInput.ImplFile)ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, item.isLastCompiland));
+                file.MutatedSyntaxTree = treeToSet;
                 if (_options.DevMode)
                 {
                     _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree}"); //.ToFullString()

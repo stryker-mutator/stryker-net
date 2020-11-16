@@ -70,8 +70,8 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult = null;
 
             // first try compiling
-            EmitResult emitResult;
-            var retryCount = 1;
+            //EmitResult emitResult;
+            //var retryCount = 1;
             (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies, pdblist);
 
             if (compilationSucces)
