@@ -22,13 +22,13 @@ namespace Stryker.Core.MutationTest
         private readonly CompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly IMutantOrchestrator _orchestrator;
+        private readonly MutantOrchestrator _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
         public MutationProcess(MutationTestInput mutationTestInput,
-            IMutantOrchestrator orchestrator = null,
+            MutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
 

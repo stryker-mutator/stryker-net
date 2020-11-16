@@ -16,42 +16,21 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
-    public interface IMutantOrchestrator
-    {
-        SyntaxNode Mutate(SyntaxNode rootNode);
-
-        /// <summary>
-        /// Gets the stored mutants and resets the mutant list to an empty collection
-        /// </summary>
-        /// <returns>Mutants</returns>
-        IReadOnlyCollection<Mutant> GetLatestMutantBatch();
-        FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot);
-    }
-
     /// <summary>
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public class MutantOrchestrator : IMutantOrchestrator
+    public class MutantOrchestrator : BaseMutantOrchestrator
     {
-        private readonly StrykerOptions _options;
-
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new TypeBasedStrategy<SyntaxNode, INodeMutator>();
 
-        private ICollection<Mutant> Mutants { get; set; }
-        private int MutantCount { get; set; }
         internal IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
-        internal bool MustInjectCoverageLogic =>
-            _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
-            !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
-
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
-            _options = options;
             Mutators = mutators ?? new List<IMutator>
             {
                 // the default list of mutators
@@ -89,17 +68,6 @@ namespace Stryker.Core.Mutants
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
                 new SyntaxNodeOrchestrator(this)
             });
-        }
-
-        /// <summary>
-        /// Gets the stored mutants and resets the mutant list to an empty collection
-        /// </summary>
-        /// <returns>Mutants</returns>
-        public IReadOnlyCollection<Mutant> GetLatestMutantBatch()
-        {
-            var tempMutants = Mutants;
-            Mutants = new Collection<Mutant>();
-            return (IReadOnlyCollection<Mutant>)tempMutants;
         }
 
         /// <summary>
@@ -182,11 +150,6 @@ namespace Stryker.Core.Mutants
             }
 
             return mutations;
-        }
-
-        public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
-        {
-            return treeroot;
         }
     }
 }

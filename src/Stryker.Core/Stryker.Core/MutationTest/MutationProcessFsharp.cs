@@ -22,13 +22,13 @@ namespace Stryker.Core.MutationTest
         private readonly CompilingProcessFsharp _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly IMutantOrchestrator _orchestrator;
+        private readonly FsharpMutantOrchestrator _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
         public MutationProcessFsharp(MutationTestInput mutationTestInput,
-            IMutantOrchestrator orchestrator = null,
+            FsharpMutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.MutationTest
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
-            _orchestrator = orchestrator ?? new MutantOrchestrator(options: _options);
+            _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);
             _fileSystem = fileSystem ?? new FileSystem();
             _compilingProcess = new CompilingProcessFsharp(mutationTestInput, new RollbackProcess(), _fileSystem);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
