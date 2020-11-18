@@ -86,19 +86,19 @@ namespace Stryker.Core.DashboardCompare
             {
                 try
                 {
-                    if (branch.UpstreamBranchCanonicalName.Contains(_options.GitDiffTarget))
+                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.GitDiffTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.CanonicalName.Contains(_options.GitDiffTarget))
+                    if (branch.CanonicalName?.Contains(_options.GitDiffTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.FriendlyName.Contains(_options.GitDiffTarget))
+                    if (branch.FriendlyName?.Contains(_options.GitDiffTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
                         targetBranch = branch;
