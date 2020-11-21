@@ -1,18 +1,31 @@
+
 open System
 
+let private key:ConsoleKeyInfo = Console.ReadKey()
+    
+let keybool =
+    key.KeyChar.CompareTo('1')
+    
+
+let testing = 
+    match keybool with
+        | 0 -> true
+        | _ -> false
+    
+let testingResults = 
+    match testing with
+        | true -> "true"
+        | false -> "false"
+            
+let fortesting key = 
+    match key with
+        | true -> true
+        | false -> false
+
+let input =
+    fortesting true
+        
 [<EntryPoint>]
 let main _ =
-    let key:ConsoleKeyInfo = Console.ReadKey()
-
-    let testing = 
-        match key.KeyChar.CompareTo('1') with
-            | 0 -> true
-            | _ -> false
-
-    let testingResults = 
-        match testing with
-            | true -> "true"
-            | false -> "false"
-
-    Console.WriteLine testingResults
+    Console.WriteLine input
     0 // return an integer exit code

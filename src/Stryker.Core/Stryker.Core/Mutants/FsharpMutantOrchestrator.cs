@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,6 +10,8 @@ using Stryker.Core.Mutants.NodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using static FSharp.Compiler.SyntaxTree;
+using static FSharp.Compiler.SyntaxTree.SynConst;
+using static FSharp.Compiler.SyntaxTree.SynPat;
 
 namespace Stryker.Core.Mutants
 {
@@ -37,7 +40,8 @@ namespace Stryker.Core.Mutants
         public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
         {
             var mutationContext = new MutationContext(this);
-            //var mutation = Mutate(treeroot, mutationContext);
+            var mutation = treeroot/*Mutate(treeroot, mutationContext)*/;
+
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {
                 // some mutants where not injected for some reason, they should be reviewed to understand why.
@@ -49,66 +53,123 @@ namespace Stryker.Core.Mutants
                 mutant.ResultStatus = MutantStatus.CompileError;
                 mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
             }
-
-            return /*mutation*/ treeroot;
+            return mutation;
         }
 
-        //private FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot, MutationContext context)
-        //{
-        //    // don't mutate immutable nodes
-        //    if (!SyntaxHelper.CanBeMutated(currentNode))
-        //    {
-        //        return currentNode;
-        //    }
+        private FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot, MutationContext context)
+        {
+            var mutated = VisitModulesAndNamespaces(treeroot);
+            return mutated;
+        }
 
-        //    // search for node specific handler
-        //    var nodeHandler = _specificOrchestrator.FindHandler(currentNode);
-        //    return nodeHandler.Mutate(currentNode, context);
-        //}
+        private FSharpList<SynModuleOrNamespace> VisitModulesAndNamespaces(FSharpList<SynModuleOrNamespace> modules)
+        {
+            var list = new List<SynModuleOrNamespace>();
+            foreach (SynModuleOrNamespace module in modules)
+            {
+                //Console.WriteLine("Namespace or module: " + module.longId);
+                list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(module.longId, module.isRecursive, module.kind, VisitDeclarations(module.decls), module.xmlDoc, module.attribs, module.accessibility, module.range));
+            }
+            return ListModule.OfSeq(list);
+        }
 
-        //internal IEnumerable<Mutant> GenerateMutationsForNodeFsharp(clause current, MutationContext context)
-        //{
-        //    var mutations = new List<Mutant>();
-        //    foreach (var mutator in Mutators)
-        //    {
-        //        foreach (var mutation in mutator.Mutate(current, _options))
-        //        {
-        //            var id = MutantCount;
-        //            Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
-        //                mutation.ReplacementNode, mutator.GetType());
-        //            var newMutant = new Mutant
-        //            {
-        //                Id = id,
-        //                Mutation = mutation,
-        //                ResultStatus = MutantStatus.NotRun,
-        //                IsStaticValue = context.InStaticValue
-        //            };
-        //            var duplicate = false;
-        //            // check if we have a duplicate
-        //            foreach (var mutant in Mutants)
-        //            {
-        //                if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
-        //                    !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
-        //                {
-        //                    continue;
-        //                }
-        //                Logger.LogDebug($"Mutant {id} discarded as it is a duplicate of {mutant.Id}");
-        //                duplicate = true;
-        //                break;
-        //            }
+        private FSharpList<SynModuleDecl> VisitDeclarations(FSharpList<SynModuleDecl> decls)
+        {
+            var list = new List<SynModuleDecl>();
+            foreach (SynModuleDecl declaration in decls)
+            {
+                if (declaration.IsLet)
+                {
+                    var childlist = new List<SynBinding>();
+                    foreach (var binding in ((SynModuleDecl.Let)declaration).bindings)
+                    {
+                        //VisitPattern(binding.headPat);
+                        childlist.Add(SynBinding.NewBinding(binding.accessibility, binding.kind, binding.mustInline, binding.isMutable, binding.attributes, binding.xmlDoc, binding.valData, binding.headPat, binding.returnInfo, VisitExpression(binding.expr), binding.range, binding.seqPoint));
+                    }
+                    list.Add(SynModuleDecl.NewLet(((SynModuleDecl.Let)declaration).isRecursive, ListModule.OfSeq(childlist), ((SynModuleDecl.Let)declaration).range));
+                }
+                else if (declaration.IsNestedModule)
+                {
+                    var decla = (SynModuleDecl.NestedModule)declaration;
+                    var visitedDeclarations = VisitDeclarations(decla.decls);
+                    list.Add(SynModuleDecl.NewNestedModule(decla.moduleInfo, decla.isRecursive, visitedDeclarations, decla.isContinuing, decla.range));
+                }
+                else
+                {
+                    list.Add(declaration);
+                    //Console.WriteLine(" - not supported declaration: " + declaration);
+                }
+            }
+            return ListModule.OfSeq(list);
+        }
 
-        //            if (duplicate)
-        //            {
-        //                continue;
-        //            }
+        private SynExpr VisitExpression(SynExpr expr)
+        {
+            if (expr.IsIfThenElse)
+            {
+                var expression = (SynExpr.IfThenElse)expr;
+                //Console.WriteLine("Conditional:");
+                expr = SynExpr.NewIfThenElse(VisitExpression(expression.ifExpr), VisitExpression(expression.thenExpr), VisitExpression(expression.elseExpr.Value), expression.spIfToThen, expression.isFromErrorRecovery, expression.ifToThenRange, expression.range);
+            }
+            else if (expr.IsLetOrUse)
+            {
+                var expression = (SynExpr.LetOrUse)expr;
+                //Console.WriteLine("LetOrUse with the following bindings:");
+                var childlist = new List<SynBinding>();
+                foreach (var binding in expression.bindings)
+                {
+                    //VisitPattern(binding.headPat);
+                    childlist.Add(SynBinding.NewBinding(binding.accessibility, binding.kind, binding.mustInline, binding.isMutable, binding.attributes, binding.xmlDoc, binding.valData, binding.headPat, binding.returnInfo, VisitExpression(binding.expr), binding.range, binding.seqPoint));
+                }
+                //Console.WriteLine("And the following body:");
+                expr = SynExpr.NewLetOrUse(expression.isRecursive, expression.isUse, ListModule.OfSeq(childlist), VisitExpression(expression.body), expression.range);
+            }
+            else if (expr.IsMatch)
+            {
+                var list = ((SynExpr.Match)expr).clauses.ToList();
+                foreach (var clause in ((SynExpr.Match)expr).clauses)
+                {
+                    if (clause.pat.IsConst && ((Const)clause.pat).constant.IsBool)
+                    {
+                        list[((SynExpr.Match)expr).clauses.ToList().FindIndex(x => x.Equals(clause))] = SynMatchClause.NewClause(NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range), clause.whenExpr, clause.resultExpr, clause.range, clause.spInfo);
+                    }
+                }
+                expr = SynExpr.NewMatch(((SynExpr.Match)expr).matchSeqPoint, ((SynExpr.Match)expr).expr, ListModule.OfSeq(list), ((SynExpr.Match)expr).range);
+                //Console.WriteLine(expr);
+            }
 
-        //            Mutants.Add(newMutant);
-        //            MutantCount++;
-        //            mutations.Add(newMutant);
-        //        }
-        //    }
+            else
+            {
+                //Console.WriteLine(" - not supported expression: " + expr);
+            }
+            return expr;
+        }
 
-        //    return mutations;
-        //}
+        private void VisitPattern(SynPat headPat)
+        {
+            if (headPat.IsWild)
+            {
+                //Console.WriteLine("  .. underscore pattern");
+            }
+            else if (headPat.IsNamed)
+            {
+                //VisitPattern(((SynPat.Named)headPat).pat);
+                //Console.WriteLine("  .. named as " + ((SynPat.Named)headPat).ident.idText);
+            }
+            else if (headPat.IsLongIdent)
+            {
+                //var longIndent = (SynPat.LongIdent)headPat;
+                //string names = "";
+                //foreach (var i in longIndent.longDotId.id)
+                //{
+                //    names = string.Concat(".", i.idText);
+                //}
+                //Console.WriteLine("  .. identifier: " + names);
+            }
+            else
+            {
+                //Console.WriteLine("  .. other pattern: " + headPat);
+            }
+        }
     }
 }

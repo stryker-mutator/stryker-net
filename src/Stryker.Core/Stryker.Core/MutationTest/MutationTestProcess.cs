@@ -116,7 +116,7 @@ namespace Stryker.Core.MutationTest
                 if (!_projectInfo.Mutants.Any())
                 {
                     _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
-                    return new StrykerRunResult(options, double.NaN);
+                    //return new StrykerRunResult(options, double.NaN);
                 }
             }
 

@@ -39,7 +39,7 @@ namespace Stryker.Core.Compiling
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
-            FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees);
+            FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
             var checker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
@@ -92,7 +92,7 @@ namespace Stryker.Core.Compiling
         {
             Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(
-                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile*/pdblist.First(), /*[OptionalArgument] FSharpOption<bool> executable*/false, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
+                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile pdblist.First()*/ null, /*[OptionalArgument] FSharpOption<bool> executable*/true, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
             return (result.Item2 == 0, result.Item1);
         }
     }
