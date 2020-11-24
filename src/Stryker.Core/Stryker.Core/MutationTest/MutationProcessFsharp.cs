@@ -36,7 +36,8 @@ namespace Stryker.Core.MutationTest
             IReporter reporter = null)
         {
             _input = mutationTestInput;
-            _projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.ProjectInfo.ProjectContents;
+            _projectInfo = (ProjectComponent<ParsedInput>)_input.ProjectInfo.ProjectContents;
+
             _options = options;
             _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);
             _fileSystem = fileSystem ?? new FileSystem();
@@ -60,7 +61,8 @@ namespace Stryker.Core.MutationTest
                 // Add the mutated syntax tree for compilation
                 var tree = (ParsedInput.ImplFile)file.SyntaxTree;
                 var item = tree.Item;
-                var treeToSet = (ParsedInput.ImplFile)ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, item.isLastCompiland));
+                var lastcompiled = item.fileName.Equals("Program.fs") ? new Tuple<bool, bool>(true, true) : item.isLastCompiland;
+                var treeToSet = ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, lastcompiled));
                 file.MutatedSyntaxTree = treeToSet;
                 if (_options.DevMode)
                 {

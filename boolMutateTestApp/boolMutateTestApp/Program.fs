@@ -21,11 +21,8 @@ let fortesting key =
     match key with
         | true -> true
         | false -> false
-
-let input =
-    fortesting true
         
-//[<EntryPoint>]
-//let main _ =
-//    Console.WriteLine input
-//    0 // return an integer exit code
+[<EntryPoint>]
+let main _ =
+    Console.WriteLine (fortesting true)
+    0   // return an integer exit code

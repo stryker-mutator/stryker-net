@@ -93,7 +93,7 @@ namespace Stryker.Core.Compiling
         {
             Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(
-                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile pdblist.First()*/ null, /*[OptionalArgument] FSharpOption<bool> executable*/true, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
+                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile pdblist.First()*/ null, /*[OptionalArgument] FSharpOption<bool> executable*/false, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
             return (result.Item2 == 0, result.Item1);
         }
     }
