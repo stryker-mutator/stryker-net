@@ -40,7 +40,7 @@ namespace Stryker.Core.Mutants
         public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
         {
             var mutationContext = new MutationContext(this);
-            var mutation = treeroot/*Mutate(treeroot, mutationContext)*/;
+            var mutation = /*treeroot*/Mutate(treeroot, mutationContext);
 
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {

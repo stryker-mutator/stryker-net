@@ -15,7 +15,7 @@ using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {
-    class CompilingProcessFsharp
+    public class CompilingProcessFsharp
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
@@ -32,6 +32,7 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
+            //@"C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\FSharp\FSharp.Build.dll";
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
