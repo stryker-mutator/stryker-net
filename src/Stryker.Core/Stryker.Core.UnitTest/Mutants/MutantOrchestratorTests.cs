@@ -874,7 +874,7 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
         }
 
         [Fact]
-        public void ShouldMutatePropertiesAsArraowExpression()
+        public void ShouldMutatePropertiesAsArrowExpression()
         {
             var source = @"class Test {
 string Value => Generator(out var x) ? """" :""test"";
