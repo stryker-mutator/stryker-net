@@ -44,7 +44,12 @@ namespace Stryker.Core.DiffProviders
                 {
                     continue;
                 }
-                if (diffPath.StartsWith(_options.BasePath))
+
+                var fullName = _options.BasePath.EndsWith(Path.DirectorySeparatorChar)
+                    ? _options.BasePath
+                    : _options.BasePath + Path.DirectorySeparatorChar;
+
+                if (diffPath.StartsWith(fullName))
                 {
                     diffResult.ChangedTestFiles.Add(diffPath);
                 }
