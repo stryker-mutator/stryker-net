@@ -8,6 +8,10 @@ namespace Stryker.Core.Instrumentation
 {
     internal class ExpressionMethodToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
+        public ExpressionMethodToBodyEngine(string markerId) : base(markerId)
+        {
+        }
+
         public T ConvertToBody<T>(T method) where T: BaseMethodDeclarationSyntax
         {
             if (method.ExpressionBody == null || method.Body != null)
@@ -95,8 +99,5 @@ namespace Stryker.Core.Instrumentation
             };
         }
 
-        public ExpressionMethodToBodyEngine(string markerId) : base(markerId, "ExpressionMethodToBodyEngine")
-        {
-        }
     }
 }

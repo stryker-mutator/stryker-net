@@ -9,7 +9,7 @@ namespace Stryker.Core.Instrumentation
     {
         private readonly ExpressionSyntax _cachedMarker = SyntaxFactory.ParseExpression(CodeInjection.StaticMarker);
 
-        public StaticInstrumentationEngine(string annotation) : base(annotation, "StaticMarker")
+        public StaticInstrumentationEngine(string annotation) : base(annotation)
         {
         }
 

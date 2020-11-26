@@ -5,15 +5,14 @@ namespace Stryker.Core.Instrumentation
 {
     internal abstract class BaseEngine<T>: IInstrumentCode where T: SyntaxNode
     {
-        protected BaseEngine(string markerId, string engineId)
+        protected BaseEngine(string markerId)
         {
-            InstrumentEngineID = engineId;
-            Marker = new SyntaxAnnotation(markerId, engineId);
+            Marker = new SyntaxAnnotation(markerId, InstrumentEngineID);
         }
 
         protected SyntaxAnnotation Marker { get; }
 
-        public string InstrumentEngineID { get; }
+        public string InstrumentEngineID => GetType().Name;
 
         protected abstract SyntaxNode Revert(T node);
 
@@ -23,7 +22,7 @@ namespace Stryker.Core.Instrumentation
             {
                 return Revert(tNode);
             }
-            throw new InvalidOperationException($"Expected a block containing a conditional expressionn, found:\n{node.ToFullString()}.");
+            throw new InvalidOperationException($"Expected a block containing a conditional expression, found:\n{node.ToFullString()}.");
         }
     }
 }

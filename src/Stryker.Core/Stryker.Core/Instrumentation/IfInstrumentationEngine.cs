@@ -7,7 +7,7 @@ namespace Stryker.Core.Instrumentation
 {
     internal class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
     {
-        public IfInstrumentationEngine(string annotation) : base(annotation, nameof(IfInstrumentationEngine))
+        public IfInstrumentationEngine(string annotation) : base(annotation)
         {
         }
 
