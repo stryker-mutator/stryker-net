@@ -7,7 +7,7 @@ namespace Stryker.Core.Instrumentation
 {
     internal class AccessorExpressionToBodyEngine : BaseEngine<AccessorDeclarationSyntax>
     {
-        public AccessorExpressionToBodyEngine(string markerId) : base(markerId, "AccessorExpressionToBodyEngine")
+        public AccessorExpressionToBodyEngine(string markerId) : base(markerId, nameof(AccessorExpressionToBodyEngine))
         {
         }
 

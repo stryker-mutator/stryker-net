@@ -12,7 +12,7 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
     {
-        public EndingReturnEngine(string markerId) : base(markerId, "EndingReturnEngine")
+        public EndingReturnEngine(string markerId) : base(markerId, nameof(EndingReturnEngine))
         {
         }
 
