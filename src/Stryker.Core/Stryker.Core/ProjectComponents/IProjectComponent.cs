@@ -11,7 +11,7 @@ namespace Stryker.Core.ProjectComponents
         string RelativePath { get; set; }
         string RelativePathToProjectFile { get; set; }
 
-        IParentComponent Parent { get; set; }
+        IFolderComposite Parent { get; set; }
 
         IEnumerable<Mutant> Mutants { get; set; }
 

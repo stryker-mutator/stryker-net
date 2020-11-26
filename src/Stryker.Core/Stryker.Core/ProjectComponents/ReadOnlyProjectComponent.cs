@@ -16,7 +16,7 @@ namespace Stryker.Core.ProjectComponents
         public string RelativePath => _projectComponent.RelativePath;
         public string RelativePathToProjectFile => _projectComponent.RelativePathToProjectFile;
 
-        public IParentComponent Parent => _projectComponent.Parent;
+        public IFolderComposite Parent => _projectComponent.Parent;
 
         public IEnumerable<IReadOnlyMutant> Mutants => _projectComponent.Mutants;
         public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m => m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);

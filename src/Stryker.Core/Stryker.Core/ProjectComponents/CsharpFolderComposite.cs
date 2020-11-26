@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class CsharpFolderComposite : ProjectComponent<SyntaxTree>, IParentComponent
+    public class CsharpFolderComposite : ProjectComponent<SyntaxTree>, IFolderComposite
     {
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
         private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();
