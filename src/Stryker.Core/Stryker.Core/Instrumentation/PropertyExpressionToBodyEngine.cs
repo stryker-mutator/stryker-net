@@ -8,7 +8,7 @@ namespace Stryker.Core.Instrumentation
 {
     internal class PropertyExpressionToBodyEngine : BaseEngine<PropertyDeclarationSyntax>
     {
-        public PropertyExpressionToBodyEngine(string markerId) : base(markerId, "PropertyExpressionToBodyEngine")
+        public PropertyExpressionToBodyEngine(string markerId) : base(markerId, nameof(PropertyExpressionToBodyEngine))
         {
         }
 
