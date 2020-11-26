@@ -4,14 +4,14 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 Stryker.NET uses custom classes to keep track of folders and files.
 
-These FolderComponents and FileLeafs have readonly variants, this is done to ensure the mutated sourcecode and Mutants are not changed after the mutation is placed.
+These FolderComposite and FileLeafs have readonly variants, this is done to ensure the mutated sourcecode and Mutants are not changed after the mutation is placed.
 
 ### UML of the classes in the namespace Stryker.Core.ProjectComponents
 ![Folder Components](./images/ProjectComponents.png)
 
 ### Old Design
 The global structure was as follows: 
-* ```FolderComponent```
+* ```FolderComposite```
 * ```FileLeaf```
 
 With the abstract class they both implement:
@@ -22,18 +22,18 @@ When implementing F# the old structure showed it's disadvantages since F# uses a
 
 To solve this ```ProjectComponent``` was made generic ```ProjectComponent<T>```.
 
-However many parts of stryker use ```FolderComponent``` and ```FileLeaf``` without needing access to the syntaxtrees or to know what language is used.
+However many parts of stryker use ```FolderComposite``` and ```FileLeaf``` without needing access to the syntaxtrees or to know what language is used.
 For this purpose the Interface IProjectComponent is used.
 
-```IParentComponent``` and ```IFileLeaf``` are implemented for the same reason. 
+```IFolderComposite``` and ```IFileLeaf``` are implemented for the same reason. 
 This enables code to ask for an ```IFileLeaf``` so It can access the elements that do not depend on the language, that being all except the syntaxtrees.
 
 For applications that do need access to the syntaxtrees ```ProjectComponent<T>``` can be used or the specific type, being:
-* ```CsharpFolderComponent```
+* ```CsharpFolderComposite```
 * ```CsharpFileLeaf```
 
 OR
-* ```FsharpFolderComponent```
+* ```FsharpFolderComposite```
 * ```FsharpFileLeaf```
 
 ```IFileLeaf<T>``` is needed to have languageagnostic notation for the syntaxtrees.
