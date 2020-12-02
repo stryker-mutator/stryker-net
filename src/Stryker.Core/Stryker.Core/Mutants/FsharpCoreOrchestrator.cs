@@ -5,12 +5,12 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
 {
-    public class FsharpBaseOrchestrator
+    public class FsharpCoreOrchestrator
     {
         private OrchestratorFinder<SynModuleDecl> _fsharpMutationsSynModuleDecl;
         private OrchestratorFinder<SynExpr> _fsharpMutationsSynExpr;
 
-        public FsharpBaseOrchestrator()
+        public FsharpCoreOrchestrator()
         {
             _fsharpMutationsSynModuleDecl = new OrchestratorFinder<SynModuleDecl>();
             _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.Let), new LetOrchestrator());

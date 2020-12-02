@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
     public interface IFsharpTypehandle<T>
     {
-        public T Mutate(T input, FsharpBaseOrchestrator iterator);
+        public T Mutate(T input, FsharpCoreOrchestrator iterator);
     }
 
     public class OrchestratorFinder<T>
@@ -30,7 +30,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 
     public class DefaultOrchestrator<T> : IFsharpTypehandle<T>
     {
-        public T Mutate(T input, FsharpBaseOrchestrator iterator)
+        public T Mutate(T input, FsharpCoreOrchestrator iterator)
         {
             return input;
         }

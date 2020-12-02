@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
     public class NestedModuleOrchestrator : IFsharpTypehandle<SynModuleDecl>
     {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpBaseOrchestrator iterator)
+        public SynModuleDecl Mutate(SynModuleDecl input, FsharpCoreOrchestrator iterator)
         {
             var castinput = input as SynModuleDecl.NestedModule;
 
@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 
     public class LetOrchestrator : IFsharpTypehandle<SynModuleDecl>
     {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpBaseOrchestrator iterator)
+        public SynModuleDecl Mutate(SynModuleDecl input, FsharpCoreOrchestrator iterator)
         {
             var castinput = input as SynModuleDecl.Let;
 

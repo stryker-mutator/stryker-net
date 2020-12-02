@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
     public class IfThenElseOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpCoreOrchestrator iterator)
         {
             var castinput = input as SynExpr.IfThenElse;
 
@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 
     public class LetOrUseOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpCoreOrchestrator iterator)
         {
             var castinput = input as SynExpr.LetOrUse;
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants.FsharpOrchestrator
 
     public class MatchOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpCoreOrchestrator iterator)
         {
             var castinput = input as SynExpr.Match;
 
