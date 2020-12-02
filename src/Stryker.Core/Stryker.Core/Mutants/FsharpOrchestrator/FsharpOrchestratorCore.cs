@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutants.FsharpNodes
+namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
     public interface IFsharpTypehandle<T>
     {
-        public T Mutate(T input, FsharpTreeIterator iterator);
+        public T Mutate(T input, FsharpBaseOrchestrator iterator);
     }
 
-    public class FsharpMutations<T>
+    public class OrchestratorFinder<T>
     {
         private readonly IDictionary<Type, IFsharpTypehandle<T>> _handlerMapping = new Dictionary<Type, IFsharpTypehandle<T>>();
 
@@ -24,13 +24,13 @@ namespace Stryker.Core.Mutants.FsharpNodes
             {
                 return returnable;
             }
-            return new DefaultHelper<T>();
+            return new DefaultOrchestrator<T>();
         }
     }
 
-    public class DefaultHelper<T> : IFsharpTypehandle<T>
+    public class DefaultOrchestrator<T> : IFsharpTypehandle<T>
     {
-        public T Mutate(T input, FsharpTreeIterator iterator)
+        public T Mutate(T input, FsharpBaseOrchestrator iterator)
         {
             return input;
         }

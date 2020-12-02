@@ -13,19 +13,19 @@ namespace Stryker.Core.Mutants
     internal class FsharpMutantOrchestrator : BaseMutantOrchestrator
     {
         private ILogger Logger { get; }
-        private FsharpTreeIterator _treeIterator { get; }
+        private readonly FsharpBaseOrchestrator _base;
 
         public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
-            _treeIterator = new FsharpTreeIterator();
+            _base = new FsharpBaseOrchestrator();
         }
 
         public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
         {
             var mutationContext = new MutationContext(this);
-            var mutation = /*treeroot*/Mutate(treeroot, mutationContext);
+            var mutation = /*treeroot*/_base.Mutate(treeroot);
 
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {
@@ -39,12 +39,6 @@ namespace Stryker.Core.Mutants
                 mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
             }
             return mutation;
-        }
-
-        private FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot, MutationContext context)
-        {
-            var mutated = _treeIterator.Mutate(treeroot);
-            return mutated;
         }
     }
 }

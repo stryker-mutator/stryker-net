@@ -8,9 +8,4 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         SyntaxNode Mutate(SyntaxNode node, MutationContext context);
     }
-
-    interface IFsharpNodeMutator : ITypeHandler<SynExpr>
-    {
-        SynExpr Mutate(SynExpr node, MutationContext context);
-    }
 }

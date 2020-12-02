@@ -5,11 +5,11 @@ using static FSharp.Compiler.SyntaxTree;
 using static FSharp.Compiler.SyntaxTree.SynConst;
 using static FSharp.Compiler.SyntaxTree.SynPat;
 
-namespace Stryker.Core.Mutants.FsharpNodes
+namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
-    public class IfThenElseHelper : IFsharpTypehandle<SynExpr>
+    public class IfThenElseOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpTreeIterator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
         {
             var castinput = input as SynExpr.IfThenElse;
 
@@ -18,9 +18,9 @@ namespace Stryker.Core.Mutants.FsharpNodes
         }
     }
 
-    public class LetOrUseHelper : IFsharpTypehandle<SynExpr>
+    public class LetOrUseOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpTreeIterator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
         {
             var castinput = input as SynExpr.LetOrUse;
 
@@ -36,9 +36,9 @@ namespace Stryker.Core.Mutants.FsharpNodes
         }
     }
 
-    public class MatchHelper : IFsharpTypehandle<SynExpr>
+    public class MatchOrchestrator : IFsharpTypehandle<SynExpr>
     {
-        public SynExpr Mutate(SynExpr input, FsharpTreeIterator iterator)
+        public SynExpr Mutate(SynExpr input, FsharpBaseOrchestrator iterator)
         {
             var castinput = input as SynExpr.Match;
 

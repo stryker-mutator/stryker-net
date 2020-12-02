@@ -1,25 +1,25 @@
 using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
-using Stryker.Core.Mutants.FsharpNodes;
+using Stryker.Core.Mutants.FsharpOrchestrator;
 using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
 {
-    public class FsharpTreeIterator
+    public class FsharpBaseOrchestrator
     {
-        private FsharpMutations<SynModuleDecl> _fsharpMutationsSynModuleDecl;
-        private FsharpMutations<SynExpr> _fsharpMutationsSynExpr;
+        private OrchestratorFinder<SynModuleDecl> _fsharpMutationsSynModuleDecl;
+        private OrchestratorFinder<SynExpr> _fsharpMutationsSynExpr;
 
-        public FsharpTreeIterator()
+        public FsharpBaseOrchestrator()
         {
-            _fsharpMutationsSynModuleDecl = new FsharpMutations<SynModuleDecl>();
-            _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.Let), new LetHelper());
-            _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.NestedModule), new NestedModuleHelper());
+            _fsharpMutationsSynModuleDecl = new OrchestratorFinder<SynModuleDecl>();
+            _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.Let), new LetOrchestrator());
+            _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.NestedModule), new NestedModuleOrchestrator());
 
-            _fsharpMutationsSynExpr = new FsharpMutations<SynExpr>();
-            _fsharpMutationsSynExpr.Add(typeof(SynExpr.Match), new MatchHelper());
-            _fsharpMutationsSynExpr.Add(typeof(SynExpr.LetOrUse), new LetOrUseHelper());
-            _fsharpMutationsSynExpr.Add(typeof(SynExpr.IfThenElse), new IfThenElseHelper());
+            _fsharpMutationsSynExpr = new OrchestratorFinder<SynExpr>();
+            _fsharpMutationsSynExpr.Add(typeof(SynExpr.Match), new MatchOrchestrator());
+            _fsharpMutationsSynExpr.Add(typeof(SynExpr.LetOrUse), new LetOrUseOrchestrator());
+            _fsharpMutationsSynExpr.Add(typeof(SynExpr.IfThenElse), new IfThenElseOrchestrator());
         }
 
         public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> modules)

@@ -4,11 +4,11 @@ using System.Text;
 using Microsoft.FSharp.Collections;
 using static FSharp.Compiler.SyntaxTree;
 
-namespace Stryker.Core.Mutants.FsharpNodes
+namespace Stryker.Core.Mutants.FsharpOrchestrator
 {
-    public class NestedModuleHelper : IFsharpTypehandle<SynModuleDecl>
+    public class NestedModuleOrchestrator : IFsharpTypehandle<SynModuleDecl>
     {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpTreeIterator iterator)
+        public SynModuleDecl Mutate(SynModuleDecl input, FsharpBaseOrchestrator iterator)
         {
             var castinput = input as SynModuleDecl.NestedModule;
 
@@ -17,9 +17,9 @@ namespace Stryker.Core.Mutants.FsharpNodes
         }
     }
 
-    public class LetHelper : IFsharpTypehandle<SynModuleDecl>
+    public class LetOrchestrator : IFsharpTypehandle<SynModuleDecl>
     {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpTreeIterator iterator)
+        public SynModuleDecl Mutate(SynModuleDecl input, FsharpBaseOrchestrator iterator)
         {
             var castinput = input as SynModuleDecl.Let;
 
