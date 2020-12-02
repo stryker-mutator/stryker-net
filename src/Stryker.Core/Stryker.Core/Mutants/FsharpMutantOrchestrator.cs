@@ -13,13 +13,13 @@ namespace Stryker.Core.Mutants
     internal class FsharpMutantOrchestrator : BaseMutantOrchestrator
     {
         private ILogger Logger { get; }
-        private readonly FsharpBaseOrchestrator _base;
+        private readonly FsharpCoreOrchestrator _base;
 
         public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
-            _base = new FsharpBaseOrchestrator();
+            _base = new FsharpCoreOrchestrator();
         }
 
         public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
