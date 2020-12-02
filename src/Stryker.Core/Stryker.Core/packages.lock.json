@@ -84,30 +84,32 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[16.7.1, )",
-        "resolved": "16.7.1",
-        "contentHash": "YmsvjckFsARpmi5Qpfp4WPya989FLDmtD353z6eDm2FEv/843jSrKT0fstSfzIYdpXZ8o5yarOA6MQX8mayP3A=="
+        "requested": "[16.8.3, )",
+        "resolved": "16.8.3",
+        "contentHash": "I0kxMUMy7/6KCNgOM8Os9+JD4eHNmxcjXwaBsO/9bOUxBALdqZ+wMu5wE5dZHaVlySB36+IXdw8cZ+1azEjLng=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[16.7.1, )",
-        "resolved": "16.7.1",
-        "contentHash": "FL+VpAC/nCCzj80MwX6L8gJD06u2m1SKcQQLAymDLFqNtgtI9h3J5n0mVN+s18qcMzybsmO9GK7rMuHYx11KMg==",
+        "requested": "[16.8.3, )",
+        "resolved": "16.8.3",
+        "contentHash": "dqHiRggyAbkjQO9926SzM11Pn0nKjH1wwM6ee3E9//y1WZsUgTSVCMS14qvlQlk9iUZJyj+iz3/1zplE4Ll+hw==",
         "dependencies": {
-          "NuGet.Frameworks": "5.0.0"
+          "NuGet.Frameworks": "5.0.0",
+          "System.Reflection.Metadata": "1.6.0",
+          "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[16.7.1, )",
-        "resolved": "16.7.1",
-        "contentHash": "98dUZvN0ePwy6DH8Lj3e+LVoH5jo8j0bxV+Ybq5bv7JwW0k6x9nR5d9D3+JVpHo57QhoeTBbzBuQ+ZFoAmfQ1Q=="
+        "requested": "[16.8.3, )",
+        "resolved": "16.8.3",
+        "contentHash": "fH7bwLmJDmzqXHF0DTtkWtC/xChxizmy2MjfFylo3Xw/5M9dRMk/1Zff4SqO/cSnBLbK66ZgQjFbNxVZBdg46g=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[16.7.1, )",
-        "resolved": "16.7.1",
-        "contentHash": "enqnyRWAnSnjppygEb69Bzw3GEtn9onITGW1202Enm1tLBFDTtEARC6vaVM7GFoRclE5CzgDS/Zb8XvDEJ6Z4Q==",
+        "requested": "[16.8.3, )",
+        "resolved": "16.8.3",
+        "contentHash": "7wRxz4cd20Yupw6qmXZW7ufCuElyv1Ip7M53PwGiWR4ILCsW3XK0tU0QMB2yayYTeZ064L+tJ3tdIQ/ikq128Q==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1385,7 +1387,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.7.1"
+          "Microsoft.TestPlatform.ObjectModel": "16.8.3"
         }
       },
       "stryker.regexmutators": {
