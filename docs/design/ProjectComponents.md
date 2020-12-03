@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/FolderComponents.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/design/ProjectComponents.md
 ---
 
 Stryker.NET uses custom classes to keep track of folders and files.
@@ -7,7 +7,7 @@ Stryker.NET uses custom classes to keep track of folders and files.
 These FolderComponents and FileLeafs have readonly variants, this is done to ensure the mutated sourcecode and Mutants are not changed after the mutation is placed.
 
 ### UML of the classes in the namespace Stryker.Core.ProjectComponents
-![Folder Components](./images/ProjectComponents.png)
+![Folder Components](.././images/ProjectComponents.png)
 
 ### Old Design
 The global structure was as follows: 
