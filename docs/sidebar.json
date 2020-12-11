@@ -1,0 +1,9 @@
+[
+  "stryker-net/Introduction",
+  "stryker-net/Configuration",
+  "stryker-net/Mutators",
+  "stryker-net/ProjectComponents",
+  "stryker-net/RegexMutators",
+  "stryker-net/Reporters",
+  "stryker-net/Stryker-in-pipeline"
+]
