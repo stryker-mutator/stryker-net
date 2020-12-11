@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
@@ -8,14 +9,19 @@ using System.Linq;
 
 namespace Stryker.Core.Reporters
 {
-    public static class ReporterFactory
+    public interface IReporterFactory
     {
-        public static IReporter Create(StrykerOptions options)
+        IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null);
+    }
+
+    public class ReporterFactory : IReporterFactory
+    {
+        public IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private static IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -30,7 +36,7 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        private static IEnumerable<IReporter> DetermineEnabledReporters(IList<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
+        private IEnumerable<IReporter> DetermineEnabledReporters(IList<Reporter> enabledReporters, IDictionary<Reporter, IReporter> possibleReporters)
         {
             if (enabledReporters.Contains(Reporter.All))
             {
@@ -57,7 +63,7 @@ namespace Stryker.Core.Reporters
                 .Select(reporter => reporter.Value);
         }
 
-        private static ProgressReporter CreateProgressReporter()
+        private ProgressReporter CreateProgressReporter()
         {
             var consoleOneLineLoggerFactory = new ConsoleOneLineLoggerFactory();
             var progressBarReporter =
