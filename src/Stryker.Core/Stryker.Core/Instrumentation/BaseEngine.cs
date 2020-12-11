@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Instrumentation

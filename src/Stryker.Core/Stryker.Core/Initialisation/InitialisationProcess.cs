@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -14,6 +15,7 @@ namespace Stryker.Core.Initialisation
         IInitialisationProcess Provide();
     }
 
+    [ExcludeFromCodeCoverage]
     public class InitialisationProcessProvider : IInitialisationProcessProvider
     {
         public IInitialisationProcess Provide()

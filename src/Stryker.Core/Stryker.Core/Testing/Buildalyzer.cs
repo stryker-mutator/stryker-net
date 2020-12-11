@@ -1,4 +1,5 @@
-﻿using Buildalyzer;
+using System.Diagnostics.CodeAnalysis;
+using Buildalyzer;
 
 namespace Stryker.Core.Testing
 {
@@ -11,6 +12,7 @@ namespace Stryker.Core.Testing
         IAnalyzerManager Provide(string solutionFilePath, AnalyzerManagerOptions options = null);
     }
 
+    [ExcludeFromCodeCoverage]
     public class BuildalyzerProvider : IBuildalyzerProvider
     {
         public IAnalyzerManager Provide(AnalyzerManagerOptions options = null)
