@@ -459,7 +459,7 @@ namespace Stryker.Core.Options
             }
 
             // Get all mutatorTypes and their descriptions
-            Dictionary<Mutator, string> typeDescriptions = Enum.GetValues(typeof(Mutator))
+            var typeDescriptions = Enum.GetValues(typeof(Mutator))
                 .Cast<Mutator>()
                 .ToDictionary(x => x, x => x.GetDescription());
 
@@ -533,7 +533,7 @@ namespace Stryker.Core.Options
 
         private Threshold ValidateThresholds(int thresholdHigh, int thresholdLow, int thresholdBreak)
         {
-            List<int> thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
+            var thresholdList = new List<int> { thresholdHigh, thresholdLow, thresholdBreak };
             if (thresholdList.Any(x => x > 100 || x < 0))
             {
                 throw new StrykerInputException(

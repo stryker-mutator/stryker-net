@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,17 +23,14 @@ namespace Stryker.Core.Initialisation
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
-        private readonly IInitialisationProcessProvider _initialisationProcessProvider;
-        private readonly IMutationTestProcessProvider _mutationTestProcessProvider;
         private readonly IBuildalyzerProvider _buildalyzerProvider;
+        private readonly IProjectMutator _projectMutator;
 
-        public ProjectOrchestrator(IInitialisationProcessProvider initialisationProcessProvider = null,
-            IMutationTestProcessProvider mutationTestProcessProvider = null,
-            IBuildalyzerProvider buildalyzerProvider = null)
+        public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
+            IProjectMutator projectMutator = null)
         {
-            _initialisationProcessProvider = initialisationProcessProvider ?? new InitialisationProcessProvider();
-            _mutationTestProcessProvider = mutationTestProcessProvider ?? new MutationTestProcessProvider();
             _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
+            _projectMutator = projectMutator ?? new ProjectMutator();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
@@ -60,7 +58,7 @@ namespace Stryker.Core.Initialisation
             {
                 // mutate a single project from the test project context
                 _logger.LogInformation("Identifying project to mutate.");
-                yield return MutateProject(options.Copy(options.BasePath, null, null), reporters);
+                yield return _projectMutator.MutateProject(options.Copy(options.BasePath, null, null), reporters);
             }
         }
 
@@ -86,7 +84,7 @@ namespace Stryker.Core.Initialisation
                         projectUnderTest: projectFilePath,
                         testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
 
-                    yield return MutateProject(projectOptions, reporters);
+                    yield return _projectMutator.MutateProject(projectOptions, reporters);
                 }
                 else
                 {
@@ -101,7 +99,7 @@ namespace Stryker.Core.Initialisation
             var manager = _buildalyzerProvider.Provide(options.SolutionPath);
 
             // build all projects
-            var projectsAnalyzerResults = new List<IAnalyzerResult>();
+            var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
             _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
             try
             {
@@ -126,33 +124,13 @@ namespace Stryker.Core.Initialisation
                 throw ex.GetBaseException();
             }
 
-            return projectsAnalyzerResults;
+            return projectsAnalyzerResults.ToList();
         }
 
         private static bool IsSolutionContext(StrykerOptions options) =>
-            options.SolutionPath != null && options.BasePath == Path.GetDirectoryName(options.SolutionPath);
+            options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.BasePath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
 
-        private IMutationTestProcess MutateProject(IStrykerOptions options, IReporter reporters)
-        {
-            // get a new instance of InitialisationProcess for each project
-            var initialisationProcess = _initialisationProcessProvider.Provide();
-            // initialize
-            var input = initialisationProcess.Initialize(options);
 
-            var process = _mutationTestProcessProvider.Provide(
-                mutationTestInput: input,
-                reporter: reporters,
-                mutationTestExecutor: new MutationTestExecutor(input.TestRunner),
-                options: options);
-
-            // initial test
-            input.TimeoutMs = initialisationProcess.InitialTest(options);
-
-            // mutate
-            process.Mutate();
-
-            return process;
-        }
 
         private IEnumerable<IAnalyzerResult> FindProjectsUnderTest(IEnumerable<IAnalyzerResult> projectsAnalyzerResults)
         {

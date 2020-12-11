@@ -167,7 +167,7 @@ namespace Stryker.Core.MutantFilters
             var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
             var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);
 
-            LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
+            var span = new LinePositionSpan(beginLinePosition, endLinePosition);
 
             var textSpan = tree.GetText().Lines.GetTextSpan(span);
             var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));

@@ -383,7 +383,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
 
         private static string FormatOptionsString<T, Y>(IEnumerable<T> @default, IEnumerable<Y> options, IEnumerable<Y> deprecated)
         {
-            StringBuilder optionsString = new StringBuilder();
+            var optionsString = new StringBuilder();
 
             optionsString.Append($"Options[ (default)[ {string.Join(", ", @default)} ], ");
             string nonDefaultOptions = string.Join(
