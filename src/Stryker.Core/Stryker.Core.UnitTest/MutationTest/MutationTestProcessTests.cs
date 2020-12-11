@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
+            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { }, fileSystem: new MockFileSystem());
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -192,7 +192,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 .Callback<IEnumerable<Mutant>, ReadOnlyFileLeaf, IStrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
                 .Returns((IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions o) => mutants.Take(1));
 
-            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { });
+            var options = new StrykerOptions(devMode: true, excludedMutations: new string[] { }, fileSystem: new MockFileSystem());
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -330,7 +330,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(basePath: basePath);
+            var options = new StrykerOptions(basePath: basePath, fileSystem: new MockFileSystem());
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -391,7 +391,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(basePath: basePath);
+            var options = new StrykerOptions(basePath: basePath, fileSystem: new MockFileSystem());
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -434,7 +434,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(basePath: basePath);
+            var options = new StrykerOptions(basePath: basePath, fileSystem: new MockFileSystem());
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
