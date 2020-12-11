@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Buildalyzer;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
@@ -36,24 +37,16 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        },
-                        Resources = new List<ResourceDescription>()
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> { 
-                        new ProjectAnalyzerResult(null, null)
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "AssemblyName", "TargetFileName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -91,24 +84,16 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        },
-                        Resources = new List<ResourceDescription>()
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "AssemblyName", "TargetFileName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -152,24 +137,16 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        },
-                        Resources = new List<ResourceDescription>()
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "AssemblyName", "TargetFileName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -207,27 +184,19 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        ProjectFilePath = "project.csproj",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                            { "SignAssembly", "true"},
-                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk"))}
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                         },
-                        Resources = new List<ResourceDescription>(),
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                        projectFilePath: "TestResources").Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "AssemblyName", "AssemblyName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -269,27 +238,19 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        ProjectFilePath = "project.csproj",
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
+                            { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll"},
-                            { "SignAssembly", "true"},
-                            {"AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "DoesNotExists.snk"))}
+                            { "AssemblyName", "AssemblyName"},
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
-                        Resources = new List<ResourceDescription>(),
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                        projectFilePath: "project.csproj").Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "AssemblyName", "AssemblyName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {
@@ -326,24 +287,19 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                    {
-                        Properties = new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
                         {
-                            { "AssemblyTitle", "TargetFileName"},
-                            { "TargetFileName", "TargetFileName.dll"},
-                        },
-                        Resources = new List<ResourceDescription>()
-                    },
-                    TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                        new ProjectAnalyzerResult(null, null)
+                            { "TargetDir", "" },
+                            { "TargetFileName", "TargetFileName.dll" },
+                            { "AssemblyName", "AssemblyName"},
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
-                            Properties = new Dictionary<string, string>()
-                            {
-                                { "AssemblyTitle", "TargetFileName"},
-                            },
-                            Resources = new List<ResourceDescription>()
-                        }
+                            { "TargetDir", "" },
+                            { "TargetFileName", "TargetFileName.dll" },
+                            { "AssemblyName", "AssemblyName"},
+                        }).Object
                     }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>() {

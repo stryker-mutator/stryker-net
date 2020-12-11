@@ -22,7 +22,7 @@ namespace Stryker.Core.Reporters.Json
 
         public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            var log = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
 
             Source = file.SourceCode;
             Language = "cs";
