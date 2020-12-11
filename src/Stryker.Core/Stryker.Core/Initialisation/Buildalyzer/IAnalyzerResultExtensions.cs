@@ -30,52 +30,10 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
         }
 
-        public static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
-        {
-            return Path.Combine(
-                Path.GetDirectoryName(analyzerResult.ProjectFilePath),
-                analyzerResult?.Properties?.GetValueOrDefault("AssemblyOriginatorKeyFile"));
-        }
-
-        public static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)
-        {
-            if (analyzerResult.Properties == null || !analyzerResult.Properties.TryGetValue(name, out var result))
-            {
-                result = defaultValue;
-            }
-
-            return result;
-        }
-
-        public static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
-        {
-            if (analyzerResult.Properties != null && analyzerResult.Properties.TryGetValue(name, out var result))
-            {
-                return bool.Parse(result);
-            }
-
-            return defaultBoolean;
-        }
-
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {
-            var kind = analyzerResult.GetPropertyOrDefault("OutputType") switch
-            {
-                "Exe" => OutputKind.ConsoleApplication,
-                "WinExe" => OutputKind.WindowsApplication,
-                "Module" => OutputKind.NetModule,
-                "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
-                "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
-                _ => OutputKind.DynamicallyLinkedLibrary
-            };
-
-            if (!Enum.TryParse(typeof(NullableContextOptions), analyzerResult.GetPropertyOrDefault("Nullable", "enable"), true, out var nullableOptions))
-            {
-                nullableOptions = NullableContextOptions.Enable;
-            }
-
-            var result = new CSharpCompilationOptions(kind)
-                .WithNullableContextOptions((NullableContextOptions)nullableOptions)
+            var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
+                .WithNullableContextOptions(analyzerResult.GetNullableContextOptions())
                 .WithAllowUnsafe(analyzerResult.GetPropertyOrDefault("AllowUnsafeBlocks", true))
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)
@@ -84,17 +42,10 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
             if (analyzerResult.IsSignedAssembly())
             {
-                result = result.WithCryptoKeyFile(Path.Combine(
-                        Path.GetDirectoryName(analyzerResult.ProjectFilePath),
-                        analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile")))
+                compilationOptions = compilationOptions.WithCryptoKeyFile(analyzerResult.GetAssemblyOriginatorKeyFile())
                     .WithStrongNameProvider(new DesktopStrongNameProvider());
             }
-            return result;
-        }
-
-        public static bool IsSignedAssembly(this IAnalyzerResult analyzerResult)
-        {
-            return bool.Parse(analyzerResult?.Properties?.GetValueOrDefault("SignAssembly") ?? "false");
+            return compilationOptions;
         }
 
         public static IList<string> GetDefineConstants(this IAnalyzerResult analyzerResult)
@@ -126,8 +77,8 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         {
             var (framework, version) = analyzerResult.GetTargetFrameworkAndVersion();
 
-            bool frameworkSupportsAppDomain = true;
-            bool frameworkSupportsPipes = true;
+            var frameworkSupportsAppDomain = true;
+            var frameworkSupportsPipes = true;
 
             switch (framework)
             {
@@ -173,7 +124,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
         }
 
-        public static Language ParseLanguage(this IAnalyzerResult analyzerResult)
+        public static Language GetLanguage(this IAnalyzerResult analyzerResult)
         {
             return analyzerResult.GetPropertyOrDefault("Language") switch
             {
@@ -181,6 +132,16 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 "C#" => Language.Csharp,
                 _ => Language.Undefined,
             };
+        }
+
+        public static bool IsTestProject(this IAnalyzerResult analyzerResult)
+        {
+            var isTestProject = analyzerResult.GetPropertyOrDefault("IsTestProject", false);
+            var hasTestProjectTypeGuid = analyzerResult
+                .GetPropertyOrDefault("ProjectTypeGuids", "")
+                .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+
+            return isTestProject || hasTestProjectTypeGuid;
         }
 
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)
@@ -216,6 +177,58 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 return new Version(version);
             }
             return new Version();
+        }
+
+        private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult)
+        {
+            return analyzerResult.GetPropertyOrDefault("OutputType") switch
+            {
+                "Exe" => OutputKind.ConsoleApplication,
+                "WinExe" => OutputKind.WindowsApplication,
+                "Module" => OutputKind.NetModule,
+                "AppContainerExe" => OutputKind.WindowsRuntimeApplication,
+                "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
+                _ => OutputKind.DynamicallyLinkedLibrary
+            };
+        }
+
+        private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
+        {
+            if (!Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "enable"), true, out NullableContextOptions nullableOptions))
+            {
+                nullableOptions = NullableContextOptions.Enable;
+            }
+
+            return nullableOptions;
+        }
+
+        private static bool IsSignedAssembly(this IAnalyzerResult analyzerResult)
+        {
+            return analyzerResult.GetPropertyOrDefault("SignAssembly", false);
+        }
+
+        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
+        {
+            return Path.Combine(
+                Path.GetDirectoryName(analyzerResult.ProjectFilePath),
+                analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
+        }
+
+        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
+        {
+            var property = GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString());
+
+            return bool.Parse(property);
+        }
+
+        private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)
+        {
+            if (analyzerResult.Properties is null || !analyzerResult.Properties.TryGetValue(name, out var property))
+            {
+                return defaultValue;
+            }
+
+            return property;
         }
     }
 }

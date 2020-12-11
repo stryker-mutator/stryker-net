@@ -1,3 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -12,14 +20,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Threading;
 using Framework = Stryker.Core.Initialisation.Framework;
 using Guid = System.Guid;
 
@@ -151,8 +151,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     : new TestListDescription(handlerTestResults.Select(tr => (TestDescription)tr.TestCase));
                 var failedTest = new TestListDescription(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(tr => (TestDescription)tr.TestCase));
-                var testsInProgress = new TestListDescription(handler.TestsInTimeout?.Select(t => (TestDescription)t));
-                var remainingMutants = update?.Invoke(mutants, failedTest, tests, testsInProgress);
+                var timedOutTests = new TestListDescription(handler.TestsInTimeout?.Select(t => (TestDescription)t));
+                var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTests);
                 if (handlerTestResults.Count >= expectedTests || remainingMutants != false || _aborted)
                 {
                     return;
