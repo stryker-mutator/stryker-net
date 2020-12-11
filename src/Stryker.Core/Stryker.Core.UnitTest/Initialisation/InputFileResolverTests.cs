@@ -645,7 +645,7 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(basePath: _basePath)));
+            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: fileSystem)));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({projectUnderTestPath}) and try again.");
         }
 
@@ -674,7 +674,7 @@ using System.Reflection;
             
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath));
+            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
 
             ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
@@ -931,7 +931,7 @@ Please specify a test project name filter that results in one project.
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-            var options = new StrykerOptions(basePath: _basePath, testRunner: TestRunner.DotnetTest.ToString());
+            var options = new StrykerOptions(basePath: _basePath, testRunner: TestRunner.DotnetTest.ToString(), fileSystem: new MockFileSystem());
 
             target.ResolveInput(options);
 
