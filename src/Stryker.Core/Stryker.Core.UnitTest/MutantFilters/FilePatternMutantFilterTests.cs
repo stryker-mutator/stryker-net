@@ -7,8 +7,6 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System.IO;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters

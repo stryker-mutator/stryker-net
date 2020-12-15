@@ -25,11 +25,6 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<ParsedInput> MutatedSyntaxTrees => new List<ParsedInput> { MutatedSyntaxTree };
 
-        public override void Add(ProjectComponent<ParsedInput> component)
-        {
-            // no children can be added to a file instance
-            throw new NotImplementedException();
-        }
         public ReadOnlyFileLeaf ToReadOnly()
         {
             return new ReadOnlyFileLeaf(this);

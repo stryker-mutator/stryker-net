@@ -29,10 +29,17 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotSupportedException("Folders do not contain mutants.");
         }
 
-        public override void Add(ProjectComponent<ParsedInput> component)
+        public void Add(IProjectComponent component)
         {
             component.Parent = this;
             _children.Add(component);
+        }
+        public void AddRange(IEnumerable<IProjectComponent> children)
+        {
+            foreach(var child in children)
+            {
+                Add(child);
+            }
         }
 
         public ReadOnlyFolderComposite ToReadOnly()
@@ -49,5 +56,6 @@ namespace Stryker.Core.ProjectComponents
         {
             return Children.SelectMany(x => x.GetAllFiles());
         }
+
     }
 }

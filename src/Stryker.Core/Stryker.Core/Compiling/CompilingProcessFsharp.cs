@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
@@ -33,7 +34,7 @@ namespace Stryker.Core.Compiling
 
         private string AssemblyName =>
             //@"C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\FSharp\FSharp.Build.dll";
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.AssemblyName;
+            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
@@ -49,17 +50,17 @@ namespace Stryker.Core.Compiling
             var pdblist = new List<string>();
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
-                var injectionPath = testProject.TargetDirectory;
+                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
                 if (!_fileSystem.Directory.Exists(injectionPath))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
                 // inject the mutated Assembly into the test project
-                pathlist.Add(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                pathlist.Add(Path.Combine(injectionPath, _input.ProjectInfo.GetInjectionFilePath(testProject)));
 
                 pdblist.Add(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
 
                 _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
             }

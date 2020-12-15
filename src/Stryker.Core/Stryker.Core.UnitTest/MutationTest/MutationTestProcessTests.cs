@@ -68,7 +68,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -150,7 +151,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -240,7 +242,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "ProjectUnderTest.dll" },
-                            { "AssemblyName", "ProjectUnderTest.dll" }
+                            { "AssemblyName", "ProjectUnderTest.dll" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -422,8 +425,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = new Collection<Mutant>() { }
             });
 
-            var projectUnderTest = new Mock<ProjectAnalyzerResult>(null, null).Object;
-            projectUnderTest.Properties = new Dictionary<string, string>() { { "Language", "C#" } };
+            var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
@@ -473,8 +476,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = new Collection<Mutant>() { }
             });
 
-            var projectUnderTest = new Mock<ProjectAnalyzerResult>(null, null).Object;
-            projectUnderTest.Properties = new Dictionary<string, string>() { { "Language", "C#" } };
+            var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()

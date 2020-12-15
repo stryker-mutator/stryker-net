@@ -857,12 +857,13 @@ Please specify a test project name filter that results in one project.
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     projectFilePath: testProjectPath,
-                    properties: new Dictionary<string, string>(),
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[] { "" }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     projectFilePath: projectUnderTestPath,
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[0]).Object);
 
             // Act
@@ -920,7 +921,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { "" },
                     targetFramework: "net4.5", // classic .net
                     projectFilePath: testProjectPath,
-                    Properties: new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
+                    properties: new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -947,7 +948,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
-                    Properties: new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "true" }, { "Language", "C#" } }),
+                    properties: new Dictionary<string, string> { { "IsTestProject", "true" }, { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -976,7 +977,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { "" },
                     targetFramework: "net4.5", // classic .net
                     projectFilePath: testProjectPath,
-                    Properties: new ReadOnlyDictionary<string, string>(new Dictionary<string, string>() { { "Language", "C#" } }),
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -1004,7 +1005,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { "" },
                     targetFramework: "net4.5", // classic .net
                     projectFilePath: testProjectPath,
-                    Properties: new ReadOnlyDictionary<string, string>(new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } }),
+                    properties: new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -1070,7 +1071,6 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
-                    properties: new Dictionary<string, string>(),
                     references: new string[0],
                     properties: new Dictionary<string, string>(){ { "Language", "C#" } }
                 ).Object);

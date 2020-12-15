@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutants
 {
     public abstract class BaseMutantOrchestrator
     {
-        internal readonly StrykerOptions _options;
+        internal readonly IStrykerOptions _options;
 
         internal bool MustInjectCoverageLogic =>
             _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants
         internal ICollection<Mutant> Mutants { get; set; }
         internal int MutantCount { get; set; }
 
-        public BaseMutantOrchestrator(StrykerOptions options)
+        public BaseMutantOrchestrator(IStrykerOptions options)
         {
             _options = options;
         }

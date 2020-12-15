@@ -3,8 +3,6 @@ using System.Linq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {

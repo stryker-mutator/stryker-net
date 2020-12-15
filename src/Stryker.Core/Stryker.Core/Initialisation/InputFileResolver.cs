@@ -11,14 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
-
 
 namespace Stryker.Core.Initialisation
 {
@@ -104,11 +97,11 @@ namespace Stryker.Core.Initialisation
             }
 
             IProjectComponent inputFiles;
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Csharp)
+            if (projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage() == Language.Csharp)
             {
                 inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             }
-            else if (projectInfo.ProjectUnderTestAnalyzerResult.Language == Language.Fsharp)
+            else if (projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage() == Language.Fsharp)
             {
                 inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             }

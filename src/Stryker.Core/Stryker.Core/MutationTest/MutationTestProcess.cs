@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -45,6 +47,7 @@ namespace Stryker.Core.MutationTest
         private readonly IProjectComponent _projectContents;
         private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
+        private readonly IFileSystem _fileSystem;
         private readonly BaseMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
@@ -55,7 +58,7 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            BaseMutantOrchestrator orchestrator = null,
+            MutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
@@ -68,14 +71,14 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = mutationTestExecutor;
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, _input);
-            _language = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.Language;
+            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
+            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             _orchestrator = orchestrator ?? genOrchestrator(_options);
 
             _mutationProcess = new MutationProcess(Input, orchestrator, fileSystem, _options, mutantFilter, _reporter);
         }
 
-        private BaseMutantOrchestrator genOrchestrator(StrykerOptions options)
+        private BaseMutantOrchestrator genOrchestrator(IStrykerOptions options)
         {
             if (_language == Language.Fsharp)
             {
@@ -90,11 +93,11 @@ namespace Stryker.Core.MutationTest
 
             if (_language == Language.Csharp)
             {
-                _mutationProcess = new MutationProcess(_input, (MutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new MutationProcess(Input, (MutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else if (_language == Language.Fsharp)
             {
-                _mutationProcess = new MutationProcessFsharp(_input, (FsharpMutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new MutationProcessFsharp(Input, (FsharpMutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else
             {

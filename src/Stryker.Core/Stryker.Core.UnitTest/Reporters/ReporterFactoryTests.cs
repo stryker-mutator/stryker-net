@@ -1,4 +1,6 @@
-﻿using Shouldly;
+using Moq;
+using Shouldly;
+using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;

@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutants
         private ILogger Logger { get; }
         private readonly FsharpCoreOrchestrator _base;
 
-        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();

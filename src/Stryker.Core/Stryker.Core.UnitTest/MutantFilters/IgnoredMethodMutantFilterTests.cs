@@ -6,7 +6,6 @@ using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters

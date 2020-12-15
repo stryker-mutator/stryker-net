@@ -71,22 +71,17 @@ namespace Stryker.Core.UnitTest.Fsharp
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>() { projectUnderTestPath },
-                    TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = testProjectPath,
-                    References = new string[] { "" }
-                });
+                .Returns(TestHelper.SetupProjectAnalyzerResult(
+                    projectReferences : new List<string>() { projectUnderTestPath },
+                    targetFramework : "netcoreapp2.1",
+                    projectFilePath : testProjectPath,
+                    references : new string[] { "" }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
-                .Returns(new ProjectAnalyzerResult(null, null)
-                {
-                    ProjectReferences = new List<string>(),
-                    TargetFrameworkVersionString = "netcoreapp2.1",
-                    ProjectFilePath = projectUnderTestPath,
-                    Properties = new Dictionary<string, string>() { { "Language", "F#" } }
-                })
-            ;
+                .Returns(TestHelper.SetupProjectAnalyzerResult(
+                    projectReferences: new List<string>() { projectUnderTestPath },
+                    targetFramework: "netcoreapp2.1",
+                    projectFilePath: projectUnderTestPath,
+                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
 

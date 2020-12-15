@@ -1,3 +1,4 @@
+using Buildalyzer;
 using FSharp.Compiler.SourceCodeServices;
 using FSharp.Compiler.Text;
 using Microsoft.Build.Logging.StructuredLogger;
@@ -23,12 +24,12 @@ namespace Stryker.Core.Initialisation
     internal class FsharpProjectComponentsBuilder : IProjectComponentsBuilder
     {
         private ProjectInfo _projectInfo;
-        private StrykerOptions _options;
+        private IStrykerOptions _options;
         private string[] _foldersToExclude;
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -50,12 +51,11 @@ namespace Stryker.Core.Initialisation
             }
             return inputFiles;
         }
-        private FolderCompositeFsharp FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderCompositeFsharp FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new FolderCompositeFsharp();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
-            var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName;
             var rootFolderComposite = new FolderCompositeFsharp()
             {
                 Name = string.Empty,
@@ -71,7 +71,7 @@ namespace Stryker.Core.Initialisation
             inputFiles.Add(rootFolderComposite);
 
             //InjectMutantHelpers(rootFolderComposite);
-            FSharpChecker fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
@@ -100,7 +100,7 @@ namespace Stryker.Core.Initialisation
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
-                    ImplFile syntaxTree = (ImplFile)result.ParseTree.Value;
+                    var syntaxTree = (ImplFile)result.ParseTree.Value;
 
                     //// don't mutate auto generated code
                     //if (syntaxTree.IsGenerated())
@@ -164,7 +164,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        inputFiles.Add(subDir);
+                        ((IParentComponent)inputFiles).Add(subDir);
                     }
                 }
                 else
@@ -206,7 +206,7 @@ namespace Stryker.Core.Initialisation
         //    return syntaxTree;
         //}
 
-        private FolderCompositeFsharp FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderCompositeFsharp FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new FolderCompositeFsharp();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -226,7 +226,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private IEnumerable<string> ExtractProjectFolders(ProjectAnalyzerResult projectAnalyzerResult)
+        private IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = _fileSystem.File.OpenText(projectFilePath);
@@ -254,7 +254,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderCompositeFsharp FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private FolderCompositeFsharp FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var rootFolderComposite = new FolderCompositeFsharp
             {
@@ -274,7 +274,7 @@ namespace Stryker.Core.Initialisation
 
         private static void InjectMutantHelpers(FolderCompositeFsharp rootFolderComposite)
         {
-            FSharpChecker fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
             /* [OptionalArgument] FSharpOption<int> projectCacheSize, 
              * [OptionalArgument] FSharpOption<bool> keepAssemblyContents, 
              * [OptionalArgument] FSharpOption<bool> keepAllBackgroundResolutions, 
@@ -331,7 +331,7 @@ namespace Stryker.Core.Initialisation
             {
                 folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
             }
-            FSharpChecker fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.fs", SearchOption.TopDirectoryOnly))
             {
                 var fileName = Path.GetFileName(file);
@@ -351,7 +351,7 @@ namespace Stryker.Core.Initialisation
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
-                    ImplFile syntaxTree = (ImplFile)result.ParseTree.Value;
+                    var syntaxTree = (ImplFile)result.ParseTree.Value;
 
                     //// don't mutate auto generated code
                     //if (syntaxTree.IsGenerated())
@@ -387,7 +387,7 @@ namespace Stryker.Core.Initialisation
             return sharedProjects;
         }
 
-        private static string ReplaceMsbuildProperties(string projectReference, ProjectAnalyzerResult projectAnalyzerResult)
+        private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
         {
             var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
             var properties = projectAnalyzerResult.Properties;

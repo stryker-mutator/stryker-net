@@ -7,6 +7,7 @@ using Xunit;
 using Xunit.Sdk;
 using Stryker.Core.ToolHelpers;
 using Stryker.Core.Initialisation.Buildalyzer;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
