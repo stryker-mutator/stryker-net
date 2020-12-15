@@ -6,16 +6,28 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
 {
+    public abstract class BaseMutantOrchestrator<T> : BaseMutantOrchestrator
+    {
+        public  BaseMutantOrchestrator() : base(null)
+        {
+        }
+        public BaseMutantOrchestrator(IStrykerOptions input) : base(input)
+        {
+        }
+
+        public abstract T Mutate(T input);
+    }
+
     public abstract class BaseMutantOrchestrator
     {
-        internal readonly IStrykerOptions _options;
+        public readonly IStrykerOptions _options;
 
-        internal bool MustInjectCoverageLogic =>
+        public bool MustInjectCoverageLogic =>
             _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
             !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
 
-        internal ICollection<Mutant> Mutants { get; set; }
-        internal int MutantCount { get; set; }
+        public ICollection<Mutant> Mutants { get; set; }
+        public int MutantCount { get; set; }
 
         public BaseMutantOrchestrator(IStrykerOptions options)
         {
@@ -25,7 +37,7 @@ namespace Stryker.Core.Mutants
         /// <summary>
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
-        public IReadOnlyCollection<Mutant> GetLatestMutantBatch()
+        public virtual IReadOnlyCollection<Mutant> GetLatestMutantBatch()
         {
             var tempMutants = Mutants;
             Mutants = new Collection<Mutant>();

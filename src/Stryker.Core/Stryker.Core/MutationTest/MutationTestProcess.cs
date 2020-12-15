@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
@@ -58,7 +59,7 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            MutantOrchestrator orchestrator = null,
+            BaseMutantOrchestrator<SyntaxNode> orchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
@@ -75,7 +76,7 @@ namespace Stryker.Core.MutationTest
             _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             _orchestrator = orchestrator ?? genOrchestrator(_options);
 
-            _mutationProcess = new MutationProcess(Input, orchestrator, fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new MutationProcess(Input, fileSystem, _options, mutantFilter, _reporter, orchestrator);
         }
 
         private BaseMutantOrchestrator genOrchestrator(IStrykerOptions options)
@@ -93,7 +94,7 @@ namespace Stryker.Core.MutationTest
 
             if (_language == Language.Csharp)
             {
-                _mutationProcess = new MutationProcess(Input, (MutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new MutationProcess(Input, _fileSystem, _options, mutantFilter, _reporter);
             }
             else if (_language == Language.Fsharp)
             {

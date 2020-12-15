@@ -23,18 +23,17 @@ namespace Stryker.Core.MutationTest
         private readonly CompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly MutantOrchestrator _orchestrator;
+        private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
         public MutationProcess(MutationTestInput mutationTestInput,
-            MutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
-
             IMutantFilter mutantFilter = null,
-            IReporter reporter = null)
+            IReporter reporter = null,
+            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;

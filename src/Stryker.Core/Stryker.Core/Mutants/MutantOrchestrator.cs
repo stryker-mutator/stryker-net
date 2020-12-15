@@ -18,12 +18,12 @@ namespace Stryker.Core.Mutants
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public class MutantOrchestrator : BaseMutantOrchestrator
+    public class MutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new TypeBasedStrategy<SyntaxNode, INodeMutator>();
 
-        internal IEnumerable<IMutator> Mutators { get; }
+        public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
@@ -73,7 +73,7 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="currentNode">The current root node</param>
         /// <returns>Mutated node</returns>
-        public SyntaxNode Mutate(SyntaxNode currentNode)
+        public override SyntaxNode Mutate(SyntaxNode currentNode)
         {
             var mutationContext = new MutationContext(this);
             var mutation = Mutate(currentNode, mutationContext);
@@ -92,7 +92,7 @@ namespace Stryker.Core.Mutants
         }
 
         // recursive version
-        internal SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
+        public SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
         {
             // don't mutate immutable nodes
             if (!SyntaxHelper.CanBeMutated(currentNode))
@@ -105,7 +105,7 @@ namespace Stryker.Core.Mutants
             return nodeHandler.Mutate(currentNode, context);
         }
 
-        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
+        public IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
             var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)

@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    internal class MutationContext : IDisposable
+    public class MutationContext : IDisposable
     {
         private readonly BaseMutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;

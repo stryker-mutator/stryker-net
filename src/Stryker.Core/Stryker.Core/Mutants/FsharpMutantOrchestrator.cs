@@ -10,7 +10,7 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
 {
-    internal class FsharpMutantOrchestrator : BaseMutantOrchestrator
+    internal class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>
     {
         private ILogger Logger { get; }
         private readonly FsharpCoreOrchestrator _base;
@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutants
             _base = new FsharpCoreOrchestrator();
         }
 
-        public FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
+        public override FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
         {
             var mutationContext = new MutationContext(this);
             var mutation = /*treeroot*/_base.Mutate(treeroot);
