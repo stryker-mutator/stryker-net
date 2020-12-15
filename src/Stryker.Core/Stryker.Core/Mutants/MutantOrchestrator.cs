@@ -20,6 +20,8 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutantOrchestrator : BaseMutantOrchestrator
     {
+        private readonly IStrykerOptions _options;
+
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new TypeBasedStrategy<SyntaxNode, INodeMutator>();
 
@@ -27,7 +29,7 @@ namespace Stryker.Core.Mutants
         private ILogger Logger { get; }
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null)
         {
             Mutators = mutators ?? new List<IMutator>
             {

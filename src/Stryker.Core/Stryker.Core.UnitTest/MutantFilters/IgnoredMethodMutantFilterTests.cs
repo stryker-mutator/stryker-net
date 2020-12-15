@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using System;
+using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.MutantFilters;

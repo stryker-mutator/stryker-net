@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +30,6 @@ namespace Stryker.Core.ProjectComponents
         /// Only those syntax trees that were changed by the mutation process
         /// </summary>
         public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
-
-        public abstract void Add(ProjectComponent<T> component);
 
         public abstract IReadOnlyProjectComponent ToReadOnlyInputComponent();
 

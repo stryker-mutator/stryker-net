@@ -1,3 +1,4 @@
+using Buildalyzer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -41,7 +42,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
         private readonly Mutant _otherMutant;
-        private readonly FolderComposite _mutants;
+        private readonly FolderComposite _projectContents;
         private readonly Uri _executorUri;
         private readonly TestProperty _coverageProperty;
 
@@ -78,24 +79,25 @@ namespace Stryker.Core.UnitTest.TestRunners
             _coverageProperty = TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
-            _mutants = content;
-            _mutants.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
+            _projectContents = content;
+            _projectContents.Add(new FileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<ProjectAnalyzerResult> {
-                    new ProjectAnalyzerResult(null, null)
-                    {
-                        AssemblyPath = _testAssemblyPath,
-                        TargetFrameworkVersionString = "toto"
-                    }
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
+                        { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
+                    },
+                    targetFramework: "toto").Object
                 },
-                ProjectUnderTestAnalyzerResult = new ProjectAnalyzerResult(null, null)
-                {
-                    AssemblyPath = Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"),
-                    TargetFrameworkVersionString = "toto",
-                    Properties = new Dictionary<string, string>() { { "Language", "C#" } }
-                },
-                ProjectContents = _mutants
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", Path.Combine(filesystemRoot, "app", "bin", "Debug") },
+                        { "TargetFileName", "AppToTest.dll" },
+                        { "Language", "C#" }
+                    }).Object,
+                ProjectContents = _projectContents
             };
             //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -209,7 +211,6 @@ namespace Stryker.Core.UnitTest.TestRunners
         // setup a customized partial test runs, using provided test results
         private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess)
         {
-
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
@@ -320,7 +321,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 });
         }
 
-        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
+        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(IStrykerOptions options, WaitHandle endProcess, out VsTestRunner runner, OptimizationFlags optimizationFlags)
         {
             var mockVsTest = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockVsTest.Setup(x => x.StartSession());
@@ -341,7 +342,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockVsTest.Object,
-                hostBuilder: ((i) => new MoqHost(endProcess)));
+                hostBuilder: (i) => new MoqHost(endProcess));
             return mockVsTest;
         }
 
@@ -525,9 +526,9 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
                 var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.Optimizations);
+                var mockVsTest = BuildVsTestRunner(strykerOptions, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
-                _mutants.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
+                _projectContents.Add(new FileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 
@@ -541,7 +542,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
                 tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);
-                tester.Test(strykerOptions);
+                tester.Test(_projectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun));
 
                 _mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
                 _otherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);

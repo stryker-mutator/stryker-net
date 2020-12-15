@@ -13,11 +13,11 @@ namespace Stryker.Core.Reporters.Html
 {
     public class HtmlReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly TextWriter _consoleWriter;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public HtmlReporter(IStrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -75,7 +75,7 @@ namespace Stryker.Core.Reporters.Html
         {
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
         }
     }
