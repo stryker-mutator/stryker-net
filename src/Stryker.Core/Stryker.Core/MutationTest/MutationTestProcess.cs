@@ -2,9 +2,12 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -45,15 +48,18 @@ namespace Stryker.Core.MutationTest
         private readonly IProjectComponent _projectContents;
         private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
+        private readonly IFileSystem _fileSystem;
+        private readonly BaseMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly IStrykerOptions _options;
-        private readonly IMutationProcess _mutationProcess;
+        private readonly Language _language;
+        private IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            IMutantOrchestrator orchestrator = null,
+            BaseMutantOrchestrator<SyntaxNode> orchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
@@ -64,15 +70,27 @@ namespace Stryker.Core.MutationTest
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
+            _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, mutationTestInput);
+            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
+            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            _orchestrator = orchestrator ?? genOrchestrator(_options);
 
-            _mutationProcess = new MutationProcess(Input, orchestrator, fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new CsharpMutationProcess(Input, fileSystem, _options, mutantFilter, _reporter, orchestrator);
+        }
+        private BaseMutantOrchestrator genOrchestrator(IStrykerOptions options)
+        {
+            if (_language == Language.Fsharp)
+            {
+                //return Fsharp version
+            }
+
+            return new MutantOrchestrator(options: options);
         }
 
         private void SetupMutationTestProcess(IMutantFilter mutantFilter)
         {
-            _mutationProcess = new CsharpMutationProcess(_input, _orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+            _mutationProcess = new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter, _reporter);
         }
 
         public void Mutate()

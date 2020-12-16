@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    internal class MutationContext: IDisposable
+    public class MutationContext: IDisposable
     {
         private readonly MutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;

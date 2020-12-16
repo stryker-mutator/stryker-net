@@ -20,12 +20,7 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
-    public interface IProjectComponentsBuilder
-    {
-        IProjectComponent Build();
-    }
-
-    public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
+    public class CsharpProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;
         private readonly IStrykerOptions _options;
@@ -56,7 +51,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new CsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -76,12 +71,12 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new CsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
-            var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName;
+            var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
             var rootFolderComposite = new CsharpFolderComposite()
             {
                 Name = string.Empty,
@@ -179,7 +174,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, ProjectAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var rootFolderComposite = new CsharpFolderComposite
             {
@@ -301,7 +296,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        var root = inputFiles as IParentComponent;
+                        var root = inputFiles as IFolderComposite;
                         root.Add(subDir);
                     }
                 }

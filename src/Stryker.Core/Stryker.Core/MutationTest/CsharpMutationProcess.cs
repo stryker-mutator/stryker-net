@@ -16,25 +16,23 @@ namespace Stryker.Core.MutationTest
 {
     public class CsharpMutationProcess : IMutationProcess
     {
-
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly CompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly IMutantOrchestrator _orchestrator;
+        private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
         public CsharpMutationProcess(MutationTestInput mutationTestInput,
-            IMutantOrchestrator orchestrator = null,
             IFileSystem fileSystem = null,
-            StrykerOptions options = null,
-
+            IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            IReporter reporter = null)
+            IReporter reporter = null,
+            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
@@ -81,14 +79,14 @@ namespace Stryker.Core.MutationTest
 
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
-                var injectionPath = testProject.TargetDirectory;
+                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
                 if (!_fileSystem.Directory.Exists(injectionPath))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
                 // inject the mutated Assembly into the test project
-                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.TargetFileName));
+                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetTargetFileName));
                 ms.Position = 0;
                 ms.CopyTo(fs);
 
