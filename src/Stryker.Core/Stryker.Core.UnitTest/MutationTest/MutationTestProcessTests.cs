@@ -68,13 +68,15 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object
                     },
                     ProjectContents = folder
@@ -93,7 +95,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped };
 
             // create mocks
-            var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
@@ -134,7 +136,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
 
-
             var folder = new CsharpFolderComposite()
             {
                 Name = Path.Combine(FilesystemRoot, "ExampleProject")
@@ -149,13 +150,15 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" }
+                            { "AssemblyName", "AssemblyName" },
+                            { "Language", "C#" }
                         }).Object
                     },
                     ProjectContents = folder
@@ -175,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped, compileErrorMutant };
 
             // create mocks
-            var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
@@ -238,12 +241,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "ProjectUnderTest.dll" },
-                            { "AssemblyName", "ProjectUnderTest.dll" }
+                            { "AssemblyName", "ProjectUnderTest.dll" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestProject.dll" }
+                            { "TargetFileName", "TestProject.dll" },
+                            { "Language", "C#" }
                         }).Object
                     },
                     ProjectContents = folder
@@ -253,7 +258,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
 
             // create mocks
-            var orchestratorMock = new Mock<IMutantOrchestrator>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
@@ -312,7 +317,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
                         }).Object
                     ,
                     ProjectContents = folder
@@ -373,7 +379,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
                         }).Object
                     },
                     ProjectContents = folder
@@ -417,11 +424,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = new Collection<Mutant>() { }
             });
 
+            var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = folder
+                    ProjectContents = folder,
+                    ProjectUnderTestAnalyzerResult = projectUnderTest
                 },
                 AssemblyReferences = _assemblies
             };
@@ -465,11 +475,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = new Collection<Mutant>() { }
             });
 
+            var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = folder
+                    ProjectContents = folder,
+                    ProjectUnderTestAnalyzerResult = projectUnderTest
                 },
                 AssemblyReferences = _assemblies
             };

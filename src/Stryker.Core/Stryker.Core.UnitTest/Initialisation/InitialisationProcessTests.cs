@@ -33,13 +33,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 Name = "SomeFile.cs"
             });
-            var folder = new FolderComposite
+            var folder = new CsharpFolderComposite
             {
                 Name = "ProjectRoot"
             };
             folder.AddRange(new Collection<IProjectComponent>
                 {
-                    new FileLeaf
+                    new CsharpFileLeaf
                     {
                         Name = "SomeFile.cs"
                     }

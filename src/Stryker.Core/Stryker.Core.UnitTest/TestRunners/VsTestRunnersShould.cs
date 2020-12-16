@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
         private readonly Mutant _otherMutant;
-        private readonly CsharpFolderComposite _mutants;
+        private readonly CsharpFolderComposite _projectContents;
         private readonly Uri _executorUri;
         private readonly TestProperty _coverageProperty;
 
@@ -79,8 +79,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             _coverageProperty = TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
-            _mutants = content;
-            _mutants.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
+            _projectContents = content;
+            _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo()
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
@@ -94,7 +94,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", Path.Combine(filesystemRoot, "app", "bin", "Debug") },
-                        { "TargetFileName", "AppToTest.dll" }
+                        { "TargetFileName", "AppToTest.dll" },
+                        { "Language", "C#" }
                     }).Object,
                 ProjectContents = _projectContents
             };
@@ -527,7 +528,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
                 var mockVsTest = BuildVsTestRunner(strykerOptions, endProcess, out var runner, strykerOptions.Optimizations);
                 // make sure we have 4 mutants
-                _mutants.Add(new CsharpFileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
+                _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 

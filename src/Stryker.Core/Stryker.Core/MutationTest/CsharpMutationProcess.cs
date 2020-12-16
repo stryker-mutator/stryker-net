@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -86,7 +87,7 @@ namespace Stryker.Core.MutationTest
                 }
 
                 // inject the mutated Assembly into the test project
-                using var fs = _fileSystem.File.Create(Path.Combine(injectionPath, _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetTargetFileName));
+                using var fs = _fileSystem.File.Create(injectionPath);
                 ms.Position = 0;
                 ms.CopyTo(fs);
 
@@ -94,7 +95,7 @@ namespace Stryker.Core.MutationTest
                 {
                     // inject the debug symbols into the test project
                     using var symbolDestination = _fileSystem.File.Create(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.SymbolFileName));
+                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }
