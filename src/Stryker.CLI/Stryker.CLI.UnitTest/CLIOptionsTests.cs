@@ -1,4 +1,5 @@
-﻿using Shouldly;
+using System;
+using Shouldly;
 
 namespace Stryker.CLI.UnitTest
 {
@@ -6,7 +7,7 @@ namespace Stryker.CLI.UnitTest
     {
         public void ShouldHaveDefaultValues()
         {
-            CLIOptions.MaxConcurrentTestRunners.DefaultValue.ShouldBeNull();
+            CLIOptions.MaxConcurrentTestRunners.DefaultValue.ShouldBe(Math.Max(Environment.ProcessorCount / 2, 1));
             CLIOptions.IgnoreMethods.DefaultValue.ShouldBeEmpty();
             CLIOptions.LogToFile.DefaultValue.ShouldBeFalse();
             CLIOptions.LogLevel.DefaultValue.ShouldBe("info");

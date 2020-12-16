@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
@@ -23,7 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
-        public VsTestRunnerPool(StrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public VsTestRunnerPool(IStrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
