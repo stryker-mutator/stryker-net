@@ -48,12 +48,10 @@ namespace Stryker.Core.MutationTest
         private readonly IProjectComponent _projectContents;
         private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly IFileSystem _fileSystem;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly IStrykerOptions _options;
-        private readonly Language _language;
-        private IMutationProcess _mutationProcess;
+        private readonly IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -69,20 +67,9 @@ namespace Stryker.Core.MutationTest
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
-            _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
-            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
-            _mutationProcess = new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter, _reporter, orchestrator);
-        }
-        private BaseMutantOrchestrator genOrchestrator(IStrykerOptions options)
-        {
-            if (_language == Language.Fsharp)
-            {
-                //return Fsharp version
-            }
-
-            return new MutantOrchestrator(options: options);
+            _mutationProcess = new CsharpMutationProcess(Input, fileSystem ?? new FileSystem(), _options, mutantFilter, _reporter, orchestrator);
         }
 
         public void Mutate()
