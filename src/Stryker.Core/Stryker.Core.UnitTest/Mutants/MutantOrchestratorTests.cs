@@ -11,11 +11,11 @@ namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutantOrchestratorTests
     {
-        private readonly MutantOrchestrator _target;
+        private readonly CsharpMutantOrchestrator _target;
 
         public MutantOrchestratorTests()
         {
-            _target = new MutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
+            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
         }
 
         [Fact]
@@ -822,7 +822,7 @@ static string Value { get; }
 static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}}";
 
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
@@ -840,7 +840,7 @@ static TestClass(){}}";
 static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);

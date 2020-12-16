@@ -56,7 +56,7 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            BaseMutantOrchestrator<SyntaxNode> orchestrator = null,
+            MutantOrchestrator<SyntaxNode> orchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,

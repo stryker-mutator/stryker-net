@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return forStatement;
         }
 
-        public ForStatementOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public ForStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }
