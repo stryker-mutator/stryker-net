@@ -73,10 +73,10 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="currentNode">The current root node</param>
         /// <returns>Mutated node</returns>
-        public override SyntaxNode Mutate(SyntaxNode currentNode)
+        public override SyntaxNode Mutate(SyntaxNode input)
         {
             var mutationContext = new MutationContext(this);
-            var mutation = Mutate(currentNode, mutationContext);
+            var mutation = Mutate(input, mutationContext);
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {
                 // some mutants where not injected for some reason, they should be reviewed to understand why.

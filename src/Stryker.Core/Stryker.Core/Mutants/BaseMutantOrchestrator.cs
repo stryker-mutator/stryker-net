@@ -1,17 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
 {
     public abstract class BaseMutantOrchestrator<T> : BaseMutantOrchestrator
     {
-        public  BaseMutantOrchestrator() : base(null)
+        protected  BaseMutantOrchestrator() : base(null)
         {
         }
-        public BaseMutantOrchestrator(IStrykerOptions input) : base(input)
+        protected BaseMutantOrchestrator(IStrykerOptions input) : base(input)
         {
         }
 
@@ -29,7 +27,7 @@ namespace Stryker.Core.Mutants
         public ICollection<Mutant> Mutants { get; set; }
         public int MutantCount { get; set; }
 
-        public BaseMutantOrchestrator(IStrykerOptions options)
+        protected BaseMutantOrchestrator(IStrykerOptions options)
         {
             _options = options;
         }
