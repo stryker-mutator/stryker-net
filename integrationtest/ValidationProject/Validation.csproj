@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Shouldly" Version="4.0.2" />
+    <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="xunit" Version="$(xunit)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />
   </ItemGroup>
