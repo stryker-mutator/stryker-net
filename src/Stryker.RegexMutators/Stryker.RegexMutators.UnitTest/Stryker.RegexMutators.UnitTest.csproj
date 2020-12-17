@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />	<!-- From Directory.Build.props -->
     <PackageReference Include="RegexParser" Version="0.5.1" />
-    <PackageReference Include="Shouldly" Version="4.0.1" />
+    <PackageReference Include="Shouldly" Version="4.0.2" />
     <PackageReference Include="xunit" Version="$(xunit)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />
   </ItemGroup>
