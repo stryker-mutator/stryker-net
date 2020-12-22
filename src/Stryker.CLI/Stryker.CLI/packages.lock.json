@@ -778,8 +778,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.7",
-        "contentHash": "J7mo0k2wH62EJeiL3uzLOdbIVX7fx+22ZDP6h3Lz4xEJJrO8NqGS7LDKFYwekGsSS8eTID1ClxWmdksVPHHRqA==",
+        "resolved": "13.2.8",
+        "contentHash": "XSmdQR5k/XHcUZPXVTLWVNcG9M55SMxqqnkM7esFeQO64ErmqcgwungcFS+OGlzDbWaevwT/6WQ1hzVb5mDiUw==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -1416,7 +1416,7 @@
           "Serilog.Sinks.Console": "3.1.1",
           "Stryker.DataCollector": "0.20.0",
           "Stryker.RegexMutators": "0.20.0",
-          "System.IO.Abstractions": "13.2.7"
+          "System.IO.Abstractions": "13.2.8"
         }
       },
       "stryker.datacollector": {
