@@ -58,7 +58,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InitialBuildProcess_ShoulduseCustomMsbuildIfNotNull()
         {
-          
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("");
