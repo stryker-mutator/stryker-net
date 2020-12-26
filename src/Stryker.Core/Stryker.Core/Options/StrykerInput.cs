@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Options
+namespace Stryker.Core.Options
 {
     public enum StrykerInput
     {
@@ -22,7 +22,7 @@
         ProjectUnderTestName,
         DiffCompare,
         DashboardCompare,
-        GitDiffTarget,
+        DiffTarget,
         AdditionalTimeoutMs,
         ExcludedMutators,
         IgnoredMethods,

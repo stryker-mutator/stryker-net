@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Crayon;
@@ -47,6 +48,13 @@ namespace Stryker.CLI
             {
                 // app started
                 var options = new OptionsBuilder(_logBuffer).Build(args, app);
+
+                if (CliOptionsParser.GenerateConfigFile(args, app))
+                {
+                    var configFilePath = Path.Combine(options.BasePath, CliOptionsParser.ConfigFilePath(args, app));
+
+                    // generate correct json config here.
+                }
 
                 RunStryker(options);
                 return ExitCode;

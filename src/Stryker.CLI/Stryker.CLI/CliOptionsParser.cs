@@ -20,11 +20,15 @@ namespace Stryker.CLI
     {
         private static readonly IDictionary<string, CliOption> CliOptions = new Dictionary<string, CliOption>();
         private static readonly CliOption ConfigOption;
+        private static readonly CliOption GenerateJsonConfigOption;
 
         static CliOptionsParser()
         {
             ConfigOption = AddCliOption(StrykerInput.None, "--config-file-path", "-cp",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
+            GenerateJsonConfigOption = AddCliOption(StrykerInput.None, "--init", "-i",
+                "Generate a stryker config file with selected and default options.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+
             PrepareCliOptions();
         }
 
@@ -40,6 +44,12 @@ namespace Stryker.CLI
         {
             RegisterCliOption(app, ConfigOption);
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value() ?? "stryker-config.json";
+        }
+
+        public static bool GenerateConfigFile(string[] args, CommandLineApplication app)
+        {
+            RegisterCliOption(app, GenerateJsonConfigOption);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == GenerateJsonConfigOption.ArgumentName)?.HasValue() ?? false;
         }
 
         public static StrykerOptions EnrichFromCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
@@ -64,7 +74,7 @@ namespace Stryker.CLI
 
         private static void PrepareCliOptions()
         {
-            AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "number");
+            AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
             AddCliOption(StrykerInput.DevMode, "dev-mode", "dev", new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
 
             AddCliOption(StrykerInput.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
@@ -91,7 +101,7 @@ namespace Stryker.CLI
 
         private static void RegisterCliOption(CommandLineApplication app, CliOption option)
         {
-            string argumentHint = option.OptionType switch
+            var argumentHint = option.OptionType switch
             {
                 CommandOptionType.NoValue => "",
                 CommandOptionType.SingleOrNoValue => $"[:<{option.ArgumentHint}>]",

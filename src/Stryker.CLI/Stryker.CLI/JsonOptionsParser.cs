@@ -8,40 +8,94 @@ namespace Stryker.CLI
 {
     public class JsonOption
     {
-        public StrykerInput InputType { get; set; }
-        public string JsonKey { get; set; }
-        public bool MultipleValue { get; set; }
+        public StrykerInput InputType { get; }
+        public string JsonKey { get; }
+        public bool Array { get; }
+        public IEnumerable<JsonOption> Children { get; }
 
-        public JsonOption(StrykerInput inputType, string jsonKey, bool multipleValue = false)
+        public JsonOption(StrykerInput inputType, string jsonKey, bool array = false, IEnumerable<JsonOption> children = null)
         {
             InputType = inputType;
             JsonKey = jsonKey;
-            MultipleValue = multipleValue;
+            Array = array;
+            Children = children;
         }
     }
 
     public static class JsonOptionsParser
     {
-        private static readonly IEnumerable<JsonOption> JsonOptions = PrepareJsonOptions();
+        private static readonly IEnumerable<JsonOption> JsonOptions;
+
+        static JsonOptionsParser()
+        {
+            JsonOptions = new List<JsonOption>
+            {
+                new JsonOption(StrykerInput.DevMode, "dev-mode"),
+                new JsonOption(StrykerInput.MutationLevel, "mutation-level"),
+
+                new JsonOption(StrykerInput.Mutate, "mutate"),
+
+                new JsonOption(StrykerInput.SolutionPath, "solution"),
+                new JsonOption(StrykerInput.ProjectUnderTestName, "project"),
+
+                new JsonOption(StrykerInput.None, "thresholds", children: new List<JsonOption> {
+                    new JsonOption(StrykerInput.ThresholdHigh, "high"),
+                    new JsonOption(StrykerInput.ThresholdLow, "low"),
+                    new JsonOption(StrykerInput.ThresholdBreak, "break")
+                }),
+
+                new JsonOption(StrykerInput.LogToFile, "log-to-file"),
+                new JsonOption(StrykerInput.LogLevel, "log-level"),
+                new JsonOption(StrykerInput.Reporters, "reporters", array: true),
+
+                new JsonOption(StrykerInput.DiffCompare, "diff"),
+                new JsonOption(StrykerInput.DiffTarget, "diff-target"),
+                new JsonOption(StrykerInput.DashboardCompare, "dashboard-compare"),
+
+                new JsonOption(StrykerInput.DashboardApiKey, "api-key"),
+                new JsonOption(StrykerInput.AzureFileStorageSas, "azure-storage-sas"),
+
+                new JsonOption(StrykerInput.ProjectVersion, "dashboard-version"),
+                new JsonOption(StrykerInput.FallbackVersion, "fallback-version"),
+
+                new JsonOption(StrykerInput.Concurrency, "concurrency")
+            };
+        }
 
         public static StrykerOptions EnrichFromJsonConfig(this StrykerOptions options, string configFilePath)
         {
             var enrichedOptions = options;
-            var config = LoadJsonConfig(configFilePath);
+            var configFile = LoadJsonConfig(configFilePath);
 
             foreach (var option in JsonOptions)
             {
-                if (config.TryGetProperty(option.JsonKey, out var configValue))
+                if (option.InputType is StrykerInput.None)
                 {
-                    enrichedOptions = option.MultipleValue switch
+                    foreach (var child in option.Children)
                     {
-                        true => enrichedOptions.With(option.InputType, ParseMultipleValue(configValue)),
-                        false => enrichedOptions.With(option.InputType, Parse(configValue)),
-                    };
+                        enrichedOptions = ReadJsonOption(configFile.GetProperty(option.JsonKey), option, options);
+                    }
+                }
+                else
+                {
+                    enrichedOptions = ReadJsonOption(configFile, option, enrichedOptions);
                 }
             }
 
             return enrichedOptions;
+        }
+
+        private static StrykerOptions ReadJsonOption(JsonElement configFile, JsonOption option, StrykerOptions options)
+        {
+            if (configFile.TryGetProperty(option.JsonKey, out var configValue))
+            {
+                return option.Array switch
+                {
+                    true => options.With(option.InputType, ParseArray(configValue)),
+                    false => options.With(option.InputType, Parse(configValue)),
+                };
+            }
+            return options;
         }
 
         private static JsonElement LoadJsonConfig(string configFilePath)
@@ -57,43 +111,12 @@ namespace Stryker.CLI
             throw new StrykerInputException("Could not find stryker-config section in config file");
         }
 
-        private static IEnumerable<JsonOption> PrepareJsonOptions()
-        {
-            return new List<JsonOption>
-            {
-                new JsonOption(StrykerInput.Concurrency, "concurrency")
-            };
-            //AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "number");
-            //AddCliOption(StrykerInput.DevMode, "dev-mode", "dev", new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
-
-            //AddCliOption(StrykerInput.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
-
-            //AddCliOption(StrykerInput.SolutionPath, "solution-path", "s", new SolutionPathInput().HelpText, argumentHint: "file-path");
-            //AddCliOption(StrykerInput.ProjectUnderTestName, "project-file", "p", new ProjectUnderTestNameInput().HelpText, argumentHint: "project-name");
-            //AddCliOption(StrykerInput.MutationLevel, "mutation-level", "level", new MutationLevelInput().HelpText);
-
-            //AddCliOption(StrykerInput.LogToFile, "log-file", "f", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
-            //AddCliOption(StrykerInput.LogLevel, "log-level", "l", new LogLevelInput().HelpText);
-            //AddCliOption(StrykerInput.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
-
-            //AddCliOption(StrykerInput.DiffCompare, "diff", "diff", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            //AddCliOption(StrykerInput.DashboardCompare, "dashboard-compare", "compare", new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-
-            //AddCliOption(StrykerInput.DashboardApiKey, "dashboard-api-key", "dk", new DashboardApiKeyInput().HelpText);
-            //AddCliOption(StrykerInput.AzureFileStorageSas, "azure-storage-sas", "sas", new AzureFileStorageSasInput().HelpText);
-
-            //AddCliOption(StrykerInput.ProjectVersion, "dashboard-version", "dv", new ProjectVersionInput().HelpText);
-            //AddCliOption(StrykerInput.FallbackVersion, "fallback-version", "fv", new FallbackVersionInput().HelpText, argumentHint: "comittish");
-
-            //AddCliOption(StrykerInput.Concurrency, "concurrency", "c", new ConcurrencyInput().HelpText, argumentHint: "number");
-        }
-
         private static string Parse(JsonElement element)
         {
             return element.GetRawText();
         }
 
-        private static IEnumerable<string> ParseMultipleValue(JsonElement element)
+        private static IEnumerable<string> ParseArray(JsonElement element)
         {
             return JsonSerializer.Deserialize<IEnumerable<string>>(element.GetRawText());
         }
