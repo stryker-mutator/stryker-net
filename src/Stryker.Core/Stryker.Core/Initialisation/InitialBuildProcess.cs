@@ -57,7 +57,7 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make targeted project buildable. You can reproduce this error your self using \"{buildCommand} {buildPath}\"");
+                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
             _logger.LogDebug("Initial build successful");
         }
