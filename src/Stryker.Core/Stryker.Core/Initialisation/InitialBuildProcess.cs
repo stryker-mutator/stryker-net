@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string solutionPath);
+        void InitialBuild(bool fullFramework, string path, string solutionPath, string msbuildPath = null);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -23,7 +23,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null)
         {
             _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.Initialisation
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
                 string solutionDir = Path.GetDirectoryName(solutionPath);
-                var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+                msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");

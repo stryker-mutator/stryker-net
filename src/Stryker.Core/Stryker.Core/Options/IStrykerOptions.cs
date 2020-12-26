@@ -44,5 +44,6 @@ namespace Stryker.Core.Options
         IEnumerable<FilePattern> DiffIgnoreFiles { get; }
         string DashboardUrl { get; }
         string DashboardApiKey { get; }
+        string MsbuildPath { get; }
     }
 }

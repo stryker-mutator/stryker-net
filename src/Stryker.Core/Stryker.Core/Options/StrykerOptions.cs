@@ -63,6 +63,8 @@ namespace Stryker.Core.Options
 
         public string FallbackVersion { get; }
 
+        public string MsbuildPath { get; }
+
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
