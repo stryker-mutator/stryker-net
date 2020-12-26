@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
@@ -49,6 +49,26 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void InitialBuildProcess_ShoulduseCustomMsbuildIfNotNull()
+        {
+          
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+            processMock.SetupProcessMockToReturn("");
+
+            var target = new InitialBuildProcess(processMock.Object);
+
+            target.InitialBuild(true, "/", "./ExampleProject.sln", "C:/User/Test/Msbuild.exe");
+
+            processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
