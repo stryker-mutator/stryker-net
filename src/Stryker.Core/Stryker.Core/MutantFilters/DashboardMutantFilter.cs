@@ -6,7 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Baseline.Utils;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -22,17 +23,20 @@ namespace Stryker.Core.MutantFilters
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<DashboardMutantFilter> _logger;
+        private readonly IBaselineMutantHelper _baselineMutantHelper;
 
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
 
         public string DisplayName => "dashboard filter";
 
-        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
+            _baselineMutantHelper = baselineMutantHelper ?? new BaselineMutantHelper();
+
             _options = options;
 
             if (options.CompareToDashboard)
@@ -67,7 +71,7 @@ namespace Stryker.Core.MutantFilters
             {
                 foreach (var baselineMutant in baselineFile.Value.Mutants)
                 {
-                    var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
+                    var baselineMutantSourceCode = _baselineMutantHelper.GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
 
                     if (string.IsNullOrEmpty(baselineMutantSourceCode))
                     {
@@ -75,7 +79,7 @@ namespace Stryker.Core.MutantFilters
                         continue;
                     }
 
-                    IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
+                    IEnumerable<Mutant> matchingMutants = _baselineMutantHelper.GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
 
                     SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                 }
@@ -97,27 +101,6 @@ namespace Stryker.Core.MutantFilters
                     matchingMutant.ResultStatusReason = "Result based on previous run was inconclusive";
                 }
             }
-        }
-
-        private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
-        {
-            return mutants.Where(x =>
-               x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
-               x.Mutation.DisplayName == baselineMutant.MutatorName);
-        }
-
-        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
-        {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
-
-            var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
-            var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);
-
-            var span = new LinePositionSpan(beginLinePosition, endLinePosition);
-
-            var textSpan = tree.GetText().Lines.GetTextSpan(span);
-            var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));
-            return originalNode?.ToString();
         }
 
         private async Task<JsonReport> GetBaselineAsync()

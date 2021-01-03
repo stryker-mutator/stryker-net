@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Options;
+using Stryker.Core.Options;
 
-namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public static class BaselineProviderFactory
     {

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {

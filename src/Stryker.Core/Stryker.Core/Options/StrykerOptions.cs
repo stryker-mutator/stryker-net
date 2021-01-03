@@ -1,12 +1,3 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
-using Serilog.Events;
-using Stryker.Core.Baseline;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutators;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +5,15 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
+using Stryker.Core.Mutators;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Options
 {

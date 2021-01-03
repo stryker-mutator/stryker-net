@@ -1,12 +1,12 @@
+using System;
+using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Options;
-using System;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
