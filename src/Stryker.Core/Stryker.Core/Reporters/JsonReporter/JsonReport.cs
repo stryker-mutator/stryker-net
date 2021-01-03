@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -34,7 +34,7 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        protected JsonReport(string schemaVersion = null, IDictionary<string, int> thresholds = null, IDictionary<string, JsonReportFileComponent> files = null)
+        protected JsonReport(string schemaVersion, IDictionary<string, int> thresholds, IDictionary<string, JsonReportFileComponent> files)
         {
             SchemaVersion = schemaVersion ?? SchemaVersion;
             Thresholds = thresholds ?? Thresholds;
