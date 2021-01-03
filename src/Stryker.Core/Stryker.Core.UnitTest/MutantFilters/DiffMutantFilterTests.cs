@@ -40,7 +40,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldNotMutateUnchangedFiles()
         {
-            // Arrange
             var options = new StrykerOptions(diff: true);
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
@@ -67,7 +66,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldOnlyMutateChangedFiles()
         {
-            // Arrange
             var options = new StrykerOptions(diff: true);
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -97,7 +95,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             string testProjectPath = "C:/MyTests";
-            var options = new StrykerOptions(diff: false);
+            var options = new StrykerOptions();
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 

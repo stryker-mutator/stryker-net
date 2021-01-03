@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
     public class DiskBaselineProviderTests
     {
         [Fact]
-        public async Task ShouldWriteToDisk()
+        public async Task ShouldWriteToDiskAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Fact]
-        public async Task ShouldHandleFileNotFoundExceptionOnLoad()
+        public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Fact]
-        public async Task ShouldLoadReportFromDisk()
+        public async Task ShouldLoadReportFromDiskAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();

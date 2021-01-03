@@ -22,11 +22,11 @@ namespace Stryker.Core.MutantFilters
         private readonly DiffResult _diffResult;
         private readonly ILogger<DiffMutantFilter> _logger;
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider = null)
+        public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
@@ -55,7 +55,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;

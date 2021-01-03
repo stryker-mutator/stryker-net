@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Baseline.Utils;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -23,9 +24,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
+            var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>(MockBehavior.Loose);
 
             // Act
-            var target = new DashboardMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object) as IMutantFilter;
+            var target = new DashboardMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
 
             // Assert
             target.DisplayName.ShouldBe("dashboard filter");
@@ -37,6 +39,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();
             var gitInfoProvider = new Mock<IGitInfoProvider>();
+            var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
 
             var reporters = new string[1];
             reporters[0] = "dashboard";

@@ -25,12 +25,12 @@ namespace Stryker.Core.MutantFilters
         private readonly ILogger<DashboardMutantFilter> _logger;
         private readonly IBaselineMutantHelper _baselineMutantHelper;
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly JsonReport _baseline;
 
         public string DisplayName => "dashboard filter";
 
-        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
+        public DashboardMutantFilter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
@@ -46,7 +46,7 @@ namespace Stryker.Core.MutantFilters
         }
         
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             if (options.CompareToDashboard)
             {

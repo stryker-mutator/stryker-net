@@ -1,15 +1,15 @@
-﻿using Buildalyzer;
+using System.Linq;
+using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        ProjectAnalyzerResult AnalyzeProject(string projectFilepath, string solutionFilePath);
+        IAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -23,7 +23,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public ProjectAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
+        public IAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
         {
             AnalyzerManager manager;
             if (solutionFilePath == null)
@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            return new ProjectAnalyzerResult(_logger, analyzerResult);
+            return analyzerResult;
         }
     }
 }

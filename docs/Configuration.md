@@ -24,6 +24,7 @@ Example `stryker-config.json` file:
         "threshold-high": 80,
         "threshold-low": 70,
         "threshold-break": 60,
+        "mutation-level": "Standard",
         "mutate": [
             "!ExampleClass.cs",
             "!Migrations/*.*",
@@ -98,6 +99,13 @@ The levels are as follows:
 | Regex | Advanced |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
+
+```
+dotnet stryker --mutation-level Advanced
+dotnet stryker -level Advanced
+```
+
+Default: `"Standard"`
 
 ## Specify testrunner
 > ⚠ This parameter is deprecated. This option will be removed in version 1.0.  Please submit an issue if you have a use case that requires Dotnet test. 
