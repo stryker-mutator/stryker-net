@@ -95,7 +95,7 @@ namespace Stryker.Core.Baseline.Providers
             foreach (var segment in storagePathSegments)
             {
                 currentDirectory.Append($"{segment}/");
-                ;
+                
                 if (!await CreateDirectory(currentDirectory.ToString()))
                 {
                     return false;
