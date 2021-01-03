@@ -12,6 +12,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -128,6 +129,115 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             results.Count().ShouldBe(3);
+        }
+
+        [Fact]
+        public void FilterMutants_WhenMutantSourceCodeIsNull_MutantIsReturned()
+        {
+            // Arrange
+            var branchProvider = new Mock<IGitInfoProvider>();
+            var baselineProvider = new Mock<IBaselineProvider>();
+            var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var file = new ReadOnlyFileLeaf(new FileLeaf
+            {
+                RelativePath = "foo.cs"
+            });
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant()
+            };
+
+            var jsonMutants = new HashSet<JsonMutant>
+            {
+                new JsonMutant()
+            };
+
+            // Setup Mocks
+            var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
+
+            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            {
+                ["foo.cs"] =  jsonReportFileComponent
+            };
+
+            var baseline = new MockJsonReport(null, jsonFileComponents);
+
+            baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
+                .Returns(Task.FromResult((JsonReport) baseline));
+
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
+
+            // Act
+            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+
+            var results = target.FilterMutants(mutants, file, options);
+
+            // Assert
+            results.Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void FilterMutants_WhenMutantMatchesSourceCode_StatusIsSetToJsonMutant()
+        {
+            // Arrange
+            var branchProvider = new Mock<IGitInfoProvider>();
+            var baselineProvider = new Mock<IBaselineProvider>();
+            var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var file = new ReadOnlyFileLeaf(new FileLeaf
+            {
+                RelativePath = "foo.cs"
+            });
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant
+                {
+                    ResultStatus = MutantStatus.NotRun
+                }
+            };
+
+            var jsonMutants = new HashSet<JsonMutant>
+            {
+                new JsonMutant
+                {
+                    Status = "Killed"
+                }
+            };
+
+            // Setup Mocks
+            var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
+
+            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            {
+                ["foo.cs"] = jsonReportFileComponent
+            };
+
+            var baseline = new MockJsonReport(null, jsonFileComponents);
+
+            baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
+                .Returns(Task.FromResult(baseline as JsonReport));
+
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns("var foo = \"bar\";");
+            baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
+                It.IsAny<IEnumerable<Mutant>>(),
+                It.Is<JsonMutant>(m => m == jsonMutants.First()),
+                It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
+
+            // Act
+            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+
+            var results = target.FilterMutants(mutants, file, options);
+
+            // Assert
+            results.First().ResultStatus.ShouldBe(MutantStatus.Killed);
+            baselineMutantHelper.Verify();
         }
     }
 }

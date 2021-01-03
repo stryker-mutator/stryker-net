@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -7,10 +11,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using System;
-using System.IO;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters

@@ -65,13 +65,13 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
         {
-            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
+            JsonReportFileComponent baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
-            if (baselineFile is { } && baselineFile.Value is { })
+            if (baselineFile is { })
             {
-                foreach (var baselineMutant in baselineFile.Value.Mutants)
+                foreach (var baselineMutant in baselineFile.Mutants)
                 {
-                    var baselineMutantSourceCode = _baselineMutantHelper.GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
+                    var baselineMutantSourceCode = _baselineMutantHelper.GetMutantSourceCode(baselineFile.Source, baselineMutant);
 
                     if (string.IsNullOrEmpty(baselineMutantSourceCode))
                     {
