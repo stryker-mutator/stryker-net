@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             // Act
-            var target = new DiffMutantFilter(new StrykerOptions(), diffProviderMock.Object) as IMutantFilter;
+            var target = new DiffMutantFilter(diffProviderMock.Object) as IMutantFilter;
 
             // Assert
             target.DisplayName.ShouldBe("git diff file filter");
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedTestFiles = new Collection<string>()
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     myFile
                 }
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
             var file = new FileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -111,7 +111,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                     myTest
                 }
             });
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
 
             // check the diff result for a file not inside the test project
             var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
@@ -140,7 +140,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedSourceFiles = new List<string>()
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
 
             var mutants = new List<Mutant>
             {
@@ -184,7 +184,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
 
             var testFile1 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name1", "C:/testfile1.cs") });
             var testFile2 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name2", "C:/testfile2.cs") });
@@ -228,7 +228,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedTestFiles = new List<string> { "C:/testfile.cs" }
             });
 
-            var target = new DiffMutantFilter(options, diffProvider.Object);
+            var target = new DiffMutantFilter(diffProvider.Object);
 
             var mutants = new List<Mutant>
             {
@@ -253,7 +253,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
             diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
 
-            var target = new DiffMutantFilter(options, diffProviderMock.Object);
+            var target = new DiffMutantFilter(diffProviderMock.Object);
 
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 

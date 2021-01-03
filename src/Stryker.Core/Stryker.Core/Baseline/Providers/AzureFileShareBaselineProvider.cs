@@ -88,19 +88,20 @@ namespace Stryker.Core.Baseline.Providers
             _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
             var uriParts = fileUrl.Split(_outputPath);
-            var currentDirectory = $"{uriParts[0]}";
+            var currentDirectory = new StringBuilder(uriParts[0]);
 
             var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains("."));
 
             foreach (var segment in storagePathSegments)
             {
-                currentDirectory += $"{segment}/";
-                if (!await CreateDirectory(currentDirectory))
+                currentDirectory.Append($"{segment}/");
+                ;
+                if (!await CreateDirectory(currentDirectory.ToString()))
                 {
                     return false;
                 }
             }
-
+            
             return true;
         }
 

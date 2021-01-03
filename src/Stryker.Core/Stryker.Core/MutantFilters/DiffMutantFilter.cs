@@ -22,15 +22,11 @@ namespace Stryker.Core.MutantFilters
         private readonly DiffResult _diffResult;
         private readonly ILogger<DiffMutantFilter> _logger;
 
-        private readonly IStrykerOptions _options;
-
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider = null)
+        public DiffMutantFilter(IDiffProvider diffProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
-
-            _options = options;
 
             _diffResult = diffProvider.ScanDiff();
 
