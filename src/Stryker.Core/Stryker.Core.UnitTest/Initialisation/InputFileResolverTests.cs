@@ -1173,5 +1173,27 @@ Please specify a test project name filter that results in one project.
             ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("no project", Case.Insensitive);
         }
+
+        [Theory]
+        [InlineData("../../Sources/ExampleProject.csproj")]
+        [InlineData("../ExampleProject.csproj")]
+        [InlineData("../../")]
+        [InlineData("..\\..\\")]
+        public void ShouldThrowWhenUsingRelativePath(string shouldMatchNone)
+        {
+            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    projectReferences: new List<string> {
+                        "../ExampleProject/ExampleProject.csproj",
+                        "../AnotherProject/AnotherProject.csproj"
+                    }).Object;
+
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
+            });
+
+            ex.Message.ShouldBe("Project reference issue.");
+            ex.Details.ShouldContain("Use the project name instead of an absolute or relative path", Case.Insensitive);
+        }
     }
 }

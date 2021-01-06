@@ -166,12 +166,34 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
+                ValidateProjectUnderTestNameFilter(projectUnderTestNameFilter);
                 projectUnderTestPath = DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
             }
 
             _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
 
             return projectUnderTestPath;
+        }
+
+        private void ValidateProjectUnderTestNameFilter(string projectUnderTestNameFilter)
+        {
+            var pathIndicators = new[] {
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar,
+                };
+
+            if (pathIndicators.Any(i => projectUnderTestNameFilter.Contains(i)))
+            {
+                var fileName = Path.GetFileName(projectUnderTestNameFilter) ?? "MyProject.csproj";
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append("Use the project name instead of an absolute or relative path, ");
+                stringBuilder.AppendLine("i.e. --project-file=");
+                stringBuilder.Append(fileName);
+                stringBuilder.Append(" instead of --project-file=");
+                stringBuilder.Append(projectUnderTestNameFilter);
+
+                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+            }
         }
 
         private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, IStrykerOptions options)
