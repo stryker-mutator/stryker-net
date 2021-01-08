@@ -142,7 +142,7 @@ namespace Stryker.Core.Reporters
 
             if (node.Parent != null)
             {
-                var isRootFile = node.Parent?.Parent == null;
+                var isRootFile = node.Parent.Parent != null;
                 if (isRootFile)
                 {
                     continuationLines.Add(true);
