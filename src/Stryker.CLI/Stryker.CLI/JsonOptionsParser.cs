@@ -14,66 +14,25 @@ namespace Stryker.CLI
             var enrichedOptions = options;
             var jsonConfig = LoadJsonConfig(configFilePath);
 
-            //StrykerInput.DevMode,
-
-            //StrykerInput.SolutionPath,
-
-            //StrykerInput.LogToFile,
-            //StrykerInput.LogLevel,
-
-            //StrykerInput.MutationLevel,
-
-            //StrykerInput.ThresholdHigh,
-            //StrykerInput.ThresholdLow,
-            //StrykerInput.ThresholdBreak,
-
-            //StrykerInput.BaselineProvider,
-            //StrykerInput.Reporters,
-            //StrykerInput.ProjectUnderTestName,
-            //StrykerInput.DiffCompare,
-            //StrykerInput.DashboardCompare,
-            //StrykerInput.DiffTarget,
-            //StrykerInput.AdditionalTimeoutMs,
-            //StrykerInput.ExcludedMutators,
-            //StrykerInput.IgnoredMethods,
-            //StrykerInput.Concurrency,
-            //StrykerInput.TestRunner,
-            //StrykerInput.Mutate,
-            //StrykerInput.LanguageVersion,
-
-            //StrykerInput.OptimizationMode,
-            //StrykerInput.DisableAbortTestOnFail,
-            //StrykerInput.DisableSimultaneousTesting,
-
-            //StrykerInput.TestProjects,
-            //StrykerInput.DashboardUrl,
-            //StrykerInput.DashboardApiKey,
-            //StrykerInput.ProjectName,
-            //StrykerInput.ModuleName,
-            //StrykerInput.ProjectVersion,
-            //StrykerInput.DiffIgnoreFilePatterns,
-            //StrykerInput.AzureFileStorageUrl,
-            //StrykerInput.AzureFileStorageSas,
-            //FStrykerInput.allbackVersion,
-
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput., jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerInput.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions
+                .With(StrykerOption.Concurrency, jsonConfig.Concurrency)
+                .With(StrykerOption.SolutionPath, jsonConfig.Solution);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
 
             return enrichedOptions;
         }
