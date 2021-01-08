@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class TestProjectsInput : SimpleStrykerInput<IEnumerable<string>>
+    public class TestProjectsInput : OptionDefinition<IEnumerable<string>>
     {
-        public override StrykerInput Type => StrykerInput.TestProjects;
+        public override StrykerOption Type => StrykerOption.TestProjects;
         public override IEnumerable<string> DefaultValue => Enumerable.Empty<string>();
 
         protected override string Description => "Specify the test projects.";

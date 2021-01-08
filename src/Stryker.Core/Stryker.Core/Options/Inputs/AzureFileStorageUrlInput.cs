@@ -4,9 +4,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class AzureFileStorageUrlInput : SimpleStrykerInput<string>
+    public class AzureFileStorageUrlInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.AzureFileStorageUrl;
+        public override StrykerOption Type => StrykerOption.AzureFileStorageUrl;
 
         protected override string Description => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 

@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options
 {
-    public enum StrykerInput
+    public enum StrykerOption
     {
         None,
         DevMode,
@@ -30,7 +30,7 @@ namespace Stryker.Core.Options
         TestRunner,
         Mutate,
         LanguageVersion,
-
+        
         OptimizationMode,
         DisableAbortTestOnFail,
         DisableSimultaneousTesting,

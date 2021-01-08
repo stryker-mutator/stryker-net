@@ -1,8 +1,8 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableSimultaneousTestingInput : ComplexStrykerInput<bool, OptimizationModes>
+    public class DisableSimultaneousTestingInput : OptionDefinition<bool, OptimizationModes>
     {
-        public override StrykerInput Type => StrykerInput.DisableSimultaneousTesting;
+        public override StrykerOption Type => StrykerOption.DisableSimultaneousTesting;
         public override bool DefaultInput => false;
         public override OptimizationModes DefaultValue => new DisableSimultaneousTestingInput(DefaultInput).Value;
 

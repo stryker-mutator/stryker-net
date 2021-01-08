@@ -8,7 +8,7 @@ namespace Stryker.CLI
 {
     public class CliOption
     {
-        public StrykerInput InputType { get; set; }
+        public StrykerOption InputType { get; set; }
         public string ArgumentName { get; set; }
         public string ArgumentShortName { get; set; }
         public string ArgumentHint { get; set; }
@@ -26,7 +26,7 @@ namespace Stryker.CLI
         {
             ConfigOption = AddCliOption(StrykerInput.None, "--config-file", "-cp",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
-            GenerateJsonConfigOption = AddCliOption(StrykerInput.None, "--init", "-i",
+            GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "--init", "-i",
                 "Generate a stryker config file with selected and default options.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
 
             PrepareCliOptions();
@@ -79,7 +79,7 @@ namespace Stryker.CLI
             AddCliOption(StrykerInput.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
             AddCliOption(StrykerInput.DevMode, "dev-mode", "dev", new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
 
-            AddCliOption(StrykerInput.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
+            AddCliOption(StrykerOption.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
             AddCliOption(StrykerInput.SolutionPath, "solution", "s", new SolutionPathInput().HelpText, argumentHint: "file-path");
             AddCliOption(StrykerInput.ProjectUnderTestName, "project", "p", new ProjectUnderTestNameInput().HelpText, argumentHint: "project-name.csproj");
@@ -109,7 +109,7 @@ namespace Stryker.CLI
             app.Option($"{option.ArgumentShortName}|{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
         }
 
-        private static CliOption AddCliOption(StrykerInput inputType, string argumentName, string argumentShortName,
+        private static CliOption AddCliOption(StrykerOption inputType, string argumentName, string argumentShortName,
             string description, CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliOption

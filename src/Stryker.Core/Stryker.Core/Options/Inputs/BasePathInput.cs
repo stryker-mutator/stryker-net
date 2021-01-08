@@ -3,9 +3,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class BasePathInput : SimpleStrykerInput<string>
+    public class BasePathInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.BasePath;
+        public override StrykerOption Type => StrykerOption.BasePath;
 
         protected override string Description => "The path from which stryker is started.";
 

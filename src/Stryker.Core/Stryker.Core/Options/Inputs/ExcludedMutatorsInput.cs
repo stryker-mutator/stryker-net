@@ -6,9 +6,9 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ExcludedMutatorsInput : ComplexStrykerInput<IEnumerable<string>, IEnumerable<Mutator>>
+    public class ExcludedMutatorsInput : OptionDefinition<IEnumerable<string>, IEnumerable<Mutator>>
     {
-        public override StrykerInput Type => StrykerInput.ExcludedMutators;
+        public override StrykerOption Type => StrykerOption.ExcludedMutators;
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
         public override IEnumerable<Mutator> DefaultValue => new ExcludedMutatorsInput(DefaultInput).Value;
 

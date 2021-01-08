@@ -2,9 +2,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DashboardApiKeyInput : SimpleStrykerInput<string>
+    public class DashboardApiKeyInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.DashboardApiKey;
+        public override StrykerOption Type => StrykerOption.DashboardApiKey;
 
         protected override string Description => "Api key for dashboard reporter.";
 

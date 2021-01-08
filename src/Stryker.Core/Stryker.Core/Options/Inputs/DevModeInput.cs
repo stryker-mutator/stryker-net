@@ -1,8 +1,8 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DevModeInput : SimpleStrykerInput<bool>
+    public class DevModeInput : OptionDefinition<bool>
     {
-        public override StrykerInput Type => StrykerInput.DevMode;
+        public override StrykerOption Type => StrykerOption.DevMode;
         public override bool DefaultValue => false;
 
         protected override string Description => @"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back

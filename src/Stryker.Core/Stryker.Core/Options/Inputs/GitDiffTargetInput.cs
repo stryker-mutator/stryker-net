@@ -2,9 +2,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class GitDiffTargetInput : SimpleStrykerInput<string>
+    public class GitDiffTargetInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.DiffTarget;
+        public override StrykerOption Type => StrykerOption.DiffTarget;
         public override string DefaultValue => "master";
         protected override string Description => "The target commitish to compare with the current codebase when a diff feature is enabled.";
         protected override string HelpOptions => DefaultInput;
