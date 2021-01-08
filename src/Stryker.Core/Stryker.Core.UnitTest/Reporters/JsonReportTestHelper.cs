@@ -1,11 +1,10 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents;
-using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
@@ -24,7 +23,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new FolderComposite { RelativePath = "src" };
+            var folder = new FolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {

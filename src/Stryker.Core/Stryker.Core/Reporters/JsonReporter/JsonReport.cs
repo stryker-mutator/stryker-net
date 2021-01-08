@@ -32,7 +32,7 @@ namespace Stryker.Core.Reporters.Json
             Thresholds.Add("high", _options.Thresholds.High);
             Thresholds.Add("low", _options.Thresholds.Low);
 
-            ProjectRoot = GetProjectRoot(mutationReport);
+            ProjectRoot = mutationReport.FullPath;
 
             Merge(Files, GenerateReportComponents(mutationReport));
         }
@@ -104,16 +104,6 @@ namespace Stryker.Core.Reporters.Json
         private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
         {
             from.ToList().ForEach(x => to[x.Key] = x.Value);
-        }
-
-        private string GetProjectRoot(IReadOnlyProjectComponent component)
-        {
-            if (component is ReadOnlyFolderComposite folder)
-            {
-                return folder.Children.OfType<ReadOnlyFolderComposite>().FirstOrDefault(s => s.RelativePath == ".")?.FullPath;
-            }
-
-            return null;
         }
     }
 }
