@@ -6,9 +6,9 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class OutputPathInput : SimpleStrykerInput<string>
+    public class OutputPathInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.None;
+        public override StrykerOption Type => StrykerOption.None;
         protected override string Description => string.Empty;
 
         public OutputPathInput(ILogger logger, IFileSystem fileSystem, string basepath)

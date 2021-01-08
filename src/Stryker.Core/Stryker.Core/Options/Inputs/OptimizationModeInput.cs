@@ -2,9 +2,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class OptimizationModeInput : ComplexStrykerInput<string, OptimizationModes>
+    public class OptimizationModeInput : OptionDefinition<string, OptimizationModes>
     {
-        public override StrykerInput Type => StrykerInput.OptimizationMode;
+        public override StrykerOption Type => StrykerOption.OptimizationMode;
         public override string DefaultInput => "perTest";
         public override OptimizationModes DefaultValue => new OptimizationModeInput(DefaultInput).Value;
 

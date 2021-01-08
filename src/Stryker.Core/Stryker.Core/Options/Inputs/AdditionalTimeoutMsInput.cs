@@ -2,9 +2,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class AdditionalTimeoutMsInput : SimpleStrykerInput<int>
+    public class AdditionalTimeoutMsInput : OptionDefinition<int>
     {
-        public override StrykerInput Type => StrykerInput.AdditionalTimeoutMs;
+        public override StrykerOption Type => StrykerOption.AdditionalTimeoutMs;
 
         protected override string Description => @"A timeout is calculated based on the initial unit test run before mutating.
 To prevent infinite loops stryker cancels a testrun if it runs longer than the timeout value.

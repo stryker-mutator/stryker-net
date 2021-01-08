@@ -5,9 +5,9 @@ using System;
 namespace Stryker.Core.Options.Inputs
 {
     // Deprecated, might be removed soon
-    public class TestRunnerInput : ComplexStrykerInput<string, TestRunner>
+    public class TestRunnerInput : OptionDefinition<string, TestRunner>
     {
-        public override StrykerInput Type => StrykerInput.TestRunner;
+        public override StrykerOption Type => StrykerOption.TestRunner;
         public override string DefaultInput => "vstest";
         public override TestRunner DefaultValue => new TestRunnerInput(DefaultInput).Value;
 

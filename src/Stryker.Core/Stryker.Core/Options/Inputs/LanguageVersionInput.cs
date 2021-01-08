@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LanguageVersionInput : ComplexStrykerInput<string, LanguageVersion>
+    public class LanguageVersionInput : OptionDefinition<string, LanguageVersion>
     {
-        public override StrykerInput Type => StrykerInput.LanguageVersion;
+        public override StrykerOption Type => StrykerOption.LanguageVersion;
         public override string DefaultInput => "latest";
         public override LanguageVersion DefaultValue => new LanguageVersionInput(DefaultInput).Value;
 

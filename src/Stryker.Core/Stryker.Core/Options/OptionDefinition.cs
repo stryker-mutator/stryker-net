@@ -5,9 +5,14 @@ using System.Text;
 
 namespace Stryker.Core.Options
 {
-    public abstract class ComplexStrykerInput<TInput, TValue>
+    public abstract class OptionDefinition<T> : OptionDefinition<T, T>
     {
-        public abstract StrykerInput Type { get; }
+        public override T DefaultInput => DefaultValue;
+    }
+
+    public abstract class OptionDefinition<TInput, TValue>
+    {
+        public abstract StrykerOption Type { get; }
         public virtual TValue DefaultValue { get; } = default;
 
         public string HelpText => Description + HelpOptions;

@@ -3,9 +3,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DashboardUrlInput : SimpleStrykerInput<string>
+    public class DashboardUrlInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.DashboardUrl;
+        public override StrykerOption Type => StrykerOption.DashboardUrl;
         public override string DefaultValue => "https://dashboard.stryker-mutator.io";
 
         protected override string Description => "Alternative url for Stryker Dashboard.";

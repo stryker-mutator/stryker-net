@@ -3,9 +3,9 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class SolutionPathInput : SimpleStrykerInput<string>
+    public class SolutionPathInput : OptionDefinition<string>
     {
-        public override StrykerInput Type => StrykerInput.SolutionPath;
+        public override StrykerOption Type => StrykerOption.SolutionPath;
 
         protected override string Description => "Full path to your solution file. Required on dotnet framework.";
         protected override string HelpOptions => "";

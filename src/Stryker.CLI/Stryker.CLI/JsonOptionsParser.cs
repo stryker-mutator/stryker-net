@@ -8,12 +8,12 @@ namespace Stryker.CLI
 {
     public class JsonOption
     {
-        public StrykerInput InputType { get; }
+        public StrykerOption InputType { get; }
         public string JsonKey { get; }
         public bool Array { get; }
         public IEnumerable<JsonOption> Children { get; }
 
-        public JsonOption(StrykerInput inputType, string jsonKey, bool array = false, IEnumerable<JsonOption> children = null)
+        public JsonOption(StrykerOption inputType, string jsonKey, bool array = false, IEnumerable<JsonOption> children = null)
         {
             InputType = inputType;
             JsonKey = jsonKey;
@@ -30,35 +30,35 @@ namespace Stryker.CLI
         {
             JsonOptions = new List<JsonOption>
             {
-                new JsonOption(StrykerInput.DevMode, "dev-mode"),
-                new JsonOption(StrykerInput.MutationLevel, "mutation-level"),
+                new JsonOption(StrykerOption.DevMode, "dev-mode"),
+                new JsonOption(StrykerOption.MutationLevel, "mutation-level"),
 
-                new JsonOption(StrykerInput.Mutate, "mutate"),
+                new JsonOption(StrykerOption.Mutate, "mutate"),
 
-                new JsonOption(StrykerInput.SolutionPath, "solution"),
-                new JsonOption(StrykerInput.ProjectUnderTestName, "project"),
+                new JsonOption(StrykerOption.SolutionPath, "solution"),
+                new JsonOption(StrykerOption.ProjectUnderTestName, "project"),
 
-                new JsonOption(StrykerInput.None, "thresholds", children: new List<JsonOption> {
-                    new JsonOption(StrykerInput.ThresholdHigh, "high"),
-                    new JsonOption(StrykerInput.ThresholdLow, "low"),
-                    new JsonOption(StrykerInput.ThresholdBreak, "break")
+                new JsonOption(StrykerOption.None, "thresholds", children: new List<JsonOption> {
+                    new JsonOption(StrykerOption.ThresholdHigh, "high"),
+                    new JsonOption(StrykerOption.ThresholdLow, "low"),
+                    new JsonOption(StrykerOption.ThresholdBreak, "break")
                 }),
 
-                new JsonOption(StrykerInput.LogToFile, "log-to-file"),
-                new JsonOption(StrykerInput.LogLevel, "log-level"),
-                new JsonOption(StrykerInput.Reporters, "reporters", array: true),
+                new JsonOption(StrykerOption.LogToFile, "log-to-file"),
+                new JsonOption(StrykerOption.LogLevel, "log-level"),
+                new JsonOption(StrykerOption.Reporters, "reporters", array: true),
 
-                new JsonOption(StrykerInput.DiffCompare, "diff"),
-                new JsonOption(StrykerInput.DiffTarget, "diff-target"),
-                new JsonOption(StrykerInput.DashboardCompare, "dashboard-compare"),
+                new JsonOption(StrykerOption.DiffCompare, "diff"),
+                new JsonOption(StrykerOption.DiffTarget, "diff-target"),
+                new JsonOption(StrykerOption.DashboardCompare, "dashboard-compare"),
 
-                new JsonOption(StrykerInput.DashboardApiKey, "api-key"),
-                new JsonOption(StrykerInput.AzureFileStorageSas, "azure-storage-sas"),
+                new JsonOption(StrykerOption.DashboardApiKey, "api-key"),
+                new JsonOption(StrykerOption.AzureFileStorageSas, "azure-storage-sas"),
 
-                new JsonOption(StrykerInput.ProjectVersion, "dashboard-version"),
-                new JsonOption(StrykerInput.FallbackVersion, "fallback-version"),
+                new JsonOption(StrykerOption.ProjectVersion, "dashboard-version"),
+                new JsonOption(StrykerOption.FallbackVersion, "fallback-version"),
 
-                new JsonOption(StrykerInput.Concurrency, "concurrency")
+                new JsonOption(StrykerOption.Concurrency, "concurrency")
             };
         }
 
@@ -69,7 +69,7 @@ namespace Stryker.CLI
 
             foreach (var option in JsonOptions)
             {
-                if (option.InputType is StrykerInput.None)
+                if (option.InputType is StrykerOption.None)
                 {
                     foreach (var child in option.Children)
                     {

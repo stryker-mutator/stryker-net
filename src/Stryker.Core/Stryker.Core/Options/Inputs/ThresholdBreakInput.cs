@@ -3,9 +3,9 @@
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdBreakInput : ComplexStrykerInput<string, int>
+    public class ThresholdBreakInput : OptionDefinition<string, int>
     {
-        public override StrykerInput Type => StrykerInput.ThresholdBreak;
+        public override StrykerOption Type => StrykerOption.ThresholdBreak;
         public override string DefaultInput => DefaultValue.ToString();
         public override int DefaultValue => 0;
 

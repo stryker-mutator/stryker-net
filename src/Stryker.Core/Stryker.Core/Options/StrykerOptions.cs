@@ -81,13 +81,13 @@ namespace Stryker.Core.Options
         /// </summary>
         /// <param name="inputType"></param>
         /// <returns>new StrykerOptions with supplied feature enabled</returns>
-        public StrykerOptions With(StrykerInput inputType, bool? enabled)
+        public StrykerOptions With(StrykerOption inputType, bool? enabled)
         {
             return inputType switch
             {
-                StrykerInput.DevMode => SetDevMode(enabled),
-                StrykerInput.DashboardCompare => SetCompareToDashboard(enabled),
-                StrykerInput.LogToFile => SetLogToFile(enabled),
+                StrykerOption.DevMode => SetDevMode(enabled),
+                StrykerOption.DashboardCompare => SetCompareToDashboard(enabled),
+                StrykerOption.LogToFile => SetLogToFile(enabled),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature.")
             };
         }
@@ -98,12 +98,12 @@ namespace Stryker.Core.Options
         /// <param name="inputType"></param>
         /// <param name="value"></param>
         /// <returns>new StrykerOptions with supplied feature enabled and it's option set to chosen value</returns>
-        public StrykerOptions With(StrykerInput inputType, bool? enabled, string value)
+        public StrykerOptions With(StrykerOption inputType, bool? enabled, string value)
         {
             return inputType switch
             {
-                StrykerInput.DiffCompare => SetDiff(enabled, value),
-                StrykerInput.DashboardCompare => SetCompareToDashboard(enabled, value),
+                StrykerOption.DiffCompare => SetDiff(enabled, value),
+                StrykerOption.DashboardCompare => SetCompareToDashboard(enabled, value),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature with value.")
             };
         }
@@ -114,20 +114,20 @@ namespace Stryker.Core.Options
         /// <param name="inputType"></param>
         /// <param name="values"></param>
         /// <returns>new StrykerOptions with supplied option set to chosen value</returns>
-        public StrykerOptions With(StrykerInput inputType, string value)
+        public StrykerOptions With(StrykerOption inputType, string value)
         {
             return inputType switch
             {
-                StrykerInput.ThresholdBreak => SetThresholdBreak(value),
-                StrykerInput.SolutionPath => SetSolutionPath(value),
-                StrykerInput.ProjectUnderTestName => SetProjectUnderTestName(value),
-                StrykerInput.MutationLevel => SetMutationLevel(value),
-                StrykerInput.LogLevel => SetLogLevel(value),
-                StrykerInput.DashboardApiKey => SetDashboardApiKey(value),
-                StrykerInput.AzureFileStorageSas => SetAzureFileStorageSas(value),
-                StrykerInput.ProjectVersion => SetProjectVersion(value),
-                StrykerInput.FallbackVersion => SetFallbackVersion(value),
-                StrykerInput.Concurrency => SetConcurrency(value),
+                StrykerOption.ThresholdBreak => SetThresholdBreak(value),
+                StrykerOption.SolutionPath => SetSolutionPath(value),
+                StrykerOption.ProjectUnderTestName => SetProjectUnderTestName(value),
+                StrykerOption.MutationLevel => SetMutationLevel(value),
+                StrykerOption.LogLevel => SetLogLevel(value),
+                StrykerOption.DashboardApiKey => SetDashboardApiKey(value),
+                StrykerOption.AzureFileStorageSas => SetAzureFileStorageSas(value),
+                StrykerOption.ProjectVersion => SetProjectVersion(value),
+                StrykerOption.FallbackVersion => SetFallbackVersion(value),
+                StrykerOption.Concurrency => SetConcurrency(value),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for single value.")
             };
         }
@@ -138,12 +138,12 @@ namespace Stryker.Core.Options
         /// <param name="inputType"></param>
         /// <param name="values"></param>
         /// <returns>new StrykerOptions with supplied option set to chosen values</returns>
-        public StrykerOptions With(StrykerInput inputType, IEnumerable<string> values)
+        public StrykerOptions With(StrykerOption inputType, IEnumerable<string> values)
         {
             return inputType switch
             {
-                StrykerInput.Mutate => SetMutate(values),
-                StrykerInput.Reporters => SetReporters(values),
+                StrykerOption.Mutate => SetMutate(values),
+                StrykerOption.Reporters => SetReporters(values),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for multi values.")
             };
         }

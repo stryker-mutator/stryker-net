@@ -2,9 +2,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LogToFileInput : SimpleStrykerInput<bool>
+    public class LogToFileInput : OptionDefinition<bool>
     {
-        public override StrykerInput Type => StrykerInput.LogToFile;
+        public override StrykerOption Type => StrykerOption.LogToFile;
         public override bool DefaultValue => false;
 
         protected override string Description => "Makes the logger write to a file. Logging to file always uses loglevel trace.";
