@@ -1,4 +1,4 @@
-﻿using Crayon;
+using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -66,7 +66,7 @@ namespace Stryker.Core.Reporters
                     folderLines = continuationLines.Last() ? BranchLine : FinalBranchLine;
                 }
 
-                var name = current.Name;
+                var name =  Path.GetFileName(current.RelativePath);
                 if (name == null && !rootFolderProcessed)
                 {
                     name = "All files";
@@ -90,8 +90,9 @@ namespace Stryker.Core.Reporters
                 {
                     stringBuilder.Append(item ? ContinueLine : NoLine);
                 }
+                var name = Path.GetFileName(current.RelativePath);
 
-                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{current.Name}");
+                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{name}");
                 DisplayComponent(current);
 
                 stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
@@ -141,7 +142,7 @@ namespace Stryker.Core.Reporters
 
             if (node.Parent != null)
             {
-                var isRootFile = node.RelativePath == node.RelativePathToProjectFile;
+                var isRootFile = node.Parent?.Parent == null;
                 if (isRootFile)
                 {
                     continuationLines.Add(true);
@@ -169,7 +170,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent.FullPath != null && inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _consoleWriter.Write(Output.BrightBlack("(Excluded)"));
             }

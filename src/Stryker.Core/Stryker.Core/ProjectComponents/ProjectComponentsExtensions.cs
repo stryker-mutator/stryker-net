@@ -36,7 +36,7 @@ namespace Stryker.Core.ProjectComponents
 
             bool MatchesFilePattern(FilePattern pattern) =>
                 pattern.Glob.IsMatch(projectComponent.FullPath) ||
-                pattern.Glob.IsMatch(projectComponent.RelativePathToProjectFile);
+                pattern.Glob.IsMatch(projectComponent.RelativePath);
         }
 
         /// <summary>

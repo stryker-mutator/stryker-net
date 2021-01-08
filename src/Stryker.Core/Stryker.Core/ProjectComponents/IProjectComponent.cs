@@ -5,11 +5,11 @@ namespace Stryker.Core.ProjectComponents
 {
     public interface IProjectComponent
     {
-        string Name { get; set; }
-
         string FullPath { get; set; }
+        /// <summary>
+        /// Relative path to project file
+        /// </summary>
         string RelativePath { get; set; }
-        string RelativePathToProjectFile { get; set; }
 
         IParentComponent Parent { get; set; }
 

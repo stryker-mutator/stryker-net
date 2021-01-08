@@ -10,11 +10,8 @@ namespace Stryker.Core.ProjectComponents
     /// </summary>
     public interface IReadOnlyProjectComponent : IEquatable<IReadOnlyProjectComponent>
     {
-        string Name { get; }
         string FullPath { get; }
         string RelativePath { get; }
-        string RelativePathToProjectFile { get; }
-
         IParentComponent Parent { get; }
 
         IEnumerable<IReadOnlyMutant> Mutants { get; }

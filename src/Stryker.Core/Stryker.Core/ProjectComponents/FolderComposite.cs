@@ -11,6 +11,7 @@ namespace Stryker.Core.ProjectComponents
         private readonly IList<SyntaxTree> _compilationSyntaxTrees = new List<SyntaxTree>();
         private readonly List<IProjectComponent> _children = new List<IProjectComponent>();
         public IEnumerable<IProjectComponent> Children => _children;
+        public bool IsProjectRoot = false;
 
         /// <summary>
         /// Add a syntax tree to this folder that is needed in compilation but should not be mutated
@@ -44,7 +45,7 @@ namespace Stryker.Core.ProjectComponents
 
         public ReadOnlyFolderComposite ToReadOnly()
         {
-            return new ReadOnlyFolderComposite(this, MutatedSyntaxTrees.Any());
+            return new ReadOnlyFolderComposite(this, MutatedSyntaxTrees.Any(), IsProjectRoot);
         }
 
         public override IReadOnlyProjectComponent ToReadOnlyInputComponent()

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -24,16 +24,14 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new FolderComposite { Name = "RootFolder", RelativePath = "src" };
+            var folder = new FolderComposite { RelativePath = "src" };
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
                 var addedFolder = new FolderComposite
                 {
-                    Name = $"{i}",
                     RelativePath = $"{i}",
                     FullPath = $"/home/user/src/project/{i}",
-                    RelativePathToProjectFile = "."
                 };
                 folder.Add(addedFolder);
 
@@ -42,10 +40,8 @@ namespace Stryker.Core.UnitTest.Reporters
                     var m = new Collection<Mutant>();
                     addedFolder.Add(new FileLeaf()
                     {
-                        Name = $"SomeFile{y}.cs",
                         RelativePath = $"{i}/SomeFile{y}.cs",
                         FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
-                        RelativePathToProjectFile = $"SomeFile{y}.cs",
                         Mutants = m,
                         SourceCode = "void M(){ int i = 0 + 8; }"
                     });

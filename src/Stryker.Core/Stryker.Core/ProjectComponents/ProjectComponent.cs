@@ -7,10 +7,8 @@ namespace Stryker.Core.ProjectComponents
 {
     public abstract class ProjectComponent<T> : IProjectComponent
     {
-        public string Name { get; set; }
         public string FullPath { get; set; }
         public string RelativePath { get; set; }
-        public string RelativePathToProjectFile { get; set; }
 
         public IParentComponent Parent { get; set; }
 

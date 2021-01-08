@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
@@ -8,12 +8,14 @@ namespace Stryker.Core.ProjectComponents
 
         private readonly FolderComposite _folderComposite;
         private readonly bool _belongsToProject;
+        public bool IsProjectRoot { get; }
 
         public IEnumerable<IReadOnlyProjectComponent> Children => _folderComposite.Children.Select(child => child.ToReadOnlyInputComponent());
-        public ReadOnlyFolderComposite(FolderComposite folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
+        public ReadOnlyFolderComposite(FolderComposite folderComposite, bool belongsToProjectUnderTest, bool isProjectRoot) : base(folderComposite)
         {
             _folderComposite = folderComposite;
             _belongsToProject = belongsToProjectUnderTest;
+            IsProjectRoot = isProjectRoot;
         }
 
         public override void Display(int depth)
@@ -23,10 +25,7 @@ namespace Stryker.Core.ProjectComponents
             {
                 DisplayFolder(depth, this);
 
-                if (!string.IsNullOrEmpty(Name))
-                {
-                    depth++;
-                }
+                depth++;
 
                 foreach (var child in Children)
                 {

@@ -98,7 +98,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
-            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePathToProjectFile, new JsonReportFileComponent(fileComponent) } };
+            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }
 
         private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
@@ -110,7 +110,7 @@ namespace Stryker.Core.Reporters.Json
         {
             if (component is ReadOnlyFolderComposite folder)
             {
-                return folder.Children.OfType<ReadOnlyFolderComposite>().FirstOrDefault(s => s.RelativePathToProjectFile == ".")?.FullPath;
+                return folder.Children.OfType<ReadOnlyFolderComposite>().FirstOrDefault(s => s.RelativePath == ".")?.FullPath;
             }
 
             return null;
