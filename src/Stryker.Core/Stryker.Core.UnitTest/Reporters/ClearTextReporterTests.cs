@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -24,15 +24,12 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { }
             });
@@ -71,15 +68,12 @@ All mutants have been tested, and your mutation score has been calculated
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() {
                 ResultStatus = MutantStatus.Killed, Mutation = mutation } }
@@ -119,15 +113,12 @@ All mutants have been tested, and your mutation score has been calculated
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() {
                 ResultStatus = MutantStatus.Survived, Mutation = mutation } }
@@ -168,15 +159,12 @@ All mutants have been tested, and your mutation score has been calculated
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {
@@ -212,15 +200,12 @@ All mutants have been tested, and your mutation score has been calculated
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {
@@ -256,15 +241,12 @@ All mutants have been tested, and your mutation score has been calculated
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
-                RelativePathToProjectFile = "SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
                 {

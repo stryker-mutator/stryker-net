@@ -29,20 +29,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
             testRunnerMock.Setup(x => x.Dispose());
             var projectContents = new FolderComposite();
-            projectContents.Add(new FileLeaf
-            {
-                Name = "SomeFile.cs"
-            });
-            var folder = new FolderComposite
-            {
-                Name = "ProjectRoot"
-            };
+            projectContents.Add(new FileLeaf());
+            var folder = new FolderComposite();
             folder.AddRange(new Collection<IProjectComponent>
                 {
-                    new FileLeaf
-                    {
-                        Name = "SomeFile.cs"
-                    }
+                    new FileLeaf()
                 });
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>()))
                 .Returns(new ProjectInfo
@@ -83,14 +74,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null));
-            var folder = new FolderComposite
-            {
-                Name = "ProjectRoot"
-            };
-            folder.Add(new FileLeaf
-            {
-                Name = "SomeFile.cs"
-            });
+            var folder = new FolderComposite();
+            folder.Add(new FileLeaf());
 
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>())).Returns(
                 new ProjectInfo

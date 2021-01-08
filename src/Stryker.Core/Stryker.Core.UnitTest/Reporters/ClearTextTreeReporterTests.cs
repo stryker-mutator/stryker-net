@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -24,13 +24,11 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { }
@@ -66,13 +64,11 @@ RootFolder [0/0 (N/A)]
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant()
@@ -114,13 +110,11 @@ RootFolder [1/1 ({1:P2})]
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() {
@@ -162,13 +156,11 @@ RootFolder [0/1 ({0:P2})]
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -205,13 +197,11 @@ RootFolder [0/1 ({0:P2})]
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -248,13 +238,11 @@ RootFolder [0/1 ({0:P2})]
 
             var folder = new FolderComposite()
             {
-                Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()

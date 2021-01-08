@@ -25,13 +25,9 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite
-            {
-                Name = "ProjectRoot"
-            };
+            var folder = new FolderComposite();
             folder.Add(new FileLeaf()
             {
-                Name = "SomeFile.cs",
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
@@ -82,13 +78,9 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite()
-            {
-                Name = "ProjectRoot"
-            };
+            var folder = new FolderComposite();
             folder.Add(new FileLeaf
             {
-                Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
             });
             var mutationTestInput = new MutationTestInput()
