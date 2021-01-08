@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -6,8 +6,12 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation
 {
-    internal class ExpressionToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
+    internal class ExpressionMethodToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
+        public ExpressionMethodToBodyEngine(string markerId) : base(markerId)
+        {
+        }
+
         public T ConvertToBody<T>(T method) where T: BaseMethodDeclarationSyntax
         {
             if (method.ExpressionBody == null || method.Body != null)
@@ -95,8 +99,5 @@ namespace Stryker.Core.Instrumentation
             };
         }
 
-        public ExpressionToBodyEngine(string markerId) : base(markerId, "ExpressionToBodyEngine")
-        {
-        }
     }
 }

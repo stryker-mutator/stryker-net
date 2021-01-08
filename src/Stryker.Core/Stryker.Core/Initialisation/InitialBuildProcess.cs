@@ -41,6 +41,7 @@ namespace Stryker.Core.Initialisation
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+                CheckBuildResult(result, msbuildPath, $"\"{solutionPath}\"");
             }
             else
             {
@@ -49,13 +50,18 @@ namespace Stryker.Core.Initialisation
                 _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
                 // Build with dotnet build
                 result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
-            }
 
+                CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
+            }
+        }
+
+        private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
+        {
             _logger.LogDebug("Initial build output {0}", result.Output);
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException(result.Output, "Initial build of targeted project failed. Please make targeted project buildable. See above message for build output.");
+                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
             _logger.LogDebug("Initial build successful");
         }

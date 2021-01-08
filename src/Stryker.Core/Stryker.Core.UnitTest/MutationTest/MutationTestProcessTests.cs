@@ -134,7 +134,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             };
 
-
             var folder = new FolderComposite()
             {
                 Name = Path.Combine(FilesystemRoot, "ExampleProject")
