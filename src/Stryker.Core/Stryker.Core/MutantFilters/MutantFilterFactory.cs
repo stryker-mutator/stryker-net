@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Baseline;
+using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Options;
@@ -13,7 +13,7 @@ namespace Stryker.Core.MutantFilters
         private static IGitInfoProvider _gitInfoProvider;
         private static IBaselineProvider _baselineProvider;
 
-        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public static IMutantFilter Create(IStrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             if (options == null)
             {
@@ -27,7 +27,7 @@ namespace Stryker.Core.MutantFilters
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
 
-        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
+        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(IStrykerOptions options)
         {
             var enabledFilters = new List<IMutantFilter> {
                     new FilePatternMutantFilter(),

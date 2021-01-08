@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutantOrchestrator : IMutantOrchestrator
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new TypeBasedStrategy<SyntaxNode, INodeMutator>();
@@ -46,7 +46,7 @@ namespace Stryker.Core.Mutants
             !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
 
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null)
+        public MutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null)
         {
             _options = options;
             Mutators = mutators ?? new List<IMutator>
@@ -78,8 +78,10 @@ namespace Stryker.Core.Mutants
                 new PostfixUnaryExpressionOrchestrator(this),
                 new StaticFieldDeclarationOrchestrator(this),
                 new StaticConstructorOrchestrator(this),
+                new PropertyDeclarationOrchestrator(this),
                 new ArrayInitializerOrchestrator(this),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
+                new AccessorSyntaxOrchestrator(this),
                 new ConstLocalDeclarationOrchestrator(this),
                 new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),

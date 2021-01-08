@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +8,7 @@ namespace Stryker.Core.Instrumentation
     internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
 
-        public ConditionalInstrumentationEngine(string marker): base(marker, "ConditionalInstrumentation")
+        public ConditionalInstrumentationEngine(string marker): base(marker)
         {
         }
 

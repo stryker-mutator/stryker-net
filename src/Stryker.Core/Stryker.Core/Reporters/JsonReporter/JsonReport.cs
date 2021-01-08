@@ -15,7 +15,7 @@ namespace Stryker.Core.Reporters.Json
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
-        private static StrykerOptions _options;
+        private static IStrykerOptions _options;
         [JsonIgnore]
         private static JsonReport _report = null;
 
@@ -25,7 +25,7 @@ namespace Stryker.Core.Reporters.Json
 
         }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             _options = options;
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             // This should really only happen in unit tests.
             // We need this construct because in a unit test

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using System;
@@ -10,26 +10,23 @@ namespace Stryker.Core.Initialisation
 {
     public static class EmbeddedResourcesGenerator
     {
-        private static IList<ResourceDescription> _resourceDescriptions;
+        private static IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
+
         public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, ILogger logger)
         {
-            if (_resourceDescriptions is null)
+            if (!_resourceDescriptions.ContainsKey(assemblyPath))
             {
-                _resourceDescriptions = new List<ResourceDescription>();
                 using (var module = LoadModule(assemblyPath, logger))
                 {
                     if (module is null)
                     {
                         yield break;
                     }
-                    foreach (var description in ReadResourceDescriptionsFromModule(module))
-                    {
-                        _resourceDescriptions.Add(description);
-                    }
+                    _resourceDescriptions.Add(assemblyPath, ReadResourceDescriptionsFromModule(module).ToList());
                 }
             }
 
-            foreach (var description in _resourceDescriptions)
+            foreach (var description in _resourceDescriptions[assemblyPath])
             {
                 yield return description;
             }
@@ -49,7 +46,7 @@ namespace Stryker.Core.Initialisation
             }
             catch (Exception e)
             {
-                logger.LogWarning(e,
+                logger?.LogWarning(e,
                     $"Original project under test {assemblyPath} could not be loaded. \n" +
                     $"Embedded Resources might be missing.");
 
