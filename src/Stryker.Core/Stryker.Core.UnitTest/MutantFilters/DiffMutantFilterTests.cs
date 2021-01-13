@@ -220,7 +220,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             string testProjectPath = "C:/MyTests";
-            var options = new StrykerOptions(diff: false);
+            var options = new StrykerOptions();
 
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
