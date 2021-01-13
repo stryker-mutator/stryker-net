@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
@@ -6,11 +6,11 @@ namespace Stryker.Core.ProjectComponents
     public class ReadOnlyFolderComposite : ReadOnlyProjectComponent
     {
 
-        private readonly FolderComposite _folderComposite;
+        private readonly IFolderComposite _folderComposite;
         private readonly bool _belongsToProject;
 
         public IEnumerable<IReadOnlyProjectComponent> Children => _folderComposite.Children.Select(child => child.ToReadOnlyInputComponent());
-        public ReadOnlyFolderComposite(FolderComposite folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
+        public ReadOnlyFolderComposite(IFolderComposite folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
         {
             _folderComposite = folderComposite;
             _belongsToProject = belongsToProjectUnderTest;

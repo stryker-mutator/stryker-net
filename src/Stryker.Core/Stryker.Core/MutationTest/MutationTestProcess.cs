@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
@@ -53,7 +54,7 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            IMutantOrchestrator orchestrator = null,
+            MutantOrchestrator<SyntaxNode> orchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
@@ -65,9 +66,8 @@ namespace Stryker.Core.MutationTest
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, mutationTestInput);
-
-            _mutationProcess = new MutationProcess(Input, orchestrator, fileSystem, _options, mutantFilter, _reporter);
+            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
+            _mutationProcess = new CsharpMutationProcess(Input, fileSystem ?? new FileSystem(), _options, mutantFilter, _reporter, orchestrator);
         }
 
         public void Mutate()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
@@ -6,15 +6,15 @@ namespace Stryker.Core.Mutants
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    internal class MutationContext: IDisposable
+    public class MutationContext: IDisposable
     {
-        private readonly MutantOrchestrator _mainOrchestrator;
+        private readonly CsharpMutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;
         public readonly List<Mutant> ExpressionLevelMutations = new List<Mutant>();
         public readonly List<Mutant> BlockLevelControlledMutations = new List<Mutant>();
         public readonly List<Mutant> StatementLevelControlledMutations = new List<Mutant>();
 
-        public MutationContext(MutantOrchestrator mutantOrchestrator)
+        public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
         }

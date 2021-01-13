@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return node;
         }
 
-        public ConstLocalDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public ConstLocalDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

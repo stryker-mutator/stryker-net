@@ -22,13 +22,13 @@ namespace Stryker.Core.UnitTest.Reporters
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -69,13 +69,13 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -117,13 +117,13 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -166,13 +166,13 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -210,13 +210,13 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -254,13 +254,13 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 Name = "RootFolder",
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",

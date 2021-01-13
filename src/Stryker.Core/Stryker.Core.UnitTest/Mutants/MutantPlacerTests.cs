@@ -157,7 +157,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);

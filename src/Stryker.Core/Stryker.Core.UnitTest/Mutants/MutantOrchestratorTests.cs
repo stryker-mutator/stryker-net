@@ -11,11 +11,11 @@ namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutantOrchestratorTests
     {
-        private readonly MutantOrchestrator _target;
+        private readonly CsharpMutantOrchestrator _target;
 
         public MutantOrchestratorTests()
         {
-            _target = new MutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
+            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
         }
 
         [Fact]
@@ -891,7 +891,6 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
             actual = @"using System;
 using System.Collections.Generic;
             using System.Text;
-
 namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
@@ -900,7 +899,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             expected = @"using System;
 using System.Collections.Generic;
             using System.Text;
-
 namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
@@ -914,5 +912,4 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             actualNode.ShouldNotContainErrors();
         }
     }
-
 }

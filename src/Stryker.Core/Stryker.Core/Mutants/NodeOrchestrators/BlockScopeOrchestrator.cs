@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// <typeparam name="T">Precise type of the statement</typeparam>
     internal class BlockScopeOrchestrator<T>: StatementSpecificOrchestrator<T> where T: StatementSyntax
     {
-        public BlockScopeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public BlockScopeOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {}
 
         protected override bool NewContext => true;
