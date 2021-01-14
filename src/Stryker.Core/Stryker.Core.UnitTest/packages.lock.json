@@ -42,11 +42,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.8, )",
-        "resolved": "13.2.8",
-        "contentHash": "9i5NSQaIcIctugXKggIaFle2V6cKug2jO8qGENL9Q5BTFTK3QLQeQCaALv7G2qfe3mE8rKhRthvLjX3EOc13Mw==",
+        "requested": "[13.2.9, )",
+        "resolved": "13.2.9",
+        "contentHash": "R5ATxnRqYV9aFknnp3WIdTbyM7bObrkcG6njl0CM9plrlImPr1T/VgHQRwdHyjnuMdnFVl4G3XuXkgrSd6Bxuw==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.8"
+          "System.IO.Abstractions": "13.2.9"
         }
       },
       "xunit": {
@@ -1188,8 +1188,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.8",
-        "contentHash": "XSmdQR5k/XHcUZPXVTLWVNcG9M55SMxqqnkM7esFeQO64ErmqcgwungcFS+OGlzDbWaevwT/6WQ1hzVb5mDiUw==",
+        "resolved": "13.2.9",
+        "contentHash": "eyucRaO1g5CSKXHgl8Mq35+QohhWuBp1vKjsXh1LE+udAaA3vuIHo5t9LqAd+hxURZWTzXZs1P6d++UxXUmxnQ==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -2063,7 +2063,7 @@
           "Serilog.Sinks.Console": "3.1.1",
           "Stryker.DataCollector": "0.20.0",
           "Stryker.RegexMutators": "0.20.0",
-          "System.IO.Abstractions": "13.2.8"
+          "System.IO.Abstractions": "13.2.9"
         }
       },
       "stryker.datacollector": {
