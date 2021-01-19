@@ -15,7 +15,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.MutationTest
 {
-    public class MutationProcess : IMutationProcess
+    public class CsharpMutationProcess : IMutationProcess
     {
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
@@ -23,22 +23,22 @@ namespace Stryker.Core.MutationTest
         private readonly CompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
+        private readonly MutantOrchestrator<SyntaxNode> _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
-        public MutationProcess(MutationTestInput mutationTestInput,
+        public CsharpMutationProcess(MutationTestInput mutationTestInput,
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
             IReporter reporter = null,
-            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
+            MutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
-            _orchestrator = orchestrator ?? new MutantOrchestrator(options: _options);
+            _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
             _compilingProcess = new CompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
@@ -50,7 +50,7 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             // Mutate source files
-            foreach (var file in _projectInfo.GetAllFiles().Cast<FileLeaf>())
+            foreach (var file in _projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.Name}");
                 // Mutate the syntax tree
@@ -126,7 +126,7 @@ namespace Stryker.Core.MutationTest
             {
                 // CompileError is a final status and can not be changed during filtering.
                 var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
-                _mutantFilter.FilterMutants(mutantsToFilter, ((FileLeaf)file).ToReadOnly(), _options);
+                _mutantFilter.FilterMutants(mutantsToFilter, ((CsharpFileLeaf)file).ToReadOnly(), _options);
             }
 
             var skippedMutants = _projectInfo.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);

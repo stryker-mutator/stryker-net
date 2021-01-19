@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -34,7 +36,16 @@ namespace Stryker.Core.Helpers
             };
         }
 
-        public static T InjectMutation<T>(this T original, Mutation mutation) where T : SyntaxNode
+        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod)
+        {
+            return baseMethod.Keyword.Text switch
+            {
+                "get" => true,
+                _ => false
+            };
+        }
+
+        public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
             {
@@ -43,5 +54,8 @@ namespace Stryker.Core.Helpers
             }
             return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }
+
+        public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
+            => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
     }
 }

@@ -51,7 +51,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 SyntaxFactory.Block(mutatedBlock));
         }
 
-        public BaseMethodDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public BaseMethodDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

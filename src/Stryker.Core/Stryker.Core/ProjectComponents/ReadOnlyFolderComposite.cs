@@ -6,11 +6,11 @@ namespace Stryker.Core.ProjectComponents
     public class ReadOnlyFolderComposite : ReadOnlyProjectComponent
     {
 
-        private readonly IParentComponent _folderComposite;
+        private readonly IFolderComposite _folderComposite;
         private readonly bool _belongsToProject;
 
         public IEnumerable<IReadOnlyProjectComponent> Children => _folderComposite.Children.Select(child => child.ToReadOnlyInputComponent());
-        public ReadOnlyFolderComposite(IParentComponent folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
+        public ReadOnlyFolderComposite(IFolderComposite folderComposite, bool belongsToProjectUnderTest) : base(folderComposite)
         {
             _folderComposite = folderComposite;
             _belongsToProject = belongsToProjectUnderTest;

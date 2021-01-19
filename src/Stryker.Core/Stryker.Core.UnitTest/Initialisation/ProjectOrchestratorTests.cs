@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new Mock<IMutationTestProcess>().Object);
 
             var components = new Collection<IProjectComponent>() {
-                new FileLeaf() {
+                new CsharpFileLeaf() {
                     Name = "SomeFile.cs",
                     Mutants = new List<Mutant> { new Mutant { Id = 1 } }
                 }
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = new FolderComposite()
+                    ProjectContents = new CsharpFolderComposite()
                     {
                         Name = "ProjectRoot"
                     }

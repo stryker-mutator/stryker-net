@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return context;
         }
 
-        public PostfixUnaryExpressionOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public PostfixUnaryExpressionOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

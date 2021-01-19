@@ -57,7 +57,7 @@ namespace Stryker.Core
             {
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                IParentComponent rootComponent = new FolderComposite();
+                IFolderComposite rootComponent = new CsharpFolderComposite();
                 rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
 
                 _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());

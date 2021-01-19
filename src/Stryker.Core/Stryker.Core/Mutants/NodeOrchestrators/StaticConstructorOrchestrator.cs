@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return mutated.ReplaceNode(mutated.Body!, MutantPlacer.PlaceStaticContextMarker(mutated.Body));
         }
 
-        public StaticConstructorOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public StaticConstructorOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

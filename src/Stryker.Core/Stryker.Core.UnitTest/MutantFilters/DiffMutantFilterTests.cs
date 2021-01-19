@@ -161,6 +161,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldNotMutateUnchangedFiles()
         {
+            // Arrange
             var options = new StrykerOptions(diff: true);
             var baselineProvider = new Mock<IBaselineProvider>();
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
@@ -173,7 +174,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ChangedTestFiles = new Collection<string>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
+            var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
 
@@ -187,6 +188,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void ShouldOnlyMutateChangedFiles()
         {
+            // Arrange
             var options = new StrykerOptions(diff: true);
 
             var baselineProvider = new Mock<IBaselineProvider>();
@@ -202,7 +204,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
-            var file = new FileLeaf { FullPath = myFile };
+            var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
 
@@ -239,7 +241,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
             // check the diff result for a file not inside the test project
-            var file = new FileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
+            var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
 
             var mutant = new Mutant();
 
@@ -336,7 +338,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<ReadOnlyFileLeaf>(new FileLeaf());
+            var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
 
             var mutants = new List<Mutant>
             {
@@ -387,7 +389,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -510,7 +512,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf().ToReadOnly(), options);
 
             // Assert
             results.ShouldBe(new []{expectedToStay1, expectedToStay2});
@@ -548,7 +550,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new FileLeaf().ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf().ToReadOnly(), options);
 
             // Assert
             results.ShouldBeEmpty();
@@ -579,7 +581,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
             // Act
-            var result = target.FilterMutants(mutants, new FileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
+            var result = target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
 
             // Assert
             result.ShouldBe(mutants);

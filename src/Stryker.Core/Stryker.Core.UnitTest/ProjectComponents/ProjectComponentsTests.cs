@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet100MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet0MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet50MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
                 Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
