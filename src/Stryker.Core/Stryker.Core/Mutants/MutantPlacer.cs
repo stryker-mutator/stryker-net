@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Instrumentation;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 

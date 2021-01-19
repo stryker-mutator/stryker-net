@@ -164,7 +164,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        ((IParentComponent)inputFiles).Add(subDir);
+                        ((IFolderComposite)inputFiles).Add(subDir);
                     }
                 }
                 else

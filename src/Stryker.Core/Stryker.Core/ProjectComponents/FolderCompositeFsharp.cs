@@ -7,7 +7,7 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FolderCompositeFsharp : ProjectComponent<ParsedInput>, IParentComponent
+    public class FolderCompositeFsharp : ProjectComponent<ParsedInput>, IFolderComposite
     {
         private readonly IList<ParsedInput> _compilationSyntaxTrees = new List<ParsedInput>();
         private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();

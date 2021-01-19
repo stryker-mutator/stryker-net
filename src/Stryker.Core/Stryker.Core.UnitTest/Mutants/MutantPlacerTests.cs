@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
