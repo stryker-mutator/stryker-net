@@ -948,7 +948,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
-                    properties: new Dictionary<string, string> { { "IsTestProject", "true" }, { "Language", "C#" } },
+                    properties: new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
