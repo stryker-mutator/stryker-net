@@ -33,7 +33,6 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            //@"C:\Program Files(x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\FSharp\FSharp.Build.dll";
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
@@ -44,6 +43,7 @@ namespace Stryker.Core.Compiling
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
+            //we need a checker if we want to compile 
             var checker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
 
             var pathlist = new List<string>();
@@ -56,7 +56,6 @@ namespace Stryker.Core.Compiling
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
-                // inject the mutated Assembly into the test project
                 pathlist.Add(Path.Combine(injectionPath, _input.ProjectInfo.GetInjectionFilePath(testProject)));
 
                 pdblist.Add(Path.Combine(injectionPath,
@@ -69,15 +68,15 @@ namespace Stryker.Core.Compiling
                 throw new GeneralStrykerException("no ProjectUnderTest");
             }
 
+            //rollback still needs to be implemented
             RollbackProcessResult rollbackProcessResult = null;
 
-            // first try compiling
-            //EmitResult emitResult;
-            //var retryCount = 1;
             (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies, pdblist);
 
             if (compilationSucces)
             {
+                //we return if compiled succesfully
+                //it is however not used as this is the end of the current F# implementation
                 return new CompilingProcessResult()
                 {
                     Success = compilationSucces,
@@ -94,7 +93,7 @@ namespace Stryker.Core.Compiling
         {
             Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(
-                    trees, AssemblyName, pathlist.First(), dependencies, /*[OptionalArgument] FSharpOption<string> pdbFile pdblist.First()*/ null, /*[OptionalArgument] FSharpOption<bool> executable*/false, /*[OptionalArgument] FSharpOption<bool> noframework*/ true, null), null, null);
+                    trees, AssemblyName, pathlist.First(), dependencies, null, false, true, null), null, null);
             return (result.Item2 == 0, result.Item1);
         }
     }
