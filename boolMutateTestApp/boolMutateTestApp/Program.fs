@@ -1,11 +1,9 @@
-
 open System
 
 let private key:ConsoleKeyInfo = Console.ReadKey()
     
 let keybool =
     key.KeyChar.CompareTo('1')
-    
 
 let testing = 
     match keybool with
