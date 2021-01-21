@@ -70,7 +70,6 @@ namespace Stryker.Core.Initialisation
 
             inputFiles.Add(rootFolderComposite);
 
-            //InjectMutantHelpers(rootFolderComposite);
             var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
@@ -101,20 +100,6 @@ namespace Stryker.Core.Initialisation
                 if (result.ParseTree.Value.IsImplFile)
                 {
                     var syntaxTree = (ImplFile)result.ParseTree.Value;
-
-                    //// don't mutate auto generated code
-                    //if (syntaxTree.IsGenerated())
-                    //{
-                    //    // we found the generated assemblyinfo file
-                    //    if (_fileSystem.Path.GetFileName(sourceFile).ToLowerInvariant() == generatedAssemblyInfo)
-                    //    {
-                    //        // add the mutated text
-                    //        syntaxTree = InjectMutationLabel(syntaxTree);
-                    //    }
-                    //    _logger.LogDebug("Skipping auto-generated code file: {fileName}", file.Name);
-                    //    folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
-                    //    continue; // Don't add the file to the folderComposite as we're not reporting on the file
-                    //}
 
                     file.SyntaxTree = syntaxTree;
                     folderComposite.Add(file);
@@ -177,35 +162,6 @@ namespace Stryker.Core.Initialisation
             return cache[targetFolder];
         }
 
-        //private FSharpOption<ParsedInput> InjectMutationLabel(FSharpOption<ParsedInput> syntaxTree)
-        //{
-        //    var root = syntaxTree.GetRoot();
-
-        //    var myAttribute = ((CompilationUnitSyntax)root).AttributeLists
-        //        .SelectMany(al => al.Attributes).FirstOrDefault(n => n.Name.Kind() == SyntaxKind.QualifiedName
-        //                                                             && ((QualifiedNameSyntax)n.Name).Right
-        //                                                             .Kind() == SyntaxKind.IdentifierName
-        //                                                             && (string)((IdentifierNameSyntax)((QualifiedNameSyntax)n.Name).Right)
-        //                                                             .Identifier.Value == "AssemblyTitleAttribute");
-        //    var labelNode = myAttribute?.ArgumentList.Arguments.First()?.Expression;
-        //    var newLabel = string.Empty;
-        //    if (labelNode != null && labelNode.Kind() == SyntaxKind.StringLiteralExpression)
-        //    {
-        //        var literal = (LiteralExpressionSyntax)labelNode;
-        //        newLabel = $"Mutated {literal.Token.Value}";
-        //    }
-
-        //    if (myAttribute != null)
-        //    {
-        //        var newAttribute = myAttribute.ReplaceNode(labelNode,
-        //            SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newLabel)));
-        //        root = root.ReplaceNode(myAttribute, newAttribute);
-        //        return root.SyntaxTree;
-        //    }
-
-        //    return syntaxTree;
-        //}
-
         private FolderCompositeFsharp FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var inputFiles = new FolderCompositeFsharp();
@@ -264,52 +220,10 @@ namespace Stryker.Core.Initialisation
                 RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
 
-            //InjectMutantHelpers(rootFolderComposite);
-
             rootFolderComposite.Add(
                 FindInputFiles(path, Path.GetDirectoryName(analyzerResult.ProjectFilePath), rootFolderComposite.RelativePath)
             );
             return rootFolderComposite;
-        }
-
-        private static void InjectMutantHelpers(FolderCompositeFsharp rootFolderComposite)
-        {
-            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
-            /* [OptionalArgument] FSharpOption<int> projectCacheSize, 
-             * [OptionalArgument] FSharpOption<bool> keepAssemblyContents, 
-             * [OptionalArgument] FSharpOption<bool> keepAllBackgroundResolutions, 
-             * [OptionalArgument] FSharpOption<ReferenceResolver.Resolver> legacyReferenceResolver, 
-             * [OptionalArgument] FSharpOption<FSharpFunc<Tuple<string, DateTime>, FSharpOption<Tuple<object, IntPtr, int>>>> tryGetMetadataSnapshot, 
-             * [OptionalArgument] FSharpOption<bool> suggestNamesForErrors, 
-             * [OptionalArgument] FSharpOption<bool> keepAllBackgroundSymbolUses, 
-             * [OptionalArgument] FSharpOption<bool> enableBackgroundItemKeyStoreAndSemanticClassification*/
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
-            {
-                Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(name, SourceText.ofString(code), null, null, null, null, null, null, null, null, null), null, null);
-                /* [OptionalArgument] FSharpOption<bool> previewEnabled, 
-                 * [OptionalArgument] FSharpOption<DateTime> loadedTimeStamp, 
-                 * [OptionalArgument] FSharpOption<string[]> otherFlags, 
-                 * [OptionalArgument] FSharpOption<bool> useFsiAuxLib, 
-                 * [OptionalArgument] FSharpOption<bool> useSdkRefs,
-                 * [OptionalArgument] FSharpOption<bool> assumeDotNetFramework,
-                 * [OptionalArgument] FSharpOption<object> extraProjectInfo,
-                 * [OptionalArgument] FSharpOption<long> optionsStamp,
-                 * [OptionalArgument] FSharpOption<string> userOpName*/
-                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(name, SourceText.ofString(code), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, null), null, null);
-                /*[OptionalArgument] FSharpOption<string> userOpName */
-                // Get the syntax tree for the source file
-
-                if (!result.ParseHadErrors && result.ParseTree.Value.IsImplFile)
-                {
-                    rootFolderComposite.AddCompilationSyntaxTree(result.ParseTree.Value);
-                }
-                else
-                {
-                    var message = $"Cannot make Fsharp SyntaxTree from .fsi filetype (SyntaxTree.ParsedImplFileInput class wanted)";
-                    throw new StrykerInputException(message);
-                }
-
-            }
         }
 
         /// <summary>
@@ -353,13 +267,6 @@ namespace Stryker.Core.Initialisation
                 {
                     var syntaxTree = (ImplFile)result.ParseTree.Value;
 
-                    //// don't mutate auto generated code
-                    //if (syntaxTree.IsGenerated())
-                    //{
-                    //    _logger.LogDebug("Skipping auto-generated code file: {fileName}", fileLeaf.Name);
-                    //    folderComposite.AddCompilationSyntaxTree(syntaxTree); // Add the syntaxTree to the list of compilationSyntaxTrees
-                    //    continue; // Don't add the file to the folderComposite as we're not reporting on the file
-                    //}
                     fileLeaf.SyntaxTree = syntaxTree;
 
                     folderComposite.Add(fileLeaf);
