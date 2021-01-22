@@ -49,7 +49,7 @@ namespace Stryker.Core.Reporters
             var rootFolderProcessed = false;
 
             // setup display handlers
-            reportComponent.DisplayFolder = (int _, IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -80,7 +80,7 @@ namespace Stryker.Core.Reporters
                 }
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -131,7 +131,7 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
-            reportComponent.Display(1);
+            reportComponent.Display();
         }
 
         private static List<bool> ParentContinuationLines(IReadOnlyProjectComponent current)

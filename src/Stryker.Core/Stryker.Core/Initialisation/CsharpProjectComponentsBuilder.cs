@@ -83,20 +83,20 @@ namespace Stryker.Core.Initialisation
             var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
-            var rootFolderComposite = new FolderComposite()
+            var projectUnderTestFolderComposite = new FolderComposite()
             {
                 FullPath = projectUnderTestDir,
                 RelativePath = string.Empty,
             };
-            var cache = new Dictionary<string, FolderComposite> { [string.Empty] = rootFolderComposite };
+            var cache = new Dictionary<string, FolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
             // Save cache in a singleton so we can use it in other parts of the project
             FolderCompositeCache<FolderComposite>.Instance.Cache = cache;
 
-            inputFiles.Add(rootFolderComposite);
+            inputFiles.Add(projectUnderTestFolderComposite);
 
             CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
-            InjectMutantHelpers(rootFolderComposite, cSharpParseOptions);
+            InjectMutantHelpers(projectUnderTestFolderComposite, cSharpParseOptions);
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {

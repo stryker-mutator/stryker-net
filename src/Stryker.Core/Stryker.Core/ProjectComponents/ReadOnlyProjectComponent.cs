@@ -30,7 +30,7 @@ namespace Stryker.Core.ProjectComponents
 
         public Display DisplayFolder { get; set; }
 
-        public abstract void Display(int depth);
+        public abstract void Display();
 
         /// <summary>
         /// Returns the mutation score for this folder / file

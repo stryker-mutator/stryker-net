@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.ProjectComponents
+namespace Stryker.Core.ProjectComponents
 {
     public class ReadOnlyFileLeaf : ReadOnlyProjectComponent
     {
@@ -11,9 +11,9 @@
             _projectComponent = projectComponent;
         }
 
-        public override void Display(int depth)
+        public override void Display()
         {
-            DisplayFile(depth, this);
+            DisplayFile(this);
         }
 
     }

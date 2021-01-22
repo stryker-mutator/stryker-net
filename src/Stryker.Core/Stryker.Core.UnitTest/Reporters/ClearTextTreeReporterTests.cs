@@ -15,6 +15,68 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class ClearTextTreeReporterTests
     {
+        [Fact]
+        public void ClearTextTreeReporter_ShouldPrintFullTree()
+        {
+            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+            var mutation = new Mutation()
+            {
+                OriginalNode = originalNode,
+                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+                DisplayName = "This name should display",
+                Type = Mutator.Arithmetic
+            };
+            var textWriter = new StringWriter();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+
+            var folder = new FolderComposite()
+            {
+                FullPath = "C://RootFolder",
+            };
+            folder.Add(new FileLeaf()
+            {
+                RelativePath = "RootFolder/Order.cs",
+                FullPath = "C://RootFolder/Order.cs",
+                Mutants = new Collection<Mutant>() {
+                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
+                }
+            });
+            folder.Add(new FileLeaf()
+            {
+                RelativePath = "RootFolder/OrderItem.cs",
+                FullPath = "C://RootFolder/OrderItem.cs",
+                Mutants = new Collection<Mutant>()
+            });
+            folder.Add(new FileLeaf()
+            {
+                RelativePath = "RootFolder/CustomerOrdersWithItemsSpecification.cs",
+                FullPath = "C://RootFolder/CustomerOrdersWithItemsSpecification.cs",
+                Mutants = new Collection<Mutant>() {
+                    new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation }
+                }
+            });
+            target.OnAllMutantsTested(folder.ToReadOnly());
+
+            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+
+All mutants have been tested, and your mutation score has been calculated
+All Files [2/3 (66,67%)]
+├── Order.cs [2/2 (100,00%)]
+│   ├── [Killed] This name should display on line 1
+│   │   ├── [-] 0 + 8
+│   │   └── [+] 0 -8
+│   └── [Killed] This name should display on line 1
+│       ├── [-] 0 + 8
+│       └── [+] 0 -8
+├── OrderItem.cs [0/0 (N/A)]
+├── CustomerOrdersWithItemsSpecification.cs [0/1 (0,00%)]
+│   └── [NoCoverage] This name should display on line 1
+│       ├── [-] 0 + 8
+│       └── [+] 0 -8
+");
+        }
 
         [Fact]
         public void ClearTextTreeReporter_ShouldPrintOnReportDone()

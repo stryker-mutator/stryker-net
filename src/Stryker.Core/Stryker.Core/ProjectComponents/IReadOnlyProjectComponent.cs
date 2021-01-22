@@ -23,13 +23,13 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         Display DisplayFile { get; set; }
         Display DisplayFolder { get; set; }
-        public void Display(int depth);
+        public void Display();
 
         double GetMutationScore();
 
         Health CheckHealth(Threshold threshold);
     }
 
-    public delegate void Display(int depth, IReadOnlyProjectComponent current);
+    public delegate void Display(IReadOnlyProjectComponent current);
 
 }
