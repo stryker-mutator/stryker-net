@@ -16,19 +16,19 @@ using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {
-    public class CompilingProcessFsharp
+    public class FsharpCompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public CompilingProcessFsharp(MutationTestInput input,
+        public FsharpCompilingProcess(MutationTestInput input,
             IRollbackProcess rollbackProcess, IFileSystem fileSystem)
         {
             _input = input;
             _rollbackProcess = rollbackProcess;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CompilingProcessFsharp>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpCompilingProcess>();
             _fileSystem = fileSystem;
         }
 
