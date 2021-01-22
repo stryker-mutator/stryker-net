@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
-namespace Stryker.Core.Mutants.NodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
-    internal class AccessorSyntaxOrchestrator: NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
+    internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
     {
         public AccessorSyntaxOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
@@ -33,15 +33,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             }
 
             var converter = sourceNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
+                ? (Func<Mutation, StatementSyntax>)((toConvert) =>
+                   SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
 
             var newBody =
                 MutantPlacer.PlaceStatementControlledMutations(result.Body,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
-                        Select( m => (m.Id, converter(m.Mutation))));
+                        Select(m => (m.Id, converter(m.Mutation))));
             return result.WithBody(SyntaxFactory.Block(newBody));
         }
     }

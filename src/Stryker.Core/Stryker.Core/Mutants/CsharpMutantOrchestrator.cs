@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
-using Stryker.Core.Mutants.NodeOrchestrators;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;

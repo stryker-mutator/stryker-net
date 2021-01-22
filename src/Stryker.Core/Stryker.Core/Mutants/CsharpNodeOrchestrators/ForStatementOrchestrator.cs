@@ -2,7 +2,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Core.Mutants.NodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class ForStatementOrchestrator : BlockScopeOrchestrator<ForStatementSyntax>
     {

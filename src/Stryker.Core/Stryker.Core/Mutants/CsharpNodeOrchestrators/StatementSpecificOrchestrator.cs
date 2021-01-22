@@ -1,9 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Core.Mutants.NodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     /// <summary>
     /// General handler for Statements. Remember to inherit from this class when you wand to create a statement specific logic.

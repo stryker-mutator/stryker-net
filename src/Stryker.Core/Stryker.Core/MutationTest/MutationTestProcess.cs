@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.FSharp.Collections;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -14,6 +15,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
+using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
@@ -59,7 +61,8 @@ namespace Stryker.Core.MutationTest
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            BaseMutantOrchestrator<SyntaxNode> orchestrator = null,
+            BaseMutantOrchestrator<SyntaxNode> csharporchestrator = null,
+            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> fsharporchestrator = null,
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
@@ -74,7 +77,7 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
             _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
-            _orchestrator = orchestrator ?? genOrchestrator(_options);
+            _orchestrator = csharporchestrator ?? fsharporchestrator ?? genOrchestrator(_options);
 
             SetupMutationTestProcess(mutantFilter);
         }
@@ -98,7 +101,7 @@ namespace Stryker.Core.MutationTest
             }
             else if (_language == Language.Fsharp)
             {
-                _mutationProcess = new MutationProcessFsharp(Input, (FsharpMutantOrchestrator)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new FsharpMutationProcess(Input, (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
             }
             else
             {

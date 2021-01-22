@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
-namespace Stryker.Core.Mutants.NodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class PropertyDeclarationOrchestrator: NodeSpecificOrchestrator<PropertyDeclarationSyntax, BasePropertyDeclarationSyntax>
     {

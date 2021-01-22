@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutants.FsharpOrchestrator
+namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
     public interface IFsharpTypehandle<T>
     {

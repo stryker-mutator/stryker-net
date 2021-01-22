@@ -1,14 +1,14 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutants.NodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class ArrayInitializerOrchestrator : ExpressionSpecificOrchestrator<InitializerExpressionSyntax>
     {
         protected override bool CanHandle(InitializerExpressionSyntax t)
         {
-            return (t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0);
+            return t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0;
         }
 
         // mutations must be controlled at the statement level as those are not really expressions.
@@ -21,6 +21,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         }
 
         public ArrayInitializerOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {}
+        { }
     }
 }

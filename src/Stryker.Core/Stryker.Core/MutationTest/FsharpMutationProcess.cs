@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.FSharp.Collections;
 using Stryker.Core.Compiling;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -14,7 +15,7 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
-    class MutationProcessFsharp : IMutationProcess
+    class FsharpMutationProcess : IMutationProcess
     {
         private readonly ProjectComponent<ParsedInput> _projectInfo;
         private readonly ILogger _logger;
@@ -22,13 +23,13 @@ namespace Stryker.Core.MutationTest
         private readonly CompilingProcessFsharp _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
-        private readonly FsharpMutantOrchestrator _orchestrator;
+        private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
         private readonly IReporter _reporter;
 
-        public MutationProcessFsharp(MutationTestInput mutationTestInput,
-            FsharpMutantOrchestrator orchestrator = null,
+        public FsharpMutationProcess(MutationTestInput mutationTestInput,
+            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator = null,
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
@@ -60,12 +61,13 @@ namespace Stryker.Core.MutationTest
                 // Add the mutated syntax tree for compilation
                 var tree = (ParsedInput.ImplFile)file.SyntaxTree;
                 var item = tree.Item;
+                //we hardcode the lastcompiled flag to make the compile pass
+                //this needs to be fixed in the FSharp.Compiler.SourceCodeServices package, or made dynamic as it now assumes the bottom of Program.fs is the entrypoint
                 var lastcompiled = item.fileName.Equals("Program.fs") ? new Tuple<bool, bool>(true, true) : item.isLastCompiland;
-                var treeToSet = ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, lastcompiled));
-                file.MutatedSyntaxTree = treeToSet;
+                file.MutatedSyntaxTree = ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, lastcompiled));
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree}"); //.ToFullString()
+                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree}");
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
@@ -104,6 +106,7 @@ namespace Stryker.Core.MutationTest
 
         public void FilterMutants()
         {
+            //fsharp implementation is work in progress
             throw new NotImplementedException();
         }
     }

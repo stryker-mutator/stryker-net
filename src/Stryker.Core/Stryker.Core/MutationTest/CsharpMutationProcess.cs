@@ -20,7 +20,7 @@ namespace Stryker.Core.MutationTest
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
         private readonly IStrykerOptions _options;
-        private readonly CompilingProcess _compilingProcess;
+        private readonly CsharpCompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
         private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
@@ -39,7 +39,7 @@ namespace Stryker.Core.MutationTest
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
-            _compilingProcess = new CompilingProcess(mutationTestInput, new RollbackProcess());
+            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, new RollbackProcess());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 

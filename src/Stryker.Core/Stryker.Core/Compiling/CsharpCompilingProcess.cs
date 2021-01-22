@@ -20,18 +20,18 @@ namespace Stryker.Core.Compiling
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// Compiles the given input onto the memorystream
-    public class CompilingProcess : ICompilingProcess
+    public class CsharpCompilingProcess : ICompilingProcess
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
 
-        public CompilingProcess(MutationTestInput input,
+        public CsharpCompilingProcess(MutationTestInput input,
             IRollbackProcess rollbackProcess)
         {
             _input = input;
             _rollbackProcess = rollbackProcess;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CompilingProcess>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
         }
 
         private string AssemblyName =>
