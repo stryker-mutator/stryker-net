@@ -70,7 +70,7 @@ namespace Stryker.Core.Initialisation
 
             inputFiles.Add(rootFolderComposite);
 
-            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var fSharpChecker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
@@ -94,8 +94,8 @@ namespace Stryker.Core.Initialisation
                 };
 
                 // Get the syntax tree for the source file
-                Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(file.FullPath, SourceText.ofString(file.SourceCode), null, null, null, null, null, null, null, null, null), null, null);
-                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(file.Name, SourceText.ofString(file.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, null), null, null);
+                Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(filename: file.FullPath, sourceText: SourceText.ofString(file.SourceCode), previewEnabled: null, loadedTimeStamp: null, otherFlags: null, useFsiAuxLib: null, useSdkRefs: null, assumeDotNetFramework: null, extraProjectInfo: null, optionsStamp: null, userOpName: null), timeout: null, cancellationToken: null);
+                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(file.Name, SourceText.ofString(file.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
@@ -245,7 +245,7 @@ namespace Stryker.Core.Initialisation
             {
                 folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
             }
-            var fSharpChecker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var fSharpChecker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
             foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.fs", SearchOption.TopDirectoryOnly))
             {
                 var fileName = Path.GetFileName(file);
@@ -260,8 +260,8 @@ namespace Stryker.Core.Initialisation
                 };
 
                 // Get the syntax tree for the source file
-                Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(fileLeaf.FullPath, SourceText.ofString(fileLeaf.SourceCode), null, null, null, null, null, null, null, null, null), null, null);
-                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(fileLeaf.FullPath, SourceText.ofString(fileLeaf.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, null), null, null);
+                Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(fileLeaf.FullPath, SourceText.ofString(fileLeaf.SourceCode), previewEnabled: null, loadedTimeStamp: null, otherFlags: null, useFsiAuxLib: null, useSdkRefs: null, assumeDotNetFramework: null, extraProjectInfo: null, optionsStamp: null, userOpName: null), timeout: null, cancellationToken: null);
+                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(fileLeaf.FullPath, SourceText.ofString(fileLeaf.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
 
                 if (result.ParseTree.Value.IsImplFile)
                 {

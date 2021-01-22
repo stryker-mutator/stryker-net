@@ -44,7 +44,7 @@ namespace Stryker.Core.Compiling
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
             //we need a checker if we want to compile 
-            var checker = FSharpChecker.Create(null, null, null, null, null, null, null, null);
+            var checker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
 
             var pathlist = new List<string>();
             var pdblist = new List<string>();
@@ -93,7 +93,7 @@ namespace Stryker.Core.Compiling
         {
             Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(
-                    trees, AssemblyName, pathlist.First(), dependencies, null, false, true, null), null, null);
+                    trees, AssemblyName, pathlist.First(), dependencies, pdbFile: null, executable: false, noframework: true, userOpName: null), timeout: null, cancellationToken: null);
             return (result.Item2 == 0, result.Item1);
         }
     }
