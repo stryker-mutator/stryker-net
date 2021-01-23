@@ -80,7 +80,6 @@ namespace Stryker.Core.Initialisation
 
         private FolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
-            var inputFiles = new FolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
             var projectUnderTestFolderComposite = new FolderComposite()
@@ -92,8 +91,6 @@ namespace Stryker.Core.Initialisation
 
             // Save cache in a singleton so we can use it in other parts of the project
             FolderCompositeCache<FolderComposite>.Instance.Cache = cache;
-
-            inputFiles.Add(projectUnderTestFolderComposite);
 
             CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
             InjectMutantHelpers(projectUnderTestFolderComposite, cSharpParseOptions);
@@ -107,7 +104,7 @@ namespace Stryker.Core.Initialisation
                 }
 
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
-                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, inputFiles);
+                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectUnderTestFolderComposite);
 
                 var file = new FileLeaf()
                 {
@@ -140,7 +137,7 @@ namespace Stryker.Core.Initialisation
                 folderComposite.Add(file);
             }
 
-            return inputFiles;
+            return projectUnderTestFolderComposite;
         }
 
         private SyntaxTree InjectMutationLabel(SyntaxTree syntaxTree)

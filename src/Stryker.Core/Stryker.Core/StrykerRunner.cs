@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -57,8 +58,7 @@ namespace Stryker.Core
             {
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                IParentComponent rootComponent = new FolderComposite();
-                rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 
                 _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
 
@@ -132,6 +132,29 @@ namespace Stryker.Core
                     project.GetCoverage();
                 }
             }
+        }
+
+        /// <summary>
+        /// In the case of multiple projects we wrap them inside a wrapper root component. Otherwise the only project root will be the root component.
+        /// </summary>
+        /// <param name="projectComponents">A list of all project root components</param>
+        /// <param name="options">The current stryker options</param>
+        /// <returns>The root folder component</returns>
+        private FolderComposite AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        {
+            var rootComponent = new FolderComposite
+            {
+                FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
+            };
+            if (projectComponents.Count() > 1)
+            {
+                rootComponent.AddRange(projectComponents);
+            }
+            else
+            {
+                rootComponent = projectComponents.FirstOrDefault() as FolderComposite;
+            }
+            return rootComponent;
         }
     }
 }

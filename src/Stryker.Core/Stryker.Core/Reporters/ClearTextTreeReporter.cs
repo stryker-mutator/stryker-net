@@ -66,8 +66,8 @@ namespace Stryker.Core.Reporters
                     folderLines = continuationLines.Last() ? BranchLine : FinalBranchLine;
                 }
 
-                var name =  Path.GetFileName(current.RelativePath);
-                if (name == null && !rootFolderProcessed)
+                var name = Path.GetFileName(current.RelativePath);
+                if (current.Parent == null && !rootFolderProcessed)
                 {
                     name = "All files";
                     rootFolderProcessed = true;
@@ -142,22 +142,14 @@ namespace Stryker.Core.Reporters
 
             if (node.Parent != null)
             {
-                var isRootFile = node.Parent.Parent != null;
-                if (isRootFile)
+                while (node.Parent != null)
                 {
-                    continuationLines.Add(true);
-                }
-                else
-                {
-                    while (node.Parent != null)
-                    {
-                        continuationLines.Add(node.Parent.Children.Last().ToReadOnlyInputComponent() == node);
+                    continuationLines.Add(node.Parent.Children.Last().FullPath != node.FullPath);
 
-                        node = node.Parent.ToReadOnlyInputComponent();
-                    }
-
-                    continuationLines.Reverse();
+                    node = node.Parent.ToReadOnlyInputComponent();
                 }
+
+                continuationLines.Reverse();
             }
 
             return continuationLines;

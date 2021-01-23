@@ -32,37 +32,44 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var folder = new FolderComposite()
             {
-                FullPath = "C://RootFolder",
+                FullPath = "C://ProjectFolder",
             };
             folder.Add(new FileLeaf()
             {
-                RelativePath = "RootFolder/Order.cs",
-                FullPath = "C://RootFolder/Order.cs",
+                RelativePath = "ProjectFolder/Order.cs",
+                FullPath = "C://ProjectFolder/Order.cs",
                 Mutants = new Collection<Mutant>() {
                     new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
                     new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
                 }
             });
-            folder.Add(new FileLeaf()
+            var folder2 = new FolderComposite()
             {
-                RelativePath = "RootFolder/OrderItem.cs",
-                FullPath = "C://RootFolder/OrderItem.cs",
+                RelativePath = "Subdir",
+                FullPath = "C://ProjectFolder/SubDir",
+            };
+            folder.Add(folder2);
+            folder2.Add(new FileLeaf()
+            {
+                RelativePath = "ProjectFolder/SubDir/OrderItem.cs",
+                FullPath = "C://ProjectFolder/SubDir/OrderItem.cs",
                 Mutants = new Collection<Mutant>()
             });
-            folder.Add(new FileLeaf()
+            folder2.Add(new FileLeaf()
             {
-                RelativePath = "RootFolder/CustomerOrdersWithItemsSpecification.cs",
-                FullPath = "C://RootFolder/CustomerOrdersWithItemsSpecification.cs",
+                RelativePath = "ProjectFolder/SubDir/CustomerOrdersWithItemsSpecification.cs",
+                FullPath = "C://ProjectFolder/SubDir/CustomerOrdersWithItemsSpecification.cs",
                 Mutants = new Collection<Mutant>() {
                     new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation }
                 }
             });
+
             target.OnAllMutantsTested(folder.ToReadOnly());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-All Files [2/3 (66,67%)]
+All files [2/3 (66,67%)]
 ├── Order.cs [2/2 (100,00%)]
 │   ├── [Killed] This name should display on line 1
 │   │   ├── [-] 0 + 8
@@ -70,11 +77,12 @@ All Files [2/3 (66,67%)]
 │   └── [Killed] This name should display on line 1
 │       ├── [-] 0 + 8
 │       └── [+] 0 -8
-├── OrderItem.cs [0/0 (N/A)]
-├── CustomerOrdersWithItemsSpecification.cs [0/1 (0,00%)]
-│   └── [NoCoverage] This name should display on line 1
-│       ├── [-] 0 + 8
-│       └── [+] 0 -8
+└── Subdir [0/1 (0,00%)]
+    ├── OrderItem.cs [0/0 (N/A)]
+    └── CustomerOrdersWithItemsSpecification.cs [0/1 (0,00%)]
+        └── [Survived] This name should display on line 1
+            ├── [-] 0 + 8
+            └── [+] 0 -8
 ");
         }
 
@@ -101,7 +109,7 @@ All Files [2/3 (66,67%)]
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-RootFolder [0/0 (N/A)]
+All files [0/0 (N/A)]
 └── SomeFile.cs [0/0 (N/A)]
 ");
             textWriter.DarkGraySpanCount().ShouldBe(2);
@@ -144,7 +152,7 @@ RootFolder [0/0 (N/A)]
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-RootFolder [1/1 ({1:P2})]
+All files [1/1 ({1:P2})]
 └── SomeFile.cs [1/1 ({1:P2})]
     └── [Killed] This name should display on line 1
         ├── [-] 0 + 8
@@ -188,7 +196,7 @@ RootFolder [1/1 ({1:P2})]
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-RootFolder [0/1 ({0:P2})]
+All files [0/1 ({0:P2})]
 └── SomeFile.cs [0/1 ({0:P2})]
     └── [Survived] This name should display on line 1
         ├── [-] 0 + 8
