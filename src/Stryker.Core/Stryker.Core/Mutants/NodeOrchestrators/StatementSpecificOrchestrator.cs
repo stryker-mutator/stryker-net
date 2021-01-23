@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// <typeparam name="T">Statement syntax type. Must inherit from <see cref="StatementSyntax"/></typeparam>
     internal class StatementSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, StatementSyntax> where T: StatementSyntax
     {
-        public StatementSpecificOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public StatementSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
 

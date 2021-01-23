@@ -675,7 +675,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
 
-            ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
+            ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
 
         [Fact]

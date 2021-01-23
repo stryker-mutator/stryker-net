@@ -30,11 +30,11 @@ namespace Stryker.Core.UnitTest.Reporters
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 FullPath = "C://ProjectFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "ProjectFolder/Order.cs",
                 FullPath = "C://ProjectFolder/Order.cs",
@@ -43,19 +43,19 @@ namespace Stryker.Core.UnitTest.Reporters
                     new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
                 }
             });
-            var folder2 = new FolderComposite()
+            var folder2 = new CsharpFolderComposite()
             {
                 RelativePath = "Subdir",
                 FullPath = "C://ProjectFolder/SubDir",
             };
             folder.Add(folder2);
-            folder2.Add(new FileLeaf()
+            folder2.Add(new CsharpFileLeaf()
             {
                 RelativePath = "ProjectFolder/SubDir/OrderItem.cs",
                 FullPath = "C://ProjectFolder/SubDir/OrderItem.cs",
                 Mutants = new Collection<Mutant>()
             });
-            folder2.Add(new FileLeaf()
+            folder2.Add(new CsharpFileLeaf()
             {
                 RelativePath = "ProjectFolder/SubDir/CustomerOrdersWithItemsSpecification.cs",
                 FullPath = "C://ProjectFolder/SubDir/CustomerOrdersWithItemsSpecification.cs",
@@ -92,12 +92,12 @@ All files [2/3 (66,67%)]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -132,12 +132,12 @@ All files [0/0 (N/A)]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -178,12 +178,12 @@ All files [1/1 ({1:P2})]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -224,12 +224,12 @@ All files [0/1 ({0:P2})]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -265,12 +265,12 @@ All files [0/1 ({0:P2})]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -306,12 +306,12 @@ All files [0/1 ({0:P2})]
             var textWriter = new StringWriter();
             var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",

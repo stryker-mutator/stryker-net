@@ -22,14 +22,14 @@ namespace Stryker.Core.UnitTest.Reporters
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var rootFolder = new FolderComposite();
+            var rootFolder = new CsharpFolderComposite();
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "FolderA",
                 FullPath = "C://Project/FolderA",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "FolderA/SomeFile.cs",
                 FullPath = "C://Project/FolderA/SomeFile.cs",
@@ -70,14 +70,14 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var rootFolder = new FolderComposite();
+            var rootFolder = new CsharpFolderComposite();
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "FolderA",
                 FullPath = "C://Project/FolderA",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "FolderA/SomeFile.cs",
                 FullPath = "C://Project/FolderA/SomeFile.cs",
@@ -119,14 +119,14 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var rootFolder = new FolderComposite();
+            var rootFolder = new CsharpFolderComposite();
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "FolderA",
                 FullPath = "C://Project/FolderA",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "FolderA/SomeFile.cs",
                 FullPath = "C://Project/FolderA/SomeFile.cs",
@@ -168,12 +168,12 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -209,12 +209,12 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
@@ -250,12 +250,12 @@ All mutants have been tested, and your mutation score has been calculated
             var textWriter = new StringWriter();
             var target = new ClearTextReporter(new StrykerOptions(), textWriter);
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite()
             {
                 RelativePath = "RootFolder",
                 FullPath = "C://RootFolder",
             };
-            folder.Add(new FileLeaf()
+            folder.Add(new CsharpFileLeaf()
             {
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",

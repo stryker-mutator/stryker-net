@@ -9,28 +9,32 @@ namespace Stryker.Core.MutantFilters
     /// <summary>
     /// Checks if the mutation should be skipped depending on the file and position of the mutation.
     /// </summary>
-    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class FilePatternMutantFilter : IMutantFilter
     {
         public string DisplayName => "file filter";
+        private readonly IEnumerable<FilePattern> _includePattern;
+        private readonly IEnumerable<FilePattern> _excludePattern;
+
+        public FilePatternMutantFilter(IStrykerOptions options)
+        {
+            _includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
+            _excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();
+        }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
-            var includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
-            var excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();
-
             return mutants.Where(IsMutantIncluded);
 
             bool IsMutantIncluded(Mutant mutant)
             {
                 // Check if the the mutant is included.
-                if (!includePattern.Any(MatchesPattern))
+                if (!_includePattern.Any(MatchesPattern))
                 {
                     return false;
                 }
 
                 // Check if the mutant is excluded.
-                if (excludePattern.Any(MatchesPattern))
+                if (_excludePattern.Any(MatchesPattern))
                 {
                     return false;
                 }

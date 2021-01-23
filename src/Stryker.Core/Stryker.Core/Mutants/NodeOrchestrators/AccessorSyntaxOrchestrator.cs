@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class AccessorSyntaxOrchestrator: NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
     {
-        public AccessorSyntaxOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public AccessorSyntaxOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
 

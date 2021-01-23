@@ -25,8 +25,8 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite();
-            folder.Add(new FileLeaf()
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
             {
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
@@ -54,6 +54,7 @@ namespace Stryker.Core.UnitTest
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
+            mutationTestProcessMock.Setup(x => x.FilterMutants());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
@@ -78,8 +79,8 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite();
-            folder.Add(new FileLeaf
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf
             {
                 Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
             });

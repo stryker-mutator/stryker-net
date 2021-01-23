@@ -10,7 +10,7 @@ namespace Stryker.Core.ProjectComponents
         public string FullPath { get; set; }
         public string RelativePath { get; set; }
 
-        public IParentComponent Parent { get; set; }
+        public IFolderComposite Parent { get; set; }
 
         public abstract IEnumerable<Mutant> Mutants { get; set; }
         public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m =>

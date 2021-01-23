@@ -12,7 +12,8 @@ namespace Stryker.Core.ProjectComponents
     {
         string FullPath { get; }
         string RelativePath { get; }
-        IParentComponent Parent { get; }
+
+        IFolderComposite Parent { get; }
 
         IEnumerable<IReadOnlyMutant> Mutants { get; }
         IEnumerable<IReadOnlyMutant> TotalMutants { get; }

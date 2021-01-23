@@ -91,6 +91,7 @@ namespace Stryker.Core
                 foreach (var project in _mutationTestProcesses)
                 {
                     // test mutations
+                    project.FilterMutants();
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
@@ -140,9 +141,9 @@ namespace Stryker.Core
         /// <param name="projectComponents">A list of all project root components</param>
         /// <param name="options">The current stryker options</param>
         /// <returns>The root folder component</returns>
-        private FolderComposite AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        private CsharpFolderComposite AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
         {
-            var rootComponent = new FolderComposite
+            var rootComponent = new CsharpFolderComposite
             {
                 FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
             };
@@ -152,7 +153,7 @@ namespace Stryker.Core
             }
             else
             {
-                rootComponent = projectComponents.FirstOrDefault() as FolderComposite;
+                rootComponent = projectComponents.FirstOrDefault() as CsharpFolderComposite;
             }
             return rootComponent;
         }

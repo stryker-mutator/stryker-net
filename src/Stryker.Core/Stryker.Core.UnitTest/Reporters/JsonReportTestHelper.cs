@@ -23,11 +23,11 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new FolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
+            var folder = new CsharpFolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
-                var addedFolder = new FolderComposite
+                var addedFolder = new CsharpFolderComposite
                 {
                     RelativePath = $"{i}",
                     FullPath = $"/home/user/src/project/{i}",
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 for (var y = 0; y <= 4; y++)
                 {
                     var m = new Collection<Mutant>();
-                    addedFolder.Add(new FileLeaf()
+                    addedFolder.Add(new CsharpFileLeaf()
                     {
                         RelativePath = $"{i}/SomeFile{y}.cs",
                         FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
