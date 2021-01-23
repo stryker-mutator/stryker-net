@@ -1,3 +1,12 @@
+## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.0...stryker@0.21.1) (2021-01-23)
+
+
+### Bug Fixes
+
+* **MutantFilters:** Fix mutant filters were not being called ([#1378](https://github.com/stryker-mutator/stryker-net/issues/1378)) ([4314bad](https://github.com/stryker-mutator/stryker-net/commit/4314bada0d8aa5817ea71a265ecc1c7d519a8f13))
+
+
+
 # [0.21.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.20.0...stryker@0.21.0) (2021-01-20)
 
 
