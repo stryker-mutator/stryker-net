@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.Reporters
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-All files [2/3 ({2/3:P2})]
+All files [2/3 ({(2.0/3.0):P2})]
 ├── Order.cs [2/2 ({1:P2})]
 │   ├── [Killed] This name should display on line 1
 │   │   ├── [-] 0 + 8
