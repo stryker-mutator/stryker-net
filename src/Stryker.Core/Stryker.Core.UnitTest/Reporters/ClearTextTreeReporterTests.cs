@@ -69,17 +69,17 @@ namespace Stryker.Core.UnitTest.Reporters
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-All files [2/3 (66,67%)]
-├── Order.cs [2/2 (100,00%)]
+All files [2/3 ({2/3:P2})]
+├── Order.cs [2/2 ({1:P2})]
 │   ├── [Killed] This name should display on line 1
 │   │   ├── [-] 0 + 8
 │   │   └── [+] 0 -8
 │   └── [Killed] This name should display on line 1
 │       ├── [-] 0 + 8
 │       └── [+] 0 -8
-└── Subdir [0/1 (0,00%)]
+└── Subdir [0/1 ({0:P2})]
     ├── OrderItem.cs [0/0 (N/A)]
-    └── CustomerOrdersWithItemsSpecification.cs [0/1 (0,00%)]
+    └── CustomerOrdersWithItemsSpecification.cs [0/1 ({0:P2})]
         └── [Survived] This name should display on line 1
             ├── [-] 0 + 8
             └── [+] 0 -8
