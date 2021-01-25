@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -14,7 +14,6 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         {
             var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -32,7 +31,6 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         {
             var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -51,7 +49,6 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         {
             var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()

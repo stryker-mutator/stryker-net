@@ -77,7 +77,7 @@ namespace Stryker.Core.MutantFilters
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
                 {
-                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePathToProjectFile);
+                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePath);
                     return mutants;
                 }
 
@@ -95,7 +95,7 @@ namespace Stryker.Core.MutantFilters
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
             {
-                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
+                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePath);
                 return SetMutantStatusForFileChanged(mutants);
             }
             else

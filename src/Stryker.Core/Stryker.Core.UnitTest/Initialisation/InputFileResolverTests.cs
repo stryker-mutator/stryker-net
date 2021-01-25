@@ -609,7 +609,6 @@ using System.Reflection;
             var allFiles = result.ProjectContents.GetAllFiles();
 
             allFiles.Count().ShouldBe(3);
-            allFiles.ShouldContain(f => f.Name == "Shared.cs");
         }
 
         [Fact]

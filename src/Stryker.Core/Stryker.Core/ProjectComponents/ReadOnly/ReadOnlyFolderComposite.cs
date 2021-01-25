@@ -16,23 +16,18 @@ namespace Stryker.Core.ProjectComponents
             _belongsToProject = belongsToProjectUnderTest;
         }
 
-        public override void Display(int depth)
+        public override void Display()
         {
             // only walk this branch of the tree if it belongs to the source project, otherwise we have nothing to display.
             if (_belongsToProject)
             {
-                DisplayFolder(depth, this);
-
-                if (!string.IsNullOrEmpty(Name))
-                {
-                    depth++;
-                }
+                DisplayFolder(this);
 
                 foreach (var child in Children)
                 {
                     child.DisplayFile = DisplayFile;
                     child.DisplayFolder = DisplayFolder;
-                    child.Display(depth);
+                    child.Display();
                 }
             }
         }

@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents;
-using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
@@ -23,11 +23,15 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new CsharpFolderComposite { Name = "RootFolder", RelativePath = "src" };
+            var folder = new CsharpFolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
             int mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
-                var addedFolder = new CsharpFolderComposite { Name = $"{i}", RelativePath = $"src/{i}" };
+                var addedFolder = new CsharpFolderComposite
+                {
+                    RelativePath = $"{i}",
+                    FullPath = $"/home/user/src/project/{i}",
+                };
                 folder.Add(addedFolder);
 
                 for (var y = 0; y <= 4; y++)
@@ -35,8 +39,8 @@ namespace Stryker.Core.UnitTest.Reporters
                     var m = new Collection<Mutant>();
                     addedFolder.Add(new CsharpFileLeaf()
                     {
-                        Name = $"SomeFile{y}.cs",
-                        RelativePath = $"src/{i}/SomeFile{y}.cs",
+                        RelativePath = $"{i}/SomeFile{y}.cs",
+                        FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
                         Mutants = m,
                         SourceCode = "void M(){ int i = 0 + 8; }"
                     });

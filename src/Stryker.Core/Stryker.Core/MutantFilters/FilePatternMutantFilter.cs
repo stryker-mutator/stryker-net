@@ -45,7 +45,7 @@ namespace Stryker.Core.MutantFilters
                 {
                     // We check both the full and the relative path to allow for relative paths.
                     return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
-                           pattern.IsMatch(file.RelativePathToProjectFile, mutant.Mutation.OriginalNode.Span);
+                           pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);
                 }
             }
         }

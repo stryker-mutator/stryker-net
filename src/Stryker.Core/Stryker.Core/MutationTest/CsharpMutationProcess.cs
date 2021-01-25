@@ -52,14 +52,14 @@ namespace Stryker.Core.MutationTest
             // Mutate source files
             foreach (var file in _projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
-                _logger.LogDebug($"Mutating {file.Name}");
+                _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
                 var mutatedSyntaxTree = _orchestrator.Mutate(file.SyntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                    _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
