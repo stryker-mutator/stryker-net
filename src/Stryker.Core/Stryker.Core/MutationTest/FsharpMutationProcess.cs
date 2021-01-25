@@ -51,10 +51,10 @@ namespace Stryker.Core.MutationTest
         public void Mutate()
         {
             // Mutate source files
-            foreach (FileLeafFsharp file in _projectInfo.GetAllFiles())
+            foreach (FsharpFileLeaf file in _projectInfo.GetAllFiles())
             {
-                Console.WriteLine(file.Name);
-                _logger.LogDebug($"Mutating {file.Name}");
+                Console.WriteLine(file.RelativePath);
+                _logger.LogDebug($"Mutating {file.RelativePath}");
                 // Mutate the syntax tree
                 var treeroot = ((ParsedInput.ImplFile)file.SyntaxTree).Item.modules;
                 var mutatedSyntaxTree = _orchestrator.Mutate(treeroot);
@@ -67,7 +67,7 @@ namespace Stryker.Core.MutationTest
                 file.MutatedSyntaxTree = ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, lastcompiled));
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.Name}:{Environment.NewLine}{mutatedSyntaxTree}");
+                    _logger.LogTrace($"Mutated {file.RelativePath}:{Environment.NewLine}{mutatedSyntaxTree}");
                 }
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();

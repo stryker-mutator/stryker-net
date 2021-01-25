@@ -40,7 +40,7 @@ namespace Stryker.Core.Initialisation
 
         public IProjectComponent Build()
         {
-            FolderCompositeFsharp inputFiles;
+            FsharpFolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
                 inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
@@ -51,22 +51,20 @@ namespace Stryker.Core.Initialisation
             }
             return inputFiles;
         }
-        private FolderCompositeFsharp FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
-            var inputFiles = new FolderCompositeFsharp();
+            var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
-            var rootFolderComposite = new FolderCompositeFsharp()
+            var rootFolderComposite = new FsharpFolderComposite()
             {
-                Name = string.Empty,
                 FullPath = projectRoot,
-                RelativePath = string.Empty,
-                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, projectUnderTestDir)
+                RelativePath = string.Empty
             };
-            var cache = new Dictionary<string, FolderCompositeFsharp> { [string.Empty] = rootFolderComposite };
+            var cache = new Dictionary<string, FsharpFolderComposite> { [string.Empty] = rootFolderComposite };
 
             // Save cache in a singleton so we can use it in other parts of the project
-            FolderCompositeCache<FolderCompositeFsharp>.Instance.Cache = cache;
+            FolderCompositeCache<FsharpFolderComposite>.Instance.Cache = cache;
 
             inputFiles.Add(rootFolderComposite);
 
@@ -84,18 +82,16 @@ namespace Stryker.Core.Initialisation
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
 
-                var file = new FileLeafFsharp()
+                var file = new FsharpFileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(sourceFile),
-                    Name = _fileSystem.Path.GetFileName(sourceFile),
                     RelativePath = _fileSystem.Path.Combine(folderComposite.RelativePath, fileName),
-                    FullPath = sourceFile,
-                    RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, sourceFile)
+                    FullPath = sourceFile
                 };
 
                 // Get the syntax tree for the source file
                 Tuple<FSharpProjectOptions, FSharpList<FSharpErrorInfo>> fsharpoptions = FSharpAsync.RunSynchronously(fSharpChecker.GetProjectOptionsFromScript(filename: file.FullPath, sourceText: SourceText.ofString(file.SourceCode), previewEnabled: null, loadedTimeStamp: null, otherFlags: null, useFsiAuxLib: null, useSdkRefs: null, assumeDotNetFramework: null, extraProjectInfo: null, optionsStamp: null, userOpName: null), timeout: null, cancellationToken: null);
-                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(file.Name, SourceText.ofString(file.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
+                FSharpParseFileResults result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(fileName, SourceText.ofString(file.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
 
                 if (result.ParseTree.Value.IsImplFile)
                 {
@@ -114,7 +110,7 @@ namespace Stryker.Core.Initialisation
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
-        private FolderCompositeFsharp GetOrBuildFolderComposite(IDictionary<string, FolderCompositeFsharp> cache, string targetFolder, string projectUnderTestDir,
+        private FsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, FsharpFolderComposite> cache, string targetFolder, string projectUnderTestDir,
             string projectRoot, ProjectComponent<ParsedInput> inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
@@ -123,7 +119,7 @@ namespace Stryker.Core.Initialisation
             }
 
             var folder = targetFolder;
-            FolderCompositeFsharp subDir = null;
+            FsharpFolderComposite subDir = null;
             while (!string.IsNullOrEmpty(folder))
             {
                 if (!cache.ContainsKey(folder))
@@ -131,12 +127,10 @@ namespace Stryker.Core.Initialisation
                     // we have not scanned this folder yet
                     var sub = Path.GetFileName(folder);
                     var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, sub);
-                    var newComposite = new FolderCompositeFsharp
+                    var newComposite = new FsharpFolderComposite
                     {
-                        Name = sub,
                         FullPath = fullPath,
                         RelativePath = Path.GetRelativePath(projectRoot, fullPath),
-                        RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, fullPath)
                     };
                     if (subDir != null)
                     {
@@ -162,9 +156,9 @@ namespace Stryker.Core.Initialisation
             return cache[targetFolder];
         }
 
-        private FolderCompositeFsharp FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
-            var inputFiles = new FolderCompositeFsharp();
+            var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
@@ -210,14 +204,12 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderCompositeFsharp FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
-            var rootFolderComposite = new FolderCompositeFsharp
+            var rootFolderComposite = new FsharpFolderComposite
             {
-                Name = Path.GetFileName(path),
                 FullPath = Path.GetFullPath(path),
                 RelativePath = Path.GetFileName(path),
-                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
 
             rootFolderComposite.Add(
@@ -229,16 +221,14 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FolderCompositeFsharp FindInputFiles(string path, string projectUnderTestDir, string parentFolder)
+        private FsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder)
         {
             var lastPathComponent = Path.GetFileName(path);
 
-            var folderComposite = new FolderCompositeFsharp
+            var folderComposite = new FsharpFolderComposite
             {
-                Name = lastPathComponent,
                 FullPath = Path.GetFullPath(path),
                 RelativePath = Path.Combine(parentFolder, lastPathComponent),
-                RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, Path.GetFullPath(path))
             };
 
             foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
@@ -250,13 +240,11 @@ namespace Stryker.Core.Initialisation
             {
                 var fileName = Path.GetFileName(file);
 
-                var fileLeaf = new FileLeafFsharp()
+                var fileLeaf = new FsharpFileLeaf()
                 {
                     SourceCode = _fileSystem.File.ReadAllText(file),
-                    Name = _fileSystem.Path.GetFileName(file),
                     RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = file,
-                    RelativePathToProjectFile = Path.GetRelativePath(projectUnderTestDir, file)
                 };
 
                 // Get the syntax tree for the source file

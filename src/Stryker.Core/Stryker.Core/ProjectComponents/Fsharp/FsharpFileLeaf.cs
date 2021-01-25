@@ -5,7 +5,7 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FileLeafFsharp : ProjectComponent<ParsedInput>, IFileLeaf<ParsedInput>
+    public class FsharpFileLeaf : ProjectComponent<ParsedInput>, IFileLeaf<ParsedInput>
     {
         public string SourceCode { get; set; }
 
