@@ -886,6 +886,21 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
             ShouldMutateSourceToExpected(source, expected);
         }
 
+        [Fact]
+        // test for issue #1386
+        public void ShouldNotLeakMutationsAccrossDefinitions()
+        {
+            var source = @"class Test {
+int GetId(string input) => int.TryParse(input, out var result) ? result : 0;
+string Value => Generator(out var x) ? """" :""test"";
+}";
+
+            var expected = @"class Test {
+int GetId(string input) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(int.TryParse(input, out var result) )? result : 0;}else{return int.TryParse(input, out var result) ? result : 0;}}
+string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(3)?"""":""test"");}}}}}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
         private void ShouldMutateSourceToExpected(string actual, string expected)
         {
             actual = @"using System;

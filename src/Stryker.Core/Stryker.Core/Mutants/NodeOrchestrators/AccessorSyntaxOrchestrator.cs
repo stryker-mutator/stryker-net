@@ -42,6 +42,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 MutantPlacer.PlaceStatementControlledMutations(result.Body,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select( m => (m.Id, converter(m.Mutation))));
+            context.BlockLevelControlledMutations.Clear();
+            context.StatementLevelControlledMutations.Clear();
             return result.WithBody(SyntaxFactory.Block(newBody));
         }
     }
