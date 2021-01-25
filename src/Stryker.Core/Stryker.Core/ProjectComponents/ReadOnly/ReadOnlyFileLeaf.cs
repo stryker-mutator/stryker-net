@@ -11,9 +11,9 @@ namespace Stryker.Core.ProjectComponents
             _projectComponent = projectComponent;
         }
 
-        public override void Display(int depth)
+        public override void Display()
         {
-            DisplayFile(depth, this);
+            DisplayFile(this);
         }
 
     }

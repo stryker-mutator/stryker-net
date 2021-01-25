@@ -10,11 +10,9 @@ namespace Stryker.Core.ProjectComponents
     {
         private readonly IProjectComponent _projectComponent;
 
-        public string Name => _projectComponent.Name;
-
         public string FullPath => _projectComponent.FullPath;
         public string RelativePath => _projectComponent.RelativePath;
-        public string RelativePathToProjectFile => _projectComponent.RelativePathToProjectFile;
+
 
         public IFolderComposite Parent => _projectComponent.Parent;
 
@@ -32,7 +30,7 @@ namespace Stryker.Core.ProjectComponents
 
         public Display DisplayFolder { get; set; }
 
-        public abstract void Display(int depth);
+        public abstract void Display();
 
         /// <summary>
         /// Returns the mutation score for this folder / file
@@ -69,8 +67,7 @@ namespace Stryker.Core.ProjectComponents
         {
             return other is { }
                 && RelativePath.Equals(other.RelativePath)
-                && FullPath.Equals(other.FullPath)
-                && Name.Equals(other.Name);
+                && FullPath.Equals(other.FullPath);
         }
     }
 }

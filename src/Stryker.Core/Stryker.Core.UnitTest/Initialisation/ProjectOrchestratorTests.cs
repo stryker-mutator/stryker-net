@@ -33,7 +33,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var components = new Collection<IProjectComponent>() {
                 new CsharpFileLeaf() {
-                    Name = "SomeFile.cs",
                     Mutants = new List<Mutant> { new Mutant { Id = 1 } }
                 }
             };
@@ -43,9 +42,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectInfo = new ProjectInfo()
                 {
                     ProjectContents = new CsharpFolderComposite()
-                    {
-                        Name = "ProjectRoot"
-                    }
                 },
             };
         }
