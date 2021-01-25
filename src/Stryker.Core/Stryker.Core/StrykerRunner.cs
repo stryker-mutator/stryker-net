@@ -141,21 +141,21 @@ namespace Stryker.Core
         /// <param name="projectComponents">A list of all project root components</param>
         /// <param name="options">The current stryker options</param>
         /// <returns>The root folder component</returns>
-        private CsharpFolderComposite AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
         {
-            var rootComponent = new CsharpFolderComposite
-            {
-                FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
-            };
             if (projectComponents.Count() > 1)
             {
+                var rootComponent = new FolderComposite
+                {
+                    FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
+                };
                 rootComponent.AddRange(projectComponents);
+                return rootComponent;
             }
             else
             {
-                rootComponent = projectComponents.FirstOrDefault() as CsharpFolderComposite;
+                return projectComponents.FirstOrDefault();
             }
-            return rootComponent;
         }
     }
 }
