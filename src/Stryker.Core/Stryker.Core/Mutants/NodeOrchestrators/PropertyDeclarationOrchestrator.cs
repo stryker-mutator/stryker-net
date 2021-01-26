@@ -39,6 +39,8 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                                     sourceNode.ExpressionBody!.Expression
                                         .InjectMutation(m.Mutation)) as StatementSyntax)))))
                 .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken));
+            context.BlockLevelControlledMutations.Clear();
+            context.StatementLevelControlledMutations.Clear();
             return result;
         }
     }
