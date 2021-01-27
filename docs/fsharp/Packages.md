@@ -36,7 +36,6 @@ Viewing the ParsedInput online: https://fsprojects.github.io/fantomas-tools/#/as
   * FSharpParseFileResults  
 *The parsing result of the function which creates an ParsedInput from sourcecode (string)*
 
-
 * **FSharp.Compiler.Text**
   * SourceText  
   *The SourceText Class contains the sourcecode from a given F# file, used to generate the initial SyntaxTrees.*
