@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
+
 {
     internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
     {
@@ -42,6 +43,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 MutantPlacer.PlaceStatementControlledMutations(result.Body,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select(m => (m.Id, converter(m.Mutation))));
+            context.BlockLevelControlledMutations.Clear();
+            context.StatementLevelControlledMutations.Clear();
             return result.WithBody(SyntaxFactory.Block(newBody));
         }
     }

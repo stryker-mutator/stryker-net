@@ -1,9 +1,9 @@
+using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
-using System;
-using System.Linq;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
@@ -47,6 +47,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 MutantPlacer.PlaceStatementControlledMutations(mutatedBlock,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select(m => (m.Id, converter(m.Mutation))));
+            context.BlockLevelControlledMutations.Clear();
+            context.StatementLevelControlledMutations.Clear();
             return targetNode.ReplaceNode(targetNode.Body!,
                 SyntaxFactory.Block(mutatedBlock));
         }
