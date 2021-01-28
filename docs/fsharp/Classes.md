@@ -11,8 +11,8 @@ The current ProjectComponentsBuilder for F# does **not** have support for the fo
    * mutanthelpers injection
    * auto generated code detection
 
-The FindProjectFilesScanningProjectFolders method (the backup for if buildalyzer doesn't work) has not been tested.
-It is unkown if it works for F#, needs to be looked into / expanded upon.
+The ```FindProjectFilesScanningProjectFolders``` method (the backup for if buildalyzer doesn't work) has not been tested.
+This was done because the ```FindProjectFilesScanningProjectFolders``` has been [deprecated] so any development would be a waste.
 
 ---
 
