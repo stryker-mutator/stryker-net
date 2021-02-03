@@ -1,5 +1,6 @@
 [
   "stryker-net/Introduction",
+  "stryker-net/GettingStarted",
   "stryker-net/Configuration",
   "stryker-net/Mutators",
   "stryker-net/ProjectComponents",
