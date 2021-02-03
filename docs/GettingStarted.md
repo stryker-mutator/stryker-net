@@ -47,6 +47,24 @@ dotnet stryker
 
 If more configuration is needed follow the instuctions in your console.
 
+# 4 Configure
+
+Optionally you can add a config file to store your options so they won't have to be passed using CLI each run.
+
+Do this by adding a `stryker-config.json` file to your run location. Now add your config to the file like this:
+
+```
+{
+    "stryker-config":
+    {
+        "reporters": [
+            "progress",
+            "html"
+        ]
+    }
+}
+```
+
 For all available configuration see [our configuration page](https://stryker-mutator.io/docs/stryker/configuration).
 
 ### Troubleshooting
