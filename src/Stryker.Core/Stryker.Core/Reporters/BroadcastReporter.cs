@@ -1,6 +1,8 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
@@ -47,6 +49,9 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent)
         {
+            // make sure all other console caches are flushed before writing final reports
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+
             foreach (var reporter in Reporters)
             {
                 reporter.OnAllMutantsTested(inputComponent);

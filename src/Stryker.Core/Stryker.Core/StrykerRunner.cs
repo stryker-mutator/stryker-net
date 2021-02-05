@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -101,8 +100,6 @@ namespace Stryker.Core
                 {
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
-
-                Thread.Sleep(TimeSpan.FromSeconds(1));
 
                 reporters.OnAllMutantsTested(readOnlyInputComponent);
 
