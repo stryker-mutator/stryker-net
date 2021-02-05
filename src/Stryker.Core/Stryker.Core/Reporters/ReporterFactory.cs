@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
@@ -32,7 +32,8 @@ namespace Stryker.Core.Reporters
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
                 { Reporter.Dashboard, new DashboardReporter(options)},
-                { Reporter.Baseline, new GitBaselineReporter(options) }
+                { Reporter.Baseline, new GitBaselineReporter(options) },
+                { Reporter.Status, new StatusReporter() },
             };
         }
 
