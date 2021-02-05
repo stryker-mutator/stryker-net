@@ -8,18 +8,13 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
-    public class StatusReporter : IReporter
+    public class FilteredMutantsLogger
     {
-        private readonly ILogger<StatusReporter> _logger;
+        private readonly ILogger<FilteredMutantsLogger> _logger;
 
-        public StatusReporter(ILogger<StatusReporter> logger = null)
+        public FilteredMutantsLogger(ILogger<FilteredMutantsLogger> logger = null)
         {
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StatusReporter>();
-        }
-
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
-        {
-            // This reporter does not report during the testrun
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<FilteredMutantsLogger>();
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
@@ -57,18 +52,6 @@ namespace Stryker.Core.Reporters
             var notRunCount = reportComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
             _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
         }
-
-        public void OnMutantTested(IReadOnlyMutant result)
-        {
-            // This reporter does not report during the testrun
-        }
-
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
-        {
-            // This reporter does not report during the testrun
-        }
-
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => throw new NotImplementedException();
 
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
         {
