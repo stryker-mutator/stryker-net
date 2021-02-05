@@ -1,13 +1,13 @@
-﻿using Crayon;
-using Stryker.Core.Mutants;
 using System;
 using System.IO;
+using Crayon;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Progress
 {
     public interface IProgressBarReporter
     {
-        void ReportInitialState(int totalNumberOfMutants);
+        void ReportInitialState(int mutantsToBeTested);
         void ReportRunTest(IReadOnlyMutant mutantTestResult);
         void ReportFinalState();
     }
@@ -20,14 +20,14 @@ namespace Stryker.Core.Reporters.Progress
         private readonly IStopWatchProvider _stopWatch;
         private readonly TextWriter _consoleWriter;
 
-        private int _totalNumberOfMutants;
-        private int _numberOfMutantsRun;
+        private int _mutantsToBeTested;
+        private int _numberOfMutantsRan;
         private bool _disposedValue;
 
         private int _mutantsKilledCount;
         private int _mutantsSurvivedCount;
-        private int _mutantsTimeoutCount; 
-        
+        private int _mutantsTimeoutCount;
+
         public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, TextWriter consoleWriter = null)
         {
             _progressBar = progressBar;
@@ -35,17 +35,17 @@ namespace Stryker.Core.Reporters.Progress
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void ReportInitialState(int totalNumberOfMutants)
+        public void ReportInitialState(int mutantsToBeTested)
         {
             _stopWatch.Start();
-            _totalNumberOfMutants = totalNumberOfMutants;
+            _mutantsToBeTested = mutantsToBeTested;
 
-            _progressBar.Start(_totalNumberOfMutants, string.Format(LoggingFormat, 0, _totalNumberOfMutants, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+            _progressBar.Start(_mutantsToBeTested, string.Format(LoggingFormat, 0, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }
 
         public void ReportRunTest(IReadOnlyMutant mutantTestResult)
         {
-            _numberOfMutantsRun++;
+            _numberOfMutantsRan++;
 
             switch (mutantTestResult.ResultStatus)
             {
@@ -60,14 +60,14 @@ namespace Stryker.Core.Reporters.Progress
                     break;
             };
 
-            _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRun, _totalNumberOfMutants, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+            _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }
 
         public void ReportFinalState()
         {
             Dispose();
 
-            var length = _totalNumberOfMutants.ToString().Length;
+            var length = _mutantsToBeTested.ToString().Length;
 
             _consoleWriter.WriteLine();
             _consoleWriter.WriteLine($"Killed:   {Output.BrightMagenta(_mutantsKilledCount.ToString().PadLeft(length))}");
@@ -77,13 +77,13 @@ namespace Stryker.Core.Reporters.Progress
 
         private string RemainingTime()
         {
-            if (_totalNumberOfMutants == 0 || _numberOfMutantsRun == 0)
+            if (_mutantsToBeTested == 0 || _numberOfMutantsRan == 0)
             {
                 return "NA";
             }
 
             var elapsed = _stopWatch.GetElapsedMillisecond();
-            var remaining = (_totalNumberOfMutants - _numberOfMutantsRun) * elapsed / _numberOfMutantsRun;
+            var remaining = (_mutantsToBeTested - _numberOfMutantsRan) * elapsed / _numberOfMutantsRan;
 
             return MillisecondsToText(remaining);
         }
