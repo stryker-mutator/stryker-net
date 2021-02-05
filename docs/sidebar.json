@@ -1,10 +1,14 @@
 [
   "stryker-net/Introduction",
-  "stryker-net/GettingStarted",
+  "stryker-net/Getting-started",
   "stryker-net/Configuration",
   "stryker-net/Mutators",
-  "stryker-net/ProjectComponents",
   "stryker-net/RegexMutators",
   "stryker-net/Reporters",
-  "stryker-net/Stryker-in-pipeline"
+  "stryker-net/Stryker-in-pipeline",
+  {
+    "Technical-reference": [
+      "stryker-net/technical-reference/ProjectComponents"
+    ]
+  }
 ]
