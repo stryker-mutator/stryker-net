@@ -1,3 +1,8 @@
+---
+title: Introduction
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/introduction.md
+---
+
 Welcome to the Stryker.NET technical references! In this wiki you will find background knowledge about Stryker.NET and some technical details.
 
 ### Why Stryker.NET

@@ -1,8 +1,9 @@
 ---
+title: Composite pattern
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/FolderComponents.md
 ---
 
-Stryker.NET uses custom classes to keep track of folders and files.
+Stryker.NET uses custom classes to keep track of folders and files. These classes are based on the composite pattern.
 
 These FolderComposite and FileLeafs have readonly variants, this is done to ensure the mutated sourcecode and Mutants are not changed after the mutation is placed.
 
