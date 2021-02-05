@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/FolderComponents.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/FolderComponents.md
 ---
 
 Stryker.NET uses custom classes to keep track of folders and files.
