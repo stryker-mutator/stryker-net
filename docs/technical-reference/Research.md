@@ -1,3 +1,8 @@
+---
+title: Research
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/research.md
+---
+
 Stryker.NET wants to be a blazing fast mutation test framework. To achieve this some research has taken place before designing the framework.
 
 ## Criteria
