@@ -1,3 +1,8 @@
+---
+title: Mutant schemata
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/mutant-schemata.md
+---
+
 Stryker.NET chose to work with mutant schemata. This created a number of challenges.
 
 ## Compile errors
