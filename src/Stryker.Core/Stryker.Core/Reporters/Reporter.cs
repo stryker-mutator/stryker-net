@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Reporters
+namespace Stryker.Core.Reporters
 {
     public enum Reporter
     {
@@ -13,7 +13,6 @@
         Json,
         Html,
         Dashboard,
-        Baseline,
-        Status
+        Baseline
     }
 }

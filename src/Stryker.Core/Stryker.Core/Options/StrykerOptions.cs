@@ -415,7 +415,7 @@ namespace Stryker.Core.Options
         {
             if (reporters == null)
             {
-                foreach (var reporter in new[] { Reporter.Progress, Reporter.Html, Reporter.Status })
+                foreach (var reporter in new[] { Reporter.Progress, Reporter.Html })
                 {
                     yield return reporter;
                 }

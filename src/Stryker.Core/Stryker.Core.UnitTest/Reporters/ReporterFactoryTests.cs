@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
@@ -21,7 +21,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("Progress", typeof(ProgressReporter))]
         [InlineData("Dots", typeof(ConsoleDotProgressReporter))]
         [InlineData("ClearText", typeof(ClearTextReporter))]
-        [InlineData("Status", typeof(StatusReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
@@ -50,9 +49,8 @@ namespace Stryker.Core.UnitTest.Reporters
             broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
-            broadcastReporter.Reporters.ShouldContain(r => r is StatusReporter);
 
-            result.Reporters.Count().ShouldBe(9);
+            result.Reporters.Count().ShouldBe(8);
         }
 
         [Fact]

@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class StatusReporterTests
     {
-        private Mock<ILogger<StatusReporter>> _loggerMock = new Mock<ILogger<StatusReporter>>();
+        private Mock<ILogger<FilteredMutantsLogger>> _loggerMock = new Mock<ILogger<FilteredMutantsLogger>>();
 
         public StatusReporterTests()
         {
@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintNoMutations()
         {
-            var target = new StatusReporter(_loggerMock.Object);
+            var target = new FilteredMutantsLogger(_loggerMock.Object);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintIgnoredStatus()
         {
-            var target = new StatusReporter(_loggerMock.Object);
+            var target = new FilteredMutantsLogger(_loggerMock.Object);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintEachReasonWithCount()
         {
-            var target = new StatusReporter(_loggerMock.Object);
+            var target = new FilteredMutantsLogger(_loggerMock.Object);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
