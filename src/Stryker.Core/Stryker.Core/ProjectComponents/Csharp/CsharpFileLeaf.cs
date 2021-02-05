@@ -1,11 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
-using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FileLeaf : ProjectComponent
+    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {
         public string SourceCode { get; set; }
 
@@ -13,6 +12,7 @@ namespace Stryker.Core.ProjectComponents
         /// The original unmutated syntaxtree
         /// </summary>
         public SyntaxTree SyntaxTree { get; set; }
+
         /// <summary>
         /// The mutated syntax tree
         /// </summary>
@@ -21,20 +21,20 @@ namespace Stryker.Core.ProjectComponents
         public override IEnumerable<Mutant> Mutants { get; set; }
 
         public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
+
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
 
-        public override void Display(int depth)
+        public ReadOnlyFileLeaf ToReadOnly()
         {
-            DisplayFile(depth, this);
+            return new ReadOnlyFileLeaf(this);
         }
 
-        public override void Add(ProjectComponent component)
+        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
         {
-            // no children can be added to a file instance
-            throw new NotImplementedException();
+            return ToReadOnly();
         }
 
-        public override IEnumerable<FileLeaf> GetAllFiles()
+        public override IEnumerable<IProjectComponent> GetAllFiles()
         {
             yield return this;
         }

@@ -1,4 +1,4 @@
-﻿using Crayon;
+using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -20,21 +20,21 @@ namespace Stryker.Core.Reporters
         private const string BranchLine = "├── ";
         private const string FinalBranchLine = "└── ";
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextTreeReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             // This reporter does not report during the testrun
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // This reporter does not report during the testrun
         }
@@ -44,12 +44,12 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var rootFolderProcessed = false;
 
             // setup display handlers
-            reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -66,8 +66,8 @@ namespace Stryker.Core.Reporters
                     folderLines = continuationLines.Last() ? BranchLine : FinalBranchLine;
                 }
 
-                var name = current.Name;
-                if (name == null && !rootFolderProcessed)
+                var name = Path.GetFileName(current.RelativePath);
+                if (current.Parent == null && !rootFolderProcessed)
                 {
                     name = "All files";
                     rootFolderProcessed = true;
@@ -80,7 +80,7 @@ namespace Stryker.Core.Reporters
                 }
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
                 // show depth
                 var continuationLines = ParentContinuationLines(current);
@@ -90,8 +90,9 @@ namespace Stryker.Core.Reporters
                 {
                     stringBuilder.Append(item ? ContinueLine : NoLine);
                 }
+                var name = Path.GetFileName(current.RelativePath);
 
-                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{current.Name}");
+                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{name}");
                 DisplayComponent(current);
 
                 stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
@@ -130,46 +131,38 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
-            reportComponent.Display(1);
+            reportComponent.Display();
         }
 
-        private static List<bool> ParentContinuationLines(IReadOnlyInputComponent current)
+        private static List<bool> ParentContinuationLines(IReadOnlyProjectComponent current)
         {
             var continuationLines = new List<bool>();
 
-            var node = (ProjectComponent)current;
+            var node = current;
 
             if (node.Parent != null)
             {
-                var isRootFile = node.RelativePath == node.RelativePathToProjectFile;
-                if (isRootFile)
+                while (node.Parent != null)
                 {
-                    continuationLines.Add(true);
-                }
-                else
-                {
-                    while (node.Parent != null)
-                    {
-                        continuationLines.Add(node.Parent.Children.Last() != node);
+                    continuationLines.Add(node.Parent.Children.Last().FullPath != node.FullPath);
 
-                        node = node.Parent;
-                    }
-
-                    continuationLines.Reverse();
+                    node = node.Parent.ToReadOnlyInputComponent();
                 }
+
+                continuationLines.Reverse();
             }
 
             return continuationLines;
         }
 
-        private void DisplayComponent(IReadOnlyInputComponent inputComponent)
+        private void DisplayComponent(IReadOnlyProjectComponent inputComponent)
         {
             var mutationScore = inputComponent.GetMutationScore();
 
             // Convert the threshold integer values to decimal values
             _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent is ProjectComponent projectComponent && projectComponent.FullPath != null && projectComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _consoleWriter.Write(Output.BrightBlack("(Excluded)"));
             }

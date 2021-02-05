@@ -1,4 +1,4 @@
-﻿using Crayon;
+using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -14,21 +14,21 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             // This reporter does not report during the testrun
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // This reporter does not report during the testrun
         }
@@ -38,22 +38,20 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var files = new List<FileLeaf>();
+            var files = new List<ReadOnlyFileLeaf>();
 
-            FolderComposite rootFolder = null;
+            ReadOnlyFolderComposite rootFolder = null;
 
-            reportComponent.DisplayFolder = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
-                rootFolder ??= (FolderComposite)current;
+                rootFolder ??= (ReadOnlyFolderComposite)current;
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyInputComponent current) =>
+            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
-                var fileLeaf = (FileLeaf)current;
-
-                files.Add((FileLeaf)current);
+                files.Add((ReadOnlyFileLeaf)current);
             };
 
             // print empty line for readability
@@ -62,9 +60,9 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
-            reportComponent.Display(0);
+            reportComponent.Display();
 
-            var filePathLength = Math.Max(9, files.Max(f => f.RelativePathToProjectFile?.Length ?? 0) + 1);
+            var filePathLength = Math.Max(9, files.Max(f => f.RelativePath?.Length ?? 0) + 1);
 
             _consoleWriter.WriteLine($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
             _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
@@ -80,13 +78,13 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
         }
 
-        private void DisplayComponent(ProjectComponent inputComponent, int filePathLength)
+        private void DisplayComponent(IReadOnlyProjectComponent inputComponent, int filePathLength)
         {
-            _consoleWriter.Write($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
+            _consoleWriter.Write($"│ {(inputComponent.RelativePath ?? "All files").PadRight(filePathLength)}│ ");
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent is FileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
                 _consoleWriter.Write(Output.BrightBlack("Excluded"));
             }
@@ -113,11 +111,11 @@ namespace Stryker.Core.Reporters
                 }
             }
 
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
             _consoleWriter.Write($" │ {inputComponent.TotalMutants.Count() - inputComponent.DetectedMutants.Count(),10}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
-            _consoleWriter.Write($" │ {inputComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
+            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
             _consoleWriter.WriteLine($" │");
         }
     }

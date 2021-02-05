@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -24,12 +24,13 @@ namespace Stryker.Core.MutantFilters
         private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<DiffMutantFilter> _logger;
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
+
         private readonly JsonReport _baseline;
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public DiffMutantFilter(IStrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
@@ -65,7 +66,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, FileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;
@@ -76,7 +77,7 @@ namespace Stryker.Core.MutantFilters
                 // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
                 if (_baseline == null)
                 {
-                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePathToProjectFile);
+                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePath);
                     return mutants;
                 }
 
@@ -94,7 +95,7 @@ namespace Stryker.Core.MutantFilters
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
             {
-                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
+                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePath);
                 return SetMutantStatusForFileChanged(mutants);
             }
             else
@@ -119,7 +120,7 @@ namespace Stryker.Core.MutantFilters
             return filteredMutants;
         }
 
-        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, FileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
         {
             var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
 
@@ -166,7 +167,7 @@ namespace Stryker.Core.MutantFilters
             var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
             var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);
 
-            LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
+            var span = new LinePositionSpan(beginLinePosition, endLinePosition);
 
             var textSpan = tree.GetText().Lines.GetTextSpan(span);
             var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));
@@ -258,21 +259,21 @@ namespace Stryker.Core.MutantFilters
             {
                 var coveringTests = mutant.CoveringTests.Tests;
 
-                if (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
-                    || coveringTests.Any(coveringTest => coveringTest.IsAllTests))
+                if (coveringTests != null
+                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                        || coveringTests.Any(coveringTest => coveringTest.IsAllTests)))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
                     mutant.ResultStatusReason = "One or more covering tests changed";
 
                     filteredMutants.Add(mutant);
-                    break;
                 }
             }
 
             return filteredMutants;
         }
 
-        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants. 
+        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants.
         /// If the targetMutants already contain a member with the same Id. The results are updated.
         internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
         {

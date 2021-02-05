@@ -5,7 +5,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class AssignmentStatementOrchestrator : ExpressionSpecificOrchestrator<AssignmentExpressionSyntax>
     {
-        public AssignmentStatementOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public AssignmentStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
 

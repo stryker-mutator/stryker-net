@@ -8,6 +8,7 @@ using Stryker.RegexMutators.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RegexParser.Nodes.GroupNodes;
 
 namespace Stryker.RegexMutators
 {
@@ -28,6 +29,7 @@ namespace Stryker.RegexMutators
                 { typeof(CharacterClassShorthandNode), new List<IRegexMutator> { new CharacterClassShorthandNegationMutator() } },
                 { typeof(QuantifierNOrMoreNode), new List<IRegexMutator> { new QuantifierUnlimitedQuantityMutator() } },
                 { typeof(QuantifierNMNode), new List<IRegexMutator> { new QuantifierQuantityMutator() } },
+                { typeof(LookaroundGroupNode), new List<IRegexMutator> { new LookAroundMutator() } },
             };
         }
 

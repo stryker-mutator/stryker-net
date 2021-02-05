@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -18,11 +18,11 @@ namespace Stryker.Core.Clients
 
     public class DashboardClient : IDashboardClient
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
         private readonly HttpClient _httpClient;
 
-        public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
+        public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();

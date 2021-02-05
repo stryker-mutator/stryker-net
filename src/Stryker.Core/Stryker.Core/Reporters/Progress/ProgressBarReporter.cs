@@ -7,7 +7,7 @@ namespace Stryker.Core.Reporters.Progress
 {
     public interface IProgressBarReporter
     {
-        void ReportInitialState(int totalNumberOfTests);
+        void ReportInitialState(int totalNumberOfMutants);
         void ReportRunTest(IReadOnlyMutant mutantTestResult);
         void ReportFinalState();
     }
@@ -35,10 +35,10 @@ namespace Stryker.Core.Reporters.Progress
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void ReportInitialState(int totalNumberOfTests)
+        public void ReportInitialState(int totalNumberOfMutants)
         {
             _stopWatch.Start();
-            _totalNumberOfMutants = totalNumberOfTests;
+            _totalNumberOfMutants = totalNumberOfMutants;
 
             _progressBar.Start(_totalNumberOfMutants, string.Format(LoggingFormat, 0, _totalNumberOfMutants, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }
