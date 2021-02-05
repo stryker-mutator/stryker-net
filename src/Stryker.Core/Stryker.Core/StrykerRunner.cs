@@ -66,6 +66,13 @@ namespace Stryker.Core
                 reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
+
+                // Filter
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.FilterMutants();
+                }
+
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
                 if (!mutantsNotRun.Any())
@@ -83,12 +90,6 @@ namespace Stryker.Core
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     }
                     return new StrykerRunResult(options, double.NaN);
-                }
-
-                // Filter
-                foreach (var project in _mutationTestProcesses)
-                {
-                    project.FilterMutants();
                 }
 
                 // Report
