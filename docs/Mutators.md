@@ -1,20 +1,8 @@
+---
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Mutators.md
+---
+
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
-
-
-<!-- TOC -->
-- [Arithmetic Operators](#arithmetic-operators)
-- [Equality Operators](#equality-operators)
-- [Boolean Literals](#boolean-literals)
-- [Assignment statements](#assignment-statements)
-- [Collection initialization](#collection-initialization)
-- [Unary Operators](#unary-operators)
-- [Update Operators](#update-operators)
-- [Checked Statements](#checked-statements)
-- [Linq Methods](#linq-methods)
-- [String Literals and Constants](#string-literals-and-constants)
-- [Bitwise Operators](#bitwise-operators)
-- [Regular Expressions](#regular-expressions)
-<!-- /TOC -->
 
 ## Arithmetic Operators
 | Original | Mutated | 
@@ -152,27 +140,4 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `a^b` | `~(a^b)` |
 
 ## Regular Expressions
-| Original | Mutated |
-| ------------- | ------------- | 
-| `[abc]` | `[^abc]` |
-| `[^abc]` | `[abc]` |
-| `\d` | `\D` |
-| `\D` | `\d` |
-| `\w` | `\W` |
-| `\W` | `\w` |
-| `\s` | `\S` |
-| `\S` | `\s` |
-| `^abc` | `abc` |
-| `abc$` | `abc` |
-| `\Aabc` | `abc` |
-| `abc\Z` | `abc` |
-| `abc\z` | `abc` |
-| `abc\b` | `abc` |
-| `abc\B` | `abc` |
-| `\Gabc` | `abc` |
-| `abc*` | `abc` |
-| `abc?` | `abc` |
-| `abc+` | `abc` |
-| `abc{5}` | `abc` |
-| `abc{5,}` | `abc` |
-| `abc{5,8}` | `abc` |
+For the full list of all available regex mutations, see the [regex mutator docs](./RegexMutators.md).

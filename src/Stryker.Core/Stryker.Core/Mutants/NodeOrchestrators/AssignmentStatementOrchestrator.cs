@@ -1,16 +1,21 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class AssignmentStatementOrchestrator : NodeSpecificOrchestrator<AssignmentExpressionSyntax>
+    internal class AssignmentStatementOrchestrator : ExpressionSpecificOrchestrator<AssignmentExpressionSyntax>
     {
-        internal override SyntaxNode OrchestrateMutation(AssignmentExpressionSyntax node, MutationContext context)
+        public AssignmentStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
-            // mutate +=, *=, ...
-            // those mutations can"t be controlled in line, they can only be controlled as a full statement (i.e. using 'if's)
-            // mutate the part right to the equal sign
-            return context.MutateNodeAndChildren(node, true);
+        }
+
+        // mutations must be controlled at the statement level
+        protected override MutationContext StoreMutations(AssignmentExpressionSyntax node,
+            IEnumerable<Mutant> mutations,
+            MutationContext context)
+        {
+            context.StatementLevelControlledMutations.AddRange(mutations);
+            return context;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,33 +7,29 @@ namespace Stryker.Core.Reporters.Progress
 {
     public class ProgressReporter : IReporter
     {
-        private readonly IMutantsResultReporter _mutantsResultReporter;
         private readonly IProgressBarReporter _progressBarReporter;
-        public ProgressReporter(IMutantsResultReporter mutantsResultReporter, IProgressBarReporter progressBarReporter)
+        public ProgressReporter(IProgressBarReporter progressBarReporter)
         {
-            _mutantsResultReporter = mutantsResultReporter;
             _progressBarReporter = progressBarReporter;
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
-            Console.WriteLine();
             _progressBarReporter.ReportInitialState(mutantsToBeTested.Count());
-            _mutantsResultReporter.ReportInitialState();
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            _progressBarReporter.ReportRunTest();
-            _mutantsResultReporter.ReportMutantTestResult(result);
+            _progressBarReporter.ReportRunTest(result);
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
+            _progressBarReporter.ReportFinalState();
         }
     }
 }

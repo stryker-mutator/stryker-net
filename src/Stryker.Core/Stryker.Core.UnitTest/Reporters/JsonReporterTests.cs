@@ -1,4 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,10 +11,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using System;
-using System.IO;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -57,7 +57,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReportFileComponent_ShouldHaveLanguageSetToCs()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var fileComponent = (folderComponent as FolderComposite).GetAllFiles().First();
+            var fileComponent = ((CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First()).ToReadOnly();
 
             new JsonReportFileComponent(fileComponent).Language.ShouldBe("cs");
         }
@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReportFileComponent_ShouldContainOriginalSource()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var fileComponent = (folderComponent as FolderComposite).GetAllFiles().First();
+            var fileComponent = ((CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First()).ToReadOnly();
 
             new JsonReportFileComponent(fileComponent).Source.ShouldBe(fileComponent.SourceCode);
         }
@@ -75,9 +75,9 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReportFileComponents_ShouldContainMutants()
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
+            foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new JsonReportFileComponent(file);
+                var jsonReportComponent = new JsonReportFileComponent(((CsharpFileLeaf)file).ToReadOnly());
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
@@ -90,9 +90,9 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var loggerMock = Mock.Of<ILogger>();
             var folderComponent = JsonReportTestHelper.CreateProjectWith(duplicateMutant: true);
-            foreach (var file in (folderComponent as FolderComposite).GetAllFiles())
+            foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new JsonReportFileComponent(file, loggerMock);
+                var jsonReportComponent = new JsonReportFileComponent(((CsharpFileLeaf)file).ToReadOnly(), loggerMock);
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
@@ -105,7 +105,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
 
             report.ShouldSatisfyAllConditions(
                 () => report.Thresholds.ShouldContainKey("high"),
@@ -117,9 +117,19 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent);
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
 
             report.Files.Count.ShouldBeGreaterThan(0);
+        }
+
+        [Fact]
+        public void JsonReport_ShouldContainTheProjectRoot()
+        {
+            var folderComponent = JsonReportTestHelper.CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
+
+            report.ProjectRoot.ShouldBe("/home/user/src/project/");
         }
 
         [Fact]
@@ -128,8 +138,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
             var options = new StrykerOptions();
 
-            var firstReport = JsonReport.Build(options, folderComponent);
-            var secondReport = JsonReport.Build(options, folderComponent);
+            var firstReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
+            var secondReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
 
             secondReport.ShouldBe(firstReport);
         }
@@ -141,7 +151,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
             var reporter = new JsonReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }

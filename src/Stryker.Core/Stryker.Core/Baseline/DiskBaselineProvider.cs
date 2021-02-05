@@ -11,12 +11,12 @@ namespace Stryker.Core.Baseline
 {
     public class DiskBaselineProvider : IBaselineProvider
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DiskBaselineProvider> _logger;
         private const string _outputPath = "StrykerOutput/Baselines/";
 
-        public DiskBaselineProvider(StrykerOptions options, IFileSystem fileSystem = null)
+        public DiskBaselineProvider(IStrykerOptions options, IFileSystem fileSystem = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();

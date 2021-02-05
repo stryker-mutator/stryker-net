@@ -1,32 +1,38 @@
-﻿using Microsoft.CodeAnalysis;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class ForStatementOrchestrator: NodeSpecificOrchestrator<ForStatementSyntax>
+    internal class ForStatementOrchestrator: BlockScopeOrchestrator<ForStatementSyntax>
     {
-        internal override SyntaxNode OrchestrateMutation(ForStatementSyntax forStatement, MutationContext context)
+        /// <inheritdoc/>
+        /// `<remarks>The sole benefit of this orchestrator is to provide code ordered mutations for now.</remarks>
+        protected override StatementSyntax OrchestrateChildrenMutation(ForStatementSyntax forStatement, MutationContext context)
         {
-            // for needs special treatments for its incrementer
+            // for needs special treatments for its incrementer(s)
             var originalFor = forStatement;
-            forStatement = originalFor.TrackNodes(forStatement.Incrementors);
-            foreach (var incrementer in originalFor.Incrementors)
+            forStatement = originalFor.ReplaceNodes(originalFor.Initializers.Union(originalFor.Incrementors),
+                (syntax, expressionSyntax) => MutantOrchestrator.Mutate(syntax, context));
+            if (forStatement.Declaration != null)
             {
-                forStatement = forStatement.ReplaceNode(forStatement.GetCurrentNode(incrementer),
-                    context.MutateNodeAndChildren(incrementer, true));
+                forStatement = forStatement.ReplaceNode(forStatement.Declaration,
+                MutantOrchestrator.Mutate(originalFor.Declaration, context));
             }
-
             // mutate condition, if any
             if (originalFor.Condition != null)
             {
-                forStatement = forStatement.ReplaceNode(forStatement.Condition,
-                    context.MutateNodeAndChildren(originalFor.Condition));
+                forStatement = forStatement.ReplaceNode(forStatement.Condition!,
+                    MutantOrchestrator.Mutate(originalFor.Condition, context));
             }
 
             // mutate the statement/block
-            forStatement = forStatement.ReplaceNode(forStatement.Statement, context.MutateNodeAndChildren(forStatement.Statement));
-            // and now we replace it
+            forStatement = forStatement.ReplaceNode(forStatement.Statement, MutantOrchestrator.Mutate(originalFor.Statement, context));
             return forStatement;
+        }
+
+        public ForStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
         }
     }
 }

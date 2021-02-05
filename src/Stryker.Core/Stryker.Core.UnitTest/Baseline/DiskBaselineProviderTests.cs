@@ -1,10 +1,10 @@
-﻿using Shouldly;
+using System.IO.Abstractions.TestingHelpers;
+using System.Threading.Tasks;
+using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using System.IO.Abstractions.TestingHelpers;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline
@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Baseline
     public class DiskBaselineProviderTests
     {
         [Fact]
-        public async Task ShouldWriteToDisk()
+        public async Task ShouldWriteToDiskAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Baseline
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
-            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith()), "version");
+            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent()), "version");
 
             // Assert
             var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json");
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Baseline
         }
 
         [Fact]
-        public async Task ShouldHandleFileNotFoundExceptionOnLoad()
+        public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
@@ -44,13 +44,13 @@ namespace Stryker.Core.UnitTest.Baseline
         }
 
         [Fact]
-        public async Task ShouldLoadReportFromDisk()
+        public async Task ShouldLoadReportFromDiskAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
 
-            var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith());
+            var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());
 

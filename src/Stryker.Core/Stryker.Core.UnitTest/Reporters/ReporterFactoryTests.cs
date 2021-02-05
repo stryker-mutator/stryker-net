@@ -24,25 +24,33 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData("Status", typeof(StatusReporter))]
         public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
         {
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { option }));
-            result.ShouldBeOfType(typeof(BroadcastReporter));
-            result.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var target = new ReporterFactory();
+
+            var result = target.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
+            var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
+            broadcastReporter.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
 
         [Fact]
         public void ReporterFactory_CreatesAllReporters()
         {
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "All" }));
-            result.ShouldBeOfType(typeof(BroadcastReporter));
-            result.Reporters.ShouldContain(r => r is JsonReporter);
-            result.Reporters.ShouldContain(r => r is HtmlReporter);
-            result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
-            result.Reporters.ShouldContain(r => r is ClearTextReporter);
-            result.Reporters.ShouldContain(r => r is ClearTextTreeReporter);
-            result.Reporters.ShouldContain(r => r is ProgressReporter);
-            result.Reporters.ShouldContain(r => r is DashboardReporter);
-            result.Reporters.ShouldContain(r => r is GitBaselineReporter);
-            result.Reporters.ShouldContain(r => r is StatusReporter);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var target = new ReporterFactory();
+
+            var result = (BroadcastReporter)target.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
+
+            var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
+            broadcastReporter.Reporters.ShouldContain(r => r is JsonReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ClearTextTreeReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is StatusReporter);
 
             result.Reporters.Count().ShouldBe(9);
         }
@@ -50,11 +58,15 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            BroadcastReporter result = (BroadcastReporter)ReporterFactory.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }));
-            result.ShouldBeOfType(typeof(BroadcastReporter));
-            result.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
-            result.Reporters.ShouldContain(r => r is ClearTextReporter);
-            result.Reporters.ShouldContain(r => r is ProgressReporter);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
+            var target = new ReporterFactory();
+
+            var result = target.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
+            var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
+            broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
         }
     }
 }

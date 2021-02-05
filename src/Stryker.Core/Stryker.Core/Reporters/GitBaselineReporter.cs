@@ -10,18 +10,18 @@ namespace Stryker.Core.Reporters
 {
     public class GitBaselineReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public GitBaselineReporter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
 
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
             var projectVersion = _gitInfoProvider.GetCurrentBranchName();
@@ -30,19 +30,19 @@ namespace Stryker.Core.Reporters
             _baselineProvider.Save(mutationReport, baselineVersion).Wait();
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
@@ -10,10 +10,10 @@ namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(StrykerOptions options, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(IStrykerOptions options, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
@@ -44,7 +44,12 @@ namespace Stryker.Core.DiffProviders
                 {
                     continue;
                 }
-                if (diffPath.StartsWith(_options.BasePath))
+
+                var fullName = _options.BasePath.EndsWith(Path.DirectorySeparatorChar)
+                    ? _options.BasePath
+                    : _options.BasePath + Path.DirectorySeparatorChar;
+
+                if (diffPath.StartsWith(fullName))
                 {
                     diffResult.ChangedTestFiles.Add(diffPath);
                 }

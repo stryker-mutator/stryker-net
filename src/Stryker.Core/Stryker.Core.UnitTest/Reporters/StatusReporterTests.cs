@@ -23,18 +23,17 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintNoMutations()
         {
-            var target = new StatusReporter(new StrykerOptions(), _loggerMock.Object);
+            var target = new StatusReporter(_loggerMock.Object);
 
-
-            var folder = new FolderComposite();
-            folder.Add(new FileLeaf()
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
             {
                 Mutants = new Collection<Mutant>()
                 {
                 }
             });
 
-            target.OnMutantsCreated(folder);
+            target.OnMutantsCreated(folder.ToReadOnlyInputComponent());
 
             _loggerMock.Verify(LogLevel.Information, "0     total mutants will be tested", Times.Once);
             _loggerMock.VerifyNoOtherCalls();
@@ -43,11 +42,10 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintIgnoredStatus()
         {
-            var target = new StatusReporter(new StrykerOptions(), _loggerMock.Object);
+            var target = new StatusReporter(_loggerMock.Object);
 
-
-            var folder = new FolderComposite();
-            folder.Add(new FileLeaf()
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
             {
                 Mutants = new Collection<Mutant>()
                 {
@@ -55,7 +53,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 }
             });
 
-            target.OnMutantsCreated(folder);
+            target.OnMutantsCreated(folder.ToReadOnlyInputComponent());
 
             _loggerMock.Verify(LogLevel.Information, "1     mutants got status Ignored.      Reason: In excluded file", Times.Once);
             _loggerMock.Verify(LogLevel.Information, "1     total mutants are skipped for the above mentioned reasons", Times.Once);
@@ -66,11 +64,10 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldPrintEachReasonWithCount()
         {
-            var target = new StatusReporter(new StrykerOptions(), _loggerMock.Object);
+            var target = new StatusReporter(_loggerMock.Object);
 
-
-            var folder = new FolderComposite();
-            folder.Add(new FileLeaf()
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
             {
                 Mutants = new Collection<Mutant>()
                 {
@@ -85,7 +82,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 }
             });
 
-            target.OnMutantsCreated(folder);
+            target.OnMutantsCreated(folder.ToReadOnlyInputComponent());
 
             _loggerMock.Verify(LogLevel.Information, "1     mutants got status CompileError. Reason: CompileError", Times.Once);
             _loggerMock.Verify(LogLevel.Information, "3     mutants got status Ignored.      Reason: In excluded file", Times.Once);

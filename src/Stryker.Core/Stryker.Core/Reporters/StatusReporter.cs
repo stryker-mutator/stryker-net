@@ -1,35 +1,30 @@
 using System;
-using Crayon;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
     public class StatusReporter : IReporter
     {
-        private readonly StrykerOptions _options;
         private readonly ILogger<StatusReporter> _logger;
 
-
-        public StatusReporter(StrykerOptions strykerOptions, ILogger<StatusReporter> logger = null)
+        public StatusReporter(ILogger<StatusReporter> logger = null)
         {
-            _options = strykerOptions;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StatusReporter>();
         }
-        public void OnAllMutantsTested(IReadOnlyInputComponent reportComponent)
+
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             // This reporter does not report during the testrun
         }
 
-        public void OnMutantsCreated(IReadOnlyInputComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
-            var skippedMutants = reportComponent.ReadOnlyMutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+            var skippedMutants = reportComponent.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
 
             var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
 
@@ -47,7 +42,7 @@ namespace Stryker.Core.Reporters
                     skippedMutants.Count());
             }
 
-            var notRunMutantsWithResultStatusReason = reportComponent.ReadOnlyMutants
+            var notRunMutantsWithResultStatusReason = reportComponent.Mutants
                 .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
                 .GroupBy(x => x.ResultStatusReason);
 
@@ -59,7 +54,7 @@ namespace Stryker.Core.Reporters
                     notRunMutantReason.Key);
             }
 
-            var notRunCount = reportComponent.ReadOnlyMutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
+            var notRunCount = reportComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
             _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
         }
 
@@ -72,6 +67,8 @@ namespace Stryker.Core.Reporters
         {
             // This reporter does not report during the testrun
         }
+
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => throw new NotImplementedException();
 
         private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
         {

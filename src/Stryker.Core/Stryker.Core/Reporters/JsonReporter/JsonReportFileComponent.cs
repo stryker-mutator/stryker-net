@@ -20,9 +20,9 @@ namespace Stryker.Core.Reporters.Json
             Mutants = mutants;
         }
 
-        public JsonReportFileComponent(FileLeaf file, ILogger logger = null)
+        public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            var log = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
 
             Source = file.SourceCode;
             Language = "cs";

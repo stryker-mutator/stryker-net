@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
@@ -17,7 +17,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var gitInfoProvider = new Mock<IGitInfoProvider>();
             var baselineProvider = new Mock<IBaselineProvider>();
 
-            var readOnlyInputComponent = new Mock<IReadOnlyInputComponent>(MockBehavior.Loose);
+            var readOnlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose);
+            readOnlyInputComponent.Setup(s => s.FullPath).Returns("/home/usr/dev/project");
 
             var options = new StrykerOptions(projectVersion: "new-feature", gitDiffTarget: "master", compareToDashboard: true);
 
