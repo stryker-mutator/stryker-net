@@ -97,7 +97,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ReadOnlyProjectComponent>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
@@ -119,7 +118,6 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // verify the right methods were called
             orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
-            reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<ReadOnlyProjectComponent>()), Times.Once);
         }
 
         [Fact]
