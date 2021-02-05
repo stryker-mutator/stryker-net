@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/GettingStarted.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Getting-started.md
 ---
 
 # 1 Install
