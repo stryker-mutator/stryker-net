@@ -65,6 +65,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void ReportFinalState()
         {
+            _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
             Dispose();
 
             var length = _mutantsToBeTested.ToString().Length;
