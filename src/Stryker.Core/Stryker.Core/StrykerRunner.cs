@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -86,12 +85,18 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, double.NaN);
                 }
 
-                reporters.OnStartMutantTestRun(mutantsNotRun);
-
+                // Filter
                 foreach (var project in _mutationTestProcesses)
                 {
-                    // test mutations
                     project.FilterMutants();
+                }
+
+                // Report
+                reporters.OnStartMutantTestRun(mutantsNotRun);
+
+                // Test
+                foreach (var project in _mutationTestProcesses)
+                {
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
