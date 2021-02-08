@@ -185,10 +185,11 @@
       },
       "ShellProgressBar": {
         "type": "Direct",
-        "requested": "[5.0.0, )",
-        "resolved": "5.0.0",
-        "contentHash": "I8v2iSu3++wWsEl1FO0ardLUKuf9xlEPm2QV4Lg6e7jWfLUU6D5gz1XflZOOiH+MatNP9en8w4C9rEbu/UTHeg==",
+        "requested": "[5.1.0, )",
+        "resolved": "5.1.0",
+        "contentHash": "361fhmZBA2rn/Z8Tp9wDpB97H9GSRTLI5vXBky4I8fkd7H6UVYgvVSW6uv6Wd1+lUbq8JLgYo+4bhJvWF/SJCw==",
         "dependencies": {
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
           "System.Text.Encoding.CodePages": "4.0.1"
         }
       },
