@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shouldly;
 using Stryker.Core.Baseline;
 using Stryker.Core.DashboardCompare;
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Reporters
             broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            broadcastReporter.Reporters.Count().ShouldBe(8);
+            result.Reporters.Count().ShouldBe(8);
         }
 
         [Fact]

@@ -14,9 +14,9 @@
       },
       "NUnit": {
         "type": "Direct",
-        "requested": "[3.13.0, )",
-        "resolved": "3.13.0",
-        "contentHash": "G+BOONgJKtNtprjGQ54l0m+Vq2VFCMh/H6ljuHfqrRlX6YkNy0GjMd5Nn0NpJidGpRd4gAOJsBqNuxr7Kgc/5g==",
+        "requested": "[3.13.1, )",
+        "resolved": "3.13.1",
+        "contentHash": "vWBvrSelmTYwqHWvO3dA63z7cOpaFR/3nJ9MMVLBkWeaWa7oiglPPm5g1h96B4i2XXqjFexxhR5MyMjmIJYPfg==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -787,7 +787,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "0.20.0"
+          "Library": "0.21.1"
         }
       }
     }

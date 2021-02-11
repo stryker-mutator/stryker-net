@@ -67,7 +67,7 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = mutationTestExecutor;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
-            _mutationProcess = new CsharpMutationProcess(Input, fileSystem ?? new FileSystem(), _options, mutantFilter, _reporter, orchestrator);
+            _mutationProcess = new CsharpMutationProcess(Input, fileSystem ?? new FileSystem(), _options, mutantFilter, orchestrator);
         }
 
         public void Mutate()

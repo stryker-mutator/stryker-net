@@ -96,6 +96,7 @@ namespace Stryker.Core.UnitTest
             projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
+            mutationTestProcessMock.Setup(x => x.FilterMutants());
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
 
             reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);

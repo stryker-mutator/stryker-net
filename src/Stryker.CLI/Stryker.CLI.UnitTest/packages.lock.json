@@ -810,6 +810,15 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "ShellProgressBar": {
+        "type": "Transitive",
+        "resolved": "5.1.0",
+        "contentHash": "361fhmZBA2rn/Z8Tp9wDpB97H9GSRTLI5vXBky4I8fkd7H6UVYgvVSW6uv6Wd1+lUbq8JLgYo+4bhJvWF/SJCw==",
+        "dependencies": {
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
+          "System.Text.Encoding.CodePages": "4.0.1"
+        }
+      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.1.0",
@@ -2064,8 +2073,9 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
-          "Stryker.RegexMutators": "1.0.0",
+          "ShellProgressBar": "5.1.0",
+          "Stryker.DataCollector": "0.21.1",
+          "Stryker.RegexMutators": "0.21.1",
           "System.IO.Abstractions": "13.2.9"
         }
       },

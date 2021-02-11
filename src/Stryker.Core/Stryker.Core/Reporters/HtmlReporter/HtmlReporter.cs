@@ -1,13 +1,13 @@
-﻿using Crayon;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using Crayon;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters.Html
 {
@@ -29,10 +29,14 @@ namespace Stryker.Core.Reporters.Html
             var mutationReport = JsonReport.Build(_options, mutationTree);
 
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
+
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
+            var clickablePath = reportPath.Replace("\\", "/");
+            clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
+
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"{reportPath} \n" +
+                $"file://{clickablePath} \n" +
                 $"You can open it in your browser of choice. \n"));
         }
 

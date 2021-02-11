@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -56,17 +55,27 @@ namespace Stryker.Core
 
             try
             {
+                // Mutate
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 
-                _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
+                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+
+                // Report
                 reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
+
+                // Filter
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.FilterMutants();
+                }
+
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
                 if (!mutantsNotRun.Any())
@@ -86,12 +95,12 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, double.NaN);
                 }
 
+                // Report
                 reporters.OnStartMutantTestRun(mutantsNotRun);
 
+                // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    // test mutations
-                    project.FilterMutants();
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
