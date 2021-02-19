@@ -27,7 +27,7 @@ namespace Stryker.CLI
             ConfigOption = AddCliOption(StrykerOption.None, "config-file", "cp",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "init", "i",
-                "Generate a stryker config file with selected and default options.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+                "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
 
             PrepareCliOptions();
         }
