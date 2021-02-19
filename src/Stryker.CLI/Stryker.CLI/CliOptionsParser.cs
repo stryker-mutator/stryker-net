@@ -77,7 +77,6 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.Concurrency, "concurrency", "c", new ConcurrencyInput().HelpText, argumentHint: "number");
 
             AddCliOption(StrykerOption.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
-            AddCliOption(StrykerOption.DevMode, "dev-mode", "dev", new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
 
             AddCliOption(StrykerOption.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
@@ -90,11 +89,12 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.LogLevel, "verbosity", "V", new LogLevelInput().HelpText);
             AddCliOption(StrykerOption.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerOption.DiffCompare, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
-            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
+            AddCliOption(StrykerOption.DiffCompare, "since", null, new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
+            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", null, new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
 
-            AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", "dk", new DashboardApiKeyInput().HelpText);
-            AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", "sas", new AzureFileStorageSasInput().HelpText);
+            AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", null, new DashboardApiKeyInput().HelpText);
+            AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", null, new AzureFileStorageSasInput().HelpText);
+            AddCliOption(StrykerOption.DevMode, "dev-mode", null, new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
         }
 
         private static void RegisterCliOption(CommandLineApplication app, CliOption option)
