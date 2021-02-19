@@ -9,7 +9,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Options
 {

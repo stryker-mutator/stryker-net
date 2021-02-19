@@ -44,13 +44,24 @@ namespace Stryker.CLI
 
             try
             {
+                var settings = new JsonSerializerSettings()
+                {
+                    MissingMemberHandling = MissingMemberHandling.Error
+                };
+
                 JToken strykerSection = JObject.Parse(json)["stryker-config"];
 
-                return strykerSection.ToObject<FileBasedOptions>();
+                var configJson = strykerSection.ToString();
+
+                return JsonConvert.DeserializeObject<FileBasedOptions>(configJson, settings);
             }
             catch (JsonReaderException)
             {
                 throw new StrykerInputException("Could not find stryker-config section in config file");
+            }
+            catch (JsonSerializationException ex)
+            {
+                throw new StrykerInputException(@$"There was a problem with one of the json properties in your stryker config. Path ""{ex.Path}"", message: ""{ex.Message}""");
             }
         }
     }

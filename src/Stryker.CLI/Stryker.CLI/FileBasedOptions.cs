@@ -4,39 +4,38 @@ namespace Stryker.CLI
 {
     public class FileBasedOptions
     {
-        public ProjectInfo ProjectInfo { get; }
+        public ProjectInfo ProjectInfo { get; set; }
 
-        public string Concurrency { get; }
+        public string Concurrency { get; set; }
 
-        public string MutationLevel { get; }
+        public string MutationLevel { get; set; }
 
-        public string Mutate { get; }
-        public string Solution { get; }
-        public string Project { get; }
+        public string[] Mutate { get; set; }
+        public string Solution { get; set; }
+        public string Project { get; set; }
 
-        public Thresholds Thresholds { get; }
+        public Thresholds Thresholds { get; set; }
 
-        public string LogToFile { get; }
-        public string Verbosity { get; }
-        public string[] Reporters { get; }
+        public bool LogToFile { get; set; }
+        public string Verbosity { get; set; }
+        public string[] Reporters { get; set; }
 
-        public Incremental Incremental { get; }
+        public Incremental Incremental { get; set; }
     }
 
     public class Incremental
     {
-        public string Target { get; }
-        public bool Since { get; }
-        public bool WithBaseline { get; }
-
-        public string Provider { get; }
-        public string AzureFileShareUrl { get; }
+        public string Target { get; set; }
+        public bool Since { get; set; }
+        public bool WithBaseline { get; set; }
+        public string Provider { get; set; }
+        public string AzureFileShareUrl { get; set; }
     }
 
     public class ProjectInfo
     {
-        public string Name { get; }
-        public string Module { get; }
-        public string Version { get; }
+        public string Name { get; set; }
+        public string Module { get; set; }
+        public string Version { get; set; }
     }
 }

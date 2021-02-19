@@ -47,6 +47,9 @@ namespace Stryker.CLI
             app.OnExecute(() =>
             {
                 // app started
+                PrintStykerASCIIName();
+                PrintStrykerVersionInformationAsync();
+
                 var options = new OptionsBuilder(_logBuffer).Build(args, app);
 
                 if (CliOptionsParser.GenerateConfigFile(args, app))
@@ -64,9 +67,6 @@ namespace Stryker.CLI
 
         private void RunStryker(StrykerOptions options)
         {
-            PrintStykerASCIIName();
-            _ = PrintStrykerVersionInformationAsync();
-
             StrykerRunResult result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
 
             HandleStrykerRunResult(options, result);
@@ -108,7 +108,7 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
-        private async Task PrintStrykerVersionInformationAsync()
+        private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
