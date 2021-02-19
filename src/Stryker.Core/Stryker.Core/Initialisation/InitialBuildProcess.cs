@@ -36,7 +36,7 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
-                string solutionDir = Path.GetDirectoryName(solutionPath);
+                var solutionDir = Path.GetDirectoryName(solutionPath);
                 var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
@@ -45,8 +45,12 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
+                var buildPath = !string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath);
+
+                _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
                 // Build with dotnet build
-                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{Path.GetFileName(projectPath)}\"");
+                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
+
                 CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
             }
         }

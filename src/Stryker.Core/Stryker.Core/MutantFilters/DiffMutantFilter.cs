@@ -66,7 +66,7 @@ namespace Stryker.Core.MutantFilters
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
             {
-                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
+                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePath);
                 return SetMutantStatusForFileChanged(mutants);
             }
             else

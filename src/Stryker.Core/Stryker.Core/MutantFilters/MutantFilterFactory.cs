@@ -30,7 +30,7 @@ namespace Stryker.Core.MutantFilters
         private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(IStrykerOptions options)
         {
             var enabledFilters = new List<IMutantFilter> {
-                    new FilePatternMutantFilter(),
+                    new FilePatternMutantFilter(options),
                     new IgnoredMethodMutantFilter(),
                     new ExcludeMutationMutantFilter(),
                     new ExcludeFromCodeCoverageFilter()

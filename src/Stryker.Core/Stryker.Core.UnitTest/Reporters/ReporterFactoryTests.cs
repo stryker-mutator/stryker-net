@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Reporters
             broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
 
-            broadcastReporter.Reporters.Count().ShouldBe(8);
+            result.Reporters.Count().ShouldBe(8);
         }
 
         [Fact]

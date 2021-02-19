@@ -25,13 +25,9 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
             {
-                Name = "ProjectRoot"
-            };
-            folder.Add(new FileLeaf()
-            {
-                Name = "SomeFile.cs",
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
@@ -58,6 +54,7 @@ namespace Stryker.Core.UnitTest
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
+            mutationTestProcessMock.Setup(x => x.FilterMutants());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
 
@@ -82,13 +79,9 @@ namespace Stryker.Core.UnitTest
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
-            var folder = new FolderComposite()
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf
             {
-                Name = "ProjectRoot"
-            };
-            folder.Add(new FileLeaf
-            {
-                Name = "SomeFile.cs",
                 Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
             });
             var mutationTestInput = new MutationTestInput()
@@ -103,6 +96,7 @@ namespace Stryker.Core.UnitTest
             projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
+            mutationTestProcessMock.Setup(x => x.FilterMutants());
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
 
             reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);

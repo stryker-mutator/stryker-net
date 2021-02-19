@@ -8,7 +8,7 @@ namespace Stryker.Core.Instrumentation
     internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
 
-        public ConditionalInstrumentationEngine(string marker): base(marker, "ConditionalInstrumentation")
+        public ConditionalInstrumentationEngine(string marker): base(marker)
         {
         }
 

@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
@@ -13,7 +12,7 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
     {
-        public EndingReturnEngine(string markerId) : base(markerId, "EndingReturnEngine")
+        public EndingReturnEngine(string markerId) : base(markerId)
         {
         }
 
@@ -51,8 +50,8 @@ namespace Stryker.Core.Instrumentation
             }
 
             method = method.ReplaceNode(method.Body!, method.Body!.AddStatements(
-                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType).
-                        WithLeadingTrivia(SyntaxFactory.Space).WithTrailingTrivia())));
+                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType.WithoutTrailingTrivia()).
+                        WithLeadingTrivia(SyntaxFactory.Space)))).WithAdditionalAnnotations(Marker);
 
             return method;
         }
@@ -64,7 +63,7 @@ namespace Stryker.Core.Instrumentation
                 throw new InvalidOperationException($"No return at the end of: {node.Body}");
             }
 
-            return node.ReplaceNode(node.Body, node.Body.Statements.Remove(node.Body.Statements.Last()));
+            return node.ReplaceNode(node.Body, node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last())));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
@@ -11,11 +11,11 @@ namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutantOrchestratorTests
     {
-        private readonly MutantOrchestrator _target;
+        private readonly CsharpMutantOrchestrator _target;
 
         public MutantOrchestratorTests()
         {
-            _target = new MutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
+            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
         }
 
         [Fact]
@@ -821,16 +821,11 @@ static TestClass() " + source + "}";
 static string Value { get; }
 static TestClass() {using(new StrykerNamespace.MutantContext()){Value = (StrykerNamespace.MutantControl.IsActive(0)?"""":""Hello, World!"");}}}";
 
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
-            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
-        public void ShouldMutateStaticProperties()
+        public void ShouldMutateStaticPropertiesInArrowForm()
         {
             var source = @"class Test {
 static string Value => """";
@@ -840,13 +835,70 @@ static TestClass(){}}";
 static string Value => (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
-            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            ShouldMutateSourceToExpected(source, expected);
+        }
 
-            expected = expected.Replace("StrykerNamespace", CodeInjection.HelperNamespace);
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+        [Fact]
+        public void ShouldMutatePropertiesInArrowFormEvenWithComplexConstruction()
+        {
+            var source = @"class Test {
+string Value {get => Out(out var x)? ""empty"": """";}
+static TestClass(){}}";
+
+            var expected = @"class Test {
+string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}}}
+static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateStaticProperties()
+        {
+            var source = @"class Test {
+static string Value
+{
+    get { return ""TestDescription"";}
+    set { value = ""TestDescription"";}
+}
+static TestClass(){}}";
+
+            var expected = @"class Test {
+static string Value
+{
+    get { return (StrykerNamespace.MutantControl.IsActive(0)?"""":""TestDescription"");}
+    set { value = (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");}
+}
+static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutatePropertiesAsArrowExpression()
+        {
+            var source = @"class Test {
+string Value => Generator(out var x) ? """" :""test"";
+}";
+
+            var expected = @"class Test {
+string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(2)?"""":""test"");}}}
+}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        // test for issue #1386
+        public void ShouldNotLeakMutationsAccrossDefinitions()
+        {
+            var source = @"class Test {
+int GetId(string input) => int.TryParse(input, out var result) ? result : 0;
+string Value => Generator(out var x) ? """" :""test"";
+}";
+
+            var expected = @"class Test {
+int GetId(string input) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(int.TryParse(input, out var result) )? result : 0;}else{return int.TryParse(input, out var result) ? result : 0;}}
+string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(3)?"""":""test"");}}}}}}";
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         private void ShouldMutateSourceToExpected(string actual, string expected)
@@ -854,7 +906,6 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
             actual = @"using System;
 using System.Collections.Generic;
             using System.Text;
-
 namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
@@ -863,7 +914,6 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             expected = @"using System;
 using System.Collections.Generic;
             using System.Text;
-
 namespace StrykerNet.UnitTest.Mutants.TestResources
     {
         class TestClass
@@ -877,5 +927,4 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             actualNode.ShouldNotContainErrors();
         }
     }
-
 }

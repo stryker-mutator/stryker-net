@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,6 +35,15 @@ namespace Stryker.Core.Helpers
             };
         }
 
+        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod)
+        {
+            return baseMethod.Keyword.Text switch
+            {
+                "get" => true,
+                _ => false
+            };
+        }
+
         public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
@@ -43,5 +53,8 @@ namespace Stryker.Core.Helpers
             }
             return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }
+
+        public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
+            => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -17,21 +17,21 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             if (forStatement.Declaration != null)
             {
                 forStatement = forStatement.ReplaceNode(forStatement.Declaration,
-                MutantOrchestrator.Mutate(forStatement.Declaration, context));
+                MutantOrchestrator.Mutate(originalFor.Declaration, context));
             }
             // mutate condition, if any
             if (originalFor.Condition != null)
             {
                 forStatement = forStatement.ReplaceNode(forStatement.Condition!,
-                    MutantOrchestrator.Mutate(forStatement.Condition, context));
+                    MutantOrchestrator.Mutate(originalFor.Condition, context));
             }
 
             // mutate the statement/block
-            forStatement = forStatement.ReplaceNode(forStatement.Statement, MutantOrchestrator.Mutate(forStatement.Statement, context));
+            forStatement = forStatement.ReplaceNode(forStatement.Statement, MutantOrchestrator.Mutate(originalFor.Statement, context));
             return forStatement;
         }
 
-        public ForStatementOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public ForStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

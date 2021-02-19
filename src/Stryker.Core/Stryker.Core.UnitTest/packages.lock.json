@@ -20,9 +20,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.15.2, )",
-        "resolved": "4.15.2",
-        "contentHash": "wegOsLAWslb4Qm/ER1hl7pd9M5fiolsnSVEZuNZgVl8iVGm/PRHXrLY/2YCnFmNHnMiX3X/+em404mGZi2ofQw==",
+        "requested": "[4.16.0, )",
+        "resolved": "4.16.0",
+        "contentHash": "YomI39ySpUBi0wX05+orpdO3pyj+2NykmUJdY1vglhm58I+acV4QaGf9FG2JnZ6DTs1tbnv7vsfeAAkYwiSvYQ==",
         "dependencies": {
           "Castle.Core": "4.4.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
@@ -42,11 +42,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.8, )",
-        "resolved": "13.2.8",
-        "contentHash": "9i5NSQaIcIctugXKggIaFle2V6cKug2jO8qGENL9Q5BTFTK3QLQeQCaALv7G2qfe3mE8rKhRthvLjX3EOc13Mw==",
+        "requested": "[13.2.15, )",
+        "resolved": "13.2.15",
+        "contentHash": "wUlTgut1kOjJzOSzjYjQm3LryYhUvFcD+WvLELTixJUsKujobczHDyfFhBMdOovfwh7HOVIjYCLX1tcktPlhQw==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.8"
+          "System.IO.Abstractions": "13.2.15"
         }
       },
       "xunit": {
@@ -81,10 +81,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "LXoLg1/I4LRh3HV6fFwtJ7nv+w6kGCXuj8eqkW2SwHKMHY1UMKB7R1LnfNvGfhTopfwzNFrc/JUE76ys793G/w==",
+        "resolved": "3.2.0",
+        "contentHash": "clK8nODLS0tuvhXi8tLAPsC4dZn2LLpCjmXh8xjDKsNc53JRCNff/KX0gjFtFUCxNfLdqAe4zY5JCREqtgfYiA==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.1.1",
+          "Buildalyzer.Logger": "3.2.0",
           "MSBuild.StructuredLogger": "2.1.133",
           "Microsoft.Build": "16.5.0",
           "Microsoft.Build.Framework": "16.5.0",
@@ -99,8 +99,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "qP5pleh4o0/z7ue3BwIjIi1Kqw6ahuZoyKJsZYRMMiKmF1EJ8Dk9aONI2U1AIOC8LFkTQENutW8wwckTOF0gcA==",
+        "resolved": "3.2.0",
+        "contentHash": "ag6y+Tu5nOg0U0g1LOwdvV3AXNqu40k0C0qPk5MYlnqP99PEL9+7ypHntJ+jyj25Aps1E0X+B6uAtGEm1qkJ0g==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -816,6 +816,15 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "ShellProgressBar": {
+        "type": "Transitive",
+        "resolved": "5.1.0",
+        "contentHash": "361fhmZBA2rn/Z8Tp9wDpB97H9GSRTLI5vXBky4I8fkd7H6UVYgvVSW6uv6Wd1+lUbq8JLgYo+4bhJvWF/SJCw==",
+        "dependencies": {
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
+          "System.Text.Encoding.CodePages": "4.0.1"
+        }
+      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.1.0",
@@ -1188,8 +1197,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.8",
-        "contentHash": "XSmdQR5k/XHcUZPXVTLWVNcG9M55SMxqqnkM7esFeQO64ErmqcgwungcFS+OGlzDbWaevwT/6WQ1hzVb5mDiUw==",
+        "resolved": "13.2.15",
+        "contentHash": "dIPrs6lqE5/mn5I6YVqLLdu/UDdaW6vk83MOCxo7KH5rfC4tR2fMkOUktXw4h3qWEBxFRU1cteWp/ANaGf5d/g==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -2042,7 +2051,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "3.1.1",
+          "Buildalyzer": "3.2.0",
           "Crayon": "1.2.48",
           "DotNet.Glob": "3.1.2",
           "LibGit2Sharp": "0.26.2",
@@ -2061,9 +2070,10 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.20.0",
-          "Stryker.RegexMutators": "0.20.0",
-          "System.IO.Abstractions": "13.2.8"
+          "ShellProgressBar": "5.1.0",
+          "Stryker.DataCollector": "0.21.1",
+          "Stryker.RegexMutators": "0.21.1",
+          "System.IO.Abstractions": "13.2.15"
         }
       },
       "stryker.datacollector": {

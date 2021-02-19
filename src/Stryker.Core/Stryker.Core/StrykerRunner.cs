@@ -55,18 +55,27 @@ namespace Stryker.Core
 
             try
             {
+                // Mutate
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                IParentComponent rootComponent = new FolderComposite();
-                rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 
-                _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
+                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+
+                // Report
                 reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
+
+                // Filter
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.FilterMutants();
+                }
+
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
                 if (!mutantsNotRun.Any())
@@ -86,11 +95,12 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, double.NaN);
                 }
 
+                // Report
                 reporters.OnStartMutantTestRun(mutantsNotRun);
 
+                // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    // test mutations
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
@@ -131,6 +141,29 @@ namespace Stryker.Core
                 {
                     project.GetCoverage();
                 }
+            }
+        }
+
+        /// <summary>
+        /// In the case of multiple projects we wrap them inside a wrapper root component. Otherwise the only project root will be the root component.
+        /// </summary>
+        /// <param name="projectComponents">A list of all project root components</param>
+        /// <param name="options">The current stryker options</param>
+        /// <returns>The root folder component</returns>
+        private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        {
+            if (projectComponents.Count() > 1)
+            {
+                var rootComponent = new FolderComposite
+                {
+                    FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
+                };
+                rootComponent.AddRange(projectComponents);
+                return rootComponent;
+            }
+            else
+            {
+                return projectComponents.FirstOrDefault();
             }
         }
     }

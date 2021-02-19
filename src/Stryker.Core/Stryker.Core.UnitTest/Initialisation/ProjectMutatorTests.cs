@@ -42,10 +42,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 ProjectInfo = new ProjectInfo()
                 {
-                    ProjectContents = new FolderComposite()
-                    {
-                        Name = "ProjectRoot"
-                    }
+                    ProjectContents = new CsharpFolderComposite()
                 },
             };
         }

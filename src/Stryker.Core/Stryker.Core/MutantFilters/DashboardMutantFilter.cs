@@ -52,7 +52,7 @@ namespace Stryker.Core.MutantFilters
             {
                 if (_baseline == null)
                 {
-                    _logger.LogDebug("Returning all mutants on {0} because there is no baseline available", file.RelativePathToProjectFile);
+                    _logger.LogDebug("Returning all mutants on {0} because there is no baseline available", file.RelativePath);
                 }
                 else
                 {
