@@ -24,7 +24,7 @@ namespace Stryker.CLI
 
         static CliOptionsParser()
         {
-            ConfigOption = AddCliOption(StrykerOption.None, "config-file", "cp",
+            ConfigOption = AddCliOption(StrykerOption.None, "config-file", "f",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "init", "i",
                 "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
@@ -86,12 +86,12 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.ProjectVersion, "version", "v", new ProjectVersionInput().HelpText);
             AddCliOption(StrykerOption.MutationLevel, "mutation-level", "l", new MutationLevelInput().HelpText);
 
-            AddCliOption(StrykerOption.LogToFile, "log-to-file", "f", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
+            AddCliOption(StrykerOption.LogToFile, "log-to-file", "L", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
             AddCliOption(StrykerOption.LogLevel, "verbosity", "V", new LogLevelInput().HelpText);
             AddCliOption(StrykerOption.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerOption.DiffCompare, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerOption.DiffCompare, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
+            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish");
 
             AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", "dk", new DashboardApiKeyInput().HelpText);
             AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", "sas", new AzureFileStorageSasInput().HelpText);
