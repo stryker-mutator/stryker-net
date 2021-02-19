@@ -1,23 +1,22 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdLowInput : OptionDefinition<string, int>
+    public class ThresholdLowInput : OptionDefinition<int>
     {
         public override StrykerOption Type => StrykerOption.ThresholdLow;
-        public override string DefaultInput => DefaultValue.ToString();
         public override int DefaultValue => 60;
 
         protected override string Description => "Minimum acceptable mutation score. Must be less than or equal to threshold high and more than threshold break.";
         protected override string HelpOptions => FormatHelpOptions("0 - 100");
 
         public ThresholdLowInput() { }
-        public ThresholdLowInput(string lowInput, int @break, int high)
+        public ThresholdLowInput(int? lowInput, int @break, int high)
         {
             if (lowInput is { })
             {
-                var low = int.Parse(lowInput);
+                var low = lowInput.Value;
                 if (low > 100 || low < 0)
                 {
                     throw new StrykerInputException("Threshold low must be between 0 and 100.");

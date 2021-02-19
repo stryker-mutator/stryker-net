@@ -117,6 +117,7 @@ namespace Stryker.Core.Options
             return inputType switch
             {
                 StrykerOption.ThresholdBreak => SetThresholdBreak(value),
+                StrykerOption.Concurrency => SetConcurrency(value),
                 StrykerOption.SolutionPath => SetSolutionPath(value),
                 StrykerOption.ProjectUnderTestName => SetProjectUnderTestName(value),
                 StrykerOption.MutationLevel => SetMutationLevel(value),
@@ -125,7 +126,24 @@ namespace Stryker.Core.Options
                 StrykerOption.AzureFileStorageSas => SetAzureFileStorageSas(value),
                 StrykerOption.ProjectVersion => SetProjectVersion(value),
                 StrykerOption.FallbackVersion => SetFallbackVersion(value),
+                _ => throw new GeneralStrykerException($"Input {inputType} is invalid for single value.")
+            };
+        }
+
+        /// <summary>
+        /// Sets option to chosen value
+        /// </summary>
+        /// <param name="inputType"></param>
+        /// <param name="values"></param>
+        /// <returns>new StrykerOptions with supplied option set to chosen value</returns>
+        public StrykerOptions With(StrykerOption inputType, int value)
+        {
+            return inputType switch
+            {
                 StrykerOption.Concurrency => SetConcurrency(value),
+                StrykerOption.ThresholdBreak => SetThresholdBreak(value),
+                StrykerOption.ThresholdHigh => SetThresholdHigh(value),
+                StrykerOption.ThresholdLow => SetThresholdLow(value),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for single value.")
             };
         }
@@ -188,11 +206,32 @@ namespace Stryker.Core.Options
         // single value
         private StrykerOptions SetThresholdBreak(string value)
         {
+            return SetThresholdBreak(int.Parse(value));
+        }
+        private StrykerOptions SetThresholdBreak(int value)
+        {
             Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdBreakInput(value, Thresholds.Low).Value);
             return this;
         }
 
+        private StrykerOptions SetThresholdHigh(int value)
+        {
+            Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdHighInput(value, Thresholds.Low).Value);
+            return this;
+        }
+
+        private StrykerOptions SetThresholdLow(int value)
+        {
+            Thresholds = new Thresholds(Thresholds.High, Thresholds.Low, new ThresholdLowInput(value, Thresholds.Break, Thresholds.High).Value);
+            return this;
+        }
+
         private StrykerOptions SetConcurrency(string value)
+        {
+            return SetConcurrency(int.Parse(value));
+        }
+
+        private StrykerOptions SetConcurrency(int value)
         {
             Concurrency = new ConcurrencyInput(_logger, value).Value;
             return this;

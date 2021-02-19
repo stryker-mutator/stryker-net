@@ -15,8 +15,11 @@ namespace Stryker.CLI
             var jsonConfig = LoadJsonConfig(configFilePath);
 
             enrichedOptions = enrichedOptions
+                .With(StrykerOption.SolutionPath, jsonConfig.Solution)
                 .With(StrykerOption.Concurrency, jsonConfig.Concurrency)
-                .With(StrykerOption.SolutionPath, jsonConfig.Solution);
+                .With(StrykerOption.ThresholdHigh, jsonConfig.Thresholds.High)
+                .With(StrykerOption.ThresholdLow, jsonConfig.Thresholds.Low)
+                .With(StrykerOption.ThresholdBreak, jsonConfig.Thresholds.Break);
             enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
             enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
             enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
