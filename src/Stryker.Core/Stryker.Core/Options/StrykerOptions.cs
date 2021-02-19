@@ -30,7 +30,6 @@ namespace Stryker.Core.Options
 
         public int AdditionalTimeoutMS { get; private set; } = new AdditionalTimeoutMsInput().Value;
         public LanguageVersion LanguageVersion { get; private set; } = new LanguageVersionInput().Value;
-        public TestRunner TestRunner { get; private set; } = new TestRunnerInput().Value;
 
         public int Concurrency { get; private set; } = new ConcurrencyInput().Value;
         public string ProjectUnderTestName { get; private set; } = new ProjectUnderTestNameInput().Value;
