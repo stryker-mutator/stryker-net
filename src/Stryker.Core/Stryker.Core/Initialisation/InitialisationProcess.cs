@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 using System.Linq;
 
 namespace Stryker.Core.Initialisation
@@ -59,7 +60,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                _testRunner = new TestRunnerFactory().Create(options, options.OptimizationMode, projectInfo);
+                _testRunner = new VsTestRunnerPool(options, projectInfo);
             }
 
             var input = new MutationTestInput()

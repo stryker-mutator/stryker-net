@@ -16,23 +16,14 @@ namespace Stryker.CLI
 
             enrichedOptions = enrichedOptions
                 .With(StrykerOption.Concurrency, jsonConfig.Concurrency)
-                .With(StrykerOption.SolutionPath, jsonConfig.Solution);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
-            enrichedOptions = enrichedOptions.With(StrykerOption.Concurrency, jsonConfig.Concurrency);
+                .With(StrykerOption.SolutionPath, jsonConfig.Solution)
+                .With(StrykerOption.FallbackVersion, jsonConfig.BaseLine.FallbackVersion)
+                .With(StrykerOption.Since, jsonConfig.Since)
+                .With(StrykerOption.SinceBranch, jsonConfig.SinceBranch)
+                .With(StrykerOption.SinceCommit, jsonConfig.SinceCommit)
+                .With(StrykerOption.BaselineProvider, jsonConfig.BaseLine.Provider)
+                .With(StrykerOption.FallbackVersion, jsonConfig.BaseLine.FallbackVersion)
+                ;
 
             return enrichedOptions;
         }

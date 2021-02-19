@@ -1,14 +1,14 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DashboardCompareInput : OptionDefinition<bool>
+    public class WithBaselineInput : OptionDefinition<bool>
     {
         public override StrykerOption Type => StrykerOption.DashboardCompare;
         public override bool DefaultValue => false;
 
         protected override string Description => "EXPERIMENTAL: Use results stored in stryker dashboard to only test new mutants.";
 
-        public DashboardCompareInput() { }
-        public DashboardCompareInput(bool? compareToDashboard)
+        public WithBaselineInput() { }
+        public WithBaselineInput(bool? compareToDashboard)
         {
             if (compareToDashboard is { })
             {

@@ -14,22 +14,19 @@ namespace Stryker.Core.Options.Inputs
                                     Note, the url might be different depending of where your file storage is hosted.";
 
         public AzureFileStorageUrlInput() { }
-        public AzureFileStorageUrlInput(string azureFileStorageUrl, BaselineProvider baselineProvider)
+        public AzureFileStorageUrlInput(string azureFileStorageUrl)
         {
-            if (baselineProvider == BaselineProvider.AzureFileStorage)
+            if (azureFileStorageUrl is null)
             {
-                if (azureFileStorageUrl is null)
-                {
-                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
-                }
-
-                if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
-                {
-                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
-                }
-
-                Value = azureFileStorageUrl;
+                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
             }
+
+            if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
+            {
+                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
+            }
+
+            Value = azureFileStorageUrl;
         }
     }
 }

@@ -20,9 +20,12 @@ namespace Stryker.Core.Options
         BaselineProvider,
         Reporters,
         ProjectUnderTestName,
-        DiffCompare,
+
+        Since,
+        SinceBranch,
+        SinceCommit,
+
         DashboardCompare,
-        DiffTarget,
         AdditionalTimeoutMs,
         ExcludedMutators,
         IgnoredMethods,

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
-        private readonly OptimizationModes _flags;
+        private readonly OptimizationModes _optimizationFlags;
         private readonly ProjectInfo _projectInfo;
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
@@ -52,7 +52,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public VsTestRunner(
             StrykerOptions options,
-            OptimizationModes flags,
             ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
             IFileSystem fileSystem = null,
@@ -64,7 +63,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
-            _flags = flags;
+            _optimizationFlags = options.OptimizationMode;
             _projectInfo = projectInfo;
             _hostBuilder = hostBuilder ?? ((id) => new StrykerVsTestHostLauncher(id));
             SetListOfTests(testCasesDiscovered);
@@ -99,13 +98,13 @@ namespace Stryker.Core.TestRunners.VsTest
             if (mutants != null)
             {
                 // if we optimize the number of tests to run
-                if (_flags.HasFlag(OptimizationModes.CoverageBasedTest))
+                if (_optimizationFlags.HasFlag(OptimizationModes.CoverageBasedTest))
                 {
                     var needAll = false;
                     foreach (var mutant in mutants)
                     {
                         List<string> tests;
-                        if ((mutant.IsStaticValue && !_flags.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                        if ((mutant.IsStaticValue && !_optimizationFlags.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
                         {
                             tests = null;
                             needAll = true;
@@ -429,7 +428,7 @@ $@"<RunSettings>
 
         private bool NeedCoverage()
         {
-            return _flags.HasFlag(OptimizationModes.CoverageBasedTest) || _flags.HasFlag(OptimizationModes.SkipUncoveredMutants);
+            return _optimizationFlags.HasFlag(OptimizationModes.CoverageBasedTest) || _optimizationFlags.HasFlag(OptimizationModes.SkipUncoveredMutants);
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()

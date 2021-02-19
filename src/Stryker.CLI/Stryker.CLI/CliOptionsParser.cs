@@ -90,8 +90,8 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.LogLevel, "verbosity", "V", new LogLevelInput().HelpText);
             AddCliOption(StrykerOption.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerOption.DiffCompare, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new DashboardCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerOption.Since, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new WithBaselineInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
             AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", "dk", new DashboardApiKeyInput().HelpText);
             AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", "sas", new AzureFileStorageSasInput().HelpText);

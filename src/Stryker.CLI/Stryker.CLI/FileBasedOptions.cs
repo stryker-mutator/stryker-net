@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Stryker.Core.Options;
 
 namespace Stryker.CLI
@@ -20,16 +21,29 @@ namespace Stryker.CLI
         public string Verbosity { get; set; }
         public string[] Reporters { get; set; }
 
-        public Incremental Incremental { get; set; }
+        // since
+        [JsonProperty(PropertyName = "since")]
+        public bool Since { get; set; }
+        [JsonProperty(PropertyName = "since-branch")]
+        public string SinceBranch { get; set; }
+        [JsonProperty(PropertyName = "since-commit")]
+        public string SinceCommit { get; set; }
+
+
+        public BaseLine BaseLine { get; set; }
     }
 
-    public class Incremental
+    public class BaseLine
     {
-        public string Target { get; set; }
-        public bool Since { get; set; }
+
+        [JsonProperty(PropertyName = "with-baseline")]
         public bool WithBaseline { get; set; }
+        [JsonProperty(PropertyName = "with-baseline")]
         public string Provider { get; set; }
+        [JsonProperty(PropertyName = "with-baseline")]
         public string AzureFileShareUrl { get; set; }
+        [JsonProperty(PropertyName = "fallback-version")]
+        public string FallbackVersion { get; set; }
     }
 
     public class ProjectInfo

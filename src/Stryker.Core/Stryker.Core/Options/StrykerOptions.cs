@@ -34,7 +34,7 @@ namespace Stryker.Core.Options
         public string ProjectUnderTestName { get; private set; } = new ProjectUnderTestNameInput().Value;
         public IEnumerable<string> TestProjects { get; private set; } = new TestProjectsInput().Value;
 
-        public bool DashboardCompareEnabled { get; private set; } = new DashboardCompareInput().Value;
+        public bool DashboardCompareEnabled { get; private set; } = new WithBaselineInput().Value;
         public IEnumerable<Reporter> Reporters { get; private set; } = new ReportersInput().Value;
 
         public BaselineProvider BaselineProvider { get; private set; } = new BaselineProviderInput().Value;
@@ -46,7 +46,7 @@ namespace Stryker.Core.Options
         public string ProjectName { get; private set; } = new ProjectNameInput().Value;
 
         public bool DiffCompareEnabled { get; private set; } = new DiffCompareInput().Value;
-        public string GitDiffTarget { get; private set; } = new GitDiffTargetInput().Value;
+        public string SinceBranch { get; private set; } = new SinceBranchInput().Value;
         public IEnumerable<FilePattern> DiffIgnoreFilePatterns { get; private set; } = new DiffIgnoreFilePatternsInput().Value;
 
         public string FallbackVersion { get; private set; } = new FallbackVersionInput().Value;
@@ -72,6 +72,11 @@ namespace Stryker.Core.Options
             OutputPath = new OutputPathInput(_logger, _fileSystem, BasePath).Value;
 
             LogOptions = new LogOptions(new LogLevelInput().Value, new LogToFileInput().Value, OutputPath);
+        }
+
+        public void Validate()
+        {
+            // validate all inputs
         }
 
         /// <summary>
@@ -100,8 +105,8 @@ namespace Stryker.Core.Options
         {
             return inputType switch
             {
-                StrykerOption.DiffCompare => SetDiff(enabled, value),
-                StrykerOption.DashboardCompare => SetCompareToDashboard(enabled, value),
+                StrykerOption.Since => SetDiff(enabled, value),
+                StrykerOption.DashboardCompare => SetWithBaseline(enabled, value),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature with value.")
             };
         }
@@ -166,22 +171,22 @@ namespace Stryker.Core.Options
 
         private StrykerOptions SetCompareToDashboard(bool? enabled)
         {
-            DashboardCompareEnabled = new DashboardCompareInput(enabled).Value;
+            DashboardCompareEnabled = new WithBaselineInput(enabled).Value;
             return this;
         }
 
         // bool with values
-        private StrykerOptions SetCompareToDashboard(bool? enabled, string value)
+        private StrykerOptions SetWithBaseline(bool? enabled, string value)
         {
-            DashboardCompareEnabled = new DashboardCompareInput(enabled).Value;
-            GitDiffTarget = new GitDiffTargetInput(value, DiffCompareEnabled).Value;
+            DashboardCompareEnabled = new WithBaselineInput(enabled).Value;
+            SinceBranch = new SinceBranchInput(value, DiffCompareEnabled).Value;
             return this;
         }
 
         private StrykerOptions SetDiff(bool? enabled, string value)
         {
             DiffCompareEnabled = new DiffCompareInput(enabled).Value;
-            GitDiffTarget = new GitDiffTargetInput(value, DiffCompareEnabled).Value;
+            SinceBranch = new SinceBranchInput(value, DiffCompareEnabled).Value;
             return this;
         }
 
@@ -208,13 +213,20 @@ namespace Stryker.Core.Options
             return this;
         }
 
+        /// <summary>
+        /// Make sure to call SetDashboardCompare before this
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private StrykerOptions SetAzureFileStorageSas(string value)
         {
+            AzureFileStorageSas = new AzureFileStorageSasInput(value, BaselineProvider).Value;
             return this;
         }
 
         private StrykerOptions SetDashboardApiKey(string value)
         {
+            AzureFileStorageSas = new DashboardApiKeyInput(value, DashboardCompareEnabled).Value;
             return this;
         }
 

@@ -596,7 +596,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "development" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitDiffTarget == "development"),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.SinceBranch == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
