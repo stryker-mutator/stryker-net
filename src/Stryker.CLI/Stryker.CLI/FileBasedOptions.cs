@@ -6,7 +6,7 @@ namespace Stryker.CLI
     {
         public ProjectInfo ProjectInfo { get; set; }
 
-        public string Concurrency { get; set; }
+        public int Concurrency { get; set; }
 
         public string MutationLevel { get; set; }
 
