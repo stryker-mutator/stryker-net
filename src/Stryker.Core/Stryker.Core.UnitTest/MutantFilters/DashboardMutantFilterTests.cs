@@ -115,7 +115,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<ReadOnlyFileLeaf>(new FileLeaf());
+            var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
 
             var mutants = new List<Mutant>
             {
@@ -141,7 +141,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            var file = new ReadOnlyFileLeaf(new FileLeaf
+            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
             });
@@ -190,7 +190,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            var file = new ReadOnlyFileLeaf(new FileLeaf
+            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
             });
@@ -250,7 +250,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
 
-            var file = new ReadOnlyFileLeaf(new FileLeaf
+            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
             });
