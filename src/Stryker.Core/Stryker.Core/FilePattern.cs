@@ -1,12 +1,12 @@
-﻿using DotNet.Globbing;
-using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DotNet.Globbing;
+using Microsoft.CodeAnalysis.Text;
+using Stryker.Core.ProjectComponents;
 
-namespace Stryker.Core.Options
+namespace Stryker.Core
 {
     /// <summary>
     /// Contains information about which files and which parts of a file should be in- or excluded.
@@ -144,8 +144,8 @@ namespace Stryker.Core.Options
             unchecked
             {
                 var hashCode = Glob != null ? Glob.GetHashCode() : 0;
-                hashCode = (hashCode * 397) ^ IsExclude.GetHashCode();
-                hashCode = (hashCode * 397) ^ (TextSpans != null ? TextSpans.Select(t => t.GetHashCode()).Sum() : 0);
+                hashCode = hashCode * 397 ^ IsExclude.GetHashCode();
+                hashCode = hashCode * 397 ^ (TextSpans != null ? TextSpans.Select(t => t.GetHashCode()).Sum() : 0);
                 return hashCode;
             }
         }
