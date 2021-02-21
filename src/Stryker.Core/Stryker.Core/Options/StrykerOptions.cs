@@ -129,7 +129,7 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
-            DiffEnabled = diff;
+            DiffEnabled = diff || compareToDashboard;
             CompareToDashboard = compareToDashboard;
             GitDiffTarget = ValidateGitDiffTarget(gitDiffTarget);
             TestProjects = ValidateTestProjects(testProjects);
