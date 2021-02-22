@@ -62,7 +62,7 @@ namespace Stryker.Core.Mutants
                 new ArrayInitializerOrchestrator(this),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
                 new AccessorSyntaxOrchestrator(this),
-                new ConstLocalDeclarationOrchestrator(this),
+                new LocalDeclarationOrchestrator(this),
                 new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),

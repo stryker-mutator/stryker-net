@@ -38,18 +38,6 @@ namespace Stryker.Core.Mutators
                 yield break;
             }
 
-            // prototype
-            if (assignmentKind == SyntaxKind.OrAssignmentExpression)
-            {
-                yield return new Mutation
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.AssignmentExpression(SyntaxKind.AndAssignmentExpression, node.Left, SyntaxFactory.PrefixUnaryExpression(SyntaxKind.BitwiseNotExpression, node.Right)),
-                    DisplayName = $"{assignmentKind} to {SyntaxKind.AndAssignmentExpression} mutation",
-                    Type = Mutator.Assignment
-                };
-                yield break;
-            }
 
             foreach (var targetAssignmentKind in targetAssignmentKinds)
             {

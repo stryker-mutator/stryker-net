@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression)]
         [InlineData(SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression)]
         [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
-        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
         [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind? additionalOutput = null)
         {
