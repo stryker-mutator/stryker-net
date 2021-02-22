@@ -193,7 +193,7 @@ namespace Stryker.Core.ToolHelpers
         {
             var vstestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
-                .Single(r => r.Contains("Microsoft.TestPlatform.Portable"));
+                .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.OrdinalIgnoreCase));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
