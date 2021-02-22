@@ -7,7 +7,7 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 The default reporters are:
 
 ```bash
-dotnet stryker --reporters "['html', 'progress', 'filteredmutants']"
+dotnet stryker --reporters "['html', 'progress']"
 ```
 
 # Html reporter
@@ -114,7 +114,7 @@ Example:
 ![progress bar reporter](./images/progress-bar-net.png)
 
 # Console dots reporter
-A basic reporter do display the progress of the mutationtest run. It indicates very simple how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
+A basic reporter to display the progress of the mutationtest run. It indicates in a very simple way how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
 
 ```bash
 dotnet stryker --reporters "['dots']"
