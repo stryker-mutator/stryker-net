@@ -42,11 +42,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.17, )",
-        "resolved": "13.2.17",
-        "contentHash": "mkGsru0QTFsZaXy4DwE4Tg3KNbEHJ6VLvCmJT4noUBibnf/mJu9dIAW4e02Ic3eYFBRTCEi8+wnrowYx0FpQ5g==",
+        "requested": "[13.2.18, )",
+        "resolved": "13.2.18",
+        "contentHash": "vEymLFGyKjlbJbufsJ1u6sE1/hGsh70lTgriv9S5h7sQbDzWiczFQNr35A6Kb1lqhHO3fpjM9gXJvIU4WQmSjA==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.17"
+          "System.IO.Abstractions": "13.2.18"
         }
       },
       "xunit": {
@@ -1197,8 +1197,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.17",
-        "contentHash": "NqTcVJYomGHDOJojSmu7rXO9pZiqCPQzvNjixMWKSJiFMnMydcDejo4qQ8ym+vqGYWiT9qQO1xeh/gq9czJezw==",
+        "resolved": "13.2.18",
+        "contentHash": "R+VO3+ASDTEqWszXT66vLZVJ/5YTLILC4snT/rO0FSHRvd9zR+PAaJxlfoi9IQlU0a8WxxXJTvdEcP4le0VfYQ==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -2073,7 +2073,7 @@
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "0.21.1",
           "Stryker.RegexMutators": "0.21.1",
-          "System.IO.Abstractions": "13.2.17"
+          "System.IO.Abstractions": "13.2.18"
         }
       },
       "stryker.datacollector": {
