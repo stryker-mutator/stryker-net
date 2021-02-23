@@ -209,14 +209,6 @@
           "NETStandard.Library": "1.6.1"
         }
       },
-      "Buildalyzer.Logger": {
-        "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "ag6y+Tu5nOg0U0g1LOwdvV3AXNqu40k0C0qPk5MYlnqP99PEL9+7ypHntJ+jyj25Aps1E0X+B6uAtGEm1qkJ0g==",
-        "dependencies": {
-          "NETStandard.Library": "1.6.1"
-        }
-      },
       "FSharp.Core": {
         "type": "Transitive",
         "resolved": "5.0.0",
