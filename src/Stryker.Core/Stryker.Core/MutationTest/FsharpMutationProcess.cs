@@ -53,7 +53,6 @@ namespace Stryker.Core.MutationTest
             // Mutate source files
             foreach (FsharpFileLeaf file in _projectInfo.GetAllFiles())
             {
-                Console.WriteLine(file.RelativePath);
                 _logger.LogDebug($"Mutating {file.RelativePath}");
                 // Mutate the syntax tree
                 var treeroot = ((ParsedInput.ImplFile)file.SyntaxTree).Item.modules;
