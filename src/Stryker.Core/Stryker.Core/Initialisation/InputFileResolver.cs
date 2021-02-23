@@ -103,7 +103,8 @@ namespace Stryker.Core.Initialisation
             }
             else if (projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage() == Language.Fsharp)
             {
-                inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+                //inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+                throw new StrykerInputException("At this moment we do not support mutationtesting in F#.");
             }
             else
             {
