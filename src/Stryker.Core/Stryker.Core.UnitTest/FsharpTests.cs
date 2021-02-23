@@ -16,11 +16,10 @@ namespace Stryker.Core.UnitTest.Fsharp
         private readonly string _currentDirectory;
         private readonly string _filesystemRoot;
         private readonly string _basePath;
-        private readonly string sourceFile;
-        private readonly string testProjectPath;
-        private readonly string projectUnderTestPath;
-        private readonly string defaultTestProjectFileContents;
-        private readonly string defaultProjectUndertestFileContents;
+        private readonly string _sourceFile;
+        private readonly string _testProjectPath;
+        private readonly string _projectUnderTestPath;
+        private readonly string _defaultTestProjectFileContents;
 
         public FsharpTests()
         {
@@ -28,10 +27,10 @@ namespace Stryker.Core.UnitTest.Fsharp
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _basePath = Path.Combine(_filesystemRoot, "TestProject");
 
-            sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/FsharpExampleSourceFile.fs");
-            testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.fsproj"));
-            projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.fsproj"));
-            defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+            _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/FsharpExampleSourceFile.fs");
+            _testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.fsproj"));
+            _projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.fsproj"));
+            _defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
         <IsPackable>false</IsPackable>
@@ -46,13 +45,6 @@ namespace Stryker.Core.UnitTest.Fsharp
         <ProjectReference Include=""..\ExampleProject\ExampleProject.fsproj"" />
     </ItemGroup>
 </Project>";
-            defaultProjectUndertestFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
-    </PropertyGroup>
-
-</Project>";
         }
 
         [Fact]
@@ -60,27 +52,27 @@ namespace Stryker.Core.UnitTest.Fsharp
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.fs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.fs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _projectUnderTestPath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.fs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.fs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") }, // bin should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") }, // obj should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences : new List<string>() { projectUnderTestPath },
+                    projectReferences : new List<string>() { _projectUnderTestPath },
                     targetFramework : "netcoreapp2.1",
-                    projectFilePath : testProjectPath,
+                    projectFilePath : _testProjectPath,
                     references : new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string>() { projectUnderTestPath },
+                    projectReferences: new List<string>() { _projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: projectUnderTestPath,
+                    projectFilePath: _projectUnderTestPath,
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));

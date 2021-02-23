@@ -288,5 +288,3 @@ StrykerLogs/
 *.buildlog
 *.DotSettings
 /src/Stryker.CLI/TestStatisticsAnalyzer/test-stats-report.json
-
-boolMutateTestApp/msbuild.binlog

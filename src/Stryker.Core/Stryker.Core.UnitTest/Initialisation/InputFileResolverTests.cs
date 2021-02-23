@@ -609,7 +609,6 @@ using System.Reflection;
             var allFiles = result.ProjectContents.GetAllFiles();
 
             allFiles.Count().ShouldBe(3);
-            allFiles.ShouldContain(f => f.Name == "Shared.cs");
         }
 
         [Fact]
@@ -694,7 +693,7 @@ using System.Reflection;
 
             var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
 
-            ((FolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
+            ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
 
         [Fact]
@@ -948,7 +947,7 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
-                    properties: new Dictionary<string, string> { { "IsTestProject", "true" }, { "Language", "C#" } },
+                    properties: new Dictionary<string, string> { { "IsTestProject", "false" }, { "Language", "C#" } },
                     references: new string[] { "" }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);

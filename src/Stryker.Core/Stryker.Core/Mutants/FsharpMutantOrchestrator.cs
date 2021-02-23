@@ -15,17 +15,18 @@ namespace Stryker.Core.Mutants
         private ILogger Logger { get; }
         private readonly FsharpCoreOrchestrator _base;
 
+        //the current implementation only has the orchestrators and does not keep track of mutants or mutators
         public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutantOrchestrator>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpMutantOrchestrator>();
             _base = new FsharpCoreOrchestrator();
         }
 
         public override FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
         {
             var mutationContext = new MutationContext(this);
-            var mutation = /*treeroot*/_base.Mutate(treeroot);
+            var mutation = _base.Mutate(treeroot);
 
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {

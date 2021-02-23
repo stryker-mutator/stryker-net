@@ -136,7 +136,7 @@ namespace Stryker.Core.Initialisation
             string[] projectFiles;
             try
             {
-                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.ToLower().EndsWith("csproj") || file.ToLower().EndsWith("fsproj")).ToArray();
+                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
             catch (DirectoryNotFoundException)
             {
@@ -214,7 +214,7 @@ namespace Stryker.Core.Initialisation
             var stringBuilder = new StringBuilder();
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower()));
+            var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
                 stringBuilder.Append("No project reference matched your --project-file=");

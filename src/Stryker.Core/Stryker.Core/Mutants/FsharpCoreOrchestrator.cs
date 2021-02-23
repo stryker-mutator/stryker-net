@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.FSharp.Collections;
-using Stryker.Core.Mutants.FsharpOrchestrator;
+using Stryker.Core.Mutants.FsharpOrchestrators;
 using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
@@ -27,7 +27,6 @@ namespace Stryker.Core.Mutants
             var list = new List<SynModuleOrNamespace>();
             foreach (SynModuleOrNamespace module in modules)
             {
-                //Console.WriteLine("Namespace or module: " + module.longId);
                 var mutation = Mutate(module.decls);
                 list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(module.longId, module.isRecursive, module.kind, mutation, module.xmlDoc, module.attribs, module.accessibility, module.range));
             }

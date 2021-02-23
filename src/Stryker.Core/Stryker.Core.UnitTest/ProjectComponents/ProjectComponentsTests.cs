@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -12,9 +12,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet100MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -30,9 +29,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet0MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
@@ -49,9 +47,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ShouldGet50MutationScore()
         {
-            var file = new FileLeaf()
+            var file = new CsharpFileLeaf()
             {
-                Name = "SomeFile.cs",
                 RelativePath = "RootFolder/SomeFile.cs",
                 FullPath = "C://RootFolder/SomeFile.cs",
                 Mutants = new Collection<Mutant>()
