@@ -23,10 +23,10 @@ namespace Stryker.Core.Mutants
             _base = new FsharpCoreOrchestrator();
         }
 
-        public override FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> treeroot)
+        public override FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> input)
         {
             var mutationContext = new MutationContext(this);
-            var mutation = _base.Mutate(treeroot);
+            var mutation = _base.Mutate(input);
 
             if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
             {

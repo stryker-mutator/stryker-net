@@ -19,7 +19,6 @@ namespace Stryker.Core.Compiling
     public class FsharpCompilingProcess
     {
         private readonly MutationTestInput _input;
-        private readonly IRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
@@ -27,7 +26,6 @@ namespace Stryker.Core.Compiling
             IRollbackProcess rollbackProcess, IFileSystem fileSystem)
         {
             _input = input;
-            _rollbackProcess = rollbackProcess;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpCompilingProcess>();
             _fileSystem = fileSystem;
         }
@@ -38,7 +36,6 @@ namespace Stryker.Core.Compiling
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
-            var compilationOptions = analyzerResult.GetCompilationOptions();
 
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
@@ -71,7 +68,7 @@ namespace Stryker.Core.Compiling
             //rollback still needs to be implemented
             RollbackProcessResult rollbackProcessResult = null;
 
-            (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies, pdblist);
+            (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies);
 
             if (compilationSucces)
             {
@@ -89,7 +86,7 @@ namespace Stryker.Core.Compiling
             throw new StrykerCompilationException("Failed to restore build able state.");
         }
 
-        private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies , List<string> pdblist)
+        private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies)
         {
             Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(

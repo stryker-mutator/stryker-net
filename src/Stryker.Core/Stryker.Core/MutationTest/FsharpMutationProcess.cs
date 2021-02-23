@@ -25,15 +25,10 @@ namespace Stryker.Core.MutationTest
         private readonly MutationTestInput _input;
         private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> _orchestrator;
 
-        private readonly IMutantFilter _mutantFilter;
-        private readonly IReporter _reporter;
-
         public FsharpMutationProcess(MutationTestInput mutationTestInput,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator = null,
             IFileSystem fileSystem = null,
-            IStrykerOptions options = null,
-            IMutantFilter mutantFilter = null,
-            IReporter reporter = null)
+            IStrykerOptions options = null,)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<ParsedInput>)_input.ProjectInfo.ProjectContents;
@@ -43,15 +38,12 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), _fileSystem);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-
-            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
-            _reporter = reporter;
         }
 
         public void Mutate()
         {
             // Mutate source files
-            foreach (FsharpFileLeaf file in _projectInfo.GetAllFiles())
+            foreach (var file in _projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.RelativePath}");
                 // Mutate the syntax tree

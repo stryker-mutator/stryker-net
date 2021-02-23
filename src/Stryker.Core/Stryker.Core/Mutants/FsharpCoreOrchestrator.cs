@@ -7,8 +7,8 @@ namespace Stryker.Core.Mutants
 {
     public class FsharpCoreOrchestrator
     {
-        private OrchestratorFinder<SynModuleDecl> _fsharpMutationsSynModuleDecl;
-        private OrchestratorFinder<SynExpr> _fsharpMutationsSynExpr;
+        private readonly OrchestratorFinder<SynModuleDecl> _fsharpMutationsSynModuleDecl;
+        private readonly OrchestratorFinder<SynExpr> _fsharpMutationsSynExpr;
 
         public FsharpCoreOrchestrator()
         {

@@ -23,11 +23,11 @@ namespace Stryker.Core.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : IProjectComponentsBuilder
     {
-        private ProjectInfo _projectInfo;
-        private IStrykerOptions _options;
-        private string[] _foldersToExclude;
-        private ILogger _logger;
-        private IFileSystem _fileSystem;
+        private readonly ProjectInfo _projectInfo;
+        private readonly IStrykerOptions _options;
+        private readonly string[] _foldersToExclude;
+        private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
         public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
             FsharpFolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
+                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult);
             }
             else
             {
@@ -51,7 +51,7 @@ namespace Stryker.Core.Initialisation
             }
             return inputFiles;
         }
-        private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -204,7 +204,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindInputFiles(string path, IAnalyzerResult analyzerResult)
         {
             var rootFolderComposite = new FsharpFolderComposite
             {
