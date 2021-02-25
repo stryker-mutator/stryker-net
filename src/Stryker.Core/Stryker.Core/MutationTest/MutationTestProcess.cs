@@ -97,7 +97,7 @@ namespace Stryker.Core.MutationTest
 
             if (_language == Language.Csharp)
             {
-                _mutationProcess = new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter, _reporter, (BaseMutantOrchestrator<SyntaxNode>)_orchestrator);
+                _mutationProcess = new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter, (BaseMutantOrchestrator<SyntaxNode>)_orchestrator);
             }
             else if (_language == Language.Fsharp)
             {

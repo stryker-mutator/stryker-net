@@ -31,7 +31,7 @@ namespace Stryker.Core.MutationTest
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            MutantOrchestrator<SyntaxNode> orchestrator = null)
+            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
