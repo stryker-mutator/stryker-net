@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Fsharp
 </Project>";
         }
 
-        [Fact]
+        [Fact(Skip ="F# is currently disabled")]
         public void Stryker_FsharpShouldRetrieveSourcefiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>

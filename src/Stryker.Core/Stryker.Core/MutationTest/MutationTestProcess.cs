@@ -101,7 +101,7 @@ namespace Stryker.Core.MutationTest
             }
             else if (_language == Language.Fsharp)
             {
-                _mutationProcess = new FsharpMutationProcess(Input, (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options, mutantFilter, _reporter);
+                _mutationProcess = new FsharpMutationProcess(Input, (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options);
             }
             else
             {

@@ -170,7 +170,7 @@ namespace Stryker.Core.Initialisation
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
 
-                inputFiles.Add(FindInputFiles(folder, projectUnderTestDir, analyzerResult, options));
+                inputFiles.Add(FindInputFiles(projectUnderTestDir, analyzerResult));
             }
 
             return inputFiles;

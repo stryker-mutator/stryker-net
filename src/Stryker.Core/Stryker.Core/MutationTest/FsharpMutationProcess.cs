@@ -28,7 +28,7 @@ namespace Stryker.Core.MutationTest
         public FsharpMutationProcess(MutationTestInput mutationTestInput,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator = null,
             IFileSystem fileSystem = null,
-            IStrykerOptions options = null,)
+            IStrykerOptions options = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<ParsedInput>)_input.ProjectInfo.ProjectContents;
