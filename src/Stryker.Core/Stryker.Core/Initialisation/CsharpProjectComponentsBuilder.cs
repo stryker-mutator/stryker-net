@@ -20,7 +20,7 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
-    public class CsharpProjectComponentsBuilder : IProjectComponentsBuilder
+    public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;
         private readonly IStrykerOptions _options;
@@ -37,7 +37,7 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem;
         }
 
-        public IProjectComponent Build()
+        public override IProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
@@ -317,38 +317,5 @@ namespace Stryker.Core.Initialisation
 
             return folders;
         }
-
-        private IEnumerable<string> FindSharedProjects(XDocument document)
-        {
-            var importStatements = document.Elements().Descendants()
-                .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
-
-            var sharedProjects = importStatements
-                .SelectMany(importStatement => importStatement.Attributes(
-                    XName.Get("Project")))
-                .Select(importFileLocation => FilePathUtils.NormalizePathSeparators(importFileLocation.Value))
-                .Where(importFileLocation => importFileLocation.EndsWith(".projitems"));
-            return sharedProjects;
-        }
-
-        private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
-        {
-            var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
-            var properties = projectAnalyzerResult.Properties;
-
-            return propertyRegex.Replace(projectReference,
-                m =>
-                {
-                    var property = m.Groups[1].Value;
-                    if (properties.TryGetValue(property, out var propertyValue))
-                    {
-                        return propertyValue;
-                    }
-
-                    var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
-                    throw new StrykerInputException(message);
-                });
-        }
-
     }
 }
