@@ -26,14 +26,12 @@ namespace Stryker.Core.MutationTest
         private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
 
         private readonly IMutantFilter _mutantFilter;
-        private readonly IReporter _reporter;
 
         public CsharpMutationProcess(MutationTestInput mutationTestInput,
             IFileSystem fileSystem = null,
             IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            IReporter reporter = null,
-            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
+            MutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
@@ -44,7 +42,6 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
             _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
-            _reporter = reporter;
         }
 
         public void Mutate()
@@ -120,6 +117,7 @@ namespace Stryker.Core.MutationTest
                 }
             }
         }
+
         public void FilterMutants()
         {
             foreach (var file in _projectInfo.GetAllFiles())
@@ -128,58 +126,6 @@ namespace Stryker.Core.MutationTest
                 var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
                 _mutantFilter.FilterMutants(mutantsToFilter, ((CsharpFileLeaf)file).ToReadOnly(), _options);
             }
-
-            var skippedMutants = _projectInfo.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
-            var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
-
-            foreach (var skippedMutantGroup in skippedMutantGroups)
-            {
-                _logger.LogInformation(
-                    FormatStatusReasonLogString(skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus),
-                    skippedMutantGroup.Count(), skippedMutantGroup.Key.ResultStatus, skippedMutantGroup.Key.ResultStatusReason);
-            }
-
-            if (skippedMutants.Any())
-            {
-                _logger.LogInformation(
-                    LeftPadAndFormatForMutantCount(skippedMutants.Count(), "total mutants are skipped for the above mentioned reasons"),
-                    skippedMutants.Count());
-            }
-
-            var notRunMutantsWithResultStatusReason = _projectInfo.Mutants
-                .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
-                .GroupBy(x => x.ResultStatusReason);
-
-            foreach (var notRunMutantReason in notRunMutantsWithResultStatusReason)
-            {
-                _logger.LogInformation(
-                    LeftPadAndFormatForMutantCount(notRunMutantReason.Count(), "mutants will be tested because: {1}"),
-                    notRunMutantReason.Count(),
-                    notRunMutantReason.Key);
-            }
-
-            var notRunCount = _projectInfo.Mutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
-            _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
-
-            _reporter.OnMutantsCreated(_projectInfo.ToReadOnlyInputComponent());
-        }
-
-        private string FormatStatusReasonLogString(int mutantCount, MutantStatus resultStatus)
-        {
-            // Pad for status CompileError length
-            var padForResultStatusLength = 13 - resultStatus.ToString().Length;
-
-            var formattedString = LeftPadAndFormatForMutantCount(mutantCount, "mutants got status {1}.");
-            formattedString += "Reason: {2}".PadLeft(11 + padForResultStatusLength);
-
-            return formattedString;
-        }
-
-        private string LeftPadAndFormatForMutantCount(int mutantCount, string logString)
-        {
-            // Pad for max 5 digits mutant amount
-            var padLengthForMutantCount = 5 - mutantCount.ToString().Length;
-            return "{0} " + logString.PadLeft(logString.Length + padLengthForMutantCount);
         }
     }
 }

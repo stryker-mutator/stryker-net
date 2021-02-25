@@ -319,28 +319,27 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Transitive",
-        "resolved": "16.8.3",
-        "contentHash": "I0kxMUMy7/6KCNgOM8Os9+JD4eHNmxcjXwaBsO/9bOUxBALdqZ+wMu5wE5dZHaVlySB36+IXdw8cZ+1azEjLng=="
+        "resolved": "16.9.1",
+        "contentHash": "wIgXY/dal7ZhJUzugN7bBRxbqI9XPND63hw17wQeynj2Bd4ae4+G9wlLrBQ7Z8mTMZM/w5F4vgzawitwr9+nBw=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "16.8.3",
-        "contentHash": "dqHiRggyAbkjQO9926SzM11Pn0nKjH1wwM6ee3E9//y1WZsUgTSVCMS14qvlQlk9iUZJyj+iz3/1zplE4Ll+hw==",
+        "resolved": "16.9.1",
+        "contentHash": "UuS6HBi6pVJDGS5pmf6Mi38oSQVQ4vE5AOmNJzA5WgOUlFmvg9fTq9KCSd5o+UPSVH420t9wthj2Q0M9Yfb+HA==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0",
-          "System.Reflection.Metadata": "1.6.0",
-          "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
+          "System.Reflection.Metadata": "1.6.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Transitive",
-        "resolved": "16.8.3",
-        "contentHash": "fH7bwLmJDmzqXHF0DTtkWtC/xChxizmy2MjfFylo3Xw/5M9dRMk/1Zff4SqO/cSnBLbK66ZgQjFbNxVZBdg46g=="
+        "resolved": "16.9.1",
+        "contentHash": "eXMoLz98hx1ZgsIkR6BX6AXXswmlWHfi7fPDKq5ZVgGbyzujL56FXD7tKEGw6c4yCUuAy2Y00V3TIqKu/OC1zg=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Transitive",
-        "resolved": "16.8.3",
-        "contentHash": "7wRxz4cd20Yupw6qmXZW7ufCuElyv1Ip7M53PwGiWR4ILCsW3XK0tU0QMB2yayYTeZ064L+tJ3tdIQ/ikq128Q==",
+        "resolved": "16.9.1",
+        "contentHash": "p3b6e0q0wbiNFlT2nkjh0PL7dc6vxexta7Zr09drE/cuBBKA6leMJCC9K9wD2Gqdd8VyXilK2pAzfrEUJ5W8Nw==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -606,6 +605,15 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "ShellProgressBar": {
+        "type": "Transitive",
+        "resolved": "5.1.0",
+        "contentHash": "361fhmZBA2rn/Z8Tp9wDpB97H9GSRTLI5vXBky4I8fkd7H6UVYgvVSW6uv6Wd1+lUbq8JLgYo+4bhJvWF/SJCw==",
+        "dependencies": {
+          "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
+          "System.Text.Encoding.CodePages": "4.0.1"
+        }
+      },
       "System.AppContext": {
         "type": "Transitive",
         "resolved": "4.1.0",
@@ -791,8 +799,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.9",
-        "contentHash": "eyucRaO1g5CSKXHgl8Mq35+QohhWuBp1vKjsXh1LE+udAaA3vuIHo5t9LqAd+hxURZWTzXZs1P6d++UxXUmxnQ==",
+        "resolved": "13.2.23",
+        "contentHash": "nk7+EH+5/7CjpJe15SoFtUqygoy9Ezaqq9sigeVl/Acvcftanj2+9+K+NPJWMfmCVG87nWpvrs7lrVFWbJhzVA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -1417,10 +1425,10 @@
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Json": "5.0.0",
           "Microsoft.Extensions.Logging": "5.0.0",
-          "Microsoft.TestPlatform": "16.8.3",
-          "Microsoft.TestPlatform.ObjectModel": "16.8.3",
-          "Microsoft.TestPlatform.Portable": "16.8.3",
-          "Microsoft.TestPlatform.TranslationLayer": "16.8.3",
+          "Microsoft.TestPlatform": "16.9.1",
+          "Microsoft.TestPlatform.ObjectModel": "16.9.1",
+          "Microsoft.TestPlatform.Portable": "16.9.1",
+          "Microsoft.TestPlatform.TranslationLayer": "16.9.1",
           "Microsoft.Web.LibraryManager.Build": "2.1.113",
           "Mono.Cecil": "0.11.3",
           "Newtonsoft.Json": "12.0.3",
@@ -1428,15 +1436,16 @@
           "Serilog.Extensions.Logging": "3.0.1",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
-          "Stryker.DataCollector": "0.16.1",
-          "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "13.2.9"
+          "ShellProgressBar": "5.1.0",
+          "Stryker.DataCollector": "0.21.1",
+          "Stryker.RegexMutators": "0.21.1",
+          "System.IO.Abstractions": "13.2.23"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.8.3"
+          "Microsoft.TestPlatform.ObjectModel": "16.9.1"
         }
       },
       "stryker.regexmutators": {

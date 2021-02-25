@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
@@ -7,17 +7,15 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
 {
     public class ProgressReporterTests
     {
-        private readonly Mock<IMutantsResultReporter> _mutantsResultReporter;
         private readonly Mock<IProgressBarReporter> _progressBarReporter;
 
         private readonly ProgressReporter _progressReporter;
 
         public ProgressReporterTests()
         {
-            _mutantsResultReporter = new Mock<IMutantsResultReporter>();
             _progressBarReporter = new Mock<IProgressBarReporter>();
 
-            _progressReporter = new ProgressReporter(_mutantsResultReporter.Object, _progressBarReporter.Object);
+            _progressReporter = new ProgressReporter(_progressBarReporter.Object);
         }
 
         [Fact]
@@ -26,7 +24,6 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             var mutants = new Mutant[3] { new Mutant(), new Mutant(), new Mutant() };
 
             _progressReporter.OnStartMutantTestRun(mutants);
-            _mutantsResultReporter.Verify(x => x.ReportInitialState(), Times.Once);
             _progressBarReporter.Verify(x => x.ReportInitialState(mutants.Length), Times.Once);
         }
 
@@ -36,8 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             var mutant = new Mutant();
             _progressReporter.OnMutantTested(mutant);
 
-            _mutantsResultReporter.Verify(x => x.ReportMutantTestResult(mutant), Times.Once);
-            _progressBarReporter.Verify(x => x.ReportRunTest(), Times.Once);
+            _progressBarReporter.Verify(x => x.ReportRunTest(mutant), Times.Once);
         }
     }
 }
