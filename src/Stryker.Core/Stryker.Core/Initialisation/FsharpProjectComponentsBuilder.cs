@@ -158,7 +158,7 @@ namespace Stryker.Core.Initialisation
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(analyzerResult))
+            foreach (var dir in ExtractProjectFolders(analyzerResult, _fileSystem))
             {
                 var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
@@ -172,31 +172,6 @@ namespace Stryker.Core.Initialisation
             }
 
             return inputFiles;
-        }
-
-        private IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult)
-        {
-            var projectFilePath = projectAnalyzerResult.ProjectFilePath;
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
-            var xDocument = XDocument.Load(projectFile);
-            var folders = new List<string>();
-            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
-            folders.Add(projectDirectory);
-
-            foreach (var sharedProject in FindSharedProjects(xDocument))
-            {
-                var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
-
-                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
-                {
-                    throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
-                }
-
-                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
-                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
-            }
-
-            return folders;
         }
 
         /// <summary>

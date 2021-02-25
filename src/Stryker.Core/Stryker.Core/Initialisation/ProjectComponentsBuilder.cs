@@ -8,6 +8,8 @@ using System.Xml.Linq;
 using System.Linq;
 using Stryker.Core.ProjectComponents;
 using Buildalyzer;
+using System.IO;
+using System.IO.Abstractions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -15,7 +17,33 @@ namespace Stryker.Core.Initialisation
     {
         public abstract IProjectComponent Build();
 
-        protected IEnumerable<string> FindSharedProjects(XDocument document)
+        protected IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult, IFileSystem _fileSystem)
+        {
+            var projectFilePath = projectAnalyzerResult.ProjectFilePath;
+            var projectFile = _fileSystem.File.OpenText(projectFilePath);
+            var xDocument = XDocument.Load(projectFile);
+            var folders = new List<string>();
+            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+            folders.Add(projectDirectory);
+
+            foreach (var sharedProject in FindSharedProjects(xDocument))
+            {
+                var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
+
+                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
+                {
+                    throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
+                }
+
+                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
+                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
+            }
+
+            return folders;
+        }
+
+
+        private IEnumerable<string> FindSharedProjects(XDocument document)
         {
             var importStatements = document.Elements().Descendants()
                 .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
@@ -28,7 +56,7 @@ namespace Stryker.Core.Initialisation
             return sharedProjects;
         }
 
-        protected static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
+        private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
         {
             var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
             var properties = projectAnalyzerResult.Properties;
