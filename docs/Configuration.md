@@ -389,12 +389,12 @@ dotnet stryker -diff-ignore-files ['**/*.ts']
 
 Default: `[]`
 
-## Git source
-Sets the source branch to compare with the current code on file system, used for calculating the difference when --diff is enabled.
+## Git diff target
+Sets the source commit-ish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled.
 
 ```
-dotnet stryker --git-source "development"
-dotnet stryker -gs "development"
+dotnet stryker --git-diff-target "development"
+dotnet stryker -gdt "development"
 ```
 
 Default: `master`
