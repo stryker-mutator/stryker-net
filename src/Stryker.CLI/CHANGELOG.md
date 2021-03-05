@@ -1,3 +1,18 @@
+# [0.22.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.21.1...dotnet-stryker@0.22.0) (2021-03-05)
+
+
+### Bug Fixes
+
+* Support newer operating systems with git diff ([#1459](https://github.com/stryker-mutator/stryker-net/issues/1459)) ([48a1ae2](https://github.com/stryker-mutator/stryker-net/commit/48a1ae224b6c19bb954de4d69e86e17d277e7bfd))
+
+
+### Features
+
+* **json report:** Add absolute path to json report [#1154](https://github.com/stryker-mutator/stryker-net/issues/1154) ([#1267](https://github.com/stryker-mutator/stryker-net/issues/1267)) ([8b72975](https://github.com/stryker-mutator/stryker-net/commit/8b72975f7dc215998bdc222a29fd6126fe0ece28))
+* **progressbar reporter:**  Switch to ShellProgressBar for console progress bar report ([#1286](https://github.com/stryker-mutator/stryker-net/issues/1286)) ([3fa0c68](https://github.com/stryker-mutator/stryker-net/commit/3fa0c687aa7fcf5be801aace2ef164844a0dade3))
+
+
+
 ## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.21.0...dotnet-stryker@0.21.1) (2021-01-23)
 
 
