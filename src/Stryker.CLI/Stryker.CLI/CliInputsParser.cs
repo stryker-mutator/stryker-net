@@ -8,7 +8,7 @@ namespace Stryker.CLI
 {
     public class CliOption
     {
-        public StrykerOption InputType { get; set; }
+        public IInputDefinition Input { get; set; }
         public string ArgumentName { get; set; }
         public string ArgumentShortName { get; set; }
         public string ArgumentHint { get; set; }
@@ -16,13 +16,13 @@ namespace Stryker.CLI
         public CommandOptionType OptionType { get; set; }
     }
 
-    public static class CliOptionsParser
+    public static class CliInputsParser
     {
         private static readonly IDictionary<string, CliOption> CliOptions = new Dictionary<string, CliOption>();
         private static readonly CliOption ConfigOption;
         private static readonly CliOption GenerateJsonConfigOption;
 
-        static CliOptionsParser()
+        static CliInputsParser()
         {
             ConfigOption = AddCliOption(StrykerOption.None, "config-file", "f",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
@@ -52,19 +52,26 @@ namespace Stryker.CLI
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == GenerateJsonConfigOption.ArgumentName)?.HasValue() ?? false;
         }
 
-        public static StrykerOptions EnrichFromCommandLineArguments(this StrykerOptions options, string[] args, CommandLineApplication app)
+        public static StrykerInputs EnrichFromCommandLineArguments(this StrykerInputs options, string[] args, CommandLineApplication app)
         {
             var enrichedOptions = options;
             foreach (var option in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
-                var inputType = CliOptions[option.LongName].InputType;
+                var input = CliOptions[option.LongName].Input;
 
-                enrichedOptions = option.OptionType switch
+                switch(input)
                 {
-                    CommandOptionType.NoValue => enrichedOptions.With(inputType, option.HasValue()),
-                    CommandOptionType.SingleOrNoValue => enrichedOptions.With(inputType, option.HasValue(), option.Value()),
-                    CommandOptionType.SingleValue => enrichedOptions.With(inputType, option.Value()),
-                    CommandOptionType.MultipleValue => enrichedOptions.With(inputType, option.Values),
+                    case ConcurrencyInput concurrencyInput:
+                        concurrencyInput.SuppliedInput = int.Parse(option.Value());
+                        break;
+                }
+
+                _ = option.OptionType switch
+                {
+                    CommandOptionType.NoValue => enrichedOptions.With(input, option.HasValue()),
+                    CommandOptionType.SingleOrNoValue => enrichedOptions.With(input, option.HasValue(), option.Value()),
+                    CommandOptionType.SingleValue => enrichedOptions.With(input, option.Value()),
+                    CommandOptionType.MultipleValue => enrichedOptions.With(input, option.Values),
                     _ => enrichedOptions
                 };
             }
@@ -74,7 +81,7 @@ namespace Stryker.CLI
 
         private static void PrepareCliOptions()
         {
-            AddCliOption(StrykerOption.Concurrency, "concurrency", "c", new ConcurrencyInput().HelpText, argumentHint: "number");
+            AddCliOption(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
 
             AddCliOption(StrykerOption.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
 
@@ -109,15 +116,15 @@ namespace Stryker.CLI
             app.Option($"{option.ArgumentShortName}|{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
         }
 
-        private static CliOption AddCliOption(StrykerOption inputType, string argumentName, string argumentShortName,
-            string description, CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
+        private static CliOption AddCliOption(IInputDefinition input, string argumentName, string argumentShortName,
+            CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliOption
             {
-                InputType = inputType,
+                Input = input,
                 ArgumentName = $"--{argumentName}",
                 ArgumentShortName = $"-{argumentShortName}",
-                Description = description,
+                Description = input.HelpText,
                 OptionType = optionType,
                 ArgumentHint = argumentHint
             };

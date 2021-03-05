@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectNameInput : OptionDefinition<string>
+    public class ProjectNameInput : InputDefinition<string>
     {
 
         protected override string Description => @"The organizational name for your project. Required when dashboard reporter is turned on.

@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class FallbackVersionInput : OptionDefinition<string>
+    public class FallbackVersionInput : InputDefinition<string>
     {
 
         protected override string Description => @"Project version used as a fallback when no report could be found based on Git information for the compare feature.

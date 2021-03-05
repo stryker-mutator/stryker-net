@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LogToFileInput : OptionDefinition<bool>
+    public class LogToFileInput : InputDefinition<bool>
     {
         public override bool Default => false;
 

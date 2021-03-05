@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DiffIgnoreFilePatternsInput : OptionDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
+    public class DiffIgnoreFilePatternsInput : InputDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
     {
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
         public override IEnumerable<FilePattern> Default => new DiffIgnoreFilePatternsInput(DefaultInput).Value;

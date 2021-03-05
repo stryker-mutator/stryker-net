@@ -3,7 +3,7 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class FileBasedOptions
+    public class FileBasedInputs
     {
         public ProjectInfo ProjectInfo { get; set; }
 

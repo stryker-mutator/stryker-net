@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class TestProjectsInput : OptionDefinition<IEnumerable<string>>
+    public class TestProjectsInput : InputDefinition<IEnumerable<string>>
     {
         public override IEnumerable<string> Default => Enumerable.Empty<string>();
 

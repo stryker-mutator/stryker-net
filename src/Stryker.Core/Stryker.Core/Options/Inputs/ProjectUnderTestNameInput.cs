@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectUnderTestNameInput : OptionDefinition<string>
+    public class ProjectUnderTestNameInput : InputDefinition<string>
     {
 
         protected override string Description => @"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj""";

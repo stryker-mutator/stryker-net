@@ -3,7 +3,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class LogLevelInput : OptionDefinition<string, LogEventLevel>
+    public class LogLevelInput : InputDefinition<string, LogEventLevel>
     {
         public override string DefaultInput => "info";
         public override LogEventLevel Default => new LogLevelInput(DefaultInput).Value;

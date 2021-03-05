@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DiffCompareInput : OptionDefinition<bool>
+    public class DiffCompareInput : InputDefinition<bool>
     {
         public override bool Default => false;
 

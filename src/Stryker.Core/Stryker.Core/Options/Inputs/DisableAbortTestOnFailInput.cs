@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableAbortTestOnFailInput : OptionDefinition<bool, OptimizationModes>
+    public class DisableAbortTestOnFailInput : InputDefinition<bool, OptimizationModes>
     {
         public override bool DefaultInput => false;
         public override OptimizationModes Default => new DisableAbortTestOnFailInput(DefaultInput).Value;

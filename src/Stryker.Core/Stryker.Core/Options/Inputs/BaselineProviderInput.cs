@@ -3,7 +3,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class BaselineProviderInput : OptionDefinition<string, BaselineProvider>
+    public class BaselineProviderInput : InputDefinition<string, BaselineProvider>
     {
         public override string DefaultInput => "disk";
         public override BaselineProvider Default => new BaselineProviderInput(DefaultInput, false).Value;

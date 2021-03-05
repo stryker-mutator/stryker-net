@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectVersionInput : OptionDefinition<string>
+    public class ProjectVersionInput : InputDefinition<string>
     {
 
         protected override string Description => "Project version used in reporters.";

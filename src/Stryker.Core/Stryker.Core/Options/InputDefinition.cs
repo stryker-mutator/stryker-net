@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Stryker.Core.Options
 {
-    public interface IOptionDefinition
+    public interface IInputDefinition
     {
-
+        string HelpText;
     }
 
 
@@ -15,7 +15,7 @@ namespace Stryker.Core.Options
     /// Definition for options that have the same type for the input and the option 
     /// </summary>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class OptionDefinition<TValue> : OptionDefinition<TValue, TValue>
+    public abstract class InputDefinition<TValue> : InputDefinition<TValue, TValue>
     {
 
     }
@@ -25,7 +25,7 @@ namespace Stryker.Core.Options
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class OptionDefinition<TInput, TValue> : IOptionDefinition
+    public abstract class InputDefinition<TInput, TValue> : IInputDefinition
     {
         /// <summary>
         /// The default value for the option when no custom value has been supplied
@@ -39,9 +39,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// The user supplied input value
         /// </summary>
-        protected TInput SuppliedInput { get; } = default;
-
-
+        public TInput SuppliedInput { get; set; } = default;
 
         protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { Default.ToString() }, Default.GetType());
         protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs, Type enumType) => FormatHelpOptions(defaultInputs, Enum.GetNames(enumType).Select(e => e.ToString()));

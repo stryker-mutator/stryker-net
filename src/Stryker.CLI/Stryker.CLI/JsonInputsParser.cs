@@ -6,10 +6,10 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public static class JsonOptionsParser
+    public static class JsonInputsParser
     {
 
-        public static StrykerOptions EnrichFromJsonConfig(this StrykerOptions options, string configFilePath)
+        public static StrykerInputs EnrichFromJsonConfig(this StrykerInputs options, string configFilePath)
         {
             var enrichedOptions = options;
             var jsonConfig = LoadJsonConfig(configFilePath);
@@ -32,7 +32,7 @@ namespace Stryker.CLI
             return enrichedOptions;
         }
 
-        private static FileBasedOptions LoadJsonConfig(string configFilePath)
+        private static FileBasedInputs LoadJsonConfig(string configFilePath)
         {
 
             var json = new StreamReader(configFilePath).ReadToEnd();
@@ -48,7 +48,7 @@ namespace Stryker.CLI
 
                 var configJson = strykerSection.ToString();
 
-                return JsonConvert.DeserializeObject<FileBasedOptions>(configJson, settings);
+                return JsonConvert.DeserializeObject<FileBasedInputs>(configJson, settings);
             }
             catch (JsonReaderException)
             {
