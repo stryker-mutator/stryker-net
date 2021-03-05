@@ -1,5 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
@@ -35,7 +35,7 @@ namespace Stryker.Core.Options
         MutationLevel MutationLevel { get; }
         string ProjectUnderTest { get; }
         bool DiffEnabled { get; }
-        string GitDiffTarget { get; }
+        string GitDiffSource { get; }
         string ModuleName { get; }
         string ProjectName { get; }
         string ProjectVersion { get; }

@@ -1,13 +1,13 @@
-﻿using Moq;
-using Stryker.Core.Baseline;
+using System.Threading.Tasks;
+using Moq;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using System.Threading.Tasks;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Baseline
+namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     public class DashboardBaselineProviderTests
     {
