@@ -5,7 +5,7 @@ namespace Stryker.Core.Options.Inputs
     public class OptimizationModeInput : OptionDefinition<string, OptimizationModes>
     {
         public override string DefaultInput => "perTest";
-        public override OptimizationModes DefaultValue => new OptimizationModeInput(DefaultInput).Value;
+        public override OptimizationModes Default => new OptimizationModeInput(DefaultInput).Value;
 
         protected override string Description => @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.

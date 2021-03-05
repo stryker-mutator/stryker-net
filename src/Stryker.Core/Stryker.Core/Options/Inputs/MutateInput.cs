@@ -7,7 +7,7 @@ namespace Stryker.Core.Options.Inputs
     {
         private readonly string _defaultInput = "**/*";
         public override IEnumerable<string> DefaultInput => new List<string> { _defaultInput };
-        public override IEnumerable<FilePattern> DefaultValue => new MutateInput(DefaultInput).Value;
+        public override IEnumerable<FilePattern> Default => new MutateInput(DefaultInput).Value;
 
         protected override string Description => @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)

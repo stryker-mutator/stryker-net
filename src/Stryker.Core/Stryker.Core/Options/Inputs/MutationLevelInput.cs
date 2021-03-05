@@ -6,8 +6,8 @@ namespace Stryker.Core.Options.Inputs
 {
     public class MutationLevelInput : OptionDefinition<string, MutationLevel>
     {
-        public override string DefaultInput => DefaultValue.ToString();
-        public override MutationLevel DefaultValue => MutationLevel.Standard;
+        public override string DefaultInput => Default.ToString();
+        public override MutationLevel Default => MutationLevel.Standard;
 
         protected override string Description => "Specify which mutation levels to place. Every higher level includes the mutations from the lower levels.";
         protected override string HelpOptions => FormatEnumHelpOptions();

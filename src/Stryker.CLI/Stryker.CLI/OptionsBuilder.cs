@@ -18,7 +18,7 @@ namespace Stryker.CLI
         {
             var basePath = Directory.GetCurrentDirectory();
 
-            var strykerOptions = new StrykerOptions(basePath, _logger);
+            var strykerOptions = new InputValidator(_logger);
 
             var configFilePath = Path.Combine(basePath, CliOptionsParser.ConfigFilePath(args, app));
             if (File.Exists(configFilePath))

@@ -18,7 +18,7 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null);
+        StrykerRunResult RunMutationTest(StrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null);
     }
 
     public class StrykerRunner : IStrykerRunner
@@ -44,10 +44,12 @@ namespace Stryker.Core
         /// Allows to pass log messages that occured before the mutation test.
         /// The messages will be written to the logger after it was configured.
         /// </param>
-        public StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        public StrykerRunResult RunMutationTest(StrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            var options = input.Validate();
 
             var reporters = _reporterFactory.Create(options);
 
@@ -133,7 +135,7 @@ namespace Stryker.Core
 
         private void AnalyseCoverage(StrykerOptions options)
         {
-            if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
 

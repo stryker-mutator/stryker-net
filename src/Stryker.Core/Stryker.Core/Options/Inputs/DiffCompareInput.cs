@@ -2,7 +2,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class DiffCompareInput : OptionDefinition<bool>
     {
-        public override bool DefaultValue => false;
+        public override bool Default => false;
 
         protected override string Description => "Enables diff compare. Only test changed files.";
 

@@ -5,7 +5,7 @@ namespace Stryker.Core.Options.Inputs
     // This does not work because of the helptext
     public class ThresholdBreakInput : OptionDefinition<int>
     {
-        public override int DefaultValue => 0;
+        public override int Default => 0;
 
         protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";
         protected override string HelpOptions => FormatHelpOptions("0 - 99");

@@ -9,7 +9,7 @@ namespace Stryker.Core.Options.Inputs
     public class ExcludedMutatorsInput : OptionDefinition<IEnumerable<string>, IEnumerable<Mutator>>
     {
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
-        public override IEnumerable<Mutator> DefaultValue => new ExcludedMutatorsInput(DefaultInput).Value;
+        public override IEnumerable<Mutator> Default => new ExcludedMutatorsInput(DefaultInput).Value;
 
         protected override string Description => @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";

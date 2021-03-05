@@ -30,42 +30,23 @@ namespace Stryker.Core.Options
         /// <summary>
         /// The default value for the option when no custom value has been supplied
         /// </summary>
-        public virtual TValue DefaultValue { get; } = default;
+        public abstract TInput Default { get; }
 
         public string HelpText => Description + HelpOptions;
         protected abstract string Description { get; }
-        protected virtual string HelpOptions => $"{ (DefaultInput is { } ? $" | default: { DefaultInput }" : "") }";
+        protected virtual string HelpOptions => $"{ (Default is { } ? $" | default: { Default }" : "") }";
 
-        /// <summary>
-        /// The default input value
-        /// </summary>
-        public abstract TInput DefaultInput { get; }
         /// <summary>
         /// The user supplied input value
         /// </summary>
         protected TInput SuppliedInput { get; } = default;
 
-        private TValue _value = default;
-        /// <summary>
-        /// The value of the option. Returns <see cref="DefaultValue"/> if current value equals <code>default(T)</code>
-        /// </summary>
-        public TValue Value
-        {
-            get
-            {
-                var hasValue = _value?.Equals(default) ?? true;
-                return hasValue ? DefaultValue : _value;
-            }
-            protected set
-            {
-                _value = value;
-            }
-        }
 
-        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { DefaultInput.ToString() }, DefaultValue.GetType());
+
+        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { Default.ToString() }, Default.GetType());
         protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs, Type enumType) => FormatHelpOptions(defaultInputs, Enum.GetNames(enumType).Select(e => e.ToString()));
 
-        protected string FormatHelpOptions(string allowedInput) => FormatHelpOptions(new List<string> { DefaultValue.ToString() }, new List<string> { allowedInput });
+        protected string FormatHelpOptions(string allowedInput) => FormatHelpOptions(new List<string> { Default.ToString() }, new List<string> { allowedInput });
         protected string FormatHelpOptions(string defaultInputs, IEnumerable<string> allowedInputs) => FormatHelpOptions(new List<string> { defaultInputs }, allowedInputs);
 
         protected string FormatHelpOptions(IEnumerable<string> defaultInputs, IEnumerable<string> allowedInputs)

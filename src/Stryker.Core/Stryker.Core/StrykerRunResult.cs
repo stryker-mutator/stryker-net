@@ -4,10 +4,10 @@ namespace Stryker.Core
 {
     public class StrykerRunResult
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         public double MutationScore { get; private set; }
 
-        public StrykerRunResult(IStrykerOptions options, double mutationScore)
+        public StrykerRunResult(StrykerOptions options, double mutationScore)
         {
             _options = options;
             MutationScore = mutationScore;

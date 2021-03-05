@@ -3,7 +3,7 @@ namespace Stryker.Core.Options.Inputs
     public class DisableAbortTestOnFailInput : OptionDefinition<bool, OptimizationModes>
     {
         public override bool DefaultInput => false;
-        public override OptimizationModes DefaultValue => new DisableAbortTestOnFailInput(DefaultInput).Value;
+        public override OptimizationModes Default => new DisableAbortTestOnFailInput(DefaultInput).Value;
 
         protected override string Description => "Disable abort unit testrun as soon as any one unit test fails.";
 

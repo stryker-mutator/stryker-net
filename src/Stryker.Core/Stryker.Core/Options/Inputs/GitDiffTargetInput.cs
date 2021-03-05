@@ -4,7 +4,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class SinceBranchInput : OptionDefinition<string>
     {
-        public override string DefaultValue => "master";
+        public override string Default => "master";
         protected override string Description => "The target branch to compare with the current codebase when the since feature is enabled.";
         protected override string HelpOptions => DefaultInput;
 

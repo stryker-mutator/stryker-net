@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     public class LogLevelInput : OptionDefinition<string, LogEventLevel>
     {
         public override string DefaultInput => "info";
-        public override LogEventLevel DefaultValue => new LogLevelInput(DefaultInput).Value;
+        public override LogEventLevel Default => new LogLevelInput(DefaultInput).Value;
 
         protected override string Description => "The loglevel for output to the console.";
         protected override string HelpOptions => FormatEnumHelpOptions();

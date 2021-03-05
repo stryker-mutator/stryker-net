@@ -2,7 +2,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class WithBaselineInput : OptionDefinition<bool>
     {
-        public override bool DefaultValue => false;
+        public override bool Default => false;
 
         protected override string Description => "EXPERIMENTAL: Use results stored in stryker dashboard to only test new mutants.";
 

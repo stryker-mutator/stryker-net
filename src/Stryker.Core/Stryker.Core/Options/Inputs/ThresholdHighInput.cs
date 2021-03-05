@@ -5,7 +5,7 @@ namespace Stryker.Core.Options.Inputs
     // This does not work because of the helptext
     public class ThresholdHighInput : OptionDefinition<int>
     {
-        public override int DefaultValue => 80;
+        public override int Default => 80;
 
         protected override string Description => "Minimum good mutation score. Must be higher than or equal to threshold low.";
         protected override string HelpOptions => FormatHelpOptions("0 - 100");

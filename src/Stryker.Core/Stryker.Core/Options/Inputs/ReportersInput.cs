@@ -8,9 +8,8 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ReportersInput : OptionDefinition<IEnumerable<string>, IEnumerable<Reporter>>
     {
-        public override StrykerOption Type => StrykerOption.Reporters;
         public override IEnumerable<string> DefaultInput => new List<string>() { "Progress", "Html" };
-        public override IEnumerable<Reporter> DefaultValue => new ReportersInput(DefaultInput).Value;
+        public override IEnumerable<Reporter> Default => new ReportersInput(DefaultInput).Value;
 
         protected override string Description => "Reporters inform about various stages in the mutation testrun.";
         protected override string HelpOptions => FormatEnumHelpOptions(DefaultInput, typeof(Reporter));

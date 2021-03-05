@@ -511,7 +511,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DashboardCompareEnabled.ShouldBeTrue();
+            options.WithBaseline.ShouldBeTrue();
         }
 
         [Theory]

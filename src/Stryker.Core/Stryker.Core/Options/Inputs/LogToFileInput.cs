@@ -4,7 +4,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class LogToFileInput : OptionDefinition<bool>
     {
-        public override bool DefaultValue => false;
+        public override bool Default => false;
 
         protected override string Description => "Makes the logger write to a file. Logging to file always uses loglevel trace.";
 

@@ -1,4 +1,4 @@
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
@@ -6,7 +6,7 @@ namespace Stryker.Core.Options.Inputs
     public class BaselineProviderInput : OptionDefinition<string, BaselineProvider>
     {
         public override string DefaultInput => "disk";
-        public override BaselineProvider DefaultValue => new BaselineProviderInput(DefaultInput, false).Value;
+        public override BaselineProvider Default => new BaselineProviderInput(DefaultInput, false).Value;
 
         protected override string Description => "Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on.";
         protected override string HelpOptions => FormatEnumHelpOptions();
