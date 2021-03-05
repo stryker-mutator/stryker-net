@@ -48,10 +48,10 @@ namespace Stryker.Core.Initialisation
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
 
             // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (analyzerResult.Properties != null)
+            if (analyzerResult.Properties != null && analyzerResult.SourceFiles != null && analyzerResult.References != null)
             {
                 _logger.LogDebug("**** Buildalyzer result ****");
-                // dump properties
+
                 _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
                 _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
 
