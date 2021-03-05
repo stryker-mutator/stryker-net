@@ -18,28 +18,27 @@ namespace Stryker.Core.Options.Inputs
         - You are running stryker in the background while doing other work";
 
         public ConcurrencyInput() { }
-        public ConcurrencyInput(ILogger logger, string maxConcurrency)
+        public ConcurrencyInput(ILogger logger, int maxConcurrency)
         {
             if (maxConcurrency is { })
             {
-                var concurrency = int.Parse(maxConcurrency);
-                if (concurrency < 1)
+                if (maxConcurrency < 1)
                 {
                     throw new StrykerInputException("Concurrency must be at least 1.");
                 }
 
-                if (concurrency > DefaultValue)
+                if (maxConcurrency > DefaultValue)
                 {
                     logger.LogWarning("Using a concurrency of {concurrency} which is more than recommended {safeConcurrencyCount} for normal system operation. " +
-                        "This might have an impact on performance.", concurrency, DefaultValue);
+                        "This might have an impact on performance.", maxConcurrency, DefaultValue);
                 }
 
-                if (concurrency is 1)
+                if (maxConcurrency is 1)
                 {
                     logger.LogWarning("Stryker is running in single threaded mode due to concurrency being set to 1.");
                 }
 
-                Value = concurrency;
+                Value = maxConcurrency;
             }
         }
     }

@@ -24,10 +24,10 @@ namespace Stryker.CLI
 
         static CliOptionsParser()
         {
-            ConfigOption = AddCliOption(StrykerOption.None, "--config-file", "-cp",
+            ConfigOption = AddCliOption(StrykerOption.None, "config-file", "f",
                 "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
-            GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "--init", "-i",
-                "Generate a stryker config file with selected and default options.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+            GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "init", "i",
+                "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
 
             PrepareCliOptions();
         }
@@ -77,7 +77,6 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.Concurrency, "concurrency", "c", new ConcurrencyInput().HelpText, argumentHint: "number");
 
             AddCliOption(StrykerOption.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
-            AddCliOption(StrykerOption.DevMode, "dev-mode", "dev", new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
 
             AddCliOption(StrykerOption.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
@@ -86,15 +85,16 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.ProjectVersion, "version", "v", new ProjectVersionInput().HelpText);
             AddCliOption(StrykerOption.MutationLevel, "mutation-level", "l", new MutationLevelInput().HelpText);
 
-            AddCliOption(StrykerOption.LogToFile, "log-to-file", "f", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
+            AddCliOption(StrykerOption.LogToFile, "log-to-file", "L", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
             AddCliOption(StrykerOption.LogLevel, "verbosity", "V", new LogLevelInput().HelpText);
             AddCliOption(StrykerOption.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
 
             AddCliOption(StrykerOption.Since, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
             AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new WithBaselineInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
-            AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", "dk", new DashboardApiKeyInput().HelpText);
-            AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", "sas", new AzureFileStorageSasInput().HelpText);
+            AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", null, new DashboardApiKeyInput().HelpText);
+            AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", null, new AzureFileStorageSasInput().HelpText);
+            AddCliOption(StrykerOption.DevMode, "dev-mode", null, new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
         }
 
         private static void RegisterCliOption(CommandLineApplication app, CliOption option)
