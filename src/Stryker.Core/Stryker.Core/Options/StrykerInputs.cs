@@ -26,7 +26,7 @@ namespace Stryker.Core.Options
         public AdditionalTimeoutMsInput AdditionalTimeoutMS { get; init; }
         public LanguageVersionInput LanguageVersion { get; init; }
 
-        public ConcurrencyInput Concurrency { get; init; }
+        public ConcurrencyInput Concurrency { get; set; }
         public ProjectUnderTestNameInput ProjectUnderTestName { get; init; }
         public TestProjectsInput TestProjects { get; init; }
 
