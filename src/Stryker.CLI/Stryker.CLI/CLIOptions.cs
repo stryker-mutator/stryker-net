@@ -147,7 +147,7 @@ namespace Stryker.CLI
             ArgumentName = "--git-diff-target",
             ArgumentShortName = "-gdt <commitish>",
             ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
-            DefaultValue = _defaultOptions.GitDiffTarget,
+            DefaultValue = _defaultOptions.GitDiffSource,
             JsonKey = "git-diff-target"
         };
 
