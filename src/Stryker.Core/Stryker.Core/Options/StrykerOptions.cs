@@ -65,10 +65,10 @@ namespace Stryker.Core.Options
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger<StrykerOptions> _logger;
+        private readonly ILogger _logger;
 
         public StrykerOptions(
-            ILogger<StrykerOptions> logger = null,
+            ILogger logger = null,
             IFileSystem fileSystem = null,
             string basePath = "",
             string[] reporters = null,
@@ -145,7 +145,7 @@ namespace Stryker.Core.Options
 
         private StrykerOptions(
             IFileSystem fileSystem,
-            ILogger<StrykerOptions> logger,
+            ILogger logger,
             string basePath,
             string outputPath,
             IEnumerable<Reporter> reporters,
