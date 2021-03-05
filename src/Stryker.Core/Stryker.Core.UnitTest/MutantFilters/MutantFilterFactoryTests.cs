@@ -83,8 +83,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
-            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DashboardMutantFilter)).Count().ShouldBe(1);
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
         }
     }
 }
