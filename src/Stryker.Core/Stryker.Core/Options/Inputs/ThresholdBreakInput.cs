@@ -3,19 +3,19 @@ using Stryker.Core.Exceptions;
 namespace Stryker.Core.Options.Inputs
 {
     // This does not work because of the helptext
-    public class ThresholdBreakInput : InputDefinition<int>
+    public class ThresholdBreakInput : InputDefinition<int?>
     {
-        public override int Default => 0;
+        public override int? Default => 0;
 
         protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";
         protected override string HelpOptions => FormatHelpOptions("0 - 99");
 
         public ThresholdBreakInput() { }
-        public ThresholdBreakInput(int? inputBreak, int low)
+        public ThresholdBreakInput(int low)
         {
-            if (inputBreak is { })
+            if (SuppliedInput is not null)
             {
-                var @break = inputBreak.Value;
+                var @break = SuppliedInput.Value;
                 if (@break > 99 || @break < 0)
                 {
                     throw new StrykerInputException("Threshold break must be between 0 and 99.");

@@ -7,7 +7,7 @@ namespace Stryker.CLI
     {
         public ProjectInfo ProjectInfo { get; set; }
 
-        public int Concurrency { get; set; }
+        public int? Concurrency { get; set; }
 
         public string MutationLevel { get; set; }
 
@@ -17,13 +17,13 @@ namespace Stryker.CLI
 
         public Thresholds Thresholds { get; set; }
 
-        public bool LogToFile { get; set; }
+        public bool? LogToFile { get; set; }
         public string Verbosity { get; set; }
         public string[] Reporters { get; set; }
 
         // since
         [JsonProperty(PropertyName = "since")]
-        public bool Since { get; set; }
+        public bool? Since { get; set; }
         [JsonProperty(PropertyName = "since-branch")]
         public string SinceBranch { get; set; }
         [JsonProperty(PropertyName = "since-commit")]
@@ -37,7 +37,7 @@ namespace Stryker.CLI
     {
 
         [JsonProperty(PropertyName = "with-baseline")]
-        public bool WithBaseline { get; set; }
+        public bool? WithBaseline { get; set; }
         [JsonProperty(PropertyName = "with-baseline")]
         public string Provider { get; set; }
         [JsonProperty(PropertyName = "with-baseline")]

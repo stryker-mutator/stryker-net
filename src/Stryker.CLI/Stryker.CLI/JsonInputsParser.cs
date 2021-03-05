@@ -9,27 +9,14 @@ namespace Stryker.CLI
     public static class JsonInputsParser
     {
 
-        public static StrykerInputs EnrichFromJsonConfig(this StrykerInputs options, string configFilePath)
+        public static StrykerInputs EnrichFromJsonConfig(this StrykerInputs inputs, string configFilePath)
         {
-            var enrichedOptions = options;
+            var enrichedInputs = inputs;
             var jsonConfig = LoadJsonConfig(configFilePath);
 
-            enrichedOptions = enrichedOptions
-                .With(StrykerOption.SolutionPath, jsonConfig.Solution)
-                .With(StrykerOption.Concurrency, jsonConfig.Concurrency)
-                .With(StrykerOption.ThresholdHigh, jsonConfig.Thresholds.High)
-                .With(StrykerOption.ThresholdLow, jsonConfig.Thresholds.Low)
-                .With(StrykerOption.ThresholdBreak, jsonConfig.Thresholds.Break)
-                .With(StrykerOption.SolutionPath, jsonConfig.Solution)
-                .With(StrykerOption.FallbackVersion, jsonConfig.BaseLine.FallbackVersion)
-                .With(StrykerOption.Since, jsonConfig.Since)
-                .With(StrykerOption.SinceBranch, jsonConfig.SinceBranch)
-                .With(StrykerOption.SinceCommit, jsonConfig.SinceCommit)
-                .With(StrykerOption.BaselineProvider, jsonConfig.BaseLine.Provider)
-                .With(StrykerOption.FallbackVersion, jsonConfig.BaseLine.FallbackVersion)
-                ;
+            enrichedInputs.Concurrency.SuppliedInput = jsonConfig.Concurrency;
 
-            return enrichedOptions;
+            return enrichedInputs;
         }
 
         private static FileBasedInputs LoadJsonConfig(string configFilePath)
