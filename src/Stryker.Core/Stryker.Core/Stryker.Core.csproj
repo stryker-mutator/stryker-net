@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <DebugType>Full</DebugType>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>

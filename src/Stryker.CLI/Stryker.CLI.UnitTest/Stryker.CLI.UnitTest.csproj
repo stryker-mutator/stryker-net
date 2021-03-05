@@ -1,15 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <xunit>2.4.1</xunit>
-  </PropertyGroup>
+	<PropertyGroup>
+		<xunit>2.4.1</xunit>
+	</PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
 	<PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />	<!-- From Directory.Build.props -->
     <PackageReference Include="Moq" Version="4.16.1" />
@@ -18,12 +18,12 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Stryker.CLI\Stryker.CLI.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Stryker.CLI\Stryker.CLI.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="filled-stryker-config.json" CopyToOutputDirectory="Always" />
-    <None Include="stryker-config.json" CopyToOutputDirectory="Always" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="filled-stryker-config.json" CopyToOutputDirectory="Always" />
+		<None Include="stryker-config.json" CopyToOutputDirectory="Always" />
+	</ItemGroup>
 </Project>
