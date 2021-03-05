@@ -888,7 +888,7 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
 
 
         [Fact]
-        public void ShouldNotExhibitIssue1423()
+        public void ShouldControlLocalDeclarationMutationAtTheBlockLevel()
         {
             var source = @"public static string FormatPrettyByte(Int64 value)
 		{
