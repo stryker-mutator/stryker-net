@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
@@ -7,13 +14,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
@@ -162,6 +162,7 @@ namespace Stryker.Core.Options
             TestRunner testRunner,
             string solutionPath,
             LanguageVersion languageVersion,
+            bool diffEnabled,
             string gitDiffSource,
             IEnumerable<string> testProjects,
             string azureSAS,
@@ -187,6 +188,7 @@ namespace Stryker.Core.Options
             LanguageVersion = languageVersion;
             OptimizationMode = optimizationMode;
             Optimizations = optimizations;
+            DiffEnabled = diffEnabled;
             GitDiffTarget = gitDiffSource;
             TestProjects = testProjects;
             AzureSAS = azureSAS;
@@ -216,6 +218,7 @@ namespace Stryker.Core.Options
                 TestRunner,
                 SolutionPath,
                 LanguageVersion,
+                DiffEnabled,
                 GitDiffTarget,
                 testProjects,
                 AzureSAS,

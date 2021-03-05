@@ -12,7 +12,7 @@
   <ItemGroup>
 	<PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />	<!-- From Directory.Build.props -->
-    <PackageReference Include="Moq" Version="4.16.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="xunit" Version="$(xunit)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />

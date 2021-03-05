@@ -55,14 +55,17 @@ namespace Stryker.Core
 
             try
             {
+                // Mutate
                 _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 
-                _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
+                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+
+                // Report
                 reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();

@@ -66,7 +66,7 @@ Do this by adding a `stryker-config.json` file to your run location. Now add you
 }
 ```
 
-For all available configuration see [our configuration page](https://stryker-mutator.io/docs/stryker/configuration).
+For all available configuration see [our configuration page](https://stryker-mutator.io/docs/stryker-net/Configuration).
 
 ### Troubleshooting
 Have troubles running Stryker? Try running with trace logging.

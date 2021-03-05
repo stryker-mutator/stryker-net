@@ -1,13 +1,11 @@
-using Buildalyzer;
-using Shouldly;
-using Stryker.Core.Initialisation;
 using System.Collections.Generic;
 using System.Linq;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
-using Xunit;
-using Xunit.Sdk;
-using Stryker.Core.ToolHelpers;
+using Shouldly;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {

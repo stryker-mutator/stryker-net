@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
@@ -25,6 +26,11 @@ namespace Stryker.Core.Reporters
             foreach (var reporter in Reporters)
             {
                 reporter.OnMutantsCreated(inputComponent);
+            }
+            // todo: refactor to lifecycle event
+            if ((inputComponent.Mutants ?? Enumerable.Empty<IReadOnlyMutant>()).Any())
+            {
+                new FilteredMutantsLogger().OnMutantsCreated(inputComponent);
             }
         }
 
