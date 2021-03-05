@@ -54,8 +54,8 @@
       },
       "Crayon": {
         "type": "Transitive",
-        "resolved": "1.2.48",
-        "contentHash": "Sq1a/HBICkK5TMU/KFznncnT0DL27qlWuFfgugFGy53wR6HtbQf5hbJFIUH03yShi6MbrZrg8TIdC0KAs1o1zw=="
+        "resolved": "2.0.60",
+        "contentHash": "pqARvOP7vsCdTa/nMB115Ci0eSbkhKDqBbWxsVgLUoJUejgFE9qJ+N5j44nmqHCRP2ohuGgFQnCD9Iodhm+DSA=="
       },
       "DotNet.Glob": {
         "type": "Transitive",
@@ -1404,7 +1404,7 @@
         "type": "Project",
         "dependencies": {
           "Buildalyzer": "3.2.0",
-          "Crayon": "1.2.48",
+          "Crayon": "2.0.60",
           "DotNet.Glob": "3.1.2",
           "LibGit2Sharp": "0.27.0-preview-0096",
           "Microsoft.CodeAnalysis.CSharp": "3.8.0",
