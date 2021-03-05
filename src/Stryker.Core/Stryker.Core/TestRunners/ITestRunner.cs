@@ -1,13 +1,12 @@
-using Stryker.Core.Mutants;
 using System;
 using System.Collections.Generic;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
-
     public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
-        ITestListDescription ranTests,
         ITestListDescription failedTests,
+        ITestListDescription ranTests,
         ITestListDescription timedOutTests);
 
     public interface ITestRunner : IDisposable

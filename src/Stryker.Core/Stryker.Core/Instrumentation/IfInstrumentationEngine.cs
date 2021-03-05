@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
-    class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
+    internal class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
     {
-        public IfInstrumentationEngine(string annotation) : base(annotation, "IfInstrumentation")
+        public IfInstrumentationEngine(string annotation) : base(annotation)
         {
         }
 

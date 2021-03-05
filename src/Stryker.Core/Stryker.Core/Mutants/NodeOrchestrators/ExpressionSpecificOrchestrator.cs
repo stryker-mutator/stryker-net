@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return context;
         }
 
-        public ExpressionSpecificOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public ExpressionSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

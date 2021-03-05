@@ -4,6 +4,7 @@ update_configs:
 - package_manager: "dotnet:nuget"
   directory: "/src/Stryker.CLI"
   update_schedule: "live"
+  target_branch: "master"
   automerged_updates:
   - match:
       dependency_type: "all"
@@ -11,6 +12,7 @@ update_configs:
 - package_manager: "dotnet:nuget"
   directory: "/src/Stryker.Core/Stryker.Core/ToolHelpers"
   update_schedule: "live"
+  target_branch: "master"
   automerged_updates:
   - match:
       dependency_type: "all"
@@ -18,6 +20,7 @@ update_configs:
 - package_manager: "dotnet:nuget"
   directory: "/integrationtest"
   update_schedule: "live"
+  target_branch: "master"
   automerged_updates:
   - match:
       dependency_type: "all"
@@ -25,6 +28,7 @@ update_configs:
 - package_manager: "dotnet:nuget"
   directory: "/integrationtest/TargetProjects/NetFramework"
   update_schedule: "live"
+  target_branch: "master"
   automerged_updates:
   - match:
       dependency_type: "all"

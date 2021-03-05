@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
@@ -36,23 +36,32 @@ namespace Stryker.Core.Initialisation
                     throw new StrykerInputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
-                string solutionDir = Path.GetDirectoryName(solutionPath);
+                var solutionDir = Path.GetDirectoryName(solutionPath);
                 var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+                CheckBuildResult(result, msbuildPath, $"\"{solutionPath}\"");
             }
             else
             {
-                // Build with dotnet build
-                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{Path.GetFileName(projectPath)}\"");
-            }
+                var buildPath = !string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath);
 
+                _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
+                // Build with dotnet build
+                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
+
+                CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
+            }
+        }
+
+        private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
+        {
             _logger.LogDebug("Initial build output {0}", result.Output);
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException(result.Output, "Initial build of targeted project failed. Please make targeted project buildable. See above message for build output.");
+                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
             _logger.LogDebug("Initial build successful");
         }

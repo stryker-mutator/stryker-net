@@ -14,12 +14,12 @@ namespace Stryker.Core.Reporters
 {
     public partial class DashboardReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly TextWriter _consoleWriter;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, TextWriter consoleWriter = null)
+        public DashboardReporter(IStrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
@@ -57,7 +57,7 @@ namespace Stryker.Core.Reporters
             // Method to implement the interface
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // Method to implement the interface
         }

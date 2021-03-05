@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
@@ -11,8 +11,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_NoMutations()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { } });
+            var target = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(double.NaN);
@@ -21,8 +21,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_OneMutation()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            var target = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(1);
@@ -31,9 +31,9 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_TwoFolders()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
+            var target = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(0.5);
@@ -42,12 +42,12 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_Recursive()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            var subFolder = new FolderComposite() { Name = "SubFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
+            var target = new CsharpFolderComposite();
+            var subFolder = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
             target.Add(subFolder);
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(0.5);
@@ -56,16 +56,16 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_Recursive2()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            var subFolder = new FolderComposite() { Name = "SubFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
+            var target = new CsharpFolderComposite();
+            var subFolder = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived } } });
             target.Add(subFolder);
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
-            subFolder.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Survived }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
+            subFolder.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Killed }, new Mutant() { ResultStatus = MutantStatus.Killed } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(0.6666666666666666666666666666666666667);
@@ -78,8 +78,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [InlineData(MutantStatus.NotRun, 0)]
         public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = status } } });
+            var target = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = status } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(expectedScore);
@@ -88,8 +88,8 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
         {
-            var target = new FolderComposite() { Name = "RootFolder" };
-            target.Add(new FileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
+            var target = new CsharpFolderComposite();
+            target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
 
             var result = target.GetMutationScore();
             result.ShouldBe(double.NaN);

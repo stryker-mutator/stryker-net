@@ -12,7 +12,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerOptions
+    public class StrykerOptions : IStrykerOptions
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -119,7 +119,7 @@ namespace Stryker.Core.Options
         /// <returns>new StrykerOptions with supplied option set to chosen value</returns>
         public StrykerOptions With(OptionDefinition inputType, string value)
         {
-            return inputType. switch
+            return inputType switch
             {
                 StrykerOption.ThresholdBreak => SetThresholdBreak(value),
                 StrykerOption.Concurrency => SetConcurrency(value),

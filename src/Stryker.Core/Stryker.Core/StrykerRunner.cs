@@ -1,15 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Stryker.Core
 {
@@ -20,16 +23,16 @@ namespace Stryker.Core
 
     public class StrykerRunner : IStrykerRunner
     {
-        private IReporter _reporter;
-        private IInitialisationProcess _initialisationProcess;
-        private MutationTestInput _input;
-        private IMutationTestProcess _mutationTestProcess;
+        private readonly IProjectOrchestrator _projectOrchestrator;
+        private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
+        private ILogger _logger;
+        private readonly IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IInitialisationProcess initialisationProcess = null, IMutationTestProcess mutationTestProcess = null, IReporter reporter = null)
+        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IEnumerable<IMutationTestProcess> mutationTestProcesses = null, IReporterFactory reporterFactory = null)
         {
-            _initialisationProcess = initialisationProcess;
-            _mutationTestProcess = mutationTestProcess;
-            _reporter = reporter;
+            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
+            _mutationTestProcesses = mutationTestProcesses ?? new List<IMutationTestProcess>();
+            _reporterFactory = reporterFactory ?? new ReporterFactory();
         }
 
         /// <summary>
@@ -43,58 +46,124 @@ namespace Stryker.Core
         /// </param>
         public StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
         {
-            // start stopwatch
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
-            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+            var reporters = _reporterFactory.Create(options);
 
-            logger.LogDebug("Stryker started with options: {0}",
-                JsonConvert.SerializeObject(options, new StringEnumConverter()));
+            SetupLogging(options, initialLogMessages);
 
             try
             {
-                // initialize
-                if (_reporter == null)
+                // Mutate
+                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
+
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
+
+                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
+
+                AnalyseCoverage(options);
+                var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+
+                // Report
+                reporters.OnMutantsCreated(readOnlyInputComponent);
+
+                var allMutants = rootComponent.Mutants.ToList();
+
+                // Filter
+                foreach (var project in _mutationTestProcesses)
                 {
-                    _reporter = ReporterFactory.Create(options);
+                    project.FilterMutants();
                 }
 
-                _initialisationProcess ??= new InitialisationProcess();
+                var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
-                _input = _initialisationProcess.Initialize(options);
+                if (!mutantsNotRun.Any())
+                {
+                    if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
+                    {
+                        _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
+                    }
+                    if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
+                    {
+                        _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
+                    }
+                    if (!allMutants.Any())
+                    {
+                        _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
+                    }
+                    return new StrykerRunResult(options, double.NaN);
+                }
 
-                _mutationTestProcess ??= new MutationTestProcess(
-                    mutationTestInput: _input,
-                    reporter: _reporter,
-                    mutationTestExecutor: new MutationTestExecutor(_input.TestRunner),
-                    options: options);
+                // Report
+                reporters.OnStartMutantTestRun(mutantsNotRun);
 
-                // initial test
-                _input.TimeoutMs = _initialisationProcess.InitialTest(options, out var nbTests);
+                // Test
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                }
 
-                // mutate
-                _mutationTestProcess.Mutate();
+                reporters.OnAllMutantsTested(readOnlyInputComponent);
 
-                _mutationTestProcess.GetCoverage();
-
-                _mutationTestProcess.FilterMutants();
-
-                // test mutations and return results
-                return _mutationTestProcess.Test(options);
+                return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }
             catch (Exception ex) when (!(ex is StrykerInputException))
             {
-                logger.LogError(ex, "An error occurred during the mutation test run ");
+                _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
             finally
             {
                 // log duration
                 stopwatch.Stop();
-                logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+                _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+            }
+        }
+
+        private void SetupLogging(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        {
+            // setup logging
+            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
+
+            _logger.LogDebug("Stryker started with options: {0}",
+                JsonConvert.SerializeObject(options, new StringEnumConverter()));
+        }
+
+        private void AnalyseCoverage(StrykerOptions options)
+        {
+            if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            {
+                _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.GetCoverage();
+                }
+            }
+        }
+
+        /// <summary>
+        /// In the case of multiple projects we wrap them inside a wrapper root component. Otherwise the only project root will be the root component.
+        /// </summary>
+        /// <param name="projectComponents">A list of all project root components</param>
+        /// <param name="options">The current stryker options</param>
+        /// <returns>The root folder component</returns>
+        private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        {
+            if (projectComponents.Count() > 1)
+            {
+                var rootComponent = new FolderComposite
+                {
+                    FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
+                };
+                rootComponent.AddRange(projectComponents);
+                return rootComponent;
+            }
+            else
+            {
+                return projectComponents.FirstOrDefault();
             }
         }
     }

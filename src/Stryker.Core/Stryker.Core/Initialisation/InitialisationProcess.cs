@@ -1,4 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -8,10 +11,25 @@ using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
+    // For mocking perposes
+    public interface IInitialisationProcessProvider
+    {
+        IInitialisationProcess Provide();
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class InitialisationProcessProvider : IInitialisationProcessProvider
+    {
+        public IInitialisationProcess Provide()
+        {
+            return new InitialisationProcess();
+        }
+    }
+
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options);
-        int InitialTest(StrykerOptions option, out int nbTests);
+        MutationTestInput Initialize(IStrykerOptions options);
+        int InitialTest(IStrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -38,7 +56,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options)
+        public MutationTestInput Initialize(IStrykerOptions options)
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
@@ -53,7 +71,7 @@ namespace Stryker.Core.Initialisation
                     projectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetFramework == Framework.DotNetClassic,
+                    testProjects[i].GetTargetFramework() == Framework.DotNetClassic,
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath);
             }
@@ -73,12 +91,11 @@ namespace Stryker.Core.Initialisation
             return input;
         }
 
-        public int InitialTest(StrykerOptions options, out int nbTests)
+        public int InitialTest(IStrykerOptions options)
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
 
-            nbTests = _initialTestProcess.TotalNumberOfTests;
             return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
         }
     }

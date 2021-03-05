@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -15,8 +15,8 @@ namespace Stryker.Core.UnitTest.Compiling
 {
     public class RollbackProcessTests
     {
-        private readonly SyntaxAnnotation _ifEngineMarker = new SyntaxAnnotation("Injector", "IfInstrumentation");
-        private readonly SyntaxAnnotation _conditionalEngineMarker = new SyntaxAnnotation("Injector", "ConditionalInstrumentation");
+        private readonly SyntaxAnnotation _ifEngineMarker = new SyntaxAnnotation("Injector", "IfInstrumentationEngine");
+        private readonly SyntaxAnnotation _conditionalEngineMarker = new SyntaxAnnotation("Injector", "ConditionalInstrumentationEngine");
 
         private SyntaxAnnotation GetMutationMarker(int id)
         {

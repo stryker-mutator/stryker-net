@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// </summary>
     internal class BlockOrchestrator : BlockScopeOrchestrator<BlockSyntax>
     {
-        public BlockOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public BlockOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
 

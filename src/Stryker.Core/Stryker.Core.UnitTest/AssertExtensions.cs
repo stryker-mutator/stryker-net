@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using System;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 
 namespace Stryker.Core.UnitTest
@@ -66,6 +67,19 @@ namespace Stryker.Core.UnitTest
             if (errors > 0)
             {
                 errors.ShouldBe(0, $"Actual code has build errors!\n{actual.ToFullString()}\nerrors: {string.Join(Environment.NewLine, actual.SyntaxTree.GetDiagnostics())}");
+            }
+        }
+
+        public static void ShouldContainFile(this MockFileSystem fileSystem, string expectedFilePath)
+        {
+            if (!fileSystem.FileExists(expectedFilePath))
+            {
+                throw new ShouldAssertException($@"The expected file was not written to disk, or not to the right location.
+
+Expected: ""{expectedFilePath}"".
+
+Files found:
+{string.Join($", {Environment.NewLine}", fileSystem.AllFiles)}");
             }
         }
     }

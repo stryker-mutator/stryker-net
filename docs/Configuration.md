@@ -74,7 +74,7 @@ dotnet stryker -p SomeProjectName.csproj
 ```
 
 ## Mutation level
-Stryker support multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
+Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
 
 The levels are as follows:
 - Basic
@@ -213,7 +213,7 @@ dotnet stryker -th 90 -tl 75 -tb 50
     - Awesome! Your reporters will color this green and happy.
 - `threshold-high > mutation score > threshold-low`:
     - Warning! Your reporters will display yellow/orange colors, watch out!
-- `threshold-low < mutation score > threshold-break`:
+- `threshold-low > mutation score > threshold-break`:
     - Danger! Your reporters will display red colors, you're in the danger zone now.
 - `threshold-break > mutation score`:
     - Error! The application will exit with exit code 1.
@@ -228,7 +228,7 @@ dotnet stryker --excluded-mutations "['string', 'logical']"
 dotnet stryker -em "['string', 'logical']"
 ```
 
-The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too exited, skipping mutations doesn't improve your mutation score ;)
+The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too excited, skipping mutations doesn't improve your mutation score ;)
 
 ## Excluding files
 > ⚠ This parameter is deprecated. Use [Mutate](#mutate) instead.
@@ -267,7 +267,7 @@ You can add an `!` in front of the pattern to exclude all files that match the p
 dotnet stryker --mutate "['!**/*Factory.cs']"
 dotnet stryker -m "['!**/*Factory.cs']"
 ```
-When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both, include and exclude patterns, are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
+When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both include and exclude patterns are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
 
 ### Example:
 
@@ -314,8 +314,10 @@ You can also ignore constructors by specifying the type and adding the `.ctor` s
 
 Both, method names and constructor names, support wildcards.
 
-`dotnet stryker -im "['*Log']" // Ignores all methods ending with log`
-`dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors`
+```
+dotnet stryker -im "['*Log']" // Ignores all methods ending with Log
+dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors
+```
 
 Default: `[]`
 
@@ -332,7 +334,7 @@ Default: `"./stryker-config.json"`
 Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
 
 - **off**: coverage data is not captured.
-- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover a the mutant are tested. Fastest option.
+- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover the mutant are tested. Fastest option.
 - **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
 coverage information for some mutants (see below), at the expense of a longer startup time.
@@ -348,7 +350,7 @@ Default: `"perTest"`
 * Results are not impacted by coverage analysis. If you identify a suspicious survivor, run
 Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
 * when using `perTest` mode, mutants that are executed as part as some static constructor/initializer 
-are run against all tests, as Stryker can not reliably capture coverage for those. This is a consequence of static
+are run against all tests, as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initialisers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
 
@@ -373,27 +375,26 @@ dotnet stryker -diff
 
 Default: `false`
 
-## Diff
+## Diff ignore files
 Allows to specify an array of C# files which should be ignored if present in the diff.
 Any not ignored files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
             
-Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
-Example: ['**/*Assets.json','**/favicon.ico']
+Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wildcards. Example: ['**/*Assets.json','**/favicon.ico']
 
 ```
 dotnet stryker --diff-ignore-files ['**/*.ts']
 dotnet stryker -diff-ignore-files ['**/*.ts']
 ```
 
-Default: ``
+Default: `[]`
 
-## Git source
-Sets the source branch to compare with the current code on file system, used for calculating the difference when --diff is enabled.
+## Git diff target
+Sets the source commit-ish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled.
 
 ```
-dotnet stryker --git-source "development"
-dotnet stryker -gs "development"
+dotnet stryker --git-diff-target "development"
+dotnet stryker -gdt "development"
 ```
 
 Default: `master`

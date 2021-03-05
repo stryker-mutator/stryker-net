@@ -1,20 +1,21 @@
-﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "1.3";
+        public string SchemaVersion { get; } = "1";
         public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
+        public string ProjectRoot { get; }
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
-        private static StrykerOptions _options;
+        private static IStrykerOptions _options;
         [JsonIgnore]
         private static JsonReport _report = null;
 
@@ -24,17 +25,26 @@ namespace Stryker.Core.Reporters.Json
 
         }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             _options = options;
 
             Thresholds.Add("high", _options.Thresholds.High);
             Thresholds.Add("low", _options.Thresholds.Low);
 
+            ProjectRoot = mutationReport.FullPath;
+
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        protected JsonReport(string schemaVersion, IDictionary<string, int> thresholds, IDictionary<string, JsonReportFileComponent> files)
+        {
+            SchemaVersion = schemaVersion ?? SchemaVersion;
+            Thresholds = thresholds ?? Thresholds;
+            Files = files ?? Files;
+        }
+
+        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             // This should really only happen in unit tests.
             // We need this construct because in a unit test
@@ -42,7 +52,7 @@ namespace Stryker.Core.Reporters.Json
             _report = _options == options ? _report : null;
 
             // If the report was already generated, return the existing report
-            _report = _report ?? new JsonReport(options, mutationReport);
+            _report ??= new JsonReport(options, mutationReport);
 
             return _report;
         }
@@ -69,7 +79,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
-            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonReportFileComponent>();
             if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -84,7 +94,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
-            Dictionary<string, JsonReportFileComponent> files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonReportFileComponent>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -98,7 +108,7 @@ namespace Stryker.Core.Reporters.Json
             return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
         }
 
-        private void Merge<T, Y>(IDictionary<T, Y> to, IDictionary<T, Y> from)
+        private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
         {
             from.ToList().ForEach(x => to[x.Key] = x.Value);
         }

@@ -16,7 +16,7 @@ namespace Stryker.Core.MutantFilters
     {
         public string DisplayName => "method filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             if (!options.IgnoredMethods.Any())
             {
@@ -26,7 +26,7 @@ namespace Stryker.Core.MutantFilters
             return mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options));
         }
 
-        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options)
+        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options)
         {
             switch (syntaxNode)
             {

@@ -21,10 +21,6 @@ namespace Stryker.CLI
                 Console.WriteLine(strEx.ToString());
                 return 1;
             }
-            catch (Exception e)
-            {
-                throw new StrykerInputException("Something unexpected went wrong.", e.ToString());
-            }
         }
     }
 }

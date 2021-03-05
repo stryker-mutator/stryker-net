@@ -1,3 +1,16 @@
+## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.21.0...dotnet-stryker@0.21.1) (2021-01-23)
+
+
+
+# [0.21.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.20.0...dotnet-stryker@0.21.0) (2021-01-20)
+
+
+### Features
+
+* **Multi project runs:** Multi project runs using solution file ([#1039](https://github.com/stryker-mutator/stryker-net/issues/1039)) ([e1b4bf3](https://github.com/stryker-mutator/stryker-net/commit/e1b4bf3b031fac3462196df553ac8a1f13392302))
+
+
+
 # [0.20.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.19.0...dotnet-stryker@0.20.0) (2020-10-19)
 
 

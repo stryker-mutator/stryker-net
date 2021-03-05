@@ -137,8 +137,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
             var originalNode =
-                baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(search, StringComparison.OrdinalIgnoreCase),
-                    5));
+                baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(search, StringComparison.OrdinalIgnoreCase), 5));
 
             var mutant = new Mutant
             {

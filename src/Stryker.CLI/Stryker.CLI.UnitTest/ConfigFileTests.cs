@@ -36,7 +36,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_WithNoArgumentsAndNoConfigFile_ShouldStartStrykerWithConfigOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            StrykerOptions options = new StrykerOptions();
+            var options = new StrykerOptions();
             string currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3);

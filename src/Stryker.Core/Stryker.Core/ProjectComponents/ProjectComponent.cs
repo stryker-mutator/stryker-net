@@ -5,16 +5,36 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public abstract class ProjectComponent<T> : IProjectComponent
+    public interface IProjectComponent
     {
-        public string Name { get; set; }
+        string FullPath { get; set; }
+        IEnumerable<Mutant> Mutants { get; set; }
+        IFolderComposite Parent { get; set; }
+        string RelativePath { get; set; }
+
+        IEnumerable<IProjectComponent> GetAllFiles();
+        IReadOnlyProjectComponent ToReadOnlyInputComponent();
+    }
+
+    public abstract class ProjectComponent : IProjectComponent
+    {
         public string FullPath { get; set; }
+        /// <summary>
+        /// Relative path to project file
+        /// </summary>
         public string RelativePath { get; set; }
-        public string RelativePathToProjectFile { get; set; }
 
-        public IParentComponent Parent { get; set; }
+        public IFolderComposite Parent { get; set; }
 
-        public abstract IEnumerable<Mutant> Mutants { get; set; }
+        public virtual IEnumerable<Mutant> Mutants { get; set; }
+
+        public abstract IReadOnlyProjectComponent ToReadOnlyInputComponent();
+
+        public abstract IEnumerable<IProjectComponent> GetAllFiles();
+    }
+
+    public abstract class ProjectComponent<T> : ProjectComponent
+    {
         public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m =>
                 m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
 
@@ -30,12 +50,6 @@ namespace Stryker.Core.ProjectComponents
         /// Only those syntax trees that were changed by the mutation process
         /// </summary>
         public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
-
-        public abstract void Add(ProjectComponent<T> component);
-
-        public abstract IReadOnlyProjectComponent ToReadOnlyInputComponent();
-
-        public abstract IEnumerable<IProjectComponent> GetAllFiles();
 
         /// <summary>
         /// Returns the mutation score for this folder / file

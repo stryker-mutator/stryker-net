@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return Enumerable.Empty<Mutant>();
         }
 
-        public SyntaxNodeOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public SyntaxNodeOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

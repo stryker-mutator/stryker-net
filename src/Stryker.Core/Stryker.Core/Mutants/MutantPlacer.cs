@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,7 +22,9 @@ namespace Stryker.Core.Mutants
         private static readonly StaticInstrumentationEngine StaticEngine;
         private static readonly IfInstrumentationEngine IfEngine;
         private static readonly ConditionalInstrumentationEngine ConditionalEngine;
-        private static readonly ExpressionToBodyEngine ExpressionEngine;
+        private static readonly ExpressionMethodToBodyEngine expressionMethodEngine;
+        private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine;
+        private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine;
         private static readonly EndingReturnEngine endingReturnEngine;
         private static ExpressionSyntax _binaryExpression;
         private static SyntaxNode _placeHolderNode;
@@ -39,8 +41,12 @@ namespace Stryker.Core.Mutants
             RegisterEngine(IfEngine);
             ConditionalEngine = new ConditionalInstrumentationEngine(Injector);
             RegisterEngine(ConditionalEngine);
-            ExpressionEngine = new ExpressionToBodyEngine(Injector);
-            RegisterEngine(ExpressionEngine);
+            expressionMethodEngine = new ExpressionMethodToBodyEngine(Injector);
+            RegisterEngine(expressionMethodEngine);
+            accessorExpressionToBodyEngine = new AccessorExpressionToBodyEngine(Injector);
+            RegisterEngine(accessorExpressionToBodyEngine);
+            propertyExpressionToBodyEngine = new PropertyExpressionToBodyEngine(Injector);
+            RegisterEngine(propertyExpressionToBodyEngine);
             endingReturnEngine = new EndingReturnEngine(Injector);
             RegisterEngine(endingReturnEngine);
         }
@@ -55,8 +61,15 @@ namespace Stryker.Core.Mutants
         }
 
         public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax =>
-            ExpressionEngine.ConvertToBody(method)
+            expressionMethodEngine.ConvertToBody(method)
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+
+        public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
+            accessorExpressionToBodyEngine.ConvertExpressionToBody(method)
+                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+
+        public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
+            propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
         public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node);
 

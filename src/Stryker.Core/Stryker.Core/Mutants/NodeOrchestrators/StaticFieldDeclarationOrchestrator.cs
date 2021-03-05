@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return base.OrchestrateChildrenMutation(node, newContext);
         }
 
-        public StaticFieldDeclarationOrchestrator(MutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public StaticFieldDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

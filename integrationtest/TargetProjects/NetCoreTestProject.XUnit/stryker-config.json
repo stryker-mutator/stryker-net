@@ -11,6 +11,9 @@
     "project-file": "TargetProject.csproj",
     "excluded-mutations": [
       "string"
+    ],
+    "mutate": [
+      "!Person.cs"
     ]
   }
 }

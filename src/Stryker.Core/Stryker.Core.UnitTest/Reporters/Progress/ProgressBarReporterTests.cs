@@ -1,6 +1,6 @@
 ﻿using Moq;
+using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
@@ -11,99 +11,192 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         {
         }
 
+        public void Stop()
+        {
+        }
+
         public long GetElapsedMillisecond()
         {
             return 10L;
         }
     }
-    
+
     public class ProgressBarReporterTests
     {
-        private readonly Mock<IConsoleOneLineLogger> _testsProgressLogger;
-        private readonly ProgressBarReporter _progressBarReporter;
-
-        public ProgressBarReporterTests()
-        {
-            _testsProgressLogger = new Mock<IConsoleOneLineLogger>();
-            _progressBarReporter = new ProgressBarReporter(_testsProgressLogger.Object, new FixedClock());
-        }
-
         [Fact]
         public void ReportInitialState_ShouldReportTestProgressAs0PercentageDone_WhenTotalNumberOfTestsIsTwo()
         {
-            _progressBarReporter.ReportInitialState(3);
+            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+            progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
 
-            VerifyProgress(progressBar: "----------",
-                tested: 0,
-                total: 3,
-                percentage: 0,
-                estimate: "NA");
+            var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+            progressBarReporter.ReportInitialState(3);
+
+            progressBarMock.Verify(x => x.Start(
+                It.Is<int>(a => a == 3),
+                It.Is<string>(b => b == "│ Testing mutant 0 / 3 │ K 0 │ S 0 │ T 0 │ NA │")
+            ));
         }
 
-        [Fact]
-        public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTime_WhenHalfOfTestsAreDone()
+        [Theory]
+        [InlineData(MutantStatus.Killed)]
+        [InlineData(MutantStatus.Survived)]
+        [InlineData(MutantStatus.Timeout)]
+        public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTime_WhenHalfOfTestsAreDone(MutantStatus status)
         {
-            _progressBarReporter.ReportInitialState(2);
+            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+            progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+            progressBarMock.Setup(x => x.Tick(It.IsAny<string>()));
 
-            _progressBarReporter.ReportRunTest();
+            var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
 
-            VerifyProgress(progressBar: "█████-----",
-                tested: 1,
-                total: 2,
-                percentage: 50,
-                estimate: "~0m 00s");
+            var mutantTestResult = new Mutant()
+            {
+                ResultStatus = status
+            };
+
+            progressBarReporter.ReportInitialState(2);
+            progressBarReporter.ReportRunTest(mutantTestResult);
+
+            string expected = string.Empty;
+            switch (status)
+            {
+                case MutantStatus.Killed:
+                    expected = "│ Testing mutant 1 / 2 │ K 1 │ S 0 │ T 0 │ ~0m 00s │";
+                    break;
+                case MutantStatus.Survived:
+                    expected = "│ Testing mutant 1 / 2 │ K 0 │ S 1 │ T 0 │ ~0m 00s │";
+                    break;
+                case MutantStatus.Timeout:
+                    expected = "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 1 │ ~0m 00s │";
+                    break;
+            }
+
+            progressBarMock.Verify(x => x.Tick(
+                It.Is<string>(b => b == expected)
+            ));
         }
 
-        [Fact]
-        public void ReportRunTest_TestExecutionTimeInMinutes()
+        [Theory]
+        [InlineData(MutantStatus.Killed)]
+        [InlineData(MutantStatus.Survived)]
+        [InlineData(MutantStatus.Timeout)]
+        public void ReportRunTest_TestExecutionTimeInMinutes(MutantStatus status)
         {
-            _progressBarReporter.ReportInitialState(10000);
-            _progressBarReporter.ReportRunTest();
+            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+            progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+            progressBarMock.Setup(x => x.Tick(It.IsAny<string>()));
 
-            VerifyProgress(progressBar: "----------",
-                tested: 1,
-                total: 10000,
-                percentage: 0,
-                estimate: "~1m 39s");
+            var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+            var mutantTestResult = new Mutant()
+            {
+                ResultStatus = status
+            };
+
+            progressBarReporter.ReportInitialState(10000);
+            progressBarReporter.ReportRunTest(mutantTestResult);
+
+            string expected = string.Empty;
+            switch (status)
+            {
+                case MutantStatus.Killed:
+                    expected = "│ Testing mutant 1 / 10000 │ K 1 │ S 0 │ T 0 │ ~1m 39s │";
+                    break;
+                case MutantStatus.Survived:
+                    expected = "│ Testing mutant 1 / 10000 │ K 0 │ S 1 │ T 0 │ ~1m 39s │";
+                    break;
+                case MutantStatus.Timeout:
+                    expected = "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 1 │ ~1m 39s │";
+                    break;
+            }
+
+            progressBarMock.Verify(x => x.Tick(
+                It.Is<string>(b => b == expected)
+            ));
         }
 
-        [Fact]
-        public void ReportRunTest_TestExecutionTimeInHours()
+        [Theory]
+        [InlineData(MutantStatus.Killed)]
+        [InlineData(MutantStatus.Survived)]
+        [InlineData(MutantStatus.Timeout)]
+        public void ReportRunTest_TestExecutionTimeInHours(MutantStatus status)
         {
-            _progressBarReporter.ReportInitialState(1000000);
-            _progressBarReporter.ReportRunTest();
+            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+            progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+            progressBarMock.Setup(x => x.Tick(It.IsAny<string>()));
 
-            VerifyProgress(progressBar: "----------",
-                tested: 1,
-                total: 1000000,
-                percentage: 0,
-                estimate: "~2h 46m");
+            var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
+
+            var mutantTestResult = new Mutant()
+            {
+                ResultStatus = status
+            };
+
+            progressBarReporter.ReportInitialState(1000000);
+            progressBarReporter.ReportRunTest(mutantTestResult);
+
+            string expected = string.Empty;
+            switch (status)
+            {
+                case MutantStatus.Killed:
+                    expected = "│ Testing mutant 1 / 1000000 │ K 1 │ S 0 │ T 0 │ ~2h 46m │";
+                    break;
+                case MutantStatus.Survived:
+                    expected = "│ Testing mutant 1 / 1000000 │ K 0 │ S 1 │ T 0 │ ~2h 46m │";
+                    break;
+                case MutantStatus.Timeout:
+                    expected = "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 1 │ ~2h 46m │";
+                    break;
+            }
         }
 
-        [Fact]
-        public void ReportRunTest_TestExecutionTimeInDays()
+        [Theory]
+        [InlineData(MutantStatus.Killed)]
+        [InlineData(MutantStatus.Survived)]
+        [InlineData(MutantStatus.Timeout)]
+        public void ReportRunTest_TestExecutionTimeInDays(MutantStatus status)
         {
-            _progressBarReporter.ReportInitialState(100000000);
+            var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
+            progressBarMock.Setup(x => x.Start(It.IsAny<int>(), It.IsAny<string>()));
+            progressBarMock.Setup(x => x.Tick(It.IsAny<string>()));
 
-            _progressBarReporter.ReportRunTest();
+            var progressBarReporter = new ProgressBarReporter(progressBarMock.Object, new FixedClock());
 
-            VerifyProgress(progressBar: "----------",
-                tested: 1,
-                total: 100000000,
-                percentage: 0,
-                estimate: "~11d 13h");
+            var mutantTestResult = new Mutant()
+            {
+                ResultStatus = status
+            };
+
+            progressBarReporter.ReportInitialState(100000000);
+            progressBarReporter.ReportRunTest(mutantTestResult);
+
+            string expected = string.Empty;
+            switch (status)
+            {
+                case MutantStatus.Killed:
+                    expected = "│ Testing mutant 1 / 100000000 │ K 1 │ S 0 │ T 0 │ ~11d 13h │";
+                    break;
+                case MutantStatus.Survived:
+                    expected = "│ Testing mutant 1 / 100000000 │ K 0 │ S 1 │ T 0 │ ~11d 13h │";
+                    break;
+                case MutantStatus.Timeout:
+                    expected = "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ ~11d 13h │";
+                    break;
+            }
         }
 
         private void VerifyProgress(string progressBar, int tested, int total, int percentage, string estimate)
         {
             if (tested > 0)
             {
-                _testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
-                It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
+                //_testsProgressLogger.Verify(x => x.ReplaceLog(It.IsAny<string>(),
+               // It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
             } else
             {
-                _testsProgressLogger.Verify(x => x.StartLog(It.IsAny<string>(),
-                It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
+                //_testsProgressLogger.Verify(x => x.StartLog(It.IsAny<string>(),
+                //It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
             }
             
         }

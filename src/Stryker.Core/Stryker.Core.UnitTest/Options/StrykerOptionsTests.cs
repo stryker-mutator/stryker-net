@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -196,7 +196,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ProjectVersionCannotBeEmpty()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: string.Empty);
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: string.Empty, projectName: "test", dashboardApiKey: "someKey");
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
@@ -205,7 +205,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ProjectVersionCannotBeNull()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: null, fallbackVersion: "fallbackVersion", projectName: "test", dashboardApiKey: "someKey");
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
@@ -214,7 +214,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void FallbackVersionCannotBeProjectVersion()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "version");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: "version", fallbackVersion: "version", projectName: "test", dashboardApiKey: "someKey");
 
             Should.Throw<StrykerInputException>(act)
                 .Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
@@ -223,7 +223,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void ShouldNotThrowInputExceptionWhenSetCorrectly()
         {
-            static void act() => new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion");
+            static void act() => new StrykerOptions(reporters: new[] { "dashboard" }, compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion", projectName: "test", dashboardApiKey: "someKey");
 
             Should.NotThrow(act);
         }
@@ -267,6 +267,14 @@ namespace Stryker.Core.UnitTest.Options
             var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
 
             target.AzureFileStorageSas.ShouldBe("SAS");
+        }
+
+        [Fact]
+        public void Should_Enabled_Diff_When_CompareToDashboard_Is_Enabled()
+        {
+            var target = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion", projectName: "test", dashboardApiKey: "someKey");
+
+            target.DiffEnabled.ShouldBeTrue();
         }
     }
 }

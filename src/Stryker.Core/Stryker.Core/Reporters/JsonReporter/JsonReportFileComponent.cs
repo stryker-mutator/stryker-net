@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
@@ -13,7 +13,7 @@ namespace Stryker.Core.Reporters.Json
         public ISet<JsonMutant> Mutants { get; }
 
         [JsonConstructor]
-        private JsonReportFileComponent(string language, string source, ISet<JsonMutant> mutants)
+        protected JsonReportFileComponent(string language, string source, ISet<JsonMutant> mutants)
         {
             Language = language;
             Source = source;
@@ -22,7 +22,7 @@ namespace Stryker.Core.Reporters.Json
 
         public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            var log = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
 
             Source = file.SourceCode;
             Language = "cs";

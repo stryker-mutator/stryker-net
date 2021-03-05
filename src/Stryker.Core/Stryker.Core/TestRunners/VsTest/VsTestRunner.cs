@@ -1,16 +1,3 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
-using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Serilog.Events;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ToolHelpers;
-using Stryker.DataCollector;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,6 +6,20 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Serilog.Events;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
+using Stryker.Core.ToolHelpers;
+using Stryker.DataCollector;
 using Framework = Stryker.Core.Initialisation.Framework;
 using Guid = System.Guid;
 
@@ -29,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IVsTestConsoleWrapper _vsTestConsole;
 
         private readonly IFileSystem _fileSystem;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly OptimizationModes _optimizationFlags;
         private readonly ProjectInfo _projectInfo;
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
@@ -51,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
 
         public VsTestRunner(
-            StrykerOptions options,
+            IStrykerOptions options,
             ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
             IFileSystem fileSystem = null,
@@ -81,8 +82,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private bool CantUseStrykerDataCollector()
         {
-            return _projectInfo.TestProjectAnalyzerResults.Any(t =>
-                t.TargetFrameworkAndVersion.framework == Framework.DotNet && t.TargetFrameworkAndVersion.version.Major < 2);
+            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
+                t.Framework == Framework.DotNet && t.Version.Major < 2);
         }
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -149,8 +150,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     : new TestListDescription(handlerTestResults.Select(tr => (TestDescription)tr.TestCase));
                 var failedTest = new TestListDescription(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(tr => (TestDescription)tr.TestCase));
-                var testsInProgress = new TestListDescription(handler.TestsInTimeout?.Select(t => (TestDescription)t));
-                var remainingMutants = update?.Invoke(mutants, failedTest, tests, testsInProgress);
+                var timedOutTests = new TestListDescription(handler.TestsInTimeout?.Select(t => (TestDescription)t));
+                var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTests);
                 if (handlerTestResults.Count >= expectedTests || remainingMutants != false || _aborted)
                 {
                     return;
@@ -392,7 +393,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, IList<string>> mutantTestsMap)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
-            var targetFramework = projectAnalyzerResult.TargetFramework;
+            var targetFramework = projectAnalyzerResult.GetTargetFramework();
 
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap, CodeInjection.HelperNamespace) : "";
@@ -456,7 +457,7 @@ $@"<RunSettings>
 
         private void InitializeVsTestConsole()
         {
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => _projectInfo.GetTestBinariesPath(testProject)).ToList();
+            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => testProject.GetAssemblyPath()).ToList();
             var testBinariesLocations = new List<string>();
             _sources = new List<string>();
 

@@ -15,7 +15,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(StrykerOptions options);
+        ProjectInfo ResolveInput(IStrykerOptions options);
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(StrykerOptions options)
+        public ProjectInfo ResolveInput(IStrykerOptions options)
         {
             var projectInfo = new ProjectInfo();
             // Determine test projects
@@ -58,8 +58,7 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            _logger.LogInformation("Identifying project to mutate.");
-            var testProjectAnalyzerResults = new List<ProjectAnalyzerResult>();
+            var testProjectAnalyzerResults = new List<IAnalyzerResult>();
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
@@ -68,25 +67,19 @@ namespace Stryker.Core.Initialisation
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
             // Determine project under test
-            projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestName);
+            if (options.TestProjects != null && options.TestProjects.Any())
+            {
+                projectUnderTest = FindProjectFile(options.BasePath);
+            }
+            else
+            {
+                projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestNameFilter);
+            }
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
-
-            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
-            {
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-                // dump properties
-                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
-                {
-                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
-                }
-
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-            }
 
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
@@ -145,7 +138,7 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindProjectUnderTest(IEnumerable<ProjectAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        public string FindProjectUnderTest(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter)
         {
             IEnumerable<string> projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
@@ -165,7 +158,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerOptions options)
+        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, IStrykerOptions options)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
@@ -230,7 +223,7 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<ProjectAnalyzerResult> testProjects)
+        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
             var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);

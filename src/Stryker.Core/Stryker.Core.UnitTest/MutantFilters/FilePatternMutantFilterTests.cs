@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
-            var target = new FilePatternMutantFilter() as IMutantFilter;
+            var target = new FilePatternMutantFilter(new StrykerOptions()) as IMutantFilter;
             target.DisplayName.ShouldBe("file filter");
         }
 
@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         {
             // Arrange
             var options = new StrykerOptions(mutate: patterns);
-            var file = new FileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
+            var file = new CsharpFileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span
             var syntaxToken = SyntaxFactory.Identifier(
@@ -54,10 +54,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant
                 { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
 
-            var sut = new FilePatternMutantFilter();
+            var sut = new FilePatternMutantFilter(options);
 
             // Act
-            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), options);
+            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), new StrykerOptions());
 
             // Assert
             result.Contains(mutant).ShouldBe(shouldKeepFile);

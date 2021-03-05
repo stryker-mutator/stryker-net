@@ -1,20 +1,20 @@
-﻿using Stryker.Core.Baseline;
+using System.Collections.Generic;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
 {
     public class GitBaselineReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public GitBaselineReporter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
@@ -32,17 +32,17 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested, IEnumerable<TestDescription> testDescriptions)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
-            // For implementing interface
+            // This reporter does not report during the testrun
         }
     }
 }

@@ -14,9 +14,9 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase>:INodeMutator where TBase: SyntaxNode where TNode: TBase
     {
-        protected MutantOrchestrator MutantOrchestrator;
+        protected CsharpMutantOrchestrator MutantOrchestrator;
 
-        protected NodeSpecificOrchestrator(MutantOrchestrator mutantOrchestrator)
+        protected NodeSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator)
         {
             MutantOrchestrator = mutantOrchestrator;
         }

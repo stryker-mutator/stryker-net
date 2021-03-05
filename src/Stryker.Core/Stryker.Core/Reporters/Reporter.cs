@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Reporters
+namespace Stryker.Core.Reporters
 {
     public enum Reporter
     {

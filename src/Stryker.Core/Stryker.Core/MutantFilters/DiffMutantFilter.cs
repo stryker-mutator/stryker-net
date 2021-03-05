@@ -20,16 +20,11 @@ namespace Stryker.Core.MutantFilters
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
-        private readonly IBaselineProvider _baselineProvider;
-        private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<DiffMutantFilter> _logger;
-
-        private readonly StrykerOptions _options;
-        private readonly JsonReport _baseline;
 
         public string DisplayName => "git diff file filter";
 
-        public DiffMutantFilter(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public DiffMutantFilter(IDiffProvider diffProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
@@ -65,7 +60,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;
@@ -94,7 +89,7 @@ namespace Stryker.Core.MutantFilters
             // If the diff result flags this file as modified, we want to run all mutants again
             if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
             {
-                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePathToProjectFile);
+                _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePath);
                 return SetMutantStatusForFileChanged(mutants);
             }
             else
@@ -117,104 +112,6 @@ namespace Stryker.Core.MutantFilters
             }
 
             return filteredMutants;
-        }
-
-        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
-        {
-            var baselineFile = _baseline.Files.SingleOrDefault(f => FilePathUtils.NormalizePathSeparators(f.Key) == FilePathUtils.NormalizePathSeparators(file.RelativePath));
-
-            if (baselineFile is { } && baselineFile.Value is { })
-            {
-                foreach (var baselineMutant in baselineFile.Value.Mutants)
-                {
-                    var baselineMutantSourceCode = GetMutantSourceCode(baselineFile.Value.Source, baselineMutant);
-
-                    if (string.IsNullOrEmpty(baselineMutantSourceCode))
-                    {
-                        _logger.LogWarning("Unable to find mutant span in original baseline source code. This indicates a bug in stryker. Please report this on github.");
-                        continue;
-                    }
-
-                    IEnumerable<Mutant> matchingMutants = GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
-
-                    SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
-                }
-            }
-        }
-
-        private static void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
-        {
-            if (matchingMutants.Count() == 1)
-            {
-                matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                matchingMutants.First().ResultStatusReason = "Result based on previous run";
-            }
-            else
-            {
-                foreach (var matchingMutant in matchingMutants)
-                {
-                    matchingMutant.ResultStatus = MutantStatus.NotRun;
-                    matchingMutant.ResultStatusReason = "Result based on previous run was inconclusive";
-                }
-            }
-        }
-
-        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
-        {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
-
-            var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
-            var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);
-
-            LinePositionSpan span = new LinePositionSpan(beginLinePosition, endLinePosition);
-
-            var textSpan = tree.GetText().Lines.GetTextSpan(span);
-            var originalNode = tree.GetRoot().DescendantNodes(textSpan).FirstOrDefault(n => textSpan.Equals(n.Span));
-            return originalNode?.ToString();
-
-
-        }
-
-        private IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
-        {
-            return mutants.Where(x =>
-                x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
-                x.Mutation.DisplayName == baselineMutant.MutatorName);
-        }
-
-        private async Task<JsonReport> GetBaselineAsync()
-        {
-            var branchName = _gitInfoProvider.GetCurrentBranchName();
-
-            var baselineLocation = $"dashboard-compare/{branchName}";
-
-            var report = await _baselineProvider.Load(baselineLocation);
-
-            if (report == null)
-            {
-                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.FallbackVersion);
-
-                return await GetFallbackBaselineAsync();
-            }
-
-            _logger.LogInformation("Found baseline report for current branch {0}", branchName);
-
-            return report;
-        }
-
-        private async Task<JsonReport> GetFallbackBaselineAsync()
-        {
-            var report = await _baselineProvider.Load(_options.FallbackVersion);
-
-            if (report == null)
-            {
-                _logger.LogInformation("We could not locate a baseline report for the current branch or fallback version. Now running a complete test to establish a baseline.");
-                return null;
-            }
-
-            _logger.LogInformation("Found fallback report using version {0}", _options.FallbackVersion);
-
-            return report;
         }
 
         private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
@@ -270,35 +167,6 @@ namespace Stryker.Core.MutantFilters
             }
 
             return filteredMutants;
-        }
-
-        /// Takes two lists. Adds the mutants from the updateMutants list to the targetMutants.
-        /// If the targetMutants already contain a member with the same Id. The results are updated.
-        internal IEnumerable<Mutant> MergeMutantLists(IEnumerable<Mutant> target, IEnumerable<Mutant> source)
-        {
-            foreach (var targetMutant in target)
-            {
-                if (source.Any(updateMutant => updateMutant.Id == targetMutant.Id))
-                {
-                    continue;
-                }
-
-                yield return targetMutant;
-            }
-
-            foreach (var sourceMutant in source)
-            {
-                if (target.SingleOrDefault(targetMutant => targetMutant.Id == sourceMutant.Id) is var targetMutant && targetMutant is { })
-                {
-                    targetMutant.ResultStatus = sourceMutant.ResultStatus;
-                    targetMutant.ResultStatusReason = sourceMutant.ResultStatusReason;
-
-                    yield return targetMutant;
-                    continue;
-                }
-
-                yield return sourceMutant;
-            }
         }
     }
 }

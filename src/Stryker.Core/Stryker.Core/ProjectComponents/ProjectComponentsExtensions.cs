@@ -26,7 +26,7 @@ namespace Stryker.Core.ProjectComponents
             var excludedSpans = excludePattern.Where(MatchesFilePattern).SelectMany(x => x.TextSpans).Reduce();
 
             // If there are only included spans, the file is not excluded.
-            if (includedSpans.Any() && !excludedSpans.Any())
+            if ((includedSpans.Any() && !excludedSpans.Any()) || projectComponent.Parent?.Parent == null)
             {
                 return false;
             }
@@ -35,7 +35,7 @@ namespace Stryker.Core.ProjectComponents
 
             bool MatchesFilePattern(FilePattern pattern) =>
                 pattern.Glob.IsMatch(projectComponent.FullPath) ||
-                pattern.Glob.IsMatch(projectComponent.RelativePathToProjectFile);
+                pattern.Glob.IsMatch(projectComponent.RelativePath);
         }
 
         /// <summary>
