@@ -37,6 +37,13 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
+        protected JsonReport(string schemaVersion, IDictionary<string, int> thresholds, IDictionary<string, JsonReportFileComponent> files)
+        {
+            SchemaVersion = schemaVersion ?? SchemaVersion;
+            Thresholds = thresholds ?? Thresholds;
+            Files = files ?? Files;
+        }
+
         public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             // This should really only happen in unit tests.

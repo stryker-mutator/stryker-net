@@ -288,5 +288,13 @@ namespace Stryker.Core.UnitTest.Options
 
             target.AzureSAS.ShouldBe("SAS");
         }
+
+        [Fact]
+        public void Should_Enabled_Diff_When_CompareToDashboard_Is_Enabled()
+        {
+            var target = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion", projectName: "test", dashboardApiKey: "someKey");
+
+            target.DiffEnabled.ShouldBeTrue();
+        }
     }
 }

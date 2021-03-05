@@ -1,5 +1,5 @@
 using Moq;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;

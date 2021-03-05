@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -129,7 +129,7 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
-            DiffEnabled = diff;
+            DiffEnabled = diff || compareToDashboard;
             CompareToDashboard = compareToDashboard;
             GitDiffSource = ValidateGitDiffTarget(gitDiffTarget);
             TestProjects = ValidateTestProjects(testProjects);

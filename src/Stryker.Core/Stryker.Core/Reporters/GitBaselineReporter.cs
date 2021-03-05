@@ -1,10 +1,10 @@
-﻿using Stryker.Core.Baseline;
+using System.Collections.Generic;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
 {

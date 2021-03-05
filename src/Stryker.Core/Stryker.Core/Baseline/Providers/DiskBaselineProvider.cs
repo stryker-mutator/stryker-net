@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -7,7 +7,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public class DiskBaselineProvider : IBaselineProvider
     {

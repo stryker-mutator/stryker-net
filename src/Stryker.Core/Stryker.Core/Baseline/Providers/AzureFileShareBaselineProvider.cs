@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
@@ -88,19 +88,20 @@ namespace Stryker.Core.Baseline
             _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
             var uriParts = fileUrl.Split(_outputPath);
-            var currentDirectory = $"{uriParts[0]}";
+            var currentDirectory = new StringBuilder(uriParts[0]);
 
             var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains("."));
 
             foreach (var segment in storagePathSegments)
             {
-                currentDirectory += $"{segment}/";
-                if (!await CreateDirectory(currentDirectory))
+                currentDirectory.Append($"{segment}/");
+                
+                if (!await CreateDirectory(currentDirectory.ToString()))
                 {
                     return false;
                 }
             }
-
+            
             return true;
         }
 
