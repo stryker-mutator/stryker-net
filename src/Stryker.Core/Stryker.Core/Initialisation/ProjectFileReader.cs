@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Build.Exceptions;
@@ -47,30 +48,27 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
 
-            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (analyzerResult.Properties != null && analyzerResult.SourceFiles != null && analyzerResult.References != null)
+            // dump all properties as it can help diagnosing build issues for user project.
+            _logger.LogDebug("**** Buildalyzer result ****");
+
+            _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
+            _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
+
+            foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
             {
-                _logger.LogDebug("**** Buildalyzer result ****");
-
-                _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
-                _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
-
-                foreach (var property in analyzerResult.Properties)
-                {
-                    _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
-                }
-                foreach (var sourceFile in analyzerResult.SourceFiles)
-                {
-                    _logger.LogDebug("SourceFile {0}", sourceFile);
-                }
-                foreach (var reference in analyzerResult.References)
-                {
-                    _logger.LogDebug("References: {0}", reference);
-                }
-                _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
-
-                _logger.LogDebug("**** Buildalyzer result ****");
+                _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
             }
+            foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
+            {
+                _logger.LogDebug("SourceFile {0}", sourceFile);
+            }
+            foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
+            {
+                _logger.LogDebug("References: {0}", reference);
+            }
+            _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
+
+            _logger.LogDebug("**** Buildalyzer result ****");
 
             if (!analyzerResult.Succeeded)
             {
