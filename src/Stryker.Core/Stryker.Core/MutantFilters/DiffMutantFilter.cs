@@ -86,14 +86,14 @@ namespace Stryker.Core.MutantFilters
             }
 
             // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
-            if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.EndsWith(".cs")))
+            if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.Path.EndsWith(".cs")))
             {
                 _logger.LogDebug("Returning all mutants in {0} because a non-source file is modified", file.RelativePath);
                 return SetMutantStatusForNonCSharpFileChanged(mutants);
             }
 
             // If the diff result flags this file as modified, we want to run all mutants again
-            if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Contains(file.FullPath))
+            if (_diffResult.ChangedSourceFiles != null && _diffResult.ChangedSourceFiles.Any(changedFile => changedFile.Path == file.FullPath))
             {
                 _logger.LogDebug("Returning all mutants in {0} because the file is modified", file.RelativePath);
                 return SetMutantStatusForFileChanged(mutants);
@@ -105,7 +105,7 @@ namespace Stryker.Core.MutantFilters
 
             // If any of the tests have been changed, we want to return all mutants covered by these testfiles.
             // Only check for changed c# files. Other files have already been handled.
-            if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any(file => file.EndsWith(".cs")))
+            if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any(changedFile => changedFile.Path.EndsWith(".cs")))
             {
                 filteredMutants = ResetMutantStatusForChangedTests(mutants);
             }
@@ -260,7 +260,7 @@ namespace Stryker.Core.MutantFilters
                 var coveringTests = mutant.CoveringTests.Tests;
 
                 if (coveringTests != null
-                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
+                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile.Path))
                         || coveringTests.Any(coveringTest => coveringTest.IsAllTests)))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;

@@ -170,8 +170,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedSourceFiles = new Collection<string>(),
-                ChangedTestFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<ChangedFile>(),
+                ChangedTestFiles = new Collection<ChangedFile>()
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
             var file = new CsharpFileLeaf { FullPath = myFile };
@@ -198,9 +198,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedSourceFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<ChangedFile>()
                 {
-                    myFile
+                    new ChangedFile { Path = myFile }
                 }
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
@@ -230,12 +230,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
             string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
-                ChangedSourceFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<ChangedFile>()
                 {
-                    myTest
+                    new ChangedFile { Path = myTest }
                 },
-                ChangedTestFiles = new Collection<string>() {
-                    myTest
+                ChangedTestFiles = new Collection<ChangedFile>() {
+                    new ChangedFile { Path = myTest }
                 }
             });
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, branchProvider.Object);
@@ -364,7 +364,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedSourceFiles = new List<string>()
+                ChangedSourceFiles = new List<ChangedFile>()
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, new Mock<IBaselineProvider>().Object, new Mock<IGitInfoProvider>().Object);
@@ -484,8 +484,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedSourceFiles = new List<string>(),
-                ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
+                ChangedSourceFiles = new List<ChangedFile>(),
+                ChangedTestFiles = new List<ChangedFile> { new ChangedFile { Path = "C:/testfile1.cs" } }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
@@ -538,8 +538,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedSourceFiles = new List<string>(),
-                ChangedTestFiles = new List<string> { "C:/testfile.cs" }
+                ChangedSourceFiles = new List<ChangedFile>(),
+                ChangedTestFiles = new List<ChangedFile> { new ChangedFile { Path = "C:/testfile.cs" } }
             });
 
             var target = new DiffMutantFilter(options, diffProvider.Object, baselineProvider.Object, gitInfoProvider.Object);
@@ -566,7 +566,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProviderMock = new Mock<IBaselineProvider>();
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-            var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
+            var diffResult = new DiffResult()
+            {
+                ChangedTestFiles = new List<ChangedFile>
+                {
+                    new ChangedFile { Path = "config.json" }
+                }
+            };
+
             diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
 
             baselineProviderMock.Setup(x =>

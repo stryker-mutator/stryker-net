@@ -23,8 +23,8 @@ namespace Stryker.Core.DiffProviders
         {
             var diffResult = new DiffResult()
             {
-                ChangedSourceFiles = new Collection<string>(),
-                ChangedTestFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<ChangedFile>(),
+                ChangedTestFiles = new Collection<ChangedFile>()
             };
 
             // A git repository has been detected, calculate the diff to filter
@@ -45,17 +45,22 @@ namespace Stryker.Core.DiffProviders
                     continue;
                 }
 
+                var addedLines = patchChanges.AddedLines;
+                var deletedLines = patchChanges.DeletedLines;
+
+                var changedFile = new ChangedFile { Path = diffPath, AddedLines = addedLines, DeletedLines = deletedLines };
+                
                 var fullName = _options.BasePath.EndsWith(Path.DirectorySeparatorChar)
                     ? _options.BasePath
                     : _options.BasePath + Path.DirectorySeparatorChar;
 
                 if (diffPath.StartsWith(fullName))
                 {
-                    diffResult.ChangedTestFiles.Add(diffPath);
+                    diffResult.ChangedTestFiles.Add(changedFile);
                 }
                 else
                 {
-                    diffResult.ChangedSourceFiles.Add(diffPath);
+                    diffResult.ChangedSourceFiles.Add(changedFile);
                 }
             }
             RemoveFilteredOutFiles(diffResult);
@@ -67,8 +72,8 @@ namespace Stryker.Core.DiffProviders
         {
             foreach (FilePattern filePattern in _options.DiffIgnoreFiles)
             {
-                diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
-                diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
+                diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile.Path)).ToList();
+                diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile.Path)).ToList();
             }
         }
     }

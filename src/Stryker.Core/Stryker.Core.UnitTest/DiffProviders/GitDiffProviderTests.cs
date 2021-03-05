@@ -1,4 +1,4 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -71,6 +71,14 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Path)
                 .Returns("file.cs");
 
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
+
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges> { patchEntryChangesMock.Object }).GetEnumerator());
@@ -131,6 +139,14 @@ namespace Stryker.Core.UnitTest.DiffProviders
             patchEntryChangesMock
                 .SetupGet(x => x.Path)
                 .Returns("/c/Users/JohnDoe/Project/Tests-temp/file.cs");
+
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -241,6 +257,22 @@ namespace Stryker.Core.UnitTest.DiffProviders
                 .SetupGet(x => x.Path)
                 .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Test.cs"));
 
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
+
             patchMock
                 .Setup(x => x.GetEnumerator())
                 .Returns(((IEnumerable<PatchEntryChanges>)new List<PatchEntryChanges>
@@ -312,6 +344,22 @@ namespace Stryker.Core.UnitTest.DiffProviders
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
                 .Returns(FilePathUtils.NormalizePathSeparators($"{basePath}/Test.cs"));
+
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -385,6 +433,22 @@ namespace Stryker.Core.UnitTest.DiffProviders
             patchEntryChangesGitIgnoreMock
                 .SetupGet(x => x.Path)
                 .Returns(FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests/Test.cs"));
+
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesGitIgnoreMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
 
             patchMock
                 .Setup(x => x.GetEnumerator())
@@ -461,6 +525,14 @@ namespace Stryker.Core.UnitTest.DiffProviders
                                                               {
                                                                   patchEntryChangesMock.Object
                                                               }).GetEnumerator());
+
+            patchEntryChangesMock
+                .SetupGet(x => x.AddedLines)
+                .Returns((List<Line>)null);
+
+            patchEntryChangesMock
+                .SetupGet(x => x.DeletedLines)
+                .Returns((List<Line>)null);
 
             repositoryMock
                 .Setup(x => x.Diff.Compare<Patch>(It.IsAny<Tree>(), DiffTargets.WorkingDirectory))
