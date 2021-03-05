@@ -61,7 +61,7 @@ namespace Stryker.Core.DashboardCompare
 
             if (commit == null)
             {
-                throw new StrykerInputException($"No Branch or commit found with given target {_options.GitDiffTarget}. Please provide a different GitDiffTarget.");
+                throw new StrykerInputException($"No Branch or commit found with given target {_options.GitDiffSource}. Please provide a different GitDiffTarget.");
             }
 
             return commit;
@@ -81,24 +81,24 @@ namespace Stryker.Core.DashboardCompare
         {
             Branch targetBranch = null;
 
-            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.GitDiffTarget);
+            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.GitDiffSource);
             foreach (var branch in Repository.Branches)
             {
                 try
                 {
-                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.GitDiffTarget) ?? false)
+                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.GitDiffSource) ?? false)
                     {
                         _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.CanonicalName?.Contains(_options.GitDiffTarget) ?? false)
+                    if (branch.CanonicalName?.Contains(_options.GitDiffSource) ?? false)
                     {
                         _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.FriendlyName?.Contains(_options.GitDiffTarget) ?? false)
+                    if (branch.FriendlyName?.Contains(_options.GitDiffSource) ?? false)
                     {
                         _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
                         targetBranch = branch;
@@ -117,13 +117,13 @@ namespace Stryker.Core.DashboardCompare
             }
 
             // It's a commit!
-            if (_options.GitDiffTarget.Length == 40)
+            if (_options.GitDiffSource.Length == 40)
             {
-                var commit = Repository.Lookup(new ObjectId(_options.GitDiffTarget)) as Commit;
+                var commit = Repository.Lookup(new ObjectId(_options.GitDiffSource)) as Commit;
 
                 if (commit != null)
                 {
-                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.GitDiffTarget}");
+                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.GitDiffSource}");
                     return commit;
                 }
             }

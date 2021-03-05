@@ -35,7 +35,7 @@ namespace Stryker.Core.Options
         MutationLevel MutationLevel { get; }
         string ProjectUnderTest { get; }
         bool DiffEnabled { get; }
-        string GitDiffTarget { get; }
+        string GitDiffSource { get; }
         string ModuleName { get; }
         string ProjectName { get; }
         string ProjectVersion { get; }
