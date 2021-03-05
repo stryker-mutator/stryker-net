@@ -1,12 +1,10 @@
-﻿using Stryker.Core.Exceptions;
+using Stryker.Core.Exceptions;
 using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
     public class SolutionPathInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.SolutionPath;
-
         protected override string Description => "Full path to your solution file. Required on dotnet framework.";
         protected override string HelpOptions => "";
 

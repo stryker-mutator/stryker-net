@@ -5,7 +5,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class LogLevelInput : OptionDefinition<string, LogEventLevel>
     {
-        public override StrykerOption Type => StrykerOption.LogLevel;
         public override string DefaultInput => "info";
         public override LogEventLevel DefaultValue => new LogLevelInput(DefaultInput).Value;
 

@@ -4,7 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ProjectVersionInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.ProjectVersion;
 
         protected override string Description => "Project version used in reporters.";
 

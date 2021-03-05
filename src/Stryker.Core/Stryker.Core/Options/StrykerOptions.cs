@@ -84,11 +84,11 @@ namespace Stryker.Core.Options
         /// </summary>
         /// <param name="inputType"></param>
         /// <returns>new StrykerOptions with supplied feature enabled</returns>
-        public StrykerOptions With(StrykerOption inputType, bool? enabled)
+        public StrykerOptions With(IOptionDefinition inputType, bool? enabled)
         {
             return inputType switch
             {
-                StrykerOption.DevMode => SetDevMode(enabled),
+                DevModeInput devModeInput => SetDevMode(enabled),
                 StrykerOption.DashboardCompare => SetCompareToDashboard(enabled),
                 StrykerOption.LogToFile => SetLogToFile(enabled),
                 _ => throw new GeneralStrykerException($"Input {inputType} is invalid for enable feature.")
@@ -117,9 +117,9 @@ namespace Stryker.Core.Options
         /// <param name="inputType"></param>
         /// <param name="values"></param>
         /// <returns>new StrykerOptions with supplied option set to chosen value</returns>
-        public StrykerOptions With(StrykerOption inputType, string value)
+        public StrykerOptions With(OptionDefinition inputType, string value)
         {
-            return inputType switch
+            return inputType. switch
             {
                 StrykerOption.ThresholdBreak => SetThresholdBreak(value),
                 StrykerOption.Concurrency => SetConcurrency(value),

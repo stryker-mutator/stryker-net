@@ -6,7 +6,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class MutationLevelInput : OptionDefinition<string, MutationLevel>
     {
-        public override StrykerOption Type => StrykerOption.MutationLevel;
         public override string DefaultInput => DefaultValue.ToString();
         public override MutationLevel DefaultValue => MutationLevel.Standard;
 

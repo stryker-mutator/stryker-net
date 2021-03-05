@@ -6,7 +6,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class IgnoredMethodsInput : OptionDefinition<IEnumerable<string>, IEnumerable<Regex>>
     {
-        public override StrykerOption Type => StrykerOption.IgnoredMethods;
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
 
         protected override string Description => @"Ignore mutations on method parameters.";

@@ -5,7 +5,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class BaselineProviderInput : OptionDefinition<string, BaselineProvider>
     {
-        public override StrykerOption Type => StrykerOption.BaselineProvider;
         public override string DefaultInput => "disk";
         public override BaselineProvider DefaultValue => new BaselineProviderInput(DefaultInput, false).Value;
 

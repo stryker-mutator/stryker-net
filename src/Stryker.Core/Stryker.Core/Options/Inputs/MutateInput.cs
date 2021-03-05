@@ -6,7 +6,6 @@ namespace Stryker.Core.Options.Inputs
     public class MutateInput : OptionDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
     {
         private readonly string _defaultInput = "**/*";
-        public override StrykerOption Type => StrykerOption.Mutate;
         public override IEnumerable<string> DefaultInput => new List<string> { _defaultInput };
         public override IEnumerable<FilePattern> DefaultValue => new MutateInput(DefaultInput).Value;
 

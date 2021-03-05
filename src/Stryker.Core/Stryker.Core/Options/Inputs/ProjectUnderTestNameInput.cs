@@ -4,7 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ProjectUnderTestNameInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.ProjectUnderTestName;
 
         protected override string Description => @"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj""";
 

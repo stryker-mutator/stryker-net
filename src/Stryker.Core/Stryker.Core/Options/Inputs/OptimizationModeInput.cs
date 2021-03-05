@@ -4,7 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class OptimizationModeInput : OptionDefinition<string, OptimizationModes>
     {
-        public override StrykerOption Type => StrykerOption.OptimizationMode;
         public override string DefaultInput => "perTest";
         public override OptimizationModes DefaultValue => new OptimizationModeInput(DefaultInput).Value;
 

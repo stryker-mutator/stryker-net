@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
 using System;
 using System.Linq;
@@ -7,7 +7,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class LanguageVersionInput : OptionDefinition<string, LanguageVersion>
     {
-        public override StrykerOption Type => StrykerOption.LanguageVersion;
         public override string DefaultInput => "latest";
         public override LanguageVersion DefaultValue => new LanguageVersionInput(DefaultInput).Value;
 

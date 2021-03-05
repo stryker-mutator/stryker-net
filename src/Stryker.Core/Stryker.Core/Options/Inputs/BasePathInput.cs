@@ -5,8 +5,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class BasePathInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.BasePath;
-
         protected override string Description => "The path from which stryker is started.";
 
         public BasePathInput(IFileSystem fileSystem, string basePath)

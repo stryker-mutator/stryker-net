@@ -5,7 +5,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class DashboardUrlInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.DashboardUrl;
         public override string DefaultValue => "https://dashboard.stryker-mutator.io";
 
         protected override string Description => "Alternative url for Stryker Dashboard.";

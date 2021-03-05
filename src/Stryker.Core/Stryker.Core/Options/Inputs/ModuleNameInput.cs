@@ -4,7 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ModuleNameInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.ModuleName;
 
         protected override string Description => "Module name used by reporters. Usually a project in your solution would be a module.";
 

@@ -6,8 +6,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class AzureFileStorageUrlInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.AzureFileStorageUrl;
-
         protected override string Description => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
                                     The url should look something like this: 
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 

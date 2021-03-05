@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using System;
 using System.IO;
@@ -8,7 +8,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class OutputPathInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.None;
         protected override string Description => string.Empty;
 
         public OutputPathInput(ILogger logger, IFileSystem fileSystem, string basepath)

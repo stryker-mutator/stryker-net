@@ -4,8 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class AdditionalTimeoutMsInput : OptionDefinition<int>
     {
-        public override StrykerOption Type => StrykerOption.AdditionalTimeoutMs;
-
         protected override string Description => @"A timeout is calculated based on the initial unit test run before mutating.
 To prevent infinite loops stryker cancels a testrun if it runs longer than the timeout value.
 If you experience a lot of timeout you might need to increase the timeout value.";

@@ -4,7 +4,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class FallbackVersionInput : OptionDefinition<string>
     {
-        public override StrykerOption Type => StrykerOption.FallbackVersion;
 
         protected override string Description => @"Project version used as a fallback when no report could be found based on Git information for the compare feature.
 Can be semver, git commit hash, branch name or anything else to indicate what version of your software you're testing.

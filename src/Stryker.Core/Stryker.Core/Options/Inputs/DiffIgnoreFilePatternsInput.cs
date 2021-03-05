@@ -5,7 +5,6 @@ namespace Stryker.Core.Options.Inputs
 {
     public class DiffIgnoreFilePatternsInput : OptionDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
     {
-        public override StrykerOption Type => StrykerOption.DiffIgnoreFilePatterns;
         public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
         public override IEnumerable<FilePattern> DefaultValue => new DiffIgnoreFilePatternsInput(DefaultInput).Value;
 
