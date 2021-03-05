@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_When_Dashboard_Compare_Enabled() {
+        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_Dashboard_Compare_Enabled() {
             var strykerOptions = new StrykerOptions(compareToDashboard: true, projectVersion: "foo");
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
