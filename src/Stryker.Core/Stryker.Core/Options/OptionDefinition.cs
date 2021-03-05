@@ -17,10 +17,7 @@ namespace Stryker.Core.Options
     /// <typeparam name="TValue">The type of the option</typeparam>
     public abstract class OptionDefinition<TValue> : OptionDefinition<TValue, TValue>
     {
-        /// <summary>
-        /// The default input which is the same as the default value
-        /// </summary>
-        public override TValue DefaultInput => DefaultValue;
+
     }
 
     /// <summary>
@@ -28,7 +25,7 @@ namespace Stryker.Core.Options
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class OptionDefinition<TInput, TValue>, IOptionDefinition
+    public abstract class OptionDefinition<TInput, TValue> : IOptionDefinition
     {
         /// <summary>
         /// The default value for the option when no custom value has been supplied

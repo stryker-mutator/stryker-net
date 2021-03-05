@@ -19,7 +19,7 @@ namespace Stryker.CLI
                 .With(StrykerOption.Concurrency, jsonConfig.Concurrency)
                 .With(StrykerOption.ThresholdHigh, jsonConfig.Thresholds.High)
                 .With(StrykerOption.ThresholdLow, jsonConfig.Thresholds.Low)
-                .With(StrykerOption.ThresholdBreak, jsonConfig.Thresholds.Break);
+                .With(StrykerOption.ThresholdBreak, jsonConfig.Thresholds.Break)
                 .With(StrykerOption.SolutionPath, jsonConfig.Solution)
                 .With(StrykerOption.FallbackVersion, jsonConfig.BaseLine.FallbackVersion)
                 .With(StrykerOption.Since, jsonConfig.Since)
