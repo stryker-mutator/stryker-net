@@ -71,9 +71,9 @@ namespace Stryker.Core.Reporters.Progress
             var length = _mutantsToBeTested.ToString().Length;
 
             _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine($"Killed:   {Output.BrightMagenta(_mutantsKilledCount.ToString().PadLeft(length))}");
-            _consoleWriter.WriteLine($"Survived: {Output.BrightMagenta(_mutantsSurvivedCount.ToString().PadLeft(length))}");
-            _consoleWriter.WriteLine($"Timeout:  {Output.BrightMagenta(_mutantsTimeoutCount.ToString().PadLeft(length))}");
+            _consoleWriter.WriteLine($"Killed:   {Output.Bright.Magenta(_mutantsKilledCount.ToString().PadLeft(length))}");
+            _consoleWriter.WriteLine($"Survived: {Output.Bright.Magenta(_mutantsSurvivedCount.ToString().PadLeft(length))}");
+            _consoleWriter.WriteLine($"Timeout:  {Output.Bright.Magenta(_mutantsTimeoutCount.ToString().PadLeft(length))}");
         }
 
         private string RemainingTime()

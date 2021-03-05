@@ -1,4 +1,8 @@
-﻿using Crayon;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
+using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -6,10 +10,6 @@ using Stryker.CLI.NuGet;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Stryker.CLI
 {
@@ -161,7 +161,7 @@ namespace Stryker.CLI
         private void PrintStykerASCIIName()
         {
             // Crayon does not support background coloring (yet)
-            Console.WriteLine(Output.FromRgb(241, 196, 15).Text(@"
+            Console.WriteLine(Output.Yellow(@"
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
