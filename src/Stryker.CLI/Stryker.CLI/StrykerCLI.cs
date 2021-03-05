@@ -41,7 +41,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            CliInputsParser.RegisterCliOptions(app);
+            CliInputsParser.RegisterCliStrykerInputs(app);
 
             app.OnExecute(() =>
             {

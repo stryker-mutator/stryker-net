@@ -25,8 +25,9 @@ namespace Stryker.CLI
             {
                 strykerInputs.EnrichFromJsonConfig(configFilePath);
             }
+            strykerInputs.EnrichFromCommandLineArguments(args, app);
 
-            return strykerInputs.EnrichFromCommandLineArguments(args, app);
+            return strykerInputs;
         }
     }
 }

@@ -6,7 +6,7 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
-    public class CliOption
+    public class CliInput
     {
         public IInputDefinition Input { get; set; }
         public string ArgumentName { get; set; }
@@ -18,70 +18,66 @@ namespace Stryker.CLI
 
     public static class CliInputsParser
     {
-        private static readonly IDictionary<string, CliOption> CliOptions = new Dictionary<string, CliOption>();
-        private static readonly CliOption ConfigOption;
-        private static readonly CliOption GenerateJsonConfigOption;
+        private static readonly IDictionary<string, CliInput> _cliStrykerInputs = new Dictionary<string, CliInput>();
+        private static readonly CliInput _configInput;
+        private static readonly CliInput _generateJsonConfigInput;
 
         static CliInputsParser()
         {
-            ConfigOption = AddCliOption(StrykerOption.None, "config-file", "f",
-                "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
-            GenerateJsonConfigOption = AddCliOption(StrykerOption.None, "init", "i",
-                "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+            _configInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
+            _generateJsonConfigInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
 
             PrepareCliOptions();
         }
 
-        public static void RegisterCliOptions(CommandLineApplication app)
+        public static void RegisterCliStrykerInputs(CommandLineApplication app)
         {
-            foreach (var (_, value) in CliOptions)
+            foreach (var (_, value) in _cliStrykerInputs)
             {
-                RegisterCliOption(app, value);
+                RegisterCliInput(app, value);
             }
         }
 
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
         {
-            RegisterCliOption(app, ConfigOption);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == ConfigOption.ArgumentName)?.Value() ?? "stryker-config.json";
+            RegisterCliInput(app, _configInput);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configInput.ArgumentName)?.Value() ?? "stryker-config.json";
         }
 
         public static bool GenerateConfigFile(string[] args, CommandLineApplication app)
         {
-            RegisterCliOption(app, GenerateJsonConfigOption);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == GenerateJsonConfigOption.ArgumentName)?.HasValue() ?? false;
+            RegisterCliInput(app, _generateJsonConfigInput);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateJsonConfigInput.ArgumentName)?.HasValue() ?? false;
         }
 
-        public static StrykerInputs EnrichFromCommandLineArguments(this StrykerInputs options, string[] args, CommandLineApplication app)
+        public static void EnrichFromCommandLineArguments(this StrykerInputs inputs, string[] args, CommandLineApplication app)
         {
-            var enrichedOptions = options;
-            foreach (var option in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
+            foreach (var commandOption in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
-                var input = CliOptions[option.LongName].Input;
+                var input = _cliStrykerInputs[commandOption.LongName].Input;
 
-                switch(input)
+                switch (input)
                 {
                     case ConcurrencyInput concurrencyInput:
-                        concurrencyInput.SuppliedInput = int.Parse(option.Value());
+                        concurrencyInput.SuppliedInput = int.Parse(commandOption.Value());
+                        inputs.Concurrency = concurrencyInput;
                         break;
                 }
 
-                _ = option.OptionType switch
+                _ = commandOption.OptionType switch
                 {
-                    CommandOptionType.NoValue => enrichedOptions.With(input, option.HasValue()),
-                    CommandOptionType.SingleOrNoValue => enrichedOptions.With(input, option.HasValue(), option.Value()),
-                    CommandOptionType.SingleValue => enrichedOptions.With(input, option.Value()),
-                    CommandOptionType.MultipleValue => enrichedOptions.With(input, option.Values),
-                    _ => enrichedOptions
+                    CommandOptionType.NoValue => inputs.With(input, commandOption.HasValue()),
+                    CommandOptionType.SingleOrNoValue => inputs.With(input, commandOption.HasValue(), commandOption.Value()),
+                    CommandOptionType.SingleValue => inputs.With(input, commandOption.Value()),
+                    CommandOptionType.MultipleValue => inputs.With(input, commandOption.Values),
+                    _ => inputs
                 };
             }
-
-            return enrichedOptions;
         }
 
         private static void PrepareCliOptions()
         {
-            AddCliOption(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
+            AddCliStrykerInput(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
 
             AddCliOption(StrykerOption.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
 
@@ -104,7 +100,7 @@ namespace Stryker.CLI
             AddCliOption(StrykerOption.DevMode, "dev-mode", null, new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
         }
 
-        private static void RegisterCliOption(CommandLineApplication app, CliOption option)
+        private static void RegisterCliInput(CommandLineApplication app, CliInput option)
         {
             var argumentHint = option.OptionType switch
             {
@@ -116,10 +112,27 @@ namespace Stryker.CLI
             app.Option($"{option.ArgumentShortName}|{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
         }
 
-        private static CliOption AddCliOption(IInputDefinition input, string argumentName, string argumentShortName,
+        private static CliInput AddCliOnlyInput(string argumentName, string argumentShortName, string helpText,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
-            var cliOption = new CliOption
+            var cliOption = new CliInput
+            {
+                ArgumentName = $"--{argumentName}",
+                ArgumentShortName = $"-{argumentShortName}",
+                Description = helpText,
+                OptionType = optionType,
+                ArgumentHint = argumentHint
+            };
+
+            _cliStrykerInputs[argumentName] = cliOption;
+
+            return cliOption;
+        }
+
+        private static CliInput AddCliStrykerInput(IInputDefinition input, string argumentName, string argumentShortName,
+            CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
+        {
+            var cliOption = new CliInput
             {
                 Input = input,
                 ArgumentName = $"--{argumentName}",
@@ -129,7 +142,7 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            CliOptions[argumentName] = cliOption;
+            _cliStrykerInputs[argumentName] = cliOption;
 
             return cliOption;
         }
