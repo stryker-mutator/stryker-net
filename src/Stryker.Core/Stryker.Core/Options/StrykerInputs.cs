@@ -6,6 +6,7 @@ namespace Stryker.Core.Options
 {
     public class StrykerInputs
     {
+        private readonly StrykerOptions _strykerOptionsCache;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
@@ -63,7 +64,7 @@ namespace Stryker.Core.Options
 
         public StrykerOptions Validate()
         {
-            return new StrykerOptions()
+            return _strykerOptionsCache ?? new StrykerOptions()
             {
                 Concurrency = ConcurrencyInput.Validate(_logger)
             };
