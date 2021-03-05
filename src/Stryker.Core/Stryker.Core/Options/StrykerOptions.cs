@@ -164,6 +164,7 @@ namespace Stryker.Core.Options
             LanguageVersion languageVersion,
             bool diffEnabled,
             string gitDiffSource,
+            IEnumerable<FilePattern> diffIgnoreFiles,
             IEnumerable<string> testProjects,
             string azureSAS,
             string azureFileStorageUrl,
@@ -190,6 +191,7 @@ namespace Stryker.Core.Options
             Optimizations = optimizations;
             DiffEnabled = diffEnabled;
             GitDiffTarget = gitDiffSource;
+            DiffIgnoreFiles = diffIgnoreFiles;
             TestProjects = testProjects;
             AzureSAS = azureSAS;
             AzureFileStorageUrl = azureFileStorageUrl;
@@ -220,6 +222,7 @@ namespace Stryker.Core.Options
                 LanguageVersion,
                 DiffEnabled,
                 GitDiffTarget,
+                DiffIgnoreFiles,
                 testProjects,
                 AzureSAS,
                 AzureFileStorageUrl,
