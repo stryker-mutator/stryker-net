@@ -4,8 +4,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -86,25 +84,11 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
-            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
-            {
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-                // dump properties
-                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
-                {
-                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
-                }
-
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-            }
-
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
             _logger.LogInformation("Analysis complete.");
-            DebugLogResults(projectInfo);
 
             return projectInfo;
         }
@@ -292,26 +276,5 @@ namespace Stryker.Core.Initialisation
         }
 
         #endregion
-
-        private void DebugLogResults(ProjectInfo projectInfo)
-        {
-            _logger.LogDebug("Values found in project under test: {0}", projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath);
-            DebugLogIAnalyzerResult(projectInfo.ProjectUnderTestAnalyzerResult);
-
-            foreach (var result in projectInfo.TestProjectAnalyzerResults)
-            {
-                _logger.LogDebug("Values found in test project: {0}", result.ProjectFilePath);
-                DebugLogIAnalyzerResult(result);
-            }
-        }
-
-        private void DebugLogIAnalyzerResult(IAnalyzerResult result)
-        {
-            _logger.LogDebug("TargetFramework: {0}", result.TargetFramework);
-            _logger.LogDebug("SourceFiles: {0}", JsonSerializer.Serialize(result.SourceFiles));
-            _logger.LogDebug("Properties: {0}", JsonSerializer.Serialize(result.Properties));
-            _logger.LogDebug("References: {0}", JsonSerializer.Serialize(result.References));
-            _logger.LogDebug("Succeeded: {0}", result.Succeeded);
-        }
     }
 }

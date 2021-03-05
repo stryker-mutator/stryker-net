@@ -3,6 +3,7 @@ using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation
@@ -45,9 +46,35 @@ namespace Stryker.Core.Initialisation
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
+
+            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
+            if (analyzerResult.Properties != null)
+            {
+                _logger.LogDebug("**** Buildalyzer result ****");
+                // dump properties
+                _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
+                _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
+
+                foreach (var property in analyzerResult.Properties)
+                {
+                    _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
+                }
+                foreach (var sourceFile in analyzerResult.SourceFiles)
+                {
+                    _logger.LogDebug("SourceFile {0}", sourceFile);
+                }
+                foreach (var reference in analyzerResult.References)
+                {
+                    _logger.LogDebug("References: {0}", reference);
+                }
+                _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
+
+                _logger.LogDebug("**** Buildalyzer result ****");
+            }
+
             if (!analyzerResult.Succeeded)
             {
-                if (!analyzerResult.TargetFramework.Contains("netcoreapp"))
+                if (analyzerResult.GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic)
                 {
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");

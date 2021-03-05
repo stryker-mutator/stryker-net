@@ -1,12 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text.Json;
 
 namespace Stryker.Core.Initialisation
 {
