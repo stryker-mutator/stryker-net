@@ -3,7 +3,6 @@ using System.Linq;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
-using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
