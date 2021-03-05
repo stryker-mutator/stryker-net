@@ -3,20 +3,17 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
     public static class JsonInputsParser
     {
-
-        public static StrykerInputs EnrichFromJsonConfig(this StrykerInputs inputs, string configFilePath)
+        public static void EnrichFromJsonConfig(this StrykerInputs inputs, string configFilePath)
         {
-            var enrichedInputs = inputs;
             var jsonConfig = LoadJsonConfig(configFilePath);
 
-            enrichedInputs.Concurrency.SuppliedInput = jsonConfig.Concurrency;
-
-            return enrichedInputs;
+            inputs.Concurrency = new ConcurrencyInput { SuppliedInput = jsonConfig.Concurrency };
         }
 
         private static FileBasedInputs LoadJsonConfig(string configFilePath)
