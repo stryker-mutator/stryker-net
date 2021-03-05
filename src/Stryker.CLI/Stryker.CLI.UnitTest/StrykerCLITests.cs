@@ -3,6 +3,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
 using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -595,7 +596,7 @@ namespace Stryker.CLI.UnitTest
 
             target.Run(new string[] { argName, "development" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitDiffTarget == "development"),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.GitDiffSource == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
