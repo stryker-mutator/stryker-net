@@ -16,8 +16,6 @@ namespace Stryker.Core.Options.Inputs
 
         public override int? Default => Environment.ProcessorCount / 2;
 
-        public ConcurrencyInput() { }
-
         public int Validate(ILogger logger)
         {
             if (SuppliedInput == null)
