@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation
@@ -45,9 +47,12 @@ namespace Stryker.Core.Initialisation
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
+
+            LogAnalyzerResult(analyzerResult);
+
             if (!analyzerResult.Succeeded)
             {
-                if (!analyzerResult.TargetFramework.Contains("netcoreapp"))
+                if (analyzerResult.GetTargetFramework() == Framework.DotNetClassic)
                 {
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
@@ -62,6 +67,31 @@ namespace Stryker.Core.Initialisation
             }
 
             return analyzerResult;
+        }
+
+        private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+        {
+            // dump all properties as it can help diagnosing build issues for user project.
+            _logger.LogDebug("**** Buildalyzer result ****");
+
+            _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
+            _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
+
+            foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
+            {
+                _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
+            }
+            foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
+            {
+                _logger.LogDebug("SourceFile {0}", sourceFile);
+            }
+            foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
+            {
+                _logger.LogDebug("References: {0}", reference);
+            }
+            _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
+
+            _logger.LogDebug("**** Buildalyzer result ****");
         }
     }
 }

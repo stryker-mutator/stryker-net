@@ -253,7 +253,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: null, gitDiffTarget: "development");
 
-            options.GitDiffTarget.ShouldBe("development");
+            options.GitDiffSource.ShouldBe("development");
             options.FallbackVersion.ShouldBe("development");
         }
 
@@ -287,6 +287,14 @@ namespace Stryker.Core.UnitTest.Options
             var target = new StrykerOptions(azureFileStorageUrl: "https://www.example.com", azureSAS: "?sv=SAS", baselineStorageLocation: "AzureFileStorage");
 
             target.AzureSAS.ShouldBe("SAS");
+        }
+
+        [Fact]
+        public void Should_Enabled_Diff_When_CompareToDashboard_Is_Enabled()
+        {
+            var target = new StrykerOptions(compareToDashboard: true, projectVersion: "version", fallbackVersion: "fallbackVersion", projectName: "test", dashboardApiKey: "someKey");
+
+            target.DiffEnabled.ShouldBeTrue();
         }
     }
 }
