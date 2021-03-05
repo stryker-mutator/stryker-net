@@ -48,6 +48,29 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = manager.GetProject(projectFilePath).Build().First();
 
+            LogAnalyzerResult(analyzerResult);
+
+            if (!analyzerResult.Succeeded)
+            {
+                if (analyzerResult.GetTargetFramework() == Framework.DotNetClassic)
+                {
+                    // buildalyzer failed to find restored packages, retry after nuget restore
+                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                    _nugetRestoreProcess.RestorePackages(solutionFilePath);
+                    analyzerResult = manager.GetProject(projectFilePath).Build().First();
+                }
+                else
+                {
+                    // buildalyzer failed, but seems to work anyway.
+                    _logger.LogDebug("Project analyzer result not successful");
+                }
+            }
+
+            return analyzerResult;
+        }
+
+        private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+        {
             // dump all properties as it can help diagnosing build issues for user project.
             _logger.LogDebug("**** Buildalyzer result ****");
 
@@ -69,24 +92,6 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogDebug("**** Buildalyzer result ****");
-
-            if (!analyzerResult.Succeeded)
-            {
-                if (analyzerResult.GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic)
-                {
-                    // buildalyzer failed to find restored packages, retry after nuget restore
-                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
-                    _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = manager.GetProject(projectFilePath).Build().First();
-                }
-                else
-                {
-                    // buildalyzer failed, but seems to work anyway.
-                    _logger.LogDebug("Project analyzer result not successful");
-                }
-            }
-
-            return analyzerResult;
         }
     }
 }

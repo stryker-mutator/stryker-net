@@ -173,7 +173,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFramework() == Framework.DotNetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&
