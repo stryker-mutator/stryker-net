@@ -1,11 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
                     projectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic,
+                    testProjects[i].GetTargetFramework() == Framework.DotNetClassic,
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath);
             }

@@ -22,9 +22,9 @@
       },
       "NuGet.Versioning": {
         "type": "Direct",
-        "requested": "[5.5.0, )",
-        "resolved": "5.5.0",
-        "contentHash": "jH8Q+XRO9REVelfvAUlRnLqrQCNi3NRVLM+MIWY4XW2CMxCD+R/X7cJWVAW7A6rG1FpgO8MbGM8DLwloMgYm0w=="
+        "requested": "[5.9.0, )",
+        "resolved": "5.9.0",
+        "contentHash": "/K7SkH6PKoKEPrP3DrYqubPoZJtfRdJ9GfKX+Yv7qEW+ep/Jjdr74AyIRNWG9MT2YPG9fld93QX4xumF+kr/Mg=="
       },
       "Buildalyzer": {
         "type": "Transitive",
@@ -64,16 +64,16 @@
       },
       "LibGit2Sharp": {
         "type": "Transitive",
-        "resolved": "0.26.2",
-        "contentHash": "qHLhuI8VEtMf7jiurT/Ypquh37S6ngllCx+aq9uqOY2evok7Fb2AzhJgvNctsXOzHaJwveBs+30sPQJFn/pISg==",
+        "resolved": "0.27.0-preview-0096",
+        "contentHash": "ANrnLBCGLtKSA0PSN4YdBo20FzE79GecdZeo6sRSWhMkI4BbENtzLSUqL1uzmNsahoepcXplQPHyMfzkGuYV1A==",
         "dependencies": {
-          "LibGit2Sharp.NativeBinaries": "[2.0.306]"
+          "LibGit2Sharp.NativeBinaries": "[2.0.312]"
         }
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
-        "resolved": "2.0.306",
-        "contentHash": "LY9nyPE2X/eLl69ttuDPFFlKR8b5KXlqYej1YR1YmqmhF8Izo+vPX90q5ouOO5YGCf5d4lDUOC0x2yMWw00P7Q=="
+        "resolved": "2.0.312",
+        "contentHash": "sL4OLOblkrLgDW+zE0OL4h9DYVCyZTlA4CppUCgqU8Ud/+Ah+Wxc3EtGpGjmH6xjDMRRpmHUFgAgzj+hzZTHZA=="
       },
       "Microsoft.Build": {
         "type": "Transitive",
@@ -1406,7 +1406,7 @@
           "Buildalyzer": "3.2.0",
           "Crayon": "2.0.60",
           "DotNet.Glob": "3.1.2",
-          "LibGit2Sharp": "0.26.2",
+          "LibGit2Sharp": "0.27.0-preview-0096",
           "Microsoft.CodeAnalysis.CSharp": "3.8.0",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Json": "5.0.0",
