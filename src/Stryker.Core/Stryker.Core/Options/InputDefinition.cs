@@ -7,7 +7,7 @@ namespace Stryker.Core.Options
 {
     public interface IInputDefinition
     {
-        string HelpText;
+        string HelpText { get; }
     }
 
 
@@ -17,7 +17,6 @@ namespace Stryker.Core.Options
     /// <typeparam name="TValue">The type of the option</typeparam>
     public abstract class InputDefinition<TValue> : InputDefinition<TValue, TValue>
     {
-
     }
 
     /// <summary>
@@ -34,7 +33,7 @@ namespace Stryker.Core.Options
 
         public string HelpText => Description + HelpOptions;
         protected abstract string Description { get; }
-        protected virtual string HelpOptions => $"{ (Default is { } ? $" | default: { Default }" : "") }";
+        protected virtual string HelpOptions => $"{ (Default is not null ? $" | default: { Default }" : "") }";
 
         /// <summary>
         /// The user supplied input value
