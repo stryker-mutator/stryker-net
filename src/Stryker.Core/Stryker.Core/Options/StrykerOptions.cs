@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -35,7 +35,7 @@ namespace Stryker.Core.Options
         public bool DiffEnabled { get; }
         public bool CompareToDashboard { get; }
 
-        public string GitDiffTarget { get; }
+        public string GitDiffSource { get; }
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
@@ -129,9 +129,9 @@ namespace Stryker.Core.Options
             SolutionPath = ValidateSolutionPath(basePath, solutionPath);
             LanguageVersion = ValidateLanguageVersion(languageVersion);
             OptimizationMode = coverageAnalysis;
-            DiffEnabled = diff;
+            DiffEnabled = diff || compareToDashboard;
             CompareToDashboard = compareToDashboard;
-            GitDiffTarget = ValidateGitDiffTarget(gitDiffTarget);
+            GitDiffSource = ValidateGitDiffTarget(gitDiffTarget);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
             (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
@@ -144,6 +144,8 @@ namespace Stryker.Core.Options
         }
 
         private StrykerOptions(
+            IFileSystem fileSystem,
+            ILogger logger,
             string basePath,
             string outputPath,
             IEnumerable<Reporter> reporters,
@@ -164,12 +166,22 @@ namespace Stryker.Core.Options
             LanguageVersion languageVersion,
             bool diffEnabled,
             string gitDiffSource,
+            IEnumerable<FilePattern> diffIgnoreFiles,
             IEnumerable<string> testProjects,
             string azureSAS,
             string azureFileStorageUrl,
             BaselineProvider baselineProvider,
-            MutationLevel mutationLevel)
+            MutationLevel mutationLevel,
+            bool compareToDashboard,
+            string dashboardUrl,
+            string dashboardApiKey,
+            string projectName,
+            string moduleName,
+            string projectVersion,
+            string fallbackVersion)
         {
+            _fileSystem = fileSystem;
+            _logger = logger;
             IgnoredMethods = ignoredMethods;
             BasePath = basePath;
             OutputPath = outputPath;
@@ -189,17 +201,27 @@ namespace Stryker.Core.Options
             OptimizationMode = optimizationMode;
             Optimizations = optimizations;
             DiffEnabled = diffEnabled;
-            GitDiffTarget = gitDiffSource;
+            GitDiffSource = gitDiffSource;
+            DiffIgnoreFiles = diffIgnoreFiles;
             TestProjects = testProjects;
             AzureSAS = azureSAS;
             AzureFileStorageUrl = azureFileStorageUrl;
             BaselineProvider = baselineProvider;
             MutationLevel = mutationLevel;
+            CompareToDashboard = compareToDashboard;
+            DashboardUrl = dashboardUrl;
+            DashboardApiKey = dashboardApiKey;
+            ProjectName = projectName;
+            ModuleName = moduleName;
+            ProjectVersion = projectVersion;
+            FallbackVersion = fallbackVersion;
         }
 
         public IStrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
         {
             return new StrykerOptions(
+                _fileSystem,
+                _logger,
                 basePath,
                 OutputPath,
                 Reporters,
@@ -219,12 +241,20 @@ namespace Stryker.Core.Options
                 SolutionPath,
                 LanguageVersion,
                 DiffEnabled,
-                GitDiffTarget,
+                GitDiffSource,
+                DiffIgnoreFiles,
                 testProjects,
                 AzureSAS,
                 AzureFileStorageUrl,
                 BaselineProvider,
-                MutationLevel);
+                MutationLevel,
+                CompareToDashboard,
+                DashboardUrl,
+                DashboardApiKey,
+                ProjectName,
+                ModuleName,
+                ProjectVersion,
+                FallbackVersion);
         }
 
         private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)

@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public enum BaselineProvider
     {
