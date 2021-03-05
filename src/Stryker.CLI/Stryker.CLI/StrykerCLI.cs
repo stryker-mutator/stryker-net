@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -50,36 +49,36 @@ namespace Stryker.CLI
                 PrintStykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
-                var options = new InputsBuilder(_logBuffer).Build(args, app);
+                var inputs = new InputsBuilder(_logBuffer).Build(args, app);
 
                 if (CliInputsParser.GenerateConfigFile(args, app))
                 {
-                    var configFilePath = Path.Combine(options.BasePath, CliInputsParser.ConfigFilePath(args, app));
+                    var configFilePath = Path.Combine(inputs.Validate().BasePath, CliInputsParser.ConfigFilePath(args, app));
 
                     // generate correct json config here.
                 }
 
-                RunStryker(options);
+                RunStryker(inputs);
                 return ExitCode;
             });
             return app.Execute(args);
         }
 
-        private void RunStryker(StrykerOptions options)
+        private void RunStryker(StrykerInputs inputs)
         {
-            StrykerRunResult result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
+            StrykerRunResult result = _stryker.RunMutationTest(inputs, _logBuffer.GetMessages());
 
-            HandleStrykerRunResult(options, result);
+            HandleStrykerRunResult(inputs, result);
         }
 
-        private void HandleStrykerRunResult(StrykerOptions options, StrykerRunResult result)
+        private void HandleStrykerRunResult(StrykerInputs inputs, StrykerRunResult result)
         {
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
 
             logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             if (result.ScoreIsLowerThanThresholdBreak())
             {
-                var thresholdBreak = (double)options.Thresholds.Break / 100;
+                var thresholdBreak = (double)inputs.Validate().Thresholds.Break / 100;
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
                 Console.WriteLine(Output.Red($@"
