@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <DebugType>Full</DebugType>
@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.21.1</VersionPrefix>
+    <VersionPrefix>0.22.0</VersionPrefix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -35,9 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Crayon" Version="1.2.48" />
-    <PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageReference Include="Crayon" Version="2.0.60" />
+    <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0096" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
     <PackageReference Include="Buildalyzer" Version="3.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->

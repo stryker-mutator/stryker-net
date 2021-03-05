@@ -1,17 +1,17 @@
-﻿using Moq;
-using Moq.Protected;
-using Stryker.Core.Baseline;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
 using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
+using Moq.Protected;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.Json;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Baseline
+namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     public class AzureFileShareBaselineProviderTests
     {

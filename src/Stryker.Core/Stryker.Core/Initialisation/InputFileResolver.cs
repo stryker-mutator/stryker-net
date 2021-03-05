@@ -84,19 +84,6 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
-            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
-            {
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-                // dump properties
-                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
-                {
-                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
-                }
-
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-            }
-
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
@@ -186,7 +173,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFramework() == Framework.DotNetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&

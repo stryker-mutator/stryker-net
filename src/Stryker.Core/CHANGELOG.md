@@ -1,3 +1,23 @@
+# [0.22.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.1...stryker@0.22.0) (2021-03-05)
+
+
+### Bug Fixes
+
+* Support newer operating systems with git diff ([#1459](https://github.com/stryker-mutator/stryker-net/issues/1459)) ([48a1ae2](https://github.com/stryker-mutator/stryker-net/commit/48a1ae224b6c19bb954de4d69e86e17d277e7bfd))
+* **Diff feature:** Diff feature could not be enabled ([#1458](https://github.com/stryker-mutator/stryker-net/issues/1458)) ([782302f](https://github.com/stryker-mutator/stryker-net/commit/782302fd79ac1c8cceb88e64cf0e934cbdda51e3))
+* **mutation placing:** mutations may leak between body formed methods/properties ([#1389](https://github.com/stryker-mutator/stryker-net/issues/1389)) ([91dbb8b](https://github.com/stryker-mutator/stryker-net/commit/91dbb8b8e7cdee0b10b6481b3dd3169efc768c1f))
+* **reporting:** report on mutations to test after filtering out mutations we should not test ([#1398](https://github.com/stryker-mutator/stryker-net/issues/1398)) ([1523a01](https://github.com/stryker-mutator/stryker-net/commit/1523a012bdfd9b9ea81f91442849f695518474c4))
+
+
+### Features
+
+* **Clickable file paths:** filepaths will be detected by supported terminals ([#1403](https://github.com/stryker-mutator/stryker-net/issues/1403)) ([f24d55c](https://github.com/stryker-mutator/stryker-net/commit/f24d55c5e7401175ca31d1ba33528438fe7406dd))
+* **Filtered mutant reporter:** Move FilterMutations status logging to reporter so the logging can be turned off ([#1275](https://github.com/stryker-mutator/stryker-net/issues/1275)) ([68591ec](https://github.com/stryker-mutator/stryker-net/commit/68591ecd1ad293ef6a330f654bb32366059a5cf0))
+* **json report:** Add absolute path to json report [#1154](https://github.com/stryker-mutator/stryker-net/issues/1154) ([#1267](https://github.com/stryker-mutator/stryker-net/issues/1267)) ([8b72975](https://github.com/stryker-mutator/stryker-net/commit/8b72975f7dc215998bdc222a29fd6126fe0ece28))
+* **progressbar reporter:**  Switch to ShellProgressBar for console progress bar report ([#1286](https://github.com/stryker-mutator/stryker-net/issues/1286)) ([3fa0c68](https://github.com/stryker-mutator/stryker-net/commit/3fa0c687aa7fcf5be801aace2ef164844a0dade3))
+
+
+
 ## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.0...stryker@0.21.1) (2021-01-23)
 
 

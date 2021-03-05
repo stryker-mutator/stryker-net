@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>0.21.1</VersionPrefix>
+    <VersionPrefix>0.22.0</VersionPrefix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
@@ -29,7 +29,7 @@
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="NuGet.Versioning" Version="5.5.0" />
+    <PackageReference Include="NuGet.Versioning" Version="5.9.0" />
   </ItemGroup>
 
   <ItemGroup>
