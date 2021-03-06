@@ -3,8 +3,9 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class FileBasedInputs
+    public class FileBasedInput
     {
+        [JsonProperty(PropertyName = "project-info")]
         public ProjectInfo ProjectInfo { get; set; }
 
         public int? Concurrency { get; set; }
@@ -22,28 +23,33 @@ namespace Stryker.CLI
         public string[] Reporters { get; set; }
 
         // since
-        [JsonProperty(PropertyName = "since")]
         public bool? Since { get; set; }
+
         [JsonProperty(PropertyName = "since-branch")]
         public string SinceBranch { get; set; }
+
         [JsonProperty(PropertyName = "since-commit")]
         public string SinceCommit { get; set; }
-
 
         public BaseLine BaseLine { get; set; }
     }
 
     public class BaseLine
     {
-
         [JsonProperty(PropertyName = "with-baseline")]
         public bool? WithBaseline { get; set; }
-        [JsonProperty(PropertyName = "with-baseline")]
+
+        [JsonProperty(PropertyName = "provider")]
         public string Provider { get; set; }
-        [JsonProperty(PropertyName = "with-baseline")]
+
+        [JsonProperty(PropertyName = "azure-fileshare-url")]
         public string AzureFileShareUrl { get; set; }
+
         [JsonProperty(PropertyName = "fallback-version")]
         public string FallbackVersion { get; set; }
+
+        [JsonProperty(PropertyName = "ignore-changed-files")]
+        public string IgnoreChangedFiles { get; set; }
     }
 
     public class ProjectInfo

@@ -41,7 +41,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            CliInputsParser.RegisterCliStrykerInputs(app);
+            CliInputParser.RegisterCliStrykerInputs(app);
 
             app.OnExecute(() =>
             {
@@ -49,11 +49,11 @@ namespace Stryker.CLI
                 PrintStykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
-                var inputs = new InputsBuilder(_logBuffer).Build(args, app);
+                var inputs = new InputBuilder(_logBuffer).Build(args, app);
 
-                if (CliInputsParser.GenerateConfigFile(args, app))
+                if (CliInputParser.GenerateConfigFile(args, app))
                 {
-                    var configFilePath = Path.Combine(inputs.Validate().BasePath, CliInputsParser.ConfigFilePath(args, app));
+                    var configFilePath = Path.Combine(inputs.Validate().BasePath, CliInputParser.ConfigFilePath(args, app));
 
                     // generate correct json config here.
                 }

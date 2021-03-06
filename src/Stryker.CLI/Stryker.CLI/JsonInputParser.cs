@@ -7,7 +7,7 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
-    public static class JsonInputsParser
+    public static class JsonInputParser
     {
         public static void EnrichFromJsonConfig(this StrykerInputs inputs, string configFilePath)
         {
@@ -16,7 +16,7 @@ namespace Stryker.CLI
             inputs.Concurrency = new ConcurrencyInput { SuppliedInput = jsonConfig.Concurrency };
         }
 
-        private static FileBasedInputs LoadJsonConfig(string configFilePath)
+        private static FileBasedInput LoadJsonConfig(string configFilePath)
         {
 
             var json = new StreamReader(configFilePath).ReadToEnd();
@@ -32,7 +32,7 @@ namespace Stryker.CLI
 
                 var configJson = strykerSection.ToString();
 
-                return JsonConvert.DeserializeObject<FileBasedInputs>(configJson, settings);
+                return JsonConvert.DeserializeObject<FileBasedInput>(configJson, settings);
             }
             catch (JsonReaderException)
             {

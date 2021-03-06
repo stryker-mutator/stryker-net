@@ -16,13 +16,13 @@ namespace Stryker.CLI
         public CommandOptionType OptionType { get; set; }
     }
 
-    public static class CliInputsParser
+    public static class CliInputParser
     {
         private static readonly IDictionary<string, CliInput> _cliStrykerInputs = new Dictionary<string, CliInput>();
         private static readonly CliInput _configInput;
         private static readonly CliInput _generateJsonConfigInput;
 
-        static CliInputsParser()
+        static CliInputParser()
         {
             _configInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             _generateJsonConfigInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");

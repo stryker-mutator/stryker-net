@@ -5,11 +5,11 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class InputsBuilder
+    public class InputBuilder
     {
         private readonly ILogger _logger;
 
-        public InputsBuilder(ILogger logger)
+        public InputBuilder(ILogger logger)
         {
             _logger = logger;
         }
@@ -18,16 +18,16 @@ namespace Stryker.CLI
         {
             var basePath = Directory.GetCurrentDirectory();
 
-            var strykerInputs = new StrykerInputs(_logger);
+            var inputs = new StrykerInputs(_logger);
 
-            var configFilePath = Path.Combine(basePath, CliInputsParser.ConfigFilePath(args, app));
+            var configFilePath = Path.Combine(basePath, CliInputParser.ConfigFilePath(args, app));
             if (File.Exists(configFilePath))
             {
-                strykerInputs.EnrichFromJsonConfig(configFilePath);
+                inputs.EnrichFromJsonConfig(configFilePath);
             }
-            strykerInputs.EnrichFromCommandLineArguments(args, app);
+            inputs.EnrichFromCommandLineArguments(args, app);
 
-            return strykerInputs;
+            return inputs;
         }
     }
 }
