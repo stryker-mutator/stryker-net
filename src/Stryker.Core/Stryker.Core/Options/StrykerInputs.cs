@@ -10,7 +10,7 @@ namespace Stryker.Core.Options
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public DevModeInput DevMode { get; init; }
+        public DevModeInput DevMode { get; set; }
 
         public BasePathInput BasePath { get; init; }
         public OutputPathInput OutputPath { get; init; }
@@ -31,7 +31,7 @@ namespace Stryker.Core.Options
         public TestProjectsInput TestProjects { get; init; }
 
         public WithBaselineInput WithBaseline { get; init; }
-        public ReportersInput Reporters { get; init; }
+        public ReportersInput ReportersInput { get; set; }
 
         public BaselineProviderInput BaselineProvider { get; init; }
         public AzureFileStorageUrlInput AzureFileStorageUrl { get; init; }
@@ -41,8 +41,8 @@ namespace Stryker.Core.Options
         public DashboardApiKeyInput DashboardApiKey { get; init; }
         public ProjectNameInput ProjectName { get; init; }
 
-        public DiffCompareInput DiffCompareEnabled { get; init; }
-        public SinceBranchInput SinceBranch { get; init; }
+        public SinceInput SinceInput { get; set; }
+        public SinceTargetInput SinceTargetInput { get; set; }
         public DiffIgnoreFilePatternsInput DiffIgnoreFilePatterns { get; init; }
 
         public FallbackVersionInput FallbackVersion { get; init; }

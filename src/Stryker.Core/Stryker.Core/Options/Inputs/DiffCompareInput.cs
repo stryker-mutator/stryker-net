@@ -1,13 +1,13 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DiffCompareInput : InputDefinition<bool>
+    public class SinceInput : InputDefinition<bool>
     {
         public override bool Default => false;
 
         protected override string Description => "Enables diff compare. Only test changed files.";
 
-        public DiffCompareInput() { }
-        public DiffCompareInput(bool? diffEnabled)
+        public SinceInput() { }
+        public SinceInput(bool? diffEnabled)
         {
             if (diffEnabled is { })
             {

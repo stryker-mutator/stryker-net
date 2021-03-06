@@ -18,7 +18,7 @@ namespace Stryker.CLI
 
     public static class CliInputParser
     {
-        private static readonly IDictionary<string, CliInput> _cliStrykerInputs = new Dictionary<string, CliInput>();
+        private static readonly IDictionary<string, CliInput> _strykerInputs = new Dictionary<string, CliInput>();
         private static readonly CliInput _configInput;
         private static readonly CliInput _generateJsonConfigInput;
 
@@ -32,7 +32,7 @@ namespace Stryker.CLI
 
         public static void RegisterCliStrykerInputs(CommandLineApplication app)
         {
-            foreach (var (_, value) in _cliStrykerInputs)
+            foreach (var (_, value) in _strykerInputs)
             {
                 RegisterCliInput(app, value);
             }
@@ -50,54 +50,100 @@ namespace Stryker.CLI
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateJsonConfigInput.ArgumentName)?.HasValue() ?? false;
         }
 
-        public static void EnrichFromCommandLineArguments(this StrykerInputs inputs, string[] args, CommandLineApplication app)
+        public static void EnrichFromCommandLineArguments(this StrykerInputs strykerInputs, string[] args, CommandLineApplication app)
         {
-            foreach (var commandOption in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
+            foreach (var cliInput in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
-                var input = _cliStrykerInputs[commandOption.LongName].Input;
-
-                switch (input)
+                strykerInputs = cliInput.OptionType switch
                 {
-                    case ConcurrencyInput concurrencyInput:
-                        concurrencyInput.SuppliedInput = int.Parse(commandOption.Value());
-                        inputs.Concurrency = concurrencyInput;
-                        break;
-                }
-
-                _ = commandOption.OptionType switch
-                {
-                    CommandOptionType.NoValue => inputs.With(input, commandOption.HasValue()),
-                    CommandOptionType.SingleOrNoValue => inputs.With(input, commandOption.HasValue(), commandOption.Value()),
-                    CommandOptionType.SingleValue => inputs.With(input, commandOption.Value()),
-                    CommandOptionType.MultipleValue => inputs.With(input, commandOption.Values),
-                    _ => inputs
+                    CommandOptionType.NoValue => ParseNoValue(cliInput, strykerInputs),
+                    CommandOptionType.SingleOrNoValue => ParseSingleOrNoValue(cliInput, strykerInputs),
+                    CommandOptionType.SingleValue => ParseSingleValue(cliInput, strykerInputs),
+                    CommandOptionType.MultipleValue => ParseMultiValue(cliInput, strykerInputs),
+                    _ => strykerInputs
                 };
             }
         }
 
+        private static StrykerInputs ParseNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        {
+            var strykerInput = GetStrykerInput(cliInput);
+            switch (strykerInput)
+            {
+                case DevModeInput devModeInput:
+                    devModeInput.SuppliedInput = true;
+                    strykerInputs.DevMode = devModeInput;
+                    break;
+            }
+            return strykerInputs;
+        }
+
+        private static StrykerInputs ParseSingleValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        {
+            var strykerInput = GetStrykerInput(cliInput);
+            switch (strykerInput)
+            {
+                case ConcurrencyInput concurrencyInput:
+                    concurrencyInput.SuppliedInput = int.Parse(cliInput.Value());
+                    strykerInputs.Concurrency = concurrencyInput;
+                    break;
+            }
+            return strykerInputs;
+        }
+
+        private static StrykerInputs ParseSingleOrNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        {
+            var strykerInput = GetStrykerInput(cliInput);
+            switch (strykerInput)
+            {
+                case SinceInput sinceInput:
+                    sinceInput.SuppliedInput = true;
+                    strykerInputs.SinceInput = sinceInput;
+                    strykerInputs.SinceTargetInput = new SinceTargetInput();
+                    strykerInputs.SinceTargetInput.SuppliedInput = cliInput.Value();
+                    break;
+            }
+            return strykerInputs;
+        }
+
+        private static StrykerInputs ParseMultiValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        {
+            var strykerInput = GetStrykerInput(cliInput);
+            switch (strykerInput)
+            {
+                case ReportersInput reportersInput:
+                    reportersInput.SuppliedInput = cliInput.Values;
+                    strykerInputs.ReportersInput = reportersInput;
+                    break;
+            }
+            return strykerInputs;
+        }
+
+        private static IInputDefinition GetStrykerInput(CommandOption cliInput) => _strykerInputs[cliInput.LongName].Input;
+
         private static void PrepareCliOptions()
         {
-            AddCliStrykerInput(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
+            AddCliInput(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
 
-            AddCliOption(StrykerOption.ThresholdBreak, "break", "b", new ThresholdBreakInput().HelpText, argumentHint: "0-100");
+            AddCliInput(new ThresholdBreakInput(), "break", "b", argumentHint: "0-100");
 
-            AddCliOption(StrykerOption.Mutate, "mutate", "m", new MutateInput().HelpText, optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
+            AddCliInput(new MutateInput(), "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
-            AddCliOption(StrykerOption.SolutionPath, "solution", "s", new SolutionPathInput().HelpText, argumentHint: "file-path");
-            AddCliOption(StrykerOption.ProjectUnderTestName, "project", "p", new ProjectUnderTestNameInput().HelpText, argumentHint: "project-name.csproj");
-            AddCliOption(StrykerOption.ProjectVersion, "version", "v", new ProjectVersionInput().HelpText);
-            AddCliOption(StrykerOption.MutationLevel, "mutation-level", "l", new MutationLevelInput().HelpText);
+            AddCliInput(new SolutionPathInput(), "solution", "s", argumentHint: "file-path");
+            AddCliInput(new ProjectUnderTestNameInput(), "project", "p", argumentHint: "project-name.csproj");
+            AddCliInput(new ProjectVersionInput(), "version", "v");
+            AddCliInput(new MutationLevelInput(), "mutation-level", "l");
 
-            AddCliOption(StrykerOption.LogToFile, "log-to-file", "L", new LogToFileInput().HelpText, optionType: CommandOptionType.NoValue);
-            AddCliOption(StrykerOption.LogLevel, "verbosity", "V", new LogLevelInput().HelpText);
-            AddCliOption(StrykerOption.Reporters, "reporter", "r", new ReportersInput().HelpText, optionType: CommandOptionType.MultipleValue);
+            AddCliInput(new LogToFileInput(), "log-to-file", "L", optionType: CommandOptionType.NoValue);
+            AddCliInput(new LogLevelInput(), "verbosity", "V");
+            AddCliInput(new ReportersInput(), "reporter", "r", optionType: CommandOptionType.MultipleValue);
 
-            AddCliOption(StrykerOption.Since, "since", "since", new DiffCompareInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            AddCliOption(StrykerOption.DashboardCompare, "with-baseline", "baseline", new WithBaselineInput().HelpText, optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliInput(new SinceInput(), "since", "since", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliInput(new WithBaselineInput(), "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
-            AddCliOption(StrykerOption.DashboardApiKey, "dashboard-api-key", null, new DashboardApiKeyInput().HelpText);
-            AddCliOption(StrykerOption.AzureFileStorageSas, "azure-fileshare-sas", null, new AzureFileStorageSasInput().HelpText);
-            AddCliOption(StrykerOption.DevMode, "dev-mode", null, new DevModeInput().HelpText, optionType: CommandOptionType.NoValue);
+            AddCliInput(new DashboardApiKeyInput(), "dashboard-api-key", null);
+            AddCliInput(new AzureFileStorageSasInput(), "azure-fileshare-sas", null);
+            AddCliInput(new DevModeInput(), "dev-mode", null, optionType: CommandOptionType.NoValue);
         }
 
         private static void RegisterCliInput(CommandLineApplication app, CliInput option)
@@ -124,12 +170,12 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            _cliStrykerInputs[argumentName] = cliOption;
+            _strykerInputs[argumentName] = cliOption;
 
             return cliOption;
         }
 
-        private static CliInput AddCliStrykerInput(IInputDefinition input, string argumentName, string argumentShortName,
+        private static CliInput AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliInput
@@ -142,7 +188,7 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            _cliStrykerInputs[argumentName] = cliOption;
+            _strykerInputs[argumentName] = cliOption;
 
             return cliOption;
         }
