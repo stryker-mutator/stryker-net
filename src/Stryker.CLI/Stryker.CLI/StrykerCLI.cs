@@ -91,7 +91,7 @@ namespace Stryker.CLI
             }
         }
 
-        private void PrintStykerASCIIName()
+        private static void PrintStykerASCIIName()
         {
             Console.WriteLine(Output.Yellow(@"
    _____ _              _               _   _ ______ _______  
@@ -106,7 +106,7 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
-        private async void PrintStrykerVersionInformationAsync()
+        private static async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
