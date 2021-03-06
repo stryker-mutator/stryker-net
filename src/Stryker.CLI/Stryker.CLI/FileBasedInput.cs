@@ -3,6 +3,11 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
+    public class FileBasedInputOuter
+    {
+        [JsonProperty(PropertyName = "stryker-config")]
+        public FileBasedInput Input { get; set; }
+    }
     public class FileBasedInput
     {
         [JsonProperty(PropertyName = "project-info")]

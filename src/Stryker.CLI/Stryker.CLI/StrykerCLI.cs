@@ -4,6 +4,7 @@ using System.Reflection;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NuGet.Versioning;
 using Stryker.CLI.NuGet;
 using Stryker.Core;
@@ -41,7 +42,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            CliInputParser.RegisterCliStrykerInputs(app);
+            CliInputParser.RegisterStrykerInputs(app);
 
             app.OnExecute(() =>
             {
@@ -53,9 +54,19 @@ namespace Stryker.CLI
 
                 if (CliInputParser.GenerateConfigFile(args, app))
                 {
-                    var configFilePath = Path.Combine(inputs.Validate().BasePath, CliInputParser.ConfigFilePath(args, app));
+                    var options = inputs.Validate();
+                    var configFilePath = Path.Combine(options.BasePath, CliInputParser.ConfigFilePath(args, app));
 
-                    // generate correct json config here.
+                    var fileBasedInputs = new FileBasedInput
+                    {
+                        BaseLine = new BaseLine
+                        {
+                            WithBaseline = options.WithBaseline,
+                            Provider = options.BaselineProvider,
+                            
+                        }
+                    };
+                    File.WriteAllText(configFilePath, JsonConvert.SerializeObject(new FileBasedInputOuter { Input = fileBasedInputs }));
                 }
 
                 RunStryker(inputs);

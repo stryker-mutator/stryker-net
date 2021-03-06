@@ -19,18 +19,18 @@ namespace Stryker.CLI
     public static class CliInputParser
     {
         private static readonly IDictionary<string, CliInput> _strykerInputs = new Dictionary<string, CliInput>();
-        private static readonly CliInput _configInput;
-        private static readonly CliInput _generateJsonConfigInput;
+        private static readonly CliInput _configFileInput;
+        private static readonly CliInput _generateConfigFileInput;
 
         static CliInputParser()
         {
-            _configInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
-            _generateJsonConfigInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+            _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
+            _generateConfigFileInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
 
             PrepareCliOptions();
         }
 
-        public static void RegisterCliStrykerInputs(CommandLineApplication app)
+        public static void RegisterStrykerInputs(CommandLineApplication app)
         {
             foreach (var (_, value) in _strykerInputs)
             {
@@ -40,14 +40,14 @@ namespace Stryker.CLI
 
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
         {
-            RegisterCliInput(app, _configInput);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configInput.ArgumentName)?.Value() ?? "stryker-config.json";
+            RegisterCliInput(app, _configFileInput);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName)?.Value() ?? "stryker-config.json";
         }
 
         public static bool GenerateConfigFile(string[] args, CommandLineApplication app)
         {
-            RegisterCliInput(app, _generateJsonConfigInput);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateJsonConfigInput.ArgumentName)?.HasValue() ?? false;
+            RegisterCliInput(app, _generateConfigFileInput);
+            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateConfigFileInput.ArgumentName)?.HasValue() ?? false;
         }
 
         public static void EnrichFromCommandLineArguments(this StrykerInputs strykerInputs, string[] args, CommandLineApplication app)

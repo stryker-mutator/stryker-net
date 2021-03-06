@@ -1,6 +1,5 @@
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -28,15 +27,7 @@ namespace Stryker.CLI
                     MissingMemberHandling = MissingMemberHandling.Error
                 };
 
-                JToken strykerSection = JObject.Parse(json)["stryker-config"];
-
-                var configJson = strykerSection.ToString();
-
-                return JsonConvert.DeserializeObject<FileBasedInput>(configJson, settings);
-            }
-            catch (JsonReaderException)
-            {
-                throw new StrykerInputException("Could not find stryker-config section in config file");
+                return JsonConvert.DeserializeObject<FileBasedInputOuter>(json, settings).Input;
             }
             catch (JsonSerializationException ex)
             {
