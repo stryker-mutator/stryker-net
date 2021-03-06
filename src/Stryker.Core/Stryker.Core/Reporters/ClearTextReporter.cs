@@ -14,10 +14,10 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;

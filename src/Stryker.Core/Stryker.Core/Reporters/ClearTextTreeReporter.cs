@@ -20,10 +20,10 @@ namespace Stryker.Core.Reporters
         private const string BranchLine = "├── ";
         private const string FinalBranchLine = "└── ";
 
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextTreeReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;
