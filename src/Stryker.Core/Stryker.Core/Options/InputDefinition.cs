@@ -9,6 +9,10 @@ namespace Stryker.Core.Options
     {
         string HelpText { get; }
     }
+    public interface IInputDefinition<T> : IInputDefinition
+    {
+        T SuppliedInput { get; set; }
+    }
 
 
     /// <summary>
@@ -24,7 +28,7 @@ namespace Stryker.Core.Options
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class InputDefinition<TInput, TValue> : IInputDefinition
+    public abstract class InputDefinition<TInput, TValue> : IInputDefinition<TInput>
     {
         /// <summary>
         /// The default value for the option when no custom value has been supplied

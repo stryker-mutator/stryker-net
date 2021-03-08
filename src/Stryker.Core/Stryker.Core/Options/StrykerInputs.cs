@@ -15,47 +15,35 @@ namespace Stryker.Core.Options
         public BasePathInput BasePath { get; init; }
         public OutputPathInput OutputPath { get; init; }
         public SolutionPathInput SolutionPath { get; init; }
-
         public LogLevelInput LogLevel { get; init; }
         public LogToFileInput LogToFile { get; init; }
-        public MutationLevelInput MutationLevel { get; init; }
-        public ThresholdBreakInput ThresholdBreak { get; init; }
-        public ThresholdHighInput ThresholdHigh { get; init; }
-        public ThresholdLowInput ThresholdLow { get; init; }
-
-        public AdditionalTimeoutMsInput AdditionalTimeoutMS { get; init; }
-        public LanguageVersionInput LanguageVersion { get; init; }
-
-        public ConcurrencyInput Concurrency { get; set; }
-        public ProjectUnderTestNameInput ProjectUnderTestName { get; init; }
-        public TestProjectsInput TestProjects { get; init; }
-
-        public WithBaselineInput WithBaseline { get; init; }
+        public MutationLevelInput MutationLevelInput { get; init; }
+        public ThresholdBreakInput ThresholdBreakInput { get; init; }
+        public ThresholdHighInput ThresholdHighInput { get; init; }
+        public ThresholdLowInput ThresholdLowInput { get; init; }
+        public AdditionalTimeoutMsInput AdditionalTimeoutMSInput { get; init; }
+        public LanguageVersionInput LanguageVersionInput { get; init; }
+        public ConcurrencyInput ConcurrencyInput { get; set; }
+        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
+        public TestProjectsInput TestProjectsInput { get; init; }
+        public WithBaselineInput WithBaselineInput { get; init; }
         public ReportersInput ReportersInput { get; set; }
-
-        public BaselineProviderInput BaselineProvider { get; init; }
-        public AzureFileStorageUrlInput AzureFileStorageUrl { get; init; }
-        public AzureFileStorageSasInput AzureFileStorageSas { get; init; }
-
-        public DashboardUrlInput DashboardUrl { get; init; }
-        public DashboardApiKeyInput DashboardApiKey { get; init; }
-        public ProjectNameInput ProjectName { get; init; }
-
+        public BaselineProviderInput BaselineProviderInput { get; init; }
+        public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
+        public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
+        public DashboardUrlInput DashboardUrlInput { get; init; }
+        public DashboardApiKeyInput DashboardApiKeyInput { get; init; }
+        public ProjectNameInput ProjectNameInput { get; init; }
         public SinceInput SinceInput { get; set; }
         public SinceTargetInput SinceTargetInput { get; set; }
-        public DiffIgnoreFilePatternsInput DiffIgnoreFilePatterns { get; init; }
-
-        public FallbackVersionInput FallbackVersion { get; init; }
-        public ProjectVersionInput ProjectVersion { get; init; }
-        public ModuleNameInput ModuleName { get; init; }
-
-        public MutateInput Mutate { get; init; }
-        public IgnoredMethodsInput IgnoredMethods { get; init; }
-        public ExcludedMutatorsInput ExcludedMutators { get; init; }
-
-        public OptimizationModeInput OptimizationMode { get; init; }
-
-        public ConcurrencyInput ConcurrencyInput { private get; init; }
+        public DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
+        public FallbackVersionInput FallbackVersionInput { get; init; }
+        public ProjectVersionInput ProjectVersionInput { get; init; }
+        public ModuleNameInput ModuleNameInput { get; init; }
+        public MutateInput MutateInput { get; init; }
+        public IgnoredMethodsInput IgnoredMethodsInput { get; init; }
+        public ExcludedMutatorsInput ExcludedMutatorsInput { get; init; }
+        public OptimizationModeInput OptimizationModeInput { get; init; }
 
         public StrykerInputs(ILogger logger = null)
         {
@@ -66,7 +54,8 @@ namespace Stryker.Core.Options
         {
             return _strykerOptionsCache ?? new StrykerOptions()
             {
-                Concurrency = ConcurrencyInput.Validate(_logger)
+                Concurrency = ConcurrencyInput.Validate(_logger),
+                MutationLevel = MutationLevelInput.Validate()
             };
         }
     }

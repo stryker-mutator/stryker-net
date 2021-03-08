@@ -12,7 +12,7 @@ namespace Stryker.CLI
         {
             var jsonConfig = LoadJsonConfig(configFilePath);
 
-            inputs.Concurrency = new ConcurrencyInput { SuppliedInput = jsonConfig.Concurrency };
+            inputs.ConcurrencyInput = new ConcurrencyInput { SuppliedInput = jsonConfig.Concurrency };
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)

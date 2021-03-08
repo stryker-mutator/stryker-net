@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 
@@ -54,44 +56,51 @@ namespace Stryker.CLI
         {
             foreach (var cliInput in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
-                strykerInputs = cliInput.OptionType switch
+                var strykerInput = GetStrykerInput(cliInput);
+
+                // the switch expression must return a value, as a workaround, return a bool and discard
+                _ = cliInput.OptionType switch
                 {
-                    CommandOptionType.NoValue => ParseNoValue(cliInput, strykerInputs),
+                    CommandOptionType.NoValue => ParseNoValue((IInputDefinition<bool>)strykerInput),
+                    CommandOptionType.MultipleValue => ParseMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput, strykerInputs),
                     CommandOptionType.SingleOrNoValue => ParseSingleOrNoValue(cliInput, strykerInputs),
-                    CommandOptionType.SingleValue => ParseSingleValue(cliInput, strykerInputs),
-                    CommandOptionType.MultipleValue => ParseMultiValue(cliInput, strykerInputs),
-                    _ => strykerInputs
+                    _ => true
+                };
+
+                _ = strykerInput switch
+                {
+                    IInputDefinition inputDefinition when inputDefinition.GetType().GetGenericArguments()[0] == typeof(string) => ParseSingleStringValue(cliInput, (IInputDefinition<string>)inputDefinition),
+                    IInputDefinition inputDefinition when inputDefinition.GetType().GetGenericArguments()[0] == typeof(int) => ParseSingleIntValue(cliInput, (IInputDefinition<int>)inputDefinition),
+                    _ => true
                 };
             }
         }
 
-        private static StrykerInputs ParseNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        private static bool ParseNoValue(IInputDefinition<bool> strykerInput)
         {
-            var strykerInput = GetStrykerInput(cliInput);
-            switch (strykerInput)
-            {
-                case DevModeInput devModeInput:
-                    devModeInput.SuppliedInput = true;
-                    strykerInputs.DevMode = devModeInput;
-                    break;
-            }
-            return strykerInputs;
+            strykerInput.SuppliedInput = true;
+            return true;
         }
 
-        private static StrykerInputs ParseSingleValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        private static bool ParseSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
         {
-            var strykerInput = GetStrykerInput(cliInput);
-            switch (strykerInput)
-            {
-                case ConcurrencyInput concurrencyInput:
-                    concurrencyInput.SuppliedInput = int.Parse(cliInput.Value());
-                    strykerInputs.Concurrency = concurrencyInput;
-                    break;
-            }
-            return strykerInputs;
+            strykerInput.SuppliedInput = cliInput.Value();
+            return true;
         }
 
-        private static StrykerInputs ParseSingleOrNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        private static bool ParseSingleIntValue(CommandOption cliInput, IInputDefinition<int> strykerInput)
+        {
+            if (int.TryParse(cliInput.Value(), out int value))
+            {
+                strykerInput.SuppliedInput = value;
+            } else
+            {
+                throw new StrykerInputException($"Unexpected value for argument {cliInput.LongName}:{cliInput.Value()}. Expected type to be integer");
+            }
+            return true;
+        }
+
+        private static bool ParseSingleOrNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
         {
             var strykerInput = GetStrykerInput(cliInput);
             switch (strykerInput)
@@ -103,20 +112,14 @@ namespace Stryker.CLI
                     strykerInputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
             }
-            return strykerInputs;
+            return true;
         }
 
-        private static StrykerInputs ParseMultiValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        private static bool ParseMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput, StrykerInputs strykerInputs)
         {
-            var strykerInput = GetStrykerInput(cliInput);
-            switch (strykerInput)
-            {
-                case ReportersInput reportersInput:
-                    reportersInput.SuppliedInput = cliInput.Values;
-                    strykerInputs.ReportersInput = reportersInput;
-                    break;
-            }
-            return strykerInputs;
+            strykerInput.SuppliedInput = cliInput.Values;
+
+            return true;
         }
 
         private static IInputDefinition GetStrykerInput(CommandOption cliInput) => _strykerInputs[cliInput.LongName].Input;
