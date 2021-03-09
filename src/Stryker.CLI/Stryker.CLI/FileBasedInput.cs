@@ -8,6 +8,7 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "stryker-config")]
         public FileBasedInput Input { get; set; }
     }
+
     public class FileBasedInput
     {
         [JsonProperty(PropertyName = "project-info")]
@@ -54,7 +55,7 @@ namespace Stryker.CLI
         public string FallbackVersion { get; set; }
 
         [JsonProperty(PropertyName = "ignore-changed-files")]
-        public string IgnoreChangedFiles { get; set; }
+        public string[] IgnoreChangedFiles { get; set; }
     }
 
     public class ProjectInfo

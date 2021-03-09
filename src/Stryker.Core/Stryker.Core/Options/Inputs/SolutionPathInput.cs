@@ -5,21 +5,22 @@ namespace Stryker.Core.Options.Inputs
 {
     public class SolutionPathInput : InputDefinition<string>
     {
-        protected override string Description => "Full path to your solution file. Required on dotnet framework.";
-        protected override string HelpOptions => "";
+        public override string Default => null;
 
-        public SolutionPathInput() { }
-        public SolutionPathInput(IFileSystem fileSystem, string solutionPath)
+        protected override string Description => "Full path to your solution file. Required on dotnet framework.";
+
+        public string Validate(IFileSystem fileSystem)
         {
-            if (solutionPath is { })
+            if (SuppliedInput is { })
             {
-                if (!fileSystem.File.Exists(solutionPath))  //validate file existance and maintain moq
+                if (!fileSystem.File.Exists(SuppliedInput))  //validate file existance and maintain moq
                 {
-                    throw new StrykerInputException("Given solution path does not exist: {0}", solutionPath);
+                    throw new StrykerInputException("Given solution path does not exist: {0}", SuppliedInput);
                 }
 
-                Value = solutionPath;
+                return SuppliedInput;
             }
+            return null;
         }
     }
 }

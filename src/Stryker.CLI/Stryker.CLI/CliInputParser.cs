@@ -62,8 +62,8 @@ namespace Stryker.CLI
                 _ = cliInput.OptionType switch
                 {
                     CommandOptionType.NoValue => ParseNoValue((IInputDefinition<bool>)strykerInput),
-                    CommandOptionType.MultipleValue => ParseMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput, strykerInputs),
-                    CommandOptionType.SingleOrNoValue => ParseSingleOrNoValue(cliInput, strykerInputs),
+                    CommandOptionType.MultipleValue => ParseMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput),
+                    CommandOptionType.SingleOrNoValue => ParseSingleOrNoValue(strykerInput, cliInput, strykerInputs),
                     _ => true
                 };
 
@@ -100,22 +100,16 @@ namespace Stryker.CLI
             return true;
         }
 
-        private static bool ParseSingleOrNoValue(CommandOption cliInput, StrykerInputs strykerInputs)
+        private static bool ParseSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, StrykerInputs strykerInputs)
         {
-            var strykerInput = GetStrykerInput(cliInput);
             switch (strykerInput)
             {
-                case SinceInput sinceInput:
-                    sinceInput.SuppliedInput = true;
-                    strykerInputs.SinceInput = sinceInput;
-                    strykerInputs.SinceTargetInput = new SinceTargetInput();
-                    strykerInputs.SinceTargetInput.SuppliedInput = cliInput.Value();
-                    break;
+                // handle single or no value inputs
             }
             return true;
         }
 
-        private static bool ParseMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput, StrykerInputs strykerInputs)
+        private static bool ParseMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Values;
 
@@ -126,9 +120,10 @@ namespace Stryker.CLI
 
         private static void PrepareCliOptions()
         {
+            AddCliInput(new DevModeInput(), "dev-mode", null, optionType: CommandOptionType.NoValue);
             AddCliInput(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
-
             AddCliInput(new ThresholdBreakInput(), "break", "b", argumentHint: "0-100");
+
 
             AddCliInput(new MutateInput(), "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
 
@@ -138,15 +133,14 @@ namespace Stryker.CLI
             AddCliInput(new MutationLevelInput(), "mutation-level", "l");
 
             AddCliInput(new LogToFileInput(), "log-to-file", "L", optionType: CommandOptionType.NoValue);
-            AddCliInput(new LogLevelInput(), "verbosity", "V");
+            AddCliInput(new VerbosityInput(), "verbosity", "V");
             AddCliInput(new ReportersInput(), "reporter", "r", optionType: CommandOptionType.MultipleValue);
 
-            AddCliInput(new SinceInput(), "since", "since", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliInput(new SinceInput(), "since", "since", optionType: CommandOptionType.NoValue, argumentHint: "comittish");
             AddCliInput(new WithBaselineInput(), "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
             AddCliInput(new DashboardApiKeyInput(), "dashboard-api-key", null);
             AddCliInput(new AzureFileStorageSasInput(), "azure-fileshare-sas", null);
-            AddCliInput(new DevModeInput(), "dev-mode", null, optionType: CommandOptionType.NoValue);
         }
 
         private static void RegisterCliInput(CommandLineApplication app, CliInput option)

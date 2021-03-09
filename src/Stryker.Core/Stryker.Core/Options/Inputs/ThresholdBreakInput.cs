@@ -10,8 +10,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";
         protected override string HelpOptions => FormatHelpOptions("0 - 99");
 
-        public ThresholdBreakInput() { }
-        public ThresholdBreakInput(int low)
+        public int Validate(int? low)
         {
             if (SuppliedInput is not null)
             {
@@ -26,8 +25,9 @@ namespace Stryker.Core.Options.Inputs
                     throw new StrykerInputException($"Threshold break must be less than threshold high. Current low: {low}, break: {@break}");
                 }
 
-                Value = @break;
+                return @break;
             }
+            return Default.Value;
         }
     }
 }

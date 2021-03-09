@@ -10,7 +10,9 @@ namespace Stryker.Core.Options.Inputs
     {
         protected override string Description => string.Empty;
 
-        public OutputPathInput(ILogger logger, IFileSystem fileSystem, string basepath)
+        public override string Default => null;
+
+        public string Validate(ILogger logger, IFileSystem fileSystem, string basepath)
         {
             if (basepath.IsNullOrEmptyInput())
             {
@@ -35,7 +37,7 @@ namespace Stryker.Core.Options.Inputs
                         "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
                 }
             }
-            Value = outputPath;
+            return outputPath;
         }
     }
 }

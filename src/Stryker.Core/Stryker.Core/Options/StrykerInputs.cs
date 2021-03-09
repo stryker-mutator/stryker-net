@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options
@@ -10,32 +11,33 @@ namespace Stryker.Core.Options
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public DevModeInput DevMode { get; set; }
-
-        public BasePathInput BasePath { get; init; }
-        public OutputPathInput OutputPath { get; init; }
-        public SolutionPathInput SolutionPath { get; init; }
-        public LogLevelInput LogLevel { get; init; }
-        public LogToFileInput LogToFile { get; init; }
+        public DevModeInput DevModeInput { get; init; }
+        public BasePathInput BasePathInput { get; init; }
+        public ProjectInput ProjectInput { get; init; }
+        public OutputPathInput OutputPathInput { get; init; }
+        public SolutionPathInput SolutionPathInput { get; init; }
+        public VerbosityInput VerbosityInput { get; init; }
+        public LogToFileInput LogToFileInput { get; init; }
         public MutationLevelInput MutationLevelInput { get; init; }
         public ThresholdBreakInput ThresholdBreakInput { get; init; }
         public ThresholdHighInput ThresholdHighInput { get; init; }
         public ThresholdLowInput ThresholdLowInput { get; init; }
         public AdditionalTimeoutMsInput AdditionalTimeoutMSInput { get; init; }
         public LanguageVersionInput LanguageVersionInput { get; init; }
-        public ConcurrencyInput ConcurrencyInput { get; set; }
+        public ConcurrencyInput ConcurrencyInput { get; init; }
         public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
         public TestProjectsInput TestProjectsInput { get; init; }
         public WithBaselineInput WithBaselineInput { get; init; }
-        public ReportersInput ReportersInput { get; set; }
+        public ReportersInput ReportersInput { get; init; }
         public BaselineProviderInput BaselineProviderInput { get; init; }
         public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
         public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
         public DashboardUrlInput DashboardUrlInput { get; init; }
         public DashboardApiKeyInput DashboardApiKeyInput { get; init; }
         public ProjectNameInput ProjectNameInput { get; init; }
-        public SinceInput SinceInput { get; set; }
-        public SinceTargetInput SinceTargetInput { get; set; }
+        public SinceInput SinceInput { get; init; }
+        public SinceBranchInput SinceBranchInput { get; init; }
+        public SinceCommitInput SinceCommitInput { get; init; }
         public DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
         public FallbackVersionInput FallbackVersionInput { get; init; }
         public ProjectVersionInput ProjectVersionInput { get; init; }
@@ -55,7 +57,21 @@ namespace Stryker.Core.Options
             return _strykerOptionsCache ?? new StrykerOptions()
             {
                 Concurrency = ConcurrencyInput.Validate(_logger),
-                MutationLevel = MutationLevelInput.Validate()
+                MutationLevel = MutationLevelInput.Validate(),
+                DevMode = DevModeInput.Validate(),
+                SolutionPath = SolutionPathInput.Validate(_fileSystem),
+                LogOptions = new LogOptions
+                {
+                    LogLevel = VerbosityInput.Validate(),
+                    LogToFile = LogToFileInput.Validate(OutputPathInput.SuppliedInput),
+                    OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
+                },
+                Thresholds = new Thresholds
+                {
+                    High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
+                    Low = ThresholdLowInput.Validate(ThresholdBreakInput.SuppliedInput, ThresholdHighInput.SuppliedInput)
+                    Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
+                }
             };
         }
     }
