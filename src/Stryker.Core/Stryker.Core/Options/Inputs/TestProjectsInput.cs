@@ -10,13 +10,13 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Specify the test projects.";
 
-        public TestProjectsInput() { }
-        public TestProjectsInput(IEnumerable<string> paths)
+        public IEnumerable<string> Validate()
         {
-            if (paths is { })
+            if (SuppliedInput is { })
             {
-                Value = paths?.Where(path => !path.IsNullOrEmptyInput()).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
+                return SuppliedInput?.Where(path => !path.IsNullOrEmptyInput()).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
             }
+            return Default;
         }
     }
 }

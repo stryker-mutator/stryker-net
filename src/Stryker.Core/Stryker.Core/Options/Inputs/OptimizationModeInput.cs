@@ -4,8 +4,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class OptimizationModeInput : InputDefinition<string, OptimizationModes>
     {
-        public override string DefaultInput => "perTest";
-        public override OptimizationModes Default => new OptimizationModeInput(DefaultInput).Value;
+        public override string Default => "perTest";
 
         protected override string Description => @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
     - off: coverage data is not captured.
@@ -13,22 +12,22 @@ namespace Stryker.Core.Options.Inputs
     - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.";
 
-        public OptimizationModeInput() { }
-        public OptimizationModeInput(string coverageAnalysis)
+        public OptimizationModes Validate()
         {
-            if (coverageAnalysis is { })
+            if (SuppliedInput is { })
             {
-                var optimization = coverageAnalysis.ToLower() switch
+                var optimization = SuppliedInput.ToLower() switch
                 {
                     "pertestinisolation" => OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
                     "pertest" => OptimizationModes.CoverageBasedTest,
                     "all" => OptimizationModes.SkipUncoveredMutants,
                     "off" => OptimizationModes.NoOptimization,
-                    _ => throw new StrykerInputException($"Incorrect coverageAnalysis option ({coverageAnalysis}). The options are [Off, All, PerTest or PerTestInIsolation].")
+                    _ => throw new StrykerInputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
                 };
 
-                Value = optimization;
+                return optimization;
             }
+            return OptimizationModes.CaptureCoveragePerTest;
         }
     }
 }

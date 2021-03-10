@@ -5,8 +5,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class DiffIgnoreFilePatternsInput : InputDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
     {
-        public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
-        public override IEnumerable<FilePattern> Default => new DiffIgnoreFilePatternsInput(DefaultInput).Value;
+        public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
         protected override string Description => @"Allows to specify an array of C# files which should be ignored if present in the diff.
              Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
@@ -15,19 +14,19 @@ namespace Stryker.Core.Options.Inputs
             Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
             Example: ['**/*Assets.json','**/favicon.ico']";
 
-        public DiffIgnoreFilePatternsInput() { }
-        public DiffIgnoreFilePatternsInput(IEnumerable<string> filePatterns)
+        public IEnumerable<FilePattern> Validate()
         {
-            if (filePatterns is { })
+            if (SuppliedInput is { })
             {
                 var diffIgnoreFilePatterns = new List<FilePattern>();
-                foreach (var pattern in filePatterns)
+                foreach (var pattern in SuppliedInput)
                 {
                     diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern), spansEnabled: false));
                 }
 
-                Value = diffIgnoreFilePatterns;
+                return diffIgnoreFilePatterns;
             }
+            return Enumerable.Empty<FilePattern>();
         }
     }
 }

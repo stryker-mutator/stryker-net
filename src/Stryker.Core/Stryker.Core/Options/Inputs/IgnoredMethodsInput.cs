@@ -6,22 +6,22 @@ namespace Stryker.Core.Options.Inputs
 {
     public class IgnoredMethodsInput : InputDefinition<IEnumerable<string>, IEnumerable<Regex>>
     {
-        public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
+        public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
         protected override string Description => @"Ignore mutations on method parameters.";
 
-        public IgnoredMethodsInput() { }
-        public IgnoredMethodsInput(IEnumerable<string> ignoredMethods)
+        public IEnumerable<Regex> Validate()
         {
-            if (ignoredMethods is { })
+            if (SuppliedInput is { })
             {
                 var ignoredMethodPatterns = new List<Regex>();
-                foreach (var methodPattern in ignoredMethods.Where(pattern => !string.IsNullOrWhiteSpace(pattern)))
+                foreach (var methodPattern in SuppliedInput.Where(pattern => !string.IsNullOrWhiteSpace(pattern)))
                 {
                     ignoredMethodPatterns.Add(new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase));
                 }
-                Value = ignoredMethodPatterns;
+                return ignoredMethodPatterns;
             }
+            return Enumerable.Empty<Regex>();
         }
     }
 }

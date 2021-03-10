@@ -6,18 +6,20 @@ namespace Stryker.Core.Options.Inputs
     {
         protected override string Description => "Api key for dashboard reporter.";
 
-        public DashboardApiKeyInput() { }
-        public DashboardApiKeyInput(string apiKey, bool dashboardEnabled)
+        public override string Default => null;
+
+        public string Validate(bool? dashboardEnabled)
         {
-            if (dashboardEnabled)
+            if (dashboardEnabled.IsNotNullAndTrue())
             {
-                if (apiKey.IsNullOrEmptyInput())
+                if (SuppliedInput.IsNullOrEmptyInput())
                 {
                     throw new StrykerInputException("When the stryker dashboard is enabled an api key required.");
                 }
 
-                Value = apiKey;
+                return SuppliedInput;
             }
+            return Default;
         }
     }
 }

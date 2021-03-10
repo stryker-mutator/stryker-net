@@ -4,20 +4,21 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ModuleNameInput : InputDefinition<string>
     {
-
         protected override string Description => "Module name used by reporters. Usually a project in your solution would be a module.";
 
-        public ModuleNameInput() { }
-        public ModuleNameInput(string moduleName)
+        public override string Default => string.Empty;
+
+        public string Validate()
         {
-            if (moduleName is { })
+            if (SuppliedInput is { })
             {
-                if (moduleName.IsNullOrEmptyInput())
+                if (SuppliedInput.IsNullOrEmptyInput())
                 {
                     throw new StrykerInputException("Module name cannot be empty. Either fill the option or leave it out.");
                 }
-                Value = moduleName;
+                return SuppliedInput;
             }
+            return Default;
         }
     }
 }

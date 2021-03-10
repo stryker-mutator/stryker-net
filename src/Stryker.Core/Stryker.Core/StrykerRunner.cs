@@ -126,7 +126,7 @@ namespace Stryker.Core
         private void SetupLogging(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
         {
             // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
+            ApplicationLogging.ConfigureLogger(options.LogOptions, options.OutputPath, initialLogMessages);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
 
             _logger.LogDebug("Stryker started with options: {0}",

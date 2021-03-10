@@ -22,7 +22,7 @@ namespace Stryker.Core.Options
         public ThresholdBreakInput ThresholdBreakInput { get; init; }
         public ThresholdHighInput ThresholdHighInput { get; init; }
         public ThresholdLowInput ThresholdLowInput { get; init; }
-        public AdditionalTimeoutMsInput AdditionalTimeoutMSInput { get; init; }
+        public AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
         public LanguageVersionInput LanguageVersionInput { get; init; }
         public ConcurrencyInput ConcurrencyInput { get; init; }
         public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -46,6 +46,8 @@ namespace Stryker.Core.Options
         public IgnoredMethodsInput IgnoredMethodsInput { get; init; }
         public ExcludedMutatorsInput ExcludedMutatorsInput { get; init; }
         public OptimizationModeInput OptimizationModeInput { get; init; }
+        public DisableAbortTestOnFailInput DisableAbortTestOnFailInput { get; set; }
+        public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
 
         public StrykerInputs(ILogger logger = null)
         {
@@ -54,6 +56,9 @@ namespace Stryker.Core.Options
 
         public StrykerOptions Validate()
         {
+            var reporters = ReportersInput.Validate();
+            var baselineProvider = BaselineProviderInput.Validate(reporters);
+            var sinceEnabled = SinceInput.Validate();
             return _strykerOptionsCache ?? new StrykerOptions()
             {
                 Concurrency = ConcurrencyInput.Validate(_logger),
@@ -63,15 +68,38 @@ namespace Stryker.Core.Options
                 LogOptions = new LogOptions
                 {
                     LogLevel = VerbosityInput.Validate(),
-                    LogToFile = LogToFileInput.Validate(OutputPathInput.SuppliedInput),
-                    OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
+                    LogToFile = LogToFileInput.Validate(OutputPathInput.SuppliedInput)
                 },
                 Thresholds = new Thresholds
                 {
                     High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
-                    Low = ThresholdLowInput.Validate(ThresholdBreakInput.SuppliedInput, ThresholdHighInput.SuppliedInput)
+                    Low = ThresholdLowInput.Validate(ThresholdBreakInput.SuppliedInput, ThresholdHighInput.SuppliedInput),
                     Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
-                }
+                },
+                Reporters = reporters,
+                ProjectUnderTestName = ProjectInput.Validate(),
+                AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
+                ExcludedMutators = ExcludedMutatorsInput.Validate(),
+                IgnoredMethods = IgnoredMethodsInput.Validate(),
+                Mutate = MutateInput.Validate(),
+                LanguageVersion = LanguageVersionInput.Validate(),
+                OptimizationMode = OptimizationModeInput.Validate() & DisableAbortTestOnFailInput.Validate() & DisableSimultaneousTestingInput.Validate(),
+                TestProjects = TestProjectsInput.Validate(),
+                DashboardUrl = DashboardUrlInput.Validate(),
+                DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
+                ProjectName = ProjectNameInput.Validate(WithBaselineInput.SuppliedInput),
+                ModuleName = ModuleNameInput.Validate(),
+                ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),
+                DiffIgnoreFilePatterns = DiffIgnoreFilePatternsInput.Validate(),
+                AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider),
+                AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(),
+                WithBaseline = WithBaselineInput.Validate(),
+                BaselineProvider = baselineProvider,
+                FallbackVersion = FallbackVersionInput.Validate(SinceBranchInput.SuppliedInput, SinceCommitInput.SuppliedInput),
+                DiffCompareEnabled = sinceEnabled,
+                SinceBranch = SinceBranchInput.Validate(sinceEnabled),
+                BasePath = BasePathInput.Validate(_fileSystem),
+                OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
             };
         }
     }

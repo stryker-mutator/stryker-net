@@ -7,28 +7,25 @@ namespace Stryker.Core.Options.Inputs
 {
     public class LanguageVersionInput : InputDefinition<string, LanguageVersion>
     {
-        public override string DefaultInput => "latest";
-        public override LanguageVersion Default => new LanguageVersionInput(DefaultInput).Value;
+        public override string Default => "latest";
 
         protected override string Description => $"The c# version used in compilation.";
-        protected override string HelpOptions => FormatHelpOptions(DefaultInput, Enum.GetNames(Default.GetType()).Where(l => LanguageVersion.CSharp1.ToString() != l));
+        protected override string HelpOptions => FormatHelpOptions(Default, Enum.GetNames(Default.GetType()).Where(l => LanguageVersion.CSharp1.ToString() != l));
 
-
-        public LanguageVersionInput() { }
-
-        public LanguageVersionInput(string languageVersion)
+        public LanguageVersion Validate()
         {
-            if (languageVersion is { })
+            if (SuppliedInput is { })
             {
-                if (Enum.TryParse(languageVersion, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)
+                if (Enum.TryParse(SuppliedInput, true, out LanguageVersion result) && result != LanguageVersion.CSharp1)
                 {
-                    Value = result;
+                    return result;
                 }
                 else
                 {
-                    throw new StrykerInputException($"The given c# language version ({languageVersion}) is invalid.");
+                    throw new StrykerInputException($"The given c# language version ({SuppliedInput}) is invalid.");
                 }
             }
+            return LanguageVersion.Default;
         }
     }
 }

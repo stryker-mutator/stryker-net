@@ -1,5 +1,4 @@
 using System;
-using Stryker.Core.Baseline;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
@@ -11,20 +10,21 @@ namespace Stryker.Core.Options.Inputs
                                     https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
                                     Note, the url might be different depending of where your file storage is hosted.";
 
-        public AzureFileStorageUrlInput() { }
-        public AzureFileStorageUrlInput(string azureFileStorageUrl)
+        public override string Default => string.Empty;
+
+        public string Validate()
         {
-            if (azureFileStorageUrl is null)
+            if (SuppliedInput is null)
             {
                 throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
             }
 
-            if (!Uri.IsWellFormedUriString(azureFileStorageUrl, UriKind.Absolute))
+            if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
             {
-                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", azureFileStorageUrl);
+                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
             }
 
-            Value = azureFileStorageUrl;
+            return SuppliedInput;
         }
     }
 }

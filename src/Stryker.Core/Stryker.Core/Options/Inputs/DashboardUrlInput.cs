@@ -9,18 +9,18 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Alternative url for Stryker Dashboard.";
 
-        public DashboardUrlInput() { }
-        public DashboardUrlInput(string url)
+        public string Validate()
         {
-            if (url is { })
+            if (SuppliedInput is { })
             {
-                if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
                 {
-                    throw new StrykerInputException("Stryker dashboard url {0} is invalid.", url);
+                    throw new StrykerInputException("Stryker dashboard url {0} is invalid.", SuppliedInput);
                 }
 
-                Value = url;
+                return SuppliedInput;
             }
+            return Default;
         }
     }
 }

@@ -1,19 +1,18 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableSimultaneousTestingInput : InputDefinition<bool, OptimizationModes>
+    public class DisableSimultaneousTestingInput : InputDefinition<bool?, OptimizationModes>
     {
-        public override bool DefaultInput => false;
-        public override OptimizationModes Default => new DisableSimultaneousTestingInput(DefaultInput).Value;
+        public override bool? Default => false;
 
         protected override string Description => "Test each mutation in an isolated test run.";
 
-        public DisableSimultaneousTestingInput() { }
-        public DisableSimultaneousTestingInput(bool? disableSimultaneousTesting)
+        public OptimizationModes Validate()
         {
-            if (disableSimultaneousTesting is { })
+            if (SuppliedInput is { })
             {
-                Value = disableSimultaneousTesting.Value ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
+                return SuppliedInput.Value ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
             }
+            return OptimizationModes.NoOptimization;
         }
     }
 }

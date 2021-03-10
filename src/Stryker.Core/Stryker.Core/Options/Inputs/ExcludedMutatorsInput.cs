@@ -8,16 +8,14 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ExcludedMutatorsInput : InputDefinition<IEnumerable<string>, IEnumerable<Mutator>>
     {
-        public override IEnumerable<string> DefaultInput => Enumerable.Empty<string>();
-        public override IEnumerable<Mutator> Default => new ExcludedMutatorsInput(DefaultInput).Value;
+        public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
         protected override string Description => @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";
 
-        public ExcludedMutatorsInput() { }
-        public ExcludedMutatorsInput(IEnumerable<string> mutatorsToExclude)
+        public IEnumerable<Mutator> Validate()
         {
-            if (mutatorsToExclude is { })
+            if (SuppliedInput is { })
             {
                 var excludedMutators = new List<Mutator>();
 
@@ -26,7 +24,7 @@ namespace Stryker.Core.Options.Inputs
                     .Cast<Mutator>()
                     .ToDictionary(x => x, x => x.GetDescription());
 
-                foreach (var mutatorToExclude in mutatorsToExclude)
+                foreach (var mutatorToExclude in SuppliedInput)
                 {
                     // Find any mutatorType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
@@ -41,8 +39,9 @@ namespace Stryker.Core.Options.Inputs
                     }
                 }
 
-                Value = excludedMutators;
+               return excludedMutators;
             }
+            return Enumerable.Empty<Mutator>();
         }
     }
 }

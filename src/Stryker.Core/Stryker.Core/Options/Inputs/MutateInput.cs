@@ -6,8 +6,7 @@ namespace Stryker.Core.Options.Inputs
     public class MutateInput : InputDefinition<IEnumerable<string>, IEnumerable<FilePattern>>
     {
         private readonly string _defaultInput = "**/*";
-        public override IEnumerable<string> DefaultInput => new List<string> { _defaultInput };
-        public override IEnumerable<FilePattern> Default => new MutateInput(DefaultInput).Value;
+        public override IEnumerable<string> Default => new List<string> { _defaultInput };
 
         protected override string Description => @"Allows to specify file that should in- or excluded for the mutations.
     Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
@@ -16,14 +15,13 @@ namespace Stryker.Core.Options.Inputs
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
         protected override string HelpOptions => $" | default ({_defaultInput})";
 
-        public MutateInput() { }
-        public MutateInput(IEnumerable<string> mutate)
+        public IEnumerable<FilePattern> Validate()
         {
-            if (mutate is { } && mutate.Any())
+            if (SuppliedInput is { } && SuppliedInput.Any())
             {
                 var filesToInclude = new List<FilePattern>();
 
-                foreach (var pattern in mutate)
+                foreach (var pattern in SuppliedInput)
                 {
                     filesToInclude.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
@@ -31,11 +29,12 @@ namespace Stryker.Core.Options.Inputs
                 if (filesToInclude.All(f => f.IsExclude))
                 {
                     // If there are only exclude patterns, we add a pattern that matches every file.
-                    filesToInclude.Add(FilePattern.Parse("**/*"));
+                    filesToInclude.Add(FilePattern.Parse(_defaultInput));
                 }
 
-                Value = filesToInclude;
+                return filesToInclude;
             }
+            return Default.Select(x => FilePattern.Parse(_defaultInput)).ToList();
         }
     }
 }

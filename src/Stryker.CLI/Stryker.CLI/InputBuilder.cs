@@ -21,7 +21,7 @@ namespace Stryker.CLI
 
             var inputs = new StrykerInputs(_logger)
             {
-                AdditionalTimeoutMSInput = new AdditionalTimeoutMsInput(),
+                AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
                 AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
                 BaselineProviderInput = new BaselineProviderInput(),
