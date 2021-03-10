@@ -1,4 +1,4 @@
-﻿using Crayon;
+using Crayon;
 using Stryker.Core;
 using Stryker.Core.Exceptions;
 using System;
@@ -19,10 +19,6 @@ namespace Stryker.CLI
             {
                 Output.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
                 Console.WriteLine(strEx.ToString());
-                return 1;
-            }
-            catch (Exception)
-            {
                 return 1;
             }
         }

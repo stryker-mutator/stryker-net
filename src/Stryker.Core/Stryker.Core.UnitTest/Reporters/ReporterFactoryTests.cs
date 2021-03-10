@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Moq;
 using Shouldly;
 using Stryker.Core.DashboardCompare;
@@ -6,8 +8,6 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using System;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters

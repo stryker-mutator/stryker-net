@@ -83,33 +83,7 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
-            // if we are in devmode, dump all properties as it can help diagnosing build issues for user project.
-            if (projectInfo.ProjectUnderTestAnalyzerResult.Properties != null && options.DevMode)
-            {
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-                // dump properties
-                foreach (var keyValuePair in projectInfo.ProjectUnderTestAnalyzerResult.Properties)
-                {
-                    _logger.LogInformation("{0}={1}", keyValuePair.Key, keyValuePair.Value);
-                }
-
-                _logger.LogInformation("**** Buildalyzer properties. ****");
-            }
-
-            IProjectComponent inputFiles;
-            if (projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage() == Language.Csharp)
-            {
-                inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
-            }
-            else if (projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage() == Language.Fsharp)
-            {
-                //inputFiles = new FsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
-                throw new StrykerInputException("At this moment we do not support mutationtesting in F#.");
-            }
-            else
-            {
-                throw new StrykerInputException("no valid csproj or fsproj was given");
-            }
+            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo, options);
@@ -198,7 +172,7 @@ namespace Stryker.Core.Initialisation
             }
 
             // if IsTestProject true property not found and project is full framework, force vstest runner
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFrameworkAndVersion().Framework == Framework.DotNetClassic &&
+            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.GetTargetFramework() == Framework.DotNetClassic &&
                 options.TestRunner != TestRunner.VsTest &&
                 (!testProject.Properties.ContainsKey("IsTestProject") ||
                 (testProject.Properties.ContainsKey("IsTestProject") &&

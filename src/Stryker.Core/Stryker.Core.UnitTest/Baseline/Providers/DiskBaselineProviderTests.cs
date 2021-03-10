@@ -1,13 +1,13 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Threading.Tasks;
 using Shouldly;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Baseline
+namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     public class DiskBaselineProviderTests
     {
