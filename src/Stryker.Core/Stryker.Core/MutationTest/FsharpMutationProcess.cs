@@ -33,8 +33,7 @@ namespace Stryker.Core.MutationTest
 
             _options = options;
             _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);
-            IFileSystem fileSystem = fileSystem ?? new FileSystem();
-            _compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), fileSystem);
+            _compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), fileSystem ?? new FileSystem());
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
