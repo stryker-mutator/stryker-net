@@ -35,7 +35,7 @@ namespace Stryker.Core.Initialisation
             _logger = logger;
             _fileSystem = fileSystem;
         }
-
+        
         public override IProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
+                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult);
             }
             return inputFiles;
         }
@@ -154,7 +154,7 @@ namespace Stryker.Core.Initialisation
             return cache[targetFolder];
         }
 
-        private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);

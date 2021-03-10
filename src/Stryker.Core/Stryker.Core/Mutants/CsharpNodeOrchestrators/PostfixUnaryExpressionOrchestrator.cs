@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             return t.Parent is ExpressionStatementSyntax || t.Parent is ForStatementSyntax;
         }
 
-        // even if they are 'expressions', the ++ and -- operators need to be controlled at the statement level.
+        //even if they are 'expressions', the ++ and -- operators need to be controlled at the statement level.
         protected override MutationContext StoreMutations(PostfixUnaryExpressionSyntax node,
             IEnumerable<Mutant> mutations,
             MutationContext context)
