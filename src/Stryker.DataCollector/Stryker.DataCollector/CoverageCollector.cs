@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +19,7 @@ namespace Stryker.DataCollector
         private int _activeMutation = -1;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
-        private int? _singleMutant = null;
+        private int? _singleMutant;
 
         private string _controlClassName;
         private Type _controller;
@@ -27,14 +27,18 @@ namespace Stryker.DataCollector
         private FieldInfo _coverageControlField;
 
         private MethodInfo _getCoverageData;
+        private IList<int> _mutationCoveredOutsideTests;
 
         private const string TemplateForConfiguration = 
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
 
+        public const string PropertyName = "Stryker.Coverage";
+        public const string OutOfTestsPropertyName = "Stryker.Covrage.OutOfTests";
+
         public string MutantList => _singleMutant?.ToString() ?? string.Join(",", _mutantTestedBy.Values.Distinct());
 
-        public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<string>> mutantTestsMap, string helpNameSpace)
+        public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<Guid>> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -90,7 +94,10 @@ namespace Stryker.DataCollector
                 FindControlType(assembly);
             }
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
-
+            if (_singleMutant.HasValue)
+            {
+                SetActiveMutation(_singleMutant.Value);
+            }
             Log($"Test Session start with conf {configuration}.");
         }
 
@@ -141,11 +148,13 @@ namespace Stryker.DataCollector
             var testMapping = node.SelectNodes("//Parameters/Mutant");
             if (testMapping !=null)
             {
+                var mutations = new HashSet<int>();
                 for (var i = 0; i < testMapping.Count; i++)
                 {
                     var current = testMapping[i];
                     var id = int.Parse(current.Attributes["id"].Value);
                     var tests = current.Attributes["tests"].Value;
+                    mutations.Add(id);
                     if (string.IsNullOrEmpty(tests))
                     {
                         _singleMutant = id;
@@ -157,6 +166,10 @@ namespace Stryker.DataCollector
                             _mutantTestedBy[test] = id;
                         }
                     }
+                }
+                if (mutations.Count==1)
+                {
+                    _singleMutant = mutations.First();
                 }
             }
 
@@ -177,6 +190,16 @@ namespace Stryker.DataCollector
         {
             if (_coverageOn)
             {
+                // see if any mutation was executed outside a test
+                var covered = RetrieveCoverData();
+                if (covered[0] != null)
+                {
+                    _mutationCoveredOutsideTests = covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
+                }
+                else if (covered[1] != null)
+                {
+                    _mutationCoveredOutsideTests = covered[1].ToList();
+                }
                 return;
             }
 
@@ -197,33 +220,31 @@ namespace Stryker.DataCollector
             }
 
             PublishCoverageData(testCaseEndArgs);
+            SetActiveMutation(-2);
         }
 
         private void PublishCoverageData(TestCaseEndArgs testCaseEndArgs)
         {
-            var coverData = RetrieveCoverData();
-            // null means we failed to retrieve data
-            if (coverData != null)
+            var covered = RetrieveCoverData();
+            var coverData = string.Join(",", covered[0]) + ";" + string.Join(",", covered[1]);
+            if (coverData == string.Empty)
             {
-                if (coverData == string.Empty)
-                {
-                    // test covers no mutant, but empty string is not a valid value
-                    coverData = " ";
-                }
-
-                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, "Stryker.Coverage", coverData);
+                // test covers no mutant, but empty string is not a valid value
+                coverData = " ";
             }
-            else
+
+            _dataSink.SendData(testCaseEndArgs.DataCollectionContext, PropertyName, coverData);
+            if (_mutationCoveredOutsideTests.Count > 0)
             {
-                Log($"Failed to retrieve coverage data for {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName}");
+                // report any mutations covered before this test executed
+                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
+                _mutationCoveredOutsideTests.Clear();
             }
         }
 
-        public string RetrieveCoverData()
+        public IList<int>[] RetrieveCoverData()
         {
-            var covered = (IList<int>[]) _getCoverageData.Invoke(null, new object[]{});
-            var coverData = string.Join(",", covered[0]) + ";" + string.Join(",", covered[1]);
-            return coverData;
+            return (IList<int>[]) _getCoverageData.Invoke(null, new object[]{});
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)

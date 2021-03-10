@@ -19,7 +19,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly OptimizationFlags _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
-        private readonly ICollection<TestCase> _discoveredTests;
+        private readonly IDictionary<Guid, TestCase> _tests;
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
@@ -30,17 +30,17 @@ namespace Stryker.Core.TestRunners.VsTest
             _flags = flags;
             using (var runner = new VsTestRunner(options, _flags, projectInfo, null, helper: _helper))
             {
-                _discoveredTests = runner.DiscoverTests();
+                _tests = runner.DiscoverTests();
                 _availableRunners.Add(runner);
             }
 
             Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, helper: _helper));
+                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _tests, helper: _helper));
             });
         }
 
-        public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription) x);
+        public IEnumerable<TestDescription> Tests => _tests.Values.Select(x => (TestDescription) x);
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
@@ -87,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
-            Parallel.ForEach(_discoveredTests, options, testCase =>
+            Parallel.ForEach(_tests.Values, options, testCase =>
             {
                 var runner = TakeRunner();
                 try
@@ -135,7 +135,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int DiscoverNumberOfTests()
         {
-            return _discoveredTests.Count();
+            return _tests.Count();
         }
     }
 }

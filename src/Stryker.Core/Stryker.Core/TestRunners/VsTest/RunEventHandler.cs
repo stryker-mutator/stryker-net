@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -57,7 +57,6 @@ namespace Stryker.Core.TestRunners.VsTest
             TestResults.AddRange(testResults);
         }
 
-
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
             if (testRunChangedArgs.ActiveTests != null)
@@ -99,7 +98,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering vstest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
@@ -132,21 +131,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            LogLevel levelFinal;
-            switch (level)
+            LogLevel levelFinal = level switch
             {
-                case TestMessageLevel.Informational:
-                    levelFinal = LogLevel.Debug;
-                    break;
-                case TestMessageLevel.Warning:
-                    levelFinal = LogLevel.Warning;
-                    break;
-                case TestMessageLevel.Error:
-                    levelFinal = LogLevel.Error;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
-            }
+                TestMessageLevel.Informational => LogLevel.Debug,
+                TestMessageLevel.Warning => LogLevel.Warning,
+                TestMessageLevel.Error => LogLevel.Error,
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
 

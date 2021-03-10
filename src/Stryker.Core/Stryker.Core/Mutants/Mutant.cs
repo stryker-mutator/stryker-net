@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = new TestListDescription();
+        public ITestListDescription CoveringTests { get; private set; } = new TestListDescription();
         public string ResultStatusReason { get; set; }
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
@@ -44,6 +44,21 @@ namespace Stryker.Core.Mutants
 
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
+        public void DeclareCoveringTest(TestDescription test)
+        {
+            if (test.IsAllTests)
+            {
+                CoveringTests = TestListDescription.EveryTest();
+                return;
+            }
+            CoveringTests = CoveringTests.Add(test);
+        }
+
+        public void ResetCoverage()
+        {
+            CoveringTests = TestListDescription.NoTest();
+        }
+
         public bool IsStaticValue { get; set; }
 
         public void AnalyzeTestRun(ITestListDescription failedTests, ITestListDescription resultRanTests, ITestListDescription timedOutTests)
@@ -52,7 +67,7 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
+            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.IsIncluded(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }

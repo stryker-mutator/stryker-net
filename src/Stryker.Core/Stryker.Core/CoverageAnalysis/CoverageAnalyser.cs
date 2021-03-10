@@ -37,7 +37,7 @@ namespace Stryker.Core.CoverageAnalysis
                     .ToList();
                 foreach (var mutant in mutantsToScan)
                 {
-                    mutant.CoveringTests = new TestListDescription(null);
+                    mutant.ResetCoverage();
                 }
                 var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
                 if (testResult.FailingTests.Count == 0)
@@ -69,7 +69,7 @@ namespace Stryker.Core.CoverageAnalysis
                 }
                 else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
-                    mutant.CoveringTests = TestListDescription.EveryTest();
+                    mutant.DeclareCoveringTest(TestDescription.AllTests());
                 }
             }
         }

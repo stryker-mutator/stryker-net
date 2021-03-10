@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var secondTest = new TestCase("T1", _executorUri, _testAssemblyPath);
 
             var content = new CsharpFolderComposite();
-            _coverageProperty = TestProperty.Register("Stryker.Coverage", "Coverage", typeof(string), typeof(TestResult));
+            _coverageProperty = TestProperty.Register(CoverageCollector.PropertyName, "Coverage", typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
             _projectContents = content;
@@ -500,8 +500,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // only first test covers one mutant
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;0", ["T1"] = ";" }, endProcess);
 
-                _mutant.CoveringTests = new TestListDescription(null);
-                _otherMutant.CoveringTests = new TestListDescription(null);
+                _mutant.ResetCoverage();
+                _otherMutant.ResetCoverage();
                 runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockTestRun(mockVsTest, false, endProcess);
@@ -535,7 +535,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 var input = new MutationTestInput { ProjectInfo = _targetProject, TestRunner = runner, TimeoutMs = 100 };
                 foreach (var mutant in _targetProject.ProjectContents.Mutants)
                 {
-                    mutant.CoveringTests = new TestListDescription(null);
+                    mutant.ResetCoverage();
                 }
                 var mockReporter = new Mock<IReporter>();
                 var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions, mutantFilter: mutantFilter.Object);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var collector = new CoverageCollector();
 
-            var mutantMap = new Dictionary<int, IList<string>>() {[0] = new List<string>()};
+            var mutantMap = new Dictionary<int, IList<Guid>>() {[0] = new List<Guid>()};
 
             var start = new TestSessionStartArgs
             {
@@ -63,4 +63,3 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
     }
 }
-    

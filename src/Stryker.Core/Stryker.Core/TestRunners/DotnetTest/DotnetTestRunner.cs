@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -56,7 +56,7 @@ namespace Stryker.Core.TestRunners
             }
             catch (OperationCanceledException)
             {
-                var emptyList = new TestListDescription(null);
+                var emptyList = TestListDescription.NoTest();
                 if (mutant != null)
                 {
                     mutant.ResultStatus = MutantStatus.Timeout;
@@ -132,7 +132,14 @@ namespace Stryker.Core.TestRunners
             var testedMutant = _lastMessage.Split(";")[0].Split(",").Select(int.Parse).ToList();
             foreach (var mutant in mutants)
             {
-                mutant.CoveringTests = testedMutant.Contains(mutant.Id) ? TestListDescription.EveryTest() : new TestListDescription(null);
+                if (testedMutant.Contains(mutant.Id))
+                {
+                    mutant.DeclareCoveringTest(TestDescription.AllTests());
+                }
+                else
+                {
+                    mutant.ResetCoverage();
+                }
             }
 
             return result;

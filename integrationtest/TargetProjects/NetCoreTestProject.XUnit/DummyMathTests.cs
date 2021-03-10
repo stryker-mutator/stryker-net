@@ -1,7 +1,7 @@
 using ExampleProject.Math;
 using Xunit;
 
-namespace ExampleProject.XUnit
+namespace NetCoreTestProject.XUnit
 {
     public class DummyMathTests
     {

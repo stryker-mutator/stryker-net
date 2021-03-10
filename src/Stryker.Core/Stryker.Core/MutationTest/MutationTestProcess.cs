@@ -127,7 +127,7 @@ namespace Stryker.Core.MutationTest
             });
         }
 
-        private void OnMutantsTested(List<Mutant> mutants, HashSet<Mutant> reportedMutants)
+        private void OnMutantsTested(IEnumerable<Mutant> mutants, HashSet<Mutant> reportedMutants)
         {
             foreach (var mutant in mutants)
             {
@@ -140,7 +140,7 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private void OnMutantTested(Mutant mutant, HashSet<Mutant> reportedMutants)
+        private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
             if (mutant.ResultStatus != MutantStatus.NotRun && !reportedMutants.Contains(mutant))
             {
@@ -175,22 +175,26 @@ namespace Stryker.Core.MutationTest
             // we deal with mutants needing full testing first
             blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
+
             var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
             mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
                 var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
+                var testSet = mutantsToGroup[i].CoveringTests;
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
-                    if (mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
-                        mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                    var currentMutant = mutantsToGroup[j];
+                    if (currentMutant.CoveringTests.Count + usedTests.Count > testsCount ||
+                        currentMutant.CoveringTests.Tests.Overlaps(usedTests))
                     {
                         continue;
                     }
 
-                    nextBlock.Add(mutantsToGroup[j]);
-                    usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
+                    testSet.Merge(currentMutant.CoveringTests);
+                    nextBlock.Add(currentMutant);
+                    usedTests.AddRange(currentMutant.CoveringTests.GetList());
                     mutantsToGroup.RemoveAt(j--);
                 }
 

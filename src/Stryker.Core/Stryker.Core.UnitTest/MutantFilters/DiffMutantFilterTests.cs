@@ -121,10 +121,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutant = new Mutant();
 
-            mutant.CoveringTests.Add(new TestDescription(Guid.NewGuid().ToString(), "name", myTest));
+            mutant.DeclareCoveringTest(new TestDescription(Guid.NewGuid(), "name", myTest));
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -189,25 +189,20 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(diffProvider.Object);
 
-            var testFile1 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name1", "C:/testfile1.cs") });
-            var testFile2 = new TestListDescription(new[] { new TestDescription(Guid.NewGuid().ToString(), "name2", "C:/testfile2.cs") });
+            var testFile1 =  new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
+            var testFile2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
 
-            var expectedToStay1 = new Mutant
-            {
-                CoveringTests = testFile1
-            };
-            var expectedToStay2 = new Mutant
-            {
-                CoveringTests = testFile1
-            };
+            var expectedToStay1 = new Mutant();
+            expectedToStay1.DeclareCoveringTest(testFile1);
+            var expectedToStay2 = new Mutant();
+            expectedToStay2.DeclareCoveringTest(testFile1);
+            var newMutant = new Mutant();
+            newMutant.DeclareCoveringTest(testFile2);
             var mutants = new List<Mutant>
             {
                 expectedToStay1,
                 expectedToStay2,
-                new Mutant
-                {
-                    CoveringTests = testFile2
-                }
+                newMutant
             };
 
             // Act

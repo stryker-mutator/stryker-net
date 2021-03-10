@@ -1,6 +1,7 @@
-﻿using Xunit;
+using ExampleProject;
+using Xunit;
 
-namespace ExampleProject.XUnit
+namespace NetCoreTestProject.XUnit
 {
     public class UnsafeCodeTests
     {
