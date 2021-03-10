@@ -4,21 +4,22 @@ namespace Stryker.Core.Options.Inputs
 {
     public class ProjectUnderTestNameInput : InputDefinition<string>
     {
+        public override string Default => string.Empty;
 
         protected override string Description => @"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj""";
 
-        public ProjectUnderTestNameInput() { }
-        public ProjectUnderTestNameInput(string projectUnderTestNameFilter)
+        public string Validate()
         {
-            if (projectUnderTestNameFilter is { })
+            if (SuppliedInput is { })
             {
-                if (projectUnderTestNameFilter.IsNullOrEmptyInput())
+                if (SuppliedInput.IsNullOrEmptyInput())
                 {
                     throw new StrykerInputException("Project under test name filter cannot be empty.");
                 }
 
-                Value = projectUnderTestNameFilter;
+                return SuppliedInput;
             }
+            return Default;
         }
     }
 }

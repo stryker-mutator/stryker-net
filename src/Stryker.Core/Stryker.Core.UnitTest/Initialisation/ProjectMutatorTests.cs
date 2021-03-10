@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     It.IsAny<MutationTestInput>(),
                     It.IsAny<IReporter>(),
                     It.IsAny<IMutationTestExecutor>(),
-                    It.IsAny<IStrykerOptions>()))
+                    It.IsAny<StrykerOptions>()))
                 .Returns(_mutationTestProcessMock.Object);
 
             _mutationTestProcessMock.Setup(x => x.Mutate());
@@ -54,8 +54,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerOptions();
             var target = new ProjectMutator(_initialisationProcessProviderMock.Object, _mutationTestProcessProviderMock.Object);
 
-            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<IStrykerOptions>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>())).Returns(5);
+            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(5);
 
             // act
             var result = target.MutateProject(options, _reporterMock.Object);

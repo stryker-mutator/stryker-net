@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants
         protected  MutantOrchestrator() : base(null)
         {
         }
-        protected MutantOrchestrator(IStrykerOptions input) : base(input)
+        protected MutantOrchestrator(StrykerOptions input) : base(input)
         {
         }
 
@@ -18,16 +18,16 @@ namespace Stryker.Core.Mutants
 
     public abstract class MutantOrchestrator
     {
-        public readonly IStrykerOptions _options;
+        public readonly StrykerOptions _options;
 
         public bool MustInjectCoverageLogic =>
-            _options != null && _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) &&
-            !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest);
+            _options != null && _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
+            !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
 
         public ICollection<Mutant> Mutants { get; set; }
         public int MutantCount { get; set; }
 
-        protected MutantOrchestrator(IStrykerOptions options)
+        protected MutantOrchestrator(StrykerOptions options)
         {
             _options = options;
         }

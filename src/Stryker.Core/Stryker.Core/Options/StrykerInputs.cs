@@ -13,7 +13,6 @@ namespace Stryker.Core.Options
 
         public DevModeInput DevModeInput { get; init; }
         public BasePathInput BasePathInput { get; init; }
-        public ProjectInput ProjectInput { get; init; }
         public OutputPathInput OutputPathInput { get; init; }
         public SolutionPathInput SolutionPathInput { get; init; }
         public VerbosityInput VerbosityInput { get; init; }
@@ -77,7 +76,7 @@ namespace Stryker.Core.Options
                     Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
                 },
                 Reporters = reporters,
-                ProjectUnderTestName = ProjectInput.Validate(),
+                ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
                 ExcludedMutators = ExcludedMutatorsInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),

@@ -23,12 +23,12 @@ namespace Stryker.Core.Initialisation
     public class CsharpProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -53,7 +53,7 @@ namespace Stryker.Core.Initialisation
         }
 
         // Deprecated method, should not be maintained
-        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var inputFiles = new CsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -73,7 +73,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
@@ -168,7 +168,7 @@ namespace Stryker.Core.Initialisation
         /// Recursively scans the given directory for files to mutate
         /// Deprecated method, should not be maintained
         /// </summary>
-        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, StrykerOptions options)
         {
             var rootFolderComposite = new CsharpFolderComposite
             {
@@ -242,7 +242,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, IStrykerOptions options)
+        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerOptions options)
         {
             return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.GetDefineConstants());
         }

@@ -13,7 +13,7 @@ namespace Stryker.Core.MutantFilters
     {
         string IMutantFilter.DisplayName { get; } = "exclude from code coverage filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
             return mutants.Where(m => !Exclude(m.Mutation.OriginalNode));
         }

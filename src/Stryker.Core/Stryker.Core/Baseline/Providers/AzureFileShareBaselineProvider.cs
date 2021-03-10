@@ -14,12 +14,12 @@ namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private const string _outputPath = "StrykerOutput/Baselines";
 
-        public AzureFileShareBaselineProvider(IStrykerOptions options, HttpClient httpClient = null)
+        public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();

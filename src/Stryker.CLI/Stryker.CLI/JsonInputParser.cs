@@ -21,7 +21,6 @@ namespace Stryker.CLI
             inputs.LogToFileInput.SuppliedInput = jsonConfig.LogToFile;
             inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
             inputs.MutationLevelInput.SuppliedInput = jsonConfig.MutationLevel;
-            inputs.ProjectInput.SuppliedInput = jsonConfig.Project;
             inputs.ProjectNameInput.SuppliedInput = jsonConfig.ProjectInfo.Name;
             inputs.ModuleNameInput.SuppliedInput = jsonConfig.ProjectInfo.Module;
             inputs.ProjectVersionInput.SuppliedInput = jsonConfig.ProjectInfo.Version;

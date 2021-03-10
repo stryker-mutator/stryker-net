@@ -21,7 +21,7 @@ namespace Stryker.Core.Reporters
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {

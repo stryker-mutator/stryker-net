@@ -15,9 +15,9 @@ namespace Stryker.Core.CoverageAnalysis
         private readonly MutationTestInput _input;
         private readonly ILogger<CoverageAnalyser> _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
 
-        public CoverageAnalyser(IStrykerOptions options, IMutationTestExecutor mutationTestExecutor, MutationTestInput input)
+        public CoverageAnalyser(StrykerOptions options, IMutationTestExecutor mutationTestExecutor, MutationTestInput input)
         {
             _input = input;
             _mutationTestExecutor = mutationTestExecutor;

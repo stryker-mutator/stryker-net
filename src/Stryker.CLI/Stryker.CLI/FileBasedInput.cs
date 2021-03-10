@@ -20,7 +20,6 @@ namespace Stryker.CLI
 
         public string[] Mutate { get; set; }
         public string Solution { get; set; }
-        public string Project { get; set; }
 
         public Thresholds Thresholds { get; set; }
 

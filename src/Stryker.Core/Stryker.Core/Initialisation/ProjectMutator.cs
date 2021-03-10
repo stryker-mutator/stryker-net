@@ -6,7 +6,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectMutator
     {
-        IMutationTestProcess MutateProject(IStrykerOptions options, IReporter reporters);
+        IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters);
     }
 
     public class ProjectMutator : IProjectMutator
@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation
             _mutationTestProcessProvider = mutationTestProcessProvider ?? new MutationTestProcessProvider();
         }
 
-        public IMutationTestProcess MutateProject(IStrykerOptions options, IReporter reporters)
+        public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters)
         {
             // get a new instance of InitialisationProcess for each project
             var initialisationProcess = _initialisationProcessProvider.Provide();

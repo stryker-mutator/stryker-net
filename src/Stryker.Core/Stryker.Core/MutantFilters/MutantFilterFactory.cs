@@ -13,7 +13,7 @@ namespace Stryker.Core.MutantFilters
         private static IGitInfoProvider _gitInfoProvider;
         private static IBaselineProvider _baselineProvider;
 
-        public static IMutantFilter Create(IStrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public static IMutantFilter Create(StrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             if (options == null)
             {
@@ -27,7 +27,7 @@ namespace Stryker.Core.MutantFilters
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
 
-        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(IStrykerOptions options)
+        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
         {
             var enabledFilters = new List<IMutantFilter> {
                     new FilePatternMutantFilter(options),
@@ -36,11 +36,11 @@ namespace Stryker.Core.MutantFilters
                     new ExcludeFromCodeCoverageFilter()
                 };
 
-            if (options.CompareToDashboard)
+            if (options.WithBaseline)
             {
                 enabledFilters.Add(new DashboardMutantFilter(options, _baselineProvider, _gitInfoProvider));
             }
-            if (options.DiffCompareEnabled || options.CompareToDashboard)
+            if (options.DiffCompareEnabled || options.WithBaseline)
             {
                 enabledFilters.Add(new DiffMutantFilter(_diffProvider));
             }

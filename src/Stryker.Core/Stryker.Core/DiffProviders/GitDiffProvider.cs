@@ -10,10 +10,10 @@ namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(IStrykerOptions options, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(StrykerOptions options, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);

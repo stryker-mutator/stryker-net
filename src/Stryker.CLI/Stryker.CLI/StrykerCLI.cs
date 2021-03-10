@@ -42,7 +42,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            CliInputParser.RegisterStrykerInputs(app);
+            var strykerInputs = CliInputParser.RegisterStrykerInputs(app, _logBuffer);
 
             app.OnExecute(() =>
             {
@@ -50,26 +50,26 @@ namespace Stryker.CLI
                 PrintStykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
-                var inputs = new InputBuilder(_logBuffer).Build(args, app);
+                strykerInputs = new InputBuilder(_logBuffer).Build(args, app, strykerInputs);
 
                 if (CliInputParser.GenerateConfigFile(args, app))
                 {
-                    var options = inputs.Validate();
+                    var options = strykerInputs.Validate();
                     var configFilePath = Path.Combine(options.BasePath, CliInputParser.ConfigFilePath(args, app));
 
                     var fileBasedInputs = new FileBasedInput
                     {
-                        BaseLine = new BaseLine
-                        {
-                            WithBaseline = options.WithBaseline,
-                            Provider = options.BaselineProvider,
+                        //BaseLine = new BaseLine
+                        //{
+                        //    WithBaseline = options.WithBaseline,
+                        //    Provider = options.BaselineProvider,
                             
-                        }
+                        //}
                     };
                     File.WriteAllText(configFilePath, JsonConvert.SerializeObject(new FileBasedInputOuter { Input = fileBasedInputs }));
                 }
 
-                RunStryker(inputs);
+                RunStryker(strykerInputs);
                 return ExitCode;
             });
             return app.Execute(args);

@@ -1,19 +1,12 @@
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Baseline;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -27,15 +20,6 @@ namespace Stryker.Core.MutantFilters
         public DiffMutantFilter(IDiffProvider diffProvider = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
-
-            _options = options;
-            _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
-            _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
-
-            if (options.DashboardCompareEnabled)
-            {
-                _baseline = GetBaselineAsync().Result;
-            }
 
             _diffResult = diffProvider.ScanDiff();
 
@@ -60,24 +44,10 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;
-
-            // If the dashboard feature is turned on we first filter based on previous results
-            if (options.DashboardCompareEnabled)
-            {
-                // If the dashboard feature is enabled but we cannot find a baseline. We are going to test the entire project. Thus none of the mutants can be filtered out and all are returned.
-                if (_baseline == null)
-                {
-                    _logger.LogDebug("Testing all mutants on {0} because there is no baseline available", file.RelativePathToProjectFile);
-                    return mutants;
-                }
-
-                // Updates all the mutants in this file with their counterpart's result in the report of the previous run
-                UpdateMutantsWithBaselineStatus(mutants, file);
-            }
 
             // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
             if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.EndsWith(".cs")))
@@ -102,13 +72,6 @@ namespace Stryker.Core.MutantFilters
             if (_diffResult.ChangedTestFiles != null && _diffResult.ChangedTestFiles.Any(file => file.EndsWith(".cs")))
             {
                 filteredMutants = ResetMutantStatusForChangedTests(mutants);
-            }
-
-            // Identical mutants within the same file cannot be distinguished from eachother and therefor we cannot give them a mutant status from the baseline. These will have to be re-run.
-            if (_options.DashboardCompareEnabled)
-            {
-                var mutantsNotRun = mutants.Where(x => x.ResultStatus == MutantStatus.NotRun);
-                filteredMutants = MergeMutantLists(filteredMutants, mutantsNotRun);
             }
 
             return filteredMutants;

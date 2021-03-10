@@ -7,7 +7,6 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,8 +27,8 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(IStrykerOptions options);
-        int InitialTest(IStrykerOptions options);
+        MutationTestInput Initialize(StrykerOptions options);
+        int InitialTest(StrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -56,7 +55,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(IStrykerOptions options)
+        public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
@@ -91,7 +90,7 @@ namespace Stryker.Core.Initialisation
             return input;
         }
 
-        public int InitialTest(IStrykerOptions options)
+        public int InitialTest(StrykerOptions options)
         {
             // initial test
             var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);

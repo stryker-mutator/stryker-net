@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IVsTestConsoleWrapper _vsTestConsole;
 
         private readonly IFileSystem _fileSystem;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly OptimizationModes _optimizationFlags;
         private readonly ProjectInfo _projectInfo;
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
@@ -52,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public IEnumerable<TestDescription> Tests => _discoveredTests.Select(x => (TestDescription)x);
 
         public VsTestRunner(
-            IStrykerOptions options,
+            StrykerOptions options,
             ProjectInfo projectInfo,
             ICollection<TestCase> testCasesDiscovered,
             IFileSystem fileSystem = null,

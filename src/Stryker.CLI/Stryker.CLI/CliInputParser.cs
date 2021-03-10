@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -20,7 +21,8 @@ namespace Stryker.CLI
 
     public static class CliInputParser
     {
-        private static readonly IDictionary<string, CliInput> _strykerInputs = new Dictionary<string, CliInput>();
+        private static readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
+        private static StrykerInputs _strykerInputs;
         private static readonly CliInput _configFileInput;
         private static readonly CliInput _generateConfigFileInput;
 
@@ -28,16 +30,55 @@ namespace Stryker.CLI
         {
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             _generateConfigFileInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
-
-            PrepareCliOptions();
         }
 
-        public static void RegisterStrykerInputs(CommandLineApplication app)
+        public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
         {
-            foreach (var (_, value) in _strykerInputs)
+            _strykerInputs = new StrykerInputs(logger)
+            {
+                AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
+                AzureFileStorageSasInput = new AzureFileStorageSasInput(),
+                AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
+                BaselineProviderInput = new BaselineProviderInput(),
+                BasePathInput = new BasePathInput(),
+                ConcurrencyInput = new ConcurrencyInput(),
+                DashboardApiKeyInput = new DashboardApiKeyInput(),
+                DashboardUrlInput = new DashboardUrlInput(),
+                DevModeInput = new DevModeInput(),
+                DiffIgnoreFilePatternsInput = new DiffIgnoreFilePatternsInput(),
+                ExcludedMutatorsInput = new ExcludedMutatorsInput(),
+                FallbackVersionInput = new FallbackVersionInput(),
+                IgnoredMethodsInput = new IgnoredMethodsInput(),
+                LanguageVersionInput = new LanguageVersionInput(),
+                VerbosityInput = new VerbosityInput(),
+                LogToFileInput = new LogToFileInput(),
+                ModuleNameInput = new ModuleNameInput(),
+                MutateInput = new MutateInput(),
+                MutationLevelInput = new MutationLevelInput(),
+                OptimizationModeInput = new OptimizationModeInput(),
+                OutputPathInput = new OutputPathInput(),
+                ProjectNameInput = new ProjectNameInput(),
+                ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
+                ProjectVersionInput = new ProjectVersionInput(),
+                ReportersInput = new ReportersInput(),
+                SinceInput = new SinceInput(),
+                SinceBranchInput = new SinceBranchInput(),
+                SolutionPathInput = new SolutionPathInput(),
+                TestProjectsInput = new TestProjectsInput(),
+                ThresholdBreakInput = new ThresholdBreakInput(),
+                ThresholdHighInput = new ThresholdHighInput(),
+                ThresholdLowInput = new ThresholdLowInput(),
+                WithBaselineInput = new WithBaselineInput()
+            };
+
+            PrepareCliOptions();
+
+            foreach (var (_, value) in _cliInputs)
             {
                 RegisterCliInput(app, value);
             }
+
+            return _strykerInputs;
         }
 
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
@@ -102,10 +143,10 @@ namespace Stryker.CLI
 
         private static bool ParseSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, StrykerInputs strykerInputs)
         {
-            switch (strykerInput)
-            {
-                // handle single or no value inputs
-            }
+            //switch (strykerInput)
+            //{
+            //    // handle single or no value inputs
+            //}
             return true;
         }
 
@@ -116,31 +157,30 @@ namespace Stryker.CLI
             return true;
         }
 
-        private static IInputDefinition GetStrykerInput(CommandOption cliInput) => _strykerInputs[cliInput.LongName].Input;
+        private static IInputDefinition GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
 
         private static void PrepareCliOptions()
         {
-            AddCliInput(new DevModeInput(), "dev-mode", null, optionType: CommandOptionType.NoValue);
-            AddCliInput(new ConcurrencyInput(), "concurrency", "c", argumentHint: "number");
-            AddCliInput(new ThresholdBreakInput(), "break", "b", argumentHint: "0-100");
+            AddCliInput(_strykerInputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue);
+            AddCliInput(_strykerInputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
+            AddCliInput(_strykerInputs.SolutionPathInput, "solution", "s", argumentHint: "file-path");
 
+            AddCliInput(_strykerInputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue);
+            AddCliInput(_strykerInputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
+            AddCliInput(_strykerInputs.ThresholdBreakInput, "break", "b", argumentHint: "0-100");
 
-            AddCliInput(new MutateInput(), "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
+            AddCliInput(_strykerInputs.ProjectUnderTestNameInput, "project", "p", argumentHint: "project-name.csproj");
+            AddCliInput(_strykerInputs.MutationLevelInput, "mutation-level", "l");
 
-            AddCliInput(new SolutionPathInput(), "solution", "s", argumentHint: "file-path");
-            AddCliInput(new ProjectUnderTestNameInput(), "project", "p", argumentHint: "project-name.csproj");
-            AddCliInput(new ProjectVersionInput(), "version", "v");
-            AddCliInput(new MutationLevelInput(), "mutation-level", "l");
+            AddCliInput(_strykerInputs.LogToFileInput, "log-to-file", "L", optionType: CommandOptionType.NoValue);
+            AddCliInput(_strykerInputs.VerbosityInput, "verbosity", "V");
 
-            AddCliInput(new LogToFileInput(), "log-to-file", "L", optionType: CommandOptionType.NoValue);
-            AddCliInput(new VerbosityInput(), "verbosity", "V");
-            AddCliInput(new ReportersInput(), "reporter", "r", optionType: CommandOptionType.MultipleValue);
+            AddCliInput(_strykerInputs.SinceInput, "since", "since", optionType: CommandOptionType.NoValue, argumentHint: "comittish");
+            AddCliInput(_strykerInputs.WithBaselineInput, "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
-            AddCliInput(new SinceInput(), "since", "since", optionType: CommandOptionType.NoValue, argumentHint: "comittish");
-            AddCliInput(new WithBaselineInput(), "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-
-            AddCliInput(new DashboardApiKeyInput(), "dashboard-api-key", null);
-            AddCliInput(new AzureFileStorageSasInput(), "azure-fileshare-sas", null);
+            AddCliInput(_strykerInputs.DashboardApiKeyInput, "dashboard-api-key", null);
+            AddCliInput(_strykerInputs.AzureFileStorageSasInput, "azure-fileshare-sas", null);
+            AddCliInput(_strykerInputs.ProjectVersionInput, "version", "v");
         }
 
         private static void RegisterCliInput(CommandLineApplication app, CliInput option)
@@ -167,7 +207,7 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            _strykerInputs[argumentName] = cliOption;
+            _cliInputs[argumentName] = cliOption;
 
             return cliOption;
         }
@@ -185,7 +225,7 @@ namespace Stryker.CLI
                 ArgumentHint = argumentHint
             };
 
-            _strykerInputs[argumentName] = cliOption;
+            _cliInputs[argumentName] = cliOption;
 
             return cliOption;
         }

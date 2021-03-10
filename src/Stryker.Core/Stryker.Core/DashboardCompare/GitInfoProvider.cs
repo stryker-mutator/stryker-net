@@ -11,7 +11,7 @@ namespace Stryker.Core.DashboardCompare
 
     public class GitInfoProvider : IGitInfoProvider
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly string _repositoryPath;
         private readonly ILogger<GitInfoProvider> _logger;
 
@@ -19,7 +19,7 @@ namespace Stryker.Core.DashboardCompare
 
         public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
 
-        public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
+        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
         {
             _repositoryPath = repositoryPath;
             _options = options;

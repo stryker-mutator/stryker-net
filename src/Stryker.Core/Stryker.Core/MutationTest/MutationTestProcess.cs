@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
@@ -16,7 +17,7 @@ namespace Stryker.Core.MutationTest
 {
     public interface IMutationTestProcessProvider
     {
-        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, IStrykerOptions options);
+        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, StrykerOptions options);
     }
 
     public class MutationTestProcessProvider : IMutationTestProcessProvider
@@ -24,7 +25,7 @@ namespace Stryker.Core.MutationTest
         public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            IStrykerOptions options)
+            StrykerOptions options)
         {
             return new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
         }
@@ -47,7 +48,7 @@ namespace Stryker.Core.MutationTest
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
@@ -57,7 +58,7 @@ namespace Stryker.Core.MutationTest
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
-            IStrykerOptions options = null)
+            StrykerOptions options = null)
         {
             Input = mutationTestInput;
             _projectContents = mutationTestInput.ProjectInfo.ProjectContents;
@@ -97,7 +98,7 @@ namespace Stryker.Core.MutationTest
         {
             var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners };
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
@@ -105,7 +106,7 @@ namespace Stryker.Core.MutationTest
 
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestListDescription failedTests, ITestListDescription ranTests, ITestListDescription timedOutTest)
                 {
-                    var continueTestRun = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationModes.DisableAbortTestOnKill);
                     foreach (var mutant in testedMutants)
                     {
                         mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
