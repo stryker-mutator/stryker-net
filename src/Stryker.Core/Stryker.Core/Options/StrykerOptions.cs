@@ -52,5 +52,41 @@ namespace Stryker.Core.Options
 
         public OptimizationModes OptimizationMode { get; init; }
 
+        public StrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
+        {
+            return new StrykerOptions()
+            {
+                AdditionalTimeoutMS = AdditionalTimeoutMS,
+                AzureFileStorageSas = AzureFileStorageSas,
+                AzureFileStorageUrl = AzureFileStorageUrl,
+                BaselineProvider = BaselineProvider,
+                BasePath = basePath,
+                Concurrency = Concurrency,
+                DashboardApiKey = DashboardApiKey,
+                DashboardUrl = DashboardUrl,
+                DevMode = DevMode,
+                DiffCompareEnabled = DiffCompareEnabled,
+                DiffIgnoreFilePatterns = DiffIgnoreFilePatterns,
+                ExcludedMutators = ExcludedMutators,
+                FallbackVersion = FallbackVersion,
+                IgnoredMethods = IgnoredMethods,
+                LanguageVersion = LanguageVersion,
+                LogOptions = LogOptions,
+                ModuleName = ModuleName,
+                Mutate = Mutate,
+                MutationLevel = MutationLevel,
+                OptimizationMode = OptimizationMode,
+                OutputPath = OutputPath,
+                ProjectName = ProjectName,
+                ProjectUnderTestName = projectUnderTest,
+                ProjectVersion = ProjectVersion,
+                Reporters = Reporters,
+                SinceBranch = SinceBranch,
+                SolutionPath = SolutionPath,
+                TestProjects = testProjects,
+                Thresholds = Thresholds,
+                WithBaseline = WithBaseline
+            };
+        }
     }
 }

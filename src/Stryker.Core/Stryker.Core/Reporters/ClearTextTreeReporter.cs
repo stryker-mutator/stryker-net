@@ -162,7 +162,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent.IsComponentExcluded(_options.DiffIgnoreFilePatterns))
             {
                 _consoleWriter.Write(Output.Bright.Black("(Excluded)"));
             }

@@ -11,6 +11,12 @@ namespace Stryker.Core.Options
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
+        public StrykerInputs(IFileSystem fileSystem)
+        {
+            _fileSystem = fileSystem ?? new FileSystem();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerInputs>();
+        }
+
         public DevModeInput DevModeInput { get; init; }
         public BasePathInput BasePathInput { get; init; }
         public OutputPathInput OutputPathInput { get; init; }
