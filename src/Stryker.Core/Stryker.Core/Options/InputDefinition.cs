@@ -14,7 +14,6 @@ namespace Stryker.Core.Options
         T SuppliedInput { get; set; }
     }
 
-
     /// <summary>
     /// Definition for options that have the same type for the input and the option 
     /// </summary>
@@ -44,7 +43,7 @@ namespace Stryker.Core.Options
         /// </summary>
         public TInput SuppliedInput { get; set; } = default;
 
-        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { Default.ToString() }, Default.GetType());
+        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { Default.ToString() }, typeof(TValue));
         protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs, Type enumType) => FormatHelpOptions(defaultInputs, Enum.GetNames(enumType).Select(e => e.ToString()));
 
         protected string FormatHelpOptions(string allowedInput) => FormatHelpOptions(new List<string> { Default.ToString() }, new List<string> { allowedInput });

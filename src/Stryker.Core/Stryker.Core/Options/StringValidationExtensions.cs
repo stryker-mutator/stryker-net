@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 namespace Stryker.Core.Options
 {
@@ -13,7 +13,7 @@ namespace Stryker.Core.Options
         public static bool IsNullOrEmptyInput(this string input)
         {
             var isNull = input is null;
-            var hasLetterOrDigit = input.Any(char.IsLetterOrDigit);
+            var hasLetterOrDigit = input?.Any(char.IsLetterOrDigit) ?? false;
             return isNull | !hasLetterOrDigit;
         }
     }

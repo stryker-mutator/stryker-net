@@ -23,7 +23,7 @@ namespace Stryker.Core.Options.Inputs
 
                 return reporters;
             }
-            return Enumerable.Empty<Reporter>();
+            return new List<Reporter> { Reporter.Progress, Reporter.Html };
         }
 
         private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, List<Reporter> reporters)

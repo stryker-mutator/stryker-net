@@ -34,7 +34,7 @@ namespace Stryker.CLI
 
         public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
         {
-            _strykerInputs = new StrykerInputs(logger)
+            _strykerInputs = new StrykerInputs(null, logger)
             {
                 AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
@@ -46,6 +46,8 @@ namespace Stryker.CLI
                 DashboardUrlInput = new DashboardUrlInput(),
                 DevModeInput = new DevModeInput(),
                 DiffIgnoreFilePatternsInput = new DiffIgnoreFilePatternsInput(),
+                DisableAbortTestOnFailInput = new DisableAbortTestOnFailInput(),
+                DisableSimultaneousTestingInput = new DisableSimultaneousTestingInput(),
                 ExcludedMutatorsInput = new ExcludedMutatorsInput(),
                 FallbackVersionInput = new FallbackVersionInput(),
                 IgnoredMethodsInput = new IgnoredMethodsInput(),
@@ -63,6 +65,7 @@ namespace Stryker.CLI
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
                 SinceBranchInput = new SinceBranchInput(),
+                SinceCommitInput = new SinceCommitInput(),
                 SolutionPathInput = new SolutionPathInput(),
                 TestProjectsInput = new TestProjectsInput(),
                 ThresholdBreakInput = new ThresholdBreakInput(),
@@ -110,8 +113,8 @@ namespace Stryker.CLI
 
                 _ = strykerInput switch
                 {
-                    IInputDefinition inputDefinition when inputDefinition.GetType().GetGenericArguments()[0] == typeof(string) => ParseSingleStringValue(cliInput, (IInputDefinition<string>)inputDefinition),
-                    IInputDefinition inputDefinition when inputDefinition.GetType().GetGenericArguments()[0] == typeof(int) => ParseSingleIntValue(cliInput, (IInputDefinition<int>)inputDefinition),
+                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(string) => ParseSingleStringValue(cliInput, (IInputDefinition<string>)inputDefinition),
+                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int) => ParseSingleIntValue(cliInput, (IInputDefinition<int>)inputDefinition),
                     _ => true
                 };
             }

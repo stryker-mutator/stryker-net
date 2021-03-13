@@ -13,7 +13,11 @@ namespace Stryker.Core.Options.Inputs
 
         public MutationLevel Validate()
         {
-            if (Enum.TryParse(SuppliedInput, true, out MutationLevel level))
+            if (SuppliedInput is null)
+            {
+                return MutationLevel.Standard;
+            }
+            else if (Enum.TryParse(SuppliedInput, true, out MutationLevel level))
             {
                 return level;
             }

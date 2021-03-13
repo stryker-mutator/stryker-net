@@ -1,4 +1,5 @@
 using System;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
@@ -12,19 +13,23 @@ namespace Stryker.Core.Options.Inputs
 
         public override string Default => string.Empty;
 
-        public string Validate()
+        public string Validate(BaselineProvider baselineProvider)
         {
-            if (SuppliedInput is null)
+            if (baselineProvider == BaselineProvider.AzureFileStorage)
             {
-                throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
-            }
+                if (SuppliedInput is null)
+                {
+                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
+                }
 
-            if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
-            {
-                throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
-            }
+                if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
+                {
+                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
+                }
 
-            return SuppliedInput;
+                return SuppliedInput;
+            }
+            return Default;
         }
     }
 }

@@ -11,10 +11,10 @@ namespace Stryker.Core.Options
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public StrykerInputs(IFileSystem fileSystem)
+        public StrykerInputs(IFileSystem fileSystem = null, ILogger logger = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerInputs>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StrykerInputs>();
         }
 
         public DevModeInput DevModeInput { get; init; }
@@ -54,11 +54,6 @@ namespace Stryker.Core.Options
         public DisableAbortTestOnFailInput DisableAbortTestOnFailInput { get; set; }
         public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
 
-        public StrykerInputs(ILogger logger = null)
-        {
-            _logger = logger;
-        }
-
         public StrykerOptions Validate()
         {
             var reporters = ReportersInput.Validate();
@@ -97,7 +92,7 @@ namespace Stryker.Core.Options
                 ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),
                 DiffIgnoreFilePatterns = DiffIgnoreFilePatternsInput.Validate(),
                 AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider),
-                AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(),
+                AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
                 WithBaseline = WithBaselineInput.Validate(),
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(SinceBranchInput.SuppliedInput, SinceCommitInput.SuppliedInput),
