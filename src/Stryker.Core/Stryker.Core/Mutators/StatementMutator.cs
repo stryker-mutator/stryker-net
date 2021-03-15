@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
-using System.Linq;
 
 namespace Stryker.Core.Mutators
 {
@@ -11,34 +10,90 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        private static readonly HashSet<SyntaxKind> ForbiddenSyntaxes = new HashSet<SyntaxKind>() {
-            SyntaxKind.EmptyStatement,
-            // removing variable declarations may result in a compilation error
-            SyntaxKind.LocalDeclarationStatement
-        };
+        private static readonly HashSet<SyntaxKind> AllowedSyntaxes = new HashSet<SyntaxKind>()
+        {
+            // SyntaxKind.EmptyStatement, // useless mutation
 
-        private static readonly HashSet<Type> ForbiddenBlockParentClasses = new HashSet<Type>() {
-            typeof(BaseMethodDeclarationSyntax),
-            typeof(AnonymousFunctionExpressionSyntax)
+            // SyntaxKind.Block, // unitary mutation should prevail over blocks
+            // SyntaxKind.CheckedStatement, // not unitary
+            // SyntaxKind.UncheckedStatement, // not unitary
+            // SyntaxKind.FixedStatement, // not unitary
+            // SyntaxKind.UnsafeStatement, // not unitary
+            // SyntaxKind.UsingStatement, // not unitary
+            // SyntaxKind.LockStatement, // not unitary
+
+            // SyntaxKind.LabeledStatement, // error: definition
+            // SyntaxKind.LocalDeclarationStatement, // error: definition
+            // SyntaxKind.LocalFunctionStatement, // error: definition
+
+            // SyntaxKind.IfStatement, // mutated in other mutators, not unitary
+            // SyntaxKind.WhileStatement, // mutated in other mutators, not unitary
+            // SyntaxKind.DoStatement, // mutated in other mutators, not unitary
+            // SyntaxKind.ForStatement, // mutated in other mutators, not unitary
+            // SyntaxKind.ForEachStatement, // not unitary
+            // SyntaxKind.ForEachVariableStatement, // not unitary
+            // SyntaxKind.TryStatement, // not unitary
+            // SyntaxKind.SwitchStatement, // not unitary
+
+            SyntaxKind.BreakStatement,
+            SyntaxKind.ReturnStatement,
+            SyntaxKind.ThrowStatement,
+            SyntaxKind.GotoStatement,
+            SyntaxKind.YieldReturnStatement,
+            SyntaxKind.YieldBreakStatement,
+
+            SyntaxKind.ExpressionStatement,
         };
 
         public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node)
         {
-            if (ForbiddenSyntaxes.Contains(node.Kind()))
+            if (!AllowedSyntaxes.Contains(node.Kind()))
             {
                 yield break;
             }
 
-            // non-void methods and lambdas blocks should not be removed
-            if (node.Kind() == SyntaxKind.Block && ForbiddenBlockParentClasses.Any(t => t.IsAssignableFrom(node.Parent.GetType())))
+            if (node is ReturnStatementSyntax returnNode)
+            {
+                // non-void return statements may cause a compile error
+                if (returnNode.Expression != null)
+                {
+                    yield break;
+                }
+
+                // return inside ifs with a declaration may cause a compile error
+                if (returnNode.FirstAncestorOrSelf<IfStatementSyntax>()?.Condition.DescendantNodes().OfType<DeclarationPatternSyntax>().Any() ?? false)
+                {
+                    yield break;
+                }
+            }
+
+            // flux-control inside switch-case may cause a compile error
+            if ((node is ReturnStatementSyntax ||
+                node is BreakStatementSyntax ||
+                node is ThrowStatementSyntax ||
+                node is GotoStatementSyntax) &&
+                node.Ancestors().OfType<SwitchSectionSyntax>().Any())
             {
                 yield break;
             }
 
-            // non-void return statements may result in an error
-            if (node is ReturnStatementSyntax returnNode && returnNode.Expression != null)
+            if (node is ExpressionStatementSyntax expressionNode)
             {
-                yield break;
+                // removing an assignment may cause a compile error
+                if (expressionNode
+                    .DescendantNodes(s => !(s is AnonymousFunctionExpressionSyntax))
+                    .OfType<AssignmentExpressionSyntax>().Any())
+                {
+                    yield break;
+                }
+
+                // removing an out variable may cause a compile error
+                if (expressionNode
+                    .DescendantTokens(s => !(s is AnonymousFunctionExpressionSyntax))
+                    .Any(t => t.Kind() == SyntaxKind.OutKeyword))
+                {
+                   yield break;
+                }
             }
 
             yield return new Mutation
