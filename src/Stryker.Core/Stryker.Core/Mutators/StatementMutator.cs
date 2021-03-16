@@ -34,11 +34,12 @@ namespace Stryker.Core.Mutators
             // SyntaxKind.ForEachVariableStatement, // not unitary
             // SyntaxKind.TryStatement, // not unitary
             // SyntaxKind.SwitchStatement, // not unitary
-
-            SyntaxKind.BreakStatement,
+            
             SyntaxKind.ReturnStatement,
-            SyntaxKind.ThrowStatement,
+            SyntaxKind.BreakStatement,
+            SyntaxKind.ContinueStatement,
             SyntaxKind.GotoStatement,
+            SyntaxKind.ThrowStatement,
             SyntaxKind.YieldReturnStatement,
             SyntaxKind.YieldBreakStatement,
 
@@ -70,8 +71,9 @@ namespace Stryker.Core.Mutators
             // flux-control inside switch-case may cause a compile error
             if ((node is ReturnStatementSyntax ||
                 node is BreakStatementSyntax ||
-                node is ThrowStatementSyntax ||
-                node is GotoStatementSyntax) &&
+                node is ContinueStatementSyntax ||
+                node is GotoStatementSyntax ||
+                node is ThrowStatementSyntax) &&
                 node.Ancestors().OfType<SwitchSectionSyntax>().Any())
             {
                 yield break;

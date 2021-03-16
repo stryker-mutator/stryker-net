@@ -20,8 +20,11 @@ namespace Stryker.Core.UnitTest.Mutators
 
         public static IEnumerable<object[]> MutableStatements => new List<object[]>
         {
+            new object[] { SyntaxFactory.ReturnStatement() },
             new object[] { SyntaxFactory.BreakStatement() },
             new object[] { SyntaxFactory.ContinueStatement() },
+            new object[] { SyntaxFactory.GotoStatement(SyntaxKind.GotoStatement) },
+            new object[] { SyntaxFactory.ThrowStatement() },
             new object[] { SyntaxFactory.YieldStatement(SyntaxKind.YieldBreakStatement) },
             new object[]
             {
@@ -30,12 +33,9 @@ namespace Stryker.Core.UnitTest.Mutators
                     SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1))
                 )
             },
-            new object[] { SyntaxFactory.ReturnStatement() },
-            new object[] {
-                SyntaxFactory.IfStatement(
-                    SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
-                    SyntaxFactory.EmptyStatement()
-                )
+            new object[]
+            {
+                SyntaxFactory.ExpressionStatement(SyntaxFactory.AwaitExpression(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)))
             },
         };
 
@@ -61,13 +61,27 @@ namespace Test
 {{
     class Program
     {{
-        delegate void TestDelegate();
-
         static int Method()
         {{
             int variable = 0;
-            TestDelegate lambda = () => {{ }};
-            TestDelegate anonymousMethod = delegate () {{ }};
+
+            Method(out var x);
+
+            if (x is Type v)
+            {{
+                return;
+            }}
+
+            switch (x)
+            {{
+                case 1:
+                    return;
+                    break;
+                    continue;
+                    goto X;
+                    throw x;
+            }}
+
             return 1;
         }}
     }}
