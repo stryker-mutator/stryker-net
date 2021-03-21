@@ -57,19 +57,19 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
                 {
-                    mutant.MustRunAgainstAllTests = true;
+                    mutant.DeclareCoveringTests(new List<TestDescription>{TestDescription.AllTests()});
                 }
             }
             foreach (var mutant in mutantsToScan)
             {
-                if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
+                if (mutant.CoveringTests.IsEmpty)
                 {
                     mutant.ResultStatus = MutantStatus.NoCoverage;
                     mutant.ResultStatusReason = "Mutant has no test coverage";
                 }
                 else if (!_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
                 {
-                    mutant.DeclareCoveringTest(TestDescription.AllTests());
+                    mutant.DeclareCoveringTests(new List<TestDescription>{TestDescription.AllTests()});
                 }
             }
         }

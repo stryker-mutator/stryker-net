@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
@@ -58,6 +58,7 @@ namespace Stryker.Core.MutationTest
                     }
                     else
                     {
+                        // we don't know which tests timed out, we rerun all tests in dedicated session
                         forceSingle = true;
                     }
                 }

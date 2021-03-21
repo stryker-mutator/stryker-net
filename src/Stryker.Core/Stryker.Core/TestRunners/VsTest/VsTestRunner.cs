@@ -21,7 +21,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
 using Framework = Stryker.Core.Initialisation.Framework;
-using Guid = System.Guid;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -37,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new List<string>();
-        private IDictionary<Guid, TestCase> _tests;
+        private IDictionary<Guid, VsTestDescription> _tests;
         private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
         private static int _count;
@@ -55,7 +54,7 @@ namespace Stryker.Core.TestRunners.VsTest
             IStrykerOptions options,
             OptimizationFlags flags,
             ProjectInfo projectInfo,
-            IDictionary<Guid, TestCase> tests,
+            IDictionary<Guid, VsTestDescription> tests,
             IFileSystem fileSystem = null,
             IVsTestHelper helper = null,
             ILogger logger = null,
@@ -82,6 +81,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 t.Framework == Framework.DotNet && t.Version.Major < 2);
         }
 
+        public TestRunResult InitialTest()
+        {
+            return TestMultipleMutants(null, null, null);
+        }
+
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> { mutant }, update);
@@ -90,7 +94,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, IList<Guid>>();
-            ICollection<TestCase> testCases = null;
+            ICollection<VsTestDescription> testCases = null;
 
             if (mutants != null)
             {
@@ -116,7 +120,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     testCases = needAll ? null : mutants.SelectMany(m => m.CoveringTests.GetGuids()).Select(t => _tests[t]).ToList();
 
                     _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                      $"against {(testCases == null ? "all tests." : string.Join(", ", testCases.Select(x => x.FullyQualifiedName)))}.");
+                                      $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
                     if (testCases?.Count == 0)
                     {
                         return new TestRunResult(TestListDescription.NoTest(), TestListDescription.NoTest(), TestListDescription.NoTest(), "Mutants are not covered by any test!");
@@ -136,19 +140,18 @@ namespace Stryker.Core.TestRunners.VsTest
 
             void HandleUpdate(IRunResults handler)
             {
+                var handlerTestResults = handler.TestResults;
                 if (mutants == null)
                 {
-                    // initial test run
                     return;
                 }
-                var handlerTestResults = handler.TestResults;
                 var tests = handlerTestResults.Count == DiscoverNumberOfTests()
                     ? TestListDescription.EveryTest()
-                    : new TestListDescription(handlerTestResults.Select(tr => (TestDescription)tr.TestCase));
+                    : new TestListDescription(handlerTestResults.Select(tr => (Mutants.TestDescription)tr.TestCase));
                 var failedTest = new TestListDescription(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
-                    .Select(tr => (TestDescription)tr.TestCase));
-                var timedOutTests = new TestListDescription(handler.TestsInTimeout?.Select(t => (TestDescription)t));
-                var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTests);
+                    .Select(tr => (Mutants.TestDescription)tr.TestCase));
+                var timedOutTest = new TestListDescription(handler.TestsInTimeout?.Select(t => (Mutants.TestDescription)t));
+                var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTest);
                 if (handlerTestResults.Count >= expectedTests || remainingMutants != false || _aborted)
                 {
                     return;
@@ -160,10 +163,19 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var testResults = RunTestSession(testCases, GenerateRunSettings(timeoutMs, mutants != null, false, mutantTestsMap), HandleUpdate);
+
+            if (mutants == null)
+            {
+                // initial test run, register test results
+                foreach (var result in testResults.TestResults)
+                {
+                    _tests[result.TestCase.Id].RegisterTestResult(result);
+                }
+            }
             var resultAsArray = testResults.TestResults.ToArray();
             var timeout = (!_aborted && resultAsArray.Length < expectedTests);
-            var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (TestDescription)tr.TestCase));
-            var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(tr => (TestDescription)tr.TestCase).ToImmutableArray();
+            var ranTests = resultAsArray.Length == DiscoverNumberOfTests() ? TestListDescription.EveryTest() : new TestListDescription(resultAsArray.Select(tr => (Mutants.TestDescription)tr.TestCase));
+            var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(tr => (Mutants.TestDescription)tr.TestCase).ToImmutableArray();
 
             if (ranTests.Count == 0 && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
@@ -174,11 +186,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                     .Select(tr => tr.ErrorMessage));
             var failedTestsDescription = new TestListDescription(failedTests);
-            var timedOutTests = new TestListDescription(testResults.TestsInTimeout?.Select(t => (TestDescription)t));
+            var timedOutTests = new TestListDescription(testResults.TestsInTimeout?.Select(t => (Mutants.TestDescription)t));
             return timeout ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message) : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message);
         }
 
-        private void SetListOfTests(IDictionary<Guid, TestCase> tests)
+        private void SetListOfTests(IDictionary<Guid, VsTestDescription> tests)
         {
             _tests = tests;
             DetectTestFramework(_tests?.Values);
@@ -189,7 +201,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return DiscoverTests().Count;
         }
 
-        public IDictionary<Guid, TestCase> DiscoverTests(string runSettings = null)
+        public IDictionary<Guid, VsTestDescription> DiscoverTests(string runSettings = null)
         {
             if (_tests != null)
             {
@@ -207,29 +219,34 @@ namespace Stryker.Core.TestRunners.VsTest
                     _logger.LogError($"{RunnerId}: Test discovery has been aborted!");
                 }
 
-                _tests = new Dictionary<Guid, TestCase>(handler.DiscoveredTestCases.Count);
+                _tests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
                 foreach (var testCase in handler.DiscoveredTestCases)
                 {
-                    _tests[testCase.Id] = testCase;
+                    if (!_tests.ContainsKey(testCase.Id))
+                    {
+                        _tests[testCase.Id] = new VsTestDescription(testCase);
+                    }
+
+                    _tests[testCase.Id].AddSubCase();
                 }
-                DetectTestFramework(handler.DiscoveredTestCases);
+                DetectTestFramework(_tests.Values);
             }
 
             return _tests;
         }
 
-        private void DetectTestFramework(ICollection<TestCase> tests)
+        private void DetectTestFramework(ICollection<VsTestDescription> tests)
         {
             if (tests == null)
             {
                 _testFramework = 0;
                 return;
             }
-            if (tests.Any(testCase => testCase.ExecutorUri.AbsoluteUri.Contains("nunit")))
+            if (tests.Any(testCase => testCase.Framework == TestFramework.nUnit))
             {
                 _testFramework |= TestFramework.nUnit;
             }
-            if (tests.Any(testCase => testCase.Properties.Any(p => p.Id == "XunitTestCase")))
+            if (tests.Any(testCase => testCase.Framework == TestFramework.xUnit))
             {
                 _testFramework |= TestFramework.xUnit;
             }
@@ -245,7 +262,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // can't capture coverage info
                 foreach (var mutant in mutants)
                 {
-                    mutant.DeclareCoveringTest(TestDescription.AllTests());
+                    mutant.DeclareCoveringTests(new List<TestDescription>{TestDescription.AllTests()});
                 }
             }
             else
@@ -261,6 +278,14 @@ namespace Stryker.Core.TestRunners.VsTest
             // since we analyze mutant coverage, mutants are assumed as not covered
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
+            var mutantCount = mutants.Max( m=> m.Id)+1;
+            var map = new List<ICollection<TestDescription>>(mutantCount);
+            var staticMutantLists = new HashSet<int>();
+            // initialize the map
+            for (var i = 0; i < mutantCount; i++)
+            {
+                map.Add(new List<TestDescription>());
+            }
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
@@ -268,20 +293,25 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     // the coverage collector did not report anything for this test ==> it has not been tracked by it, so we do not have coverage data
                     // ==> we need it to use this test against every mutation
-                    if (seenTestCases.Contains(testResult.TestCase.Id) && !dynamicTestCases.Contains(testResult.TestCase.Id))
+                    if (!seenTestCases.Contains(testResult.TestCase.Id) ||
+                        dynamicTestCases.Contains(testResult.TestCase.Id))
                     {
-                        dynamicTestCases.Add(testResult.TestCase.Id);
-                        foreach (var mutant in mutants)
-                        {
-                            mutant.DeclareCoveringTest(testResult.TestCase);
-                        }
-                        _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
+                        continue;
                     }
+
+                    dynamicTestCases.Add(testResult.TestCase.Id);
+                    // assume the test (may) cover every mutation
+                    foreach (var entry in map)
+                    {
+                        entry.Add(testResult.TestCase);
+                    }
+                    _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
                 }
                 else if (value != null)
                 {
                     // we have coverage data
                     seenTestCases.Add(testResult.TestCase.Id);
+
                     var propertyPairValue = (value as string);
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
@@ -291,60 +321,61 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         var parts = propertyPairValue.Split(';');
                         var coveredMutants = string.IsNullOrEmpty(parts[0])
-                            ? new HashSet<int>()
-                            : parts[0].Split(',').Select(int.Parse).ToHashSet();
+                            ? Enumerable.Empty<int>()
+                            : parts[0].Split(',').Select(int.Parse);
                         // we identify mutants that are part of static code, unless we performed pertest capture
                         var staticMutants = (string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
-                            ? new HashSet<int>()
-                            : parts[1].Split(',').Select(int.Parse).ToHashSet();
-                        // add the covering test to the mutants
-                        foreach (var mutant in mutants)
-                        {
-                            if (coveredMutants.Contains(mutant.Id))
-                            {
-                                mutant.DeclareCoveringTest(testResult.TestCase);
-                            }
+                            ? Enumerable.Empty<int>()
+                            : parts[1].Split(',').Select(int.Parse);
 
-                            if (!staticMutants.Contains(mutant.Id))
-                            {
-                                continue;
-                            }
-                            // the mutation is used in static initialization context
-                            mutant.IsStaticValue = true;
+                        foreach (var id in coveredMutants)
+                        {
+                            map[id].Add(testResult.TestCase);
+                        }
+
+                        foreach (var id in staticMutants)
+                        {
+                            staticMutantLists.Add(id);
                         }
                     }
-                    var mutantCoveredOutsideTests = testResult.GetProperties()
+                    var (testProperty, mutantOutsideTests) = testResult.GetProperties()
                         .FirstOrDefault(x => x.Key.Id == CoverageCollector.OutOfTestsPropertyName);
-                    if (mutantCoveredOutsideTests.Key != null)
+                    if (testProperty != null)
                     {
                         // we have some mutations that appeared outside any test, probably some run time test case generation, or some async logic.
-                        propertyPairValue = (mutantCoveredOutsideTests.Value as string);
+                        propertyPairValue = (mutantOutsideTests as string);
                         var coveredMutants = string.IsNullOrEmpty(propertyPairValue)
-                            ? new HashSet<int>()
-                            : propertyPairValue.Split(',').Select(int.Parse).ToHashSet();
+                            ? Enumerable.Empty<int>()
+                            : propertyPairValue.Split(',').Select(int.Parse);
                         _logger.LogWarning("Some mutations were executed outside any test (mutation ids: {0}).", propertyPairValue);
-                        foreach (var mutant in mutants)
+                        foreach (var id in coveredMutants)
                         {
-                            if (coveredMutants.Contains(mutant.Id))
-                            {
-                                mutant.IsStaticValue = true;
-                            }
+                            staticMutantLists.Add(id);
                         }
                     }
                 }
             }
+
+            // push coverage data to the mutants
+            foreach (var mutant in mutants)
+            {
+                mutant.DeclareCoveringTests(map[mutant.Id]);
+                if (staticMutantLists.Contains(mutant.Id))
+                {
+                    mutant.IsStaticValue = true;
+                }
+            }
+
         }
 
-        public void CoverageForOneTest(TestCase test, IEnumerable<Mutant> mutants)
+        public void CoverageForOneTest(VsTestDescription test, IEnumerable<Mutant> mutants)
         {
-            _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.FullyQualifiedName}.");
+            _logger.LogDebug($"{RunnerId}: Capturing coverage for {test.Case.FullyQualifiedName}.");
             var testResults = RunTestSession(new[] { test }, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test.Id), mutants);
-            // we cancel the test. Avoid using 'Abort' method, as we use the Aborted status to identify timeouts.
-            _vsTestConsole.CancelTestRun();
         }
 
-        private IRunResults RunTestSession(IEnumerable<TestCase> testCases,
+        private IRunResults RunTestSession(IEnumerable<VsTestDescription> testCases,
             string runSettings,
             Action<RunEventHandler> updateHandler = null,
             int retries = 0)
@@ -360,7 +391,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _aborted = false;
             if (testCases != null)
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(testCases.Select( t => _tests[t.Id]), runSettings, eventHandler, strykerVsTestHostLauncher);
+
+                _vsTestConsole.RunTestsWithCustomTestHost(testCases.Select( t => _tests[t.Id].Case), runSettings, eventHandler, strykerVsTestHostLauncher);
             }
             else
             {

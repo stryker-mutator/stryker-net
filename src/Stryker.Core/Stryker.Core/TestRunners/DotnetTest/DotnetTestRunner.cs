@@ -41,6 +41,8 @@ namespace Stryker.Core.TestRunners
 
         public IEnumerable<TestDescription> Tests => null;
 
+        public TestRunResult InitialTest() => RunAll(null ,null, null);
+
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             var envVars = mutant == null ? null : 
@@ -134,7 +136,7 @@ namespace Stryker.Core.TestRunners
             {
                 if (testedMutant.Contains(mutant.Id))
                 {
-                    mutant.DeclareCoveringTest(TestDescription.AllTests());
+                    mutant.DeclareCoveringTests(new List<TestDescription>{TestDescription.AllTests()});
                 }
                 else
                 {

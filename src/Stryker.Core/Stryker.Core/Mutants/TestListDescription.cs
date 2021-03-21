@@ -12,7 +12,6 @@ namespace Stryker.Core.Mutants
         bool IsEveryTest { get; }
         ITestListDescription Add(TestDescription test);
         public TestListDescription Merge(ITestListDescription other);
-        bool Contains(Guid id);
         bool Contains(TestDescription test);
         bool IsIncluded(ITestListDescription test);
         bool ContainsAny(IReadOnlyList<TestDescription> usedTests);
@@ -23,7 +22,7 @@ namespace Stryker.Core.Mutants
 
     public class TestListDescription : ITestListDescription
     {
-        public HashSet<TestDescription> Tests { get; private set; }
+        public HashSet<TestDescription> Tests { get; }
 
         private static readonly ITestListDescription EveryTests;
         private static readonly ITestListDescription NoTestAtAll;
@@ -42,11 +41,6 @@ namespace Stryker.Core.Mutants
         public TestListDescription(IEnumerable<TestDescription> testDescriptions)
         {
             Tests = testDescriptions == null ? new HashSet<TestDescription>() : testDescriptions.ToHashSet();
-        }
-
-        public TestListDescription(ITestListDescription other)
-        {
-            Tests = other.Tests.ToHashSet();
         }
 
         public bool IsEveryTest => Tests == null || (Tests.Count == 1 && Tests.First().IsAllTests);
@@ -68,11 +62,6 @@ namespace Stryker.Core.Mutants
         public TestListDescription Merge(ITestListDescription other)
         {
             return new TestListDescription(Tests.Union(Tests));
-        }
-
-        public bool Contains(Guid id)
-        {
-            return IsEveryTest || Tests.Any(t => t.Guid == id);
         }
 
         public bool Contains(TestDescription test)
@@ -107,7 +96,7 @@ namespace Stryker.Core.Mutants
 
         public bool ContainsAny(ITestListDescription other)
         {
-            return Tests?.Any(other.Contains) == true;
+            return (IsEveryTest && other.Count>0) || Tests?.Any(other.Contains) == true;
         }
 
         public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)

@@ -281,8 +281,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldCallExecutorForEveryMutant()
         {
-            var mutant = new Mutant { Id = 1, MustRunAgainstAllTests = true };
-            var otherMutant = new Mutant { Id = 2, MustRunAgainstAllTests = true };
+            var mutant = new Mutant { Id = 1, CoveringTests = TestListDescription.EveryTest() };
+            var otherMutant = new Mutant { Id = 2, CoveringTests = TestListDescription.EveryTest() };
             string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
             var folder = new CsharpFolderComposite();

@@ -1,4 +1,3 @@
-﻿using System.Collections;
 using System.Collections.Generic;
 using Moq;
 using Shouldly;
@@ -24,7 +23,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null, null)).Returns(new TestRunResult(false) );
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(false) );
             testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>(),false, false))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
@@ -36,7 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int?>(), null, null)).Callback(() => Thread.Sleep(2)).Returns(new TestRunResult(true));
+            testRunnerMock.Setup(x => x.InitialTest()).Callback(() => Thread.Sleep(2)).Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<List<Mutant>>(),false, false))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(2);

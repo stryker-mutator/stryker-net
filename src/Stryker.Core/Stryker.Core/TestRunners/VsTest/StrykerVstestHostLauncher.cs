@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Stryker.Core.Logging;
@@ -87,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 lock (_lck)
                 {
-                    Monitor.Wait(_lck, 5000);
+                    Monitor.Wait(_lck, 500);
                 }
             }
             return true;

@@ -97,20 +97,21 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldNotFilterMutantsWhereCoveringTestsContainsChangedTestFile()
         {
             // Arrange
-            string testProjectPath = "C:/MyTests";
+            var testProjectPath = "C:/MyTests";
             var options = new StrykerOptions();
 
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             // If a file inside the test project is changed, a test has been changed
-            string myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            var myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
+            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
-                ChangedSourceFiles = new Collection<string>()
+                ChangedSourceFiles = new Collection<string>
                 {
                     myTest
                 },
-                ChangedTestFiles = new Collection<string>() {
+                ChangedTestFiles = new Collection<string>
+                {
                     myTest
                 }
             });
@@ -118,10 +119,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // check the diff result for a file not inside the test project
             var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
-
             var mutant = new Mutant();
 
-            mutant.DeclareCoveringTest(new TestDescription(Guid.NewGuid(), "name", myTest));
+            mutant.DeclareCoveringTests(new List<TestDescription> {new TestDescription(Guid.NewGuid(), "name", myTest)});
 
             // Act
             var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
@@ -189,15 +189,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new DiffMutantFilter(diffProvider.Object);
 
-            var testFile1 =  new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
-            var testFile2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
+            var testFile1 =  new List<TestDescription>{ new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs")};
+            var testFile2 = new List<TestDescription>{new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs")};
 
             var expectedToStay1 = new Mutant();
-            expectedToStay1.DeclareCoveringTest(testFile1);
+            expectedToStay1.DeclareCoveringTests(testFile1);
             var expectedToStay2 = new Mutant();
-            expectedToStay2.DeclareCoveringTest(testFile1);
+            expectedToStay2.DeclareCoveringTests(testFile1);
             var newMutant = new Mutant();
-            newMutant.DeclareCoveringTest(testFile2);
+            newMutant.DeclareCoveringTests(testFile2);
             var mutants = new List<Mutant>
             {
                 expectedToStay1,

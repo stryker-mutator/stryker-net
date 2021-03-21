@@ -68,6 +68,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return;
             }
+            
             CaptureTestResults(testRunChangedArgs.NewTestResults);
             ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }

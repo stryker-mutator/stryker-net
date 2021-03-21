@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestExecutor_FailedTestShouldBeKilled()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            var mutant = new Mutant { Id = 1, MustRunAgainstAllTests = true };
+            var mutant = new Mutant { Id = 1, CoveringTests = TestListDescription.EveryTest() };
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).Returns(new TestRunResult(false));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestExecutor_TimeoutShouldBePassedToProcessTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            var mutant = new Mutant { Id = 1, MustRunAgainstAllTests = true };
+            var mutant = new Mutant { Id = 1, CoveringTests = TestListDescription.EveryTest() };
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).
                 Returns(TestRunResult.TimedOut(TestListDescription.NoTest(), TestListDescription.NoTest(), TestListDescription.EveryTest(), ""));
 
