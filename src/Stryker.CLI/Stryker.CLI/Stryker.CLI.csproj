@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>0.22.0</VersionPrefix>
+    <VersionPrefix>0.22.1</VersionPrefix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
