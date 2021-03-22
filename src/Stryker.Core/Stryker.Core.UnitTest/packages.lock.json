@@ -2070,8 +2070,8 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "0.22.0",
-          "Stryker.RegexMutators": "0.22.0",
+          "Stryker.DataCollector": "0.16.1",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "13.2.25"
         }
       },
