@@ -1,13 +1,13 @@
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using McMaster.Extensions.CommandLineUtils;
+using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.CLI
 {

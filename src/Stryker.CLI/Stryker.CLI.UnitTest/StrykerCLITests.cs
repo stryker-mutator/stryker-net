@@ -3,6 +3,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
 using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;

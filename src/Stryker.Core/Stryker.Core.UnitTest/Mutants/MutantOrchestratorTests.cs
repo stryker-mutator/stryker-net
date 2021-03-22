@@ -886,6 +886,43 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
             ShouldMutateSourceToExpected(source, expected);
         }
 
+
+        [Fact]
+        public void ShouldControlLocalDeclarationMutationAtTheBlockLevel()
+        {
+            var source = @"public static string FormatPrettyByte(Int64 value)
+		{
+			string[] SizeSuffixes = { ""bytes"", ""KB"", ""MB"", ""GB"", ""TB"", ""PB"", ""EB"", ""ZB"", ""YB"" };
+
+			int mag = (int)Math.Log(value, 1024);
+			decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+
+			return $""{adjustedSize:n1} {SizeSuffixes[mag]}"";
+		}
+";
+
+            var expected = @"public static string FormatPrettyByte(Int64 value)
+{if(StrykerNamespace.MutantControl.IsActive(0))		{
+			string[] SizeSuffixes = {};
+
+			int mag = (int)Math.Log(value, 1024);
+			decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+
+			return $""{adjustedSize:n1} {SizeSuffixes[mag]}"";
+		}
+else		{
+			string[] SizeSuffixes = { (StrykerNamespace.MutantControl.IsActive(1)?"""":""bytes""), (StrykerNamespace.MutantControl.IsActive(2)?"""":""KB""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""MB""), (StrykerNamespace.MutantControl.IsActive(4)?"""":""GB""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""TB""), (StrykerNamespace.MutantControl.IsActive(6)?"""":""PB""), (StrykerNamespace.MutantControl.IsActive(7)?"""":""EB""), (StrykerNamespace.MutantControl.IsActive(8)?"""":""ZB""), (StrykerNamespace.MutantControl.IsActive(9)?"""":""YB"" )};
+
+			int mag = (int)Math.Log(value, 1024);
+			decimal adjustedSize = (StrykerNamespace.MutantControl.IsActive(10)?(decimal)value * (1L << (mag * 10)):(decimal)value / ((StrykerNamespace.MutantControl.IsActive(11)?1L >> (mag * 10):1L << ((StrykerNamespace.MutantControl.IsActive(12)?mag / 10:mag * 10)))));
+
+			return (StrykerNamespace.MutantControl.IsActive(13)?$"""":$""{adjustedSize:n1} {SizeSuffixes[mag]}"");
+		}
+return default(string);}}";
+            ShouldMutateSourceToExpected(source, expected);
+
+        }
+
         [Fact]
         // test for issue #1386
         public void ShouldNotLeakMutationsAccrossDefinitions()

@@ -1,5 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
