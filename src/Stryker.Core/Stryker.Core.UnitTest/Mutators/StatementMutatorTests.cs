@@ -18,31 +18,27 @@ namespace Stryker.Core.UnitTest.Mutators
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        public static IEnumerable<object[]> MutableStatements => new List<object[]>
-        {
-            new object[] { SyntaxFactory.ReturnStatement() },
-            new object[] { SyntaxFactory.BreakStatement() },
-            new object[] { SyntaxFactory.ContinueStatement() },
-            new object[] { SyntaxFactory.GotoStatement(SyntaxKind.GotoStatement) },
-            new object[] { SyntaxFactory.ThrowStatement() },
-            new object[] { SyntaxFactory.YieldStatement(SyntaxKind.YieldBreakStatement) },
-            new object[]
-            {
-                SyntaxFactory.YieldStatement(
-                    SyntaxKind.YieldReturnStatement,
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1))
-                )
-            },
-            new object[]
-            {
-                SyntaxFactory.ExpressionStatement(SyntaxFactory.AwaitExpression(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)))
-            },
-        };
-
         [Theory]
-        [MemberData(nameof(MutableStatements))]
-        private void ShouldMutate(StatementSyntax statement)
+        [InlineData("return;")]
+        [InlineData("break;")]
+        [InlineData("continue;")]
+        [InlineData("goto test;")]
+        [InlineData("throw null;")]
+        [InlineData("yield break;")]
+        [InlineData("yield return 0;")]
+        [InlineData("await null;")]
+        private void ShouldMutate(string statementString)
         {
+            var source = $@"class Test {{
+                void Method() {{
+                    {statementString}
+                }}
+            }}";
+
+            var tree = CSharpSyntaxTree.ParseText(source).GetRoot();
+
+            var statement = tree.DescendantNodes().OfType<StatementSyntax>().Where(s => s is not BlockSyntax).First();
+
             var target = new StatementMutator();
 
             var result = target.ApplyMutations(statement).ToList();
