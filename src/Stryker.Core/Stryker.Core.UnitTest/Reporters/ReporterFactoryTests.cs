@@ -14,19 +14,20 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class ReporterFactoryTests
     {
+        private Mock<IGitInfoProvider> _branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+
         [Theory]
-        [InlineData("Json", typeof(JsonReporter))]
-        [InlineData("Html", typeof(HtmlReporter))]
-        [InlineData("Progress", typeof(ProgressReporter))]
-        [InlineData("Dots", typeof(ConsoleDotProgressReporter))]
-        [InlineData("ClearText", typeof(ClearTextReporter))]
-        public void ReporterFactory_CreatesRequestedReporters(string option, Type reporter)
+        [InlineData(Reporter.Json, typeof(JsonReporter))]
+        [InlineData(Reporter.Html, typeof(HtmlReporter))]
+        [InlineData(Reporter.Progress, typeof(ProgressReporter))]
+        [InlineData(Reporter.Dots, typeof(ConsoleDotProgressReporter))]
+        [InlineData(Reporter.ClearText, typeof(ClearTextReporter))]
+        public void ReporterFactory_CreatesRequestedReporters(Reporter option, Type reporter)
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-
             var target = new ReporterFactory();
+            var options = new StrykerOptions { Reporters = new[] { option } };
 
-            var result = target.Create(new StrykerOptions(reporters: new[] { option }), branchProviderMock.Object);
+            var result = target.Create(options, _branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
@@ -34,11 +35,11 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesAllReporters()
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
             var target = new ReporterFactory();
+            var options = new StrykerOptions { Reporters = new[] { Reporter.All } };
 
-            var result = (BroadcastReporter)target.Create(new StrykerOptions(reporters: new[] { "All" }), branchProviderMock.Object);
+            var result = (BroadcastReporter)target.Create(options, _branchProviderMock.Object);
 
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is JsonReporter);
@@ -55,11 +56,10 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
         {
-            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-
             var target = new ReporterFactory();
+            var options = new StrykerOptions { Reporters = new[] { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport } };
 
-            var result = target.Create(new StrykerOptions(reporters: new[] { "ConsoleProgressBar", "ConsoleProgressDots", "ConsoleReport" }), branchProvider: branchProviderMock.Object);
+            var result = target.Create(options, _branchProviderMock.Object);
             var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
             broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);

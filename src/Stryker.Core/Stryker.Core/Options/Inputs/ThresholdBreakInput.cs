@@ -2,7 +2,6 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    // This does not work because of the helptext
     public class ThresholdBreakInput : InputDefinition<int?>
     {
         public override int? Default => 0;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Shouldly;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -14,7 +14,8 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public HtmlReporterTests()
         {
-            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
+            var options = new LogOptions { LogLevel = Serilog.Events.LogEventLevel.Fatal, LogToFile = false };
+            ApplicationLogging.ConfigureLogger(options, null);
             ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
         }
 
@@ -22,7 +23,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReporter_OnAllMutantsTestedShouldReplacePlaceholdersInHtmlFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -52,7 +53,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReporter_OnAllMutantsTestedShouldContainJsonReport()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());

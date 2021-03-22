@@ -7,9 +7,9 @@ namespace Stryker.Core.Options.Inputs
         public override string Default => "master";
         protected override string Description => "The target branch to compare with the current codebase when the since feature is enabled.";
 
-        public string Validate(bool diffEnabled)
+        public string Validate(bool sinceEnabled)
         {
-            if (SuppliedInput is { } && diffEnabled)
+            if (SuppliedInput is { } && sinceEnabled)
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {

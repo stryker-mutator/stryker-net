@@ -166,7 +166,8 @@ All mutants have been tested, and your mutation score has been calculated
             };
 
             var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), textWriter);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
+            var target = new ClearTextReporter(options, textWriter);
 
             var folder = new CsharpFolderComposite()
             {
@@ -207,7 +208,8 @@ All mutants have been tested, and your mutation score has been calculated
             };
 
             var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), textWriter);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
+            var target = new ClearTextReporter(options, textWriter);
 
             var folder = new CsharpFolderComposite()
             {

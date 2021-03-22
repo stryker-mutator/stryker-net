@@ -15,7 +15,8 @@ namespace Stryker.Core.UnitTest.Mutants
 
         public MutantOrchestratorTests()
         {
-            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
+            var options = new StrykerOptions { MutationLevel = MutationLevel.Complete };
+            _target = new CsharpMutantOrchestrator(options: options);
         }
 
         [Fact]
