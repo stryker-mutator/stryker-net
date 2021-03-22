@@ -77,7 +77,7 @@ namespace Stryker.Core.MutationTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
             _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
-            _orchestrator = csharporchestrator ?? fsharporchestrator ?? genOrchestrator(_options);
+            _orchestrator = csharporchestrator ?? fsharporchestrator ?? ChooseOrchestrator(_options);
 
             SetupMutationTestProcess(mutantFilter);
         }
