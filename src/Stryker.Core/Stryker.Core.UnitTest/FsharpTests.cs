@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {
-    public class FsharpTests
+    public class FsharpFileDetectionTests
     {
         private readonly string _currentDirectory;
         private readonly string _filesystemRoot;
@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Fsharp
         private readonly string _projectUnderTestPath;
         private readonly string _defaultTestProjectFileContents;
 
-        public FsharpTests()
+        public FsharpFileDetectionTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
