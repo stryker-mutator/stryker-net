@@ -1,3 +1,13 @@
+## [0.22.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.0...stryker@0.22.1) (2021-03-22)
+
+
+### Bug Fixes
+
+* **solution run:** Fix NPE on solution runs ([#1479](https://github.com/stryker-mutator/stryker-net/issues/1479)) ([5cdac27](https://github.com/stryker-mutator/stryker-net/commit/5cdac275167ebc6b5016535db22af2cae0c4377b))
+* local declaration mutations are promoted from statement to block level mutations ([#1427](https://github.com/stryker-mutator/stryker-net/issues/1427)) ([c440de0](https://github.com/stryker-mutator/stryker-net/commit/c440de05aaf5c37270e60aa009c49a5742cde33e)), closes [#1368](https://github.com/stryker-mutator/stryker-net/issues/1368) [#1423](https://github.com/stryker-mutator/stryker-net/issues/1423)
+
+
+
 # [0.22.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.1...stryker@0.22.0) (2021-03-05)
 
 
