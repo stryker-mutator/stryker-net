@@ -1,5 +1,3 @@
-using Stryker.Core.Exceptions;
-
 namespace Stryker.Core.Options.Inputs
 {
     public class FallbackVersionInput : InputDefinition<string>
@@ -12,11 +10,11 @@ Example: If the current branch is based on the master branch, set 'master' as th
 
         public override string Default => string.Empty;
 
-        public string Validate(string sinceBranch, string sinceCommit)
+        public string Validate(string sinceTarget)
         {
             if (SuppliedInput.IsNullOrEmptyInput())
             {
-                return sinceBranch.IsNullOrEmptyInput() ? sinceBranch : sinceCommit;
+                return sinceTarget;
             }
 
             return SuppliedInput;

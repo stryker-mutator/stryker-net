@@ -64,7 +64,7 @@ namespace Stryker.CLI
                 ProjectVersionInput = new ProjectVersionInput(),
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
-                SinceBranchInput = new SinceBranchInput(),
+                SinceTargetInput = new SinceTargetInput(),
                 SinceCommitInput = new SinceCommitInput(),
                 SolutionPathInput = new SolutionPathInput(),
                 TestProjectsInput = new TestProjectsInput(),
@@ -146,10 +146,18 @@ namespace Stryker.CLI
 
         private static bool ParseSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, StrykerInputs strykerInputs)
         {
-            //switch (strykerInput)
-            //{
-            //    // handle single or no value inputs
-            //}
+            switch (strykerInput)
+            {
+                // handle single or no value inputs
+                case SinceInput sinceInput:
+                    sinceInput.SuppliedInput = true;
+                    _strykerInputs.SinceTargetInput.SuppliedInput = cliInput.Value();
+                    break;
+                case WithBaselineInput withBaselineInput:
+                    withBaselineInput.SuppliedInput = true;
+                    _strykerInputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
+                    break;
+            }
             return true;
         }
 
@@ -178,7 +186,7 @@ namespace Stryker.CLI
             AddCliInput(_strykerInputs.LogToFileInput, "log-to-file", "L", optionType: CommandOptionType.NoValue);
             AddCliInput(_strykerInputs.VerbosityInput, "verbosity", "V");
 
-            AddCliInput(_strykerInputs.SinceInput, "since", "since", optionType: CommandOptionType.NoValue, argumentHint: "comittish");
+            AddCliInput(_strykerInputs.SinceInput, "since", "since", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
             AddCliInput(_strykerInputs.WithBaselineInput, "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
             AddCliInput(_strykerInputs.DashboardApiKeyInput, "dashboard-api-key", null);

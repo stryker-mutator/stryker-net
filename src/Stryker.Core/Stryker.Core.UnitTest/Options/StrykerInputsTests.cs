@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Options
                 ProjectVersionInput = new ProjectVersionInput(),
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
-                SinceBranchInput = new SinceBranchInput(),
+                SinceTargetInput = new SinceTargetInput(),
                 SinceCommitInput = new SinceCommitInput(),
                 SolutionPathInput = new SolutionPathInput(),
                 TestProjectsInput = new TestProjectsInput(),
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Options
                 WithBaselineInput = new WithBaselineInput()
             };
 
-            var options = strykerInputs.Validate();
+            var options = strykerInputs.ValidateAll();
             options.Thresholds.High.ShouldBe(60);
             options.Thresholds.Low.ShouldBe(60);
             options.Thresholds.Break.ShouldBe(50);
@@ -89,7 +89,7 @@ namespace Stryker.Core.UnitTest.Options
                 ProjectVersionInput = new ProjectVersionInput(),
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
-                SinceBranchInput = new SinceBranchInput(),
+                SinceTargetInput = new SinceTargetInput(),
                 SinceCommitInput = new SinceCommitInput(),
                 SolutionPathInput = new SolutionPathInput(),
                 TestProjectsInput = new TestProjectsInput(),
@@ -127,7 +127,7 @@ namespace Stryker.Core.UnitTest.Options
             strykerInputs.ProjectVersionInput.SuppliedInput =
             strykerInputs.ReportersInput.SuppliedInput =
             strykerInputs.SinceInput.SuppliedInput =
-            strykerInputs.SinceBranchInput.SuppliedInput =
+            strykerInputs.SinceTargetInput.SuppliedInput =
             strykerInputs.SinceCommitInput.SuppliedInput =
             strykerInputs.SolutionPathInput.SuppliedInput =
             strykerInputs.TestProjectsInput.SuppliedInput =
@@ -136,7 +136,7 @@ namespace Stryker.Core.UnitTest.Options
             strykerInputs.ThresholdLowInput.SuppliedInput =
             strykerInputs.WithBaselineInput.SuppliedInput =
 
-            var options = strykerInputs.Validate();
+            var options = strykerInputs.ValidateAll();
             options.Thresholds.High.ShouldBe(60);
             options.Thresholds.Low.ShouldBe(60);
             options.Thresholds.Break.ShouldBe(50);

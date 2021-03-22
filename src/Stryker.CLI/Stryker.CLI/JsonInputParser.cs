@@ -26,7 +26,7 @@ namespace Stryker.CLI
             inputs.ProjectVersionInput.SuppliedInput = jsonConfig.ProjectInfo?.Version;
             inputs.ReportersInput.SuppliedInput = jsonConfig.Reporters;
             inputs.SinceInput.SuppliedInput = jsonConfig.Since;
-            inputs.SinceBranchInput.SuppliedInput = jsonConfig.SinceBranch;
+            inputs.SinceTargetInput.SuppliedInput = jsonConfig.SinceBranch;
             inputs.SinceCommitInput.SuppliedInput = jsonConfig.SinceCommit;
             inputs.SolutionPathInput.SuppliedInput = jsonConfig.Solution;
             inputs.ThresholdBreakInput.SuppliedInput = jsonConfig.Thresholds?.Break;

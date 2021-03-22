@@ -7,11 +7,11 @@ namespace Stryker.Core.Options
 {
     public class StrykerInputs
     {
-        private readonly StrykerOptions _strykerOptionsCache;
+        private StrykerOptions _strykerOptionsCache;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public StrykerInputs(IFileSystem fileSystem = null, ILogger logger = null)
+        public StrykerInputs(ILogger logger = null, IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StrykerInputs>();
@@ -41,8 +41,7 @@ namespace Stryker.Core.Options
         public DashboardApiKeyInput DashboardApiKeyInput { get; init; }
         public ProjectNameInput ProjectNameInput { get; init; }
         public SinceInput SinceInput { get; init; }
-        public SinceBranchInput SinceBranchInput { get; init; }
-        public SinceCommitInput SinceCommitInput { get; init; }
+        public SinceTargetInput SinceTargetInput { get; init; }
         public DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
         public FallbackVersionInput FallbackVersionInput { get; init; }
         public ProjectVersionInput ProjectVersionInput { get; init; }
@@ -54,12 +53,13 @@ namespace Stryker.Core.Options
         public DisableAbortTestOnFailInput DisableAbortTestOnFailInput { get; set; }
         public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
 
-        public StrykerOptions Validate()
+        public StrykerOptions ValidateAll()
         {
             var reporters = ReportersInput.Validate();
             var baselineProvider = BaselineProviderInput.Validate(reporters);
-            var sinceEnabled = SinceInput.Validate();
-            return _strykerOptionsCache ?? new StrykerOptions()
+            var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
+
+            _strykerOptionsCache ??= new StrykerOptions()
             {
                 Concurrency = ConcurrencyInput.Validate(_logger),
                 MutationLevel = MutationLevelInput.Validate(),
@@ -95,12 +95,13 @@ namespace Stryker.Core.Options
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
                 WithBaseline = WithBaselineInput.Validate(),
                 BaselineProvider = baselineProvider,
-                FallbackVersion = FallbackVersionInput.Validate(SinceBranchInput.SuppliedInput, SinceCommitInput.SuppliedInput),
+                FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput),
                 DiffCompareEnabled = sinceEnabled,
-                SinceBranch = SinceBranchInput.Validate(sinceEnabled),
+                SinceBranch = SinceTargetInput.Validate(sinceEnabled),
                 BasePath = BasePathInput.Validate(_fileSystem),
                 OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
             };
+            return _strykerOptionsCache;
         }
     }
 }

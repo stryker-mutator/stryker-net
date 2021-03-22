@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new SinceBranchInput { SuppliedInput = "" }.Validate(true);
+                new SinceTargetInput { SuppliedInput = "" }.Validate(true);
             });
             ex.Message.ShouldBe("GitDiffTarget may not be empty, please provide a valid git branch name");
         }
@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldNotValidateGitSourceWhenSinceIsTurnedOff()
         {
-            var validatedSinceBranch = new SinceBranchInput { SuppliedInput = "" }.Validate(false);
+            var validatedSinceBranch = new SinceTargetInput { SuppliedInput = "" }.Validate(false);
             validatedSinceBranch.ShouldBe(null);
         }
     }

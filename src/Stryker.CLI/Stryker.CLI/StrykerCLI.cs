@@ -54,7 +54,7 @@ namespace Stryker.CLI
 
                 if (CliInputParser.GenerateConfigFile(args, app))
                 {
-                    var options = strykerInputs.Validate();
+                    var options = strykerInputs.ValidateAll();
                     var configFilePath = Path.Combine(options.BasePath, CliInputParser.ConfigFilePath(args, app));
 
                     var fileBasedInputs = new FileBasedInput
@@ -89,7 +89,7 @@ namespace Stryker.CLI
             logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             if (result.ScoreIsLowerThanThresholdBreak())
             {
-                var thresholdBreak = (double)inputs.Validate().Thresholds.Break / 100;
+                var thresholdBreak = (double)inputs.ValidateAll().Thresholds.Break / 100;
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
                 Console.WriteLine(Output.Red($@"

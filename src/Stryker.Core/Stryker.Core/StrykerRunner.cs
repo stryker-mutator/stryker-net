@@ -49,7 +49,7 @@ namespace Stryker.Core
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var options = input.Validate();
+            var options = input.ValidateAll();
 
             var reporters = _reporterFactory.Create(options);
 
