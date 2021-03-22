@@ -82,7 +82,7 @@ namespace Stryker.Core.MutationTest
             SetupMutationTestProcess(mutantFilter);
         }
 
-        private BaseMutantOrchestrator genOrchestrator(IStrykerOptions options)
+        private BaseMutantOrchestrator ChooseOrchestrator(IStrykerOptions options)
         {
             if (_language == Language.Fsharp)
             {
