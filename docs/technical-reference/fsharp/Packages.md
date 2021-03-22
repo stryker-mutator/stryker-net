@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/fsharp/Packages.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/fsharp/Packages.md
 ---
 
 During the development of Stryker.net for F# packages have been added to Stryker.net.

@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/fsharp/Classes.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/fsharp/Classes.md
 ---
 
 The Following Classes need extra context to explain the current workings.

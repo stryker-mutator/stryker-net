@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/fsharp/CurrentState.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/fsharp/CurrentState.md
 ---
 
 The following have been added to secure Fsharp support in the future:
