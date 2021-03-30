@@ -176,25 +176,24 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
 
-            var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
-            mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
+            var testsCount = mutantsToGroup.Sum(m => m.CoveringTests.Count);
+            mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
-                var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
-                var testSet = mutantsToGroup[i].CoveringTests;
+                var usedTests = mutantsToGroup[i].CoveringTests.GetGuids().ToHashSet();
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
                     var currentMutant = mutantsToGroup[j];
-                    if (currentMutant.CoveringTests.Count + usedTests.Count > testsCount ||
-                        currentMutant.CoveringTests.Tests.Overlaps(usedTests))
+                    var nextSet = currentMutant.CoveringTests.GetGuids().ToHashSet();
+                    if (nextSet.Count + usedTests.Count > testsCount ||
+                        nextSet.Overlaps(usedTests))
                     {
                         continue;
                     }
 
-                    testSet.Merge(currentMutant.CoveringTests);
                     nextBlock.Add(currentMutant);
-                    usedTests.AddRange(currentMutant.CoveringTests.GetList());
+                    usedTests.UnionWith(nextSet);
                     mutantsToGroup.RemoveAt(j--);
                 }
 

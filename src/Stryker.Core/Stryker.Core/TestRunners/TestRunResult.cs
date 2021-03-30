@@ -6,8 +6,8 @@ namespace Stryker.Core.TestRunners
     {
         public TestRunResult(bool success, string message = null)
         {
-            FailingTests = !success ? TestListDescription.EveryTest() : TestListDescription.NoTest();
-            RanTests = TestListDescription.EveryTest();
+            FailingTests = !success ? TestsGuidList.EveryTest() : TestsGuidList.NoTest();
+            RanTests = TestsGuidList.EveryTest();
             ResultMessage = message;
         }
 

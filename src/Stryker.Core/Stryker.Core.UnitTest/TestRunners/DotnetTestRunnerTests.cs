@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var result = target.RunAll(null, null, null);
 
-            Assert.Equal(1, result.FailingTests.Count);
+            Assert.True(result.FailingTests.IsEveryTest);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var result = target.RunAll(null, null, null);
 
-            Assert.Equal(1, result.FailingTests.Count);
+            Assert.True(result.FailingTests.IsEveryTest);
             processMock.Verify(m => m.Start(path, "dotnet", It.Is<string>(s => s.Contains("vstest")), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()));
         }
 

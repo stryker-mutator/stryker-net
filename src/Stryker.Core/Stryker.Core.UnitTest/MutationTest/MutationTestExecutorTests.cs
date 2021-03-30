@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestExecutor_FailedTestShouldBeKilled()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            var mutant = new Mutant { Id = 1, CoveringTests = TestListDescription.EveryTest() };
+            var mutant = new Mutant { Id = 1, CoveringTests = TestsGuidList.EveryTest() };
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).Returns(new TestRunResult(false));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
@@ -44,9 +44,9 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void MutationTestExecutor_TimeoutShouldBePassedToProcessTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            var mutant = new Mutant { Id = 1, CoveringTests = TestListDescription.EveryTest() };
+            var mutant = new Mutant { Id = 1, CoveringTests = TestsGuidList.EveryTest() };
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), mutant, null)).
-                Returns(TestRunResult.TimedOut(TestListDescription.NoTest(), TestListDescription.NoTest(), TestListDescription.EveryTest(), ""));
+                Returns(TestRunResult.TimedOut(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.EveryTest(), ""));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

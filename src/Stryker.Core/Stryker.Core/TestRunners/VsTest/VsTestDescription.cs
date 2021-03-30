@@ -9,26 +9,24 @@ namespace Stryker.Core.TestRunners.VsTest
 
     public class VsTestDescription
     {
-        private readonly TestCase _case;
         private int _subCasesCount = 0;
         private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
 
-        static public implicit operator TestDescription(VsTestDescription test)
+        public VsTestDescription(TestCase testCase)
         {
-            return test._case;
+            Case = testCase;
+            Description = new TestDescription(testCase.Id, testCase.DisplayName, testCase.CodeFilePath);
         }
-
-        public VsTestDescription(TestCase @case) => _case = @case;
 
         public TestFramework Framework
         {
             get
             {
-                if (_case.ExecutorUri.AbsoluteUri.Contains("nunit"))
+                if (Case.ExecutorUri.AbsoluteUri.Contains("nunit"))
                 {
                     return TestFramework.nUnit;
                 }
-                if (_case.Properties.Any(p => p.Id == "XunitTestCase"))
+                if (Case.Properties.Any(p => p.Id == "XunitTestCase"))
                 {
                     return TestFramework.xUnit;
                 }
@@ -37,17 +35,13 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TimeSpan InitialRunTime
-        {
-            get
-            {
-                return _initialResults.Aggregate(new TimeSpan(), (current, result) => current + result.Duration);
-            }
-        }
+        public TestDescription Description { get; }
 
-        public Guid Id => _case.Id;
+        public TimeSpan InitialRunTime => _initialResults.Aggregate(new TimeSpan(), (current, result) => current + result.Duration);
 
-        public TestCase Case => _case;
+        public Guid Id => Case.Id;
+
+        public TestCase Case { get; }
 
         public void AddSubCase()
         {
@@ -59,7 +53,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _initialResults.Add(result);
         }
 
-        protected bool Equals(VsTestDescription other) => Equals(_case.Id, other._case.Id);
+        protected bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);
 
         public override bool Equals(object obj)
         {
@@ -68,8 +62,8 @@ namespace Stryker.Core.TestRunners.VsTest
             return obj.GetType() == GetType() && Equals((VsTestDescription) obj);
         }
 
-        public override int GetHashCode() => (_case != null ? _case.Id.GetHashCode() : 0);
+        public override int GetHashCode() => (Case != null ? Case.Id.GetHashCode() : 0);
 
-        public override string ToString() => _case.FullyQualifiedName;
+        public override string ToString() => Case.FullyQualifiedName;
     }
 }

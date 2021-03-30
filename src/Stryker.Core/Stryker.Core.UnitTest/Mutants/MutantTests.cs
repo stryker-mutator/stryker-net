@@ -57,7 +57,6 @@ namespace Stryker.Core.UnitTest.Mutants
 
             failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
             timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);
-            coveringTestsMock.Setup(x => x.GetList()).Returns(new List<TestDescription>() { new TestDescription(Guid.NewGuid(), "test", null)});
             coveringTestsMock.Setup(x => x.IsEveryTest).Returns(coversEveryTest);
             coveringTestsMock.Setup(x => x.ContainsAny(It.IsAny<IReadOnlyList<TestDescription>>())).Returns(coveringTestsContainTimedoutTests);
 

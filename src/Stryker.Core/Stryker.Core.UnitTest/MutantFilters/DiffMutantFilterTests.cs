@@ -1,23 +1,15 @@
-using DotNet.Globbing;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.UnitTest.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -58,7 +50,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldBeEmpty();
@@ -87,7 +79,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant>() { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -104,6 +96,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // If a file inside the test project is changed, a test has been changed
             var myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
+            var tests = new TestSet();
+            var test = new TestDescription(Guid.NewGuid(), "name", myTest);
+            tests.RegisterTests(new[] {test});
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
                 ChangedSourceFiles = new Collection<string>
@@ -119,9 +114,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // check the diff result for a file not inside the test project
             var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
-            var mutant = new Mutant();
+            var mutant = new Mutant
+            {
+                CoveringTests = new TestsGuidList(tests, new[] {test})
+            };
 
-            mutant.DeclareCoveringTests(new List<TestDescription> {new TestDescription(Guid.NewGuid(), "name", myTest)});
 
             // Act
             var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
@@ -188,16 +185,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
             });
 
             var target = new DiffMutantFilter(diffProvider.Object);
+            var tests = new TestSet();
+            var test1 = new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
+            var test2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
+            tests.RegisterTests(new[] {test1, test2});
 
-            var testFile1 =  new List<TestDescription>{ new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs")};
-            var testFile2 = new List<TestDescription>{new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs")};
+            var testFile1 = new TestsGuidList(tests, new [] {test1});
+            var testFile2 = new TestsGuidList(tests, new [] {test2});
 
-            var expectedToStay1 = new Mutant();
-            expectedToStay1.DeclareCoveringTests(testFile1);
-            var expectedToStay2 = new Mutant();
-            expectedToStay2.DeclareCoveringTests(testFile1);
-            var newMutant = new Mutant();
-            newMutant.DeclareCoveringTests(testFile2);
+            var expectedToStay1 = new Mutant {CoveringTests = testFile1};
+            var expectedToStay2 = new Mutant {CoveringTests = testFile1};
+            var newMutant = new Mutant {CoveringTests = testFile2};
             var mutants = new List<Mutant>
             {
                 expectedToStay1,
@@ -230,7 +228,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var mutants = new List<Mutant>
             {
-                new Mutant()
+                new Mutant{CoveringTests = TestsGuidList.NoTest()}
             };
 
             // Act

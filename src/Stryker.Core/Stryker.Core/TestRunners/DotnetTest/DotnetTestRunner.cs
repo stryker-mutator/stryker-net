@@ -20,7 +20,7 @@ namespace Stryker.Core.TestRunners
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
         private readonly IEnumerable<string> _testBinariesPaths;
-        private CommunicationServer _server;
+        private readonly CommunicationServer _server;
         private CommunicationChannel _client;
         private readonly object _lck = new object();
         private string _lastMessage;
@@ -39,8 +39,6 @@ namespace Stryker.Core.TestRunners
             _server.Listen();
         }
 
-        public IEnumerable<TestDescription> Tests => null;
-
         public TestRunResult InitialTest() => RunAll(null ,null, null);
 
         public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -58,12 +56,12 @@ namespace Stryker.Core.TestRunners
             }
             catch (OperationCanceledException)
             {
-                var emptyList = TestListDescription.NoTest();
+                var emptyList = TestsGuidList.NoTest();
                 if (mutant != null)
                 {
                     mutant.ResultStatus = MutantStatus.Timeout;
                 }
-                return TestRunResult.TimedOut(emptyList,  emptyList, TestListDescription.EveryTest(), "time out");
+                return TestRunResult.TimedOut(emptyList,  emptyList, TestsGuidList.EveryTest(), "time out");
             }
         }
 
@@ -136,7 +134,7 @@ namespace Stryker.Core.TestRunners
             {
                 if (testedMutant.Contains(mutant.Id))
                 {
-                    mutant.DeclareCoveringTests(new List<TestDescription>{TestDescription.AllTests()});
+                    mutant.CoveringTests = TestsGuidList.EveryTest();
                 }
                 else
                 {

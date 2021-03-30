@@ -126,8 +126,7 @@ namespace Stryker.Core.MutantFilters
                 var coveringTests = mutant.CoveringTests.Tests;
 
                 if (coveringTests != null
-                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile))
-                        || coveringTests.Any(coveringTest => coveringTest.IsAllTests)))
+                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile))))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
                     mutant.ResultStatusReason = "One or more covering tests changed";

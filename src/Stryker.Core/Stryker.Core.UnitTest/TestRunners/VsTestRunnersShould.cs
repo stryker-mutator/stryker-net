@@ -41,6 +41,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly MockFileSystem _fileSystem;
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
+        private readonly TestSet _testSet;
         private readonly Mutant _otherMutant;
         private readonly CsharpFolderComposite _projectContents;
         private readonly Uri _executorUri;
@@ -72,8 +73,8 @@ namespace Stryker.Core.UnitTest.TestRunners
 </Project>";
             _testAssemblyPath = Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll");
             _executorUri = new Uri("exec://nunit");
-            var firstTest = new TestCase("T0", _executorUri, _testAssemblyPath);
-            var secondTest = new TestCase("T1", _executorUri, _testAssemblyPath);
+            var firstTest = new TestCase("T0", _executorUri, _testAssemblyPath) {Id = new Guid()};
+            var secondTest = new TestCase("T1", _executorUri, _testAssemblyPath) {Id = new Guid()};
 
             var content = new CsharpFolderComposite();
             _coverageProperty = TestProperty.Register(CoverageCollector.PropertyName, "Coverage", typeof(string), typeof(TestResult));
@@ -111,6 +112,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             });
 
             _testCases = new List<TestCase> { firstTest, secondTest };
+            _testSet = new TestSet();
+            _testSet.RegisterTests(_testCases.Select( t => new TestDescription(t.Id, t.FullyQualifiedName, t.CodeFilePath)));
         }
 
         // mock a VsTest run. Provides test result one by one at 10 ms intervals
@@ -339,6 +342,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 optimizationFlags,
                 _targetProject,
                 null,
+                _testSet,
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockVsTest.Object,
@@ -439,7 +443,8 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
-                _mutant.CoveringTests.GetList()[0].Name.ShouldBe("T0");
+                var id = _mutant.CoveringTests.GetGuids().First();
+                _testCases.Find(t => t.Id == id)?.DisplayName.ShouldBe("T0");
             }
         }
 
@@ -455,10 +460,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "0;" }, endProcess);
 
                 var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                var testIds = _mutant.CoveringTests.GetGuids().ToList();
                 // one mutant is covered by tests 0 and 1
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
-                _mutant.CoveringTests.GetList()[0].Name.ShouldBe("T0");
-                _mutant.CoveringTests.GetList()[1].Name.ShouldBe("T1");
+
+                var id = _mutant.CoveringTests.GetGuids().First();
+                _testCases.Find(t => t.Id == testIds[0])?.DisplayName.ShouldBe("T0");
+                _testCases.Find(t => t.Id == testIds[1])?.DisplayName.ShouldBe("T1");
 
                 // verify Abort has been called
                 result.FailingTests.IsEmpty.ShouldBeTrue();

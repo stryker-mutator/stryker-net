@@ -18,7 +18,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly OptimizationFlags _flags;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
-        private readonly IDictionary<Guid, VsTestDescription> _tests;
+        private readonly IDictionary<Guid, VsTestDescription> _vsTests;
+        private readonly TestSet _tests = new TestSet();
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
@@ -27,21 +28,20 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
             _flags = flags;
-            using (var runner = new VsTestRunner(options, _flags, projectInfo, null, helper: _helper))
+            using (var runner = new VsTestRunner(options, _flags, projectInfo, null, _tests, helper: _helper))
             {
-                _tests = runner.DiscoverTests();
+                _vsTests = runner.DiscoverTests();
+                _tests.RegisterTests(_vsTests.Values.Select(t => t.Description));
                 _availableRunners.Add(runner);
             }
 
             Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _tests, helper: _helper));
+                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _vsTests, _tests, helper: _helper));
             });
         }
 
-        public IEnumerable<TestDescription> Tests => _tests.Values.Select(x => (TestDescription) x);
-
-        public TimeSpan TotalTestTime => _tests.Values.Aggregate(new TimeSpan(), (current, testDec) => current += testDec.InitialRunTime);
+        public TimeSpan TotalTestTime => _vsTests.Values.Aggregate(new TimeSpan(), (current, testDec) => current += testDec.InitialRunTime);
 
         public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
@@ -102,7 +102,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
-            Parallel.ForEach(_tests.Values, options, testCase =>
+            Parallel.ForEach(_vsTests.Values, options, testCase =>
             {
                 var runner = TakeRunner();
                 try
@@ -150,7 +150,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int DiscoverNumberOfTests()
         {
-            return _tests.Count();
+            return _vsTests.Count();
         }
     }
 }

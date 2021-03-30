@@ -18,8 +18,6 @@ namespace Stryker.Core.TestRunners
         TestRunResult InitialTest();
 
         TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe);
-
-        IEnumerable<TestDescription> Tests { get; }
     }
 
     public interface IMultiTestRunner : ITestRunner
