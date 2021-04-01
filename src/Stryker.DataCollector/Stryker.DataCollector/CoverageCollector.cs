@@ -38,7 +38,7 @@ namespace Stryker.DataCollector
 
         public string MutantList => _singleMutant?.ToString() ?? string.Join(",", _mutantTestedBy.Values.Distinct());
 
-        public static string GetVsTestSettings(bool needCoverage, Dictionary<int, IList<Guid>> mutantTestsMap, string helpNameSpace)
+        public static string GetVsTestSettings(bool needCoverage, IEnumerable<(int, IEnumerable<Guid>)> mutantTestsMap, string helpNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -57,7 +57,7 @@ namespace Stryker.DataCollector
             {
                 foreach ( var entry in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Key,  entry.Value == null ? "" : string.Join(",", entry.Value));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Item1,  entry.Item2 == null ? "" : string.Join(",", entry.Item2));
                 }
             }
 

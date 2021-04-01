@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var collector = new CoverageCollector();
 
-            var mutantMap = new Dictionary<int, IList<Guid>>() {[0] = new List<Guid>()};
+            var mutantMap = new List<(int, IEnumerable<Guid>)>() {(0, new List<Guid>())};
 
             var start = new TestSessionStartArgs
             {

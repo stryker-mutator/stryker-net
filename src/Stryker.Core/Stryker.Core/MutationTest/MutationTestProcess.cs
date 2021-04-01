@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -185,7 +186,7 @@ namespace Stryker.Core.MutationTest
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
                     var currentMutant = mutantsToGroup[j];
-                    var nextSet = currentMutant.CoveringTests.GetGuids().ToHashSet();
+                    var nextSet = new HashSet<Guid>(currentMutant.CoveringTests.GetGuids());
                     if (nextSet.Count + usedTests.Count > testsCount ||
                         nextSet.Overlaps(usedTests))
                     {

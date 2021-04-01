@@ -102,7 +102,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
-            Parallel.ForEach(_vsTests.Values, options, testCase =>
+            Parallel.ForEach(_vsTests.Keys, options, testCase =>
             {
                 var runner = TakeRunner();
                 try

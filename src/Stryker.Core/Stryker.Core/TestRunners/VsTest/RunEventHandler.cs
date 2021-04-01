@@ -28,9 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public event EventHandler ResultsUpdated;
 
         public List<TestResult> TestResults { get; }
-
         public IReadOnlyList<TestCase> TestsInTimeout { get; private set; }
-
         public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
 

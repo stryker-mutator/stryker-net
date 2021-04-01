@@ -11,12 +11,11 @@ namespace Stryker.Core.Mutants
         bool IsEmpty { get; }
         bool IsEveryTest { get; }
         public TestsGuidList Merge(ITestListDescription other);
-        bool Contains(TestDescription test);
         bool Contains(Guid testId);
         bool IsIncluded(ITestListDescription test);
         bool ContainsAny(IReadOnlyList<TestDescription> usedTests);
         bool ContainsAny(ITestListDescription other);
-        public IEnumerable<Guid> GetGuids();
+        public ISet<Guid> GetGuids();
     }
 
     public class TestsGuidList : ITestListDescription
@@ -31,7 +30,7 @@ namespace Stryker.Core.Mutants
         static TestsGuidList()
         {
             EveryTests = new TestsGuidList();
-            NoTestAtAll = new TestsGuidList(null, Array.Empty<TestDescription>());
+            NoTestAtAll = new TestsGuidList(null, Array.Empty<Guid>());
         }
 
         private TestsGuidList()
@@ -63,8 +62,6 @@ namespace Stryker.Core.Mutants
             return new TestsGuidList(_testsBase, _testsIdsGuid.Union(other.GetGuids()));
         }
 
-        public bool Contains(TestDescription test) => Contains(test.Id);
-
         public bool Contains(Guid testId)
         {
             return IsEveryTest || _testsIdsGuid.Contains(testId);
@@ -85,7 +82,7 @@ namespace Stryker.Core.Mutants
             return NoTestAtAll;
         }
 
-        public IEnumerable<Guid> GetGuids()
+        public ISet<Guid> GetGuids()
         {
             return _testsIdsGuid;
         }
