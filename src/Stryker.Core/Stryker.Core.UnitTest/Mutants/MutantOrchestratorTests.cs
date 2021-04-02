@@ -542,13 +542,15 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
 }";
             string expected = @"public void SomeMethod() {
     var x = 0;
-    if (StrykerNamespace.MutantControl.IsActive(0))
-    {
-        x--;
-    }
-    else
-    {
-        x++;
+    if(StrykerNamespace.MutantControl.IsActive(0)){;}else{
+        if (StrykerNamespace.MutantControl.IsActive(1))
+        {
+            x--;
+        }
+        else
+        {
+            x++;
+        }
     }
 }";
 
@@ -635,11 +637,17 @@ static Mutator_Flag_MutatedStatics()
 }";
             string expected = @"private async Task GoodLuck()
 {
-    await SendRequest(url, HttpMethod.Get, (request) =>
-    {
-        request.Headers.Add((StrykerNamespace.MutantControl.IsActive(0)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(1)?"""":""application / json; version = 1""));
-        request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(2)?"""":""Date""), date);
-}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(3)?true:false));
+    if(StrykerNamespace.MutantControl.IsActive(0)){;}else{
+        await SendRequest(url, HttpMethod.Get, (request) =>
+        {
+            if(StrykerNamespace.MutantControl.IsActive(1)){;}else{
+                request.Headers.Add((StrykerNamespace.MutantControl.IsActive(2)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""application / json; version = 1""));
+            }
+            if(StrykerNamespace.MutantControl.IsActive(4)){;}else{
+                request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(5)?"""":""Date""), date);
+            }
+        }, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(6)?true:false));
+    }
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -678,7 +686,7 @@ namespace TestApp
             _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var mutants = _target.GetLatestMutantBatch().ToList();
-            mutants.Count.ShouldBe(3);
+            mutants.Count.ShouldBe(4);
             foreach (var mutant in mutants)
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
@@ -739,7 +747,9 @@ const string text = ""a""+""b""+""c"";}";
         {
         foreach (var o in enumerable)
         {
-            yield return value;
+            if(StrykerNamespace.MutantControl.IsActive(0)){;}else{
+                yield return value;
+            }
         }
     }";
             ShouldMutateSourceToExpected(source, expected);

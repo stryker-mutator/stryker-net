@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -27,6 +27,8 @@ namespace Stryker.Core.Mutators
         Linq,
         [Description("String literals")]
         String,
+        [Description("Statements")]
+        Statement,
         [Description("Bitwise operators")]
         Bitwise,
         [Description("Array initializer")]
