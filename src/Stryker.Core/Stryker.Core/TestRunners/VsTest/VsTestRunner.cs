@@ -468,11 +468,10 @@ $@"<RunSettings>
                 {
                     throw new GeneralStrykerException($"The test project binaries could not be found at {path}, exiting...");
                 }
+
                 testBinariesLocations.Add(Path.GetDirectoryName(path));
                 _sources.Add(FilePathUtils.NormalizePathSeparators(path));
             }
-
-            testBinariesLocations.Add(_vsTestHelper.GetDefaultVsTestExtensionsPath(_vsTestHelper.GetCurrentPlatformVsTestToolPath()));
 
             try
             {
