@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new OptimizationModeInput { SuppliedInput = "gibberish" }.Validate();
+                new CoverageAnalysisInput { SuppliedInput = "gibberish" }.Validate();
             });
             ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
         }
@@ -21,17 +21,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldSetOptimisationMode()
         {
-            var flags = new OptimizationModeInput { SuppliedInput = "perTestInIsolation" }.Validate();
+            var flags = new CoverageAnalysisInput { SuppliedInput = "perTestInIsolation" }.Validate();
             flags.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
             flags.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
 
-            flags = new OptimizationModeInput { SuppliedInput = null }.Validate();
+            flags = new CoverageAnalysisInput { SuppliedInput = null }.Validate();
             flags.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
 
-            flags = new OptimizationModeInput { SuppliedInput = "all" }.Validate();
+            flags = new CoverageAnalysisInput { SuppliedInput = "all" }.Validate();
             flags.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
 
-            flags = new OptimizationModeInput { SuppliedInput = "off" }.Validate();
+            flags = new CoverageAnalysisInput { SuppliedInput = "off" }.Validate();
             flags.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
         }
     }

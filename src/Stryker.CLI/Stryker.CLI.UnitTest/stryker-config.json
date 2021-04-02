@@ -1,8 +1,12 @@
 {
   "stryker-config": {
-    "dashboard-project": "github.com/stryker-mutator/stryker-net",
-    "dashboard-version": "master",
-    "dashboard-fallback-version": "master",
-    "dashboard-module": "cli"
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "version": "master",
+      "module": "cli"
+    },
+    "baseline": {
+      "fallback-version": "master"
+    }
   }
 }

@@ -57,7 +57,7 @@ namespace Stryker.CLI
                 ModuleNameInput = new ModuleNameInput(),
                 MutateInput = new MutateInput(),
                 MutationLevelInput = new MutationLevelInput(),
-                OptimizationModeInput = new OptimizationModeInput(),
+                CoverageAnalysisInput = new CoverageAnalysisInput(),
                 OutputPathInput = new OutputPathInput(),
                 ProjectNameInput = new ProjectNameInput(),
                 ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
@@ -85,13 +85,13 @@ namespace Stryker.CLI
 
         public static string ConfigFilePath(string[] args, CommandLineApplication app)
         {
-            RegisterCliInput(app, _configFileInput);
-            return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName)?.Value() ?? "stryker-config.json";
+            var commands = app.Parse(args);
+            var option = commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
+            return option?.Value() ?? "stryker-config.json";
         }
 
         public static bool GenerateConfigFile(string[] args, CommandLineApplication app)
         {
-            RegisterCliInput(app, _generateConfigFileInput);
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateConfigFileInput.ArgumentName)?.HasValue() ?? false;
         }
 
@@ -202,7 +202,7 @@ namespace Stryker.CLI
                 _ => $" <{option.ArgumentHint}>"
             };
 
-            app.Option($"{option.ArgumentShortName}|{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
+            app.Option($"-{option.ArgumentShortName}|--{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
         }
 
         private static CliInput AddCliOnlyInput(string argumentName, string argumentShortName, string helpText,
@@ -210,8 +210,8 @@ namespace Stryker.CLI
         {
             var cliOption = new CliInput
             {
-                ArgumentName = $"--{argumentName}",
-                ArgumentShortName = $"-{argumentShortName}",
+                ArgumentName = argumentName,
+                ArgumentShortName = argumentShortName,
                 Description = helpText,
                 OptionType = optionType,
                 ArgumentHint = argumentHint
@@ -228,8 +228,8 @@ namespace Stryker.CLI
             var cliOption = new CliInput
             {
                 Input = input,
-                ArgumentName = $"--{argumentName}",
-                ArgumentShortName = $"-{argumentShortName}",
+                ArgumentName = argumentName,
+                ArgumentShortName = argumentShortName,
                 Description = input.HelpText,
                 OptionType = optionType,
                 ArgumentHint = argumentHint

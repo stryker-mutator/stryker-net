@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest
                 }
             };
             var basePathInput = new BasePathInput();
-            var optimizationModeInput = new OptimizationModeInput();
+            var optimizationModeInput = new CoverageAnalysisInput();
             basePathInput.SuppliedInput = "C:/test";
             optimizationModeInput.SuppliedInput = "off";
             var inputs = new StrykerInputs(fileSystem: fileSystemMock)

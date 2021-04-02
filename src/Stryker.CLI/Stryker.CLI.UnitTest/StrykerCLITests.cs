@@ -1,16 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
-using Stryker.Core.Baseline;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -22,7 +21,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("--help")]
         [InlineData("-h")]
         [InlineData("-?")]
-        public void StrykerCLI_WithHelpArgument_ShouldNotStartStryker(string argName)
+        public void ShouldNotStartStryker_WithHelpArgument(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var target = new StrykerCLI(mock.Object);
@@ -33,7 +32,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnException_ShouldThrow()
+        public void ShouldThrow_OnException()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
@@ -45,7 +44,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--reporters")]
         [InlineData("-r")]
-        public void StrykerCLI_WithReporterArgument_ShouldPassReporterArgumentsToStryker(string argName)
+        public void ShouldPassReporterArgumentsToStryker_WithReporterArgument(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -65,7 +64,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--excluded-mutations")]
         [InlineData("-em")]
-        public void StrykerCLI_WithExcludedMutationsArgument_ShouldPassExcludedMutationsArgumentsToStryker(string argName)
+        public void ShouldPassExcludedMutationsArgumentsToStryker_WithExcludedMutationsArgument(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions();
@@ -93,7 +92,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData(Mutator.String, "string", "string literals")]
         [InlineData(Mutator.Unary, "unary", "unary operators")]
         [InlineData(Mutator.Update, "update", "update operators")]
-        public void StrykerCLI_ExcludedMutationsNamesShouldMapToMutatorTypes(Mutator expectedType, params string[] argValues)
+        public void ShouldMapToMutatorTypes_ExcludedMutationsNames(Mutator expectedType, params string[] argValues)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions();
@@ -116,7 +115,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--project-file")]
         [InlineData("-p")]
-        public void StrykerCLI_WithProjectArgument_ShouldPassProjectArgumentsToStryker(string argName)
+        public void ShouldPassProjectArgumentsToStryker_WithProjectArgument(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -133,7 +132,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--test-projects")]
         [InlineData("-tp")]
-        public void StrykerCLI_WithTestProjectsArgument_ShouldPassTestProjectArgumentsToStryker(string argName)
+        public void ShouldPassTestProjectArgumentsToStryker_WithTestProjectsArgument(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -150,7 +149,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--solution-path")]
         [InlineData("-s")]
-        public void StrykerCLI_WithSolutionArgument_ShouldPassSolutionArgumentPlusBasePathToStryker(string argName)
+        public void ShouldPassSolutionArgumentPlusBasePathToStryker_WithSolutionArgument(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -167,7 +166,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--log-level")]
         [InlineData("-l")]
-        public void StrykerCLI_WithLogConsoleArgument_ShouldPassLogConsoleArgumentsToStryker(string argName)
+        public void ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
         {
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
@@ -189,7 +188,7 @@ namespace Stryker.CLI.UnitTest
 
         [Theory]
         [InlineData("--log-file")]
-        public void StrykerCLI_WithLogLevelFileArgument_ShouldPassLogFileArgumentsToStryker(string argName)
+        public void ShouldPassLogFileArgumentsToStryker_WithLogLevelFileArgument_(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -205,7 +204,7 @@ namespace Stryker.CLI.UnitTest
 
         [Theory]
         [InlineData("--dev-mode")]
-        public void StrykerCLI_WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
+        public void WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
         {
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
@@ -228,7 +227,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--timeout-ms")]
         [InlineData("-t")]
-        public void StrykerCLI_WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
+        public void WithTimeoutArgument_ShouldPassTimeoutToStryker(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -246,7 +245,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--max-concurrent-test-runners")]
         [InlineData("-c")]
-        public void StrykerCLI_WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
+        public void WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -264,7 +263,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--threshold-break")]
         [InlineData("-tb")]
-        public void StrykerCLI_WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
+        public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -281,7 +280,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--threshold-low")]
         [InlineData("-tl")]
-        public void StrykerCLI_WithCustomThresholdLowParameter_ShouldPassThresholdLowToStryker(string argName)
+        public void WithCustomThresholdLowParameter_ShouldPassThresholdLowToStryker(string argName)
         {
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
@@ -299,7 +298,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--threshold-high")]
         [InlineData("-th")]
-        public void StrykerCLI_WithCustomThresholdHighParameter_ShouldPassThresholdHighToStryker(string argName)
+        public void WithCustomThresholdHighParameter_ShouldPassThresholdHighToStryker(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions();
@@ -315,7 +314,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
+        public void OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
@@ -338,7 +337,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
+        public void OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
@@ -360,7 +359,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
+        public void OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
@@ -382,7 +381,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
+        public void OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
@@ -405,7 +404,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_WithNoFilesToExcludeSet_ShouldPassDefaultValueToStryker()
+        public void ShouldPassDefaultValueToStryker_WithNoFilesToExcludeSet()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions();
@@ -423,7 +422,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--files-to-exclude")]
         [InlineData("-fte")]
-        public void StrykerCLI_WithFilesToExcludeSet_ShouldPassFilesToExcludeToStryker(string argName)
+        public void ShouldPassFilesToExcludeToStryker_WithFilesToExcludeSet(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions actualOptions = null;
@@ -452,7 +451,7 @@ namespace Stryker.CLI.UnitTest
         [Theory]
         [InlineData("--mutate")]
         [InlineData("-m")]
-        public void StrykerCLI_WithFilePatternSet_ShouldPassFilePatternSetToStryker(string argName)
+        public void ShouldPassFilePatternSetToStryker_WithFilePatternSet(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             StrykerOptions actualOptions = null;

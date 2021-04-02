@@ -13,12 +13,16 @@ namespace Stryker.CLI
 
             // As json values are first in line we can just overwrite all supplied inputs
             inputs.ConcurrencyInput.SuppliedInput = jsonConfig.Concurrency;
+            inputs.WithBaselineInput.SuppliedInput = jsonConfig.WithBaseline;
             inputs.BaselineProviderInput.SuppliedInput = jsonConfig.BaseLine?.Provider;
             inputs.WithBaselineInput.SuppliedInput = jsonConfig.BaseLine?.WithBaseline;
             inputs.DiffIgnoreFilePatternsInput.SuppliedInput = jsonConfig.BaseLine?.IgnoreChangedFiles;
             inputs.FallbackVersionInput.SuppliedInput = jsonConfig.BaseLine?.FallbackVersion;
             inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.BaseLine?.AzureFileShareUrl;
-            inputs.LogToFileInput.SuppliedInput = jsonConfig.LogToFile;
+            inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
+            inputs.DisableAbortTestOnFailInput.SuppliedInput = jsonConfig.DisableTestAbortion;
+            inputs.DisableSimultaneousTestingInput.SuppliedInput = jsonConfig.DisableTestingMixMutations;
+            inputs.AdditionalTimeoutMsInput.SuppliedInput = jsonConfig.AdditionalTimeout;
             inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
             inputs.MutationLevelInput.SuppliedInput = jsonConfig.MutationLevel;
             inputs.ProjectNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Name;
@@ -28,10 +32,15 @@ namespace Stryker.CLI
             inputs.SinceInput.SuppliedInput = jsonConfig.Since;
             inputs.SinceTargetInput.SuppliedInput = jsonConfig.SinceTarget;
             inputs.SolutionPathInput.SuppliedInput = jsonConfig.Solution;
+            inputs.ProjectUnderTestNameInput.SuppliedInput = jsonConfig.Project;
             inputs.ThresholdBreakInput.SuppliedInput = jsonConfig.Thresholds?.Break;
             inputs.ThresholdHighInput.SuppliedInput = jsonConfig.Thresholds?.High;
             inputs.ThresholdLowInput.SuppliedInput = jsonConfig.Thresholds?.Low;
             inputs.VerbosityInput.SuppliedInput = jsonConfig.Verbosity;
+            inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
+            inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
+            inputs.ExcludedMutatorsInput.SuppliedInput = jsonConfig.IgnoreMutators;
+
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)

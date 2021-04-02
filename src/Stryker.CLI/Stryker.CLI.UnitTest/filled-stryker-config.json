@@ -3,19 +3,48 @@
     "reporters": [
       "ConsoleReport"
     ],
-    "log-level": "trace",
-    "dev-mode": true,
+    "verbosity": "trace",
     "coverage-analysis": "perTest",
-    "abort-test-on-fail": true,
-    "timeout-ms": 9999,
-    "log-file": true,
-    "project-file": "ExampleProject.csproj",
-    "max-concurrent-test-runners": 1,
-    "threshold-high": 40,
-    "threshold-low": 30,
-    "threshold-break": 20,
+    "disable-test-abortion": true,
+    "additional-timeout": 9999,
+    "project": "ExampleProject.csproj",
+    "concurrency": 1,
+    "solution": "",
+    "mutation-level": "",
+    "since": true,
+    "since-target": "main",
+    "language-version": "",
+    "dashboard-url": "",
+    "with-baseline": true,
+    "test-projects": [
+      ""
+    ],
+    "ignore-mutators": [
+      ""
+    ],
+    "ignore-methods": [
+      ""
+    ],
+    "thresholds": {
+      "high": 40,
+      "low": 30,
+      "break": 20
+    },
     "mutate": [
       "!**/Test.cs{1..100}{200..300}"
-    ] 
+    ],
+    "project-info": {
+      "name": "github.com/stryker-mutator/stryker-net",
+      "version": "master",
+      "module": "cli"
+    },
+    "baseline": {
+      "fallback-version": "master",
+      "ignore-changed-files": [
+        ""
+      ],
+      "azure-fileshare-url": "",
+      "provider": ""
+    }
   }
 }

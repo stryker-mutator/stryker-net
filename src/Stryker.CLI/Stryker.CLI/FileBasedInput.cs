@@ -16,15 +16,34 @@ namespace Stryker.CLI
 
         public int? Concurrency { get; set; }
 
+        [JsonProperty(PropertyName = "mutation-level")]
         public string MutationLevel { get; set; }
 
+        [JsonProperty(PropertyName = "language-version")]
+        public string LanguageVersion { get; set; }
+
+        [JsonProperty(PropertyName = "additional-timeout")]
+        public int AdditionalTimeout { get; set; }
+
         public string[] Mutate { get; set; }
+
         public string Solution { get; set; }
+
+        public string Project { get; set; }
+
+        [JsonProperty(PropertyName = "coverage-analysis")]
+        public string CoverageAnalysis { get; set; }
+
+        [JsonProperty(PropertyName = "disable-test-abortion")]
+        public bool DisableTestAbortion { get; set; }
+
+        [JsonProperty(PropertyName = "disable-testing-mix-mutations")]
+        public bool DisableTestingMixMutations { get; set; }
 
         public Thresholds Thresholds { get; set; }
 
-        public bool? LogToFile { get; set; }
         public string Verbosity { get; set; }
+
         public string[] Reporters { get; set; }
 
         // since
@@ -32,6 +51,21 @@ namespace Stryker.CLI
 
         [JsonProperty(PropertyName = "since-target")]
         public string SinceTarget { get; set; }
+        
+        [JsonProperty(PropertyName = "with-baseline")]
+        public bool WithBaseline { get; set; }
+
+        [JsonProperty(PropertyName = "dashboard-url")]
+        public string DashboardUrl { get; set; }
+
+        [JsonProperty(PropertyName = "test-projects")]
+        public string[] TestProjects { get; set; }
+        
+        [JsonProperty(PropertyName = "ignore-mutators")]
+        public string[] IgnoreMutators { get; set; }
+        
+        [JsonProperty(PropertyName = "ignore-methods")]
+        public string[] IgnoreMethods { get; set; }
 
         public BaseLine BaseLine { get; set; }
     }

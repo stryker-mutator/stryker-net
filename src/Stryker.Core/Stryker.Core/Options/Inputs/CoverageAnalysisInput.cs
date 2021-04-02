@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class OptimizationModeInput : InputDefinition<string, OptimizationModes>
+    public class CoverageAnalysisInput : InputDefinition<string, OptimizationModes>
     {
         public override string Default => "perTest";
 
