@@ -1,6 +1,3 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Stryker.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,13 +6,15 @@ using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.ToolHelpers
 {
     public interface IVsTestHelper
     {
         string GetCurrentPlatformVsTestToolPath();
-        string GetDefaultVsTestExtensionsPath(string vstestToolPath);
         void Cleanup(int tries = 5);
     }
 
@@ -58,16 +57,6 @@ namespace Stryker.Core.ToolHelpers
             }
 
             return _platformVsTestToolPath;
-        }
-
-        public string GetDefaultVsTestExtensionsPath(string vstestToolPath)
-        {
-            var extensionPath = Path.Combine(Path.GetDirectoryName(vstestToolPath), "Extensions");
-            if (_fileSystem.Directory.Exists(extensionPath))
-            {
-                return extensionPath;
-            }
-            throw new ApplicationException($"VsTest extensions not found in: {extensionPath}");
         }
 
         private Dictionary<OSPlatform, string> GetVsTestToolPaths()
