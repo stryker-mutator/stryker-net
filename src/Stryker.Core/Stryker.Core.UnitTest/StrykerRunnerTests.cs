@@ -8,6 +8,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Xunit;
@@ -38,9 +39,14 @@ namespace Stryker.Core.UnitTest
                     ProjectContents = folder
                 },
             };
-            var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
+            var basePathInput = new BasePathInput();
+            basePathInput.SuppliedInput = "C:/test";
+            var inputs = new StrykerInputs(fileSystem: fileSystemMock)
+            {
+                BasePathInput = basePathInput
+            };
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>()
                 {
                     mutationTestProcessMock.Object
@@ -60,9 +66,9 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
 
-            target.RunMutationTest(options);
+            target.RunMutationTest(inputs);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(options, It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
@@ -91,9 +97,17 @@ namespace Stryker.Core.UnitTest
                     ProjectContents = folder
                 }
             };
-            var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock, coverageAnalysis: "off");
+            var basePathInput = new BasePathInput();
+            var optimizationModeInput = new OptimizationModeInput();
+            basePathInput.SuppliedInput = "C:/test";
+            optimizationModeInput.SuppliedInput = "off";
+            var inputs = new StrykerInputs(fileSystem: fileSystemMock)
+            {
+                BasePathInput = basePathInput,
+                OptimizationModeInput = optimizationModeInput
+            };
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
             mutationTestProcessMock.Setup(x => x.FilterMutants());
@@ -106,7 +120,7 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
 
-            var result = target.RunMutationTest(options);
+            var result = target.RunMutationTest(inputs);
 
             result.MutationScore.ShouldBe(double.NaN);
 

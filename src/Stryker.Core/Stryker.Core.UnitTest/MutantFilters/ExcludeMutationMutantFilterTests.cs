@@ -32,11 +32,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var sut = new ExcludeMutationMutantFilter();
 
+            var options = new StrykerOptions
+            {
+                ExcludedMutators = new[] { excludedMutator }
+            };
+
             // Act
             var filteredMutants = sut.FilterMutants(
                 new[] { mutant },
                 null,
-                new StrykerOptions(excludedMutations: new[] { excludedMutator.ToString() }));
+                options);
 
             // Assert
             if (skipped)

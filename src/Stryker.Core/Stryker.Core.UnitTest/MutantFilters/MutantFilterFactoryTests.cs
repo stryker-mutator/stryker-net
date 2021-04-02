@@ -16,11 +16,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()
         {
+            var options = new StrykerOptions()
+            {
+                Since = true
+            };
+
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
-            var result = MutantFilterFactory.Create(new StrykerOptions(diff: false), diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
@@ -35,14 +40,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void MutantFilterFactory_Creates_Standard_Mutant_Filters()
         {
             // Arrange
-            var strykerOptions = new StrykerOptions(diff: false);
-
+            var options = new StrykerOptions()
+            {
+                Since = true
+            };
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -54,14 +61,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void MutantFilterFactory_Creates_DiffMutantFilter_When_Diff_Enabled()
         {
             // Arrange
-            var strykerOptions = new StrykerOptions(diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true
+            };
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -73,13 +83,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
         [Fact]
         public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_Dashboard_Compare_Enabled() {
-            var strykerOptions = new StrykerOptions(compareToDashboard: true, projectVersion: "foo");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = false,
+                ProjectVersion = "foo"
+            };
 
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
-            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
 
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 

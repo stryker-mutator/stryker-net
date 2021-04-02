@@ -1,4 +1,4 @@
-﻿using DotNet.Globbing;
+using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Serilog.Events;
@@ -23,7 +23,7 @@ namespace Stryker.CLI.UnitTest
             // Arrange
             string currentDirectory = Directory.GetCurrentDirectory();
             var strykerRunner = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            strykerRunner.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(It.IsAny<StrykerRunResult>()).Verifiable();
+            strykerRunner.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(It.IsAny<StrykerRunResult>()).Verifiable();
 
             // Act
             new StrykerCLI(strykerRunner.Object).Run(new string[] { });
@@ -40,7 +40,7 @@ namespace Stryker.CLI.UnitTest
             string currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
@@ -60,7 +60,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();

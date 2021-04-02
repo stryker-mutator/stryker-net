@@ -20,7 +20,11 @@ namespace Stryker.Core.UnitTest.Reporters
             var readOnlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose);
             readOnlyInputComponent.Setup(s => s.FullPath).Returns("/home/usr/dev/project");
 
-            var options = new StrykerOptions(projectVersion: "new-feature", gitDiffTarget: "master", compareToDashboard: true);
+            var options = new StrykerOptions {
+                ProjectVersion = "new-feature",
+                SinceTarget = "master",
+                WithBaseline = true
+            };
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");
 

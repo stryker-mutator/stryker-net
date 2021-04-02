@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Clients;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
@@ -13,15 +13,14 @@ namespace Stryker.Core.UnitTest.Reporters
         public void ShouldUploadHumanReadableWhenCompareToDashboardEnabled()
         {
             // Arrange
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-               dashboardApiKey: "Acces_Token",
-               projectName: "github.com/JohnDoe/project",
-               projectVersion: "version/human/readable",
-               reporters: reporters
-               );
+            var options = new StrykerOptions {
+               DashboardApiKey = "Acces_Token",
+               ProjectName = "github.com/JohnDoe/project",
+               ProjectVersion = "version/human/readable",
+               Reporters = reporters
+            };
 
             var dashboardClientMock = new Mock<IDashboardClient>();
 

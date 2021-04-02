@@ -38,8 +38,8 @@ namespace Stryker.Core.Options
         public string DashboardApiKey { get; init; }
         public string ProjectName { get; init; }
 
-        public bool DiffCompareEnabled { get; init; }
-        public string SinceBranch { get; init; }
+        public bool Since { get; init; }
+        public string SinceTarget { get; init; }
         public IEnumerable<FilePattern> DiffIgnoreFilePatterns { get; init; }
 
         public string FallbackVersion { get; init; }
@@ -65,7 +65,7 @@ namespace Stryker.Core.Options
                 DashboardApiKey = DashboardApiKey,
                 DashboardUrl = DashboardUrl,
                 DevMode = DevMode,
-                DiffCompareEnabled = DiffCompareEnabled,
+                Since = Since,
                 DiffIgnoreFilePatterns = DiffIgnoreFilePatterns,
                 ExcludedMutators = ExcludedMutators,
                 FallbackVersion = FallbackVersion,
@@ -81,7 +81,7 @@ namespace Stryker.Core.Options
                 ProjectUnderTestName = projectUnderTest,
                 ProjectVersion = ProjectVersion,
                 Reporters = Reporters,
-                SinceBranch = SinceBranch,
+                SinceTarget = SinceTarget,
                 SolutionPath = SolutionPath,
                 TestProjects = testProjects,
                 Thresholds = Thresholds,

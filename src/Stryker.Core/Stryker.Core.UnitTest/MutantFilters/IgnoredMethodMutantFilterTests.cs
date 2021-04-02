@@ -55,7 +55,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new[] { new Regex(ignoredMethodName) }
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -109,7 +112,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new[] { new Regex(ignoredMethodName) }
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -159,7 +165,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new[] { new Regex(ignoredMethodName) }
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -235,7 +244,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new []{ "M.ctor" });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new[] { new Regex("M.ctor") }
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -263,7 +275,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { "Fact" });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new[] { new Regex("Fact") }
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 

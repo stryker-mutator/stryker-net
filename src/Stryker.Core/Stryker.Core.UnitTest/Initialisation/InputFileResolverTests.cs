@@ -32,13 +32,17 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string projectUnderTestPath;
         private readonly string defaultTestProjectFileContents;
         private readonly string defaultProjectUndertestFileContents;
+        private readonly StrykerOptions _options;
 
         public InputFileResolverTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _basePath = Path.Combine(_filesystemRoot, "TestProject");
-
+            _options = new StrykerOptions()
+            {
+                BasePath = _basePath
+            };
             sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
             testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
             projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
@@ -120,7 +124,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     projectFilePath: projectUnderTestPath).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -157,7 +161,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -194,7 +198,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -248,7 +252,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
             var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
@@ -288,7 +292,7 @@ using System.Reflection;
                     projectFilePath: projectUnderTestPath).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -350,7 +354,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: fileSystem));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
@@ -401,7 +405,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -477,7 +481,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -530,7 +534,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<FileNotFoundException>(() => target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem())));
+            Assert.Throws<FileNotFoundException>(() => target.ResolveInput(_options));
 
         }
 
@@ -589,7 +593,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             var allFiles = result.ProjectContents.GetAllFiles();
 
@@ -644,7 +648,7 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: fileSystem)));
+            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(_options));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({projectUnderTestPath}) and try again.");
         }
 
@@ -673,7 +677,7 @@ using System.Reflection;
             
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
@@ -825,12 +829,12 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
-            var options = new StrykerOptions(
-                basePath: basePath,
-                projectUnderTestNameFilter: projectUnderTestNameFilter,
-                testProjects: new List<string> { testProjectPath },
-                fileSystem: new MockFileSystem()
-            );
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                ProjectUnderTestName = projectUnderTestNameFilter,
+                TestProjects = new List<string> { testProjectPath }
+            };
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
@@ -876,7 +880,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var ex = Assert.Throws<StrykerInputException>(() => target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem())));
+            var ex = Assert.Throws<StrykerInputException>(() => target.ResolveInput(_options));
 
             ex.Message.ShouldBe("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.");
             ex.Details.ShouldBe(@"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
@@ -914,7 +918,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions(basePath: _basePath, fileSystem: new MockFileSystem()));
+            var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -947,12 +951,15 @@ Please specify a test project name filter that results in one project.
                     references: new string[0]).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-            var options = new StrykerOptions(basePath: Path.Combine(_filesystemRoot, "ExampleProject"), testProjects: new List<string>
+            var options = new StrykerOptions()
             {
-                Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
-                Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj")
-            },
-            fileSystem: new MockFileSystem());
+                BasePath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                TestProjects = new List<string>
+                {
+                    Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
+                    Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj")
+                }
+            };
             var result = target.ResolveInput(options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);

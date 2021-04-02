@@ -19,7 +19,12 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         public async Task Load_Calls_Correct_URL()
         {
             // Arrange
-            var options = new StrykerOptions(azureFileStorageUrl: "https://www.filestoragelocation.com", azureSAS: "AZURE_SAS_KEY", baselineStorageLocation: "azurefilestorage");
+            var options = new StrykerOptions()
+            {
+                AzureFileStorageUrl = "https://www.filestoragelocation.com",
+                AzureFileStorageSas = "AZURE_SAS_KEY",
+                BaselineProvider = BaselineProvider.AzureFileStorage
+            };
 
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -65,7 +70,12 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         public async Task Save_Doesnt_Call_CreateDictionary_And_AllocateFileLocation_When_Baseline_Exists()
         {
             // arrange
-            var options = new StrykerOptions(azureFileStorageUrl: "https://www.filestoragelocation.com", azureSAS: "AZURE_SAS_KEY", baselineStorageLocation: "azurefilestorage");
+            var options = new StrykerOptions()
+            {
+                AzureFileStorageUrl = "https://www.filestoragelocation.com",
+                AzureFileStorageSas = "AZURE_SAS_KEY",
+                BaselineProvider = BaselineProvider.AzureFileStorage
+            };
 
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -174,8 +184,12 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         public async Task Save_Calls_CreateDictionary_And_AllocateFileLocation_When_Baseline_Does_Not_Exists()
         {
             // arrange
-            var options = new StrykerOptions(azureFileStorageUrl: "https://www.filestoragelocation.com", azureSAS: "AZURE_SAS_KEY", baselineStorageLocation: "azurefilestorage");
-
+            var options = new StrykerOptions()
+            {
+                AzureFileStorageUrl = "https://www.filestoragelocation.com",
+                AzureFileStorageSas = "AZURE_SAS_KEY",
+                BaselineProvider = BaselineProvider.AzureFileStorage
+            };
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;

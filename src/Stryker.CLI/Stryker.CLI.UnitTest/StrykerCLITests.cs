@@ -36,7 +36,7 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnException_ShouldThrow()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             Assert.Throws<Exception>(() => target.Run(new string[] { }));
@@ -50,13 +50,16 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
-            target.Run(new string[] { argName, $"['{ Reporter.ConsoleReport }', '{ Reporter.ConsoleProgressDots }']" });
+            target.Run(new string[] { argName, $"['{ Reporter.ConsoleReport }', '{ Reporter.Dots }']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Reporters.Contains(Reporter.ConsoleReport) && o.Reporters.Contains(Reporter.ConsoleProgressDots)), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ReportersInput.SuppliedInput.Contains(Reporter.ConsoleReport.ToString()) &&
+                o.ReportersInput.SuppliedInput.Contains(Reporter.Dots.ToString())
+            ), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -68,15 +71,15 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "['string', 'logical']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.ExcludedMutators.Contains(Mutator.String) &&
-                o.ExcludedMutators.Contains(Mutator.Logical)
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ExcludedMutatorsInput.SuppliedInput.Contains(Mutator.String.ToString()) &&
+                o.ExcludedMutatorsInput.SuppliedInput.Contains(Mutator.Logical.ToString())
             ), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -96,7 +99,7 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
@@ -106,7 +109,7 @@ namespace Stryker.CLI.UnitTest
             {
                 target.Run(new string[] { "-em", $"['{argValue}']" });
 
-                mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ExcludedMutators.Single() == expectedType), It.IsAny<IEnumerable<LogMessage>>()));
+                mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.ExcludedMutatorsInput.SuppliedInput.Single() == expectedType.ToString()), It.IsAny<IEnumerable<LogMessage>>()));
             }
         }
 
@@ -118,13 +121,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "SomeProjectName.csproj" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.ProjectUnderTestName == "SomeProjectName.csproj"), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.ProjectUnderTestNameInput.SuppliedInput == "SomeProjectName.csproj"), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -135,13 +138,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "['TestProjectFolder/SomeTestProjectName.csproj']" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.TestProjects.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.TestProjectsInput.SuppliedInput.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -152,13 +155,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "SomeSolutionPath.sln" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.SolutionPath.Contains("SomeSolutionPath.sln")), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.SolutionPathInput.SuppliedInput.Contains("SomeSolutionPath.sln")), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -170,7 +173,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -191,13 +194,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.LogOptions.LogToFile), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.LogToFileInput.SuppliedInput.Value), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -208,7 +211,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -230,14 +233,14 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "1000" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.AdditionalTimeoutMS == 1000), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.AdditionalTimeoutMsInput.SuppliedInput == 1000), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -248,14 +251,14 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "4" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.Concurrency <= 4), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ConcurrencyInput.SuppliedInput <= 4), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -266,13 +269,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "20" });
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.Thresholds.Break == 20), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ThresholdBreakInput.SuppliedInput == 20), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -283,14 +286,14 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "65" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.Thresholds.Low == 65), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ThresholdLowInput.SuppliedInput == 65), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -301,24 +304,30 @@ namespace Stryker.CLI.UnitTest
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions();
             var runResult = new StrykerRunResult(options, 0.3);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResult);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResult);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "90" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.Thresholds.High == 90), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.ThresholdHighInput.SuppliedInput == 90), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Fact]
         public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var options = new StrykerOptions(thresholdBreak: 40);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    Break = 40
+                }
+            };
             var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -332,9 +341,15 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var options = new StrykerOptions(thresholdBreak: 0);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    Break = 0
+                }
+            };
             var strykerRunResult = new StrykerRunResult(options, double.NaN);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -348,9 +363,15 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var options = new StrykerOptions(thresholdBreak: 40);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    Break = 40
+                }
+            };
             var strykerRunResult = new StrykerRunResult(options, double.NaN);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -364,10 +385,16 @@ namespace Stryker.CLI.UnitTest
         public void StrykerCLI_OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var options = new StrykerOptions(thresholdBreak: 0);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    Break = 0
+                }
+            };
             var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -384,13 +411,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(() => strykerRunResult);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(() => strykerRunResult);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.Mutate.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.MutateInput.SuppliedInput.Count() == 1), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -402,7 +429,7 @@ namespace Stryker.CLI.UnitTest
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.1);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -431,7 +458,7 @@ namespace Stryker.CLI.UnitTest
             StrykerOptions actualOptions = null;
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.1);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -460,7 +487,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => actualOptions = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -471,7 +498,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            actualOptions.DiffCompareEnabled.ShouldBeTrue();
+            actualOptions.Since.ShouldBeTrue();
         }
 
         [Theory]
@@ -482,13 +509,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "advanced" });
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
-                o.MutationLevel == MutationLevel.Advanced), It.IsAny<IEnumerable<LogMessage>>()));
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o =>
+                o.MutationLevelInput.SuppliedInput == MutationLevel.Advanced.ToString()), It.IsAny<IEnumerable<LogMessage>>()));
         }
 
         [Theory]
@@ -500,7 +527,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -523,7 +550,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -534,7 +561,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            options.DiffCompareEnabled.ShouldBeTrue();
+            options.Since.ShouldBeTrue();
         }
 
         [Theory]
@@ -546,7 +573,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -567,7 +594,7 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(new StrykerOptions(), 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Callback<StrykerOptions, IEnumerable<LogMessage>>((c, m) => options = c)
                 .Returns(runResults)
                 .Verifiable();
@@ -590,13 +617,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName, "development" });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.SinceBranch == "development"),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.SinceTargetInput.SuppliedInput == "development"),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -609,13 +636,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.BaselineProviderInput.SuppliedInput == BaselineProvider.Disk.ToString()),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -628,13 +655,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Dashboard),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.BaselineProviderInput.SuppliedInput == BaselineProvider.Dashboard.ToString()),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -645,13 +672,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.BaselineProvider == BaselineProvider.Disk),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.BaselineProviderInput.SuppliedInput == BaselineProvider.Disk.ToString()),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
 
@@ -664,13 +691,13 @@ namespace Stryker.CLI.UnitTest
             var options = new StrykerOptions();
             var runResults = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
 
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { argName });
 
-            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o => o.DiffIgnoreFilePatterns.Count() == 1),
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerInputs>(o => o.DiffIgnoreFilePatternsInput.SuppliedInput.Count() == 1),
                 It.IsAny<IEnumerable<LogMessage>>()));
         }
     }

@@ -25,7 +25,7 @@ namespace Stryker.Core.DashboardCompare
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
-            if (!options.DiffCompareEnabled)
+            if (!options.Since)
             {
                 return;
             }
@@ -61,7 +61,7 @@ namespace Stryker.Core.DashboardCompare
 
             if (commit == null)
             {
-                throw new StrykerInputException($"No Branch or commit found with given target {_options.SinceBranch}. Please provide a different GitDiffTarget.");
+                throw new StrykerInputException($"No Branch or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
             }
 
             return commit;
@@ -81,24 +81,24 @@ namespace Stryker.Core.DashboardCompare
         {
             Branch targetBranch = null;
 
-            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.SinceBranch);
+            _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.SinceTarget);
             foreach (var branch in Repository.Branches)
             {
                 try
                 {
-                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.SinceBranch) ?? false)
+                    if (branch.UpstreamBranchCanonicalName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.CanonicalName?.Contains(_options.SinceBranch) ?? false)
+                    if (branch.CanonicalName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
                         targetBranch = branch;
                         break;
                     }
-                    if (branch.FriendlyName?.Contains(_options.SinceBranch) ?? false)
+                    if (branch.FriendlyName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
                         targetBranch = branch;
@@ -117,13 +117,13 @@ namespace Stryker.Core.DashboardCompare
             }
 
             // It's a commit!
-            if (_options.SinceBranch.Length == 40)
+            if (_options.SinceTarget.Length == 40)
             {
-                var commit = Repository.Lookup(new ObjectId(_options.SinceBranch)) as Commit;
+                var commit = Repository.Lookup(new ObjectId(_options.SinceTarget)) as Commit;
 
                 if (commit != null)
                 {
-                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.SinceBranch}");
+                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.SinceTarget}");
                     return commit;
                 }
             }

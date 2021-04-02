@@ -34,7 +34,7 @@ namespace Stryker.CLI
 
         public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
         {
-            _strykerInputs = new StrykerInputs(null, logger)
+            _strykerInputs = new StrykerInputs(logger, null)
             {
                 AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
@@ -65,7 +65,6 @@ namespace Stryker.CLI
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
                 SinceTargetInput = new SinceTargetInput(),
-                SinceCommitInput = new SinceCommitInput(),
                 SolutionPathInput = new SolutionPathInput(),
                 TestProjectsInput = new TestProjectsInput(),
                 ThresholdBreakInput = new ThresholdBreakInput(),

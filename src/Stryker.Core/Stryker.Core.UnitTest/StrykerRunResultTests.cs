@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Options;
 using Xunit;
 
@@ -13,7 +13,15 @@ namespace Stryker.Core.UnitTest
         public void ScoreIsLowerThanThresholdBreak_ShouldReturnFalseWhen(double mutationScore, int thresholdBreak)
         {
             // Arrange
-            var options = new StrykerOptions(thresholdHigh: 100, thresholdLow: 100, thresholdBreak: thresholdBreak);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    High = 100,
+                    Low = 100,
+                    Break = thresholdBreak
+                }
+            };
             var runResult = new StrykerRunResult(options, mutationScore);
 
             // Act
@@ -30,7 +38,15 @@ namespace Stryker.Core.UnitTest
         public void ScoreIsLowerThanThresholdBreak_ShouldReturnTrueWhen(double mutationScore, int thresholdBreak)
         {
             // Arrange
-            var options = new StrykerOptions(thresholdHigh: 100, thresholdLow: 100, thresholdBreak: thresholdBreak);
+            var options = new StrykerOptions()
+            {
+                Thresholds = new Thresholds
+                {
+                    High = 100,
+                    Low = 100,
+                    Break = thresholdBreak
+                }
+            };
             var runResult = new StrykerRunResult(options, mutationScore);
 
             // Act

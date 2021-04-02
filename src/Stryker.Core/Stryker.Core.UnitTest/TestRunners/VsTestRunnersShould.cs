@@ -336,7 +336,6 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             runner = new VsTestRunner(
                 options,
-                optimizationFlags,
                 _targetProject,
                 null,
                 _fileSystem,
@@ -525,7 +524,10 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions(fileSystem: _fileSystem, abortTestOnFail: false);
+                var strykerOptions = new StrykerOptions()
+                {
+                    OptimizationMode = OptimizationModes.DisableAbortTestOnKill
+                };
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.OptimizationMode);
                 // make sure we have 4 mutants
                 _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });

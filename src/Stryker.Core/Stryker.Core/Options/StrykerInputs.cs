@@ -96,8 +96,8 @@ namespace Stryker.Core.Options
                 WithBaseline = WithBaselineInput.Validate(),
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput),
-                DiffCompareEnabled = sinceEnabled,
-                SinceBranch = SinceTargetInput.Validate(sinceEnabled),
+                Since = sinceEnabled,
+                SinceTarget = SinceTargetInput.Validate(sinceEnabled),
                 BasePath = BasePathInput.Validate(_fileSystem),
                 OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
             };

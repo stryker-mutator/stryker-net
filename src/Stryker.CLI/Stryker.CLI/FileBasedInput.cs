@@ -30,11 +30,8 @@ namespace Stryker.CLI
         // since
         public bool? Since { get; set; }
 
-        [JsonProperty(PropertyName = "since-branch")]
-        public string SinceBranch { get; set; }
-
-        [JsonProperty(PropertyName = "since-commit")]
-        public string SinceCommit { get; set; }
+        [JsonProperty(PropertyName = "since-target")]
+        public string SinceTarget { get; set; }
 
         public BaseLine BaseLine { get; set; }
     }

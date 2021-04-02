@@ -40,7 +40,7 @@ namespace Stryker.Core.MutantFilters
             {
                 enabledFilters.Add(new DashboardMutantFilter(options, _baselineProvider, _gitInfoProvider));
             }
-            if (options.DiffCompareEnabled || options.WithBaseline)
+            if (options.Since || options.WithBaseline)
             {
                 enabledFilters.Add(new DiffMutantFilter(_diffProvider));
             }

@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Options
                 DashboardApiKey = "key",
                 DashboardUrl = "url",
                 DevMode = true,
-                DiffCompareEnabled = true,
+                Since = true,
                 DiffIgnoreFilePatterns = new[] { new FilePattern(Glob.Parse("**"), true, null) },
                 ExcludedMutators = new[] { Mutator.Bitwise },
                 FallbackVersion = "main",
