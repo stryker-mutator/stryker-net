@@ -41,7 +41,8 @@ namespace Stryker.Core.Initialisation
                     new ReaderParameters(ReadingMode.Immediate)
                     {
                         InMemory = true,
-                        ReadWrite = false
+                        ReadWrite = false,
+                        AssemblyResolver = new CustomAssemblyResolver()
                     });
             }
             catch (Exception e)
