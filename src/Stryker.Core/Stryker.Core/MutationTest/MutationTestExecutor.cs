@@ -58,7 +58,7 @@ namespace Stryker.Core.MutationTest
                     }
                     else
                     {
-                        // we don't know which tests timed out, we rerun all tests in dedicated session
+                        // we don't know which tests timed out, we rerun all tests in dedicated sessions
                         forceSingle = true;
                     }
                 }

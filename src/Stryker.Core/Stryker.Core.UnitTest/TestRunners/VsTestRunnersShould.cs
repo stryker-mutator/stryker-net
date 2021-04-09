@@ -528,7 +528,6 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunTestsSimultaneouslyWhenPossible()
         {
-            var options = new StrykerOptions();
             var mutantFilter = new Mock<IMutantFilter>(MockBehavior.Loose);
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
@@ -565,7 +564,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationFlags.CoverageBasedTest | OptimizationFlags.CaptureCoveragePerTest);
-
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0,1;1", ["T1"] = ";" }, endProcess);
 

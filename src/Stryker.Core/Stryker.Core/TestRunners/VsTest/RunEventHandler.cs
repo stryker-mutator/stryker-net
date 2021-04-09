@@ -16,14 +16,63 @@ namespace Stryker.Core.TestRunners.VsTest
         List<TestResult> TestResults { get; }
         IReadOnlyList<TestCase> TestsInTimeout { get; }
     }
+    internal class TestRun
+    {
+        private readonly VsTestDescription _testDescription;
+        private readonly IList<TestResult> _results;
+
+        public TestRun(VsTestDescription testDescription)
+        {
+            _testDescription = testDescription;
+            _results = new List<TestResult>(testDescription.NbSubCases);
+        }
+
+        public bool AddResult(TestResult result)
+        {
+            _results.Add(result);
+            return _results.Count >= _testDescription.NbSubCases;
+        }
+
+        public TestResult Result()
+        {
+            return _results.Aggregate((TestResult) null, (acc, next) =>
+            {
+                if (acc == null)
+                {
+                    return next;
+                }
+                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
+                {
+                    acc.Outcome = next.Outcome;
+                }
+                if (acc.StartTime > next.StartTime)
+                {
+                    acc.StartTime = next.StartTime;
+                }
+                if (acc.EndTime < next.EndTime)
+                {
+                    acc.EndTime = next.EndTime;
+                }
+
+                foreach (var message in next.Messages)
+                {
+                    acc.Messages.Add(message);
+                }
+
+                acc.Duration = acc.EndTime - acc.StartTime;
+                return acc;
+            });
+        }
+    }
 
     public class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
         private readonly string _runnerId;
-        private readonly List<TestCase> _inProgress = new List<TestCase>();
-
+        private readonly IDictionary<Guid, VsTestDescription> _vsTests;
+        private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
+        private readonly Dictionary<Guid, TestCase> _inProgress = new Dictionary<Guid, TestCase>();
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
@@ -32,10 +81,11 @@ namespace Stryker.Core.TestRunners.VsTest
         public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
 
-        public RunEventHandler(ILogger logger, string runnerId)
+        public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
             _waitHandle = new AutoResetEvent(false);
             TestResults = new List<TestResult>();
+            _vsTests = vsTests;
             _logger = logger;
             _runnerId = runnerId;
         }
@@ -45,24 +95,31 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResults = results as TestResult[] ?? results.ToArray();
             foreach (var testResult in testResults)
             {
-                var index = _inProgress.FindIndex(t => t.Id == testResult.TestCase.Id);
-                if (index < 0)
+                var id = testResult.TestCase.Id;
+                if (!_runs.ContainsKey(id))
                 {
-                    continue;
+                    _runs[id] = new TestRun(_vsTests[id]);
                 }
-                _inProgress.RemoveAt(index);
+
+                if (_runs[id].AddResult(testResult))
+                {
+                    TestResults.Add(_runs[id].Result());
+                    _inProgress.Remove(id);
+                }
             }
-            TestResults.AddRange(testResults);
         }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
             if (testRunChangedArgs.ActiveTests != null)
             {
-                _inProgress.AddRange(testRunChangedArgs.ActiveTests);
+                foreach (var activeTest in testRunChangedArgs.ActiveTests)
+                {
+                    _inProgress[activeTest.Id] = activeTest;
+                }
             }
 
-            if (testRunChangedArgs.NewTestResults == null)
+            if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
             {
                 return;
             }
@@ -84,7 +141,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
             {
-                TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
+                TestsInTimeout = _inProgress.Values.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
                 if (TestsInTimeout.Count > 0)
                 {
                     TimeOut = true;
