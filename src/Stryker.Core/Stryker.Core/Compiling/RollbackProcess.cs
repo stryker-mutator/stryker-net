@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
@@ -24,6 +24,7 @@ namespace Stryker.Core.Compiling
     {
         private List<int> RolledBackIds { get; }
         private ILogger Logger { get; }
+        private const int _dummyId = int.MinValue;
 
         public RollbackProcess()
         {
@@ -99,6 +100,11 @@ namespace Stryker.Core.Compiling
                 return null;
             }
 
+            if (first.Data == null)
+            {
+                Logger.LogDebug("Remove a mutation helper.");
+                return _dummyId;
+            }
             var mutantId = int.Parse(first.Data);
             Logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
             return mutantId;
@@ -118,12 +124,12 @@ namespace Stryker.Core.Compiling
             return null;
         }
 
-        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IDictionary<SyntaxNode, int> scan)
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IList<(SyntaxNode, int)> scan)
         {
             var id = ExtractMutationIfAndId(node);
             if (id != null)
             {
-                scan[node] = id.Value;
+                scan.Add((node, id.Value));
             }
 
             foreach (var childNode in node.ChildNodes())
@@ -193,7 +199,7 @@ namespace Stryker.Core.Compiling
                     Logger.LogWarning(
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutations in the node
-                    var scan = new Dictionary<SyntaxNode, int>();
+                    var scan = new List<(SyntaxNode, int)>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
@@ -202,7 +208,10 @@ namespace Stryker.Core.Compiling
                         if (!brokenMutations.Contains(key))
                         {
                             brokenMutations.Add(key);
-                            RolledBackIds.Add(value);
+                            if (value != _dummyId)
+                            {
+                                RolledBackIds.Add(value);
+                            }
                         }
                     }
                 }

@@ -69,9 +69,11 @@ namespace Stryker.Core.Mutants
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
-            propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
+            propertyExpressionToBodyEngine.ConvertExpressionToBody(property).
+                WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
-        public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node);
+        public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node).
+            WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
             StaticEngine.PlaceStaticContextMarker(block).
