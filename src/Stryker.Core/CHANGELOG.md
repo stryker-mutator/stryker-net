@@ -1,3 +1,13 @@
+## [0.22.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.1...stryker@0.22.2) (2021-04-15)
+
+
+### Bug Fixes
+
+* **mutating:** Place yield return instead of yield return default(type) for yield break ([f791ad6](https://github.com/stryker-mutator/stryker-net/commit/f791ad6562ad162c3b067a7d02f6d3179303e90b))
+* Default vstest extensions are no longer required on the filesystem ([#1500](https://github.com/stryker-mutator/stryker-net/issues/1500)) ([554bc38](https://github.com/stryker-mutator/stryker-net/commit/554bc38afc147983a23118b8b2b6128a842bbadb))
+
+
+
 ## [0.22.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.0...stryker@0.22.1) (2021-03-22)
 
 
