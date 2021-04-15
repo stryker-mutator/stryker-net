@@ -1195,8 +1195,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.28",
-        "contentHash": "Q+CtHEI1gcIqz2XOScfprBBR3YM4HZS4S5dSrOzuid/kijaapSyoYMhn19g3menbDT1QGLErLas7ELrOW3HV/w==",
+        "resolved": "13.2.29",
+        "contentHash": "DJlsTlvHRUc0yZFMw0aL5VzOCP0jR0kUfNcajeowFXYSTPD+UHj5Y7aWAxVL41PiXRyY9wHYS6cvOsWYtnqGMQ==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -2047,7 +2047,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.9.0",
-          "stryker": "0.22.1"
+          "stryker": "0.22.2"
         }
       },
       "stryker": {
@@ -2073,9 +2073,9 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "0.22.1",
-          "Stryker.RegexMutators": "0.22.1",
-          "System.IO.Abstractions": "13.2.28"
+          "Stryker.DataCollector": "0.22.2",
+          "Stryker.RegexMutators": "0.22.2",
+          "System.IO.Abstractions": "13.2.29"
         }
       },
       "stryker.datacollector": {
