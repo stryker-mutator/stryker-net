@@ -34,8 +34,8 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "coverage-analysis")]
         public string CoverageAnalysis { get; set; }
 
-        [JsonProperty(PropertyName = "disable-test-abortion")]
-        public bool DisableTestAbortion { get; set; }
+        [JsonProperty(PropertyName = "disable-bail")]
+        public bool DisableBail { get; set; }
 
         [JsonProperty(PropertyName = "disable-testing-mix-mutations")]
         public bool DisableTestingMixMutations { get; set; }
@@ -62,7 +62,7 @@ namespace Stryker.CLI
         public string[] TestProjects { get; set; }
         
         [JsonProperty(PropertyName = "ignore-mutations")]
-        public string[] IgnoreMutators { get; set; }
+        public string[] IgnoreMutations { get; set; }
         
         [JsonProperty(PropertyName = "ignore-methods")]
         public string[] IgnoreMethods { get; set; }

@@ -48,7 +48,7 @@ namespace Stryker.CLI
                 DiffIgnoreFilePatternsInput = new DiffIgnoreFilePatternsInput(),
                 DisableAbortTestOnFailInput = new DisableAbortTestOnFailInput(),
                 DisableSimultaneousTestingInput = new DisableSimultaneousTestingInput(),
-                ExcludedMutatorsInput = new ExcludedMutatorsInput(),
+                ExcludedMutationsInput = new ExcludedMutationsInput(),
                 FallbackVersionInput = new FallbackVersionInput(),
                 IgnoredMethodsInput = new IgnoredMethodsInput(),
                 LanguageVersionInput = new LanguageVersionInput(),

@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Options
                 DevMode = true,
                 Since = true,
                 DiffIgnoreFilePatterns = new[] { new FilePattern(Glob.Parse("**"), true, null) },
-                ExcludedMutators = new[] { Mutator.Bitwise },
+                ExcludedMutations = new[] { Mutator.Bitwise },
                 FallbackVersion = "main",
                 IgnoredMethods = new[] { new Regex("") },
                 LanguageVersion = LanguageVersion.Latest,

@@ -17,7 +17,7 @@ namespace Stryker.Core.MutantFilters
         /// <inheritdoc />
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
-            return mutants.Where(mutant => !options.ExcludedMutators.Contains(mutant.Mutation.Type));
+            return mutants.Where(mutant => !options.ExcludedMutations.Contains(mutant.Mutation.Type));
         }
     }
 }

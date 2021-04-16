@@ -48,7 +48,7 @@ namespace Stryker.Core.Options
         public ModuleNameInput ModuleNameInput { get; init; }
         public MutateInput MutateInput { get; init; }
         public IgnoredMethodsInput IgnoredMethodsInput { get; init; }
-        public ExcludedMutatorsInput ExcludedMutatorsInput { get; init; }
+        public ExcludedMutationsInput ExcludedMutationsInput { get; init; }
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; }
         public DisableAbortTestOnFailInput DisableAbortTestOnFailInput { get; set; }
         public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
@@ -79,7 +79,7 @@ namespace Stryker.Core.Options
                 Reporters = reporters,
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
-                ExcludedMutators = ExcludedMutatorsInput.Validate(),
+                ExcludedMutations = ExcludedMutationsInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),

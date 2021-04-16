@@ -257,11 +257,11 @@ constructors/initialisers being called only once during tests. This heuristic is
 `perTestInIsolation` due to test being run one by one.
 
 
-### `no-bail` <`bool`>
+### `disable-bail` <`bool`>
 
 Default: `false`  
 Command line: `N/A`  
-Config file: `"no-bail": true`
+Config file: `"disable-bail": true`
 
 Stryker aborts a unit testrun for a mutant as soon as one test fails. This can reduce the total runtime. You can disable this behavior with this option.
 

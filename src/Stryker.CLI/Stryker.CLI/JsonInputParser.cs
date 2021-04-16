@@ -20,7 +20,7 @@ namespace Stryker.CLI
             inputs.FallbackVersionInput.SuppliedInput = jsonConfig.BaseLine?.FallbackVersion;
             inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.BaseLine?.AzureFileShareUrl;
             inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
-            inputs.DisableAbortTestOnFailInput.SuppliedInput = jsonConfig.DisableTestAbortion;
+            inputs.DisableAbortTestOnFailInput.SuppliedInput = jsonConfig.DisableBail;
             inputs.DisableSimultaneousTestingInput.SuppliedInput = jsonConfig.DisableTestingMixMutations;
             inputs.AdditionalTimeoutMsInput.SuppliedInput = jsonConfig.AdditionalTimeout;
             inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
@@ -39,7 +39,7 @@ namespace Stryker.CLI
             inputs.VerbosityInput.SuppliedInput = jsonConfig.Verbosity;
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
-            inputs.ExcludedMutatorsInput.SuppliedInput = jsonConfig.IgnoreMutators;
+            inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
 
         }
 

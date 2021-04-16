@@ -49,7 +49,7 @@ namespace Stryker.Core.Options
 
         public IEnumerable<FilePattern> Mutate { get; init; } = Enumerable.Empty<FilePattern>();
         public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
-        public IEnumerable<Mutator> ExcludedMutators { get; init; } = Enumerable.Empty<Mutator>();
+        public IEnumerable<Mutator> ExcludedMutations { get; init; } = Enumerable.Empty<Mutator>();
 
         public OptimizationModes OptimizationMode { get; init; }
 
@@ -68,7 +68,7 @@ namespace Stryker.Core.Options
                 DevMode = DevMode,
                 Since = Since,
                 DiffIgnoreFilePatterns = DiffIgnoreFilePatterns,
-                ExcludedMutators = ExcludedMutators,
+                ExcludedMutations = ExcludedMutations,
                 FallbackVersion = FallbackVersion,
                 IgnoredMethods = IgnoredMethods,
                 LanguageVersion = LanguageVersion,

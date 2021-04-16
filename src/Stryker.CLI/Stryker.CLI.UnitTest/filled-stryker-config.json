@@ -5,7 +5,7 @@
     ],
     "verbosity": "trace",
     "coverage-analysis": "perTest",
-    "disable-test-abortion": true,
+    "disable-bail": true,
     "additional-timeout": 9999,
     "project": "ExampleProject.csproj",
     "concurrency": 1,
