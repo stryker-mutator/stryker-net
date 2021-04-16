@@ -234,8 +234,13 @@ Both, method names and constructor names support wildcards.
 
 ## Optimization
 
-### Coverage analysis
-Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
+### `coverage-analysis` [`string`]
+
+Default: `perTest`  
+Command line: `N/A`  
+Config file: `"coverage-analysis": 'off'`
+
+Use coverage info to speed up execution. 
 
 - **off**: coverage data is not captured.
 - **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover the mutant are tested. Fastest option.
@@ -243,41 +248,43 @@ Use coverage info to speed up execution. Possible values are: off, perTest, all,
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
 coverage information for some mutants (see below), at the expense of a longer startup time.
 
-```
-dotnet stryker --coverage-analysis perTest
-dotnet stryker -ca perTest
-```
-
-Default: `"perTest"`
 #### Notes on coverage analysis
-* The 'dotnet test' runner only supports `all` mode. This is due to dotnet test limitation
-* Results are not impacted by coverage analysis. If you identify a suspicious survivor, run
+* Results should not be impacted by coverage analysis. If you identify a suspicious survivor, run
 Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
 * when using `perTest` mode, mutants that are executed as part as some static constructor/initializer 
-are run against all tests, as Stryker cannot reliably capture coverage for those. This is a consequence of static
+are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initialisers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
 
 
-### Abort test on fail
-Abort unit testrun as soon as any one unit test fails. This can reduce the overall running time.
+### `no-bail` <`bool`>
 
-```
-dotnet stryker --abort-test-on-fail
-dotnet stryker -atof
-```
+Default: `false`  
+Command line: `N/A`  
+Config file: `"no-bail": true`
 
-Default: `"on"`
+Stryker aborts a unit testrun for a mutant as soon as one test fails. This can reduce the total runtime. You can disable this behavior with this option.
 
-### Diff
-Enables the diff feature. It makes sure to only mutate changed files. Gets the diff from git by default.
+### `since` <`bool[<:comittish>]`>
 
-```
-dotnet stryker --diff
-dotnet stryker -diff
-```
+Default: `false:master`  
+Command line: `--since:feat-2`  
+Config file: `"since": true, "since-target": 'feat-2'`
 
-Default: `false`
+Use git information to test only code changes since the given target.
+
+Set the diffing target on the command line by passing a comittish with the since flag.
+Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
+
+\* For changes on test project files all mutants covered by tests in that file will be seen as changed.
+
+### `since-target` <`comittish`>
+
+Default: `master`  
+Command line: `N/A`  
+Config file: `""since-target": 'feat-2'`
+
+Set the diffing target for the [since](#since-<bool[<:comittish>]>) feature.
 
 ### Diff ignore files
 Allows to specify an array of C# files which should be ignored if present in the diff.
@@ -292,20 +299,6 @@ dotnet stryker -diff-ignore-files ['**/*.ts']
 ```
 
 Default: `[]`
-
-### Git diff target
-Sets the source commit-ish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled.
-
-```
-dotnet stryker --git-diff-target "development"
-dotnet stryker -gdt "development"
-```
-
-Default: `master`
-
-This feature works based on file diffs, which means that only changed files will be mutated.
-
-Also note that for changes on test files all mutants covered by tests in that file will be mutated.
 
 ## EXPERIMENTAL: Dashboard Compare
 Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
