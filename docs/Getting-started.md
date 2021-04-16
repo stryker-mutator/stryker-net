@@ -1,6 +1,6 @@
 ---
 title: Getting started
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Getting-started.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/getting-started.md
 ---
 # Install prerequisites
 

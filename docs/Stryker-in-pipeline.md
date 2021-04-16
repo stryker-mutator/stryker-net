@@ -1,6 +1,6 @@
 ---
 title: Installing Stryker in pipelines
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Stryker-in-pipeline.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/stryker-in-pipeline.md
 ---
 
 When running stryker in your pipeline there are some things to take into consideration
@@ -41,7 +41,7 @@ The following minimal steps are needed to use dashboard compare
 1. Set up authentication for the chosen storage provider 
 1. Set --dashboard-version to the name of the source branch (usually current branch)
 1. Set --git-source to the name of the target branch (usually master/main or development)
-1. Set any other options needed for your chosen storage provider (see: [Configuration](./Configuration.md))
+1. Set any other options needed for your chosen storage provider (see: [Configuration](./configuration.md))
 
 Example for azure devops with dashboard storage provider:
 ```

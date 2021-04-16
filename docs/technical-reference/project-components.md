@@ -1,6 +1,6 @@
 ---
 title: Composite pattern
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/FolderComponents.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/project-components.md
 ---
 
 Stryker.NET uses custom classes to keep track of folders and files. These classes are based on the composite pattern.

@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Mutators.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutators.md
 ---
 
 Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!

@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Configuration.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/configuration.md
 ---
 
 For .NET Core projects Stryker.NET can be run without any configuration. On .NET Framework projects the solution path is required.

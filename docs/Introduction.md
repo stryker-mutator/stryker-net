@@ -1,5 +1,5 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Introduction.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/introduction.md
 ---
 
 Welcome to the documentation for Stryker for .NET. Also known as Stryker.NET or stryker-net.
