@@ -197,22 +197,6 @@ dotnet stryker -em "['string', 'logical']"
 
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too excited, skipping mutations doesn't improve your mutation score ;)
 
-## Excluding files
-> ⚠ This parameter is deprecated. Use [Mutate](#mutate) instead.
-
-If you decide to exclude files for unit testing, you can configure this with the following command:
-
-```
-dotnet stryker --files-to-exclude "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']"
-dotnet stryker -fte "['./ExampleClass.cs', './ExampleDirectory', './ExampleDirectory/ExampleClass2.cs']"
-```
-
-We recommend to use relative paths. Relative paths are automatically resolved. Absolute paths break easily on different devices. However it is also possible to use absolute paths.
-
-When you want to exclude a large set of files, it is advised to use the stryker configuration file because it is easier to handle multiple files.
-
-Default: `[]`
-
 ## Mutate
 To specify which files should be mutated you can use file pattern to in- or excluded files or even only parts of a files. By default all files are included.
 
