@@ -67,6 +67,33 @@ Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.cspr
 
 When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.
 
+### `Mutate` [`glob[]`]
+
+Default: `*`  
+Command line: `[-m|--mutate] "**/*Services.cs"`  
+Config file: `"mutate": ['**/*Services.cs', '!**/*.Generated.cs']`
+
+With `mutate` you configure the subset of files to use for mutation testing. Only source files part of your project will be taken into account. When this option is not specified the whole project will be mutated.  
+You can add an `!` in front of the pattern to exclude instead of include matching files. This can be used to for example ignore generated files while mutating.
+
+When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both include and exclude patterns are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
+
+The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) to allow wildcards.
+
+### Example:
+
+| Patterns  | File                      | Will be mutated   |
+| ----------| ------------------------- | ----------------- |
+| null            | MyFolder/MyFactory.cs    | Yes               |
+| '\*\*/\*.\*'   | MyFolder/MyFactory.cs    | Yes               |
+| '!\*\*/MyFactory.cs'   | MyFolder/MyFactory.cs    | No        |
+
+To allow more fine grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
+
+```bash
+dotnet stryker -m "MyFolder/MyService.cs{10..100}"
+```
+
 ## Mutation level
 Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
 
@@ -196,49 +223,6 @@ dotnet stryker -em "['string', 'logical']"
 ```
 
 The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too excited, skipping mutations doesn't improve your mutation score ;)
-
-## Mutate
-To specify which files should be mutated you can use file pattern to in- or excluded files or even only parts of a files. By default all files are included.
-
-```
-dotnet stryker --mutate "['C:/Repos/MyProject/MyFile.cs']"
-dotnet stryker -m "['C:/Repos/MyProject/MyFile.cs']"
-```
-
-The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) to allow wildcards.
-
-```
-dotnet stryker --mutate "['**/*Services.cs']"
-dotnet stryker -m "['**/*Services.cs']"
-```
-
-You can add an `!` in front of the pattern to exclude all files that match the pattern.
-
-```
-dotnet stryker --mutate "['!**/*Factory.cs']"
-dotnet stryker -m "['!**/*Factory.cs']"
-```
-When only exclude patterns are provided, all files will be included that do not match any exclude pattern. If both include and exclude patterns are provided, only the files that match an include pattern but not also an exclude pattern will be included. The order of the patterns is irrelevant.
-
-### Example:
-
-| Patterns  | File                      | Will be mutated   |
-| ----------| ------------------------- | ----------------- |
-| []            | MyFolder/MyFactory.cs    | Yes               |
-| []            | MyFolder/MyService.cs | Yes               |
-| ['\*\*/\*.\*']   | MyFolder/MyFactory.cs    | Yes               |
-| ['\*\*/\*.\*']   | MyFolder/MyService.cs | Yes               |
-| ['!\*\*/MyFactory.cs']   | MyFolder/MyFactory.cs    | No        |
-| ['!\*\*/MyFactory.cs']   | MyFolder/MyService.cs | Yes       |
-| ['!\*\*/MyFactory.cs', '\*\*/My\*.cs']   | MyFolder/MyFactory.cs    | No        |
-| ['!\*\*/MyFactory.cs', '\*\*/My\*.cs']   | MyFolder/MyService.cs | Yes       |
-
-To allow more fine grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
-
-```
-dotnet stryker --mutate "['MyFolder/MyService.cs{10..100}']"
-dotnet stryker -m "['MyFolder/MyService.cs{10..100}']"
-```
 
 ## Ignore methods
 If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
