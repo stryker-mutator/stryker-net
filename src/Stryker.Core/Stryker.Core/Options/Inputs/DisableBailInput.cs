@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableAbortTestOnFailInput : InputDefinition<bool?, OptimizationModes>
+    public class DisableBailInput : InputDefinition<bool?, OptimizationModes>
     {
         public override bool? Default => false;
 
@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is { })
             {
-                return SuppliedInput.Value ? OptimizationModes.DisableAbortTestOnKill : OptimizationModes.NoOptimization;
+                return SuppliedInput.Value ? OptimizationModes.DisableBail : OptimizationModes.NoOptimization;
             }
             return OptimizationModes.NoOptimization;
         }

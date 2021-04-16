@@ -412,7 +412,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationModes.DisableAbortTestOnKill);
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationModes.DisableBail);
 
                 mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
@@ -526,7 +526,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var strykerOptions = new StrykerOptions()
                 {
-                    OptimizationMode = OptimizationModes.DisableAbortTestOnKill
+                    OptimizationMode = OptimizationModes.DisableBail
                 };
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.OptimizationMode);
                 // make sure we have 4 mutants

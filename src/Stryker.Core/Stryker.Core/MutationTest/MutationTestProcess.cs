@@ -106,7 +106,7 @@ namespace Stryker.Core.MutationTest
 
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestListDescription failedTests, ITestListDescription ranTests, ITestListDescription timedOutTest)
                 {
-                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationModes.DisableAbortTestOnKill);
+                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
                     foreach (var mutant in testedMutants)
                     {
                         mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);

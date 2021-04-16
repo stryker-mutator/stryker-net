@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Options
                 ModuleName = "module",
                 Mutate = new[] { new FilePattern(Glob.Parse("**"), true, null) },
                 MutationLevel = MutationLevel.Complete,
-                OptimizationMode = OptimizationModes.DisableAbortTestOnKill,
+                OptimizationMode = OptimizationModes.DisableBail,
                 OutputPath = "output",
                 ProjectName = "name",
                 ProjectUnderTestName = "project",
