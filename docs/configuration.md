@@ -96,9 +96,9 @@ To allow more fine grained filtering you can also specify the span of text that 
 dotnet stryker -m "MyFolder/MyService.cs{10..100}"
 ```
 
-## Tweak testrun dials
+## Control flow
 
-## `mutation-level` [`level`]
+### `mutation-level` [`level`]
 
 Default: `Standard`  
 Command line: `[-l|--mutation-level] "Advanced"`  
@@ -130,7 +130,7 @@ The levels are:
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 
-## `reporter` [`string[]`]
+### `reporter` [`string[]`]
 
 Default: `html, progress`  
 Command line: `[-r|--reporter] "html"`  
@@ -152,7 +152,7 @@ The available reporters options are
 
 You can find a description for every reporter in [reporter docs](./Reporters.md)
 
-## `additional-timeout` [`number`]
+### `additional-timeout` [`number`]
 
 Default: `5000`  
 Command line: `N/A`  
@@ -167,7 +167,7 @@ If you have a lot of timeouts you might need to increase the additional timeout.
 
 Timeout is in milliseconds.
 
-## `concurrency` [`number`]
+### `concurrency` [`number`]
 
 Default: `your number of logical processors / 2`  
 Command line: `[-c|--concurrency] 10`  
@@ -177,66 +177,60 @@ Change the amount of concurrent workers stryker uses for the mutation testrun. D
 
 \* Example: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default.
 
-## Custom thresholds
-If you want to decide on your own mutation score thresholds, you can configure this with extra parameters.
+### `thresholds` [`object`]
 
-```
-dotnet stryker --threshold-high 90 --threshold-low 75 --threshold-break 50
-dotnet stryker -th 90 -tl 75 -tb 50
-```
+Default: `{ high: 80, low: 60, break: 0 }`  
+Command line: `[-b|--break] 40`  
+Config file: `"thresholds": { "high": 80, "low": 60, "break": 0 }`
 
-- `mutation score > threshold-high`: 
+Configure the mutation score thresholds for your project.
+
+- `mutation score >= threshold-high`: 
     - Awesome! Your reporters will color this green and happy.
-- `threshold-high > mutation score > threshold-low`:
+- `mutation score < threshold-high && mutation score >= threshold-low`:
     - Warning! Your reporters will display yellow/orange colors, watch out!
-- `threshold-low > mutation score > threshold-break`:
+- `mutation score < threshold-low`:
     - Danger! Your reporters will display red colors, you're in the danger zone now.
-- `threshold-break > mutation score`:
+- `mutation score < threshold-break`:
     - Error! The application will exit with exit code 1.
 
-Default: `80`, `60`, `0`
+Set threshold break to 0 (default) or leave it empty to not exit with an error code. This option can also be set using the command line.
 
-## Excluding mutations
-If you deem some mutations unwanted for your project you can disable mutations. 
+### `ignored-mutations` [`string[]`]
 
-```
-dotnet stryker --excluded-mutations "['string', 'logical']"
-dotnet stryker -em "['string', 'logical']"
-```
+Default: `null`  
+Command line: `N/A`  
+Config file: `"ignored-mutations": ['string', 'logical']`
 
-The mutations of these kinds will be skipped and not be shown in your reports. This can also speed up your performance on large projects. But don't get too excited, skipping mutations doesn't improve your mutation score ;)
+Turn off mutations that are not currently relevant to your project. 
 
-## Ignore methods
-If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
+The mutants of the ignored types will not be tested. They will show up in your reports as 'Ignored'.
 
-```
-dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor']"
-dotnet stryker -im "['ToString', 'ConfigureAwait', '*Exception.ctor']"
-```
+### `ignored-methods` [`string[]`]
 
-Ignore methods will only affect mutations in directly passed parameters.
+Default: `null`  
+Command line: `N/A`  
+Config file: `"ignored-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor']`
 
-``` csharp
-// This mutation will be skipped;
+Skip specified method signatures from being mutated. 
+
+```csharp
+// This mutation will be skipped
 ConfigureAwait(true); 
 
-// This mutation won't
+// This mutation won't because we cannot currently detect this
 var t = true;
 ConfigureAwait(t); 
 ```
 
 You can also ignore constructors by specifying the type and adding the `.ctor` suffix.
 
-`dotnet stryker -im "['NotImplementedException.ctor']"`
+Both, method names and constructor names support wildcards.
 
-Both, method names and constructor names, support wildcards.
-
+```json
+"['*Log']" // Ignores all methods ending with Log
+"['*Exception.ctor']" // Ignores all exception constructors
 ```
-dotnet stryker -im "['*Log']" // Ignores all methods ending with Log
-dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors
-```
-
-Default: `[]`
 
 ## Optimization
 
