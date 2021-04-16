@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -83,8 +82,8 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, MutantPlacer.ConvertExpressionToBody(node));
             actualNode.ToFullString().ShouldBeSemantically($"class Test {{{injected}}}");
 
-            node =
-                actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
+            node = actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
+
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
@@ -105,8 +104,8 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, MutantPlacer.ConvertExpressionToBody(node));
             actualNode.ToFullString().ShouldBeSemantically($"class Test {{{injected}}}");
 
-            node =
-                actualNode.DescendantNodes().First(t => t is AccessorDeclarationSyntax) as AccessorDeclarationSyntax;
+            node = actualNode.DescendantNodes().First(t => t is AccessorDeclarationSyntax) as AccessorDeclarationSyntax;
+
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
@@ -124,8 +123,8 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, MutantPlacer.ConvertPropertyExpressionToBodyAccessor(node));
             actualNode.ToFullString().ShouldBeSemantically("class Test {public int X {get{return 1;}}}");
 
-            node =
-                actualNode.DescendantNodes().First(t => t is PropertyDeclarationSyntax) as PropertyDeclarationSyntax;
+            node = actualNode.DescendantNodes().First(t => t is PropertyDeclarationSyntax) as PropertyDeclarationSyntax;
+
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
@@ -143,8 +142,8 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, MutantPlacer.AddEndingReturn(node));
             actualNode.ToFullString().ShouldBeSemantically("class Test {bool Method() {x++;return default(bool);}}");
 
-            node =
-                actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
+            node = actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
+
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
@@ -157,7 +156,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions { });
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);

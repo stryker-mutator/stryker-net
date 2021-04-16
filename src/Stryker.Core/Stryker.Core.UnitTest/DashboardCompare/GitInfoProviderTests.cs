@@ -397,7 +397,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             var options = new StrykerOptions()
             {
                 Since = true,
-                SinceTarget = "refs/head/master"
+                SinceTarget = "refs/heads/master"
             };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 

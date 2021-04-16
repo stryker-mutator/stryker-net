@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var options = new StrykerOptions()
             {
-                Since = true
+                Since = false
             };
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void MutantFilterFactory_Creates_DiffMutantFilter_When_Diff_Enabled()
+        public void MutantFilterFactory_Creates_DiffMutantFilter_When_Since_Enabled()
         {
             // Arrange
             var options = new StrykerOptions()
@@ -82,10 +82,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_Dashboard_Compare_Enabled() {
+        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled() {
             var options = new StrykerOptions()
             {
-                WithBaseline = false,
+                WithBaseline = true,
                 ProjectVersion = "foo"
             };
 

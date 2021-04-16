@@ -20,19 +20,19 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Theory]
-        [InlineData("Where", true)]
-        [InlineData("Where*", true)]
-        [InlineData("*Where", true)]
-        [InlineData("*Where*", true)]
-        [InlineData("*ere", true)]
-        [InlineData("Wh*", true)]
-        [InlineData("W*e", true)]
-        [InlineData("*", true)]
-        [InlineData("ToList", false)]
-        [InlineData("*List", false)]
-        [InlineData("To*", false)]
-        [InlineData("T*ist", false)]
-        [InlineData("", false)]
+        [InlineData("^Where$", true)]
+        [InlineData("^Where*$", true)]
+        [InlineData("^*Where$", true)]
+        [InlineData("^*Where$*", true)]
+        [InlineData("^*ere$", true)]
+        [InlineData("^Wh.*$", true)]
+        [InlineData("^W.*e$", true)]
+        [InlineData("^*$", true)]
+        [InlineData("^ToList$", false)]
+        [InlineData("^*List$", false)]
+        [InlineData("^To*$", false)]
+        [InlineData("^T*ist$", false)]
+        [InlineData("^$", false)]
         public void MutantFilter_ChainedMethodsCalls(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -77,19 +77,19 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Theory]
-        [InlineData("Where", true)]
-        [InlineData("Where*", true)]
-        [InlineData("*Where", true)]
-        [InlineData("*Where*", true)]
-        [InlineData("*ere", true)]
-        [InlineData("Wh*", true)]
-        [InlineData("W*e", true)]
-        [InlineData("*", true)]
-        [InlineData("ToList", false)]
-        [InlineData("*List", false)]
-        [InlineData("To*", false)]
-        [InlineData("T*ist", false)]
-        [InlineData("", false)]
+        [InlineData("^Where$", true)]
+        [InlineData("^Where.*$", true)]
+        [InlineData("^*Where$", true)]
+        [InlineData("^*Where.*$", true)]
+        [InlineData("^.*ere$", true)]
+        [InlineData("^Wh.*$", true)]
+        [InlineData("^W.*e$", true)]
+        [InlineData("^.*$", true)]
+        [InlineData("^ToList$", false)]
+        [InlineData("^*List$", false)]
+        [InlineData("^To.*$", false)]
+        [InlineData("^T*ist$", false)]
+        [InlineData("^$", false)]
         public void MutantFilter_WorksWithConditionalInvocation(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -134,15 +134,15 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Theory]
-        [InlineData("MyType.ctor", true)]
-        [InlineData("MyType*.ctor", true)]
-        [InlineData("*MyType.ctor", true)]
-        [InlineData("*MyType*.ctor", true)]
-        [InlineData("*Type.ctor", true)]
-        [InlineData("My*.ctor", true)]
-        [InlineData("*.ctor", true)]
-        [InlineData("MyType.constructor", false)]
-        [InlineData("Type.ctor", false)]
+        [InlineData("^MyType.ctor$", true)]
+        [InlineData("^MyType.*.ctor$", true)]
+        [InlineData("^*MyType.ctor$", true)]
+        [InlineData("^*MyType.*.ctor$", true)]
+        [InlineData("^*Type.ctor$", true)]
+        [InlineData("^My.*.ctor$", true)]
+        [InlineData("^*.ctor$", true)]
+        [InlineData("^MyType.constructor$", false)]
+        [InlineData("^Type.ctor$", false)]
         public void MutantFilter_ShouldIgnoreConstructor(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -246,7 +246,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             var options = new StrykerOptions
             {
-                IgnoredMethods = new[] { new Regex("M.ctor") }
+                IgnoredMethods = new[] { new Regex("^M.ctor^") }
             };
 
             var sut = new IgnoredMethodMutantFilter();
