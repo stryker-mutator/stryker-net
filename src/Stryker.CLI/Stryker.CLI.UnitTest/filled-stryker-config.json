@@ -1,7 +1,7 @@
 {
   "stryker-config": {
     "reporters": [
-      "ConsoleReport"
+      "Json"
     ],
     "verbosity": "trace",
     "coverage-analysis": "perTest",

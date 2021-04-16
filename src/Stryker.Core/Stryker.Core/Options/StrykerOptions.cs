@@ -18,7 +18,7 @@ namespace Stryker.Core.Options
 
         public LogOptions LogOptions { get; init; }
         public MutationLevel MutationLevel { get; init; }
-        public Thresholds Thresholds { get; init; }
+        public Thresholds Thresholds { get; init; } = new Thresholds();
 
         public int AdditionalTimeoutMS { get; init; }
         public LanguageVersion LanguageVersion { get; init; }

@@ -98,13 +98,13 @@ namespace Stryker.Core.UnitTest
                 }
             };
             var basePathInput = new BasePathInput();
-            var optimizationModeInput = new CoverageAnalysisInput();
+            var coverageAnalysisInput = new CoverageAnalysisInput();
             basePathInput.SuppliedInput = "C:/test";
-            optimizationModeInput.SuppliedInput = "off";
+            coverageAnalysisInput.SuppliedInput = "off";
             var inputs = new StrykerInputs(fileSystem: fileSystemMock)
             {
                 BasePathInput = basePathInput,
-                OptimizationModeInput = optimizationModeInput
+                CoverageAnalysisInput = coverageAnalysisInput
             };
 
             projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))

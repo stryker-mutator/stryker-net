@@ -70,7 +70,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
             actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
-            actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.ConsoleReport.ToString());
+            actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Json.ToString());
             actualInputs.ConcurrencyInput.SuppliedInput.ShouldBe(1);
             actualInputs.ThresholdBreakInput.SuppliedInput.ShouldBe(20);
             actualInputs.ThresholdLowInput.SuppliedInput.ShouldBe(30);

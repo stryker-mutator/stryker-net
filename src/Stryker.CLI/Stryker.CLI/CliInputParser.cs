@@ -104,7 +104,7 @@ namespace Stryker.CLI
                 // the switch expression must return a value, as a workaround, return a bool and discard
                 _ = cliInput.OptionType switch
                 {
-                    CommandOptionType.NoValue => ParseNoValue((IInputDefinition<bool>)strykerInput),
+                    CommandOptionType.NoValue => ParseNoValue((IInputDefinition<bool?>)strykerInput),
                     CommandOptionType.MultipleValue => ParseMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput),
                     CommandOptionType.SingleOrNoValue => ParseSingleOrNoValue(strykerInput, cliInput, strykerInputs),
                     _ => true
@@ -113,13 +113,14 @@ namespace Stryker.CLI
                 _ = strykerInput switch
                 {
                     IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(string) => ParseSingleStringValue(cliInput, (IInputDefinition<string>)inputDefinition),
-                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int) => ParseSingleIntValue(cliInput, (IInputDefinition<int>)inputDefinition),
+                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int?) => ParseSingleIntValue(cliInput, (IInputDefinition<int?>)inputDefinition),
+                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int) => ParseSingleIntValue(cliInput, (IInputDefinition<int?>)inputDefinition),
                     _ => true
                 };
             }
         }
 
-        private static bool ParseNoValue(IInputDefinition<bool> strykerInput)
+        private static bool ParseNoValue(IInputDefinition<bool?> strykerInput)
         {
             strykerInput.SuppliedInput = true;
             return true;
@@ -131,7 +132,7 @@ namespace Stryker.CLI
             return true;
         }
 
-        private static bool ParseSingleIntValue(CommandOption cliInput, IInputDefinition<int> strykerInput)
+        private static bool ParseSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
         {
             if (int.TryParse(cliInput.Value(), out int value))
             {
