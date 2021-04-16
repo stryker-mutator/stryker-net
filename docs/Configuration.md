@@ -4,8 +4,10 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 ## Basics
 
-On some dotnet core projects stryker can run without specifying any custom configuration. Simply run `dotnet stryker` to start testing!  
-On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` to start testing.
+You run stryker from the test project directory.
+
+On some dotnet core projects stryker can run without specifying any custom configuration. Simply run `dotnet stryker` to start testing.  
+On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-[path]).
 
 ## Use a config file
 When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config. Alternatively use [init](#init-[bool])
@@ -15,7 +17,7 @@ Example `stryker-config.json` file:
 {
     "stryker-config":
     {
-        "solution": "SolutionFile.sln",
+        "solution": "../SolutionFile.sln",
         "project": "ExampleProject.csproj"
     }
 }
@@ -37,7 +39,9 @@ Config file: `N/A`
 
 You can specify a custom path to the config file. For example if you want to add the stryker config section to your appsettings file. The section should still be called `stryker-config`.
 
-## `solution` [`path`]
+## Project information
+
+### `solution` [`path`]
 
 Default: `null`  
 Command line: `[-s|--solution] "../solution.sln"`  
@@ -45,13 +49,23 @@ Config file: `"solution": '../solution.sln'`
 
 The solution file is required for dotnet framework projects. You may specify the solution file for dotnet core projects. In some cases this can help with dependency resolution.
 
-## `project` [`file-name`]
+### `project` [`file-name`]
 
 Default: `null`  
 Command line: `[-p|--project] "MyAwesomeProject.csproj"`  
 Config file: `"project": 'MyAwesomeProject.csproj'`
 
 The project file name is required when your test project has more than one project reference. Stryker can currently mutate one project under test for 1..N test projects but not 1..N projects under test for one test project.
+
+*Do not pass a path to this option. Pass the project file **name** as it appears in your test project's project references.*
+
+### `test-projects` [`path[]`]
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']`
+
+When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.
 
 ## Mutation level
 Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
@@ -109,18 +123,6 @@ dotnet stryker -r "['html', 'progress']"
 You can find a list of all available reporters and what output they produce in the [reporter docs](./Reporters.md)
 
 Default: `"['html', 'progress']"`
-
-## Test projects
-Stryker can also be run from the directory containing the project under test. If you pass a list of test projects that reference the project under test, the tests of all projects will be run while testing the mutants.
-
-```
-dotnet stryker --test-projects "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
-dotnet stryker -tp "['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']"
-```
-
-When running from a test project directory this option is not required.
-
-Default: `null`
 
 ## Logging to console
 To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.
@@ -285,15 +287,6 @@ dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors
 ```
 
 Default: `[]`
-
-## Config file location
-If you want to integrate these settings in your existing settings json, make sure the section is called stryker-config and run stryker with the command
-```
-dotnet stryker --config-file-path <relativePathToFile>
-dotnet stryker -cp <relativePathToFile>
-```
-
-Default: `"./stryker-config.json"`
 
 ## Coverage analysis
 Use coverage info to speed up execution. Possible values are: off, perTest, all, perIsolatedTest.
