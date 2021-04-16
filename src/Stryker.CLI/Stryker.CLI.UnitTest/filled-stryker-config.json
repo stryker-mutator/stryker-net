@@ -19,7 +19,7 @@
     "test-projects": [
       ""
     ],
-    "ignore-mutators": [
+    "ignore-mutations": [
       ""
     ],
     "ignore-methods": [

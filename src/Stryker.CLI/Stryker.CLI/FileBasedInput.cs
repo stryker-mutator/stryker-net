@@ -61,7 +61,7 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "test-projects")]
         public string[] TestProjects { get; set; }
         
-        [JsonProperty(PropertyName = "ignore-mutators")]
+        [JsonProperty(PropertyName = "ignore-mutations")]
         public string[] IgnoreMutators { get; set; }
         
         [JsonProperty(PropertyName = "ignore-methods")]
