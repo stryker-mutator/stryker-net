@@ -151,33 +151,6 @@ You can find a list of all available reporters and what output they produce in t
 
 Default: `"['html', 'progress']"`
 
-## Logging to console
-To gain more insight in what Stryker does during a mutation testrun you can lower your loglevel.
-```
-dotnet stryker --log-level "debug"
-dotnet stryker -l "debug"
-```
-
-All available loglevels are:
-* error
-* warning
-* info
-* debug
-* trace
-
-Default: `"info"`
-
-## Logging to a file
-When creating an issue for Stryker.NET on github you can include a logfile. File logging always uses loglevel `trace`.
-
-```
-dotnet stryker --log-file
-dotnet stryker -f
-
-```
-
-Default: `off`
-
 ## Maximum concurrent test runners  
 By default Stryker.NET will use as much CPU power as you allow it to use during a mutation testrun. You can lower this setting to lower your CPU usage.
 
@@ -409,3 +382,28 @@ dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.
 ## Using dashboard compare in a pull request pipeline
 
 See: [Using stryker in pipelines](./Stryker-in-pipeline.md)
+
+## Troubleshooting
+
+### `verbosity` [`log-level`]
+
+Default: `info`  
+Command line: `[-V|--verbosity] trace`  
+Config file: `"verbosity": 'trace'`
+
+Change the console `verbosity` of stryker when you want more or less details about the mutation testrun.
+
+All available loglevels are:
+* error
+* warning
+* info
+* debug
+* trace
+
+### `log-to-file` [`flag`]
+
+Default: `false`  
+Command line: `[-L|--log-to-file]`  
+Config file: `N/A`
+
+When creating an issue for Stryker.NET on github you can include a logfile. File logging always uses loglevel `trace`.
