@@ -196,21 +196,21 @@ Configure the mutation score thresholds for your project.
 
 Set threshold break to 0 (default) or leave it empty to not exit with an error code. This option can also be set using the command line.
 
-### `ignored-mutations` [`string[]`]
+### `ignore-mutations` [`string[]`]
 
 Default: `null`  
 Command line: `N/A`  
-Config file: `"ignored-mutations": ['string', 'logical']`
+Config file: `"ignore-mutations": ['string', 'logical']`
 
 Turn off mutations that are not currently relevant to your project. 
 
 The mutants of the ignored types will not be tested. They will show up in your reports as 'Ignored'.
 
-### `ignored-methods` [`string[]`]
+### `ignore-methods` [`string[]`]
 
 Default: `null`  
 Command line: `N/A`  
-Config file: `"ignored-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor']`
+Config file: `"ignore-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor']`
 
 Skip specified method signatures from being mutated. 
 
