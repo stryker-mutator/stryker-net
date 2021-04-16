@@ -737,21 +737,29 @@ const string text = ""a""+""b""+""c"";}";
         public void ShouldNotAddReturnDefaultToEnumerationMethods()
         {
             string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
-        {
+      {
         foreach (var o in enumerable)
         {
             yield return value;
         }
-    }";
+      }
+public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
+      {
+        yield break;
+      }";
             string expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
-        {
+      {
         foreach (var o in enumerable)
         {
             if(StrykerNamespace.MutantControl.IsActive(0)){;}else{
                 yield return value;
             }
         }
-    }";
+      } 
+public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
+      {
+        yield break;
+      }";
             ShouldMutateSourceToExpected(source, expected);
         }
 

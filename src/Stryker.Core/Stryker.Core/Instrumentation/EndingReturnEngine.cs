@@ -25,7 +25,7 @@ namespace Stryker.Core.Instrumentation
             }
 
             // we can also skip iterator methods, as they don't need to end with return
-            if (method.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement), false))
+            if (method.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
                 // not need to add yield return at the end of an enumeration method
                 return method;
@@ -58,7 +58,7 @@ namespace Stryker.Core.Instrumentation
 
         protected override SyntaxNode Revert(BaseMethodDeclarationSyntax node)
         {
-            if (node.Body?.Statements.Last()?.IsKind(SyntaxKind.ReturnStatement) != true)
+            if (node.Body?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)
             {
                 throw new InvalidOperationException($"No return at the end of: {node.Body}");
             }
