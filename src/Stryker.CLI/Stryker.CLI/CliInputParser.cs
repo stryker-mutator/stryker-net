@@ -29,7 +29,7 @@ namespace Stryker.CLI
         static CliInputParser()
         {
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
-            _generateConfigFileInput = AddCliOnlyInput("init", "i", "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
+            _generateConfigFileInput = AddCliOnlyInput("init", null, "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
         }
 
         public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
