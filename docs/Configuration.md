@@ -1,51 +1,33 @@
 ---
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/Configuration.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/configuration.md
 ---
 
-For .NET Core projects Stryker.NET can be run without any configuration. On .NET Framework projects the solution path is required.
+## Basics
+
+On some dotnet core projects stryker can run without specifying any custom configuration. Simply run `dotnet stryker` to start testing!  
+On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` to start testing.
 
 ## Use a config file
-When using Stryker in a team we recomend using a config file. This way you ensure all team members use the same settings to run Stryker. The settings will also be picked up in pipelines. To use a config file create a file called `stryker-config.json` in the folder you run Stryker and add a configuration section called stryker-config. Then you can add the options you want to configure to the file.
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the folder you run Stryker and add a configuration section called stryker-config.
 
 Example `stryker-config.json` file:
 ``` javascript
 {
     "stryker-config":
     {
-        "reporters": [
-            "progress",
-            "html"
-        ],
-        "log-level": "info",
-        "log-file":true,
-        "timeout-ms": 10000,
-        "project-file": "ExampleProject.csproj",
-        "max-concurrent-test-runners": 4,
-        "threshold-high": 80,
-        "threshold-low": 70,
-        "threshold-break": 60,
-        "mutation-level": "Standard",
-        "mutate": [
-            "!ExampleClass.cs",
-            "!Migrations/*.*",
-            "!ExampleDirectory\\ExampleClass2.cs"
-        ],
-        "excluded-mutations": [
-            "string",
-            "Logical operators"
-        ],
-        "ignore-methods": [
-            "*Log*",
-            "ToString",
-            "*HashCode*"
-        ],
-        "dashboard-compare": true,
-        "baseline-storage-location": "AzureFileStorage",
-        "azure-storage-url": "https://storageaccount.file.core.windows.net/sharename",
-        "azure-storage-sas": "<SAS>"
+        "solution": "SolutionFile.sln",
+        "project": "ExampleProject.csproj"
     }
 }
 ```
+
+### `config-file` [`path`]
+
+Default: `stryker-config.json`  
+Command line: `--config-file | -f "appsettings.dev.json"`  
+Config file: `N/A`  
+
+You can specify a custom path to the config file. For example if you want to add the stryker config section to your appsettings file. The section should still be called `stryker-config`.
 
 ## Solution path
 On .NET Framework projects Stryker needs your `.sln` file path.
