@@ -9,13 +9,16 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantOrchestratorTests
+    public class CsharpMutantOrchestratorTests
     {
         private readonly CsharpMutantOrchestrator _target;
 
-        public MutantOrchestratorTests()
+        public CsharpMutantOrchestratorTests()
         {
-            var options = new StrykerOptions { MutationLevel = MutationLevel.Complete };
+            var options = new StrykerOptions {
+                MutationLevel = MutationLevel.Complete,
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
             _target = new CsharpMutantOrchestrator(options: options);
         }
 

@@ -326,7 +326,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath
+                BasePath = basePath,
+                Concurrency = 1
             };
             var target = new MutationTestProcess(input,
                 reporterMock.Object,

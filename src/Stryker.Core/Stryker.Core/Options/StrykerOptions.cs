@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
@@ -25,10 +26,10 @@ namespace Stryker.Core.Options
 
         public int Concurrency { get; init; }
         public string ProjectUnderTestName { get; init; }
-        public IEnumerable<string> TestProjects { get; init; }
+        public IEnumerable<string> TestProjects { get; init; } = Enumerable.Empty<string>();
 
         public bool WithBaseline { get; init; }
-        public IEnumerable<Reporter> Reporters { get; init; }
+        public IEnumerable<Reporter> Reporters { get; init; } = Enumerable.Empty<Reporter>();
 
         public BaselineProvider BaselineProvider { get; init; }
         public string AzureFileStorageUrl { get; init; }
@@ -40,15 +41,15 @@ namespace Stryker.Core.Options
 
         public bool Since { get; init; }
         public string SinceTarget { get; init; }
-        public IEnumerable<FilePattern> DiffIgnoreFilePatterns { get; init; }
+        public IEnumerable<FilePattern> DiffIgnoreFilePatterns { get; init; } = Enumerable.Empty<FilePattern>();
 
         public string FallbackVersion { get; init; }
         public string ProjectVersion { get; init; }
         public string ModuleName { get; init; }
 
-        public IEnumerable<FilePattern> Mutate { get; init; }
-        public IEnumerable<Regex> IgnoredMethods { get; init; }
-        public IEnumerable<Mutator> ExcludedMutators { get; init; }
+        public IEnumerable<FilePattern> Mutate { get; init; } = Enumerable.Empty<FilePattern>();
+        public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
+        public IEnumerable<Mutator> ExcludedMutators { get; init; } = Enumerable.Empty<Mutator>();
 
         public OptimizationModes OptimizationMode { get; init; }
 

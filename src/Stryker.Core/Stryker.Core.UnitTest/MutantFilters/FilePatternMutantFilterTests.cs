@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             bool shouldKeepFile)
         {
             // Arrange
-            var options = new StrykerOptions() { DiffIgnoreFilePatterns = patterns.Select(FilePattern.Parse) };
+            var options = new StrykerOptions() { Mutate = patterns.Select(FilePattern.Parse) };
             var file = new CsharpFileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span
@@ -57,7 +57,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var sut = new FilePatternMutantFilter(options);
 
             // Act
-            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), new StrykerOptions());
+            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), null);
 
             // Assert
             result.Contains(mutant).ShouldBe(shouldKeepFile);

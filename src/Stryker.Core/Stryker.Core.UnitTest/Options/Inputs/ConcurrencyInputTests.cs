@@ -20,15 +20,15 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 var options = new ConcurrencyInput { SuppliedInput = 0 }.Validate(_loggerMock.Object);
             });
-            ex.Details.ShouldBe("Amount of maximum concurrent testrunners must be greater than zero.");
+            ex.Message.ShouldBe("Concurrency must be at least 1.");
         }
 
         [Theory]
-        [InlineData(2, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", LogLevel.Warning)]
-        [InlineData(8, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", LogLevel.Warning)]
-        [InlineData(16, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", LogLevel.Warning)]
-        [InlineData(128, "Using {0} testrunners which is more than recommended {1} for normal system operation. This can have an impact on performance.", LogLevel.Warning)]
-        public void WhenGivenValueIsPassedAsMaxConcurrentTestRunnersParam_ExpectedValueShouldBeSet_ExpectedMessageShouldBeLogged(int concurrentTestRunners, string logMessage, LogLevel expectedLoglevel)
+        [InlineData(2, LogLevel.Warning)]
+        [InlineData(8, LogLevel.Warning)]
+        [InlineData(16, LogLevel.Warning)]
+        [InlineData(128, LogLevel.Warning)]
+        public void WhenGivenValueIsPassedAsMaxConcurrentTestRunnersParam_ExpectedValueShouldBeSet_ExpectedMessageShouldBeLogged(int concurrentTestRunners, LogLevel expectedLoglevel)
         {
             var validatedInput = new ConcurrencyInput { SuppliedInput = concurrentTestRunners }.Validate(_loggerMock.Object);
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             if (concurrentTestRunners > safeProcessorCount)
             {
-                string formattedMessage = string.Format(logMessage, concurrentTestRunners, safeProcessorCount);
+                string formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", concurrentTestRunners, safeProcessorCount);
 
                 _loggerMock.Verify(expectedLoglevel, formattedMessage, Times.Once);
             }
@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             validatedInput.ShouldBe(1);
 
-            _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", Times.Once);
+            _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to concurrency being set to 1.", Times.Once);
 
             _loggerMock.VerifyNoOtherCalls();
         }
