@@ -37,8 +37,8 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
-
-            var sut = new DiskBaselineProvider(new StrykerOptions(), fileSystemMock);
+            var options = new StrykerOptions { BasePath = "C:/Dev" };
+            var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
             var result = await sut.Load("testversion");

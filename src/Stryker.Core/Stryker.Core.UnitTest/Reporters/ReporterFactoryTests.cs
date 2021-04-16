@@ -52,18 +52,5 @@ namespace Stryker.Core.UnitTest.Reporters
 
             result.Reporters.Count().ShouldBe(8);
         }
-
-        [Fact]
-        public void ReporterFactory_CreatesReplacementsForDeprecatedReporterOptions()
-        {
-            var target = new ReporterFactory();
-            var options = new StrykerOptions { Reporters = new[] { Reporter.ConsoleProgressBar, Reporter.ConsoleProgressDots, Reporter.ConsoleReport } };
-
-            var result = target.Create(options, _branchProviderMock.Object);
-            var broadcastReporter = result.ShouldBeOfType<BroadcastReporter>();
-            broadcastReporter.Reporters.ShouldContain(r => r is ConsoleDotProgressReporter);
-            broadcastReporter.Reporters.ShouldContain(r => r is ClearTextReporter);
-            broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
-        }
     }
 }

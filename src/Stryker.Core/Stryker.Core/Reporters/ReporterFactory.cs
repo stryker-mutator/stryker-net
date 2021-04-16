@@ -42,22 +42,6 @@ namespace Stryker.Core.Reporters
             {
                 return possibleReporters.Values;
             }
-            var replacementFor = new Dictionary<Reporter, Reporter>
-            {
-                { Reporter.ConsoleProgressBar, Reporter.Progress },
-                { Reporter.ConsoleProgressDots, Reporter.Dots },
-                { Reporter.ConsoleReport, Reporter.ClearText }
-            };
-            if (enabledReporters.Where(deprecated => replacementFor.Any(replacement => replacement.Key == deprecated)).ToList() is var deprecatedReporters && deprecatedReporters.Count() > 0)
-            {
-                var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(typeof(ReporterFactory).Name);
-                foreach (var deprecatedReporter in deprecatedReporters)
-                {
-                    logger.LogWarning($"Reporter {deprecatedReporter} is deprecated. Please use {replacementFor[deprecatedReporter]} instead.");
-
-                    enabledReporters.Add(replacementFor[deprecatedReporter]);
-                }
-            }
 
             return possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
                 .Select(reporter => reporter.Value);
