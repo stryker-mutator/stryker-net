@@ -8,7 +8,7 @@ On some dotnet core projects stryker can run without specifying any custom confi
 On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` to start testing.
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the folder you run Stryker and add a configuration section called stryker-config.
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config. Alternatively use [init](#init-[bool])
 
 Example `stryker-config.json` file:
 ``` javascript
@@ -21,39 +21,37 @@ Example `stryker-config.json` file:
 }
 ```
 
+### `init` [`flag`]
+
+Default: `false`  
+Command line: `--init`  
+Config file: `N/A`  
+
+Creates a stryker config file with default options. Any options passed in the cli will override the defaults.
+
 ### `config-file` [`path`]
 
 Default: `stryker-config.json`  
-Command line: `--config-file | -f "appsettings.dev.json"`  
+Command line: `[-f|--config-file] "appsettings.dev.json"`  
 Config file: `N/A`  
 
 You can specify a custom path to the config file. For example if you want to add the stryker config section to your appsettings file. The section should still be called `stryker-config`.
 
-## Solution path
-On .NET Framework projects Stryker needs your `.sln` file path.
+## `solution` [`path`]
 
-```
-dotnet stryker --solution-path "..\\ExampleProject.sln"
-dotnet stryker -s "..\\ExampleProject.sln"
-```
+Default: `null`  
+Command line: `[-s|--solution] "../solution.sln"`  
+Config file: `"solution": '../solution.sln'`
 
-Stryker.NET needs the path to execute:
+The solution file is required for dotnet framework projects. You may specify the solution file for dotnet core projects. In some cases this can help with dependency resolution.
 
-```
-nuget restore "*.sln"
-```
-and 
-```
-MSBuild.exe "*.sln"
-```
+## `project` [`file-name`]
 
-## Project file
-When Stryker finds two or more project references inside your test project, it needs to know which project should be mutated. Pass the name of this project using:
+Default: `null`  
+Command line: `[-p|--project] "MyAwesomeProject.csproj"`  
+Config file: `"project": 'MyAwesomeProject.csproj'`
 
-```
-dotnet stryker --project-file SomeProjectName.csproj
-dotnet stryker -p SomeProjectName.csproj
-```
+The project file name is required when your test project has more than one project reference. Stryker can currently mutate one project under test for 1..N test projects but not 1..N projects under test for one test project.
 
 ## Mutation level
 Stryker supports multiple mutation levels. Each level comes with a specific set of mutations. Each level contains the mutations of the levels below it. By setting the level to `Complete` you will get all possible mutations and the best mutation testing experience. This comes at the price of longer runtime, as more mutations have to be tested at higher levels. 
