@@ -6,6 +6,7 @@
   "stryker-net/RegexMutators",
   "stryker-net/Reporters",
   "stryker-net/Stryker-in-pipeline",
+  "stryker-net/updating",
   {
     "Technical reference": [
       "stryker-net/technical-reference/Introduction",
