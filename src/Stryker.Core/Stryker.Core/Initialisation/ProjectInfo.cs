@@ -22,6 +22,16 @@ namespace Stryker.Core.Initialisation
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
         }
+
+        public void RestoreOrginalAssembly()
+        {
+            foreach(var testProject in TestProjectAnalyzerResults)
+            {
+                var injectionPath = GetInjectionFilePath(testProject);
+                File.Delete(injectionPath);
+                File.Move(injectionPath + ".stryker-unchanged", injectionPath);
+            }
+        }
     }
 
     public enum Framework
