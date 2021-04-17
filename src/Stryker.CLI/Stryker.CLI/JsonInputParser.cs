@@ -21,7 +21,7 @@ namespace Stryker.CLI
             inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.BaseLine?.AzureFileShareUrl;
             inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
             inputs.DisableBailInput.SuppliedInput = jsonConfig.DisableBail;
-            inputs.DisableSimultaneousTestingInput.SuppliedInput = jsonConfig.DisableTestingMixMutations;
+            inputs.DisableMixMutantsInput.SuppliedInput = jsonConfig.DisableMixMutants;
             inputs.AdditionalTimeoutMsInput.SuppliedInput = jsonConfig.AdditionalTimeout;
             inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
             inputs.MutationLevelInput.SuppliedInput = jsonConfig.MutationLevel;

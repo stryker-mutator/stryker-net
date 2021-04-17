@@ -166,7 +166,7 @@ namespace Stryker.Core.MutationTest
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
 
-            if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableTestMix) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }

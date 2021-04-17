@@ -263,7 +263,15 @@ Default: `false`
 Command line: `N/A`  
 Config file: `"disable-bail": true`
 
-Stryker aborts a unit testrun for a mutant as soon as one test fails. This can reduce the total runtime. You can disable this behavior with this option.
+Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (eg if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
+
+### `disable-mix-mutants` <`bool`>
+
+Default: `false`  
+Command line: `N/A`  
+Config file: `"disable-mix-mutants": true`
+
+Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
 
 ### `since` <`bool[<:comittish>]`>
 

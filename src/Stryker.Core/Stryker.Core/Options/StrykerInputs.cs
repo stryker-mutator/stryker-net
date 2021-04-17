@@ -51,7 +51,7 @@ namespace Stryker.Core.Options
         public ExcludedMutationsInput ExcludedMutationsInput { get; init; }
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; }
         public DisableBailInput DisableBailInput { get; set; }
-        public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
+        public DisableMixMutantsInput DisableMixMutantsInput { get; set; }
 
         public StrykerOptions ValidateAll()
         {
@@ -83,7 +83,7 @@ namespace Stryker.Core.Options
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),
-                OptimizationMode = CoverageAnalysisInput.Validate() & DisableBailInput.Validate() & DisableSimultaneousTestingInput.Validate(),
+                OptimizationMode = CoverageAnalysisInput.Validate() & DisableBailInput.Validate() & DisableMixMutantsInput.Validate(),
                 TestProjects = TestProjectsInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),

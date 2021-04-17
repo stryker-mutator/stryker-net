@@ -37,8 +37,8 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "disable-bail")]
         public bool DisableBail { get; set; }
 
-        [JsonProperty(PropertyName = "disable-testing-mix-mutations")]
-        public bool DisableTestingMixMutations { get; set; }
+        [JsonProperty(PropertyName = "disable-mix-mutants")]
+        public bool DisableMixMutants { get; set; }
 
         public Thresholds Thresholds { get; set; }
 

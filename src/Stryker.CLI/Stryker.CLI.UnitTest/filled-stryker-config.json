@@ -6,6 +6,7 @@
     "verbosity": "trace",
     "coverage-analysis": "perTest",
     "disable-bail": true,
+    "disable-mix-mutants":  true,
     "additional-timeout": 9999,
     "project": "ExampleProject.csproj",
     "concurrency": 1,
