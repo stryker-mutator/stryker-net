@@ -1,3 +1,12 @@
+## [0.22.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.3) (2021-04-17)
+
+
+### Bug Fixes
+
+* **baseline:** Allow valid version strings like 2.0.0 ([#1514](https://github.com/stryker-mutator/stryker-net/issues/1514)) ([b740bba](https://github.com/stryker-mutator/stryker-net/commit/b740bba44fab7e6e4673743d1d46fcc45da28cd5))
+
+
+
 ## [0.22.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.1...stryker@0.22.2) (2021-04-15)
 
 
