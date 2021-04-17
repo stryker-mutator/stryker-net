@@ -90,7 +90,7 @@ namespace Stryker.Core.Baseline.Providers
             var uriParts = fileUrl.Split(_outputPath);
             var currentDirectory = new StringBuilder(uriParts[0]);
 
-            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains("."));
+            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains(".json"));
 
             foreach (var segment in storagePathSegments)
             {
