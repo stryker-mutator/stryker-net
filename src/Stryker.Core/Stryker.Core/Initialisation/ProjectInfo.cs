@@ -23,7 +23,7 @@ namespace Stryker.Core.Initialisation
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
         }
 
-        public void RestoreOrginalAssembly()
+        public virtual void RestoreOrginalAssembly()
         {
             foreach(var testProject in TestProjectAnalyzerResults)
             {
