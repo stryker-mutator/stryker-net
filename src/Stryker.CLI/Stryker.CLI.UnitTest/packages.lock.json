@@ -2047,7 +2047,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.9.1",
-          "stryker": "0.22.2"
+          "stryker": "0.22.3"
         }
       },
       "stryker": {
@@ -2073,8 +2073,8 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "0.22.2",
-          "Stryker.RegexMutators": "0.22.2",
+          "Stryker.DataCollector": "0.16.1",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "13.2.29"
         }
       },
