@@ -67,7 +67,7 @@ Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.cspr
 
 When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.
 
-### `Mutate` [`glob[]`]
+### `mutate` [`glob[]`]
 
 Default: `*`  
 Command line: `[-m|--mutate] "**/*Services.cs"`  
@@ -95,6 +95,32 @@ To allow more fine grained filtering you can also specify the span of text that 
 ```bash
 dotnet stryker -m "MyFolder/MyService.cs{10..100}"
 ```
+
+### `language-version` [`string`]
+
+Default: `latest`  
+Command line: `N/A`  
+Config file: `"language-version": 'CSharp7_3'`
+
+Stryker compiles with the latest stable csharp version by default. This should generally be fine as csharp language features are forward compatible. You should not have to change the option from latest unless you're using preview versions of dotnet/csharp. If you do have compilation errors regarding language features you can explicitly set the language version.
+
+Valid language versions:
+- Default (Latest)
+- Latest (Default)
+- Csharp2
+- Csharp3
+- Csharp4
+- Csharp5
+- Csharp6
+- Csharp7
+- Csharp7_1
+- Csharp7_2
+- Csharp7_3
+- Csharp8
+- Csharp9
+- Preview (next language version)
+
+\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
 
 ## Control flow
 
