@@ -8,7 +8,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 Stryker is installed using the dotnet cli as a [dotnet tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools)
 
-Stryker requires dotnet core runtime 3.1 or newer: [Install dotnet](https://dotnet.microsoft.com/download)
+Stryker requires dotnet 5.0 or newer: [Install dotnet](https://dotnet.microsoft.com/download)
 
 ## Dotnet framework specific
 Nuget is required for dotnet framework. Follow the instructions at [Install nuget](https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools#windows) including adding nuget to the path. Otherwise stryker will not be able to find and use nuget.
