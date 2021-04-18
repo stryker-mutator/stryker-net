@@ -467,3 +467,14 @@ Config file: `N/A`
 
 Stryker will not gracefully recover from compilation errors, instead crash immediately. Used during development to quickly diagnose errors.  
 Also enables more debug logs not generally useful to normal users.
+
+# Misc
+
+### `dashboard-url` <`string`>
+
+Default: `https://dashboard.stryker-mutator.io`  
+Command line: `--dashboard-url "https://dev-dashboard.stryker-mutator.io"`  
+Config file: `"dashboard-url": 'https://dev-dashboard.stryker-mutator.io'`
+
+If you're not using the official Stryker Dashboard you can set a custom dashboard url.  
+This can be used during Stryker development to not pollute the production dashboard or if you self-host a custom dashboard that adheres to the Stryker Dashboard API.
