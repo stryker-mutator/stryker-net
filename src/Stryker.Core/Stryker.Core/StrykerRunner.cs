@@ -65,17 +65,16 @@ namespace Stryker.Core
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
 
-                // Report
-                reporters.OnMutantsCreated(readOnlyInputComponent);
-
-                var allMutants = rootComponent.Mutants.ToList();
-
                 // Filter
                 foreach (var project in _mutationTestProcesses)
                 {
                     project.FilterMutants();
                 }
 
+                // Report
+                reporters.OnMutantsCreated(readOnlyInputComponent);
+
+                var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
 
                 if (!mutantsNotRun.Any())
