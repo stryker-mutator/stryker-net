@@ -334,86 +334,103 @@ dotnet stryker -diff-ignore-files ['**/*.ts']
 
 Default: `[]`
 
-## EXPERIMENTAL: Dashboard Compare
-Enabling the dashboard compare feature saves reports and re-uses the result when a mutant or it's tests are unchanged.
+# Experimental
 
+**The features in this section are experimental. Results can contain false postives and false negatives.**
+
+## Baseline
+
+### `with-baseline` <`bool`[<`:comittish`>]>
+
+Default: `false:master`  
+Command line: `--with-baseline:feat-2`  
+Config file: `"with-baseline": true, "since-target": 'feat-2'`
+
+Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-<bool[<:comittish>]>) feature by providing you with a full report after a partial mutation testrun.
+
+The report name is based on the current branch name or the [project-info.version](#project-info.version-<string>).
+
+Set the diffing target on the command line by passing a comittish with the since flag.
+Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
+
+*\* This feature automatically enables the [since](#since-<bool[<:comittish>]>) feature.*
+
+### `baseline.fallback-version` <`string`>
+
+Default: [since-target](#since-target-<comittish>)  
+Command line: `N/A`  
+Config file: `"baseline": { "fallback-version": 'develop' }`
+
+When [with-baseline](#with-baseline-<bool[<:comittish>]>) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
+
+**Example**:
+```json
+"since-target": 'development',
+"current-branch" 'feat-2'
 ```
-dotnet stryker --dashboard-compare
-dotnet stryker -compare
+```json
+baseline exists for branch feat-2: false
+baseline exists for branch development: false
+
+baseline used: null (complete instead of partial testrun)
+new baseline saved to: feat-2
+```
+```json
+baseline exists for branch feat-2: false
+baseline exists for branch development: true
+
+baseline used: development
+new baseline saved to: feat-2
+```
+```json
+baseline exists for branch feat-2: true
+baseline exists for branch development: true
+
+baseline used: feat-2
+new baseline saved to: feat-2
 ```
 
-Default `"off"`
+*\* The [since-target](#since-target-<comittish>) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
 
-This feature automatically enables the --diff feature.
+### `baseline.provider` <`string`>
 
-This feature is experimental. Results can contain slight false postives and false negatives.
+Default: `Disk`  
+Command line: `N/A`  
+Config file: `"baseline": { "provider": 'AzureFileStorage'}`
 
-### Fallback version
-When enabling the --dashboard-compare feature you can provide a fallback version. This version will be used to pull a baseline when we cannot find a baseline for your current branch. When we are still unable to provide a baseline we will start a complete testrun to create a complete baseline.
+Sets the storage provider for the baseline used by [with-baseline](#with-baseline-<bool[<:comittish>]>). By default this is set to disk, when the dashboard [reporter](#reporter-<string>) is enabled this is automatically set to Dashboard.
 
-```
-dotnet stryker --dashboard-compare --dashboard-fallback-version master
-dotnet stryker -compare -fallback-version master
-```
-Default: value provided to --git-source or null
+Supported storage providers are:
 
-### Baseline Storage location
-Sets the storage location for the baseline used by --dashboard-compare. By default this is set to disk, when the dashboard reporter is enabled this is automatically set to Stryker Dashboard.
-
-Supported storage locations are:
-
-| Storage location | Option | Description |
-|------------------|--------|-------------|
-| Disk             | Disk   | Saves the baseline to the `StrykerOutput` folder|
-| Stryker Dashboard| Dashboard | Saves the baseline to Stryker Dashboard |
+| Storage location  | Option | Description |
+|------------------ |--------|-------------|
+| Disk              | Disk   | Saves the baseline on disk to the `StrykerOutput` folder |
+| Stryker Dashboard | Dashboard | Saves the baseline to Stryker Dashboard |
 | Azure File Storage | AzureFileStorage | Saves the baseline to Azure File Storage |
 
-```
-dotnet stryker --dashboard-compare --baseline-storage-location disk
-dotnet stryker -compare -bsl disk
-```
-Defaut `"disk"`
+For configuring the dashboard provider see [Dashboard Reporter Settings](./reporters.md#dashboard-reporter)
 
-### Configurating Dashboard location
+### `baseline.azure-fileshare-url` <`url`>
 
-See: [Dashboard Reporter Settings](./Reporters.md#dashboard-reporter)
+Default: `null`  
+Command line: `N/A`  
+Config file: `"baseline": { "azure-fileshare-url": 'https://stryker-net.file.core.windows.net/baselines'}`
 
-#### Configuring Azure File Storage
-When using Azure File Storage as baseline storage location you are required to provide the following values.
+When using the azure file storage [provider](#baseline.provider-<string>) you must set the file share url.
+The file share url should be in the the format:
 
-#### Azure File Storage URL
-This is the url to your Azure File Storage. The URL should look something like this:
+`https://<STORAGE_ACCOUNT_NAME>.file.core.windows.net/<FILE_SHARE_NAME>/<OPTIONAL_SUBFOLDER_NAME>`
 
-```
-https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
-```
-Providing a subfolder is optional, we store the baseline in a `StrykerOutput` subfolder.
+Providing a subfolder is optional but allowed. The baseline are always stored in a folder called `StrykerOutput/Baselines`. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
 
-```
--storage url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
---azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER
-```
+### `azure-storage-sas` <`string`>
 
-#### Shared Access Signature (SAS)
-For authentication we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+Default: `null`  
+Command line: `--azure-storage-sas "adfdf34343242323rewfe323434"`  
+Config file: `N/A`
 
-```
--storage-sas <STORAGE_SAS>
---azure-storage-sas <STORAGE_SAS>
-```
-
-The complete configuration would look like this:
-```
-dotnet stryker --dashboard-compare --baseline-storage-location AzureFileStorage --azure-storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER --azure-storage-sas STORAGE_SAS
-
-or
-
-dotnet stryker -compare -bsl AzureFileStorage -storage-url https://STORAGE_NAME.file.core.windows.net/FILE_SHARE/(optional)SUBFOLDER -sas STORAGE_SAS
-```
-
-### Using dashboard compare in a pull request pipeline
-
-See: [Using stryker in pipelines](./Stryker-in-pipeline.md)
+When using the azure file storage [provider](#baseline.provider-<string>) you must pass credentials for the fileshare to Stryker.
+For authentication with the azure fileshare we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
 ## Troubleshooting
 
