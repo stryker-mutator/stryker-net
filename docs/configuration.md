@@ -57,7 +57,7 @@ Config file: `"project": 'MyAwesomeProject.csproj'`
 
 The project file name is required when your test project has more than one project reference. Stryker can currently mutate one project under test for 1..N test projects but not 1..N projects under test for one test project.
 
-*Do not pass a path to this option. Pass the project file **name** as it appears in your test project's project references.*
+*\* Do not pass a path to this option. Pass the project file **name** as it appears in your test project's references.*
 
 ### `test-projects` [`path[]`]
 
@@ -73,7 +73,7 @@ Default: `*`
 Command line: `[-m|--mutate] "**/*Services.cs"`  
 Config file: `"mutate": ['**/*Services.cs', '!**/*.Generated.cs']`
 
-*The mutate option can be used multiple times on the command line*
+*\* The mutate option can be used multiple times on the command line*
 
 With `mutate` you configure the subset of files to use for mutation testing. Only source files part of your project will be taken into account. When this option is not specified the whole project will be mutated.  
 You can add an `!` in front of the pattern to exclude instead of include matching files. This can be used to for example ignore generated files while mutating.
@@ -82,7 +82,7 @@ When only exclude patterns are provided, all files will be included that do not 
 
 The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) to allow wildcards.
 
-\* Example:
+**Example**:
 
 | Patterns  | File                      | Will be mutated   |
 | ----------| ------------------------- | ----------------- |
@@ -120,7 +120,7 @@ Valid language versions:
 - Csharp9
 - Preview (next language version)
 
-\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
+*\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
 
 ## Control flow
 
@@ -166,7 +166,7 @@ Config file: `"reporters": ['html', 'json', 'progress']`
 
 During a mutation testrun one or more reporters can be enabled. A reporter will produce some kind of output during or after the mutation testrun.
 
-The available reporters options are
+The available reporter options are
 * all
 * progress
 * dots
@@ -201,7 +201,7 @@ Config file: `"concurrency": 10`
 
 Change the amount of concurrent workers stryker uses for the mutation testrun. Defaults to using half your logical (virtual) processor count.
 
-\* Example: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default.
+**Example**: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default.
 
 ### `thresholds` [`object`]
 
@@ -310,13 +310,13 @@ Use git information to test only code changes since the given target.
 Set the diffing target on the command line by passing a comittish with the since flag.
 Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
 
-\* For changes on test project files all mutants covered by tests in that file will be seen as changed.
+*\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
 
 ### `since-target` <`comittish`>
 
 Default: `master`  
 Command line: `N/A`  
-Config file: `""since-target": 'feat-2'`
+Config file: `"since-target": 'feat-2'`
 
 Set the diffing target for the [since](#since-<bool[<:comittish>]>) feature.
 
@@ -438,7 +438,9 @@ Default: `false`
 Command line: `[-L|--log-to-file]`  
 Config file: `N/A`
 
-When creating an issue for Stryker.NET on github you can include a logfile. File logging always uses loglevel `trace`.
+When creating an issue on github you can include a logfile so the issue can be diagnosed easier. 
+
+*\* File logging always uses loglevel `trace`.*
 
 ### `dev-mode` [`flag`]
 
