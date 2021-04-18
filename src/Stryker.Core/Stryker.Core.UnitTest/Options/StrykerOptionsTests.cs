@@ -174,6 +174,13 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
+        public void ShouldAllowBreakThresholdAt100()
+        {
+            var options = new StrykerOptions(thresholdHigh: 100, thresholdLow: 100, thresholdBreak: 100);
+            options.Thresholds.Break.ShouldBe(100);
+        }
+
+        [Fact]
         public void ShouldValidateMutationLevel()
         {
             var ex = Assert.Throws<StrykerInputException>(() =>

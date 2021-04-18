@@ -574,8 +574,7 @@ namespace Stryker.Core.Options
                     "The thresholds must be between 0 and 100");
             }
 
-            // ThresholdLow and ThresholdHigh can be the same value
-            if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh)
+            if (thresholdBreak > thresholdLow || thresholdLow > thresholdHigh)
             {
                 throw new StrykerInputException(
                     ErrorMessage,
