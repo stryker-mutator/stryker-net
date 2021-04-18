@@ -268,11 +268,11 @@ Config file: `"coverage-analysis": 'off'`
 
 Use coverage info to speed up execution. 
 
-- **off**: coverage data is not captured.
-- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover the mutant are tested. Fastest option.
-- **all**: capture the list of mutants covered by each test. Test only these mutants. Non covered mutants are assumed as survivors. Fast option.
+- **perTest**: capture the list of mutants covered by each test. For every mutant that has tests, only the tests that cover the mutant are used to test a mutant. Mutants without tests are reported as `NoCoverage`. Fastest option.
 - **perTestInIsolation**: like 'perTest', but running each test in an isolated run. This results in more accurate
 coverage information for some mutants (see below), at the expense of a longer startup time.
+- **all**: capture the list of mutants covered by a test. Test only the mutants covered by unit tests. Non covered mutants are assumed as survivors. Fast option.
+- **off**: coverage data is not captured. All unit tests are ran against all mutants.
 
 #### Notes on coverage analysis
 * Results should not be impacted by coverage analysis. If you identify a suspicious survivor, run
@@ -281,7 +281,6 @@ Stryker again without coverage analysis and report an issue if this mutant is ki
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
 constructors/initialisers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
-
 
 ### `disable-bail` <`bool`>
 
