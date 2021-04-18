@@ -122,6 +122,34 @@ Valid language versions:
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
 
+### `project-info.name` <`string`>
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"project-info": { "name": 'github.com/stryker-mutator/stryker-net' }`
+
+The name registered with the [Stryker dashboard](#reporters.md#dashboard-reporter). It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we want to also support gitlab.com/bitbucket.org etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
+
+### `project-info.module` <`string`>
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"project-info": { "module": 'stryker-core' }`
+
+If you want to store multiple reports for a given version you can use this option to separate them logically. For example in a mono-repo setup where each package (or project or module) delivers a separate report. The Stryker dashboard will combine all module reports for a given version into one complete project report.
+
+See [Stryker dashboard](#reporters.md#dashboard-reporter)
+
+### `project-info.version` <`comittish`>
+
+Default: `null`  
+Command line: `[-v|--version] "feat/logging"`  
+Config file: `"project-info": { "version": 'feat/logging' }`
+
+The version of the report. This should be filled with the branch name, git tag or git sha (although no validation is done). You can override a report of a specific version, like docker tags. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
+
+See [Stryker dashboard](#reporters.md#dashboard-reporter)
+
 ## Control flow
 
 ### `mutation-level` <`level`>
@@ -167,16 +195,16 @@ Config file: `"reporters": ['html', 'json', 'progress']`
 During a mutation testrun one or more reporters can be enabled. A reporter will produce some kind of output during or after the mutation testrun.
 
 The available reporter options are
-* all
-* progress
-* dots
-* cleartext
-* cleartexttree
-* html
-* json
-* dashboard
+* all (Enable all reporters)
+* [html](./reporters.md#html-reporter)
+* [progress](./reporters.md#progress-reporter)
+* [dashboard](./reporters.md#dashboard-reporter)
+* [cleartext](./reporters.md#cleartext-reporter)
+* [cleartexttree](./reporters.md#cleartext-tree-reporter)
+* [dots](./reporters.md#dots-reporter)
+* [json](./reporters.md#json-reporter)
 
-You can find a description for every reporter in the [reporter docs](./Reporters.md)
+You can find a description for every reporter in the [reporter docs](./reporters.md)
 
 ### `additional-timeout` <`number`>
 
@@ -480,10 +508,20 @@ Also enables more debug logs not generally useful to normal users.
 
 # Misc
 
+### `dashboard-api-key` <`string`>
+
+Default: `null`  
+Command line: `--dashboard-api-key "afdfsgarg3wr32r3r32f3f3"`  
+Config file: `N/A`
+Environment variable: `STRYKER_DASHBOARD_API_KEY="afdfsgarg3wr32r3r32f3f3"`
+
+The API key for authentication with the Stryker dashboard.  
+Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). To keep your api key safe, store it in an encrypted variable in your pipeline.
+
 ### `dashboard-url` <`string`>
 
 Default: `https://dashboard.stryker-mutator.io`  
-Command line: `--dashboard-url "https://dev-dashboard.stryker-mutator.io"`  
+Command line: `N/A`  
 Config file: `"dashboard-url": 'https://dev-dashboard.stryker-mutator.io'`
 
 If you're not using the official Stryker Dashboard you can set a custom dashboard url.  
