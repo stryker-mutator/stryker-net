@@ -124,7 +124,7 @@ namespace Stryker.Core.ToolHelpers
                     dllPath = FilePathUtils.NormalizePathSeparators(
                         Path.Combine(
                             nugetPackageFolder, portablePackageFolder, versionString,
-                            "tools", "netcoreapp2.0", "vstest.console.dll"));
+                            "tools", "netcoreapp2.1", "vstest.console.dll"));
                     exePath = FilePathUtils.NormalizePathSeparators(
                         Path.Combine(
                             nugetPackageFolder, portablePackageFolder, versionString,
@@ -162,7 +162,14 @@ namespace Stryker.Core.ToolHelpers
 
         private IEnumerable<string> CollectNugetPackageFolders()
         {
-            if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
+            static bool TryGetNonEmptyEnvironmentVariable(string variable, out string value)
+            {
+                value = Environment.GetEnvironmentVariable(variable);
+                return !string.IsNullOrWhiteSpace(value);
+            }
+
+            if (TryGetNonEmptyEnvironmentVariable("USERPROFILE", out var userProfile)
+                || TryGetNonEmptyEnvironmentVariable("HOME", out userProfile))
             {
                 var path = Path.Combine(userProfile, ".nuget", "packages");
                 if (_fileSystem.Directory.Exists(path))
@@ -170,8 +177,7 @@ namespace Stryker.Core.ToolHelpers
                     yield return path;
                 }
             }
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation
-                && !string.IsNullOrWhiteSpace(nugetPackagesLocation)
+            if (TryGetNonEmptyEnvironmentVariable("NUGET_PACKAGES", out var nugetPackagesLocation)
                 && _fileSystem.Directory.Exists(nugetPackagesLocation))
             {
                 yield return nugetPackagesLocation;
@@ -182,14 +188,14 @@ namespace Stryker.Core.ToolHelpers
         {
             var vstestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
-                .Single(r => r.Contains("Microsoft.TestPlatform.Portable"));
+                .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
             using (var stream = typeof(VsTestHelper).Assembly
             .GetManifestResourceStream(vstestZip))
             {
-                var zipPath = Path.Combine(tempDir, $"vstest.zip");
+                var zipPath = Path.Combine(tempDir, "vstest.zip");
                 _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
                 using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
