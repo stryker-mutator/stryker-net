@@ -12,11 +12,15 @@
     "concurrency": 1,
     "solution": "",
     "mutation-level": "",
-    "since": true,
-    "since-target": "main",
+    "since": {
+      "enabled": false,
+      "target": "main",
+      "ignore-changes-in": [
+        ""
+      ]
+    },
     "language-version": "",
     "dashboard-url": "",
-    "with-baseline": true,
     "test-projects": [
       ""
     ],
@@ -40,10 +44,8 @@
       "module": "cli"
     },
     "baseline": {
+      "enabled":  false,
       "fallback-version": "master",
-      "ignore-changed-files": [
-        ""
-      ],
       "azure-fileshare-url": "",
       "provider": ""
     }

@@ -335,42 +335,39 @@ Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
 
-### `since` <`bool[<:comittish>]`>
+### `since` <`flag`>
 
-Default: `false:master`  
+Default: `false`  
 Command line: `--since:feat-2`  
-Config file: `"since": true, "since-target": 'feat-2'`
+Config file: `"since": { }`
 
 Use git information to test only code changes since the given target. Stryker will only report on mutants within the changed code. All other mutants will not have a result.
 
-If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-<bool[<:comittish>]>).
+If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-<flag>).
 
-Set the diffing target on the command line by passing a comittish with the since flag.
-Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
+Set the diffing target on the command line by passing a comittish with the since flag in the format `--since:<comittish>`.
+Set the diffing target in the config file by setting the [since.target](#since.target-<comittish>) option.
 
 *\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
 
-### `since-target` <`comittish`>
+### `since.target` <`comittish`>
 
 Default: `master`  
 Command line: `N/A`  
-Config file: `"since-target": 'feat-2'`
+Config file: `"since": { "target": 'feat-2' }`
 
-Set the diffing target for the [since](#since-<bool[<:comittish>]>) feature.
+Set the diffing target for the [since](#since-<flag>) feature.
 
-### Diff ignore files
-Allows to specify an array of C# files which should be ignored if present in the diff.
-Any not ignored files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
+### `since.ignore-changes-in` <`string[]`>
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"since": { "ignore-changes-in: ['**/*Translations.json'] }`
+
+Allows to specify an array of files which should be ignored if present in the diff.
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
             
 Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wildcards. Example: ['**/*Assets.json','**/favicon.ico']
-
-```
-dotnet stryker --diff-ignore-files ['**/*.ts']
-dotnet stryker -diff-ignore-files ['**/*.ts']
-```
-
-Default: `[]`
 
 # Experimental
 
@@ -378,20 +375,20 @@ Default: `[]`
 
 ## Baseline
 
-### `with-baseline` <`bool`[<`:comittish`>]>
+### `with-baseline` <`flag`>
 
-Default: `false:master`  
+Default: `false`  
 Command line: `--with-baseline:feat-2`  
-Config file: `"with-baseline": true, "since-target": 'feat-2'`
+Config file: `"baseline": { }`
 
-Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-<bool[<:comittish>]>) feature by providing you with a full report after a partial mutation testrun.
+Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-<flag>) feature by providing you with a full report after a partial mutation testrun.
 
 The report name is based on the current branch name or the [project-info.version](#project-info.version-<string>).
 
 Set the diffing target on the command line by passing a comittish with the since flag.
-Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
+Set the diffing target in the config file by setting the [since.target](#since.target-<comittish>) option.
 
-*\* This feature automatically enables the [since](#since-<bool[<:comittish>]>) feature.*
+*\* This feature automatically enables the [since](#since-<flag>) feature.*
 
 ### `baseline.fallback-version` <`string`>
 

@@ -13,12 +13,19 @@ namespace Stryker.CLI
 
             // As json values are first in line we can just overwrite all supplied inputs
             inputs.ConcurrencyInput.SuppliedInput = jsonConfig.Concurrency;
-            inputs.WithBaselineInput.SuppliedInput = jsonConfig.WithBaseline;
-            inputs.BaselineProviderInput.SuppliedInput = jsonConfig.BaseLine?.Provider;
-            inputs.WithBaselineInput.SuppliedInput = jsonConfig.BaseLine?.WithBaseline;
-            inputs.DiffIgnoreFilePatternsInput.SuppliedInput = jsonConfig.BaseLine?.IgnoreChangedFiles;
-            inputs.FallbackVersionInput.SuppliedInput = jsonConfig.BaseLine?.FallbackVersion;
-            inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.BaseLine?.AzureFileShareUrl;
+
+            inputs.SinceInput.SuppliedInput =
+                jsonConfig.Since is not null ||
+                (jsonConfig.Since.Enabled.HasValue && jsonConfig.Since.Enabled.Value);
+
+            inputs.WithBaselineInput.SuppliedInput =
+                jsonConfig.Baseline is not null ||
+                (jsonConfig.Baseline.Enabled.HasValue && jsonConfig.Baseline.Enabled.Value);
+
+            inputs.BaselineProviderInput.SuppliedInput = jsonConfig.Baseline?.Provider;
+            inputs.DiffIgnoreFilePatternsInput.SuppliedInput = jsonConfig.Since?.IgnoreChangesIn;
+            inputs.FallbackVersionInput.SuppliedInput = jsonConfig.Baseline?.FallbackVersion;
+            inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.Baseline?.AzureFileShareUrl;
             inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
             inputs.DisableBailInput.SuppliedInput = jsonConfig.DisableBail;
             inputs.DisableMixMutantsInput.SuppliedInput = jsonConfig.DisableMixMutants;
@@ -29,8 +36,8 @@ namespace Stryker.CLI
             inputs.ModuleNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Module;
             inputs.ProjectVersionInput.SuppliedInput = jsonConfig.ProjectInfo?.Version;
             inputs.ReportersInput.SuppliedInput = jsonConfig.Reporters;
-            inputs.SinceInput.SuppliedInput = jsonConfig.Since;
-            inputs.SinceTargetInput.SuppliedInput = jsonConfig.SinceTarget;
+            
+            inputs.SinceTargetInput.SuppliedInput = jsonConfig.Since?.Target;
             inputs.SolutionPathInput.SuppliedInput = jsonConfig.Solution;
             inputs.ProjectUnderTestNameInput.SuppliedInput = jsonConfig.Project;
             inputs.ThresholdBreakInput.SuppliedInput = jsonConfig.Thresholds?.Break;
@@ -40,12 +47,10 @@ namespace Stryker.CLI
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
             inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
-
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)
         {
-
             var json = new StreamReader(configFilePath).ReadToEnd();
 
             try

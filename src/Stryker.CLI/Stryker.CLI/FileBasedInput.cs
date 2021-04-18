@@ -46,14 +46,9 @@ namespace Stryker.CLI
 
         public string[] Reporters { get; set; }
 
-        // since
-        public bool? Since { get; set; }
+        public Since Since { get; set; }
 
-        [JsonProperty(PropertyName = "since-target")]
-        public string SinceTarget { get; set; }
-        
-        [JsonProperty(PropertyName = "with-baseline")]
-        public bool WithBaseline { get; set; }
+        public Baseline Baseline { get; set; }
 
         [JsonProperty(PropertyName = "dashboard-url")]
         public string DashboardUrl { get; set; }
@@ -66,14 +61,22 @@ namespace Stryker.CLI
         
         [JsonProperty(PropertyName = "ignore-methods")]
         public string[] IgnoreMethods { get; set; }
-
-        public BaseLine BaseLine { get; set; }
     }
 
-    public class BaseLine
+    public class Since
     {
-        [JsonProperty(PropertyName = "with-baseline")]
-        public bool? WithBaseline { get; set; }
+        public bool? Enabled { get; set; }
+
+        [JsonProperty(PropertyName = "ignore-changes-in")]
+        public string[] IgnoreChangesIn { get; set; }
+
+        [JsonProperty(PropertyName = "target")]
+        public string Target { get; set; }
+    }
+
+    public class Baseline
+    {
+        public bool? Enabled { get; set; }
 
         [JsonProperty(PropertyName = "provider")]
         public string Provider { get; set; }
@@ -83,9 +86,6 @@ namespace Stryker.CLI
 
         [JsonProperty(PropertyName = "fallback-version")]
         public string FallbackVersion { get; set; }
-
-        [JsonProperty(PropertyName = "ignore-changed-files")]
-        public string[] IgnoreChangedFiles { get; set; }
     }
 
     public class ProjectInfo
