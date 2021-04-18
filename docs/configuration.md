@@ -7,10 +7,10 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 You run stryker from the test project directory.
 
 On some dotnet core projects stryker can run without specifying any custom configuration. Simply run `dotnet stryker` to start testing.  
-On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-[path]).
+On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-<path>).
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config. Alternatively use [init](#init-[bool])
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config. Alternatively use [init](#init-<bool>)
 
 Example `stryker-config.json` file:
 ``` javascript
@@ -23,7 +23,7 @@ Example `stryker-config.json` file:
 }
 ```
 
-### `init` [`flag`]
+### `init` <`flag`>
 
 Default: `false`  
 Command line: `--init`  
@@ -31,7 +31,7 @@ Config file: `N/A`
 
 Creates a stryker config file with default options. Any options passed in the cli will override the defaults.
 
-### `config-file` [`path`]
+### `config-file` <`path`>
 
 Default: `stryker-config.json`  
 Command line: `[-f|--config-file] "appsettings.dev.json"`  
@@ -41,7 +41,7 @@ You can specify a custom path to the config file. For example if you want to add
 
 ## Project information
 
-### `solution` [`path`]
+### `solution` <`path`>
 
 Default: `null`  
 Command line: `[-s|--solution] "../solution.sln"`  
@@ -49,7 +49,7 @@ Config file: `"solution": '../solution.sln'`
 
 The solution file is required for dotnet framework projects. You may specify the solution file for dotnet core projects. In some cases this can help with dependency resolution.
 
-### `project` [`file-name`]
+### `project` <`file-name`>
 
 Default: `null`  
 Command line: `[-p|--project] "MyAwesomeProject.csproj"`  
@@ -59,7 +59,7 @@ The project file name is required when your test project has more than one proje
 
 *\* Do not pass a path to this option. Pass the project file **name** as it appears in your test project's references.*
 
-### `test-projects` [`path[]`]
+### `test-projects` <`string[]`>
 
 Default: `null`  
 Command line: `N/A`  
@@ -67,10 +67,10 @@ Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.cspr
 
 When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.
 
-### `mutate` [`glob[]`]
+### `mutate` <`glob[]`]
 
 Default: `*`  
-Command line: `[-m|--mutate] "**/*Services.cs"`  
+Command line: `[-m|--mutate] "**/*Services.cs" -m "!**/*.Generated.cs"`  
 Config file: `"mutate": ['**/*Services.cs', '!**/*.Generated.cs']`
 
 *\* The mutate option can be used multiple times on the command line*
@@ -96,7 +96,7 @@ To allow more fine grained filtering you can also specify the span of text that 
 dotnet stryker -m "MyFolder/MyService.cs{10..100}"
 ```
 
-### `language-version` [`string`]
+### `language-version` <`string`>
 
 Default: `latest`  
 Command line: `N/A`  
@@ -124,7 +124,7 @@ Valid language versions:
 
 ## Control flow
 
-### `mutation-level` [`level`]
+### `mutation-level` <`level`>
 
 Default: `Standard`  
 Command line: `[-l|--mutation-level] "Advanced"`  
@@ -156,10 +156,10 @@ The levels are:
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 
-### `reporter` [`string[]`]
+### `reporter` <`string[]`>
 
 Default: `html, progress`  
-Command line: `[-r|--reporter] "html"`  
+Command line: `[-r|--reporter] "html" -r "json" -r "progress"`  
 Config file: `"reporters": ['html', 'json', 'progress']`
 
 *The reporter option can be used multiple times on the command line*
@@ -176,9 +176,9 @@ The available reporter options are
 * json
 * dashboard
 
-You can find a description for every reporter in [reporter docs](./Reporters.md)
+You can find a description for every reporter in the [reporter docs](./Reporters.md)
 
-### `additional-timeout` [`number`]
+### `additional-timeout` <`number`>
 
 Default: `5000`  
 Command line: `N/A`  
@@ -191,22 +191,22 @@ The formula to calculate the timeout is:
 
 If you have a lot of timeouts you might need to increase the additional timeout. If you have a lot of endless loops causing a long mutation testrun you might want to decrease the additional timeout. Only decrease the additional timeout if you are certain that the mutations are endless loops.
 
-Timeout is in milliseconds.
+*\* Timeout is in milliseconds.*
 
-### `concurrency` [`number`]
+### `concurrency` <`number`>
 
 Default: `your number of logical processors / 2`  
 Command line: `[-c|--concurrency] 10`  
 Config file: `"concurrency": 10`
 
-Change the amount of concurrent workers stryker uses for the mutation testrun. Defaults to using half your logical (virtual) processor count.
+Change the amount of concurrent workers Stryker uses for the mutation testrun. Defaults to using half your logical (virtual) processor count.
 
 **Example**: an intel i7 quad-core with hyperthreading has 8 logical cores and 4 physical cores. Stryker will use 4 concurrent workers when using the default.
 
-### `thresholds` [`object`]
+### `thresholds` <`object`>
 
 Default: `{ high: 80, low: 60, break: 0 }`  
-Command line: `[-b|--break] 40`  
+Command line: `N/A`  
 Config file: `"thresholds": { "high": 80, "low": 60, "break": 0 }`
 
 Configure the mutation score thresholds for your project. Thresholds should be a number between 0 and 100. Thresholds can all have the same value except for 0. Threshold high cannot be 0.
@@ -221,9 +221,17 @@ Threshold calculations in order:
 - `mutation score < threshold-break`:
     - Error! The application will exit with exit code 1.
 
-Set threshold break to 0 (default) or leave it empty to not exit with an error code. This option can be set using the command line, the other thresholds can not.
+### `break` <`number`>
 
-### `ignore-mutations` [`string[]`]
+Default: `0`  
+Command line: `[-b|--break] 40`  
+Config file: `"thresholds": { "break": 0 }`
+
+When threshold break is set to anything other than 0 Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when you mutation score is not sufficient. Must be less than or equal to threshold low.
+
+See [thresholds](#thresholds-<object>)
+
+### `ignore-mutations` <`string[]`>
 
 Default: `null`  
 Command line: `N/A`  
@@ -231,9 +239,9 @@ Config file: `"ignore-mutations": ['string', 'logical']`
 
 Turn off mutations that are not currently relevant to your project. 
 
-The mutants of the ignored types will not be tested. They will show up in your reports as 'Ignored'.
+The mutants of the ignored types will not be tested. They will show up in your reports as `Ignored`.
 
-### `ignore-methods` [`string[]`]
+### `ignore-methods` <`string[]`>
 
 Default: `null`  
 Command line: `N/A`  
@@ -261,7 +269,7 @@ Both, method names and constructor names support wildcards.
 
 ## Optimization
 
-### `coverage-analysis` [`string`]
+### `coverage-analysis` <`string`>
 
 Default: `perTest`  
 Command line: `N/A`  
@@ -305,7 +313,9 @@ Default: `false:master`
 Command line: `--since:feat-2`  
 Config file: `"since": true, "since-target": 'feat-2'`
 
-Use git information to test only code changes since the given target.
+Use git information to test only code changes since the given target. Stryker will only report on mutants within the changed code. All other mutants will not have a result.
+
+If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-<bool[<:comittish>]>).
 
 Set the diffing target on the command line by passing a comittish with the since flag.
 Set the diffing target in the config file by setting the [since-target](#since-target-<comittish>) option.
@@ -432,9 +442,9 @@ Config file: `N/A`
 When using the azure file storage [provider](#baseline.provider-<string>) you must pass credentials for the fileshare to Stryker.
 For authentication with the azure fileshare we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
-## Troubleshooting
+# Troubleshooting
 
-### `verbosity` [`log-level`]
+### `verbosity` <`log-level`>
 
 Default: `info`  
 Command line: `[-V|--verbosity] trace`  
@@ -449,7 +459,7 @@ All available loglevels are
 * debug
 * trace
 
-### `log-to-file` [`flag`]
+### `log-to-file` <`flag`>
 
 Default: `false`  
 Command line: `[-L|--log-to-file]`  
@@ -459,10 +469,10 @@ When creating an issue on github you can include a logfile so the issue can be d
 
 *\* File logging always uses loglevel `trace`.*
 
-### `dev-mode` [`flag`]
+### `dev-mode` <`flag`>
 
 Default: `false`  
-Command line: `[--dev-mode]`  
+Command line: `--dev-mode`  
 Config file: `N/A`
 
 Stryker will not gracefully recover from compilation errors, instead crash immediately. Used during development to quickly diagnose errors.  
