@@ -209,8 +209,9 @@ Default: `{ high: 80, low: 60, break: 0 }`
 Command line: `[-b|--break] 40`  
 Config file: `"thresholds": { "high": 80, "low": 60, "break": 0 }`
 
-Configure the mutation score thresholds for your project.
+Configure the mutation score thresholds for your project. Thresholds should be a number between 0 and 100. Thresholds can all have the same value except for 0. Threshold high cannot be 0.
 
+Threshold calculations in order:
 - `mutation score >= threshold-high`: 
     - Awesome! Your reporters will color this green and happy.
 - `mutation score < threshold-high && mutation score >= threshold-low`:
@@ -220,7 +221,7 @@ Configure the mutation score thresholds for your project.
 - `mutation score < threshold-break`:
     - Error! The application will exit with exit code 1.
 
-Set threshold break to 0 (default) or leave it empty to not exit with an error code. This option can also be set using the command line.
+Set threshold break to 0 (default) or leave it empty to not exit with an error code. This option can be set using the command line, the other thresholds can not.
 
 ### `ignore-mutations` [`string[]`]
 

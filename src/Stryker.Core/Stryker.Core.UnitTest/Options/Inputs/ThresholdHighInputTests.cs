@@ -8,17 +8,16 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class ThresholdHighInputTests
     {
         [Theory]
-        [InlineData(101, "The thresholds must be between 0 and 100")]
-        [InlineData(1000, "The thresholds must be between 0 and 100")]
-        [InlineData(-1, "The thresholds must be between 0 and 100")]
-        [InlineData(59, "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.")]
-        public void ShouldValidateThresholdsIncorrect(int thresholdHigh, string message)
+        [InlineData(0, "Threshold high must be between 1 and 100.")]
+        [InlineData(101, "Threshold high must be between 1 and 100.")]
+        [InlineData(59, "Threshold high must be higher than or equal to threshold low. Current low: 60, high: 59.")]
+        public void ShouldValidateThresholdHigh(int thresholdHigh, string message)
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 var options = new ThresholdHighInput { SuppliedInput = thresholdHigh }.Validate(60);
             });
-            ex.Details.ShouldBe(message);
+            ex.Message.ShouldBe(message);
         }
     }
 }

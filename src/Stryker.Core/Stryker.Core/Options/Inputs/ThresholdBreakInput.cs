@@ -21,7 +21,7 @@ namespace Stryker.Core.Options.Inputs
 
                 if (@break > low)
                 {
-                    throw new StrykerInputException($"Threshold break must be less than or equal to threshold low. Current low: {low}, break: {@break}");
+                    throw new StrykerInputException($"Threshold break must be less than or equal to threshold low. Current low: {low}, break: {@break}.");
                 }
 
                 return @break;
