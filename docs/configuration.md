@@ -350,6 +350,14 @@ Set the diffing target in the config file by setting the [since.target](#since.t
 
 *\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
 
+### `since.enabled` <`bool`>
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"since": { "enabled": false }`
+
+Enable or disable [since](#since-<flag>). If the enabled property is not set but the `since` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `since` without having to delete the other `since` configuration.
+
 ### `since.target` <`comittish`>
 
 Default: `master`  
@@ -383,12 +391,20 @@ Config file: `"baseline": { }`
 
 Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-<flag>) feature by providing you with a full report after a partial mutation testrun.
 
-The report name is based on the current branch name or the [project-info.version](#project-info.version-<string>).
+The report name is based on the current branch name or the [project-info version](#project-info.version-<string>).
 
 Set the diffing target on the command line by passing a comittish with the since flag.
-Set the diffing target in the config file by setting the [since.target](#since.target-<comittish>) option.
+Set the diffing target in the config file by setting the [since target](#since.target-<comittish>) option.
 
 *\* This feature automatically enables the [since](#since-<flag>) feature.*
+
+### `baseline.enabled` <`bool`>
+
+Default: `null`  
+Command line: `N/A`  
+Config file: `"baseline": { "enabled": false }`
+
+Enable or disable [with-baseline](#with-baseline-<flag>). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
 
 ### `baseline.fallback-version` <`string`>
 
