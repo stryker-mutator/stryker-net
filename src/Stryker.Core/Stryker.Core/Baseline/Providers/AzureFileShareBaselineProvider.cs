@@ -128,7 +128,7 @@ namespace Stryker.Core.Baseline.Providers
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully created directory {0}", fileUrl);
+                _logger.LogDebug("Successfully created directory {0}", fileUrl);
                 return true;
             }
             else if (response.StatusCode == HttpStatusCode.Conflict)
@@ -159,7 +159,7 @@ namespace Stryker.Core.Baseline.Providers
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully allocated storage");
+                _logger.LogDebug("Successfully allocated storage");
                 return true;
             }
             else
