@@ -14,16 +14,25 @@ namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
+        private const string DefaultOutputDirectoryName = "StrykerOutput";
+        private const string BaselinesDirectoryName = "Baselines";
+
         private readonly IStrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
-        private const string _outputPath = "StrykerOutput/Baselines";
+        private readonly string _outputPath;
 
         public AzureFileShareBaselineProvider(IStrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
+
+            _outputPath = $"{DefaultOutputDirectoryName}/{BaselinesDirectoryName}";
+            if (!string.IsNullOrWhiteSpace(options.ProjectName))
+            {
+                _outputPath = $"{options.ProjectName}/{BaselinesDirectoryName}";
+            }
         }
 
         public async Task<JsonReport> Load(string version)

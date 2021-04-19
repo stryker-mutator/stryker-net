@@ -307,7 +307,7 @@ namespace Stryker.Core.Options
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, null);
+                return (null, projectName);
             }
 
             var errorStrings = new StringBuilder();
