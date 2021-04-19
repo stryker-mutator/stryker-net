@@ -272,64 +272,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             await target.Save(jsonReport, projectVersion);
 
             // assert
-            handlerMock
-               .Protected()
-               .Verify(
-                "SendAsync",
-                Times.Exactly(1),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                   req.Method == HttpMethod.Get
-                   && req.RequestUri == expectedGetUri),
-                ItExpr.IsAny<CancellationToken>());
-
-            handlerMock
-               .Protected()
-               .Verify(
-                "SendAsync",
-                Times.Exactly(1),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                   req.Method == HttpMethod.Put
-                   && req.RequestUri == expectedCreateProjectOutputDirectoryUri),
-                ItExpr.IsAny<CancellationToken>());
-            handlerMock
-               .Protected()
-               .Verify(
-                "SendAsync",
-                Times.Exactly(1),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                   req.Method == HttpMethod.Put
-                   && req.RequestUri == expectedCreateBaselinesDirectoryUri),
-                ItExpr.IsAny<CancellationToken>());
-            handlerMock
-               .Protected()
-               .Verify(
-                "SendAsync",
-                Times.Exactly(1),
-                ItExpr.Is<HttpRequestMessage>(req =>
-                   req.Method == HttpMethod.Put
-                   && req.RequestUri == expectedCreateVersionDirectoryUri),
-                ItExpr.IsAny<CancellationToken>());
-
-            handlerMock
-              .Protected()
-              .Verify(
-               "SendAsync",
-               Times.Exactly(1),
-               ItExpr.Is<HttpRequestMessage>(req =>
-                  req.Method == HttpMethod.Put
-                  && req.RequestUri == expectedFileAllocationUri
-                  && req.Headers.Contains("x-ms-type")),
-                ItExpr.IsAny<CancellationToken>());
-
-            handlerMock
-              .Protected()
-              .Verify(
-               "SendAsync",
-               Times.Exactly(1),
-               ItExpr.Is<HttpRequestMessage>(req =>
-                  req.Method == HttpMethod.Put
-                  && req.RequestUri == expectedUploadContentUri),
-                ItExpr.IsAny<CancellationToken>());
+            handlerMock.VerifyAll();
         }
 
         [Theory]
