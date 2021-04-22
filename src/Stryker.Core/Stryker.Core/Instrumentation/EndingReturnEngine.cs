@@ -49,9 +49,8 @@ namespace Stryker.Core.Instrumentation
                 }
             }
 
-            method = method.ReplaceNode(method.Body!, method.Body!.AddStatements(
-                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType.WithoutTrailingTrivia()).
-                        WithLeadingTrivia(SyntaxFactory.Space)))).WithAdditionalAnnotations(Marker);
+            method = method.WithBody(method.Body!.AddStatements(
+                    SyntaxFactory.ReturnStatement(returnType.BuildDefaultExpression()))).WithAdditionalAnnotations(Marker);
 
             return method;
         }
@@ -63,7 +62,7 @@ namespace Stryker.Core.Instrumentation
                 throw new InvalidOperationException($"No return at the end of: {node.Body}");
             }
 
-            return node.ReplaceNode(node.Body, node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last())));
+            return node.WithBody(node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last()))).WithoutAnnotations(Marker);
         }
     }
 }

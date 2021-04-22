@@ -94,21 +94,16 @@ namespace Stryker.Core.Compiling
 
         private int? ExtractMutationIfAndId(SyntaxNode node)
         {
-            var first = node.GetAnnotations(MutantPlacer.MutationMarkers).FirstOrDefault();
-            if (first == null)
+            var (engine, id) = MutantPlacer.FindEngine(node);
+
+            if (engine == null)
             {
                 return null;
             }
 
-            if (first.Data == null)
-            {
-                Logger.LogDebug("Remove a mutation helper.");
-                return _dummyId;
-            }
-            var mutantId = int.Parse(first.Data);
-            Logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-            return mutantId;
+            Logger.LogDebug(id == -1 ? $"Found a helper: {engine}." : $"Found id {id} in {engine} annotation.");
 
+            return id;
         }
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
@@ -208,7 +203,7 @@ namespace Stryker.Core.Compiling
                         if (!brokenMutations.Contains(key))
                         {
                             brokenMutations.Add(key);
-                            if (value != _dummyId)
+                            if (value != -1)
                             {
                                 RolledBackIds.Add(value);
                             }

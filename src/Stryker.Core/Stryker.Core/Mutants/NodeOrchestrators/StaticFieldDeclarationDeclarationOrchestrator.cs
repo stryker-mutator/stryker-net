@@ -1,10 +1,10 @@
-﻿using System.Linq;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class StaticFieldDeclarationOrchestrator: NodeSpecificOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
+    internal class StaticFieldDeclarationDeclarationOrchestrator: MemberDeclarationOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
     {
         protected override bool CanHandle(FieldDeclarationSyntax t)
         {
@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return base.OrchestrateChildrenMutation(node, newContext);
         }
 
-        public StaticFieldDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public StaticFieldDeclarationDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }
