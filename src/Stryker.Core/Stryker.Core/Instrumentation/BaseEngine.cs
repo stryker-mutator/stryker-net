@@ -22,7 +22,7 @@ namespace Stryker.Core.Instrumentation
             {
                 return Revert(tNode);
             }
-            throw new InvalidOperationException($"Expected a block containing a conditional expression, found:\n{node.ToFullString()}.");
+            throw new InvalidOperationException($"Expected a {typeof(T).Name}, found:\n{node.ToFullString()}.");
         }
     }
 }
