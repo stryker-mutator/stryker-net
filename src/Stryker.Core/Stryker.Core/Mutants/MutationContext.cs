@@ -61,7 +61,7 @@ namespace Stryker.Core.Mutants
             if (HasStatementLevelMutant)
             {
                 // some mutants 
-                Logger.LogInformation($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
+                Logger.LogDebug($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
                 foreach (var mutant in BlockLevelControlledMutations.Union(StatementLevelControlledMutations))
                 {
                     mutant.ResultStatus = MutantStatus.CompileError;

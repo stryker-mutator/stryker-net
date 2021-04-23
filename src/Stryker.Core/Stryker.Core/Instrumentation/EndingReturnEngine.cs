@@ -8,7 +8,7 @@ using Stryker.Core.Helpers;
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
-    /// Injects 'return' statement at the end of a method
+    /// Injects 'return default(...)' statement at the end of a method
     /// </summary>
     internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
     {

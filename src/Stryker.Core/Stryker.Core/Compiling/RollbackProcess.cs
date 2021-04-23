@@ -24,7 +24,6 @@ namespace Stryker.Core.Compiling
     {
         private List<int> RolledBackIds { get; }
         private ILogger Logger { get; }
-        private const int _dummyId = int.MinValue;
 
         public RollbackProcess()
         {
@@ -89,7 +88,7 @@ namespace Stryker.Core.Compiling
                 }
             }
 
-            return (null, 0);
+            return (null, -1);
         }
 
         private int? ExtractMutationIfAndId(SyntaxNode node)
