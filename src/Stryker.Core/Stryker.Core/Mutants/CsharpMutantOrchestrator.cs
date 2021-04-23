@@ -56,7 +56,7 @@ namespace Stryker.Core.Mutants
                 new ForStatementOrchestrator(this),
                 new AssignmentStatementOrchestrator(this),
                 new PostfixUnaryExpressionOrchestrator(this),
-                new StaticFieldDeclarationDeclarationOrchestrator(this),
+                new StaticFieldDeclarationOrchestrator(this),
                 new StaticConstructorOrchestrator(this),
                 new PropertyDeclarationOrchestrator(this),
                 new ArrayInitializerOrchestrator(this),

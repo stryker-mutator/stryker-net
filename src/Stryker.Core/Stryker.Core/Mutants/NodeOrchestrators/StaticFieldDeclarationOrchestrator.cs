@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    internal class StaticFieldDeclarationDeclarationOrchestrator: MemberDeclarationOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
+    internal class StaticFieldDeclarationOrchestrator: MemberDeclarationOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
     {
         protected override bool CanHandle(FieldDeclarationSyntax t)
         {
@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             return base.OrchestrateChildrenMutation(node, newContext);
         }
 
-        public StaticFieldDeclarationDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        public StaticFieldDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
         }
     }

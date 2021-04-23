@@ -125,7 +125,7 @@ private bool Out(out string test)
         }
 
         [Fact]
-        public void ShouldNotFail()
+        public void ShouldNotLeakMutationsToNextMethodOrProperty()
         {
             string source = @"public static class ExampleExtension
     {

@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutationContext: IDisposable
     {
-        private static readonly ILogger Logger;
+        private static readonly ILogger _logger;
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;
         public readonly List<Mutant> ExpressionLevelMutations = new List<Mutant>();
@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutants
 
         static MutationContext()
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationContext>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationContext>();
         }
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
@@ -61,7 +61,7 @@ namespace Stryker.Core.Mutants
             if (HasStatementLevelMutant)
             {
                 // some mutants 
-                Logger.LogInformation($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
+                _logger.LogDebug($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
                 foreach (var mutant in BlockLevelControlledMutations.Union(StatementLevelControlledMutations))
                 {
                     mutant.ResultStatus = MutantStatus.CompileError;
