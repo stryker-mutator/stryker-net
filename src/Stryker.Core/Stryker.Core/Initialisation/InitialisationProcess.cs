@@ -76,7 +76,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                _testRunner = new TestRunnerFactory().Create(options, options.Optimizations, projectInfo);
+                _testRunner = new TestRunnerFactory().Create(options, projectInfo);
             }
 
             var input = new MutationTestInput()

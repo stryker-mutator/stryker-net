@@ -15,7 +15,7 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : IMultiTestRunner
     {
-        private readonly OptimizationFlags _flags;
+        private readonly IStrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
@@ -23,12 +23,12 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _helper = new VsTestHelper();
         private readonly ILogger _logger;
 
-        public VsTestRunnerPool(IStrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public VsTestRunnerPool(IStrykerOptions options, ProjectInfo projectInfo)
         {
+            _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
 
-            _flags = flags;
-            using (var runner = new VsTestRunner(options, _flags, projectInfo, null, _tests, helper: _helper))
+            using (var runner = new VsTestRunner(options, projectInfo, null, _tests, helper: _helper))
             {
                 _vsTests = runner.DiscoverTests();
                 _tests.RegisterTests(_vsTests.Values.Select(t => t.Description));
@@ -37,7 +37,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
             {
-                _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _vsTests, _tests, helper: _helper));
+                _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper));
             });
         }
 
@@ -78,8 +78,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
         {
-            var needCoverage = _flags.HasFlag(OptimizationFlags.CoverageBasedTest) || _flags.HasFlag(OptimizationFlags.SkipUncoveredMutants);
-            if (needCoverage && _flags.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            var needCoverage = _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants);
+            if (needCoverage && _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
             {
                 return CaptureCoveragePerIsolatedTests(mutants);
             }

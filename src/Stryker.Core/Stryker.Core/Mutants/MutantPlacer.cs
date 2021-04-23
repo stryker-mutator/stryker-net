@@ -57,10 +57,7 @@ namespace Stryker.Core.Mutants
         ///  register an instrumentation engine
         /// </summary>
         /// <param name="engine"></param>
-        public static void RegisterEngine(IInstrumentCode engine)
-        {
-            InstrumentEngines.Add(engine.InstrumentEngineID, engine);
-        }
+        public static void RegisterEngine(IInstrumentCode engine) => InstrumentEngines.Add(engine.InstrumentEngineID, engine);
 
         public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax =>
             expressionMethodEngine.ConvertToBody(method);

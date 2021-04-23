@@ -43,9 +43,9 @@ namespace Stryker.Core.Mutants
             CoveringTests = TestsGuidList.NoTest();
         }
 
-        public void AnalyzeTestRun(ITestListDescription failedTests, ITestListDescription resultRanTests, ITestListDescription timedOutTests)
+        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {
-            if (!failedTests.IsEmpty && MustRunAgainstAllTests || failedTests.ContainsAny(CoveringTests))
+            if (CoveringTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
             }

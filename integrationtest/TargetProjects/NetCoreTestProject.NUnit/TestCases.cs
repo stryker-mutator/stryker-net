@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using NUnit.Framework;
 using TargetProject;
 
@@ -48,5 +50,21 @@ namespace NetCoreTestProject.NUnit
             Assert.AreEqual("Yes", sut.IsExpired());
         }
 
+        private static IEnumerable<int> RandomSource()
+        {
+            var rnd = new Random();
+            for (var i = 0; i < 10; i++)
+            {
+                Console.Error.WriteLine($"Random{i}");
+                yield return rnd.Next();
+            }
+        }
+
+        [Test]
+        [TestCaseSource(nameof(RandomSource))]
+        public void TestRandom(int x)
+        {
+            Assert.IsTrue(x % 2 == 0);
+        }
     }
 }

@@ -4,28 +4,15 @@ using System.Linq;
 
 namespace Stryker.Core.Mutants
 {
-    public interface ITestListDescription
-    {
-        ISet<TestDescription> Tests { get; }
-        int Count { get; }
-        bool IsEmpty { get; }
-        bool IsEveryTest { get; }
-        public TestsGuidList Merge(ITestListDescription other);
-        bool Contains(Guid testId);
-        bool IsIncluded(ITestListDescription test);
-        bool ContainsAny(IReadOnlyList<TestDescription> usedTests);
-        bool ContainsAny(ITestListDescription other);
-        public ISet<Guid> GetGuids();
-    }
 
     public class TestsGuidList : ITestListDescription
     {
         private readonly TestSet _testsBase;
-        private readonly ISet<Guid> _testsIdsGuid = new HashSet<Guid>();
-        public ISet<TestDescription> Tests => _testsIdsGuid?.Select(t => _testsBase[t]).ToHashSet();
+        private readonly ISet<Guid> _testsGuid;
+        public ICollection<TestDescription> Tests => _testsGuid?.Select(t => _testsBase[t]).ToHashSet();
 
-        private static readonly ITestListDescription EveryTests;
-        private static readonly ITestListDescription NoTestAtAll;
+        private static readonly TestsGuidList EveryTests;
+        private static readonly TestsGuidList NoTestAtAll;
 
         static TestsGuidList()
         {
@@ -35,7 +22,7 @@ namespace Stryker.Core.Mutants
 
         private TestsGuidList()
         {
-            _testsIdsGuid = null;
+            _testsGuid = null;
         }
 
         public TestsGuidList(TestSet testsBase, IEnumerable<TestDescription> testDescriptions) : this(testsBase, testDescriptions?.Select(t => t.Id))
@@ -45,56 +32,60 @@ namespace Stryker.Core.Mutants
         public TestsGuidList(TestSet testsBase, IEnumerable<Guid> guids)
         {
             _testsBase = testsBase;
-            if (guids != null)
-            {
-                _testsIdsGuid.UnionWith(guids);
-            }
+            _testsGuid = guids != null ? new HashSet<Guid>(guids) : new HashSet<Guid>();
         }
 
-        public bool IsEveryTest => _testsIdsGuid == null;
+        public bool IsEveryTest => _testsGuid == null;
 
-        public bool IsEmpty => _testsIdsGuid != null && _testsIdsGuid.Count == 0;
+        public bool IsEmpty => _testsGuid != null && _testsGuid.Count == 0;
 
-        public int Count => _testsIdsGuid?.Count ?? 0;
+        public int Count => _testsGuid?.Count ?? 0;
 
-        public TestsGuidList Merge(ITestListDescription other)
+        public TestsGuidList Merge(ITestGuids other)
         {
-            return new TestsGuidList(_testsBase, _testsIdsGuid.Union(other.GetGuids()));
+            return new TestsGuidList(_testsBase, _testsGuid.Union(other.GetGuids()));
         }
 
         public bool Contains(Guid testId)
         {
-            return IsEveryTest || _testsIdsGuid.Contains(testId);
+            return IsEveryTest || _testsGuid.Contains(testId);
         }
 
-        public bool IsIncluded(ITestListDescription test)
+        public bool IsIncluded(ITestGuids test)
         {
-            return test.IsEveryTest || _testsIdsGuid.All(test.Contains);
+            return test.IsEveryTest || _testsGuid.IsSubsetOf(test.GetGuids());
         }
 
-        public static ITestListDescription EveryTest()
+        public static TestsGuidList EveryTest()
         {
             return EveryTests;
         }
 
-        public static ITestListDescription NoTest()
+        public static TestsGuidList NoTest()
         {
             return NoTestAtAll;
         }
 
-        public ISet<Guid> GetGuids()
+        public IEnumerable<Guid> GetGuids()
         {
-            return _testsIdsGuid;
+            return _testsGuid;
         }
 
-        public bool ContainsAny(ITestListDescription other)
+        public bool ContainsAny(ITestGuids other)
         {
-            return !other.IsEmpty && (IsEveryTest || _testsIdsGuid.Any(other.Contains));
-        }
-
-        public bool ContainsAny(IReadOnlyList<TestDescription> usedTests)
-        {
-            return usedTests.Select(t => t.Id).Any(Contains);
+            if (other.IsEmpty || IsEmpty)
+            {
+                return false;
+            }
+            if (IsEveryTest)
+            {
+                return true;
+            }
+            if (other.IsEveryTest)
+            {
+                return true;
+            }
+            return _testsGuid.Overlaps(other.GetGuids());
         }
     }
 }

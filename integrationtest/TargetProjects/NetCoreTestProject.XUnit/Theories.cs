@@ -47,6 +47,21 @@ namespace NetCoreTestProject.XUnit
             Assert.Equal("Yes", sut.IsExpired());
         }
 
+        public static IEnumerable<object[]> RandomSource()
+        {
+            var rnd = new Random();
+            for (var i = 0; i < 10; i++)
+            {
+                Console.Error.WriteLine($"Random{i}");
+                yield return  new []{(object) rnd.Next()};
+            }
+        }
 
+        [Theory(DisplayName = "test")]
+        [MemberData(nameof(RandomSource))]
+        public void TestRandom(int x)
+        {
+            Assert.True(x % 2 == 0);
+        }
     }
 }

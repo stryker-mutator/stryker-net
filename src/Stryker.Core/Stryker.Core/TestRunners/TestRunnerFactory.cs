@@ -18,7 +18,7 @@ namespace Stryker.Core.TestRunners
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TestRunnerFactory>();
         }
 
-        public ITestRunner Create(IStrykerOptions options, OptimizationFlags flags, ProjectInfo projectInfo)
+        public ITestRunner Create(IStrykerOptions options, ProjectInfo projectInfo)
         {
             _logger.LogInformation("Initializing test runners ({0})", options.TestRunner);
             ITestRunner testRunner;
@@ -27,10 +27,10 @@ namespace Stryker.Core.TestRunners
             {
                 case TestRunner.DotnetTest:
                 default:
-                    testRunner = new DotnetTestRunner(projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath, new ProcessExecutor(), flags, projectInfo.TestProjectAnalyzerResults.Select(x => x.GetAssemblyPath()));
+                    testRunner = new DotnetTestRunner(projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath, new ProcessExecutor(), options.Optimizations, projectInfo.TestProjectAnalyzerResults.Select(x => x.GetAssemblyPath()));
                     break;
                 case TestRunner.VsTest:
-                    testRunner = new VsTestRunnerPool(options, flags, projectInfo);
+                    testRunner = new VsTestRunnerPool(options, projectInfo);
                     break;
             }
             return testRunner;

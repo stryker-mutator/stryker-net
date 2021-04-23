@@ -33,9 +33,14 @@ namespace Stryker.Core.TestRunners.VsTest
             return _results.Count >= _testDescription.NbSubCases;
         }
 
+        public bool IsComplete()
+        {
+            return _results.Count >= _testDescription.NbSubCases;
+        }
+
         public TestResult Result()
         {
-            return _results.Aggregate((TestResult) null, (acc, next) =>
+            var result = _results.Aggregate((TestResult) null, (acc, next) =>
             {
                 if (acc == null)
                 {
@@ -62,6 +67,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 acc.Duration = acc.EndTime - acc.StartTime;
                 return acc;
             });
+            return result;
         }
     }
 
@@ -89,7 +95,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger = logger;
             _runnerId = runnerId;
         }
-        
+
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
             var testResults = results as TestResult[] ?? results.ToArray();
@@ -98,7 +104,15 @@ namespace Stryker.Core.TestRunners.VsTest
                 var id = testResult.TestCase.Id;
                 if (!_runs.ContainsKey(id))
                 {
-                    _runs[id] = new TestRun(_vsTests[id]);
+                    if (_vsTests.ContainsKey(id))
+                    {
+                        _runs[id] = new TestRun(_vsTests[id]);
+                    }
+                    else
+                    {
+                        // unknown id. Probable cause: test name has changed due to some parameter having changed
+                        _runs[id] = new TestRun(new VsTestDescription(testResult.TestCase));
+                    }
                 }
 
                 if (_runs[id].AddResult(testResult))
@@ -134,14 +148,23 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
+            if (lastChunkArgs?.ActiveTests != null)
+            {
+                foreach (var activeTest in lastChunkArgs.ActiveTests)
+                {
+                    _inProgress[activeTest.Id] = activeTest;
+                }
+            }
+
             if (lastChunkArgs?.NewTestResults != null)
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
-            if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
+            if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
             {
-                TestsInTimeout = _inProgress.Values.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
+                // report ongoing tests and test case with missing results as timeouts.
+                TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
                 if (TestsInTimeout.Count > 0)
                 {
                     TimeOut = true;

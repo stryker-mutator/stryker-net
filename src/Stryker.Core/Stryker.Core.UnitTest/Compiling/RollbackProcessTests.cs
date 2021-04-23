@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis.Emit;
 using Stryker.Core.Exceptions;
 using Xunit;
 
@@ -598,13 +599,9 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var compileResult = compiler.Emit(ms);
+                var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false,false);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
-                
-                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-                rollbackedResult.Success.ShouldBeTrue();
+                fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
                 
                 // validate that only one of the compile errors marked the mutation as rollbacked.
                 fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });

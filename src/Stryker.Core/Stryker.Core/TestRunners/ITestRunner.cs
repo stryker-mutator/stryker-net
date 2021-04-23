@@ -5,9 +5,9 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.TestRunners
 {
     public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
-        ITestListDescription failedTests,
-        ITestListDescription ranTests,
-        ITestListDescription timedOutTests);
+        ITestGuids failedTests,
+        ITestGuids ranTests,
+        ITestGuids timedOutTests);
 
     public interface ITestRunner : IDisposable
     {

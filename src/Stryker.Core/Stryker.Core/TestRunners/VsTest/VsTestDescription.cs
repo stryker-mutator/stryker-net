@@ -10,7 +10,7 @@ namespace Stryker.Core.TestRunners.VsTest
     public class VsTestDescription
     {
         private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
-        private int _subcases = 0;
+        private int _subCases = 0;
 
         public VsTestDescription(TestCase testCase)
         {
@@ -43,7 +43,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestCase Case { get; }
 
-        public int NbSubCases => _subcases;
+        public int NbSubCases => Math.Max(_subCases, _initialResults.Count);
 
         public void RegisterInitialTestResult(TestResult result)
         {
@@ -52,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void AddSubCase()
         {
-            _subcases++;
+            _subCases++;
         }
 
         protected bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);

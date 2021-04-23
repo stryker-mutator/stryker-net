@@ -105,7 +105,7 @@ namespace Stryker.Core.MutationTest
             {
                 var reportedMutants = new HashSet<Mutant>();
 
-                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestListDescription failedTests, ITestListDescription ranTests, ITestListDescription timedOutTest)
+                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
                     var continueTestRun = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
                     foreach (var mutant in testedMutants)
@@ -181,21 +181,23 @@ namespace Stryker.Core.MutationTest
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
-                var usedTests = mutantsToGroup[i].CoveringTests.GetGuids().ToHashSet();
+                var usedTests =  mutantsToGroup[i].CoveringTests;
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
                     var currentMutant = mutantsToGroup[j];
-                    var nextSet = new HashSet<Guid>(currentMutant.CoveringTests.GetGuids());
+                    var nextSet = currentMutant.CoveringTests;
                     if (nextSet.Count + usedTests.Count > testsCount ||
-                        nextSet.Overlaps(usedTests))
+                        nextSet.ContainsAny(usedTests))
                     {
                         continue;
                     }
-
+                    // add this mutant to the block
                     nextBlock.Add(currentMutant);
-                    usedTests.UnionWith(nextSet);
+                    // remove the mutant from the todo list
                     mutantsToGroup.RemoveAt(j--);
+                    // add this mutant tests
+                    usedTests = usedTests.Merge(nextSet);
                 }
 
                 blocks.Add(nextBlock);

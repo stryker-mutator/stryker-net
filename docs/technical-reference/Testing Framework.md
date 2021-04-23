@@ -16,6 +16,11 @@ This affect:
 - how tests are filtered
 - how tests are executed
 - how test results are reported
+
+## Identification
+By default, VsTest generates unique identifier stored as `Guid`. I do not know if test runners are able to provide
+a specific implementation but in practice, this identifier is derived from the(test's) display's name hash code.
+
 ## xUnit
 
 ### Theories
@@ -25,7 +30,7 @@ There are differences
 between compile time theories (data is fixed at build time) and run time theories (data is discovered at run time).
 
 #### Static theories
-Static discoveries are seen and processed as different tests with different ids.
+Static discoveries are seen and processed as different test cases.
 
 #### Run time theories
 Run time theories are discovered as one test, disregarding the number of underlying data set.
@@ -46,9 +51,12 @@ TestCase end event
 TestCase start event
    ...
 ```
-The difficuly here is that a lot happens between 'testcase end' and 'testcase start' event. From coverage capture it is
-difficult, because there is a risk of spilling coverage information to the next tests.
+The difficuly here is that a lot happens between 'testcase end' and 'testcase start' event. 
+At coverage capture it is a problem, because there is a risk of spilling coverage information to the next tests.
 And during execution phase, it is diffcult to predict when the test will really be over. 
+
+Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, this
+testcase will only run when running **all tests** and can no longer be executed in isolation.
 
 
 ### NUnit
