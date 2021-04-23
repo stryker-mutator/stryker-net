@@ -50,9 +50,34 @@ namespace Stryker.Core.Options
 
         public string DashboardUrl { get; } = "https://dashboard.stryker-mutator.io";
         public string DashboardApiKey { get; }
-        public string ProjectName { get; }
+
+        private string _projectName;
+        public string ProjectName
+        {
+            get => _strykerOptions == this ? _projectName : _strykerOptions.ProjectName;
+            set
+            {
+                if (_strykerOptions == this)
+                    _projectName = value;
+                else
+                    _strykerOptions.ProjectName = value;
+            }
+        }
+
         public string ModuleName { get; }
-        public string ProjectVersion { get; }
+
+        private string _projectVersion;
+        public string ProjectVersion
+        {
+            get => _strykerOptions == this ? _projectVersion : _strykerOptions.ProjectVersion;
+            set
+            {
+                if (_strykerOptions == this)
+                    _projectVersion = value;
+                else
+                    _strykerOptions.ProjectVersion = value;
+            }
+        }
         public MutationLevel MutationLevel { get; }
 
         public IEnumerable<FilePattern> DiffIgnoreFiles { get; }
@@ -64,6 +89,7 @@ namespace Stryker.Core.Options
         public string FallbackVersion { get; }
 
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
+        private readonly StrykerOptions _strykerOptions;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
@@ -107,6 +133,7 @@ namespace Stryker.Core.Options
             string mutationLevel = null,
             string[] diffIgnoreFiles = null)
         {
+            _strykerOptions = this;
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -134,7 +161,8 @@ namespace Stryker.Core.Options
             GitDiffSource = ValidateGitDiffTarget(gitDiffTarget);
             TestProjects = ValidateTestProjects(testProjects);
             DashboardUrl = dashboardUrl;
-            (DashboardApiKey, ProjectName) = ValidateDashboardReporter(dashboardApiKey, projectName);
+            DashboardApiKey = ValidateDashboardApiKey(dashboardApiKey);
+            ProjectName = projectName;
             (ProjectVersion, FallbackVersion) = ValidateCompareToDashboard(projectVersion, fallbackVersion, gitDiffTarget);
             DiffIgnoreFiles = ValidateDiffIgnoreFiles(diffIgnoreFiles);
             ModuleName = !Reporters.Contains(Reporter.Dashboard) ? null : moduleName;
@@ -144,6 +172,7 @@ namespace Stryker.Core.Options
         }
 
         private StrykerOptions(
+            StrykerOptions strykerOptions,
             IFileSystem fileSystem,
             ILogger logger,
             string basePath,
@@ -180,6 +209,7 @@ namespace Stryker.Core.Options
             string projectVersion,
             string fallbackVersion)
         {
+            _strykerOptions = strykerOptions;
             _fileSystem = fileSystem;
             _logger = logger;
             IgnoredMethods = ignoredMethods;
@@ -220,6 +250,7 @@ namespace Stryker.Core.Options
         public IStrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
         {
             return new StrykerOptions(
+                this,
                 _fileSystem,
                 _logger,
                 basePath,
@@ -303,38 +334,25 @@ namespace Stryker.Core.Options
             }
         }
 
-        private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
+        private string ValidateDashboardApiKey(string dashboadApiKey)
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
-                return (null, projectName);
+                return null;
             }
 
-            var errorStrings = new StringBuilder();
             if (string.IsNullOrWhiteSpace(dashboadApiKey))
             {
                 var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
                 if (!string.IsNullOrWhiteSpace(environmentApiKey))
                 {
-                    dashboadApiKey = environmentApiKey;
+                    return environmentApiKey;
                 }
-                else
-                {
-                    errorStrings.AppendLine($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
-                }
+
+                throw new StrykerInputException($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrl}");
             }
 
-            if (string.IsNullOrWhiteSpace(projectName))
-            {
-                errorStrings.AppendLine($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
-            }
-
-            if (errorStrings.Length > 0)
-            {
-                throw new StrykerInputException(errorStrings.ToString());
-            }
-
-            return (dashboadApiKey, projectName);
+            return dashboadApiKey;
         }
 
         private string ValidateGitDiffTarget(string gitDiffTarget)

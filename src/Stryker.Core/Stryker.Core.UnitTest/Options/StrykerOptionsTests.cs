@@ -99,7 +99,6 @@ namespace Stryker.Core.UnitTest.Options
                     new StrykerOptions(reporters: new string[] { "Dashboard" });
                 });
                 ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {options.DashboardUrl}");
-                ex.Message.ShouldContain($"A project name is required when the {Reporter.Dashboard} reporter is turned on!");
             }
             finally
             {

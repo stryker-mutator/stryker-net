@@ -37,8 +37,8 @@ namespace Stryker.Core.Options
         bool DiffEnabled { get; }
         string GitDiffSource { get; }
         string ModuleName { get; }
-        string ProjectName { get; }
-        string ProjectVersion { get; }
+        string ProjectName { get; set; }
+        string ProjectVersion { get; set; }
         bool CompareToDashboard { get; }
         string FallbackVersion { get; }
         IEnumerable<FilePattern> DiffIgnoreFiles { get; }
