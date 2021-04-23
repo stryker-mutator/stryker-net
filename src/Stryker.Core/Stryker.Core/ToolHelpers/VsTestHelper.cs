@@ -106,43 +106,37 @@ namespace Stryker.Core.ToolHelpers
 
             foreach (string nugetPackageFolder in nugetPackageFolders)
             {
-                string dllPath = null, exePath = null;
                 if (dllFound && exeFound)
                 {
                     break;
                 }
 
+                string searchFolder;
                 if (versionDependent)
                 {
-                    var portablePackageFolder = _fileSystem.Directory.GetDirectories(nugetPackageFolder, portablePackageName, SearchOption.AllDirectories).FirstOrDefault();
+                    var portablePackageFolder = Path.Combine(nugetPackageFolder, portablePackageName, versionString);
 
-                    if (string.IsNullOrWhiteSpace(portablePackageFolder))
+                    if (!_fileSystem.Directory.Exists(portablePackageFolder))
                     {
                         return vsTestPaths;
                     }
-
-                    dllPath = FilePathUtils.NormalizePathSeparators(
-                        Path.Combine(
-                            nugetPackageFolder, portablePackageFolder, versionString,
-                            "tools", "netcoreapp2.0", "vstest.console.dll"));
-                    exePath = FilePathUtils.NormalizePathSeparators(
-                        Path.Combine(
-                            nugetPackageFolder, portablePackageFolder, versionString,
-                            "tools", "net451", "vstest.console.exe"));
+                    searchFolder = portablePackageFolder;
                 }
                 else
                 {
-                    dllPath = FilePathUtils.NormalizePathSeparators(
-                        _fileSystem.Directory.GetFiles(
-                            nugetPackageFolder,
-                            "vstest.console.dll",
-                            SearchOption.AllDirectories).First());
-                    exePath = FilePathUtils.NormalizePathSeparators(
-                        _fileSystem.Directory.GetFiles(
-                            nugetPackageFolder,
-                            "vstest.console.exe",
-                            SearchOption.AllDirectories).First());
+                    searchFolder = nugetPackageFolder;
                 }
+
+                var dllPath = FilePathUtils.NormalizePathSeparators(
+                    _fileSystem.Directory.GetFiles(
+                        searchFolder,
+                        "vstest.console.dll",
+                        SearchOption.AllDirectories).FirstOrDefault());
+                var exePath = FilePathUtils.NormalizePathSeparators(
+                    _fileSystem.Directory.GetFiles(
+                        searchFolder,
+                        "vstest.console.exe",
+                        SearchOption.AllDirectories).FirstOrDefault());
 
                 if (!dllFound && _fileSystem.File.Exists(dllPath))
                 {
@@ -162,16 +156,20 @@ namespace Stryker.Core.ToolHelpers
 
         private IEnumerable<string> CollectNugetPackageFolders()
         {
-            if (Environment.GetEnvironmentVariable("USERPROFILE") is var userProfile && !string.IsNullOrWhiteSpace(userProfile))
+            var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var path = Path.Combine(userProfilePath, ".nuget", "packages");
+            if (_fileSystem.Directory.Exists(path))
             {
-                var path = Path.Combine(userProfile, ".nuget", "packages");
-                if (_fileSystem.Directory.Exists(path))
-                {
-                    yield return path;
-                }
+                yield return path;
             }
-            if (Environment.GetEnvironmentVariable("NUGET_PACKAGES") is var nugetPackagesLocation
-                && !string.IsNullOrWhiteSpace(nugetPackagesLocation)
+
+            static bool TryGetNonEmptyEnvironmentVariable(string variable, out string value)
+            {
+                value = Environment.GetEnvironmentVariable(variable);
+                return !string.IsNullOrWhiteSpace(value);
+            }
+
+            if (TryGetNonEmptyEnvironmentVariable("NUGET_PACKAGES", out var nugetPackagesLocation)
                 && _fileSystem.Directory.Exists(nugetPackagesLocation))
             {
                 yield return nugetPackagesLocation;
@@ -182,14 +180,14 @@ namespace Stryker.Core.ToolHelpers
         {
             var vstestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
-                .Single(r => r.Contains("Microsoft.TestPlatform.Portable"));
+                .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
             using (var stream = typeof(VsTestHelper).Assembly
             .GetManifestResourceStream(vstestZip))
             {
-                var zipPath = Path.Combine(tempDir, $"vstest.zip");
+                var zipPath = Path.Combine(tempDir, "vstest.zip");
                 _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
                 using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
