@@ -5,12 +5,21 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
+    /// <summary>
+    /// Helper that converts a property accessor from expression body to statement body form (or arrow to curly braces).
+    /// </summary>
     internal class AccessorExpressionToBodyEngine : BaseEngine<AccessorDeclarationSyntax>
     {
         public AccessorExpressionToBodyEngine(string markerId) : base(markerId)
         {
         }
 
+        /// <summary>
+        /// Convert an expression accessor to the body form.
+        /// </summary>
+        /// <param name="accessor">Accessor to be converted</param>
+        /// <returns>Accessor in body form</returns>
+        /// <remarks>No conversion happens it is already in body form or if it is virtual.</remarks>
         public AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax accessor)
         {
             if (accessor.Body != null || accessor.ExpressionBody == null)
