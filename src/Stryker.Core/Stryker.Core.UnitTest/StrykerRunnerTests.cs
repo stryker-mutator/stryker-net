@@ -31,12 +31,12 @@ namespace Stryker.Core.UnitTest
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
+            var projectInfo = Mock.Of<ProjectInfo>();
+            projectInfo.ProjectContents = folder;
+            Mock.Get(projectInfo).Setup(p => p.RestoreOrginalAssembly());
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
-                {
-                    ProjectContents = folder
-                },
+                ProjectInfo = projectInfo
             };
             var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
 

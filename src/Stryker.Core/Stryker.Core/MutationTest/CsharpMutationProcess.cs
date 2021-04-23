@@ -82,7 +82,11 @@ namespace Stryker.Core.MutationTest
                 {
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
                 }
-
+                if (_fileSystem.File.Exists(injectionPath))
+                {
+                    _fileSystem.File.Move(injectionPath, injectionPath + ".stryker-unchanged");
+                }
+                
                 // inject the mutated Assembly into the test project
                 using var fs = _fileSystem.File.Create(injectionPath);
                 ms.Position = 0;
