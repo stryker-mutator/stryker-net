@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -20,9 +22,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
             MutationContext context)
         {
+            // find outparameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
             if (targetNode.Body != null)
             {
+                // inject initialization to default for all out parameters
+                targetNode = sourceNode.ParameterList.Parameters.Where(p => p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))
+                    .Aggregate(targetNode, (current, parameter) => MutantPlacer.AddDefaultInitialization(current, parameter.Identifier, parameter.Type));
                 // add a return in case we changed the control flow
                 return MutantPlacer.AddEndingReturn(targetNode) as T;
             }
