@@ -118,8 +118,47 @@ else{
 }
 private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(14)?false:true);
+    {test= default(string);}    return (StrykerNamespace.MutantControl.IsActive(14)?false:true);
 }}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotLeakMutationsToNextMethodOrProperty()
+        {
+            string source = @"public static class ExampleExtension
+    {
+        private static string[] tabs = { ""tab1"", ""tab2""};
+
+        private List<string> _collection;
+
+        public List<string> Collection
+        {
+            get => _collection;
+
+            set
+            {
+                _collection = value;
+            }
+        }
+    }";
+            string expected = @"public static class ExampleExtension
+    {
+        private static string[] tabs = { (StrykerNamespace.MutantControl.IsActive(1)?"""":""tab1""), (StrykerNamespace.MutantControl.IsActive(2)?"""":""tab2"")};
+
+        private List<string> _collection;
+
+        public List<string> Collection
+        {
+            get => _collection;
+
+            set
+            {
+                _collection = value;
+            }
+        }
+    }";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -134,7 +173,7 @@ private bool Out(out string test)
 }
 private bool Out(out string test)
 {
-    return true;
+       return true;
 }";
             string expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){
@@ -147,7 +186,7 @@ else{
 }
 }private bool Out(out string test)
 {
-    return (StrykerNamespace.MutantControl.IsActive(2)?false:true);
+{test= default(string);}     return (StrykerNamespace.MutantControl.IsActive(2)?false:true);
 }";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -625,6 +664,15 @@ static Mutator_Flag_MutatedStatics()
         }
 
         [Fact]
+        public void ShouldInitializeOutVars()
+        {
+            string source = @"public void SomeMethod(out int x, out string text) { x = 1; text = ""hello"";}";
+            string expected = @"public void SomeMethod(out int x, out string text) { {x= default(int);text= default(string);}x = 1; text = (StrykerNamespace.MutantControl.IsActive(0)?"""":""hello"");)}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateInsideLambda()
         {
             string source = @"private async Task GoodLuck()
@@ -748,18 +796,16 @@ public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
         yield break;
       }";
             string expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
-      {
-        foreach (var o in enumerable)
-        {
-            if(StrykerNamespace.MutantControl.IsActive(0)){;}else{
-                yield return value;
-            }
-        }
-      } 
-public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
-      {
-        yield break;
-      }";
+          {
+            foreach (var o in enumerable)
+            {
+    if(StrykerNamespace.MutantControl.IsActive(0)){;}else{            yield return value;
+    }        }
+          }
+    public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
+          {
+    if(StrykerNamespace.MutantControl.IsActive(1)){;}else{        yield break;
+    }      }}}";
             ShouldMutateSourceToExpected(source, expected);
         }
 
