@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -59,8 +60,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
                 }
                 // Filter the mutants
-                var allMutants = _orchestrator.GetLatestMutantBatch();
-                file.Mutants = allMutants;
+                file.Mutants = _orchestrator.GetLatestMutantBatch();
             }
 
             _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
