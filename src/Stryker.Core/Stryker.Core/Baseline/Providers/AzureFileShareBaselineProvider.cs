@@ -31,11 +31,11 @@ namespace Stryker.Core.Baseline.Providers
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
             var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
             requestMessage.Headers.Add("x-ms-date", "now");
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -95,13 +95,13 @@ namespace Stryker.Core.Baseline.Providers
             foreach (var segment in storagePathSegments)
             {
                 currentDirectory.Append($"{segment}/");
-                
+
                 if (!await CreateDirectory(currentDirectory.ToString()))
                 {
                     return false;
                 }
             }
-            
+
             return true;
         }
 
@@ -111,12 +111,11 @@ namespace Stryker.Core.Baseline.Providers
 
             var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
             SetWritingHeaders(requestMessage);
 
-            var response = await _httpClient.SendAsync(requestMessage);
-
+            using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
             {
                 _logger.LogDebug("Succesfully created directory {0}", fileUrl);
@@ -129,6 +128,7 @@ namespace Stryker.Core.Baseline.Providers
             }
 
             _logger.LogError("Creating directory failed with status {0} and message {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
+
             return false;
         }
 
@@ -138,7 +138,7 @@ namespace Stryker.Core.Baseline.Providers
 
             var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
             SetWritingHeaders(requestMessage);
 
@@ -146,7 +146,7 @@ namespace Stryker.Core.Baseline.Providers
             requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
 
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -164,7 +164,7 @@ namespace Stryker.Core.Baseline.Providers
         {
             _logger.LogDebug("Uploading file to azure file storage");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
             {
                 Content = new StringContent(report, Encoding.UTF8, "application/json")
             };
@@ -174,7 +174,7 @@ namespace Stryker.Core.Baseline.Providers
             requestMessage.Headers.Add("x-ms-range", $"bytes=0-{byteSize - 1}");
             requestMessage.Headers.Add("x-ms-write", "update");
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode != HttpStatusCode.Created)
             {
