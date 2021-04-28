@@ -62,6 +62,7 @@ namespace NetCoreTestProject.NUnit
 
         [Test]
         [TestCaseSource(nameof(RandomSource))]
+        [Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
             Assert.IsTrue(x % 2 == 0);

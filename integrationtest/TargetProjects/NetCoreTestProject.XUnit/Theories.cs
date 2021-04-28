@@ -57,7 +57,7 @@ namespace NetCoreTestProject.XUnit
             }
         }
 
-        [Theory(DisplayName = "test")]
+        [Theory(DisplayName = "test", Skip = "Run Explicitly")]
         [MemberData(nameof(RandomSource))]
         public void TestRandom(int x)
         {
