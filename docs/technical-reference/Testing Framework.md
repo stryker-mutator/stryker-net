@@ -7,10 +7,10 @@ To be specific, this document will mostly (and implicitly) refer to their VsTest
 
 ## Generalities
 The [VsTest protocol](https://github.com/Microsoft/vstest-docs/blob/master/RFCs/0006-DataCollection-Protocol.md) is not
-rich enought to cover evey test framework features. Therefore, each framework makes their own decision on how to handle
+rich enough to cover every test framework feature. Therefore, each framework makes their own decisions on how to handle
 some of their specificities. That is the reason why we can observe different behaviour and surprising results.
 
-This affect:
+This affects:
 - how tests are discovered
 - how tests are described/identified
 - how tests are filtered
@@ -18,7 +18,7 @@ This affect:
 - how test results are reported
 
 ## Identification
-By default, VsTest generates unique identifier stored as `Guid`. I do not know if test runners are able to provide
+By default, VsTest generates unique identifiers stored as `Guid`. I do not know if test runners are able to provide
 a specific implementation but in practice, this identifier is derived from the(test's) display's name hash code.
 
 ## xUnit
@@ -38,10 +38,10 @@ There is one test result per dataset, all associated with the unique test id.
 
 Here is a summarized timeline of tests execution:
 ```
-   xUnit runner calls data theory's data source to feach each test value(s)
+   xUnit runner calls data theory's data source to fetch each test case value(s)
 TestCase start event
    xUnit run test with first set of data
-   xUnit reports test reult
+   xUnit reports test results
 TestCase end event
    xUnit run test with second set of data
    xUnit reports test reult
@@ -51,9 +51,9 @@ TestCase end event
 TestCase start event
    ...
 ```
-The difficuly here is that a lot happens between 'testcase end' and 'testcase start' event. 
+The difficulty here is that a lot happens between 'testcase end' and 'testcase start' event. 
 At coverage capture it is a problem, because there is a risk of spilling coverage information to the next tests.
-And during execution phase, it is diffcult to predict when the test will really be over. 
+And during execution phase, it is impossible to predict when the test will really be over. 
 
 Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, this
 testcase will only run when running **all tests** and can no longer be executed in isolation.
@@ -63,7 +63,7 @@ testcase will only run when running **all tests** and can no longer be executed 
 
 ### TestCases
 NUnit's TestCases is a pattern where some test is executed multiple time with varying input data (like xUnit's TestCase).
-These test mesthods accept one or more parameters and bear one of this attributes (on top of the `[Test]` attribue):
+These test methods accept one or more parameters and bear one of these attributes (on top of the `[Test]` attribute):
  `TestCase` or `TestCaseSource`.
 
 There are some differences
@@ -88,7 +88,7 @@ When this happens, these appear as a single test resulting in multiple outcomes 
 
 Here is a summarized timeline of tests execution:
 ```
-   NUnit runner calls the TestCaseSource and gets every test cases.
+   NUnit runner calls the TestCaseSource and gets every test case.
 TestCase start event
    NUnit run test with first set of data
    NUnit reports test reult
@@ -106,8 +106,8 @@ TestCase start event
 
 The problems for Stryker are:
 1. If test cases have the same name, we cannot distinguish between test cases, so it must be handled as a single test. This *single test* reports multiple test cases so Stryker needs to wait either for one failure or for each testcase
-to succeed to establish the correct status. The good news is that discovery should provide the number of result to wait for.
-2. Every mutations encountered by the `TestCaseSource` method will be reported as covered by the first test case,
+to succeed to establish the correct status. The good news is that discovery should provide the number of results to wait for.
+2. Every mutation encountered by the `TestCaseSource` method will be reported as covered by the first test case,
 whereas it is likely these mutations would need to be adequately associated with their realtive test case.
 3. TestCaseSource is called **before** Testcase start event which means Stryker may set the active mutation too late. 
 The only way to handle this is to force any concerned mutants to run in dedicated test sessions.
