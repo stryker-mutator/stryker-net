@@ -1,0 +1,79 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/src/Stryker.CLI"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  target-branch: master
+  ignore:
+  - dependency-name: System.IO.Abstractions.TestingHelpers
+    versions:
+    - 13.2.13
+    - 13.2.14
+    - 13.2.16
+    - 13.2.18
+    - 13.2.29
+  - dependency-name: System.IO.Abstractions
+    versions:
+    - 13.2.13
+    - 13.2.14
+    - 13.2.16
+    - 13.2.18
+    - 13.2.29
+  - dependency-name: Newtonsoft.Json
+    versions:
+    - 13.0.1
+- package-ecosystem: nuget
+  directory: "/integrationtest"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  target-branch: master
+  ignore:
+  - dependency-name: System.IO.Abstractions
+    versions:
+    - 13.2.10
+    - 13.2.11
+    - 13.2.13
+    - 13.2.16
+    - 13.2.18
+    - 13.2.22
+    - 13.2.23
+    - 13.2.24
+    - 13.2.25
+    - 13.2.27
+    - 13.2.28
+  - dependency-name: Microsoft.CodeAnalysis.CSharp
+    versions:
+    - 3.9.0
+  - dependency-name: Crayon
+    versions:
+    - 2.0.60
+  - dependency-name: ShellProgressBar
+    versions:
+    - 5.1.0
+- package-ecosystem: nuget
+  directory: "/integrationtest/TargetProjects/NetFramework"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  target-branch: master
+  ignore:
+  - dependency-name: MSTest.TestFramework
+    versions:
+    - 2.2.1
+    - 2.2.2
+  - dependency-name: MSTest.TestAdapter
+    versions:
+    - 2.2.1
+- package-ecosystem: nuget
+  directory: "/src/Stryker.Core/Stryker.Core/ToolHelpers"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  target-branch: master
