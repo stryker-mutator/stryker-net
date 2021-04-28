@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var filesystemRoot = Path.GetPathRoot(currentDirectory);
 
             var sourceFile = File.ReadAllText(currentDirectory + "/TestResources/ExampleSourceFile.cs");
-            var testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "TestProject", "TestProject.csproj"));
+            var testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot!, "TestProject", "TestProject.csproj"));
             var projectUnderTestPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
             const string defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
@@ -108,7 +108,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 { Path.Combine(filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
                 { Path.Combine(filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
                 { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                { _testAssemblyPath, new MockFileData("Bytecode") },
+                { _testAssemblyPath!, new MockFileData("Bytecode") },
                 { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
 
@@ -119,7 +119,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private static void DiscoverTests(ITestDiscoveryEventsHandler discoveryEventsHandler, ICollection<TestCase> tests, bool aborted)
         {
             Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
-                ContinueWith((t, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
+                ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
         }
 
         private TestCase BuildCase(string name) => new TestCase(name, _executorUri, _testAssemblyPath){Id = new Guid()};
@@ -192,8 +192,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                     It.Is<string>(settings => !settings.Contains("<Coverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
-                (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
-                    ITestHostLauncher host) =>
+                (IEnumerable<string> _, string _, ITestRunEventsHandler testRunEvents,
+                    ITestHostLauncher _) =>
                 {
                     // generate test results
                     MoqTestRun(testRunEvents, results);
@@ -210,8 +210,8 @@ namespace Stryker.Core.UnitTest.TestRunners
                     It.Is<string>(settings => settings.Contains("<Coverage")),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
-                (IEnumerable<string> sources, string settings, ITestRunEventsHandler testRunEvents,
-                    ITestHostLauncher host) =>
+                (IEnumerable<string> _, string _, ITestRunEventsHandler testRunEvents,
+                    ITestHostLauncher _) =>
                 {
                     // generate test results
                     var results = new List<TestResult>(coverageResults.Count);
@@ -246,7 +246,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
-                    ITestHostLauncher host) =>
+                    ITestHostLauncher _) =>
                 {
                     var collector = new CoverageCollector();
                     var start = new TestSessionStartArgs
@@ -300,7 +300,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
                 (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
-                    ITestHostLauncher host) =>
+                    ITestHostLauncher _) =>
                 {
                     var collector = new CoverageCollector();
                     var start = new TestSessionStartArgs
@@ -359,7 +359,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                     It.IsAny<string>(),
                     It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
-                (IEnumerable<string> sources, string discoverySettings, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
+                (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
                     DiscoverTests(discoveryEventsHandler, _testCases, false));
 
             runner = new VsTestRunner(
@@ -370,7 +370,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockedVsTestConsole.Object,
-                hostBuilder: (i) => new MoqHost(endProcess));
+                hostBuilder: _ => new MoqHost(endProcess, false));
             return mockedVsTestConsole;
         }
 
@@ -441,7 +441,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
                 SetupMockTestRun(mockVsTest, false, endProcess);
 
-                var result = runner.RunAll(null, _mutant, ((mutants, tests, failedTests, inProgress) => false));
+                var result = runner.RunAll(null, _mutant, ((_, _, _, _) => false));
                 // verify Abort has been called
                 Mock.Verify(mockVsTest);
                 // and test run is failed
@@ -483,7 +483,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // one mutant is covered by tests 0 and 1
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
 
-                var id = _mutant.CoveringTests.GetGuids().First();
                 _testCases.Find(t => t.Id == testIds[0])?.DisplayName.ShouldBe("T0");
                 _testCases.Find(t => t.Id == testIds[1])?.DisplayName.ShouldBe("T1");
 
@@ -600,74 +599,69 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void HandleMultipleTestResults()
         {
             var options = new StrykerOptions();
-            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
-            {
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
-                // assume 2 results for T0
-                SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
-                var result = runner.InitialTest();
-                // initial test is fine
-                result.FailingTests.IsEmpty.ShouldBeTrue();
-                // test session will fail
-                SetupMockTestRun(mockVsTest, new[]{("T0", true),  ("T0", true), ("T1", true)}, endProcess);
-                result = runner.RunAll(null, _mutant, null);
-                result.FailingTests.IsEmpty.ShouldBeTrue();
-                result.RanTests.IsEveryTest.ShouldBeTrue();
-            }
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
+            var result = runner.InitialTest();
+            // initial test is fine
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            // test session will fail
+            SetupMockTestRun(mockVsTest, new[]{("T0", true),  ("T0", true), ("T1", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            result.RanTests.IsEveryTest.ShouldBeTrue();
         }
+
         [Fact]
         public void HandleFailureWithinMultipleTestResults()
         {
             var options = new StrykerOptions();
-            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
-            {
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
-                // assume 2 results for T0
-                SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
-                var result = runner.InitialTest();
-                // initial test is fine
-                result.FailingTests.IsEmpty.ShouldBeTrue();
-                // test session will fail on test 1
-                SetupMockTestRun(mockVsTest, new[]{("T0", false),  ("T0", true), ("T1", true)}, endProcess);
-                result = runner.RunAll(null, _mutant, null);
-                result.RanTests.IsEveryTest.ShouldBeTrue();
-                result.FailingTests.IsEmpty.ShouldBeFalse();
-                result.FailingTests.GetGuids().ShouldContain(_testCases[0].Id);
-                // test session will fail on the other test result
-                SetupMockTestRun(mockVsTest, new[]{("T0", true),  ("T0", false), ("T1", true)}, endProcess);
-                result = runner.RunAll(null, _mutant, null);
-                result.RanTests.IsEveryTest.ShouldBeTrue();
-                result.FailingTests.IsEmpty.ShouldBeFalse();
-                result.FailingTests.GetGuids().ShouldContain(_testCases[0].Id);
-            }
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
+            var result = runner.InitialTest();
+            // initial test is fine
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            // test session will fail on test 1
+            SetupMockTestRun(mockVsTest, new[]{("T0", false),  ("T0", true), ("T1", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.FailingTests.IsEmpty.ShouldBeFalse();
+            result.FailingTests.GetGuids().ShouldContain(_testCases[0].Id);
+            // test session will fail on the other test result
+            SetupMockTestRun(mockVsTest, new[]{("T0", true),  ("T0", false), ("T1", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.FailingTests.IsEmpty.ShouldBeFalse();
+            result.FailingTests.GetGuids().ShouldContain(_testCases[0].Id);
         }
 
         [Fact]
         public void HandleTimeOutWithMultipleTestResults()
         {
             var options = new StrykerOptions();
-            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
-            {
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
-                // assume 2 results for T0
-                SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
-                var result = runner.InitialTest();
-                // initial test is fine
-                result.FailingTests.IsEmpty.ShouldBeTrue();
-                // test session will fail
-                SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true)}, endProcess);
-                result = runner.RunAll(null, _mutant, null);
-                result.FailingTests.IsEmpty.ShouldBeTrue();
-                result.TimedOutTests.Count.ShouldBe(1);
-                result.TimedOutTests.GetGuids().ShouldContain(_testCases[0].Id);
-                result.RanTests.IsEveryTest.ShouldBeFalse();
-            }
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
+            var result = runner.InitialTest();
+            // initial test is fine
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            // test session will fail
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            result.TimedOutTests.Count.ShouldBe(1);
+            result.TimedOutTests.GetGuids().ShouldContain(_testCases[0].Id);
+            result.RanTests.IsEveryTest.ShouldBeFalse();
         }
 
         [Fact]
         public void MarkSuspiciousCoverage()
         {
-            var options = new StrykerOptions(coverageAnalysis:"pertestinisolation");
+            var options = new StrykerOptions(coverageAnalysis:"pertest");
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -685,9 +679,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             private readonly WaitHandle _handle;
 
-            public MoqHost(WaitHandle handle)
+            public MoqHost(WaitHandle handle, bool isDebug)
             {
                 _handle = handle;
+                IsDebug = isDebug;
             }
 
             public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)

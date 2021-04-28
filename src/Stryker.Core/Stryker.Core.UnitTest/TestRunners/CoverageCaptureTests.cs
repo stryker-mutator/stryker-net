@@ -1,5 +1,4 @@
-﻿using Shouldly;
-using Stryker.DataCollector;
+using Shouldly;
 using System;
 using System.Diagnostics;
 using System.Threading;
