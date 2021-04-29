@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.Clients
             var options = new StrykerOptions
             {
                 DashboardUrl = "http://www.example.com/",
-                DashboardApiKey = "Acces_Token"
+                DashboardApiKey = "Access_Token"
             };
 
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
