@@ -13,7 +13,7 @@ Stryker requires dotnet 5.0 or newer: [Install dotnet](https://dotnet.microsoft.
 ## Dotnet framework specific
 Nuget is required for dotnet framework. Follow the instructions at [Install nuget](https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools#windows) including adding nuget to the path. Otherwise stryker will not be able to find and use nuget.
 
-Make sure NuGet targets and build tasks are installed. You can install them with visual studio by going to Tools >  Get Tools and Features > Individual components > Code tools
+Make sure NuGet targets and build tasks are installed. You can install them with visual studio by going to Tools > Get Tools and Features > Individual components > Code tools
 
 [NuGet targets and build tasks feature](./images/install-nuget-targets.png)
 
