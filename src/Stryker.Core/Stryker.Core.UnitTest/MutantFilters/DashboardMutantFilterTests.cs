@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions()
             {
                 WithBaseline = true,
-                DashboardApiKey = "Acces_Token",
+                DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "version/human/readable",
                 Reporters = new[] { Reporter.Dashboard },
