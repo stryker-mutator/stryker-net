@@ -58,7 +58,7 @@ For most projects no configuration is needed. Simply run stryker and it will fin
 dotnet stryker
 ```
 
-If more configuration is needed follow the instuctions in your console.
+If more configuration is needed follow the instructions in your console.
 
 # Configure
 
