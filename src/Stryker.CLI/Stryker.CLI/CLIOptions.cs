@@ -85,7 +85,7 @@ namespace Stryker.CLI
         {
             ArgumentName = "--mutations-options",
             ArgumentShortName = "-mo <mutationsOptions>",
-            ArgumentDescription = @"Options for mutations",
+            ArgumentDescription = @"Options for mutations. Example: ['!linq.first'] to exclude linq First method mutations",
             JsonKey = "mutations-options"
         };
 
