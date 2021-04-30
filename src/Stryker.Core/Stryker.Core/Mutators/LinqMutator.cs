@@ -67,8 +67,8 @@ namespace Stryker.Core.Mutators
                 LinqExpression.Intersect
             };
         }
-        private ILogger Logger { get; }
-        public LinqMutator(IStrykerOptions options = null, ILogger logger = null)
+
+        public LinqMutator(IStrykerOptions options = null)
         {
             if (options != null &&
                 options.MutationsOptions != null
