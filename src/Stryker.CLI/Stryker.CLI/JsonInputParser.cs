@@ -15,11 +15,11 @@ namespace Stryker.CLI
             inputs.ConcurrencyInput.SuppliedInput = jsonConfig.Concurrency;
 
             inputs.SinceInput.SuppliedInput =
-                jsonConfig.Since is not null ||
+                jsonConfig.Since is not null &&
                 (jsonConfig.Since.Enabled.HasValue && jsonConfig.Since.Enabled.Value);
 
             inputs.WithBaselineInput.SuppliedInput =
-                jsonConfig.Baseline is not null ||
+                jsonConfig.Baseline is not null &&
                 (jsonConfig.Baseline.Enabled.HasValue && jsonConfig.Baseline.Enabled.Value);
 
             inputs.BaselineProviderInput.SuppliedInput = jsonConfig.Baseline?.Provider;

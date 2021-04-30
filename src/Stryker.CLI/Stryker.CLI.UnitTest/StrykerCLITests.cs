@@ -5,7 +5,6 @@ using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Core;
-using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -14,7 +13,7 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-
+    [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class StrykerCLITests
     {
         private StrykerInputs inputs;
@@ -47,8 +46,10 @@ namespace Stryker.CLI.UnitTest
             };
             var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
-
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Returns(strykerRunResult)
+                .Verifiable();
+            
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
 
@@ -233,7 +234,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--threshold-break")]
+        [InlineData("--break-at")]
         [InlineData("-b")]
         public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {

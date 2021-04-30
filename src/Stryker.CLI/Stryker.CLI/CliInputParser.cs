@@ -79,7 +79,6 @@ namespace Stryker.CLI
             {
                 RegisterCliInput(app, value);
             }
-
             return _strykerInputs;
         }
 
@@ -178,7 +177,7 @@ namespace Stryker.CLI
 
             AddCliInput(_strykerInputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue);
             AddCliInput(_strykerInputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");
-            AddCliInput(_strykerInputs.ThresholdBreakInput, "threshold-break", "b", argumentHint: "0-100");
+            AddCliInput(_strykerInputs.ThresholdBreakInput, "break-at", "b", argumentHint: "0-100");
 
             AddCliInput(_strykerInputs.ProjectUnderTestNameInput, "project", "p", argumentHint: "project-name.csproj");
             AddCliInput(_strykerInputs.MutationLevelInput, "mutation-level", "l");
