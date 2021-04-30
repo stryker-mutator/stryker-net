@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
@@ -22,7 +23,7 @@ namespace Stryker.Core.Options.Inputs
                 }
                 else
                 {
-                    throw new StrykerInputException($"The given c# language version ({SuppliedInput}) is invalid.");
+                    throw new StrykerInputException($"The given c# language version ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
                 }
             }
             return LanguageVersion.Default;

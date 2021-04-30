@@ -10,11 +10,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldValidateMutationLevel()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var target = new MutationLevelInput();
+            target.SuppliedInput = "gibberish";
+
+            var ex = Should.Throw<StrykerInputException>(() =>
             {
-                var options = new MutationLevelInput { SuppliedInput = "gibberish" }.Validate();
+                target.Validate();
             });
-            ex.Details.ShouldBe($"The given mutation level (gibberish) is invalid. Valid options are: [Basic, Standard, Advanced, Complete]");
+            ex.Message.ShouldBe($"The given mutation level (gibberish) is invalid. Valid options are: [Basic, Standard, Advanced, Complete]");
         }
     }
 }

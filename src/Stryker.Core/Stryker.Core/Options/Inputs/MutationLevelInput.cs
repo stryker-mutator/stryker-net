@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 
@@ -23,7 +24,7 @@ namespace Stryker.Core.Options.Inputs
             }
             else
             {
-                throw new StrykerInputException($"The given mutation level ({SuppliedInput}) is invalid.");
+                throw new StrykerInputException($"The given mutation level ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<MutationLevel>)Enum.GetValues(typeof(MutationLevel))))}]");
             }
         }
     }

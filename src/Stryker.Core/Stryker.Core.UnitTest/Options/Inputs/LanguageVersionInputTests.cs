@@ -11,15 +11,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class LanguageVersionInputTests
     {
-
         [Fact]
         public void ShouldValidateLanguageVersion()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var target = new LanguageVersionInput();
+            target.SuppliedInput = "gibberish";
+
+            var ex = Should.Throw<StrykerInputException>(() =>
             {
-                var options = new LanguageVersionInput { SuppliedInput = "gibberish" };
+                target.Validate();
             });
-            ex.Details.ShouldBe($"The given c# language version (gibberish) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+            ex.Message.ShouldBe($"The given c# language version (gibberish) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
         }
     }
 }

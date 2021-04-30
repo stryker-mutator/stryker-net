@@ -6,7 +6,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ExcludedMutationsInput : InputDefinition<IEnumerable<string>, IEnumerable<Mutator>>
+    public class IgnoreMutationsInput : InputDefinition<IEnumerable<string>, IEnumerable<Mutator>>
     {
         public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
@@ -35,7 +35,7 @@ namespace Stryker.Core.Options.Inputs
                     }
                     else
                     {
-                        throw new StrykerInputException($"Invalid excluded mutator ({mutatorToExclude}).");
+                        throw new StrykerInputException($"Invalid excluded mutation ({mutatorToExclude}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                     }
                 }
 

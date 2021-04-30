@@ -1,4 +1,6 @@
+using System;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -10,16 +12,25 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(bool? dashboardEnabled)
         {
-            if (dashboardEnabled.IsNotNullAndTrue())
+            if (!dashboardEnabled.IsNotNullAndTrue())
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
-                {
-                    throw new StrykerInputException("When the stryker dashboard is enabled an api key required.");
-                }
-
-                return SuppliedInput;
+                // this input is not needed when dashboard is not enabled
+                return Default;
             }
-            return Default;
+            if (SuppliedInput.IsNullOrEmptyInput())
+            {
+                var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
+                if (!string.IsNullOrWhiteSpace(environmentApiKey))
+                {
+                    return environmentApiKey;
+                }
+                else
+                {
+                    throw new StrykerInputException($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
+                }
+            }
+
+            return SuppliedInput;
         }
     }
 }

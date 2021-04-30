@@ -47,8 +47,8 @@ namespace Stryker.Core.Options
         public ProjectVersionInput ProjectVersionInput { get; init; }
         public ModuleNameInput ModuleNameInput { get; init; }
         public MutateInput MutateInput { get; init; }
-        public IgnoredMethodsInput IgnoredMethodsInput { get; init; }
-        public ExcludedMutationsInput ExcludedMutationsInput { get; init; }
+        public IgnoreMethodsInput IgnoredMethodsInput { get; init; }
+        public IgnoreMutationsInput ExcludedMutationsInput { get; init; }
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; }
         public DisableBailInput DisableBailInput { get; set; }
         public DisableMixMutantsInput DisableMixMutantsInput { get; set; }
@@ -95,7 +95,7 @@ namespace Stryker.Core.Options
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
                 WithBaseline = WithBaselineInput.Validate(),
                 BaselineProvider = baselineProvider,
-                FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput),
+                FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,
                 SinceTarget = SinceTargetInput.Validate(sinceEnabled),
                 BasePath = BasePathInput.Validate(_fileSystem),
