@@ -15,24 +15,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 new CoverageAnalysisInput { SuppliedInput = "gibberish" }.Validate();
             });
-            ex.Details.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
-        }
-
-        [Fact]
-        public void ShouldSetOptimisationMode()
-        {
-            var flags = new CoverageAnalysisInput { SuppliedInput = "perTestInIsolation" }.Validate();
-            flags.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-            flags.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
-
-            flags = new CoverageAnalysisInput { SuppliedInput = null }.Validate();
-            flags.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-
-            flags = new CoverageAnalysisInput { SuppliedInput = "all" }.Validate();
-            flags.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
-
-            flags = new CoverageAnalysisInput { SuppliedInput = "off" }.Validate();
-            flags.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
+            ex.Message.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
         }
     }
 }

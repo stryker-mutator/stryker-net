@@ -65,24 +65,24 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsDisableMixMutants()
+        public void ShouldSetOptimisationFlagsDisableBail()
         {
             _target.DisableMixMutantsInput.SuppliedInput = true;
 
             var result = _target.ValidateAll();
             
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
             result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsDisableBail()
+        public void ShouldSetOptimisationFlagsDisableMixMutants()
         {
             _target.DisableBailInput.SuppliedInput = true;
 
             var result = _target.ValidateAll();
             
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
             result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
         }
 

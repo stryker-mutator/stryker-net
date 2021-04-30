@@ -13,11 +13,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [InlineData("")]
         public void ProjectVersionCannotBeEmpty(string value)
         {
-            var input = new ProjectVersionInput { SuppliedInput = value };
+            var input = new ProjectVersionInput { };
+            input.SuppliedInput = value;
 
-            void act() => input.Validate(null, reporters: new[] { Reporter.Dashboard }, true);
+            var exception = Should.Throw<StrykerInputException>(() => {
+                input.Validate(null, reporters: new[] { Reporter.Dashboard }, true);
+            });
 
-            Should.Throw<StrykerInputException>(act).Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+            exception.Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
         }
     }
 }

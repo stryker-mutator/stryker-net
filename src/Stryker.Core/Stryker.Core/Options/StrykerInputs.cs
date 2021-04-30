@@ -83,7 +83,7 @@ namespace Stryker.Core.Options
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),
-                OptimizationMode = CoverageAnalysisInput.Validate() & DisableBailInput.Validate() & DisableMixMutantsInput.Validate(),
+                OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
                 TestProjects = TestProjectsInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
