@@ -78,7 +78,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.MutateInput.SuppliedInput.ShouldHaveSingleItem();
             actualInputs.MutateInput.SuppliedInput.ShouldContain("!**/Test.cs{1..100}{200..300}");
             actualInputs.CoverageAnalysisInput.SuppliedInput.ShouldBe("perTest");
-            actualInputs.DisableAbortTestOnFailInput.SuppliedInput.ShouldBe(true);
+            actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
         }
     }
 }

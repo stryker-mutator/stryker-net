@@ -9,8 +9,8 @@ namespace Stryker.Core.Options
         NoOptimization = 0,
         SkipUncoveredMutants = 1,
         CoverageBasedTest = 2,
-        DisableAbortTestOnKill = 4,
+        DisableBail = 4,
         CaptureCoveragePerTest = 8,
-        DisableTestMix = 16
+        DisableMixMutants = 16
     }
 }

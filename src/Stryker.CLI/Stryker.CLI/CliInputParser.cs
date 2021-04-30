@@ -34,7 +34,7 @@ namespace Stryker.CLI
 
         public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
         {
-            _strykerInputs = new StrykerInputs(logger, null)
+            _strykerInputs = new StrykerInputs(logger)
             {
                 AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
@@ -46,9 +46,9 @@ namespace Stryker.CLI
                 DashboardUrlInput = new DashboardUrlInput(),
                 DevModeInput = new DevModeInput(),
                 DiffIgnoreFilePatternsInput = new DiffIgnoreFilePatternsInput(),
-                DisableAbortTestOnFailInput = new DisableAbortTestOnFailInput(),
-                DisableSimultaneousTestingInput = new DisableSimultaneousTestingInput(),
-                ExcludedMutatorsInput = new ExcludedMutatorsInput(),
+                DisableBailInput = new DisableBailInput(),
+                DisableMixMutantsInput = new DisableMixMutantsInput(),
+                ExcludedMutationsInput = new ExcludedMutationsInput(),
                 FallbackVersionInput = new FallbackVersionInput(),
                 IgnoredMethodsInput = new IgnoredMethodsInput(),
                 LanguageVersionInput = new LanguageVersionInput(),

@@ -48,10 +48,10 @@ namespace Stryker.Core.Options
         public ModuleNameInput ModuleNameInput { get; init; }
         public MutateInput MutateInput { get; init; }
         public IgnoredMethodsInput IgnoredMethodsInput { get; init; }
-        public ExcludedMutatorsInput ExcludedMutatorsInput { get; init; }
+        public ExcludedMutationsInput ExcludedMutationsInput { get; init; }
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; }
-        public DisableAbortTestOnFailInput DisableAbortTestOnFailInput { get; set; }
-        public DisableSimultaneousTestingInput DisableSimultaneousTestingInput { get; set; }
+        public DisableBailInput DisableBailInput { get; set; }
+        public DisableMixMutantsInput DisableMixMutantsInput { get; set; }
 
         public StrykerOptions ValidateAll()
         {
@@ -79,11 +79,11 @@ namespace Stryker.Core.Options
                 Reporters = reporters,
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
-                ExcludedMutators = ExcludedMutatorsInput.Validate(),
+                ExcludedMutations = ExcludedMutationsInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),
-                OptimizationMode = CoverageAnalysisInput.Validate() & DisableAbortTestOnFailInput.Validate() & DisableSimultaneousTestingInput.Validate(),
+                OptimizationMode = CoverageAnalysisInput.Validate() & DisableBailInput.Validate() & DisableMixMutantsInput.Validate(),
                 TestProjects = TestProjectsInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),

@@ -6,22 +6,22 @@ namespace Stryker.Core.Options.Inputs
     {
         public override int? Default => 0;
 
-        protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than threshold low.";
-        protected override string HelpOptions => FormatHelpOptions("0 - 99");
+        protected override string Description => "Anything below this mutation score will return a non-zero exit code. Must be less than or equal to threshold low.";
+        protected override string HelpOptions => FormatHelpOptions("0 - 100");
 
         public int Validate(int? low)
         {
             if (SuppliedInput is not null)
             {
                 var @break = SuppliedInput.Value;
-                if (@break > 99 || @break < 0)
+                if (@break > 100 || @break < 0)
                 {
-                    throw new StrykerInputException("Threshold break must be between 0 and 99.");
+                    throw new StrykerInputException("Threshold break must be between 0 and 100.");
                 }
 
-                if (@break <= low)
+                if (@break > low)
                 {
-                    throw new StrykerInputException($"Threshold break must be less than threshold high. Current low: {low}, break: {@break}");
+                    throw new StrykerInputException($"Threshold break must be less than or equal to threshold low. Current low: {low}, break: {@break}.");
                 }
 
                 return @break;

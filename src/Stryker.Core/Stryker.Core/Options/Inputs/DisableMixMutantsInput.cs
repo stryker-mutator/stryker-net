@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableSimultaneousTestingInput : InputDefinition<bool?, OptimizationModes>
+    public class DisableMixMutantsInput : InputDefinition<bool?, OptimizationModes>
     {
         public override bool? Default => false;
 
@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is { })
             {
-                return SuppliedInput.Value ? OptimizationModes.DisableTestMix : OptimizationModes.NoOptimization;
+                return SuppliedInput.Value ? OptimizationModes.DisableMixMutants : OptimizationModes.NoOptimization;
             }
             return OptimizationModes.NoOptimization;
         }

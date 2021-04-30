@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class ExcludedMutatorsInputTests
+    public class ExcludedMutationsInputTests
     {
         [Fact]
         public void ShouldValidateExcludedMutation()
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
-                new ExcludedMutatorsInput { SuppliedInput = new[] { "gibberish" } }.Validate();
+                new ExcludedMutationsInput { SuppliedInput = new[] { "gibberish" } }.Validate();
             });
             ex.Details.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
         }

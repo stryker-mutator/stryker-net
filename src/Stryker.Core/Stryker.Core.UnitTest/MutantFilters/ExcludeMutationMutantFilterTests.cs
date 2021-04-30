@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions
             {
-                ExcludedMutators = new[] { excludedMutator }
+                ExcludedMutations = new[] { excludedMutator }
             };
 
             // Act

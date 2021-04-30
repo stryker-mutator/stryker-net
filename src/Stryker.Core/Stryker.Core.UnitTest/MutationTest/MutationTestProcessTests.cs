@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var options = new StrykerOptions()
             {
                 DevMode = true,
-                ExcludedMutators = new Mutator[] { }
+                ExcludedMutations = new Mutator[] { }
             };
 
             var target = new MutationTestProcess(input,
@@ -190,7 +190,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var options = new StrykerOptions()
             {
                 DevMode = true,
-                ExcludedMutators = new Mutator[] { }
+                ExcludedMutations = new Mutator[] { }
             };
 
             var target = new MutationTestProcess(input,

@@ -5,21 +5,26 @@
     ],
     "verbosity": "trace",
     "coverage-analysis": "perTest",
-    "disable-test-abortion": true,
+    "disable-bail": true,
+    "disable-mix-mutants":  true,
     "additional-timeout": 9999,
     "project": "ExampleProject.csproj",
     "concurrency": 1,
     "solution": "",
     "mutation-level": "",
-    "since": true,
-    "since-target": "main",
+    "since": {
+      "enabled": false,
+      "target": "main",
+      "ignore-changes-in": [
+        ""
+      ]
+    },
     "language-version": "",
     "dashboard-url": "",
-    "with-baseline": true,
     "test-projects": [
       ""
     ],
-    "ignore-mutators": [
+    "ignore-mutations": [
       ""
     ],
     "ignore-methods": [
@@ -39,10 +44,8 @@
       "module": "cli"
     },
     "baseline": {
+      "enabled":  false,
       "fallback-version": "master",
-      "ignore-changed-files": [
-        ""
-      ],
       "azure-fileshare-url": "",
       "provider": ""
     }

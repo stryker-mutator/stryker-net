@@ -34,11 +34,11 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "coverage-analysis")]
         public string CoverageAnalysis { get; set; }
 
-        [JsonProperty(PropertyName = "disable-test-abortion")]
-        public bool DisableTestAbortion { get; set; }
+        [JsonProperty(PropertyName = "disable-bail")]
+        public bool DisableBail { get; set; }
 
-        [JsonProperty(PropertyName = "disable-testing-mix-mutations")]
-        public bool DisableTestingMixMutations { get; set; }
+        [JsonProperty(PropertyName = "disable-mix-mutants")]
+        public bool DisableMixMutants { get; set; }
 
         public Thresholds Thresholds { get; set; }
 
@@ -46,14 +46,9 @@ namespace Stryker.CLI
 
         public string[] Reporters { get; set; }
 
-        // since
-        public bool? Since { get; set; }
+        public Since Since { get; set; }
 
-        [JsonProperty(PropertyName = "since-target")]
-        public string SinceTarget { get; set; }
-        
-        [JsonProperty(PropertyName = "with-baseline")]
-        public bool WithBaseline { get; set; }
+        public Baseline Baseline { get; set; }
 
         [JsonProperty(PropertyName = "dashboard-url")]
         public string DashboardUrl { get; set; }
@@ -61,19 +56,27 @@ namespace Stryker.CLI
         [JsonProperty(PropertyName = "test-projects")]
         public string[] TestProjects { get; set; }
         
-        [JsonProperty(PropertyName = "ignore-mutators")]
-        public string[] IgnoreMutators { get; set; }
+        [JsonProperty(PropertyName = "ignore-mutations")]
+        public string[] IgnoreMutations { get; set; }
         
         [JsonProperty(PropertyName = "ignore-methods")]
         public string[] IgnoreMethods { get; set; }
-
-        public BaseLine BaseLine { get; set; }
     }
 
-    public class BaseLine
+    public class Since
     {
-        [JsonProperty(PropertyName = "with-baseline")]
-        public bool? WithBaseline { get; set; }
+        public bool? Enabled { get; set; }
+
+        [JsonProperty(PropertyName = "ignore-changes-in")]
+        public string[] IgnoreChangesIn { get; set; }
+
+        [JsonProperty(PropertyName = "target")]
+        public string Target { get; set; }
+    }
+
+    public class Baseline
+    {
+        public bool? Enabled { get; set; }
 
         [JsonProperty(PropertyName = "provider")]
         public string Provider { get; set; }
@@ -83,9 +86,6 @@ namespace Stryker.CLI
 
         [JsonProperty(PropertyName = "fallback-version")]
         public string FallbackVersion { get; set; }
-
-        [JsonProperty(PropertyName = "ignore-changed-files")]
-        public string[] IgnoreChangedFiles { get; set; }
     }
 
     public class ProjectInfo
