@@ -233,7 +233,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
-        [InlineData("--break")]
+        [InlineData("--threshold-break")]
         [InlineData("-b")]
         public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {
