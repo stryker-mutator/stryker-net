@@ -45,7 +45,6 @@ namespace Stryker.Core.Options
         IEnumerable<FilePattern> DiffIgnoreFiles { get; }
         string DashboardUrl { get; }
         string DashboardApiKey { get; }
-
         MutationOptions MutationsOptions { get; }
     }
 }

@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants
                 new PrefixUnaryMutator(),
                 new PostfixUnaryMutator(),
                 new CheckedMutator(),
-                new LinqMutator(options,Logger),
+                new LinqMutator(options),
                 new StringMutator(),
                 new StringEmptyMutator(),
                 new InterpolatedStringMutator(),

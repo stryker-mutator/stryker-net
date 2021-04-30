@@ -147,17 +147,6 @@ namespace Stryker.Core.Options
             MutationsOptions = ValidateMutationOptions(mutationsOptions);
         }
 
-        public class MutationOptions
-        {
-
-            public MutationOptions(IDictionary<string, bool> linq)
-            {
-                Linq = linq;
-            }
-
-            public IDictionary<string, bool> Linq { get; private set; }
-        }
-
         private MutationOptions ValidateMutationOptions(string[] mutationsOptions)
         {
             IDictionary<string, bool> linq = new Dictionary<string, bool>();
