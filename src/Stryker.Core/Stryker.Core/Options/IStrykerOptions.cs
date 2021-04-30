@@ -6,7 +6,6 @@ using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using static Stryker.Core.Options.StrykerOptions;
 
 namespace Stryker.Core.Options
 {
