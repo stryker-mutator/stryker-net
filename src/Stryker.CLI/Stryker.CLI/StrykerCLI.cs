@@ -55,6 +55,7 @@ namespace Stryker.CLI
             var disableSimultaneousTesting = CreateOption(app, CLIOptions.DisableTestingMix);
             var timeoutParam = CreateOption(app, CLIOptions.AdditionalTimeoutMS);
             var excludedMutationsParam = CreateOption(app, CLIOptions.ExcludedMutations);
+            var mutationOptionsParam = CreateOption(app, CLIOptions.MutationOptions);
             var ignoreMethodsParam = CreateOption(app, CLIOptions.IgnoreMethods);
             var fileLogParam = CreateOption(app, CLIOptions.LogToFile);
             var projectNameParam = CreateOption(app, CLIOptions.ProjectFileName);
@@ -95,6 +96,7 @@ namespace Stryker.CLI
                     projectUnderTestNameFilter: projectNameParam,
                     additionalTimeoutMS: timeoutParam,
                     excludedMutations: excludedMutationsParam,
+                    mutationOptions: mutationOptionsParam,
                     ignoreMethods: ignoreMethodsParam,
                     logLevel: logConsoleParam,
                     logToFile: fileLogParam,

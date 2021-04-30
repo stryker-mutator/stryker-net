@@ -57,7 +57,8 @@ namespace Stryker.CLI
             CommandOption azureSAS,
             CommandOption azureFileStorageUrl,
             CommandOption mutationLevel,
-            CommandOption dashboardCompareFileExcludePatterns)
+            CommandOption dashboardCompareFileExcludePatterns,
+            CommandOption mutationOptions)
         {
             var fileLocation = Path.Combine(basePath, GetOption(configFilePath.Value(), CLIOptions.ConfigFilePath));
             if (File.Exists(fileLocation))
@@ -90,6 +91,7 @@ namespace Stryker.CLI
                 projectUnderTestNameFilter: GetOption(projectUnderTestNameFilter.Value(), CLIOptions.ProjectFileName),
                 additionalTimeoutMS: GetOption(additionalTimeoutMS.Value(), CLIOptions.AdditionalTimeoutMS),
                 excludedMutations: GetOption(excludedMutations.Value(), CLIOptions.ExcludedMutations),
+                mutationsOptions: GetOption(mutationOptions.Value(), CLIOptions.MutationOptions),
                 ignoredMethods: GetOption(ignoreMethods.Value(), CLIOptions.IgnoreMethods),
                 logLevel: GetOption(logLevel.Value(), CLIOptions.LogLevel),
                 logToFile: GetOption(logToFile.HasValue(), CLIOptions.LogToFile),

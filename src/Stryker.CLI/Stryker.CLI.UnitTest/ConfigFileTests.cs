@@ -1,4 +1,4 @@
-﻿using DotNet.Globbing;
+using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Serilog.Events;
@@ -83,6 +83,7 @@ namespace Stryker.CLI.UnitTest
             actualOptions.FilePatterns.Count().ShouldBe(2);
             actualOptions.FilePatterns.ShouldContain(filePattern);
             actualOptions.Optimizations.ShouldBe(OptimizationFlags.CoverageBasedTest | OptimizationFlags.AbortTestOnKill);
+            actualOptions.MutationsOptions.Linq.ShouldContain(new KeyValuePair<string,bool>("firstordefault",false));
         }
     }
 }

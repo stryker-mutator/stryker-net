@@ -63,6 +63,8 @@ namespace Stryker.Core.Options
 
         public string FallbackVersion { get; }
 
+        public MutationOptions MutationsOptions { get; }
+
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
@@ -105,7 +107,8 @@ namespace Stryker.Core.Options
             string azureFileStorageUrl = null,
             IEnumerable<string> testProjects = null,
             string mutationLevel = null,
-            string[] diffIgnoreFiles = null)
+            string[] diffIgnoreFiles = null,
+            string[] mutationsOptions = null)
         {
             _logger = logger;
             _fileSystem = fileSystem ?? new FileSystem();
@@ -141,6 +144,38 @@ namespace Stryker.Core.Options
             BaselineProvider = ValidateBaselineProvider(baselineStorageLocation);
             (AzureSAS, AzureFileStorageUrl) = ValidateAzureFileStorage(azureSAS, azureFileStorageUrl);
             MutationLevel = ValidateMutationLevel(mutationLevel ?? MutationLevel.Standard.ToString());
+            MutationsOptions = ValidateMutationOptions(mutationsOptions);
+        }
+
+        public class MutationOptions
+        {
+
+            public MutationOptions(IDictionary<string, bool> linq)
+            {
+                Linq = linq;
+            }
+
+            public IDictionary<string, bool> Linq { get; private set; }
+        }
+
+        private MutationOptions ValidateMutationOptions(string[] mutationsOptions)
+        {
+            IDictionary<string, bool> linq = new Dictionary<string, bool>();
+
+            if (mutationsOptions != null)
+                linq =
+                    new Dictionary<string, bool>(mutationsOptions
+                            .Where(w => w.ToLower().StartsWith("!linq"))
+                            .Select(s => s.Replace("!linq.", ""))
+                            .Select(s => new KeyValuePair<string, bool>(s, false))
+                            .Union(
+                                mutationsOptions
+                            .Where(w => w.ToLower().StartsWith("linq"))
+                            .Select(s => s.Replace("linq.", ""))
+                            .Select(s => new KeyValuePair<string, bool>(s, true))));
+
+            var value = new MutationOptions(linq);
+            return value;
         }
 
         private StrykerOptions(
@@ -178,7 +213,9 @@ namespace Stryker.Core.Options
             string projectName,
             string moduleName,
             string projectVersion,
-            string fallbackVersion)
+            string fallbackVersion,
+            MutationOptions mutationsOptions
+            )
         {
             _fileSystem = fileSystem;
             _logger = logger;
@@ -215,6 +252,7 @@ namespace Stryker.Core.Options
             ModuleName = moduleName;
             ProjectVersion = projectVersion;
             FallbackVersion = fallbackVersion;
+            MutationsOptions = mutationsOptions;
         }
 
         public IStrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
@@ -254,7 +292,8 @@ namespace Stryker.Core.Options
                 ProjectName,
                 ModuleName,
                 ProjectVersion,
-                FallbackVersion);
+                FallbackVersion,
+                MutationsOptions);
         }
 
         private (string AzureSAS, string AzureFileStorageUrl) ValidateAzureFileStorage(string azureSAS, string azureFileStorageUrl)

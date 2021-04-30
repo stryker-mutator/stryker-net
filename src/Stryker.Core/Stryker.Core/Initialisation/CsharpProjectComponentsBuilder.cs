@@ -114,6 +114,7 @@ namespace Stryker.Core.Initialisation
                     encoding: Encoding.UTF32,
                     options: cSharpParseOptions);
 
+
                 // don't mutate auto generated code
                 if (syntaxTree.IsGenerated())
                 {

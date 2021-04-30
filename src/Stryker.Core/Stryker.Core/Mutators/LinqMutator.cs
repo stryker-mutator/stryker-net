@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutators
 {
@@ -13,13 +16,16 @@ namespace Stryker.Core.Mutators
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
-        private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
-       /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
+        public static IReadOnlyDictionary<LinqExpression, LinqExpression> KindsToMutate { get; private set; }
+
+        private static IReadOnlyDictionary<LinqExpression, LinqExpression> KindsToMutateDefault { get; }
+
+        /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static HashSet<LinqExpression> RequireArguments { get; }
 
         static LinqMutator()
         {
-            KindsToMutate = new Dictionary<LinqExpression, LinqExpression>
+            KindsToMutateDefault = new Dictionary<LinqExpression, LinqExpression>
             {
                 { LinqExpression.FirstOrDefault, LinqExpression.First },
                 { LinqExpression.First, LinqExpression.FirstOrDefault },
@@ -61,6 +67,31 @@ namespace Stryker.Core.Mutators
                 LinqExpression.Intersect
             };
         }
+        private ILogger Logger { get; }
+        public LinqMutator(IStrykerOptions options = null, ILogger logger = null)
+        {
+            if (options != null &&
+                options.MutationsOptions != null
+                && options.MutationsOptions.Linq != null
+                && options.MutationsOptions.Linq.Any()
+                )
+            {
+                var _exclude = new Dictionary<LinqExpression, LinqExpression>();
+                var _include = KindsToMutateDefault;
+                //Remove LinqExpression
+                if (options.MutationsOptions.Linq.Any(a => !a.Value))
+                    _exclude = new Dictionary<LinqExpression, LinqExpression>(KindsToMutateDefault.Where(w => options.MutationsOptions.Linq.Any(a => !a.Value && a.Key.ToLower() == Enum.GetName(typeof(LinqExpression), w.Key).ToLower())));
+
+                //Add LinqExpression
+                if (options.MutationsOptions.Linq.Any(a => a.Value))
+                    _include = new Dictionary<LinqExpression, LinqExpression>(KindsToMutateDefault.Where(w => options.MutationsOptions.Linq.Any(a => a.Value && a.Key.ToLower() == Enum.GetName(typeof(LinqExpression), w.Key).ToLower())));
+
+                KindsToMutate = new Dictionary<LinqExpression, LinqExpression>(_include.Except(_exclude));
+            }
+            else
+                KindsToMutate = KindsToMutateDefault;
+        }
+
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
         public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
         {
@@ -78,7 +109,7 @@ namespace Stryker.Core.Mutators
 
         private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax node, ExpressionSyntax original)
         {
-            while(node is ConditionalAccessExpressionSyntax conditional)
+            while (node is ConditionalAccessExpressionSyntax conditional)
             {
                 foreach (var subMutants in FindMutableMethodCalls(conditional.Expression, original))
                 {
@@ -87,7 +118,7 @@ namespace Stryker.Core.Mutators
                 node = conditional.WhenNotNull;
             }
 
-            for (;;)
+            for (; ; )
             {
                 ExpressionSyntax next = null;
                 if (!(node is InvocationExpressionSyntax invocationExpression))

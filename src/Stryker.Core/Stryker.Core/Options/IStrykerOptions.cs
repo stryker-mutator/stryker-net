@@ -6,6 +6,7 @@ using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using static Stryker.Core.Options.StrykerOptions;
 
 namespace Stryker.Core.Options
 {
@@ -44,5 +45,7 @@ namespace Stryker.Core.Options
         IEnumerable<FilePattern> DiffIgnoreFiles { get; }
         string DashboardUrl { get; }
         string DashboardApiKey { get; }
+
+        MutationOptions MutationsOptions { get; }
     }
 }

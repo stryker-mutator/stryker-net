@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,8 +6,10 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Moq;
 using Shouldly;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -53,6 +55,24 @@ namespace TestApplication
         {
             var target = new LinqMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        }
+
+        [Fact]
+        public void ShouldKindsToMutateContainsFirst()
+        {
+            var mutationOptions = new List<string> { "linq.first" };
+            var options = new StrykerOptions(mutationsOptions: mutationOptions.ToArray());
+            var target = new LinqMutator(options);
+            LinqMutator.KindsToMutate.Where(f => f.Key == LinqExpression.First).Count().ShouldBeGreaterThanOrEqualTo(1);
+        }
+
+        [Fact]
+        public void ShouldKindsToMutateNotContainsFirst()
+        {
+            var mutationOptions = new List<string> { "!linq.first" };
+            var options = new StrykerOptions(mutationsOptions: mutationOptions.ToArray());
+            var target = new LinqMutator(options);
+            LinqMutator.KindsToMutate.Where(f => f.Key == LinqExpression.First).Count().ShouldBe(0);
         }
 
         /// <summary>

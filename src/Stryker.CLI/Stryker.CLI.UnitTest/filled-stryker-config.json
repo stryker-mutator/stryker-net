@@ -16,6 +16,9 @@
     "threshold-break": 20,
     "mutate": [
       "!**/Test.cs{1..100}{200..300}"
-    ] 
+    ],
+    "mutations-options": [
+      "!linq.firstordefault"
+    ]
   }
 }

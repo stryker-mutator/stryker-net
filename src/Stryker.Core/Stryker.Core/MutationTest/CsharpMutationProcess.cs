@@ -51,9 +51,11 @@ namespace Stryker.Core.MutationTest
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
+                _logger.LogDebug($" file.SyntaxTree.GetRoot(): { file.SyntaxTree.GetRoot() }");
                 var mutatedSyntaxTree = _orchestrator.Mutate(file.SyntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
+                _logger.LogDebug($" file.MutatedSyntaxTree: { file.MutatedSyntaxTree }");
                 if (_options.DevMode)
                 {
                     _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");

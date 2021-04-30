@@ -81,6 +81,14 @@ namespace Stryker.CLI
             JsonKey = "excluded-mutations"
         };
 
+        public static readonly CLIOption<string[]> MutationOptions = new CLIOption<string[]>
+        {
+            ArgumentName = "--mutations-options",
+            ArgumentShortName = "-mo <mutationsOptions>",
+            ArgumentDescription = @"Options for mutations",
+            JsonKey = "mutations-options"
+        };
+
         public static readonly CLIOption<string[]> IgnoreMethods = new CLIOption<string[]>
         {
             ArgumentName = "--ignore-methods",

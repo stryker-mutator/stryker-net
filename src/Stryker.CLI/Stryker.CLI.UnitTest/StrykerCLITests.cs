@@ -492,6 +492,43 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Theory]
+        [InlineData("--mutations-options")]
+        [InlineData("-mo")]
+        public void ShouldSetMutationOptionsWhenPassed(string argName)
+        {
+            var options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, @"[
+      ""!linq.first"",
+      ""!linq.firstordefault""
+    ]" });
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MutationsOptions.Linq.Count == 2), It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
+        [InlineData("--mutations-options")]
+        [InlineData("-mo")]
+        public void ShouldNotSetMutationOptionsWhenNotProvided(string argName)
+        {
+            var options = new StrykerOptions();
+            var runResults = new StrykerRunResult(options, 0.3);
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults);
+
+            var target = new StrykerCLI(mock.Object);
+
+            target.Run(new string[] { argName, @"" });
+            mock.Verify(x => x.RunMutationTest(It.Is<StrykerOptions>(o =>
+                o.MutationsOptions.Linq.Count == 0), It.IsAny<IEnumerable<LogMessage>>()));
+        }
+
+        [Theory]
         [InlineData("--dashboard-compare", "--dashboard-version project")]
         [InlineData("-compare", "-version project")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
