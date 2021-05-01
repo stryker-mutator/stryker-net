@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -154,8 +155,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     return;
                 }
                 var tests = handlerTestResults.Count == DiscoverNumberOfTests()
-                    ? (ITestGuids) TestsGuidList.EveryTest()
-                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t =>t.TestCase.Id));
+                    ? (ITestGuids)TestsGuidList.EveryTest()
+                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(t => t.TestCase.Id));
                 var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
@@ -220,7 +221,17 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 var handler = new DiscoveryEventHandler(waitHandle, _messages);
                 var generateRunSettings = GenerateRunSettings(null, false, false, null);
-                _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, handler);
+
+                // Inject the filtering options
+                var vsTestOptions = new TestPlatformOptions
+                {
+                    TestCaseFilter = "Category=unit",
+                    FilterOptions = new FilterOptions
+                    {
+
+                    },
+                };
+                _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, vsTestOptions, handler);
 
                 waitHandle.WaitOne();
                 if (handler.Aborted)
@@ -287,7 +298,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // since we analyze mutant coverage, mutants are assumed as not covered
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
-            var mutantCount = mutants.Max( m=> m.Id)+1;
+            var mutantCount = mutants.Max(m => m.Id) + 1;
             var map = new List<ICollection<TestDescription>>(mutantCount);
             var staticMutantLists = new HashSet<int>();
             // initialize the map
@@ -380,7 +391,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(Guid test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {_vsTests[test].Case.FullyQualifiedName}.");
-            var map = new Dictionary<int, ITestGuids>(1) {[-1] = new WrappedGuidsEnumeration(new []{test})};
+            var map = new Dictionary<int, ITestGuids>(1) { [-1] = new WrappedGuidsEnumeration(new[] { test }) };
             var testResults = RunTestSession(map, true, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test), mutants);
         }
@@ -407,7 +418,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany( m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
+                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany(m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
                     eventHandler, strykerVsTestHostLauncher);
             }
 
@@ -459,7 +470,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.GetTargetFramework();
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select( e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
+            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
             var settingsForCoverage = string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.nUnit))
