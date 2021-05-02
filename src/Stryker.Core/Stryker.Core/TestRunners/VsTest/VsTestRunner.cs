@@ -223,14 +223,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var generateRunSettings = GenerateRunSettings(null, false, false, null);
 
                 // Inject the filtering options
-                var vsTestOptions = new TestPlatformOptions
-                {
-                    TestCaseFilter = "Category=unit",
-                    FilterOptions = new FilterOptions
-                    {
-
-                    },
-                };
+                var vsTestOptions = new TestPlatformOptions { TestCaseFilter = "Category=unit" };
                 _vsTestConsole.DiscoverTests(_sources, runSettings ?? generateRunSettings, vsTestOptions, handler);
 
                 waitHandle.WaitOne();
@@ -495,6 +488,9 @@ $@"<RunSettings>
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
  </RunConfiguration>
+ <MSTest>
+  <ForcedLegacyMode>false</ForcedLegacyMode>
+ </MSTest>
 {dataCollectorSettings}
 </RunSettings>";
             _logger.LogTrace("VsTest run settings set to: {0}", runSettings);
