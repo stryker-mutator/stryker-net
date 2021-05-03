@@ -14,16 +14,25 @@ namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
+        private const string DefaultOutputDirectoryName = "StrykerOutput";
+        private const string BaselinesDirectoryName = "Baselines";
+
         private readonly IStrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
-        private const string _outputPath = "StrykerOutput/Baselines";
+        private readonly string _outputPath;
 
         public AzureFileShareBaselineProvider(IStrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
+
+            _outputPath = $"{DefaultOutputDirectoryName}/{BaselinesDirectoryName}";
+            if (!string.IsNullOrWhiteSpace(options.ProjectName))
+            {
+                _outputPath = $"{options.ProjectName}/{BaselinesDirectoryName}";
+            }
         }
 
         public async Task<JsonReport> Load(string version)
@@ -118,7 +127,7 @@ namespace Stryker.Core.Baseline.Providers
             using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully created directory {0}", fileUrl);
+                _logger.LogDebug("Successfully created directory {0}", fileUrl);
                 return true;
             }
             else if (response.StatusCode == HttpStatusCode.Conflict)
@@ -150,7 +159,7 @@ namespace Stryker.Core.Baseline.Providers
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully allocated storage");
+                _logger.LogDebug("Successfully allocated storage");
                 return true;
             }
             else
