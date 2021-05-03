@@ -13,6 +13,17 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
         }
 
+        protected override BasePropertyDeclarationSyntax OrchestrateChildrenMutation(PropertyDeclarationSyntax node, MutationContext context)
+        {
+            if (!node.IsStatic())
+            {
+                return base.OrchestrateChildrenMutation(node, context);
+            }
+
+            return node.ReplaceNodes(node.ChildNodes(), (original, _) =>
+                MutantOrchestrator.Mutate(original, original == node.Initializer ? context.EnterStatic() : context));
+        }
+
         protected override BasePropertyDeclarationSyntax InjectMutations(PropertyDeclarationSyntax sourceNode,
             BasePropertyDeclarationSyntax targetNode, MutationContext context)
         {
