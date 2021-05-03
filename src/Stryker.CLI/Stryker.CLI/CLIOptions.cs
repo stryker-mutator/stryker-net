@@ -86,7 +86,8 @@ namespace Stryker.CLI
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
             ArgumentDescription = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']",
-            JsonKey = "ignore-methods"
+            JsonKey = "ignore-methods",
+            DefaultValue = Array.Empty<string>()
         };
 
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>

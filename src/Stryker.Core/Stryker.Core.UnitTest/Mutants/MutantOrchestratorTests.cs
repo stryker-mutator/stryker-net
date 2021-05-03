@@ -930,6 +930,19 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
         }
 
         [Fact]
+        public void ShouldMarkStaticMutationStarticInPropertiesInitializer()
+        {
+            var source = @"class Test {
+static string Value {get;} = """";}";
+
+            var expected = @"class Test {
+static string Value {get;} = (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");}";
+            ShouldMutateSourceToExpected(source, expected);
+            _target.Mutants.Count.ShouldBe(1);
+            _target.Mutants.First().IsStaticValue.ShouldBeTrue();
+        }
+
+        [Fact]
         public void ShouldMutatePropertiesAsArrowExpression()
         {
             var source = @"class Test {
