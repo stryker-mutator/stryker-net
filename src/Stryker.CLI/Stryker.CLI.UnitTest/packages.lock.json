@@ -59,10 +59,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "clK8nODLS0tuvhXi8tLAPsC4dZn2LLpCjmXh8xjDKsNc53JRCNff/KX0gjFtFUCxNfLdqAe4zY5JCREqtgfYiA==",
+        "resolved": "3.2.1",
+        "contentHash": "v6PrhkbPrKU385Q/Y+110DKCPQvNFCHSZ90VNGOettbHDx+FtfLkfEZe1aDFgnz4s/9ihWcuYNqZ37I1jH/7eA==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.2.0",
+          "Buildalyzer.Logger": "3.2.1",
           "MSBuild.StructuredLogger": "2.1.133",
           "Microsoft.Build": "16.5.0",
           "Microsoft.Build.Framework": "16.5.0",
@@ -77,8 +77,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "ag6y+Tu5nOg0U0g1LOwdvV3AXNqu40k0C0qPk5MYlnqP99PEL9+7ypHntJ+jyj25Aps1E0X+B6uAtGEm1qkJ0g==",
+        "resolved": "3.2.1",
+        "contentHash": "im8uOVxoXK2Jn02SlBZQNgj9/fNTxHrrUCeWWBXOOTuDpP8W+4yQe1hn7nMqkQOCPEgxXT9DOZZMVfA/fSNreQ==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -2050,7 +2050,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "3.2.0",
+          "Buildalyzer": "3.2.1",
           "Crayon": "2.0.60",
           "DotNet.Glob": "3.1.2",
           "LibGit2Sharp": "0.27.0-preview-0096",
