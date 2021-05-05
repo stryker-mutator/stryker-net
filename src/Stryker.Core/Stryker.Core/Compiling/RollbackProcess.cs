@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Compiling
@@ -77,14 +78,45 @@ namespace Stryker.Core.Compiling
             };
         }
 
+        // search is this node is within a mutation
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
+            var id = ExtractMutationIfAndId(startNode);
+            if (id != null)
+            {
+                return (startNode, id.Value);
+            }
             for (var node = startNode; node != null; node = node.Parent)
+            {
+                id = ExtractMutationIfAndId(node);
+                if (id != null) 
+                {
+                    return (node, id.Value);
+                }
+            }
+
+            // scan within the expression
+            return startNode is ExpressionSyntax ? FindMutationInChildren(startNode) : (null, -1);
+        }
+
+        // search the first mutation within the node
+        private (SyntaxNode, int) FindMutationInChildren(SyntaxNode startNode)
+        {
+            foreach (var node in startNode.ChildNodes())
             {
                 var id = ExtractMutationIfAndId(node);
                 if (id != null) 
                 {
                     return (node, id.Value);
+                }
+            }
+
+            foreach (var node in startNode.ChildNodes())
+            {
+                var (subNode, mutantId) = FindMutationInChildren(node);
+                if (subNode != null)
+                {
+                    return (subNode, mutantId);
                 }
             }
 

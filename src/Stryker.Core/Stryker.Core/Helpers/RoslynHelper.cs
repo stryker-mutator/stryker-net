@@ -35,6 +35,8 @@ namespace Stryker.Core.Helpers
             };
         }
 
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
+
         public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod)
         {
             return baseMethod.Keyword.Text switch
