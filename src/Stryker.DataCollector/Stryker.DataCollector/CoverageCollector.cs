@@ -174,9 +174,9 @@ namespace Stryker.DataCollector
             }
 
             var nameSpaceNode = node.SelectSingleNode("//Parameters/MutantControl");
-            if (nameSpaceNode != null)
+            if (nameSpaceNode != null && nameSpaceNode.Attributes!=null)
             {
-                this._controlClassName = nameSpaceNode.Attributes["name"].Value;
+                _controlClassName = nameSpaceNode.Attributes["name"].Value;
             }
 
             var coverage = node.SelectSingleNode("//Parameters/Coverage");
@@ -220,7 +220,7 @@ namespace Stryker.DataCollector
             }
 
             PublishCoverageData(testCaseEndArgs);
-            SetActiveMutation(-2);
+            SetActiveMutation(_singleMutant ?? -2);
         }
 
         private void PublishCoverageData(TestCaseEndArgs testCaseEndArgs)

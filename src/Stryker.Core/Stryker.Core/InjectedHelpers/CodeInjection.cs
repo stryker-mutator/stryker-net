@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -9,7 +9,7 @@ namespace Stryker.Core.InjectedHelpers
     {
         // files to be injected into the mutated assembly
         private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
-            "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs", "Stryker.Core.InjectedHelpers.Coverage.CommunicationChannel.cs"};
+            "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
 
         static CodeInjection()

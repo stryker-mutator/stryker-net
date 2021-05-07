@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
-    <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
     <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
