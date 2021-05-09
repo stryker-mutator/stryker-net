@@ -63,6 +63,13 @@ namespace Stryker.Core.Options
 
         public string FallbackVersion { get; }
 
+        /// <summary>
+        /// DUMMY IMPLEMENTATION.
+        /// DO NOT MERGE TO MASTER.
+        /// MUST BE REPLACED WITH A PROPER HANDLING OF OPTIONS.
+        /// </summary>
+        public string TestCaseFilter => "Category=unit";
+
         private const string ErrorMessage = "The value for one of your settings is not correct. Try correcting or removing them.";
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;

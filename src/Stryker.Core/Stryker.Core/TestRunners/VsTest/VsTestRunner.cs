@@ -409,6 +409,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
             var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+            var testCaseFilter = string.IsNullOrWhiteSpace(_options.TestCaseFilter) ?
+                string.Empty : $"<TestCaseFilter>{_options.TestCaseFilter}</TestCaseFilter>" + Environment.NewLine;
+
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
             var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
             var runSettings =
@@ -420,6 +423,7 @@ $@"<RunSettings>
 {settingsForCoverage}
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
+{testCaseFilter}
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";

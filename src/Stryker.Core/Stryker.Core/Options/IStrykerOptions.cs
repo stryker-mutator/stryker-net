@@ -1,11 +1,11 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
@@ -44,5 +44,11 @@ namespace Stryker.Core.Options
         IEnumerable<FilePattern> DiffIgnoreFiles { get; }
         string DashboardUrl { get; }
         string DashboardApiKey { get; }
+
+        /// <summary>
+        /// Filter expression to run selective tests.
+        /// <see href="https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests">See here.</see>
+        /// </summary>
+        string TestCaseFilter { get; }
     }
 }
