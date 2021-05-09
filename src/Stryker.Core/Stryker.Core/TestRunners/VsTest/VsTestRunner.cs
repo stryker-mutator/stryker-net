@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -118,7 +119,13 @@ namespace Stryker.Core.TestRunners.VsTest
                         mutantTestsMap.Add(mutant.Id, tests);
                     }
 
-                    testCases = needAll ? null : mutants.SelectMany(m => m.CoveringTests.GetList()).Distinct().Select(t => _discoveredTests.First(tc => tc.Id.ToString() == t.Guid)).ToList();
+                    testCases = needAll ?
+                        null :
+                        mutants
+                            .SelectMany(m => m.CoveringTests.GetList())
+                            .Distinct()
+                            .Select(t => _discoveredTests.First(tc => tc.Id.ToString() == t.Guid))
+                            .ToList();
 
                     _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
                                       $"against {(testCases == null ? "all tests." : string.Join(", ", testCases.Select(x => x.FullyQualifiedName)))}.");
@@ -345,7 +352,8 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler, strykerVsTestHostLauncher);
+                var options = new TestPlatformOptions { TestCaseFilter = _options.TestCaseFilter };
+                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);
             }
 
             // Test host exited signal comes after the run completed
