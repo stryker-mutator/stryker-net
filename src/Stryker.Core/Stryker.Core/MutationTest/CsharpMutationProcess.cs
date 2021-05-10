@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -12,7 +11,6 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters;
 
 namespace Stryker.Core.MutationTest
 {
@@ -82,11 +80,7 @@ namespace Stryker.Core.MutationTest
                 {
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
                 }
-                if (_fileSystem.File.Exists(injectionPath))
-                {
-                    _fileSystem.File.Move(injectionPath, injectionPath + ".stryker-unchanged");
-                }
-                
+
                 // inject the mutated Assembly into the test project
                 using var fs = _fileSystem.File.Create(injectionPath);
                 ms.Position = 0;

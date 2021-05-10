@@ -23,8 +23,10 @@ using Framework = Stryker.Core.Initialisation.Framework;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunner : IMultiTestRunner
+    public class VsTestRunner : ITestRunner
     {
+        private static int count;
+
         private IVsTestConsoleWrapper _vsTestConsole;
         private readonly IFileSystem _fileSystem;
         private readonly IStrykerOptions _options;
@@ -36,7 +38,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private IDictionary<Guid, VsTestDescription> _vsTests;
         private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
-        private static int _count;
         private readonly int _id;
         private TestFramework _testFramework;
         private bool _vsTestFailed;
@@ -66,7 +67,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
             _vsTestConsole = wrapper ?? PrepareVsTestConsole();
-            _id = _count++;
+            _id = count++;
             InitializeVsTestConsole();
         }
 
@@ -79,7 +80,6 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult InitialTest()
         {
             var testResults = RunTestSession(null, true, GenerateRunSettings(null, false, false, new Dictionary<int, ITestGuids>()));
-
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
@@ -88,16 +88,17 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, DiscoverNumberOfTests());
         }
 
-        public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
+        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> { mutant }, update);
         }
 
-        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
             ICollection<Guid> testCases;
+            int? timeOutMs = timeoutCalc?.DefaultTimeout;
 
             if (mutants != null)
             {
@@ -126,7 +127,14 @@ namespace Stryker.Core.TestRunners.VsTest
                                      $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
                     if (testCases?.Count == 0)
                     {
-                        return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!");
+                        return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+                    }
+
+                    if (timeoutCalc != null && testCases!= null)
+                    {
+                        // compute time out
+                        var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
+                        timeOutMs = timeoutCalc.CalculateTimeoutValue(duration);
                     }
                 }
                 else
@@ -170,7 +178,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 _aborted = true;
             }
 
-            var testResults = RunTestSession(mutantTestsMap, needAll, GenerateRunSettings(timeoutMs, mutants != null, false, mutantTestsMap), HandleUpdate);
+            _logger.LogDebug("Using {0} ms as testrun timeout", timeOutMs.ToString() ?? "no");
+
+            var testResults = RunTestSession(mutantTestsMap, needAll, GenerateRunSettings(timeOutMs, mutants != null, false, mutantTestsMap), HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
         }
@@ -189,14 +199,16 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: Initial Test session reports 0 result and 0 stuck tests.");
             }
 
+            var duration = testResults.TestResults.Aggregate(new TimeSpan(), (span, result) => span.Add(result.Duration));
+
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                     .Select(tr => tr.ErrorMessage));
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message);
+                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message, duration)
+                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
         private void SetListOfTests(IDictionary<Guid, VsTestDescription> tests)
@@ -471,7 +483,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
-            var timeoutSettings = timeout.HasValue ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+            // TODO: get proper timeout
+            var timeoutSettings = timeout!=null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
             var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
             var runSettings =
@@ -481,8 +494,7 @@ $@"<RunSettings>
   <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
 {timeoutSettings}
 {settingsForCoverage}
-<DesignMode>false</DesignMode>
-<BatchSize>1</BatchSize>
+<DesignMode>false</DesignMode><BatchSize>1</BatchSize>
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";

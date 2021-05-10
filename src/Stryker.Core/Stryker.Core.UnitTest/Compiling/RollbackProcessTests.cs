@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.IO.Pipes;
 using System.Linq;
-using Microsoft.CodeAnalysis.Emit;
 using System.Reflection;
 using System.Text;
 using Buildalyzer;
@@ -26,12 +26,12 @@ namespace Stryker.Core.UnitTest.Compiling
 {
     public class RollbackProcessTests
     {
-        private readonly SyntaxAnnotation _ifEngineMarker = new SyntaxAnnotation("Injector", "IfInstrumentationEngine");
-        private readonly SyntaxAnnotation _conditionalEngineMarker = new SyntaxAnnotation("Injector", "ConditionalInstrumentationEngine");
+        private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
+        private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
 
         private SyntaxAnnotation GetMutationMarker(int id)
         {
-            return new SyntaxAnnotation("Mutation", id.ToString());
+            return new("Mutation", id.ToString());
         }
 
         [Fact]
@@ -125,7 +125,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
 
        var input = new MutationTestInput()
        {
-           ProjectInfo = new ProjectInfo()
+           ProjectInfo = new ProjectInfo(new MockFileSystem())
            {
                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                    {

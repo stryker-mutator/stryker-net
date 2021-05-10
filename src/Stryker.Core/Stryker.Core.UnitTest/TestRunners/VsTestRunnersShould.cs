@@ -77,13 +77,22 @@ namespace Stryker.Core.UnitTest.TestRunners
             var secondTest = BuildCase("T1");
 
             var content = new CsharpFolderComposite();
+            _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
+                { Path.Combine(filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
+                { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                { _testAssemblyPath!, new MockFileData("Bytecode") },
+                { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
+            });
             _coverageProperty = TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(TestResult));
             _unexpectedCoverageProperty = TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(TestResult));
             _mutant = new Mutant { Id = 0 };
             _otherMutant = new Mutant { Id = 1 };
             _projectContents = content;
             _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
-            _targetProject = new ProjectInfo()
+            _targetProject = new ProjectInfo(_fileSystem)
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -102,15 +111,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                 ProjectContents = _projectContents
             };
             //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
-            _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { projectUnderTestPath, new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                { Path.Combine(filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                { _testAssemblyPath!, new MockFileData("Bytecode") },
-                { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
-            });
 
             _testCases = new List<TestCase> { firstTest, secondTest };
         }
@@ -507,7 +507,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S" }, endProcess);
 
                 // process coverage information
-                var result = runner.RunAll(0, _mutant, null);
+                var result = runner.RunAll(null, _mutant, null);
                 // verify Abort has been called
                 Mock.Verify(mockVsTest);
                 // verify only one test has been run
@@ -533,11 +533,11 @@ namespace Stryker.Core.UnitTest.TestRunners
                 SetupMockTestRun(mockVsTest, false, endProcess);
                 // mutant 0 is covered
                 _mutant.IsStaticValue.ShouldBeTrue();
-                var result = runner.RunAll(0, _mutant, null);
+                var result = runner.RunAll(null, _mutant, null);
                 // mutant is killed
                 result.FailingTests.IsEmpty.ShouldBeFalse();
                 // mutant 1 is not covered
-                result = runner.RunAll(0, _otherMutant, null);
+                result = runner.RunAll(null, _otherMutant, null);
                 // tests are ok
                 result.RanTests.IsEmpty.ShouldBeTrue();
             }
@@ -557,7 +557,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 
-                var input = new MutationTestInput { ProjectInfo = _targetProject, TestRunner = runner, TimeoutMs = 100 };
+                var input = new MutationTestInput { ProjectInfo = _targetProject, TestRunner = runner, TimeoutMs = new TimeoutValueCalculator(100) };
                 foreach (var mutant in _targetProject.ProjectContents.Mutants)
                 {
                     mutant.ResetCoverage();
@@ -588,7 +588,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=F", ["1"] = "T0=S" }, endProcess);
-                var result = runner.RunAll(0, _otherMutant, null);
+                var result = runner.RunAll(null, _otherMutant, null);
                 result.FailingTests.IsEmpty.ShouldBeTrue();
                 result = runner.RunAll(null, _mutant, null);
                 result.FailingTests.IsEmpty.ShouldBeFalse();
@@ -656,6 +656,43 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.TimedOutTests.Count.ShouldBe(1);
             result.TimedOutTests.GetGuids().ShouldContain(_testCases[0].Id);
             result.RanTests.IsEveryTest.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void HandleFailureWhenExtraMultipleTestResults()
+        {
+            var options = new StrykerOptions();
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
+            var result = runner.InitialTest();
+            // initial test is fine
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            // test session will fail
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T0", true), ("T0", false), ("T1", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.FailingTests.IsEmpty.ShouldBeFalse();
+            result.FailingTests.GetGuids().ShouldContain(_testCases[0].Id);
+        }
+
+        [Fact]
+        public void HandleUnexpectedTestResult()
+        {
+            var options = new StrykerOptions();
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T1", true), ("T0", true)}, endProcess);
+            var result = runner.InitialTest();
+            // initial test is fine
+            result.FailingTests.IsEmpty.ShouldBeTrue();
+            // test session will fail
+            SetupMockTestRun(mockVsTest, new[]{("T0", true), ("T2", true), ("T1", true), ("T0", true)}, endProcess);
+            result = runner.RunAll(null, _mutant, null);
+            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.FailingTests.IsEmpty.ShouldBeTrue();
         }
 
         [Fact]

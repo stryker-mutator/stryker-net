@@ -1,3 +1,4 @@
+using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
@@ -35,7 +36,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             _mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = new CsharpFolderComposite()
                 },
@@ -50,7 +51,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectMutator(_initialisationProcessProviderMock.Object, _mutationTestProcessProviderMock.Object);
 
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<IStrykerOptions>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>())).Returns(5);
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>())).Returns(new TimeoutValueCalculator(5));
 
             // act
             var result = target.MutateProject(options, _reporterMock.Object);

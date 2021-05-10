@@ -17,6 +17,7 @@ using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -53,9 +54,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var folder = new CsharpFolderComposite();
             folder.Add(inputFile);
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
+            });
+
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -76,13 +84,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 },
                 AssemblyReferences = _assemblies
             };
-
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
-            });
 
             var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped };
@@ -128,10 +129,17 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var folder = new CsharpFolderComposite();
             folder.Add(inputFile);
+            
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
+            });
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -152,13 +160,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 },
                 AssemblyReferences = _assemblies
             };
-
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
-            });
 
             var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
             var compileErrorMutant = new Mutant() { Mutation = new Mutation(), ResultStatus = MutantStatus.CompileError };
@@ -216,9 +217,14 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
             });
 
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
+            });
+
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -244,12 +250,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var orchestratorMock = new Mock<MutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var compilingProcessMock = new Mock<ICompilingProcess>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
-            });
+
             fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
@@ -291,7 +293,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -311,7 +313,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
@@ -325,7 +327,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
-            executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Once);
+            executorMock.Verify(x => x.Test(new List<Mutant> { mutant }, It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Once);
         }
 
         [Theory]
@@ -344,7 +346,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -369,7 +371,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
@@ -399,7 +401,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest
@@ -411,7 +413,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(Mock.Of<ITestRunner>());
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
@@ -425,7 +427,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var testResult = target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
-            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
+            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             testResult.MutationScore.ShouldBe(double.NaN);
@@ -446,7 +448,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest
@@ -460,7 +462,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             runnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
@@ -474,7 +476,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var testResult = target.Test(folder.Mutants);
 
-            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<int>(), It.IsAny<TestUpdateHandler>()), Times.Never);
+            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             testResult.MutationScore.ShouldBe(double.NaN);
         }

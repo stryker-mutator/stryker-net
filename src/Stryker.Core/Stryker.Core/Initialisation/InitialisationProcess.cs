@@ -27,7 +27,7 @@ namespace Stryker.Core.Initialisation
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(IStrykerOptions options);
-        int InitialTest(IStrykerOptions options);
+        ITimeoutValueCalculator InitialTest(IStrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -89,12 +89,10 @@ namespace Stryker.Core.Initialisation
             return input;
         }
 
-        public int InitialTest(IStrykerOptions options)
+        public ITimeoutValueCalculator InitialTest(IStrykerOptions options)
         {
             // initial test
-            var initialTestDuration = _initialTestProcess.InitialTest(_testRunner);
-
-            return new TimeoutValueCalculator().CalculateTimeoutValue(initialTestDuration, options.AdditionalTimeoutMS);
+            return _initialTestProcess.InitialTest(options, _testRunner);
         }
     }
 }

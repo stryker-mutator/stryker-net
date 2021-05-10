@@ -1,3 +1,4 @@
+using System;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
@@ -9,39 +10,35 @@ namespace Stryker.Core.TestRunners
             FailingTests = !success ? TestsGuidList.EveryTest() : TestsGuidList.NoTest();
             RanTests = TestsGuidList.EveryTest();
             ResultMessage = message;
+            Duration = TimeSpan.Zero;
         }
 
         public TestRunResult(ITestGuids ranTests,
             ITestGuids failedTests,
             ITestGuids timedOutTest,
-            string message)
+            string message, TimeSpan timeSpan)
         {
             RanTests = ranTests;
             FailingTests = failedTests;
             TimedOutTests = timedOutTest;
             ResultMessage = message;
+            Duration = timeSpan;
         }
 
         public static TestRunResult TimedOut(ITestGuids ranTests,
             ITestGuids failedTest,
             ITestGuids timedOutTests,
-            string message)
+            string message,
+            TimeSpan duration)
         {
-            return new TestRunResult(ranTests, failedTest, timedOutTests, message){SessionTimedOut = true};
+            return new TestRunResult(ranTests, failedTest, timedOutTests, message, duration){SessionTimedOut = true};
         }
 
-        public ITestGuids FailingTests { get; private set; }
-        public ITestGuids RanTests { get; private set; }
-        public ITestGuids TimedOutTests { get; private set; }
+        public ITestGuids FailingTests { get; }
+        public ITestGuids RanTests { get; }
+        public ITestGuids TimedOutTests { get; }
         public bool SessionTimedOut { get; private set; }
-        public string ResultMessage { get; private set; }
-
-        public void Merge(TestRunResult other)
-        {
-            ResultMessage += other.ResultMessage;
-            FailingTests =  WrappedGuidsEnumeration.MergeList(FailingTests, other.FailingTests);
-            TimedOutTests = WrappedGuidsEnumeration.MergeList(TimedOutTests, other.TimedOutTests);
-            RanTests = WrappedGuidsEnumeration.MergeList(RanTests, other.RanTests);
-        }
+        public string ResultMessage { get; }
+        public TimeSpan Duration { get; }
     }
 }

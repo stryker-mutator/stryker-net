@@ -3,12 +3,13 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.TestRunners;
 using System.Diagnostics;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
-        int InitialTest(ITestRunner testRunner);
+        ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner);
         int TotalNumberOfTests { get; }
     }
 
@@ -26,8 +27,9 @@ namespace Stryker.Core.Initialisation
         /// Executes the initial testrun using the given testrunner
         /// </summary>
         /// <param name="testRunner"></param>
+        /// <param name="options">Stryker options</param>
         /// <returns>The duration of the initial testrun</returns>
-        public int InitialTest(ITestRunner testRunner)
+        public ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner)
         {
             var message = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
 
@@ -52,7 +54,9 @@ namespace Stryker.Core.Initialisation
                 throw new StrykerInputException("Initial testrun was not successful.", testResult.ResultMessage);
             }
 
-            return (int)stopwatch.ElapsedMilliseconds;
+            return new TimeoutValueCalculator(options.AdditionalTimeoutMS,
+                (int)stopwatch.ElapsedMilliseconds-(int)testResult.Duration.TotalMilliseconds ,
+                (int)stopwatch.ElapsedMilliseconds);
         }
     }
 }

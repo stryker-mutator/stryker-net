@@ -13,7 +13,7 @@ using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunnerPool : IMultiTestRunner
+    public class VsTestRunnerPool : ITestRunner
     {
         private readonly IStrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
@@ -43,7 +43,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TimeSpan TotalTestTime => _vsTests.Values.Aggregate(new TimeSpan(), (current, testDec) => current += testDec.InitialRunTime);
 
-        public TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var runner = TakeRunner();
 
@@ -57,7 +57,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TestRunResult RunAll(int? timeoutMs, Mutant mutant, TestUpdateHandler update)
+        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant mutant, TestUpdateHandler update)
         {
             return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> {mutant}, update);
         }

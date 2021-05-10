@@ -37,6 +37,7 @@ namespace Stryker.Core.MutationTest
         MutationTestInput Input { get; }
         void Mutate();
         StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
+        void Restore();
         void GetCoverage();
         void FilterMutants();
     }
@@ -73,6 +74,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
+            Input.ProjectInfo.BackupOriginalAssembly();
             _mutationProcess.Mutate();
         }
 
@@ -89,11 +91,12 @@ namespace Stryker.Core.MutationTest
             }
 
             TestMutants(mutantsToTest);
-
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(_options, _projectContents.ToReadOnlyInputComponent().GetMutationScore());
         }
+
+        public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
