@@ -386,6 +386,18 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void RunInitialTests()
+        {
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(new StrykerOptions(), endProcess, out var runner);
+            SetupMockTestRun(mockVsTest, new[] {("T0", false),("T1", true) }, endProcess);
+            var result = runner.InitialTest();
+            // tests are successful => run should be successful
+            result.FailingTests.Count.ShouldBe(1);
+
+        }
+
+        [Fact]
         public void RunTests()
         {
             using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -420,7 +432,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 SetupMockTimeOutTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S" }, "T0", endProcess);
 
@@ -460,7 +472,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = ";" }, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
                 var id = _mutant.CoveringTests.GetGuids().First();
                 _testCases.Find(t => t.Id == id)?.DisplayName.ShouldBe("T0");
@@ -478,7 +490,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // test 0 and 1 cover mutant 1
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "0;" }, endProcess);
 
-                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                var result = runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
                 var testIds = _mutant.CoveringTests.GetGuids().ToList();
                 // one mutant is covered by tests 0 and 1
                 _mutant.CoveringTests.IsEmpty.ShouldBe(false);
@@ -502,7 +514,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // only first test covers one mutant
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = ";" }, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S" }, endProcess);
 
@@ -528,7 +540,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 _mutant.ResetCoverage();
                 _otherMutant.ResetCoverage();
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 SetupMockTestRun(mockVsTest, false, endProcess);
                 // mutant 0 is covered
@@ -585,7 +597,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0,1;1", ["T1"] = ";" }, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
 
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=F", ["1"] = "T0=S" }, endProcess);
                 var result = runner.RunAll(null, _otherMutant, null);
@@ -706,7 +718,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" }, endProcess);
 
-                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants, false, false);
+                runner.CaptureCoverage(_targetProject.ProjectContents.Mutants);
                 _otherMutant.IsStaticValue.ShouldBeTrue();
             }
         }

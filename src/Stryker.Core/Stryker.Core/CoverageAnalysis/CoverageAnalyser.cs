@@ -33,7 +33,6 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 return;
             }
-            var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes();
             var mutantsToScan =
                 _input.ProjectInfo.ProjectContents.Mutants
                     .Where(x => x.ResultStatus == MutantStatus.NotRun)
@@ -42,7 +41,7 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 mutant.ResetCoverage();
             }
-            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan);
             if (testResult.FailingTests.Count == 0)
             {
                 SetCoveringTests(mutantsToScan);

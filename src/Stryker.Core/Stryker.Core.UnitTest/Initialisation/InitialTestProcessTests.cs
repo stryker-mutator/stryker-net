@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(false) );
-            testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>(),false, false))
+            testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
 
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.InitialTest()).Callback(() => Thread.Sleep(2)).Returns(new TestRunResult(true));
-            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<List<Mutant>>(),false, false))
+            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(2);
 

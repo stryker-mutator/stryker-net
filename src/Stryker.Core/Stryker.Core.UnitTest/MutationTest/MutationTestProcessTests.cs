@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
-using Stryker.Core.Compiling;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -17,7 +16,6 @@ using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
@@ -25,10 +23,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
-
-    public delegate bool UpdateHandler(IReadOnlyList<Mutant> mutants, TestsGuidList ranTestsGuids,
-        TestsGuidList failedTestsGuids);
-
     public class MutationTestProcessTests
     {
         private string CurrentDirectory { get; }

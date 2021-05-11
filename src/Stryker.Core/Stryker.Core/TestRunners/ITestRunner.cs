@@ -18,7 +18,7 @@ namespace Stryker.Core.TestRunners
 
         TestRunResult InitialTest();
 
-        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe);
+        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants);
 
         TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }

@@ -41,8 +41,6 @@ namespace Stryker.Core.TestRunners.VsTest
             });
         }
 
-        public TimeSpan TotalTestTime => _vsTests.Values.Aggregate(new TimeSpan(), (current, testDec) => current += testDec.InitialRunTime);
-
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var runner = TakeRunner();
@@ -76,7 +74,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe)
+        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
             var needCoverage = _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants);
             if (needCoverage && _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
@@ -89,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants, cantUseAppDomain, cantUsePipe) : runner.RunAll(null, null, null);
+                result = needCoverage ? runner.CaptureCoverage(mutants) : runner.RunAll(null, null, null);
             }
             finally
             {
