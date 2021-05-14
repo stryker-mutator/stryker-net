@@ -35,11 +35,6 @@ namespace Stryker.Core.Initialisation
 
         public virtual AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
-            if (name.Name == "System.Data.Entity")
-            {
-                //TODOF: remove if statement
-            }
-
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
@@ -109,7 +104,6 @@ namespace Stryker.Core.Initialisation
                     return assembly;
                 }
             }
-
 
             if (ResolveFailure != null)
             {
