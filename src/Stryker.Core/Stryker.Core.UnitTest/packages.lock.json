@@ -42,11 +42,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.29, )",
-        "resolved": "13.2.29",
-        "contentHash": "S6wDvBuPowRLgwAxc9vcWdU0NDlKoSQw2uIZBwrl+WDRcYH8+t8lL2QWU8RE78ax+cosBG2jXmfUF/unt0uWAA==",
+        "requested": "[13.2.31, )",
+        "resolved": "13.2.31",
+        "contentHash": "Fw95aJ2AXrVt7ad9YgjIOiffdNLrfQ1CdFhfxQZ/iKMxJu6wN8eGSg4bawcDJJ55Vt4Zzq6UyaN/yycigkMl1w==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.29"
+          "System.IO.Abstractions": "13.2.31"
         }
       },
       "xunit": {
@@ -62,12 +62,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.4.1, )",
-        "resolved": "2.4.1",
-        "contentHash": "mBXd1lp1TQr4to2nFv+c4Tf+RnPoQPKglzwLdbdirOUxRaJsCUNDUx2y7E6j9ajgISlTTp1CydFBZCRCUIrwDg==",
-        "dependencies": {
-          "Microsoft.NET.Test.Sdk": "15.0.0"
-        }
+        "requested": "[2.4.3, )",
+        "resolved": "2.4.3",
+        "contentHash": "kZZSmOmKA8OBlAJaquPXnJJLM9RwQ27H7BMVqfMLUcTi9xHinWGJiWksa3D4NEtz0wZ/nxd2mogObvBgJKCRhQ=="
       },
       "Xunit.SkippableFact": {
         "type": "Direct",
@@ -81,10 +78,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "clK8nODLS0tuvhXi8tLAPsC4dZn2LLpCjmXh8xjDKsNc53JRCNff/KX0gjFtFUCxNfLdqAe4zY5JCREqtgfYiA==",
+        "resolved": "3.2.1",
+        "contentHash": "v6PrhkbPrKU385Q/Y+110DKCPQvNFCHSZ90VNGOettbHDx+FtfLkfEZe1aDFgnz4s/9ihWcuYNqZ37I1jH/7eA==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.2.0",
+          "Buildalyzer.Logger": "3.2.1",
           "MSBuild.StructuredLogger": "2.1.133",
           "Microsoft.Build": "16.5.0",
           "Microsoft.Build.Framework": "16.5.0",
@@ -99,8 +96,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.2.0",
-        "contentHash": "ag6y+Tu5nOg0U0g1LOwdvV3AXNqu40k0C0qPk5MYlnqP99PEL9+7ypHntJ+jyj25Aps1E0X+B6uAtGEm1qkJ0g==",
+        "resolved": "3.2.1",
+        "contentHash": "im8uOVxoXK2Jn02SlBZQNgj9/fNTxHrrUCeWWBXOOTuDpP8W+4yQe1hn7nMqkQOCPEgxXT9DOZZMVfA/fSNreQ==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
@@ -1201,8 +1198,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.29",
-        "contentHash": "DJlsTlvHRUc0yZFMw0aL5VzOCP0jR0kUfNcajeowFXYSTPD+UHj5Y7aWAxVL41PiXRyY9wHYS6cvOsWYtnqGMQ==",
+        "resolved": "13.2.31",
+        "contentHash": "2HBkS/8XtwCw6zESvpRJRTbnj+H83C3wRVx5X3XKE/DLcDiC3IJ8VQ2YQ7hMBoC3BoxIwzgWjXx43SuHn8vnDw==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -2045,7 +2042,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "3.2.0",
+          "Buildalyzer": "3.2.1",
           "Crayon": "2.0.60",
           "DotNet.Glob": "3.1.2",
           "LibGit2Sharp": "0.27.0-preview-0096",
@@ -2065,9 +2062,9 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "3.1.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "0.22.3",
-          "Stryker.RegexMutators": "0.22.3",
-          "System.IO.Abstractions": "13.2.29"
+          "Stryker.DataCollector": "0.16.1",
+          "Stryker.RegexMutators": "1.0.0",
+          "System.IO.Abstractions": "13.2.31"
         }
       },
       "stryker.datacollector": {

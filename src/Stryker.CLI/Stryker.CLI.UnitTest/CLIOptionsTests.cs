@@ -1,10 +1,12 @@
 using System;
 using Shouldly;
+using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
     public class CLIOptionsTests
     {
+        [Fact]
         public void ShouldHaveDefaultValues()
         {
             CLIOptions.MaxConcurrentTestRunners.DefaultValue.ShouldBe(Math.Max(Environment.ProcessorCount / 2, 1));

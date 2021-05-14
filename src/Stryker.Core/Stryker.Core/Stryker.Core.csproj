@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.22.3</VersionPrefix>
+    <VersionPrefix>0.22.4</VersionPrefix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -39,7 +39,7 @@
     <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0096" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
-    <PackageReference Include="Buildalyzer" Version="3.2.0" />
+    <PackageReference Include="Buildalyzer" Version="3.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> 				<!-- From Directory.Build.props -->
