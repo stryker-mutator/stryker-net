@@ -18,55 +18,20 @@ namespace Stryker.Core.Initialisation
     //
     public class CrossPlatformAssemblyResolver : IAssemblyResolver
     {
-        public CrossPlatformAssemblyResolver()
-        {
-            directories = new List<string>(2) { ".", "bin" };
-        }
+        private static readonly bool OnMono = Type.GetType("Mono.Runtime") != null;
 
-        static readonly bool on_mono = Type.GetType("Mono.Runtime") != null;
-
-        readonly List<string> directories;
+        private readonly List<string> _directories = new List<string>(2) { ".", "bin" };
 
         // Maps file names of available trusted platform assemblies to their full paths.
         // Internal for testing.
         internal static readonly Lazy<Dictionary<string, string>> TrustedPlatformAssemblies =
             new Lazy<Dictionary<string, string>>(CreateTrustedPlatformAssemblyMap);
 
-        List<string> gac_paths;
-
-        public void AddSearchDirectory(string directory)
-        {
-            directories.Add(directory);
-        }
-
-        public void RemoveSearchDirectory(string directory)
-        {
-            directories.Remove(directory);
-        }
-
-        public string[] GetSearchDirectories()
-        {
-            var directories = new string[this.directories.Count];
-            Array.Copy(this.directories.ToArray(), directories, directories.Length);
-            return directories;
-        }
+        private List<string> _gacPaths;
 
         public event AssemblyResolveEventHandler ResolveFailure;
 
-
-
-        AssemblyDefinition GetAssembly(string file, ReaderParameters parameters)
-        {
-            if (parameters.AssemblyResolver == null)
-                parameters.AssemblyResolver = this;
-
-            return ModuleDefinition.ReadModule(file, parameters).Assembly;
-        }
-
-        public virtual AssemblyDefinition Resolve(AssemblyNameReference name)
-        {
-            return Resolve(name, new ReaderParameters());
-        }
+        public virtual AssemblyDefinition Resolve(AssemblyNameReference name) => Resolve(name, new ReaderParameters());
 
         public virtual AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
@@ -85,9 +50,11 @@ namespace Stryker.Core.Initialisation
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            var assembly = SearchDirectory(name, directories, parameters);
+            var assembly = SearchDirectory(name, _directories, parameters);
             if (assembly != null)
+            {
                 return assembly;
+            }
 
             if (name.IsRetargetable)
             {
@@ -108,7 +75,7 @@ namespace Stryker.Core.Initialisation
             else
             {
                 var framework_dir = Path.GetDirectoryName(typeof(object).Module.FullyQualifiedName);
-                var framework_dirs = on_mono
+                var framework_dirs = OnMono
                     ? new[] { framework_dir, Path.Combine(framework_dir, "Facades") }
                     : new[] { framework_dir };
 
@@ -116,23 +83,31 @@ namespace Stryker.Core.Initialisation
                 {
                     assembly = SearchDirectory(name, framework_dirs, parameters);
                     if (assembly != null)
+                    {
                         return assembly;
+                    }
                 }
 
                 if (name.Name == "mscorlib")
                 {
                     assembly = GetCorlib(name, parameters);
                     if (assembly != null)
+                    {
                         return assembly;
+                    }
                 }
 
                 assembly = GetAssemblyInGac(name, parameters);
                 if (assembly != null)
+                {
                     return assembly;
+                }
 
                 assembly = SearchDirectory(name, framework_dirs, parameters);
                 if (assembly != null)
+                {
                     return assembly;
+                }
             }
 
 
@@ -140,25 +115,35 @@ namespace Stryker.Core.Initialisation
             {
                 assembly = ResolveFailure(this, name);
                 if (assembly != null)
+                {
                     return assembly;
+                }
             }
 
             throw new AssemblyResolutionException(name);
         }
 
-
-        AssemblyDefinition SearchTrustedPlatformAssemblies(AssemblyNameReference name, ReaderParameters parameters)
+        private AssemblyDefinition GetAssembly(string file, ReaderParameters parameters)
         {
-            if (name.IsWindowsRuntime)
-                return null;
+            if (parameters.AssemblyResolver == null)
+            {
+                parameters.AssemblyResolver = this;
+            }
 
-            if (TrustedPlatformAssemblies.Value.TryGetValue(name.Name, out string path))
-                return GetAssembly(path, parameters);
-
-            return null;
+            return ModuleDefinition.ReadModule(file, parameters).Assembly;
         }
 
-        static Dictionary<string, string> CreateTrustedPlatformAssemblyMap()
+        private AssemblyDefinition SearchTrustedPlatformAssemblies(AssemblyNameReference name, ReaderParameters parameters)
+        {
+            if (name.IsWindowsRuntime)
+            {
+                return null;
+            }
+
+            return TrustedPlatformAssemblies.Value.TryGetValue(name.Name, out var path) ? GetAssembly(path, parameters) : null;
+        }
+
+        private static Dictionary<string, string> CreateTrustedPlatformAssemblyMap()
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -174,11 +159,17 @@ namespace Stryker.Core.Initialisation
             }
 
             if (paths == null)
+            {
                 return result;
+            }
 
             foreach (var path in paths.Split(Path.PathSeparator))
+            {
                 if (string.Equals(Path.GetExtension(path), ".dll", StringComparison.OrdinalIgnoreCase))
+                {
                     result[Path.GetFileNameWithoutExtension(path)] = path;
+                }
+            }
 
             return result;
         }
@@ -191,9 +182,12 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var extension in extensions)
                 {
-                    string file = Path.Combine(directory, name.Name + extension);
+                    var file = Path.Combine(directory, name.Name + extension);
                     if (!File.Exists(file))
+                    {
                         continue;
+                    }
+
                     try
                     {
                         return GetAssembly(file, parameters);
@@ -208,39 +202,44 @@ namespace Stryker.Core.Initialisation
             return null;
         }
 
-        static bool IsZero(Version version)
-        {
-            return version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0;
-        }
+        private static bool IsZero(Version version) => version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0;
 
-
-        AssemblyDefinition GetCorlib(AssemblyNameReference reference, ReaderParameters parameters)
+        private AssemblyDefinition GetCorlib(AssemblyNameReference reference, ReaderParameters parameters)
         {
             var version = reference.Version;
             var corlib = typeof(object).Assembly.GetName();
             if (corlib.Version == version || IsZero(version))
+            {
                 return GetAssembly(typeof(object).Module.FullyQualifiedName, parameters);
+            }
 
-            var path = Directory.GetParent(
-                Directory.GetParent(
-                    typeof(object).Module.FullyQualifiedName).FullName
-            ).FullName;
+            var path = Directory.GetParent(Directory.GetParent(typeof(object).Module.FullyQualifiedName).FullName).FullName;
 
-            if (on_mono)
+            if (OnMono)
             {
                 if (version.Major == 1)
+                {
                     path = Path.Combine(path, "1.0");
+                }
                 else if (version.Major == 2)
                 {
                     if (version.MajorRevision == 5)
+                    {
                         path = Path.Combine(path, "2.1");
+                    }
                     else
+                    {
                         path = Path.Combine(path, "2.0");
+                    }
                 }
                 else if (version.Major == 4)
+                {
                     path = Path.Combine(path, "4.0");
+                }
                 else
+                {
                     throw new NotSupportedException("Version not supported: " + version);
+                }
             }
             else
             {
@@ -248,9 +247,14 @@ namespace Stryker.Core.Initialisation
                 {
                     case 1:
                         if (version.MajorRevision == 3300)
+                        {
                             path = Path.Combine(path, "v1.0.3705");
+                        }
                         else
+                        {
                             path = Path.Combine(path, "v1.1.4322");
+                        }
+
                         break;
                     case 2:
                         path = Path.Combine(path, "v2.0.50727");
@@ -265,121 +269,143 @@ namespace Stryker.Core.Initialisation
 
             var file = Path.Combine(path, "mscorlib.dll");
             if (File.Exists(file))
+            {
                 return GetAssembly(file, parameters);
+            }
 
-            if (on_mono && Directory.Exists(path + "-api"))
+            if (OnMono && Directory.Exists(path + "-api"))
             {
                 file = Path.Combine(path + "-api", "mscorlib.dll");
                 if (File.Exists(file))
-                    return GetAssembly(file, parameters);
-            }
-
-            return null;
-        }
-
-        static List<string> GetGacPaths()
-        {
-            if (on_mono)
-                return GetDefaultMonoGacPaths();
-
-            var paths = new List<string>(2);
-            var windir = Environment.GetEnvironmentVariable("WINDIR");
-            if (windir == null)
-                return paths;
-
-            paths.Add(Path.Combine(windir, "assembly"));
-            paths.Add(Path.Combine(windir, Path.Combine("Microsoft.NET", "assembly")));
-            return paths;
-        }
-
-        static List<string> GetDefaultMonoGacPaths()
-        {
-            var paths = new List<string>(1);
-            var gac = GetCurrentMonoGac();
-            if (gac != null)
-                paths.Add(gac);
-
-            var gac_paths_env = Environment.GetEnvironmentVariable("MONO_GAC_PREFIX");
-            if (string.IsNullOrEmpty(gac_paths_env))
-                return paths;
-
-            var prefixes = gac_paths_env.Split(Path.PathSeparator);
-            foreach (var prefix in prefixes)
-            {
-                if (string.IsNullOrEmpty(prefix))
-                    continue;
-
-                var gac_path = Path.Combine(Path.Combine(Path.Combine(prefix, "lib"), "mono"), "gac");
-                if (Directory.Exists(gac_path) && !paths.Contains(gac))
-                    paths.Add(gac_path);
-            }
-
-            return paths;
-        }
-
-        static string GetCurrentMonoGac()
-        {
-            return Path.Combine(
-                Directory.GetParent(
-                    Path.GetDirectoryName(typeof(object).Module.FullyQualifiedName)).FullName,
-                "gac");
-        }
-
-        AssemblyDefinition GetAssemblyInGac(AssemblyNameReference reference, ReaderParameters parameters)
-        {
-            if (reference.PublicKeyToken == null || reference.PublicKeyToken.Length == 0)
-                return null;
-
-            if (gac_paths == null)
-                gac_paths = GetGacPaths();
-
-            if (on_mono)
-                return GetAssemblyInMonoGac(reference, parameters);
-
-            return GetAssemblyInNetGac(reference, parameters);
-        }
-
-        AssemblyDefinition GetAssemblyInMonoGac(AssemblyNameReference reference, ReaderParameters parameters)
-        {
-            for (int i = 0; i < gac_paths.Count; i++)
-            {
-                var gac_path = gac_paths[i];
-                var file = GetAssemblyFile(reference, string.Empty, gac_path);
-                if (File.Exists(file))
-                    return GetAssembly(file, parameters);
-            }
-
-            return null;
-        }
-
-        AssemblyDefinition GetAssemblyInNetGac(AssemblyNameReference reference, ReaderParameters parameters)
-        {
-            var gacs = new[] { "GAC_MSIL", "GAC_32", "GAC_64", "GAC" };
-            var prefixes = new[] { string.Empty, "v4.0_" };
-
-            for (int i = 0; i < gac_paths.Count; i++)
-            {
-                for (int j = 0; j < gacs.Length; j++)
                 {
-                    var gac = Path.Combine(gac_paths[i], gacs[j]);
-                    var file = GetAssemblyFile(reference, prefixes[i], gac);
-                    if (Directory.Exists(gac) && File.Exists(file))
-                        return GetAssembly(file, parameters);
+                    return GetAssembly(file, parameters);
                 }
             }
 
             return null;
         }
 
-        static string GetAssemblyFile(AssemblyNameReference reference, string prefix, string gac)
+        private static List<string> GetGacPaths()
+        {
+            if (OnMono)
+            {
+                return GetDefaultMonoGacPaths();
+            }
+
+            var paths = new List<string>(2);
+            var windir = Environment.GetEnvironmentVariable("WINDIR");
+            if (windir == null)
+            {
+                return paths;
+            }
+
+            paths.Add(Path.Combine(windir, "assembly"));
+            paths.Add(Path.Combine(windir, Path.Combine("Microsoft.NET", "assembly")));
+            return paths;
+        }
+
+        private static List<string> GetDefaultMonoGacPaths()
+        {
+            var paths = new List<string>(1);
+            var gac = GetCurrentMonoGac();
+            if (gac != null)
+            {
+                paths.Add(gac);
+            }
+
+            var gac_paths_env = Environment.GetEnvironmentVariable("MONO_GAC_PREFIX");
+            if (string.IsNullOrEmpty(gac_paths_env))
+            {
+                return paths;
+            }
+
+            var prefixes = gac_paths_env.Split(Path.PathSeparator);
+            foreach (var prefix in prefixes)
+            {
+                if (string.IsNullOrEmpty(prefix))
+                {
+                    continue;
+                }
+
+                var gac_path = Path.Combine(Path.Combine(Path.Combine(prefix, "lib"), "mono"), "gac");
+                if (Directory.Exists(gac_path) && !paths.Contains(gac))
+                {
+                    paths.Add(gac_path);
+                }
+            }
+
+            return paths;
+        }
+
+        private static string GetCurrentMonoGac() => Path.Combine(Directory.GetParent(Path.GetDirectoryName(typeof(object).Module.FullyQualifiedName)).FullName, "gac");
+
+        private AssemblyDefinition GetAssemblyInGac(AssemblyNameReference reference, ReaderParameters parameters)
+        {
+            if (reference.PublicKeyToken == null || reference.PublicKeyToken.Length == 0)
+            {
+                return null;
+            }
+
+            if (_gacPaths == null)
+            {
+                _gacPaths = GetGacPaths();
+            }
+
+            if (OnMono)
+            {
+                return GetAssemblyInMonoGac(reference, parameters);
+            }
+
+            return GetAssemblyInNetGac(reference, parameters);
+        }
+
+        private AssemblyDefinition GetAssemblyInMonoGac(AssemblyNameReference reference, ReaderParameters parameters)
+        {
+            for (var i = 0; i < _gacPaths.Count; i++)
+            {
+                var gac_path = _gacPaths[i];
+                var file = GetAssemblyFile(reference, string.Empty, gac_path);
+                if (File.Exists(file))
+                {
+                    return GetAssembly(file, parameters);
+                }
+            }
+
+            return null;
+        }
+
+        private AssemblyDefinition GetAssemblyInNetGac(AssemblyNameReference reference, ReaderParameters parameters)
+        {
+            var gacs = new[] { "GAC_MSIL", "GAC_32", "GAC_64", "GAC" };
+            var prefixes = new[] { string.Empty, "v4.0_" };
+
+            for (var i = 0; i < _gacPaths.Count; i++)
+            {
+                for (var j = 0; j < gacs.Length; j++)
+                {
+                    var gac = Path.Combine(_gacPaths[i], gacs[j]);
+                    var file = GetAssemblyFile(reference, prefixes[i], gac);
+                    if (Directory.Exists(gac) && File.Exists(file))
+                    {
+                        return GetAssembly(file, parameters);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetAssemblyFile(AssemblyNameReference reference, string prefix, string gac)
         {
             var gac_folder = new StringBuilder()
                 .Append(prefix)
                 .Append(reference.Version)
                 .Append("__");
 
-            for (int i = 0; i < reference.PublicKeyToken.Length; i++)
-                gac_folder.Append(reference.PublicKeyToken[i].ToString("x2"));
+            for (var i = 0; i < reference.PublicKeyToken.Length; i++)
+            {
+                _ = gac_folder.Append(reference.PublicKeyToken[i].ToString("x2"));
+            }
 
             return Path.Combine(
                 Path.Combine(
