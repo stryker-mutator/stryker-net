@@ -379,19 +379,19 @@ namespace Stryker.Core.Initialisation
 
         private static string GetAssemblyFile(AssemblyNameReference reference, string prefix, string gac)
         {
-            var gac_folder = new StringBuilder()
+            var gacFolder = new StringBuilder()
                 .Append(prefix)
                 .Append(reference.Version)
                 .Append("__");
 
             for (var i = 0; i < reference.PublicKeyToken.Length; i++)
             {
-                _ = gac_folder.Append(reference.PublicKeyToken[i].ToString("x2"));
+                _ = gacFolder.Append(reference.PublicKeyToken[i].ToString("x2"));
             }
 
             return Path.Combine(
                 Path.Combine(
-                    Path.Combine(gac, reference.Name), gac_folder.ToString()),
+                    Path.Combine(gac, reference.Name), gacFolder.ToString()),
                 reference.Name + ".dll");
         }
 
