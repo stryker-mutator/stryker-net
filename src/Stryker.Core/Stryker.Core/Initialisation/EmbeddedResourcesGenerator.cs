@@ -42,7 +42,7 @@ namespace Stryker.Core.Initialisation
                     {
                         InMemory = true,
                         ReadWrite = false,
-                        AssemblyResolver = new CustomAssemblyResolver()
+                        AssemblyResolver = new CrossPlatformAssemblyResolver()
                     });
             }
             catch (Exception e)

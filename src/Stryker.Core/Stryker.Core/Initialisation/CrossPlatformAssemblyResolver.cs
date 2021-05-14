@@ -15,9 +15,9 @@ namespace Stryker.Core.Initialisation
     //
     // Licensed under the MIT/X11 license.
     //
-    public class CustomAssemblyResolver : IAssemblyResolver
+    public class CrossPlatformAssemblyResolver : IAssemblyResolver
     {
-        public CustomAssemblyResolver()
+        public CrossPlatformAssemblyResolver()
         {
             directories = new List<string>(2) { ".", "bin" };
         }
