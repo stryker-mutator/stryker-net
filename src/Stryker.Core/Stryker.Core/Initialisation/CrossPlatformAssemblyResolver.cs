@@ -18,17 +18,13 @@ namespace Stryker.Core.Initialisation
     //
     public class CrossPlatformAssemblyResolver : IAssemblyResolver
     {
-        private static readonly bool OnMono = Type.GetType("Mono.Runtime") != null;
-
-        private readonly List<string> _directories = new List<string>(2) { ".", "bin" };
+        private static readonly bool _onMono = Type.GetType("Mono.Runtime") != null;
+        private static readonly List<string> _directories = new List<string>(2) { ".", "bin" };
 
         // Maps file names of available trusted platform assemblies to their full paths.
-        // Internal for testing.
-        internal static readonly Lazy<Dictionary<string, string>> TrustedPlatformAssemblies =
-            new Lazy<Dictionary<string, string>>(CreateTrustedPlatformAssemblyMap);
+        private static readonly Lazy<Dictionary<string, string>> TrustedPlatformAssemblies = new Lazy<Dictionary<string, string>>(CreateTrustedPlatformAssemblyMap);
 
         private List<string> _gacPaths;
-
         public event AssemblyResolveEventHandler ResolveFailure;
 
         public virtual AssemblyDefinition Resolve(AssemblyNameReference name) => Resolve(name, new ReaderParameters());
@@ -70,7 +66,7 @@ namespace Stryker.Core.Initialisation
             else
             {
                 var framework_dir = Path.GetDirectoryName(typeof(object).Module.FullyQualifiedName);
-                var framework_dirs = OnMono
+                var framework_dirs = _onMono
                     ? new[] { framework_dir, Path.Combine(framework_dir, "Facades") }
                     : new[] { framework_dir };
 
@@ -209,7 +205,7 @@ namespace Stryker.Core.Initialisation
 
             var path = Directory.GetParent(Directory.GetParent(typeof(object).Module.FullyQualifiedName).FullName).FullName;
 
-            if (OnMono)
+            if (_onMono)
             {
                 if (version.Major == 1)
                 {
@@ -240,15 +236,7 @@ namespace Stryker.Core.Initialisation
                 switch (version.Major)
                 {
                     case 1:
-                        if (version.MajorRevision == 3300)
-                        {
-                            path = Path.Combine(path, "v1.0.3705");
-                        }
-                        else
-                        {
-                            path = Path.Combine(path, "v1.1.4322");
-                        }
-
+                        path = version.MajorRevision == 3300 ? Path.Combine(path, "v1.0.3705") : Path.Combine(path, "v1.1.4322");
                         break;
                     case 2:
                         path = Path.Combine(path, "v2.0.50727");
@@ -267,7 +255,7 @@ namespace Stryker.Core.Initialisation
                 return GetAssembly(file, parameters);
             }
 
-            if (OnMono && Directory.Exists(path + "-api"))
+            if (_onMono && Directory.Exists(path + "-api"))
             {
                 file = Path.Combine(path + "-api", "mscorlib.dll");
                 if (File.Exists(file))
@@ -281,7 +269,7 @@ namespace Stryker.Core.Initialisation
 
         private static List<string> GetGacPaths()
         {
-            if (OnMono)
+            if (_onMono)
             {
                 return GetDefaultMonoGacPaths();
             }
@@ -345,7 +333,7 @@ namespace Stryker.Core.Initialisation
                 _gacPaths = GetGacPaths();
             }
 
-            if (OnMono)
+            if (_onMono)
             {
                 return GetAssemblyInMonoGac(reference, parameters);
             }
