@@ -5,28 +5,21 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class InputBuilder
+    public static class InputBuilder
     {
-        private readonly ILogger _logger;
-
-        public InputBuilder(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public StrykerInputs Build(string[] args, CommandLineApplication app, StrykerInputs strykerInputs)
+        public static StrykerInputs Build(string[] args, CommandLineApplication app, StrykerInputs strykerInputs, CliInputParser cliInputParser)
         {
             var basePath = Directory.GetCurrentDirectory();
 
             // basepath gets a default value without user input, but can be overwritten
             strykerInputs.BasePathInput.SuppliedInput = basePath;
 
-            var configFilePath = Path.Combine(basePath, CliInputParser.ConfigFilePath(args, app));
+            var configFilePath = Path.Combine(basePath, cliInputParser.ConfigFilePath(args, app));
             if (File.Exists(configFilePath))
             {
                 strykerInputs.EnrichFromJsonConfig(configFilePath);
             }
-            strykerInputs.EnrichFromCommandLineArguments(args, app);
+            cliInputParser.EnrichFromCommandLineArguments(strykerInputs, args, app);
 
             return strykerInputs;
         }

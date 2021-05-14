@@ -18,7 +18,7 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(StrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null);
+        StrykerRunResult RunMutationTest(IStrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null);
     }
 
     public class StrykerRunner : IStrykerRunner
@@ -44,7 +44,7 @@ namespace Stryker.Core
         /// Allows to pass log messages that occured before the mutation test.
         /// The messages will be written to the logger after it was configured.
         /// </param>
-        public StrykerRunResult RunMutationTest(StrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null)
+        public StrykerRunResult RunMutationTest(IStrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();

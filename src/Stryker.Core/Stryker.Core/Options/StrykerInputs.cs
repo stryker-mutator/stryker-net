@@ -5,7 +5,48 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options
 {
-    public class StrykerInputs
+    public interface IStrykerInputs
+    {
+        AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
+        AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
+        AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
+        BaselineProviderInput BaselineProviderInput { get; init; }
+        BasePathInput BasePathInput { get; init; }
+        ConcurrencyInput ConcurrencyInput { get; init; }
+        CoverageAnalysisInput CoverageAnalysisInput { get; init; }
+        DashboardApiKeyInput DashboardApiKeyInput { get; init; }
+        DashboardUrlInput DashboardUrlInput { get; init; }
+        DevModeInput DevModeInput { get; init; }
+        DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
+        DisableBailInput DisableBailInput { get; set; }
+        DisableMixMutantsInput DisableMixMutantsInput { get; set; }
+        IgnoreMutationsInput ExcludedMutationsInput { get; init; }
+        FallbackVersionInput FallbackVersionInput { get; init; }
+        IgnoreMethodsInput IgnoredMethodsInput { get; init; }
+        LanguageVersionInput LanguageVersionInput { get; init; }
+        LogToFileInput LogToFileInput { get; init; }
+        ModuleNameInput ModuleNameInput { get; init; }
+        MutateInput MutateInput { get; init; }
+        MutationLevelInput MutationLevelInput { get; init; }
+        OutputPathInput OutputPathInput { get; init; }
+        ProjectNameInput ProjectNameInput { get; init; }
+        ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
+        ProjectVersionInput ProjectVersionInput { get; init; }
+        ReportersInput ReportersInput { get; init; }
+        SinceInput SinceInput { get; init; }
+        SinceTargetInput SinceTargetInput { get; init; }
+        SolutionPathInput SolutionPathInput { get; init; }
+        TestProjectsInput TestProjectsInput { get; init; }
+        ThresholdBreakInput ThresholdBreakInput { get; init; }
+        ThresholdHighInput ThresholdHighInput { get; init; }
+        ThresholdLowInput ThresholdLowInput { get; init; }
+        VerbosityInput VerbosityInput { get; init; }
+        WithBaselineInput WithBaselineInput { get; init; }
+
+        StrykerOptions ValidateAll();
+    }
+
+    public class StrykerInputs : IStrykerInputs
     {
         private StrykerOptions _strykerOptionsCache;
         private readonly ILogger _logger;

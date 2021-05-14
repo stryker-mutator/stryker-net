@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
-            _testAssemblyPath = Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll");
+            _testAssemblyPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll"));
             _executorUri = new Uri("exec://nunit");
             var firstTest = new TestCase("T0", _executorUri, _testAssemblyPath);
             var secondTest = new TestCase("T1", _executorUri, _testAssemblyPath);
@@ -389,7 +389,11 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void DetectTimeout()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
             using (var endProcess = new EventWaitHandle(false, EventResetMode.AutoReset))
             {
                 var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, OptimizationModes.CoverageBasedTest);
@@ -428,7 +432,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void CaptureCoverageWhenSkippingUncovered()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.SkipUncoveredMutants
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -445,7 +452,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void IdentifyNonCoveredMutants()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.SkipUncoveredMutants
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -467,7 +477,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunOnlyUsefulTest()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -491,7 +504,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void NotRunTestWhenNotCovered()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
@@ -519,16 +535,18 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunTestsSimultaneouslyWhenPossible()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions()
+            {
+                OptimizationMode = OptimizationModes.DisableBail | OptimizationModes.CoverageBasedTest,
+                Concurrency = Math.Max(Environment.ProcessorCount / 2, 1)
+            };
+
             var mutantFilter = new Mock<IMutantFilter>(MockBehavior.Loose);
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {
-                var strykerOptions = new StrykerOptions()
-                {
-                    OptimizationMode = OptimizationModes.DisableBail
-                };
-                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, strykerOptions.OptimizationMode);
+
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner, options.OptimizationMode);
                 // make sure we have 4 mutants
                 _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { new Mutant { Id = 2 }, new Mutant { Id = 3 } } });
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
@@ -540,7 +558,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     mutant.CoveringTests = new TestListDescription(null);
                 }
                 var mockReporter = new Mock<IReporter>();
-                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: strykerOptions, mutantFilter: mutantFilter.Object);
+                var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: options, mutantFilter: mutantFilter.Object);
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);
                 tester.GetCoverage();
                 SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["1,0"] = "T0=S,T1=F" }, endProcess);
@@ -554,7 +572,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void RunRelevantTestsOnStaticWhenPerTestCoverage()
         {
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {

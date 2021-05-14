@@ -42,7 +42,9 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            var strykerInputs = CliInputParser.RegisterStrykerInputs(app, _logBuffer);
+            var cliParser = new CliInputParser();
+
+            var strykerInputs = cliParser.RegisterStrykerInputs(app, _logBuffer);
 
             app.OnExecute(() =>
             {
@@ -50,12 +52,12 @@ namespace Stryker.CLI
                 PrintStykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
-                strykerInputs = new InputBuilder(_logBuffer).Build(args, app, strykerInputs);
+                strykerInputs = InputBuilder.Build(args, app, strykerInputs, cliParser);
 
-                if (CliInputParser.GenerateConfigFile(args, app))
+                if (cliParser.GenerateConfigFile(args, app))
                 {
                     var options = strykerInputs.ValidateAll();
-                    var configFilePath = Path.Combine(options.BasePath, CliInputParser.ConfigFilePath(args, app));
+                    var configFilePath = Path.Combine(options.BasePath, cliParser.ConfigFilePath(args, app));
 
                     var fileBasedInputs = new FileBasedInput
                     {

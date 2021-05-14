@@ -44,7 +44,7 @@ namespace Stryker.CLI.UnitTest
         [InlineData("-f")]
         public void WithConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
-            StrykerInputs actualInputs = null;
+            IStrykerInputs actualInputs = null;
             var options = new StrykerOptions() {
                 Thresholds = new Thresholds() {
                     High = 80,
@@ -55,8 +55,8 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(options, 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
-                .Callback<StrykerInputs, IEnumerable<LogMessage>>((c, m) => actualInputs = c)
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<IStrykerInputs, IEnumerable<LogMessage>>((c, m) => actualInputs = c)
                 .Returns(runResults)
                 .Verifiable();
 

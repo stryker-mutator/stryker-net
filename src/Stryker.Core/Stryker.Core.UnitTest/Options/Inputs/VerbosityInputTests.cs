@@ -33,8 +33,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 new VerbosityInput { SuppliedInput = logLevel }.Validate();
             });
 
-            ex.Message.ShouldBe("The value for one of your settings is not correct. Try correcting or removing them.");
-            ex.Details.ShouldBe($"Incorrect log level ({logLevel}). The log level options are [Verbose, Debug, Information, Warning, Error, Fatal]");
+            ex.Message.ShouldBe($"Incorrect verbosity (incorrect). The verbosity options are [Trace, Debug, Info, Warning, Error]");
         }
     }
 }

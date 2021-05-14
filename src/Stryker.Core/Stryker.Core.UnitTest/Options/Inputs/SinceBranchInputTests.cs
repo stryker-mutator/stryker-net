@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 new SinceTargetInput { SuppliedInput = "" }.Validate(true);
             });
-            ex.Message.ShouldBe("GitDiffTarget may not be empty, please provide a valid git branch name");
+            ex.Message.ShouldBe("The target branch/commit cannot be empty when the since feature is enabled");
         }
 
         [Fact]

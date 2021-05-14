@@ -20,10 +20,13 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
+        public void ShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -32,10 +35,13 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldReplacePlaceholdersInHtmlFile()
+        public void ShouldReplacePlaceholdersInHtmlFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -50,10 +56,13 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldContainJsonReport()
+        public void ShouldContainJsonReport()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 } };
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());

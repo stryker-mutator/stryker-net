@@ -155,12 +155,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
-                Thresholds = new Thresholds
-                {
-                    High = 80,
-                    Low = 60,
-                    Break = 0,
-                }
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
             };
             var reporter = new JsonReporter(options, mockFileSystem);
 

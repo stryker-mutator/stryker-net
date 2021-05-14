@@ -19,20 +19,20 @@ namespace Stryker.CLI
         public CommandOptionType OptionType { get; set; }
     }
 
-    public static class CliInputParser
+    public class CliInputParser
     {
-        private static readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
-        private static StrykerInputs _strykerInputs;
-        private static readonly CliInput _configFileInput;
-        private static readonly CliInput _generateConfigFileInput;
+        private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
+        private StrykerInputs _strykerInputs;
+        private readonly CliInput _configFileInput;
+        private readonly CliInput _generateConfigFileInput;
 
-        static CliInputParser()
+        public CliInputParser()
         {
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
             _generateConfigFileInput = AddCliOnlyInput("init", null, "Generate a stryker config file with selected plus default options where no option is selected.", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "file-path");
         }
 
-        public static StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
+        public StrykerInputs RegisterStrykerInputs(CommandLineApplication app, ILogger logger)
         {
             _strykerInputs = new StrykerInputs(logger)
             {
@@ -82,19 +82,19 @@ namespace Stryker.CLI
             return _strykerInputs;
         }
 
-        public static string ConfigFilePath(string[] args, CommandLineApplication app)
+        public string ConfigFilePath(string[] args, CommandLineApplication app)
         {
             var commands = app.Parse(args);
             var option = commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
             return option?.Value() ?? "stryker-config.json";
         }
 
-        public static bool GenerateConfigFile(string[] args, CommandLineApplication app)
+        public bool GenerateConfigFile(string[] args, CommandLineApplication app)
         {
             return app.Parse(args).SelectedCommand.Options.SingleOrDefault(o => o.LongName == _generateConfigFileInput.ArgumentName)?.HasValue() ?? false;
         }
 
-        public static void EnrichFromCommandLineArguments(this StrykerInputs strykerInputs, string[] args, CommandLineApplication app)
+        public void EnrichFromCommandLineArguments(StrykerInputs strykerInputs, string[] args, CommandLineApplication app)
         {
             foreach (var cliInput in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
             {
@@ -119,19 +119,19 @@ namespace Stryker.CLI
             }
         }
 
-        private static bool ParseNoValue(IInputDefinition<bool?> strykerInput)
+        private bool ParseNoValue(IInputDefinition<bool?> strykerInput)
         {
             strykerInput.SuppliedInput = true;
             return true;
         }
 
-        private static bool ParseSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
+        private bool ParseSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Value();
             return true;
         }
 
-        private static bool ParseSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
+        private bool ParseSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
         {
             if (int.TryParse(cliInput.Value(), out int value))
             {
@@ -143,7 +143,7 @@ namespace Stryker.CLI
             return true;
         }
 
-        private static bool ParseSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, StrykerInputs strykerInputs)
+        private bool ParseSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, StrykerInputs strykerInputs)
         {
             switch (strykerInput)
             {
@@ -160,16 +160,16 @@ namespace Stryker.CLI
             return true;
         }
 
-        private static bool ParseMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
+        private bool ParseMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Values;
 
             return true;
         }
 
-        private static IInputDefinition GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
+        private IInputDefinition GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
 
-        private static void PrepareCliOptions()
+        private void PrepareCliOptions()
         {
             AddCliInput(_strykerInputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue);
             AddCliInput(_strykerInputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
@@ -193,7 +193,7 @@ namespace Stryker.CLI
             AddCliInput(_strykerInputs.ProjectVersionInput, "version", "v");
         }
 
-        private static void RegisterCliInput(CommandLineApplication app, CliInput option)
+        private void RegisterCliInput(CommandLineApplication app, CliInput option)
         {
             var argumentHint = option.OptionType switch
             {
@@ -205,7 +205,7 @@ namespace Stryker.CLI
             app.Option($"-{option.ArgumentShortName}|--{option.ArgumentName}{argumentHint}", option.Description, option.OptionType);
         }
 
-        private static CliInput AddCliOnlyInput(string argumentName, string argumentShortName, string helpText,
+        private CliInput AddCliOnlyInput(string argumentName, string argumentShortName, string helpText,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliInput
@@ -222,7 +222,7 @@ namespace Stryker.CLI
             return cliOption;
         }
 
-        private static CliInput AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
+        private CliInput AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliInput

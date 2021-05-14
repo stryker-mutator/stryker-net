@@ -81,8 +81,12 @@ All mutants have been tested, and your mutation score has been calculated
             {
                 RelativePath = "FolderA/SomeFile.cs",
                 FullPath = "C://Project/FolderA/SomeFile.cs",
-                Mutants = new Collection<Mutant>() { new Mutant() {
-                ResultStatus = MutantStatus.Killed, Mutation = mutation } }
+                Mutants = new Collection<Mutant>() {
+                    new Mutant() {
+                        ResultStatus = MutantStatus.Killed,
+                        Mutation = mutation
+                    }
+                }
             });
 
             rootFolder.Add(folder);
@@ -130,8 +134,12 @@ All mutants have been tested, and your mutation score has been calculated
             {
                 RelativePath = "FolderA/SomeFile.cs",
                 FullPath = "C://Project/FolderA/SomeFile.cs",
-                Mutants = new Collection<Mutant>() { new Mutant() {
-                ResultStatus = MutantStatus.Survived, Mutation = mutation } }
+                Mutants = new Collection<Mutant>() {
+                    new Mutant() {
+                        ResultStatus = MutantStatus.Survived,
+                        Mutation = mutation
+                    }
+                }
             });
             rootFolder.Add(folder);
 

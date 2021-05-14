@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 input.Validate(null, reporters: new[] { Reporter.Dashboard }, true);
             });
 
-            exception.Message.ShouldBe("When the compare to dashboard feature is enabled, dashboard-version cannot be empty, please provide a dashboard-version");
+            exception.Message.ShouldBe("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
         }
     }
 }

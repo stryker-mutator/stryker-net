@@ -19,7 +19,7 @@ namespace Stryker.Core.Options
 
         public LogOptions LogOptions { get; init; }
         public MutationLevel MutationLevel { get; init; }
-        public Thresholds Thresholds { get; init; } = new Thresholds();
+        public Thresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
 
         public int AdditionalTimeoutMS { get; init; }
         public LanguageVersion LanguageVersion { get; init; }
@@ -47,7 +47,7 @@ namespace Stryker.Core.Options
         public string ProjectVersion { get; init; }
         public string ModuleName { get; init; }
 
-        public IEnumerable<FilePattern> Mutate { get; init; } = Enumerable.Empty<FilePattern>();
+        public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
         public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
         public IEnumerable<Mutator> ExcludedMutations { get; init; } = Enumerable.Empty<Mutator>();
 

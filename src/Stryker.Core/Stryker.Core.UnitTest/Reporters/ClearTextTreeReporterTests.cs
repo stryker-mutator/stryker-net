@@ -223,7 +223,7 @@ All files [0/1 ({0:P2})]
 
             var textWriter = new StringWriter();
             var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
-            var target = new ClearTextReporter(options, textWriter);
+            var target = new ClearTextTreeReporter(options, textWriter);
 
             var folder = new CsharpFolderComposite()
             {

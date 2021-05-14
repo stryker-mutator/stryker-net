@@ -16,7 +16,7 @@ namespace Stryker.CLI.UnitTest
     [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class StrykerCLITests
     {
-        private StrykerInputs inputs;
+        private IStrykerInputs inputs;
         private StrykerOptions options;
         private StrykerRunResult runResults;
         private Mock<IStrykerRunner> strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -26,8 +26,8 @@ namespace Stryker.CLI.UnitTest
         {
             options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
             runResults = new StrykerRunResult(options, 0.3);
-            strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
-                .Callback<StrykerInputs, IEnumerable<LogMessage>>((c, m) => inputs = c)
+            strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<IStrykerInputs, IEnumerable<LogMessage>>((c, m) => inputs = c)
                 .Returns(runResults)
                 .Verifiable();
             target = new StrykerCLI(strykerRunnerMock.Object);
@@ -46,7 +46,7 @@ namespace Stryker.CLI.UnitTest
             };
             var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Returns(strykerRunResult)
                 .Verifiable();
             
@@ -70,7 +70,7 @@ namespace Stryker.CLI.UnitTest
                 }
             };
             var strykerRunResult = new StrykerRunResult(options, double.NaN);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -92,7 +92,7 @@ namespace Stryker.CLI.UnitTest
                 }
             };
             var strykerRunResult = new StrykerRunResult(options, double.NaN);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -115,7 +115,7 @@ namespace Stryker.CLI.UnitTest
             };
             var strykerRunResult = new StrykerRunResult(options, 0.1);
 
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             var result = target.Run(new string[] { });
@@ -143,7 +143,7 @@ namespace Stryker.CLI.UnitTest
         public void ShouldThrow_OnException()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
 
             var target = new StrykerCLI(mock.Object);
             Assert.Throws<Exception>(() => target.Run(new string[] { }));
