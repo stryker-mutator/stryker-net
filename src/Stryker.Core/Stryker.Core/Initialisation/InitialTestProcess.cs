@@ -10,13 +10,11 @@ namespace Stryker.Core.Initialisation
     public interface IInitialTestProcess
     {
         ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner);
-        int TotalNumberOfTests { get; }
     }
 
     public class InitialTestProcess : IInitialTestProcess
     {
         private readonly ILogger _logger;
-        public int TotalNumberOfTests { get; private set; }
 
         public InitialTestProcess()
         {
@@ -33,10 +31,9 @@ namespace Stryker.Core.Initialisation
         {
             var message = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
 
-            TotalNumberOfTests = total;
-            _logger.LogInformation("Total number of tests found: {0}", message);
+            _logger.LogInformation("Total number of tests found: {0}.", message);
 
-            _logger.LogInformation("Initial testrun started");
+            _logger.LogInformation("Initial testrun started.");
 
             // Setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();
@@ -47,7 +44,7 @@ namespace Stryker.Core.Initialisation
             stopwatch.Stop();
 
             // timings
-            _logger.LogDebug("Initial testrun output: {0}", testResult.ResultMessage);
+            _logger.LogDebug("Initial testrun output: {0}.", testResult.ResultMessage);
             if (!testResult.FailingTests.IsEmpty)
             {
                 _logger.LogWarning("Initial test run failed. Mutation score cannot be computed.");
