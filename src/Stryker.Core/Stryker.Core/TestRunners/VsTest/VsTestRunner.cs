@@ -63,7 +63,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _projectInfo = projectInfo;
             _hostBuilder = hostBuilder ?? ((id) => new StrykerVsTestHostLauncher(id));
             SetListOfTests(tests);
-            _tests = testSet;
+            _tests = testSet ?? new TestSet();
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
             _vsTestConsole = wrapper ?? PrepareVsTestConsole();
@@ -85,7 +85,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 _vsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
-            return BuildTestRunResult(testResults, DiscoverNumberOfTests());
+            return BuildTestRunResult(testResults, _tests.Count);
         }
 
         public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -152,7 +152,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 testCases = null;
             }
 
-            var expectedTests = needAll ? DiscoverNumberOfTests() : testCases.Count;
+            var expectedTests = needAll ? DiscoverTests().Count : testCases.Count;
 
             void HandleUpdate(IRunResults handler)
             {
@@ -161,7 +161,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     return;
                 }
-                var tests = handlerTestResults.Count == DiscoverNumberOfTests()
+                var tests = handlerTestResults.Count == DiscoverTests().Count
                     ? (ITestGuids) TestsGuidList.EveryTest()
                     : new WrappedGuidsEnumeration(handlerTestResults.Select(t =>t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
@@ -191,7 +191,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testCases = resultAsArray.Select(t => t.TestCase.Id).Distinct();
             var ranTestsCount = testCases.Count();
             var timeout = (!_aborted && ranTestsCount < expectedTests);
-            var ranTests = ranTestsCount >= DiscoverNumberOfTests() ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = ranTestsCount >= DiscoverTests().Count ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
@@ -217,16 +217,16 @@ namespace Stryker.Core.TestRunners.VsTest
             DetectTestFramework(_vsTests?.Values);
         }
 
-        public int DiscoverNumberOfTests()
+        public TestSet DiscoverTests()
         {
-            return DiscoverTests().Count;
+            return DiscoverTests(null).Item2;
         }
 
-        public IDictionary<Guid, VsTestDescription> DiscoverTests(string runSettings = null)
+        public (IDictionary<Guid, VsTestDescription>, TestSet) DiscoverTests(string runSettings = null)
         {
             if (_vsTests != null)
             {
-                return _vsTests;
+                return (_vsTests, _tests);
             }
             using (var waitHandle = new AutoResetEvent(false))
             {
@@ -253,7 +253,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 DetectTestFramework(_vsTests.Values);
             }
 
-            return _vsTests;
+            _tests.RegisterTests(_vsTests.Values.Select(t => t.Description));
+            return (_vsTests, _tests);
         }
 
         private void DetectTestFramework(ICollection<VsTestDescription> tests)
@@ -381,7 +382,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // push coverage data to the mutants
             foreach (var mutant in mutants)
             {
-                mutant.CoveringTests = new TestsGuidList(_tests, map[mutant.Id]);
+                mutant.CoveringTests = new TestsGuidList(map[mutant.Id]);
                 if (staticMutantLists.Contains(mutant.Id))
                 {
                     mutant.IsStaticValue = true;
@@ -560,7 +561,7 @@ $@"<RunSettings>
                 throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
 
-            _vsTests = DiscoverTests();
+            _vsTests = DiscoverTests(null).Item1;
         }
 
         #region IDisposable Support

@@ -20,7 +20,15 @@ namespace Stryker.Core.MutationTest
         /// </summary>
         public ITestRunner TestRunner { get; set; }
 
+        /// <summary>
+        /// Gets/Set the time calculator object
+        /// </summary>
         public ITimeoutValueCalculator TimeoutMs { get; set; }
+
+        /// <summary>
+        /// Get/Set the initial test run results
+        /// </summary>
+        public TestRunResult InitialTestRun { get; set; }
 
         /// <summary>
         /// All the needed references for compiling the input project

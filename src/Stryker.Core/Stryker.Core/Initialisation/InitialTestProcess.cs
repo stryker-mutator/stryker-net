@@ -10,16 +10,20 @@ namespace Stryker.Core.Initialisation
     public interface IInitialTestProcess
     {
         ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner);
+        TestRunResult InitialTestRun { get; }
     }
 
     public class InitialTestProcess : IInitialTestProcess
     {
         private readonly ILogger _logger;
+        private TestRunResult _initTestRunResult;
 
         public InitialTestProcess()
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
+
+        public TestRunResult InitialTestRun => _initTestRunResult;
 
         /// <summary>
         /// Executes the initial testrun using the given testrunner
@@ -29,7 +33,7 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial testrun</returns>
         public ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner)
         {
-            var message = testRunner.DiscoverNumberOfTests() is var total && total == -1 ? "Unable to detect" : $"{total}";
+            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : $"{total}";
 
             _logger.LogInformation("Total number of tests found: {0}.", message);
 
@@ -39,20 +43,20 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var testResult = testRunner.InitialTest();
+            _initTestRunResult = testRunner.InitialTest();
             // Stop stopwatch immediately after testrun
             stopwatch.Stop();
 
             // timings
-            _logger.LogDebug("Initial testrun output: {0}.", testResult.ResultMessage);
-            if (!testResult.FailingTests.IsEmpty)
+            _logger.LogDebug("Initial testrun output: {0}.", _initTestRunResult.ResultMessage);
+            if (!_initTestRunResult.FailingTests.IsEmpty)
             {
-                _logger.LogWarning("Initial test run failed. Mutation score cannot be computed.");
-                throw new StrykerInputException("Initial testrun was not successful.", testResult.ResultMessage);
+                _logger.LogWarning($"{_initTestRunResult.FailingTests.Count} tests are failing ");
+                //throw new StrykerInputException("Initial testrun was not successful.", _initTestRunResult.ResultMessage);
             }
 
             return new TimeoutValueCalculator(options.AdditionalTimeoutMS,
-                (int)stopwatch.ElapsedMilliseconds-(int)testResult.Duration.TotalMilliseconds ,
+                (int)stopwatch.ElapsedMilliseconds-(int)_initTestRunResult.Duration.TotalMilliseconds ,
                 (int)stopwatch.ElapsedMilliseconds);
         }
     }

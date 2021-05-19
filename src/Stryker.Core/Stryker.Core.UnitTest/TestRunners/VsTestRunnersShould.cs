@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -380,9 +381,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             using var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset);
             BuildVsTestRunner(new StrykerOptions(), endProcess, out var runner);
             var tests = runner.DiscoverTests();
-            tests.Count.ShouldBe(_testCases.Count);
             // make sure we have discovered first and second tests
-            runner.DiscoverNumberOfTests().ShouldBe(_testCases.Count);
+            runner.DiscoverTests().Count.ShouldBe(_testCases.Count);
         }
 
         [Fact]
@@ -569,7 +569,10 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 
-                var input = new MutationTestInput { ProjectInfo = _targetProject, TestRunner = runner, TimeoutMs = new TimeoutValueCalculator(100) };
+                var input = new MutationTestInput { ProjectInfo = _targetProject,
+                    TestRunner = runner,
+                    TimeoutMs = new TimeoutValueCalculator(100),
+                    InitialTestRun = new TestRunResult(true)};
                 foreach (var mutant in _targetProject.ProjectContents.Mutants)
                 {
                     mutant.ResetCoverage();

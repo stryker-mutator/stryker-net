@@ -83,7 +83,8 @@ namespace Stryker.Core.Initialisation
             {
                 ProjectInfo = projectInfo,
                 AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                TestRunner = _testRunner
+                TestRunner = _testRunner,
+                InitialTestRun =  _initialTestProcess.InitialTestRun
             };
 
             return input;

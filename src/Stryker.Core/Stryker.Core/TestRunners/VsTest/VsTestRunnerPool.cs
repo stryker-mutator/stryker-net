@@ -19,21 +19,17 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
-        private readonly TestSet _tests = new TestSet();
-        private readonly VsTestHelper _helper = new VsTestHelper();
+        private readonly TestSet _tests;
+        private readonly VsTestHelper _helper = new();
         private readonly ILogger _logger;
 
         public VsTestRunnerPool(IStrykerOptions options, ProjectInfo projectInfo)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-
-            using (var runner = new VsTestRunner(options, projectInfo, null, _tests, helper: _helper))
-            {
-                _vsTests = runner.DiscoverTests();
-                _tests.RegisterTests(_vsTests.Values.Select(t => t.Description));
-                _availableRunners.Add(runner);
-            }
+            using var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), helper: _helper);
+            (_vsTests, _tests) = runner.DiscoverTests(null);
+            _availableRunners.Add(runner);
 
             Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
             {
@@ -146,9 +142,9 @@ namespace Stryker.Core.TestRunners.VsTest
             _runnerAvailableHandler.Dispose();
         }
 
-        public int DiscoverNumberOfTests()
+        public TestSet DiscoverTests()
         {
-            return _vsTests.Count();
+            return _tests;
         }
     }
 }

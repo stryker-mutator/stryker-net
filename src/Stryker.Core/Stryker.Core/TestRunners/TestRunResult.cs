@@ -16,7 +16,8 @@ namespace Stryker.Core.TestRunners
         public TestRunResult(ITestGuids ranTests,
             ITestGuids failedTests,
             ITestGuids timedOutTest,
-            string message, TimeSpan timeSpan)
+            string message,
+            TimeSpan timeSpan)
         {
             RanTests = ranTests;
             FailingTests = failedTests;

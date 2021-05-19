@@ -7,9 +7,7 @@ namespace Stryker.Core.Mutants
 
     public class TestsGuidList : ITestListDescription
     {
-        private readonly TestSet _testsBase;
         private readonly ISet<Guid> _testsGuid;
-        public ICollection<TestDescription> Tests => _testsGuid?.Select(t => _testsBase[t]).ToHashSet();
 
         private static readonly TestsGuidList EveryTests;
         private static readonly TestsGuidList NoTestAtAll;
@@ -17,7 +15,7 @@ namespace Stryker.Core.Mutants
         static TestsGuidList()
         {
             EveryTests = new TestsGuidList();
-            NoTestAtAll = new TestsGuidList(null, Array.Empty<Guid>());
+            NoTestAtAll = new TestsGuidList(Array.Empty<Guid>());
         }
 
         private TestsGuidList()
@@ -25,13 +23,12 @@ namespace Stryker.Core.Mutants
             _testsGuid = null;
         }
 
-        public TestsGuidList(TestSet testsBase, IEnumerable<TestDescription> testDescriptions) : this(testsBase, testDescriptions?.Select(t => t.Id))
+        public TestsGuidList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
         {
         }
 
-        public TestsGuidList(TestSet testsBase, IEnumerable<Guid> guids)
+        public TestsGuidList(IEnumerable<Guid> guids)
         {
-            _testsBase = testsBase;
             _testsGuid = guids != null ? new HashSet<Guid>(guids) : new HashSet<Guid>();
         }
 
@@ -43,7 +40,7 @@ namespace Stryker.Core.Mutants
 
         public TestsGuidList Merge(ITestGuids other)
         {
-            return new TestsGuidList(_testsBase, _testsGuid.Union(other.GetGuids()));
+            return new TestsGuidList(_testsGuid.Union(other.GetGuids()));
         }
 
         public bool Contains(Guid testId)

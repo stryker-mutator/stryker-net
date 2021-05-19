@@ -104,6 +104,8 @@ namespace Stryker.Core.MutationTest
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners };
 
+            var testsFailingInitialy = Input.InitialTestRun.FailingTests.GetGuids().ToHashSet();
+
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
@@ -111,6 +113,13 @@ namespace Stryker.Core.MutationTest
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
                     var continueTestRun = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
+                    if (testsFailingInitialy.Count>0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
+                    {
+                        // some of the failing tests where failing without any mutation
+                        // we discard those tests
+                        failedTests = new TestsGuidList(
+                            failedTests.GetGuids().Where(t => !testsFailingInitialy.Contains(t)));
+                    }
                     foreach (var mutant in testedMutants)
                     {
                         mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -148,7 +157,7 @@ namespace Stryker.Core.MutationTest
         {
             if (mutant.ResultStatus != MutantStatus.NotRun && !reportedMutants.Contains(mutant))
             {
-                _reporter.OnMutantTested(mutant);
+                _reporter?.OnMutantTested(mutant);
                 reportedMutants.Add(mutant);
             }
         }

@@ -11,6 +11,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.MutationTest
 {
@@ -40,7 +41,7 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
-            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options, _input);
         }
 
         public void Mutate()

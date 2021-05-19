@@ -14,7 +14,7 @@ namespace Stryker.Core.TestRunners
     {
         TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update);
 
-        int DiscoverNumberOfTests();
+        TestSet DiscoverTests();
 
         TestRunResult InitialTest();
 
