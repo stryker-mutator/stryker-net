@@ -1,4 +1,3 @@
-using ExampleProject;
 using Xunit;
 
 namespace ExampleProject.XUnit
