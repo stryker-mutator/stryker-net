@@ -1,3 +1,18 @@
+## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.4) (2021-05-14)
+
+
+### Bug Fixes
+
+* Improve reliability of embedded resources resolving ([#1564](https://github.com/stryker-mutator/stryker-net/issues/1564)) ([6991b60](https://github.com/stryker-mutator/stryker-net/commit/6991b60d1206f1427cdf312a95c79d880402d0f5))
+* **baseline:** Allow valid version strings like 2.0.0 ([#1514](https://github.com/stryker-mutator/stryker-net/issues/1514)) ([b740bba](https://github.com/stryker-mutator/stryker-net/commit/b740bba44fab7e6e4673743d1d46fcc45da28cd5))
+* **baseline:** Azure fileshare uses projectname as output path if specified ([#1526](https://github.com/stryker-mutator/stryker-net/issues/1526)) ([de8940a](https://github.com/stryker-mutator/stryker-net/commit/de8940aba22489eb51ff063c0a2fd5a587a83679))
+* **filtered mutants reporter:** OnMutantsCreated was executed before filtering mutants ([64b4ace](https://github.com/stryker-mutator/stryker-net/commit/64b4ace60b324156305e96af4be7f071ffd8c83a))
+* **mutation orchestration:** rollback of helpers and faulty array initializers to prevent unrecoverable compile errors ([#1530](https://github.com/stryker-mutator/stryker-net/issues/1530)) ([2b6af15](https://github.com/stryker-mutator/stryker-net/commit/2b6af15a951a50d5271f8f58848d7b7e6b14097d))
+* **rollback:** rollback mutation in expressions that cause build error(s) ([#1539](https://github.com/stryker-mutator/stryker-net/issues/1539)) ([83a8082](https://github.com/stryker-mutator/stryker-net/commit/83a80829edb23b1a816d1537927f05a098d1e284))
+* Automatically disable DiffEngine when running tests ([#1523](https://github.com/stryker-mutator/stryker-net/issues/1523)) ([c37fafc](https://github.com/stryker-mutator/stryker-net/commit/c37fafc8b1ecf0a6ef119514b1bbdc1e225568ae))
+
+
+
 ## [0.22.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.3) (2021-04-17)
 
 

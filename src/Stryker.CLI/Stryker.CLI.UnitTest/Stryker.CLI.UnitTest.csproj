@@ -5,7 +5,7 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
-	<ItemGroup>
+  <ItemGroup>
 	<PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />	<!-- From Directory.Build.props -->
     <PackageReference Include="Moq" Version="4.16.1" />
