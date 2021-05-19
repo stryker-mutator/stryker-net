@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Moq;
 using Shouldly;
@@ -22,16 +23,41 @@ namespace Stryker.Core.UnitTest.Initialisation
             _options = new StrykerOptions(additionalTimeoutMS:0);
         }
 
-        [Fact(Skip = "Behavior changed")]
+        [Fact]
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(false) );
+            var test1 = Guid.NewGuid();
+            var test2 = Guid.NewGuid();
+            var ranTests = new TestsGuidList(new[] {test1, test2});
+            var failedTests = new TestsGuidList(new[] {test1});
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             Assert.Throws<StrykerInputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
+        }
+
+        [Fact]
+        public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
+        {
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+            var test1 = Guid.NewGuid();
+            var testList = new List<Guid>(10);
+            testList.Add(test1);
+            for (int i = testList.Count; i < testList.Capacity; i++)
+            {
+                testList.Add(Guid.NewGuid());
+            }
+            var ranTests = new TestsGuidList(testList);
+            var failedTests = new TestsGuidList(new[] {test1});
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
+            testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
+                .Returns(new TestRunResult(true));
+            testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
+
+            _target.InitialTest(_options, testRunnerMock.Object);
         }
 
         [Fact]
