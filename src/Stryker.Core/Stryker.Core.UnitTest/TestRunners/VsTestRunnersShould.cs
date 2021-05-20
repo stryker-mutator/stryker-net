@@ -571,8 +571,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 var input = new MutationTestInput { ProjectInfo = _targetProject,
                     TestRunner = runner,
-                    TimeoutMs = new TimeoutValueCalculator(100),
-                    InitialTestRun = new TestRunResult(true)};
+                    InitialTestRun = new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500))};
                 foreach (var mutant in _targetProject.ProjectContents.Mutants)
                 {
                     mutant.ResetCoverage();

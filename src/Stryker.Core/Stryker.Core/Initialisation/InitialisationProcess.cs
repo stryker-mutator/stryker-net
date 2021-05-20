@@ -18,16 +18,13 @@ namespace Stryker.Core.Initialisation
     [ExcludeFromCodeCoverage]
     public class InitialisationProcessProvider : IInitialisationProcessProvider
     {
-        public IInitialisationProcess Provide()
-        {
-            return new InitialisationProcess();
-        }
+        public IInitialisationProcess Provide() => new InitialisationProcess();
     }
 
     public interface IInitialisationProcess
     {
         MutationTestInput Initialize(IStrykerOptions options);
-        ITimeoutValueCalculator InitialTest(IStrykerOptions options);
+        InitialTestRun InitialTest(IStrykerOptions options);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -79,21 +76,18 @@ namespace Stryker.Core.Initialisation
                 _testRunner = new TestRunnerFactory().Create(options, projectInfo);
             }
 
-            var input = new MutationTestInput()
+            var input = new MutationTestInput
             {
                 ProjectInfo = projectInfo,
                 AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner,
-                InitialTestRun =  _initialTestProcess.InitialTestRun
             };
 
             return input;
         }
 
-        public ITimeoutValueCalculator InitialTest(IStrykerOptions options)
-        {
+        public InitialTestRun InitialTest(IStrykerOptions options) =>
             // initial test
-            return _initialTestProcess.InitialTest(options, _testRunner);
-        }
+            _initialTestProcess.InitialTest(options, _testRunner);
     }
 }

@@ -33,7 +33,7 @@ namespace Stryker.Core.MutationTest
             var forceSingle = false;
             while (mutantsToTest.Any())
             {
-                var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler);
+                var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
                 Logger.LogTrace(
                     $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
@@ -72,16 +72,30 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler)
+        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+            TestUpdateHandler updateHandler, bool forceSingle)
         {
             TestRunResult result;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-            if (updateHandler == null)
+            if (forceSingle && mutantsToTest.Count>1)
             {
                 foreach (var mutant in mutantsToTest)
                 {
-                    mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
+                    var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] {mutant}, updateHandler);
+                    mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests);
+                }
+
+                return new TestRunResult(true);
+            }
+            else
+            {
+                result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+                if (updateHandler == null)
+                {
+                    foreach (var mutant in mutantsToTest)
+                    {
+                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
+                    }
                 }
             }
 

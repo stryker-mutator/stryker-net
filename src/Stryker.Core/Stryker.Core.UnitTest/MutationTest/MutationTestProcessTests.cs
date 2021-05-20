@@ -304,7 +304,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = new TestRunResult(true)
+                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -368,7 +368,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = executor.TestRunner.InitialTest()
+                InitialTestRun =  new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
@@ -432,7 +432,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = executor.TestRunner.InitialTest()
+                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);

@@ -61,7 +61,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
-            _hostBuilder = hostBuilder ?? ((id) => new StrykerVsTestHostLauncher(id));
+            _hostBuilder = hostBuilder ?? (id => new StrykerVsTestHostLauncher(id));
             SetListOfTests(tests);
             _tests = testSet ?? new TestSet();
             _ownHelper = helper == null;
@@ -83,9 +83,15 @@ namespace Stryker.Core.TestRunners.VsTest
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
+                if (!_vsTests.ContainsKey(result.TestCase.Id))
+                {
+                    _vsTests[result.TestCase.Id] = new VsTestDescription(result.TestCase);
+                    _logger.LogWarning($"Initial test run encounter a unexpected test case ({result.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
+                }
                 _vsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
-            return BuildTestRunResult(testResults, _tests.Count);
+            // get the test results, but prevent compression of 'all tests'
+            return BuildTestRunResult(testResults, int.MaxValue, false);
         }
 
         public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant mutant, TestUpdateHandler update)
@@ -185,13 +191,13 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, expectedTests);
         }
 
-        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests)
+        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, bool compressAll = true)
         {
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).Distinct();
             var ranTestsCount = testCases.Count();
             var timeout = (!_aborted && ranTestsCount < expectedTests);
-            var ranTests = ranTestsCount >= DiscoverTests().Count ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = (compressAll && ranTestsCount >= DiscoverTests().Count) ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
@@ -311,6 +317,11 @@ namespace Stryker.Core.TestRunners.VsTest
             foreach (var testResult in testResults)
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
+                if (!_vsTests.ContainsKey(testResult.TestCase.Id))
+                {
+                    _logger.LogWarning($"Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
+                    _vsTests.Add(testResult.TestCase.Id, new VsTestDescription(testResult.TestCase));
+                }
                 var testDescription = _vsTests[testResult.TestCase.Id];
                 if (key == null)
                 {

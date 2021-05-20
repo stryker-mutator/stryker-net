@@ -104,7 +104,7 @@ namespace Stryker.Core.MutationTest
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners };
 
-            var testsFailingInitialy = Input.InitialTestRun.FailingTests.GetGuids().ToHashSet();
+            var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
 
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
@@ -134,7 +134,7 @@ namespace Stryker.Core.MutationTest
 
                     return continueTestRun;
                 }
-                _mutationTestExecutor.Test(mutants, Input.TimeoutMs, testUpdateHandler);
+                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, testUpdateHandler);
 
                 OnMutantsTested(mutants, reportedMutants);
             });

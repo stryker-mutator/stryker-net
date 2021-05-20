@@ -7,10 +7,21 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation
 {
+    public class InitialTestRun
+    {
+        public InitialTestRun(TestRunResult result, ITimeoutValueCalculator timeoutValueCalculator)
+        {
+            Result = result;
+            TimeoutValueCalculator = timeoutValueCalculator;
+        }
+
+        public TestRunResult Result { get; }
+        public ITimeoutValueCalculator TimeoutValueCalculator { get;}
+    }
+
     public interface IInitialTestProcess
     {
-        ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner);
-        TestRunResult InitialTestRun { get; }
+        InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner);
     }
 
     public class InitialTestProcess : IInitialTestProcess
@@ -24,6 +35,7 @@ namespace Stryker.Core.Initialisation
         }
 
         public TestRunResult InitialTestRun => _initTestRunResult;
+        public ITimeoutValueCalculator TimeoutValueCalculator { get; private set; }
 
         /// <summary>
         /// Executes the initial testrun using the given testrunner
@@ -31,9 +43,9 @@ namespace Stryker.Core.Initialisation
         /// <param name="testRunner"></param>
         /// <param name="options">Stryker options</param>
         /// <returns>The duration of the initial testrun</returns>
-        public ITimeoutValueCalculator InitialTest(IStrykerOptions options, ITestRunner testRunner)
+        public InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner)
         {
-            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : $"{total}";
+            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : $"{total.Count}";
 
             _logger.LogInformation("Total number of tests found: {0}.", message);
 
@@ -59,9 +71,11 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            return new TimeoutValueCalculator(options.AdditionalTimeoutMS,
+            TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeoutMS,
                 (int)stopwatch.ElapsedMilliseconds-(int)_initTestRunResult.Duration.TotalMilliseconds ,
                 (int)stopwatch.ElapsedMilliseconds);
+
+            return new InitialTestRun(_initTestRunResult, TimeoutValueCalculator);
         }
     }
 }
