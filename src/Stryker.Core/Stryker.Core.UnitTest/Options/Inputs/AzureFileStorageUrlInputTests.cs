@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             void act() => new AzureFileStorageUrlInput { SuppliedInput = null }.Validate(BaselineProvider.AzureFileStorage);
 
-            Should.Throw<StrykerInputException>(act).Message.ShouldBe(@"The azure file storage url is required when Azure File Storage is used for dashboard compare.");
+            Should.Throw<StrykerInputException>(act).Message.ShouldBe("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
         }
     }
 }
