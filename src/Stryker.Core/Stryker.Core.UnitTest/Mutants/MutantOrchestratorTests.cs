@@ -596,6 +596,24 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
             ShouldMutateSourceToExpected(source, expected);
         }
 
+        [Fact(Skip = "Refactor syntax parsing before implementing this")]
+        public void ShouldNotMutateIfDisabledByComment()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+    x++;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+     x++;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
         [Fact]
         public void ShouldMutateChainedMutations()
         {
@@ -979,7 +997,8 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
 ";
 
             var expected = @"public static string FormatPrettyByte(Int64 value)
-{if(StrykerNamespace.MutantControl.IsActive(0))		{
+{ 
+if(StrykerNamespace.MutantControl.IsActive(0))		{
 			string[] SizeSuffixes = {};
 
 			int mag = (int)Math.Log(value, 1024);

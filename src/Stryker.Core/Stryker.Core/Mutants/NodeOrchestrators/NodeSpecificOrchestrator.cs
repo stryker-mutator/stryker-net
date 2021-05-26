@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
@@ -21,14 +21,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             MutantOrchestrator = mutantOrchestrator;
         }
 
-        /// <summary>
-        /// Get if this class this a new context.
-        /// </summary>
-        /// <remarks>The base class uses this information to determine if it has to create a new MutationContext. This is required when mutations pending injections
-        /// must not be propagated 'down' in the syntax tree.</remarks>
-        protected virtual bool NewContext => false;
-
-        /// <summary>
         /// Get the Roslyn type handled by this class
         /// </summary>
         public Type ManagedType => typeof(TNode);
@@ -88,9 +80,27 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
         /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
         /// skip mutation the children node.</remarks>
-        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
-            node.ReplaceNodes(node.ChildNodes(), 
-                (original, _) => MutantOrchestrator.Mutate(original, context));
+        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context)
+        {
+            return node.ReplaceNodes(node.ChildNodes(),
+                computeReplacementNode: (original, _) => MutateSingleNode(original, context));
+        }
+
+        protected virtual SyntaxNode MutateSingleNode(SyntaxNode node, MutationContext context)
+        {
+            if (!SyntaxHelper.CanBeMutated(node))
+            {
+                return node;
+            }
+
+            var handler = MutantOrchestrator.GetHandler(node);
+            return handler.Mutate(node, context);
+        }
+
+        protected virtual MutationContext PrepareContext(MutationContext context) => context.Clone();
+
+        protected virtual void RestoreContext(MutationContext context)
+        {}
 
         /// <summary>
         /// Mutates a node and its children. Update the mutation context with mutations needed to be injected in a higher level node.
@@ -101,23 +111,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         public SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {
             var specificNode = node as TNode;
-            if (NewContext)
-            {
-                using var newContext = context.Clone();
-                // we generate mutations for this node (to help numbering being in 'code reading' order)
-                var mutations = GenerateMutationForNode(specificNode, newContext);
-                return InjectMutations(specificNode,
-                    OrchestrateChildrenMutation(specificNode, newContext),
-                    StoreMutations(specificNode, mutations, newContext));
-            }
-            else
-            {
-                // we generate mutations for this node (to help numbering being in 'code reading' order)
-                var mutations = GenerateMutationForNode(specificNode, context);
-                return InjectMutations(specificNode,
-                    OrchestrateChildrenMutation(specificNode, context),
-                    StoreMutations(specificNode, mutations, context));
-            }
+            context = PrepareContext(context);
+            // we generate mutations for this node (to help numbering being in 'code reading' order)
+            var mutations = GenerateMutationForNode(specificNode, context);
+            SyntaxNode result = InjectMutations(specificNode,
+                OrchestrateChildrenMutation(specificNode, context),
+                StoreMutations(specificNode, mutations, context));
+
+            RestoreContext(context);
+            return result;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return result;
             }
 
-            if (!context.HasStatementLevelMutant)
+            if (!context.HasStatementLevelMutant && !context.Store.HasBlockLevel)
             {
                 return result;
             }
@@ -38,12 +38,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
 
-            var newBody =
-                MutantPlacer.PlaceStatementControlledMutations(result.Body,
-                    context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
-                        Select( m => (m.Id, converter(m.Mutation))));
-            context.BlockLevelControlledMutations.Clear();
-            context.StatementLevelControlledMutations.Clear();
+            var newBody = context.Store.PlaceBlockMutations(result.Body, converter);
             return result.WithBody(SyntaxFactory.Block(newBody));
         }
     }

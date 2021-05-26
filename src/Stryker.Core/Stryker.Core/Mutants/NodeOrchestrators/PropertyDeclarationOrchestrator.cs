@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,6 +9,17 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     internal class PropertyDeclarationOrchestrator: NodeSpecificOrchestrator<PropertyDeclarationSyntax, BasePropertyDeclarationSyntax>
     {
+        protected override MutationContext PrepareContext(MutationContext context)
+        {
+            context.Store.EnterBlock();
+            return base.PrepareContext(context);
+        }
+
+        protected override void RestoreContext(MutationContext context)
+        {
+            context.Store.LeaveBlock();
+            base.RestoreContext(context);
+        }
 
         public PropertyDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
         {
@@ -21,14 +33,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             }
 
             return node.ReplaceNodes(node.ChildNodes(), (original, _) =>
-                MutantOrchestrator.Mutate(original, original == node.Initializer ? context.EnterStatic() : context));
+                MutateSingleNode(original, original == node.Initializer ? context.EnterStatic() : context));
         }
 
         protected override BasePropertyDeclarationSyntax InjectMutations(PropertyDeclarationSyntax sourceNode,
             BasePropertyDeclarationSyntax targetNode, MutationContext context)
         {
             var result = base.InjectMutations(sourceNode, targetNode, context);
-            if (!context.HasStatementLevelMutant)
+            if (!context.HasStatementLevelMutant && !context.Store.HasBlockLevel)
             {
                 return result;
             }
@@ -41,17 +53,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             mutated = MutantPlacer.ConvertPropertyExpressionToBodyAccessor(mutated);
             var getter = mutated.GetAccessor();
 
-            result = mutated.ReplaceNode(getter.Body!, SyntaxFactory.Block(
-                    MutantPlacer.PlaceStatementControlledMutations(
-                        getter.Body,
-                        context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).Select(
-                            m => (m.Id,
-                                SyntaxFactory.ReturnStatement(
-                                    sourceNode.ExpressionBody!.Expression
-                                        .InjectMutation(m.Mutation)) as StatementSyntax)))))
+            var converter = (Func<Mutation, StatementSyntax>)(toConvert =>
+                SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)));
+
+            result = mutated.ReplaceNode(getter.Body!, SyntaxFactory.Block( context.Store.PlaceBlockMutations(getter.Body, converter)))
                 .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken));
-            context.BlockLevelControlledMutations.Clear();
-            context.StatementLevelControlledMutations.Clear();
             return result;
         }
     }

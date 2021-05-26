@@ -9,7 +9,6 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
@@ -75,28 +74,13 @@ namespace Stryker.Core.Mutants
         /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
-        /// <param name="currentNode">The current root node</param>
+        /// <param name="input">The current root node</param>
         /// <returns>Mutated node</returns>
-        public override SyntaxNode Mutate(SyntaxNode input)
-        {
-            var mutationContext = new MutationContext(this);
-            var mutation = Mutate(input, mutationContext);
-            return mutation;
-        }
-
-        // recursive version
-        public SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
-        {
-            // don't mutate immutable nodes
-            if (!SyntaxHelper.CanBeMutated(currentNode))
-            {
-                return currentNode;
-            }
-
+        public override SyntaxNode Mutate(SyntaxNode input) =>
             // search for node specific handler
-            var nodeHandler = _specificOrchestrator.FindHandler(currentNode);
-            return nodeHandler.Mutate(currentNode, context);
-        }
+            GetHandler(input).Mutate(input, new MutationContext(this));
+
+        internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
 
         public IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
