@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Theory]
         [InlineData(Mutator.Arithmetic, true)]
         [InlineData(Mutator.Assignment, false)]
-        public void MutantFilter_ShouldSkipMutationsForExcludedMutatorType(Mutator excludedMutator, bool skipped)
+        public void MutantFilter_ShouldSkipMutationsForExcludedMutatorType(Mutator excludedMutation, bool skipped)
         {
             // Arrange
             var mutant = new Mutant
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions
             {
-                ExcludedMutations = new[] { excludedMutator }
+                ExcludedMutations = new[] { excludedMutation }
             };
 
             // Act

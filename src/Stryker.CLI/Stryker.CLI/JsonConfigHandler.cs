@@ -5,9 +5,9 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public static class JsonInputParser
+    public class JsonConfigHandler
     {
-        public static void EnrichFromJsonConfig(this StrykerInputs inputs, string configFilePath)
+        public static void DeserializeConfig(string configFilePath, IStrykerInputs inputs)
         {
             var jsonConfig = LoadJsonConfig(configFilePath);
 

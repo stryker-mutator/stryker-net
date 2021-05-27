@@ -42,9 +42,10 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            var cliParser = new CliInputParser();
+            var inputs = InputBuilder.InitializeInputs(_logBuffer);
+            var cmdConfigHandler = new CommandLineConfigHandler();
 
-            var strykerInputs = cliParser.RegisterStrykerInputs(app, _logBuffer);
+            cmdConfigHandler.RegisterCommandlineOptions(app, inputs);
 
             app.OnExecute(() =>
             {
@@ -52,39 +53,22 @@ namespace Stryker.CLI
                 PrintStykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
-                strykerInputs = InputBuilder.Build(args, app, strykerInputs, cliParser);
+                var inputs = InputBuilder.Build(args, app, cmdConfigHandler);
 
-                if (cliParser.GenerateConfigFile(args, app))
-                {
-                    var options = strykerInputs.ValidateAll();
-                    var configFilePath = Path.Combine(options.BasePath, cliParser.ConfigFilePath(args, app));
-
-                    var fileBasedInputs = new FileBasedInput
-                    {
-                        //BaseLine = new BaseLine
-                        //{
-                        //    WithBaseline = options.WithBaseline,
-                        //    Provider = options.BaselineProvider,
-                            
-                        //}
-                    };
-                    File.WriteAllText(configFilePath, JsonConvert.SerializeObject(new FileBasedInputOuter { Input = fileBasedInputs }));
-                }
-
-                RunStryker(strykerInputs);
+                RunStryker(inputs);
                 return ExitCode;
             });
             return app.Execute(args);
         }
 
-        private void RunStryker(StrykerInputs inputs)
+        private void RunStryker(IStrykerInputs inputs)
         {
             StrykerRunResult result = _stryker.RunMutationTest(inputs, _logBuffer.GetMessages());
 
             HandleStrykerRunResult(inputs, result);
         }
 
-        private void HandleStrykerRunResult(StrykerInputs inputs, StrykerRunResult result)
+        private void HandleStrykerRunResult(IStrykerInputs inputs, StrykerRunResult result)
         {
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
 
