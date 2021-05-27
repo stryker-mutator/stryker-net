@@ -128,6 +128,47 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Theory]
+        [InlineData("Dispose")]
+        [InlineData("Dispose*")]
+        [InlineData("*Dispose")]
+        [InlineData("*Dispose*")]
+        [InlineData("*ispose")]
+        [InlineData("Dis*")]
+        [InlineData("*")]
+        public void ShouldFilterStandaloneInvocation(string ignoredMethodName)
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Dispose();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf('D'), 1));
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldNotContain(mutant);
+        }
+
+        [Theory]
         [InlineData("MyType.ctor", true)]
         [InlineData("MyType*.ctor", true)]
         [InlineData("*MyType.ctor", true)]
