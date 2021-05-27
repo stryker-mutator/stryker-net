@@ -103,6 +103,18 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
         }
 
+        public static Framework GetTargetFramework(this IAnalyzerResult analyzerResult)
+        {
+            try
+            {
+                return ParseTargetFramework(analyzerResult.TargetFramework);
+            }
+            catch (ArgumentException)
+            {
+                throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
+            }
+        }
+
         /// <summary>
         /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
         /// </summary>

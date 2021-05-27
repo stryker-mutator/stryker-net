@@ -3,15 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
 
-  <PropertyGroup>
-    <xunit>2.4.1</xunit>
-  </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
   </ItemGroup>
@@ -34,17 +26,17 @@
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" /> 	<!-- From Directory.Build.props -->
-    <PackageReference Include="xunit" Version="$(xunit)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="all"/>
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="MutantFilters\" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

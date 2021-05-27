@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -10,20 +10,29 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline
+namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
+        private const string DefaultOutputDirectoryName = "StrykerOutput";
+        private const string BaselinesDirectoryName = "Baselines";
+
         private readonly IStrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
-        private const string _outputPath = "StrykerOutput/Baselines";
+        private readonly string _outputPath;
 
         public AzureFileShareBaselineProvider(IStrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
+
+            _outputPath = $"{DefaultOutputDirectoryName}/{BaselinesDirectoryName}";
+            if (!string.IsNullOrWhiteSpace(options.ProjectName))
+            {
+                _outputPath = $"{options.ProjectName}/{BaselinesDirectoryName}";
+            }
         }
 
         public async Task<JsonReport> Load(string version)
@@ -31,11 +40,11 @@ namespace Stryker.Core.Baseline
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
             var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
             requestMessage.Headers.Add("x-ms-date", "now");
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
@@ -88,14 +97,15 @@ namespace Stryker.Core.Baseline
             _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
             var uriParts = fileUrl.Split(_outputPath);
-            var currentDirectory = $"{uriParts[0]}";
+            var currentDirectory = new StringBuilder(uriParts[0]);
 
-            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains("."));
+            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains(".json"));
 
             foreach (var segment in storagePathSegments)
             {
-                currentDirectory += $"{segment}/";
-                if (!await CreateDirectory(currentDirectory))
+                currentDirectory.Append($"{segment}/");
+
+                if (!await CreateDirectory(currentDirectory.ToString()))
                 {
                     return false;
                 }
@@ -110,15 +120,14 @@ namespace Stryker.Core.Baseline
 
             var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
             SetWritingHeaders(requestMessage);
 
-            var response = await _httpClient.SendAsync(requestMessage);
-
+            using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully created directory {0}", fileUrl);
+                _logger.LogDebug("Successfully created directory {0}", fileUrl);
                 return true;
             }
             else if (response.StatusCode == HttpStatusCode.Conflict)
@@ -128,6 +137,7 @@ namespace Stryker.Core.Baseline
             }
 
             _logger.LogError("Creating directory failed with status {0} and message {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
+
             return false;
         }
 
@@ -137,7 +147,7 @@ namespace Stryker.Core.Baseline
 
             var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
             SetWritingHeaders(requestMessage);
 
@@ -145,11 +155,11 @@ namespace Stryker.Core.Baseline
             requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
 
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode == HttpStatusCode.Created)
             {
-                _logger.LogDebug("Succesfully allocated storage");
+                _logger.LogDebug("Successfully allocated storage");
                 return true;
             }
             else
@@ -163,7 +173,7 @@ namespace Stryker.Core.Baseline
         {
             _logger.LogDebug("Uploading file to azure file storage");
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
             {
                 Content = new StringContent(report, Encoding.UTF8, "application/json")
             };
@@ -173,7 +183,7 @@ namespace Stryker.Core.Baseline
             requestMessage.Headers.Add("x-ms-range", $"bytes=0-{byteSize - 1}");
             requestMessage.Headers.Add("x-ms-write", "update");
 
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.StatusCode != HttpStatusCode.Created)
             {

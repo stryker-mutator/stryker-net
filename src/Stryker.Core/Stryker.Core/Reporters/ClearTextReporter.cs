@@ -1,11 +1,11 @@
-using Crayon;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Crayon;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
@@ -86,11 +86,11 @@ namespace Stryker.Core.Reporters
 
             if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
             {
-                _consoleWriter.Write(Output.BrightBlack("Excluded"));
+                _consoleWriter.Write(Output.Bright.Black("Excluded"));
             }
             else if (double.IsNaN(mutationScore))
             {
-                _consoleWriter.Write(Output.BrightBlack("     N/A"));
+                _consoleWriter.Write(Output.Bright.Black("     N/A"));
             }
             else
             {

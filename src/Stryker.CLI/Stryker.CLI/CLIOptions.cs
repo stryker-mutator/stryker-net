@@ -1,13 +1,13 @@
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Baseline;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using McMaster.Extensions.CommandLineUtils;
+using Microsoft.CodeAnalysis.CSharp;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Options;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.CLI
 {
@@ -86,7 +86,8 @@ namespace Stryker.CLI
             ArgumentName = "--ignore-methods",
             ArgumentShortName = "-im <methodNames>",
             ArgumentDescription = @"Mutations that would affect parameters that are directly passed into methods with given names are ignored. Example: ['ConfigureAwait', 'ToString']",
-            JsonKey = "ignore-methods"
+            JsonKey = "ignore-methods",
+            DefaultValue = Array.Empty<string>()
         };
 
         public static readonly CLIOption<string> ProjectFileName = new CLIOption<string>
@@ -147,7 +148,7 @@ namespace Stryker.CLI
             ArgumentName = "--git-diff-target",
             ArgumentShortName = "-gdt <commitish>",
             ArgumentDescription = @"Sets the source commitish (branch or commit) to compare with the current codebase, used for calculating the difference when --diff is enabled. Default: master",
-            DefaultValue = _defaultOptions.GitDiffTarget,
+            DefaultValue = _defaultOptions.GitDiffSource,
             JsonKey = "git-diff-target"
         };
 

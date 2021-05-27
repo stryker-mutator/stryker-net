@@ -60,9 +60,10 @@ namespace Stryker.Core.Mutants
                 new StaticConstructorOrchestrator(this),
                 new PropertyDeclarationOrchestrator(this),
                 new ArrayInitializerOrchestrator(this),
+                new MemberDeclarationOrchestrator<MemberDeclarationSyntax, MemberDeclarationSyntax>(this),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
                 new AccessorSyntaxOrchestrator(this),
-                new ConstLocalDeclarationOrchestrator(this),
+                new LocalDeclarationOrchestrator(this),
                 new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
@@ -79,17 +80,6 @@ namespace Stryker.Core.Mutants
         {
             var mutationContext = new MutationContext(this);
             var mutation = Mutate(input, mutationContext);
-            if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
-            {
-                // some mutants where not injected for some reason, they should be reviewed to understand why.
-                Logger.LogError($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count + mutationContext.StatementLevelControlledMutations.Count}");
-            }
-            // mark remaining mutants as CompileError
-            foreach (var mutant in mutationContext.StatementLevelControlledMutations.Union(mutationContext.BlockLevelControlledMutations))
-            {
-                mutant.ResultStatus = MutantStatus.CompileError;
-                mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
-            }
             return mutation;
         }
 

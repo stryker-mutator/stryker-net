@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Mutants
 {
@@ -8,11 +11,17 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutationContext: IDisposable
     {
+        private static readonly ILogger _logger;
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
         private readonly MutationContext _ancestor;
         public readonly List<Mutant> ExpressionLevelMutations = new List<Mutant>();
         public readonly List<Mutant> BlockLevelControlledMutations = new List<Mutant>();
         public readonly List<Mutant> StatementLevelControlledMutations = new List<Mutant>();
+
+        static MutationContext()
+        {
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationContext>();
+        }
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
@@ -47,10 +56,28 @@ namespace Stryker.Core.Mutants
             return new MutationContext(this);
         }
 
+        public void Discard()
+        {
+            if (HasStatementLevelMutant)
+            {
+                // some mutants 
+                _logger.LogDebug($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
+                foreach (var mutant in BlockLevelControlledMutations.Union(StatementLevelControlledMutations))
+                {
+                    mutant.ResultStatus = MutantStatus.CompileError;
+                    mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
+                }
+                BlockLevelControlledMutations.Clear();
+                StatementLevelControlledMutations.Clear();
+            }
+
+        }
+
         public void Dispose()
         {
             if (_ancestor == null)
             {
+                Discard();
                 return;
             }
             // copy the pending mutation to the enclosing context

@@ -35,6 +35,8 @@ namespace Stryker.Core.Helpers
             };
         }
 
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
+
         public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod)
         {
             return baseMethod.Keyword.Text switch
@@ -56,5 +58,7 @@ namespace Stryker.Core.Helpers
 
         public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
             => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
+
+        public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrailingTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
     }
 }

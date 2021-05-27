@@ -1,12 +1,12 @@
-﻿using Moq;
+using System;
+using System.Linq;
+using Moq;
 using Shouldly;
-using Stryker.Core.Baseline;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Options;
-using System;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -68,6 +68,23 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
 
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_Dashboard_Compare_Enabled() {
+            var strykerOptions = new StrykerOptions(compareToDashboard: true, projectVersion: "foo");
+
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
+            var result = MutantFilterFactory.Create(strykerOptions, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+
+            var resultAsBroadcastFilter = result as BroadcastMutantFilter;
+
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DashboardMutantFilter)).Count().ShouldBe(1);
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
         }
     }
