@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,6 +37,9 @@ namespace Stryker.Core.MutantFilters
                 // check when conditional access
                 case InvocationExpressionSyntax invocation when invocation.Expression is MemberBindingExpressionSyntax member:
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
+                // Check if the current node is an object creation syntax (constructor invocation).
+                case InvocationExpressionSyntax invocation when invocation.Expression is IdentifierNameSyntax member:
+                    return options.IgnoredMethods.Any(r => r.IsMatch(member.ToString()));
                 // Check if the current node is an object creation syntax (constructor invocation).
                 case ObjectCreationExpressionSyntax creation:
                 {
