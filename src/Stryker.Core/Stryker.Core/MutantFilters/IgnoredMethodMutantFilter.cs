@@ -34,10 +34,10 @@ namespace Stryker.Core.MutantFilters
                 // This will also ignore invokable properties like `Func<bool> MyProp { get;}`
                 case InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax member:
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
-                // check when conditional access
+                // Check when conditional access
                 case InvocationExpressionSyntax invocation when invocation.Expression is MemberBindingExpressionSyntax member:
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
-                // Check if the current node is an object creation syntax (constructor invocation).
+                // Check when direct identifier
                 case InvocationExpressionSyntax invocation when invocation.Expression is IdentifierNameSyntax member:
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.ToString()));
                 // Check if the current node is an object creation syntax (constructor invocation).
