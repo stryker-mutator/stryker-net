@@ -16,7 +16,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
                 {
-                    throw new StrykerInputException("Stryker dashboard url {0} is invalid.", SuppliedInput);
+                    throw new InputException("Stryker dashboard url {0} is invalid.", SuppliedInput);
                 }
 
                 return SuppliedInput;

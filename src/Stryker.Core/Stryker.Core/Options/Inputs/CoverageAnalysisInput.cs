@@ -22,7 +22,7 @@ namespace Stryker.Core.Options.Inputs
                     "pertest" => OptimizationModes.CoverageBasedTest,
                     "all" => OptimizationModes.SkipUncoveredMutants,
                     "off" => OptimizationModes.NoOptimization,
-                    _ => throw new StrykerInputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
+                    _ => throw new InputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
                 };
 
                 return optimization;

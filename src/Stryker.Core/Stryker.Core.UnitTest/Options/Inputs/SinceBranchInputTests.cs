@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldValidateGitSource()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new SinceTargetInput { SuppliedInput = "" }.Validate(true);
             });

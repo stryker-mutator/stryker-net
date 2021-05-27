@@ -16,12 +16,12 @@ namespace Stryker.Core.Options.Inputs
                 var @break = SuppliedInput.Value;
                 if (@break > 100 || @break < 0)
                 {
-                    throw new StrykerInputException("Threshold break must be between 0 and 100.");
+                    throw new InputException("Threshold break must be between 0 and 100.");
                 }
 
                 if (@break > low)
                 {
-                    throw new StrykerInputException($"Threshold break must be less than or equal to threshold low. Current low: {low}, break: {@break}.");
+                    throw new InputException($"Threshold break must be less than or equal to threshold low. Current low: {low}, break: {@break}.");
                 }
 
                 return @break;

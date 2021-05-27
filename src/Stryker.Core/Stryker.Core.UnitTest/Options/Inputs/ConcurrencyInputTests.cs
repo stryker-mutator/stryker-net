@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void WhenZeroIsPassedAsMaxConcurrentTestRunnersParam_StrykerInputExceptionShouldBeThrown()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 var options = new ConcurrencyInput { SuppliedInput = 0 }.Validate(_loggerMock.Object);
             });

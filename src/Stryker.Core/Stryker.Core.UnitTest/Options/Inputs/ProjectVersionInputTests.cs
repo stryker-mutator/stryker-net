@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var input = new ProjectVersionInput { };
             input.SuppliedInput = value;
 
-            var exception = Should.Throw<StrykerInputException>(() => {
+            var exception = Should.Throw<InputException>(() => {
                 input.Validate(null, reporters: new[] { Reporter.Dashboard }, true);
             });
 

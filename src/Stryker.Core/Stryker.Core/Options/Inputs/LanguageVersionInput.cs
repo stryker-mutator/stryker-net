@@ -23,7 +23,7 @@ namespace Stryker.Core.Options.Inputs
                 }
                 else
                 {
-                    throw new StrykerInputException($"The given c# language version ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
+                    throw new InputException($"The given c# language version ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<LanguageVersion>)Enum.GetValues(typeof(LanguageVersion))).Where(l => l != LanguageVersion.CSharp1))}]");
                 }
             }
             return LanguageVersion.Default;

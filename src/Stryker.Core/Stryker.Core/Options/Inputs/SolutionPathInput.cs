@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (!fileSystem.File.Exists(SuppliedInput))  //validate file existance and maintain moq
                 {
-                    throw new StrykerInputException("Given solution path does not exist: {0}", SuppliedInput);
+                    throw new InputException("Given solution path does not exist: {0}", SuppliedInput);
                 }
 
                 return SuppliedInput;

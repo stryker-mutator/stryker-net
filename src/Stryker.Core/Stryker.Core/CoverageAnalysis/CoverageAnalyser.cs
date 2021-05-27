@@ -46,7 +46,7 @@ namespace Stryker.Core.CoverageAnalysis
                     return;
                 }
                 _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
-                throw new StrykerInputException("No active mutant testrun was not successful.", testResult.ResultMessage);
+                throw new InputException("No active mutant testrun was not successful.", testResult.ResultMessage);
             }
         }
 

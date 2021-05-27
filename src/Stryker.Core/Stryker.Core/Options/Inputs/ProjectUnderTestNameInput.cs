@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {
-                    throw new StrykerInputException("Project under test name filter cannot be empty.");
+                    throw new InputException("Project under test name filter cannot be empty.");
                 }
 
                 return SuppliedInput;

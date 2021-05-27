@@ -9,29 +9,29 @@ namespace Stryker.Core.Exceptions
     /// but the user might also might not be able to fix
     /// </summary>
     [Serializable]
-    public class StrykerCompilationException : Exception
+    public class CompilationException : Exception
     {
-        public StrykerCompilationException()
+        public CompilationException()
             : base()
         {
         }
 
-        public StrykerCompilationException(string message)
+        public CompilationException(string message)
             : base(message)
         {
         }
 
-        public StrykerCompilationException(string message, string details)
+        public CompilationException(string message, string details)
             : base(message)
         {
             Details = details;
         }
 
-        public StrykerCompilationException(string message, Exception innerException) : base(message, innerException)
+        public CompilationException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
-        protected StrykerCompilationException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected CompilationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 

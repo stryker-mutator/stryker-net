@@ -19,12 +19,12 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput is null)
                 {
-                    throw new StrykerInputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
+                    throw new InputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
                 }
 
                 if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
                 {
-                    throw new StrykerInputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
+                    throw new InputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
                 }
 
                 return SuppliedInput;

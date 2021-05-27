@@ -4,7 +4,7 @@ namespace Stryker.Core.Options.Inputs
     {
         public override bool? Default => false;
 
-        protected override string Description => "Disable abort unit testrun as soon as any one unit test fails.";
+        protected override string Description => "Disable abort unit testrun as soon as the first unit test fails.";
 
         public OptimizationModes Validate()
         {

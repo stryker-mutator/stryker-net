@@ -61,7 +61,7 @@ namespace Stryker.Core.Compiling
                 {
                     Logger.LogCritical(
                         "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
-                    throw new StrykerCompilationException("Internal error due to compile error.");
+                    throw new CompilationException("Internal error due to compile error.");
                 }
 
                 Logger.LogTrace("RolledBack to {0}", updatedSyntaxTree.ToString());

@@ -35,7 +35,7 @@ namespace Stryker.Core.Options.Inputs
                     }
                     else
                     {
-                        throw new StrykerInputException($"Invalid excluded mutation ({mutatorToExclude}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
+                        throw new InputException($"Invalid excluded mutation ({mutatorToExclude}). The excluded mutations options are [{string.Join(", ", typeDescriptions.Select(x => x.Key))}]");
                     }
                 }
 

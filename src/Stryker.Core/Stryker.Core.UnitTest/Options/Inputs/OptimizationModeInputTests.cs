@@ -9,9 +9,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class OptimizationModeInputTests
     {
         [Fact]
-        public void ShouldValidateOptimisationMode()
+        public void ShouldValidateOptimizationMode()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new CoverageAnalysisInput { SuppliedInput = "gibberish" }.Validate();
             });

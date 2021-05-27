@@ -113,7 +113,7 @@ namespace Stryker.Core.Initialisation
             }
             catch (DirectoryNotFoundException)
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
+                throw new InputException($"No .csproj file found, please check your project directory at {path}");
             }
 
             _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
@@ -128,11 +128,11 @@ namespace Stryker.Core.Initialisation
                 }
                 sb.AppendLine();
                 sb.AppendLine("Please specify a test project name filter that results in one project.");
-                throw new StrykerInputException(sb.ToString());
+                throw new InputException(sb.ToString());
             }
             else if (!projectFiles.Any())
             {
-                throw new StrykerInputException($"No .csproj file found, please check your project directory at {path}");
+                throw new InputException($"No .csproj file found, please check your project directory at {path}");
             }
             _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
 
@@ -166,7 +166,7 @@ namespace Stryker.Core.Initialisation
             if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
                 .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
             {
-                throw new StrykerInputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
+                throw new InputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
             }
         }
@@ -184,7 +184,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.Append(referenceChoice);
                 AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
-                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
@@ -194,7 +194,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.Append(referenceChoice);
                 AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
-                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
 
             return FilePathUtils.NormalizePathSeparators(projectReferencesMatchingNameFilter.Single());
@@ -211,14 +211,14 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.Append(referenceChoice);
                 AppendExampleIfPossible(stringBuilder, projectReferences);
 
-                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
 
             if (!projectReferences.Any()) // No references found
             {
                 stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
-                throw new StrykerInputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
 
             return projectReferences.Single();

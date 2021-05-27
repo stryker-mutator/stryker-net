@@ -12,7 +12,7 @@ namespace Stryker.Core.Options.Inputs
 
         public LogEventLevel Validate()
         {
-            if (!SuppliedInput.IsNullOrEmptyInput())
+            if (SuppliedInput is not null)
             {
                 var logEventLevel = SuppliedInput.ToLower() switch
                 {
@@ -21,7 +21,7 @@ namespace Stryker.Core.Options.Inputs
                     "info" => LogEventLevel.Information,
                     "debug" => LogEventLevel.Debug,
                     "trace" => LogEventLevel.Verbose,
-                    _ => throw new StrykerInputException($"Incorrect verbosity ({SuppliedInput}). The verbosity options are [Trace, Debug, Info, Warning, Error]")
+                    _ => throw new InputException($"Incorrect verbosity ({SuppliedInput}). The verbosity options are [Trace, Debug, Info, Warning, Error]")
                 };
 
                 return logEventLevel;

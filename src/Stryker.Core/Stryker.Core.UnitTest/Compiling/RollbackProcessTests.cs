@@ -546,7 +546,7 @@ namespace ExampleProject
                 
                 rollbackedResult.Success.ShouldBeFalse();
                 rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-                Should.Throw<StrykerCompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
+                Should.Throw<CompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
             }
         }
 
@@ -643,7 +643,7 @@ namespace ExampleProject
                 var compileResult = compiler.Emit(ms);
 
                 Should.NotThrow(() => target.Start(compiler, compileResult.Diagnostics, false, false));
-                Should.Throw<StrykerCompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
+                Should.Throw<CompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
             }
         }
     }

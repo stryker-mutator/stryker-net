@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var input = new FallbackVersionInput();
             input.SuppliedInput = "master";
 
-            var exception = Should.Throw<StrykerInputException>(() => {
+            var exception = Should.Throw<InputException>(() => {
                 input.Validate("master", true);
             });
 

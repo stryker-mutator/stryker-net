@@ -13,7 +13,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {
-                    throw new StrykerInputException("The target branch/commit cannot be empty when the since feature is enabled");
+                    throw new InputException("The target branch/commit cannot be empty when the since feature is enabled");
                 }
                 return SuppliedInput;
             }

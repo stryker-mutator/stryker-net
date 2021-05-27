@@ -16,7 +16,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {
-                    throw new StrykerInputException("When the stryker dashboard is enabled the project name is required.");
+                    throw new InputException("When the stryker dashboard is enabled the project name is required.");
                 }
 
                 return SuppliedInput;

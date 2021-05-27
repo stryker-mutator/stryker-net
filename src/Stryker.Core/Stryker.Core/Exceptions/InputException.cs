@@ -8,16 +8,16 @@ namespace Stryker.Core.Exceptions
     /// Everything that the user can fix themselves should be shown to them
     ///  using this kind of exception.
     /// </summary>
-    public class StrykerInputException : Exception
+    public class InputException : Exception
     {
         public string Details { get; }
         
-        public StrykerInputException(string message)
+        public InputException(string message)
             : base(message)
         {
         }
 
-        public StrykerInputException(string message, string details) : base(message)
+        public InputException(string message, string details) : base(message)
         {
             Details = details;
         }

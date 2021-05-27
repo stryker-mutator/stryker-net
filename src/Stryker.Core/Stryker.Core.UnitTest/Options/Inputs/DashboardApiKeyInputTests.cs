@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
 
-                var ex = Should.Throw<StrykerInputException>(() =>
+                var ex = Should.Throw<InputException>(() =>
                 {
                     target.Validate(true);
                 });

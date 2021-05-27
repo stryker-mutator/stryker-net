@@ -43,7 +43,7 @@ namespace Stryker.Core.Options.Inputs
             }
             if (invalidReporters.Any())
             {
-                throw new StrykerInputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
+                throw new InputException($"These reporter values are incorrect: {string.Join(", ", invalidReporters)}.");
             }
         }
     }

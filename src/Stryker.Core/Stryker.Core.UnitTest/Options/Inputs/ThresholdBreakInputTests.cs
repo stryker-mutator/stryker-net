@@ -10,14 +10,23 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Theory]
         [InlineData(-1, "Threshold break must be between 0 and 100.")]
         [InlineData(101, "Threshold break must be between 0 and 100.")]
-        [InlineData(51, "Threshold break must be less than or equal to threshold low. Current low: 50, break: 51.")]
         public void ShouldValidateThresholdBreak(int thresholdBreak, string message)
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new ThresholdBreakInput { SuppliedInput = thresholdBreak }.Validate(50);
             });
             ex.Message.ShouldBe(message);
+        }
+
+        [Fact]
+        public void ThresholdBreakShouldBeLowerThanOrEqualToThresholdLow()
+        {
+            var ex = Assert.Throws<InputException>(() =>
+            {
+                new ThresholdBreakInput { SuppliedInput = 51 }.Validate(50);
+            });
+            ex.Message.ShouldBe("Threshold break must be less than or equal to threshold low. Current low: 50, break: 51.");
         }
 
         [Fact]

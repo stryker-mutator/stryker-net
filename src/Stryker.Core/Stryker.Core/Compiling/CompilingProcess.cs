@@ -66,7 +66,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
                     emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
-                throw new StrykerCompilationException("General Build Failure detected.");
+                throw new CompilationException("General Build Failure detected.");
             }
 
             const int maxAttempt = 50;
@@ -90,7 +90,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogWarning($"{emitResultDiagnostic}");
             }
-            throw new StrykerCompilationException("Failed to restore build able state.");
+            throw new CompilationException("Failed to restore build able state.");
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(

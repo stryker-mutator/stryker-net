@@ -10,7 +10,6 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    [CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
     public class ConfigFileTests
     {
         [Fact]

@@ -138,7 +138,7 @@ namespace Stryker.CLI
                 strykerInput.SuppliedInput = value;
             } else
             {
-                throw new StrykerInputException($"Unexpected value for argument {cliInput.LongName}:{cliInput.Value()}. Expected type to be integer");
+                throw new InputException($"Unexpected value for argument {cliInput.LongName}:{cliInput.Value()}. Expected type to be integer");
             }
             return true;
         }

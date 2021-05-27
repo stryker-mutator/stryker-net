@@ -648,7 +648,7 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.ResolveInput(_options));
+            var exception = Assert.Throws<InputException>(() => target.ResolveInput(_options));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({projectUnderTestPath}) and try again.");
         }
 
@@ -699,7 +699,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
         [Fact]
@@ -729,7 +729,7 @@ $@"Expected exactly one .csproj file, found more than one:
 Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
             exception.Message.ShouldBe(errorMessage);
         }
 
@@ -776,7 +776,7 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<StrykerInputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
+            var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
             exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
         }
 
@@ -880,7 +880,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var ex = Assert.Throws<StrykerInputException>(() => target.ResolveInput(_options));
+            var ex = Assert.Throws<InputException>(() => target.ResolveInput(_options));
 
             ex.Message.ShouldBe("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.");
             ex.Details.ShouldBe(@"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
@@ -980,7 +980,7 @@ Please specify a test project name filter that results in one project.
         [Fact]
         public void ShouldThrowOnNoProjectReference()
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalyzerResult>(), null);
             });
@@ -998,7 +998,7 @@ Please specify a test project name filter that results in one project.
                         "../AnotherProject/AnotherProject.csproj"
                     }).Object;
 
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
             });
@@ -1039,7 +1039,7 @@ Please specify a test project name filter that results in one project.
                         "../AnotherProject/AnotherProject.csproj"
                     }).Object;
 
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchMoreThanOne);
             });
@@ -1060,7 +1060,7 @@ Please specify a test project name filter that results in one project.
                         "../AnotherProject/AnotherProject.csproj"
                     }).Object;
 
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
             });

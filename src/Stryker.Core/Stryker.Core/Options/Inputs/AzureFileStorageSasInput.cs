@@ -15,16 +15,11 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new StrykerInputException("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
+                    throw new InputException("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
                 }
 
                 // Normalize the SAS
-                if (SuppliedInput.StartsWith("?sv="))
-                {
-                    return SuppliedInput.Replace("?sv=", "");
-                }
-
-                return SuppliedInput;
+                return SuppliedInput.Replace("?sv=", "");
             }
             return Default;
         }

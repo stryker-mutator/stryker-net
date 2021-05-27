@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var target = new MutationLevelInput();
             target.SuppliedInput = "gibberish";
 
-            var ex = Should.Throw<StrykerInputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 target.Validate();
             });

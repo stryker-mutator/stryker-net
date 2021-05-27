@@ -50,7 +50,7 @@ namespace Stryker.Core.DashboardCompare
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                throw new StrykerInputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
+                throw new InputException("Unfortunately we could not determine the branch name automatically. Please set the dashboard project version option to your current branch.");
             }
             return branchName;
         }
@@ -61,7 +61,7 @@ namespace Stryker.Core.DashboardCompare
 
             if (commit == null)
             {
-                throw new StrykerInputException($"No Branch or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
+                throw new InputException($"No Branch or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
             }
 
             return commit;
@@ -71,7 +71,7 @@ namespace Stryker.Core.DashboardCompare
         {
             if (string.IsNullOrEmpty(RepositoryPath))
             {
-                throw new StrykerInputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+                throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
             }
 
             return new Repository(RepositoryPath);

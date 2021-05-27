@@ -26,7 +26,7 @@ namespace Stryker.Core.Options.Inputs
                 }
                 else
                 {
-                    throw new StrykerInputException($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
+                    throw new InputException($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
                 }
             }
 

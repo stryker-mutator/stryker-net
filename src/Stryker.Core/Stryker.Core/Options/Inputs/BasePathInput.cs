@@ -14,12 +14,12 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput.IsNullOrEmptyInput())
             {
-                throw new StrykerInputException("Base path cannot be null.");
+                throw new InputException("Base path cannot be null.");
             }
 
             if (!fileSystem.Directory.Exists(SuppliedInput)) // validate base path is valid path
             {
-                throw new StrykerInputException("Base path must exist.");
+                throw new InputException("Base path must exist.");
             }
 
             return SuppliedInput;

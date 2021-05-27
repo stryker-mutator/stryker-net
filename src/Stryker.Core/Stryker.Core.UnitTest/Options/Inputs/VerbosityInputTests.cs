@@ -10,7 +10,6 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     {
         [Theory]
         [InlineData("error", LogEventLevel.Error)]
-        [InlineData("", LogEventLevel.Information)]
         [InlineData(null, LogEventLevel.Information)]
         [InlineData("warning", LogEventLevel.Warning)]
         [InlineData("info", LogEventLevel.Information)]
@@ -23,17 +22,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedInput.ShouldBe(expectedLogLevel);
         }
 
-        [Fact]
-        public void ShouldValidateLoglevel()
+        [Theory]
+        [InlineData("incorrect")]
+        [InlineData("")]
+        public void ShouldValidateLoglevel(string logLevel)
         {
-            var logLevel = "incorrect";
-
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 new VerbosityInput { SuppliedInput = logLevel }.Validate();
             });
 
-            ex.Message.ShouldBe($"Incorrect verbosity (incorrect). The verbosity options are [Trace, Debug, Info, Warning, Error]");
+            ex.Message.ShouldBe($"Incorrect verbosity ({logLevel}). The verbosity options are [Trace, Debug, Info, Warning, Error]");
         }
     }
 }

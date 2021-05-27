@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(1);
 
-            var exception = Assert.Throws<StrykerInputException>(() => _target.InitialTest(testRunnerMock.Object));
+            var exception = Assert.Throws<InputException>(() => _target.InitialTest(testRunnerMock.Object));
         }
 
         [Fact]

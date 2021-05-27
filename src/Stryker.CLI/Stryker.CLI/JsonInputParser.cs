@@ -64,7 +64,7 @@ namespace Stryker.CLI
             }
             catch (JsonSerializationException ex)
             {
-                throw new StrykerInputException(@$"There was a problem with one of the json properties in your stryker config. Path ""{ex.Path}"", message: ""{ex.Message}""");
+                throw new InputException(@$"There was a problem with one of the json properties in your stryker config. Path ""{ex.Path}"", message: ""{ex.Message}""");
             }
         }
     }

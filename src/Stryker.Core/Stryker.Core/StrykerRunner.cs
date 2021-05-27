@@ -38,7 +38,7 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <exception cref="StrykerInputException">For managed exceptions</exception>
+        /// <exception cref="InputException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
         /// <param name="initialLogMessages">
         /// Allows to pass log messages that occured before the mutation test.
@@ -110,7 +110,7 @@ namespace Stryker.Core
 
                 return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }
-            catch (Exception ex) when (!(ex is StrykerInputException))
+            catch (Exception ex) when (!(ex is InputException))
             {
                 _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;

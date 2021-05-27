@@ -16,7 +16,7 @@ If you experience a lot of timeout you might need to increase the timeout value.
             {
                 if (SuppliedInput < 0)
                 {
-                    throw new StrykerInputException("Timeout cannot be negative");
+                    throw new InputException("Timeout cannot be negative");
                 }
                 return SuppliedInput.Value;
             }

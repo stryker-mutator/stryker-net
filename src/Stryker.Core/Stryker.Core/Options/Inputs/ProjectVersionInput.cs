@@ -17,12 +17,12 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {
-                    throw new StrykerInputException("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
+                    throw new InputException("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
                 }
 
                 if (dashboardCompareEnabled.IsNotNullAndTrue() && fallbackVersion == SuppliedInput)
                 {
-                    throw new StrykerInputException("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
+                    throw new InputException("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
                 }
 
                 return SuppliedInput;

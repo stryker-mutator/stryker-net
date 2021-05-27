@@ -25,7 +25,7 @@ namespace Stryker.Core.Options.Inputs
 
             if (SuppliedInput < 1)
             {
-                throw new StrykerInputException("Concurrency must be at least 1.");
+                throw new InputException("Concurrency must be at least 1.");
             }
 
             if (SuppliedInput > Default)

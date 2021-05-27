@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [InlineData(61, "Threshold low must be less than or equal to threshold high and more than or equal to threshold break. Current high: 60, low: 61, break: 60.")]
         public void ShouldValidateThresholdLow(int thresholdLow, string message)
         {
-            var ex = Assert.Throws<StrykerInputException>(() =>
+            var ex = Assert.Throws<InputException>(() =>
             {
                 var options = new ThresholdLowInput { SuppliedInput = thresholdLow }.Validate(60, 60);
             });

@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             void act() => new AzureFileStorageSasInput { SuppliedInput = null }.Validate(BaselineProvider.AzureFileStorage);
 
-            Should.Throw<StrykerInputException>(act).Message.ShouldBe("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
+            Should.Throw<InputException>(act).Message.ShouldBe("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
         }
 
         [Fact]

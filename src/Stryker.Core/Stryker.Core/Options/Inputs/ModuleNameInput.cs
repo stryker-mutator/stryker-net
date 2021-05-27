@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput.IsNullOrEmptyInput())
                 {
-                    throw new StrykerInputException("Module name cannot be empty. Either fill the option or leave it out.");
+                    throw new InputException("Module name cannot be empty. Either fill the option or leave it out.");
                 }
                 return SuppliedInput;
             }

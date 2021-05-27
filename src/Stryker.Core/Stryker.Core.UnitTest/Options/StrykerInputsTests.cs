@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.Options
         };
 
         [Fact]
-        public void ShouldSetOptimisationFlagsPerTestInIsolation()
+        public void PerTestInIsolationShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "perTestInIsolation";
 
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsDisableBail()
+        public void DisableBailShouldSetOptimizationFlags()
         {
             _target.DisableMixMutantsInput.SuppliedInput = true;
 
@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsDisableMixMutants()
+        public void DisableMixMutantsShouldSetOptimizationFlags()
         {
             _target.DisableBailInput.SuppliedInput = true;
 
@@ -87,7 +87,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsAll()
+        public void AllShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "all";
 
@@ -97,7 +97,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsOff()
+        public void OffShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "off";
 
@@ -107,7 +107,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void ShouldSetOptimisationFlagsDefault()
+        public void OptimizationFlagsShouldHaveDefault()
         {
             _target.CoverageAnalysisInput.SuppliedInput = null;
 

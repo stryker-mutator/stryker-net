@@ -41,7 +41,7 @@ namespace Stryker.Core.Initialisation
                 }
                 catch (InvalidProjectFileException)
                 {
-                    throw new StrykerInputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
+                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
                 }
             }
 

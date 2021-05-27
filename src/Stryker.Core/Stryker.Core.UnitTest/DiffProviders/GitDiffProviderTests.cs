@@ -208,7 +208,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             var target = new GitDiffProvider(options, gitInfoMock.Object);
 
-            Should.Throw<StrykerInputException>(() => target.ScanDiff());
+            Should.Throw<InputException>(() => target.ScanDiff());
         }
 
         [Fact]

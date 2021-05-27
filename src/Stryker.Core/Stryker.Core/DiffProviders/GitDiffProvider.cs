@@ -33,7 +33,7 @@ namespace Stryker.Core.DiffProviders
 
             if (commit == null)
             {
-                throw new StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
+                throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
             foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))

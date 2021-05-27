@@ -19,14 +19,14 @@ namespace Stryker.Core.Options.Inputs
             {
                 return BaselineProvider.Dashboard;
             }
-            else if (SuppliedInput is { })
+            else if (SuppliedInput is not null)
             {
                 return SuppliedInput.ToLower() switch
                 {
                     "disk" => BaselineProvider.Disk,
                     "dashboard" => BaselineProvider.Dashboard,
                     "azurefilestorage" => BaselineProvider.AzureFileStorage,
-                    _ => throw new StrykerInputException("Base line storage provider {0} does not exist", SuppliedInput),
+                    _ => throw new InputException("Baseline storage provider {0} does not exist", SuppliedInput),
                 };
             }
             return BaselineProvider.Disk;
