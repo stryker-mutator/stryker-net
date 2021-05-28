@@ -8,14 +8,22 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class VerbosityInputTests
     {
+        [Fact]
+        public void ShouldBeInformationWhenNull()
+        {
+            var input = new VerbosityInput { SuppliedInput = null };
+            var validatedInput = input.Validate();
+
+            validatedInput.ShouldBe(LogEventLevel.Information);
+        }
+
         [Theory]
         [InlineData("error", LogEventLevel.Error)]
-        [InlineData(null, LogEventLevel.Information)]
         [InlineData("warning", LogEventLevel.Warning)]
         [InlineData("info", LogEventLevel.Information)]
         [InlineData("debug", LogEventLevel.Debug)]
         [InlineData("trace", LogEventLevel.Verbose)]
-        public void Constructor_WithCorrectLoglevelArgument_ShouldAssignCorrectLogLevel(string argValue, LogEventLevel expectedLogLevel)
+        public void ShouldTranslateLogLevelToLogEventLevel(string argValue, LogEventLevel expectedLogLevel)
         {
             var validatedInput = new VerbosityInput { SuppliedInput = argValue }.Validate();
 
@@ -25,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Theory]
         [InlineData("incorrect")]
         [InlineData("")]
-        public void ShouldValidateLoglevel(string logLevel)
+        public void ShouldThrowWhenInputCannotBeTranslated(string logLevel)
         {
             var ex = Assert.Throws<InputException>(() =>
             {
