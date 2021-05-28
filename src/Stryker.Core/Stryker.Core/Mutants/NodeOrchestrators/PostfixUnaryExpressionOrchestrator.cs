@@ -15,9 +15,5 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             context.Store.StoreMutations(mutations, MutationControl.Statement);
             return context;
         }
-
-        public PostfixUnaryExpressionOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
     }
 }

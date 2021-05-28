@@ -481,7 +481,6 @@ namespace Stryker.Core.Options
                     $"These reporter values are incorrect: {string.Join(", ", invalidReporters)}. Valid reporter options are [{string.Join(", ", (IEnumerable<Reporter>)Enum.GetValues(typeof(Reporter)))}]");
             }
             // If we end up here then the user probably disabled all reporters. Return empty IEnumerable.
-            yield break;
         }
 
         private IEnumerable<Mutator> ValidateExcludedMutations(string[] excludedMutations)
@@ -496,7 +495,7 @@ namespace Stryker.Core.Options
                 .Cast<Mutator>()
                 .ToDictionary(x => x, x => x.GetDescription());
 
-            foreach (string excludedMutation in excludedMutations)
+            foreach (var excludedMutation in excludedMutations)
             {
                 // Find any mutatorType that matches the name passed by the user
                 var mutatorDescriptor = typeDescriptions.FirstOrDefault(

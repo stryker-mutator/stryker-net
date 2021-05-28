@@ -10,23 +10,23 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// <summary>
     /// Handles Methods/properties' accessors/constructors and finalizers.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of the syntax node, must be derived from <see cref="BaseMethodDeclarationSyntax"/>.</typeparam>
     internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T: BaseMethodDeclarationSyntax
     {
-        protected override MutationContext PrepareContext(MutationContext context)
+        protected override MutationContext PrepareContext(T node, MutationContext context)
         {
-            context.Store.EnterBlock();
-            return context.Clone();
+            context.Enter(MutationControl.Block);
+            return base.PrepareContext(node, context);
         }
 
-        protected override void RestoreContext(MutationContext context) => context.Store.LeaveBlock();
+        protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.Block);
 
         /// <inheritdoc/>
         /// Inject mutations and convert expression body to block body if required.
         protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
             MutationContext context)
         {
-            // find outparameters
+            // find out parameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
             if (targetNode.Body != null)
             {
@@ -37,7 +37,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return MutantPlacer.AddEndingReturn(targetNode) as T;
             }
 
-            if (!context.HasStatementLevelMutant && !context.Store.HasBlockLevel)
+            if (!context.Store.HasBlockLevel)
             {
                 return targetNode;
             }
@@ -56,10 +56,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             mutatedBlock = context.Store.PlaceBlockMutations(mutatedBlock, converter);
             return targetNode.ReplaceNode(targetNode.Body!, 
                 SyntaxFactory.Block(mutatedBlock));
-        }
-
-        public BaseMethodDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
         }
     }
 }

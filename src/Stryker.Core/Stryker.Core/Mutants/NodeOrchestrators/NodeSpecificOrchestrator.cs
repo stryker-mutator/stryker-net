@@ -1,6 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -12,15 +17,22 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// </summary>
     /// <typeparam name="TNode">Roslyn type which represents the C# construct</typeparam>
     /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
+    /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
+    /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase>:INodeMutator where TBase: SyntaxNode where TNode: TBase
     {
-        protected CsharpMutantOrchestrator MutantOrchestrator;
+        private static Regex Pattern =
+            new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*(\\w+)\\s*$", RegexOptions.Compiled|RegexOptions.IgnoreCase);
 
-        protected NodeSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator)
+        private static ILogger _logger;
+
+        static NodeSpecificOrchestrator()
         {
-            MutantOrchestrator = mutantOrchestrator;
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
         }
 
+        /// <summary>
         /// Get the Roslyn type handled by this class
         /// </summary>
         public Type ManagedType => typeof(TNode);
@@ -58,7 +70,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <param name="context">Mutation context.</param>
         /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
         /// <remarks>You should not override this, unless you want to block mutation generation for the node. Then returns and empty list.</remarks>
-        protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, MutationContext context) => MutantOrchestrator.GenerateMutationsForNode(node, context);
+        protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, MutationContext context) => context.GenerateMutantsForNode(node);
 
         /// <summary>
         /// Stores provided mutations.
@@ -70,7 +82,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <remarks>You need to override this method if you need to ensure mutations are controlled at with 'if' at the statement or block level.</remarks>
         protected virtual MutationContext StoreMutations(TNode node,
             IEnumerable<Mutant> mutations,
-            MutationContext context) =>  context;
+            MutationContext context) => context;
 
         /// <summary>
         /// Mutate children, grandchildren (recursively). 
@@ -80,24 +92,60 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
         /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
         /// skip mutation the children node.</remarks>
-        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context)
-        {
-            return node.ReplaceNodes(node.ChildNodes(),
+        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
+            node.ReplaceNodes(node.ChildNodes(),
                 computeReplacementNode: (original, _) => MutateSingleNode(original, context));
-        }
 
-        protected virtual SyntaxNode MutateSingleNode(SyntaxNode node, MutationContext context)
+        protected virtual SyntaxNode MutateSingleNode(SyntaxNode node, MutationContext context) => context.FindHandler(node).Mutate(node, context);
+
+        protected virtual MutationContext PrepareContext(TNode node, MutationContext context)
         {
-            if (!SyntaxHelper.CanBeMutated(node))
+            foreach (var commentTrivia in node.GetLeadingTrivia().Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) || t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
             {
-                return node;
-            }
+                // perform a quick pattern check to see if it is a 'Stryker comment'
+                if (!Pattern.Match(commentTrivia).Success)
+                {
+                    continue;
+                }
+                var match = Parser.Match(commentTrivia);
+                if (match.Success)
+                {
+                    bool mode;
+                    switch (match.Groups[1].Value.ToLower())
+                    {
+                        case "disable":
+                            mode = true;
+                            break;
+                        default:
+                        case "restore":
+                            mode = false;
+                            break;
+                    }
 
-            var handler = MutantOrchestrator.GetHandler(node);
-            return handler.Mutate(node, context);
+                    if (match.Groups[3].Value.ToLower() == "all")
+                    {
+
+                    }
+                    else
+                    {
+                        context.FilteredMutators = match.Groups[3].Value.ToLower().Split(',');
+                    }
+                    if (match.Groups[2].Value.ToLower() == "once")
+                    {
+                        // do not mutate this node ONLY
+                        context = context.DisableMutation(mode);
+                    }
+                    else
+                    {
+                        // do not mutate this statement and the next ones
+                        context.Disable = mode;
+                    }
+                    break;
+                }
+
+                _logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}");
+            }return context;
         }
-
-        protected virtual MutationContext PrepareContext(MutationContext context) => context.Clone();
 
         protected virtual void RestoreContext(MutationContext context)
         {}
@@ -108,10 +156,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         /// <param name="node">Node to be mutated</param>
         /// <param name="context">Mutation context</param>
         /// <returns>A <see cref="SyntaxNode"/> instance will all injected mutations.</returns>
-        public SyntaxNode Mutate(SyntaxNode node, MutationContext context)
+        public virtual SyntaxNode Mutate(SyntaxNode node, MutationContext context)
         {
             var specificNode = node as TNode;
-            context = PrepareContext(context);
+            context = PrepareContext(specificNode, context);
             // we generate mutations for this node (to help numbering being in 'code reading' order)
             var mutations = GenerateMutationForNode(specificNode, context);
             SyntaxNode result = InjectMutations(specificNode,

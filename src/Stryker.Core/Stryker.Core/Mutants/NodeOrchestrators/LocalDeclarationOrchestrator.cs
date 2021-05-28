@@ -26,10 +26,5 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             StatementSyntax targetNode,
             MutationContext context) =>
             targetNode;
-
-
-        public LocalDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
     }
 }

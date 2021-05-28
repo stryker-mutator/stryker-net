@@ -5,17 +5,14 @@ using Stryker.Core.Helpers;
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     /// <summary>
-    /// Handles expressions and sub expressions.
+    /// Orchestrate mutations for expressions (and sub expressions-.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Node specific type, must inherit <see cref="ExpressionSyntax"/>.</typeparam>
     internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, ExpressionSyntax> where T: ExpressionSyntax
     {
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context)
-        {
-            return context.Store.PlaceExpressionMutations(targetNode, m => (ExpressionSyntax) sourceNode.InjectMutation(m));
-        }
+        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context) => context.Store.PlaceExpressionMutations(targetNode, m => (ExpressionSyntax) sourceNode.InjectMutation(m));
 
         protected override MutationContext StoreMutations(T node,
             IEnumerable<Mutant> mutations,
@@ -25,10 +22,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             context.Store.StoreMutations(mutations,
                 !node.ContainsDeclarations() ? MutationControl.Expression : MutationControl.Block);
             return context;
-        }
-
-        public ExpressionSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
         }
     }
 }

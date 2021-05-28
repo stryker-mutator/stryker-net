@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,12 +6,11 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
+    /// <summary>
+    /// Orchestrate mutation for Accessors. Its purpose is to convert arrow expression accessor to body statement form when needed.
+    /// </summary>
     internal class AccessorSyntaxOrchestrator: NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
     {
-        public AccessorSyntaxOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
-
         protected override SyntaxNode InjectMutations(AccessorDeclarationSyntax sourceNode, SyntaxNode targetNode, MutationContext context)
         {
             var result = base.InjectMutations(sourceNode, targetNode, context) as AccessorDeclarationSyntax;
@@ -21,7 +19,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return result;
             }
 
-            if (!context.HasStatementLevelMutant && !context.Store.HasBlockLevel)
+            if (!context.Store.HasBlockLevel)
             {
                 return result;
             }
@@ -33,7 +31,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             }
 
             var converter = sourceNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
+                ? (Func<Mutation, StatementSyntax>) (toConvert =>
                     SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));

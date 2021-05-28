@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants.NodeOrchestrators;
@@ -20,7 +21,7 @@ namespace Stryker.Core.Mutants
     public class CsharpMutantOrchestrator : MutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
-            new TypeBasedStrategy<SyntaxNode, INodeMutator>();
+            new();
 
         public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
@@ -53,21 +54,25 @@ namespace Stryker.Core.Mutants
 
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
-                new ForStatementOrchestrator(this),
-                new AssignmentStatementOrchestrator(this),
-                new PostfixUnaryExpressionOrchestrator(this),
-                new StaticFieldDeclarationOrchestrator(this),
-                new StaticConstructorOrchestrator(this),
-                new PropertyDeclarationOrchestrator(this),
-                new ArrayInitializerOrchestrator(this),
-                new MemberDeclarationOrchestrator<MemberDeclarationSyntax, MemberDeclarationSyntax>(this),
-                new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
-                new AccessorSyntaxOrchestrator(this),
-                new LocalDeclarationOrchestrator(this),
-                new StatementSpecificOrchestrator<StatementSyntax>(this),
-                new BlockOrchestrator(this),
-                new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
-                new SyntaxNodeOrchestrator(this)
+                new DontMutateOrchestrator<AttributeListSyntax>(),
+                new DontMutateOrchestrator<ParameterListSyntax>(),
+                new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+                new DontMutateOrchestrator<RecursivePatternSyntax>(),
+                new DontMutateOrchestrator<FieldDeclarationSyntax>(
+                    (t) => t.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword)),
+                new AssignmentStatementOrchestrator(),
+                new PostfixUnaryExpressionOrchestrator(),
+                new StaticFieldDeclarationOrchestrator(),
+                new StaticConstructorOrchestrator(),
+                new PropertyDeclarationOrchestrator(),
+                new ArrayInitializerOrchestrator(),
+                new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
+                new AccessorSyntaxOrchestrator(),
+                new LocalDeclarationOrchestrator(),
+                new StatementSpecificOrchestrator<StatementSyntax>(),
+                new BlockOrchestrator(),
+                new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
+                new SyntaxNodeOrchestrator()
             });
         }
 
@@ -82,7 +87,7 @@ namespace Stryker.Core.Mutants
 
         internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
 
-        public IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
             var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)
@@ -92,11 +97,16 @@ namespace Stryker.Core.Mutants
                     var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
                         mutation.ReplacementNode, mutator.GetType());
+                    var mutantIgnored = context.Disable;
+                    if (context.FilteredMutators!= null &&  context.FilteredMutators.Any(m => m.Contains(mutation.Type.ToString())))
+                    {
+                        // TODO: add proper logic
+                    }
                     var newMutant = new Mutant
                     {
                         Id = id,
                         Mutation = mutation,
-                        ResultStatus = MutantStatus.NotRun,
+                        ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
                         IsStaticValue = context.InStaticValue
                     };
                     var duplicate = false;

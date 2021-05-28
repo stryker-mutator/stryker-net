@@ -8,9 +8,5 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         // we don't mutate this node
         protected override IEnumerable<Mutant> GenerateMutationForNode(SyntaxNode node, MutationContext context) => Enumerable.Empty<Mutant>();
-
-        public SyntaxNodeOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
     }
 }
