@@ -14,9 +14,9 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(ILogger logger, IFileSystem fileSystem, string basepath)
         {
-            if (basepath.IsNullOrEmptyInput())
+            if (string.IsNullOrWhiteSpace(basepath))
             {
-                throw new InputException("The output path cannot be empty.");
+                throw new InputException("The basepath cannot be empty.");
             }
 
             var outputPath = Path.Combine(basepath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));

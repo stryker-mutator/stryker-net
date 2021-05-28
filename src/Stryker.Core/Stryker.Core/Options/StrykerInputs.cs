@@ -30,7 +30,7 @@ namespace Stryker.Core.Options
         MutationLevelInput MutationLevelInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
-        ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
+        ProjectNameInput ProjectUnderTestNameInput { get; init; }
         ProjectVersionInput ProjectVersionInput { get; init; }
         ReportersInput ReportersInput { get; init; }
         SinceInput SinceInput { get; init; }
@@ -71,7 +71,7 @@ namespace Stryker.Core.Options
         public AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
         public LanguageVersionInput LanguageVersionInput { get; init; }
         public ConcurrencyInput ConcurrencyInput { get; init; }
-        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
+        public ProjectNameInput ProjectUnderTestNameInput { get; init; }
         public TestProjectsInput TestProjectsInput { get; init; }
         public WithBaselineInput WithBaselineInput { get; init; }
         public ReportersInput ReportersInput { get; init; }

@@ -12,7 +12,7 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(IFileSystem fileSystem)
         {
-            if (SuppliedInput.IsNullOrEmptyInput())
+            if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
                 throw new InputException("Base path cannot be null.");
             }

@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput.HasValue)
             {
-                if (outputPath.IsNullOrEmptyInput())
+                if (string.IsNullOrWhiteSpace(outputPath))
                 {
                     throw new InputException("Output path must be set if log to file is enabled");
                 }

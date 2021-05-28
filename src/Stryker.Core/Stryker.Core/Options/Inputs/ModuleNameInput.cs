@@ -10,9 +10,9 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate()
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
+                if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {
                     throw new InputException("Module name cannot be empty. Either fill the option or leave it out.");
                 }

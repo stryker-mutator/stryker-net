@@ -9,13 +9,18 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(bool sinceEnabled)
         {
-            if (SuppliedInput is not null && sinceEnabled)
+            if (sinceEnabled)
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
+                if (!string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new InputException("The target branch/commit cannot be empty when the since feature is enabled");
+                    return SuppliedInput;
                 }
-                return SuppliedInput;
+
+                if(SuppliedInput is null)
+                {
+                    return Default;
+                }
+                throw new InputException("The target branch/commit cannot be empty when the since feature is enabled");
             }
             return null;
         }
