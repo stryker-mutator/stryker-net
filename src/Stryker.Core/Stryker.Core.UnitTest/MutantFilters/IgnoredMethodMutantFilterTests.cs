@@ -236,7 +236,8 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             // Assert
             filteredMutants.ShouldNotContain(mutant);
         }
-        
+
+        [Theory]
         [InlineData("^MyType.constructor$")]
         [InlineData("^Type.ctor$")]
         public void ShouldNotIgnoreConstructor(string ignoredMethodName)
