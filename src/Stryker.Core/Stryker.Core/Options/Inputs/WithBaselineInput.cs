@@ -10,7 +10,7 @@ namespace Stryker.Core.Options.Inputs
 
         public bool Validate()
         {
-            return SuppliedInput.IsNotNullAndTrue();
+            return SuppliedInput ?? Default.Value;
         }
     }
 }

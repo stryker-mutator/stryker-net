@@ -35,7 +35,7 @@ namespace Stryker.Core.Options
         ReportersInput ReportersInput { get; init; }
         SinceInput SinceInput { get; init; }
         SinceTargetInput SinceTargetInput { get; init; }
-        SolutionPathInput SolutionPathInput { get; init; }
+        SolutionInput SolutionInput { get; init; }
         TestProjectsInput TestProjectsInput { get; init; }
         ThresholdBreakInput ThresholdBreakInput { get; init; }
         ThresholdHighInput ThresholdHighInput { get; init; }
@@ -61,7 +61,7 @@ namespace Stryker.Core.Options
         public DevModeInput DevModeInput { get; init; }
         public BasePathInput BasePathInput { get; init; }
         public OutputPathInput OutputPathInput { get; init; }
-        public SolutionPathInput SolutionPathInput { get; init; }
+        public SolutionInput SolutionInput { get; init; }
         public VerbosityInput VerbosityInput { get; init; }
         public LogToFileInput LogToFileInput { get; init; }
         public MutationLevelInput MutationLevelInput { get; init; }
@@ -105,7 +105,7 @@ namespace Stryker.Core.Options
                 Concurrency = ConcurrencyInput.Validate(_logger),
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),
-                SolutionPath = SolutionPathInput.Validate(_fileSystem),
+                SolutionPath = SolutionInput.Validate(_fileSystem),
                 LogOptions = new LogOptions
                 {
                     LogLevel = VerbosityInput.Validate(),

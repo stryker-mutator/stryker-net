@@ -10,7 +10,7 @@ namespace Stryker.Core.Options
         /// <param name="input">the boolean</param>
         public static bool IsNotNullAndTrue(this bool? input)
         {
-            return input.HasValue ? input.Value : false;
+            return input ?? false;
         }
     }
 }

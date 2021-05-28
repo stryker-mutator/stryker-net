@@ -1,12 +1,39 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shouldly;
+using Stryker.Core.Options.Inputs;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    class WithBaselineInputTests
+    public class WithBaselineInputTests
     {
+        [Fact]
+        public void ShouldBeEnabledWhenTrue()
+        {
+            var target = new WithBaselineInput { SuppliedInput = null };
+
+            var result = target.Validate();
+
+            result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ShouldProvideDefaultWhenNull()
+        {
+            var target = new WithBaselineInput { SuppliedInput = null };
+
+            var result = target.Validate();
+
+            result.ShouldBe(target.Default.Value);
+        }
+
+        [Fact]
+        public void ShouldNotBeEnabledWhenFalse()
+        {
+            var target = new WithBaselineInput { SuppliedInput = false };
+
+            var result = target.Validate();
+
+            result.ShouldBeFalse();
+        }
     }
 }
