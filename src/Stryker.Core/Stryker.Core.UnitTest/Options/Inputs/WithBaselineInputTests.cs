@@ -9,11 +9,11 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldBeEnabledWhenTrue()
         {
-            var target = new WithBaselineInput { SuppliedInput = null };
+            var target = new WithBaselineInput { SuppliedInput = true };
 
             var result = target.Validate();
 
-            result.ShouldBeFalse();
+            result.ShouldBeTrue();
         }
 
         [Fact]

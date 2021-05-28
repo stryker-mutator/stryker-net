@@ -7,9 +7,49 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class SinceInputTests
     {
         [Fact]
-        public void Should_Enable_Diff_When_CompareToDashboard_Is_Enabled()
+        public void ShouldBeEnabledWhenTrue()
         {
-            var sinceEnabled = new SinceInput().Validate(true);
+            var target = new SinceInput { SuppliedInput = true };
+
+            var result = target.Validate(withBaseline: null);
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldBeEnabledWhenTrueEvenIfWithBaselineFalse()
+        {
+            var target = new SinceInput { SuppliedInput = true };
+
+            var result = target.Validate(withBaseline: false);
+
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldProvideDefaultWhenNull()
+        {
+            var target = new SinceInput();
+
+            var result = target.Validate(withBaseline: null);
+
+            result.ShouldBe(target.Default.Value);
+        }
+
+        [Fact]
+        public void ShouldNotBeEnabledWhenFalse()
+        {
+            var target = new SinceInput { SuppliedInput = false };
+
+            var result = target.Validate(withBaseline: null);
+
+            result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void ShouldBeEnabledWithBaseline()
+        {
+            var sinceEnabled = new SinceInput().Validate(withBaseline: true);
 
             sinceEnabled.ShouldBeTrue();
         }
