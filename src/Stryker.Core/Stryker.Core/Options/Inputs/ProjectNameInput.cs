@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -10,9 +13,9 @@ For example: Your project might be called 'consumer-loans' and it might contains
 
         public override string Default => string.Empty;
 
-        public string Validate(bool? dashboardEnabled)
+        public string Validate(IEnumerable<Reporter> reporters)
         {
-            if (dashboardEnabled.IsNotNullAndTrue())
+            if (reporters is { } && reporters.Contains(Reporter.Dashboard))
             {
                 if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {

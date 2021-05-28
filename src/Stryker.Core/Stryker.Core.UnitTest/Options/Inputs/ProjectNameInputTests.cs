@@ -1,12 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Options.Inputs;
+using Stryker.Core.Reporters;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    class ProjectNameInputTests
+    public class ProjectNameInputTests
     {
+        [Fact]
+        public void ShouldReturnName()
+        {
+            var input = new ProjectNameInput { SuppliedInput = "name" };
+
+            var result = input.Validate(new[] { Reporter.Dashboard });
+
+            result.ShouldBe("name");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void ShouldThrowOnEmptyValue(string value)
+        {
+            var input = new ProjectNameInput { SuppliedInput = value };
+
+            var exception = Should.Throw<InputException>(() =>
+            {
+                input.Validate(new[] { Reporter.Dashboard });
+            });
+
+            exception.Message.ShouldBe("When the stryker dashboard is enabled the project name is required.");
+        }
+
+        [Fact]
+        public void ShouldHaveDefault()
+        {
+            var input = new ProjectNameInput { SuppliedInput = null };
+            
+            var result = input.Validate(new Reporter[] { });
+
+            result.ShouldBe(string.Empty);
+        }
     }
 }
