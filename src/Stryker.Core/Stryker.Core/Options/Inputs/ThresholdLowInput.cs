@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
 
         public int Validate(int? @break, int? high)
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
                 var low = SuppliedInput.Value;
                 if (low > 100 || low < 0)

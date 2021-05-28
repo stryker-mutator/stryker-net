@@ -12,9 +12,9 @@ namespace Stryker.Core.Options.Inputs
 
         public IEnumerable<string> Validate()
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
-                return SuppliedInput?.Where(path => !path.IsNullOrEmptyInput()).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
+                return SuppliedInput.Where(path => !path.IsNullOrEmptyInput()).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
             }
             return Default;
         }
