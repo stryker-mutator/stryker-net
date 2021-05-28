@@ -16,10 +16,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void WhenZeroIsPassedAsMaxConcurrentTestRunnersParam_StrykerInputExceptionShouldBeThrown()
         {
-            var ex = Assert.Throws<InputException>(() =>
-            {
-                var options = new ConcurrencyInput { SuppliedInput = 0 }.Validate(_loggerMock.Object);
-            });
+            var target = new ConcurrencyInput { SuppliedInput = 0 };
+
+            var ex = Assert.Throws<InputException>(() => target.Validate(_loggerMock.Object));
+
             ex.Message.ShouldBe("Concurrency must be at least 1.");
         }
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             if (concurrentTestRunners > safeProcessorCount)
             {
-                string formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", concurrentTestRunners, safeProcessorCount);
+                var formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", concurrentTestRunners, safeProcessorCount);
 
                 _loggerMock.Verify(expectedLoglevel, formattedMessage, Times.Once);
             }
@@ -53,7 +53,6 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedInput.ShouldBe(1);
 
             _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to concurrency being set to 1.", Times.Once);
-
             _loggerMock.VerifyNoOtherCalls();
         }
         
@@ -65,7 +64,6 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
             validatedInput.ShouldBe(safeProcessorCount);
-
             _loggerMock.VerifyNoOtherCalls();
         }
     }

@@ -24,7 +24,7 @@ namespace Stryker.Core.Options.Inputs
 
                 if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
                 {
-                    throw new InputException("The azure file storage url is not a valid Uri: {0}", SuppliedInput);
+                    throw new InputException($"The azure file storage url is not a valid Uri: {SuppliedInput}");
                 }
 
                 return SuppliedInput;
