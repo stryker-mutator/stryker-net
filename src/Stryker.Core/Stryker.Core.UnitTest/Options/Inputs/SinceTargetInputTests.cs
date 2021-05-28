@@ -8,7 +8,15 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class SinceTargetInputTests
     {
         [Fact]
-        public void ShouldUseDefaultWhenSinceEnabled()
+        public void ShouldUseSuppliedInputWhenSinceEnabled()
+        {
+            var suppliedInput = "develop";
+            var validatedSinceBranch = new SinceTargetInput { SuppliedInput = suppliedInput }.Validate(sinceEnabled: true);
+            validatedSinceBranch.ShouldBe(suppliedInput);
+        }
+
+        [Fact]
+        public void ShouldUseDefaultWhenSinceEnabledAndInputNull()
         {
             var input = new SinceTargetInput();
             var validatedSinceBranch = input.Validate(sinceEnabled: true);

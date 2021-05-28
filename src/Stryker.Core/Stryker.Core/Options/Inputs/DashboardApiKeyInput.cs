@@ -17,7 +17,7 @@ namespace Stryker.Core.Options.Inputs
                 // this input is not needed when dashboard is not enabled
                 return Default;
             }
-            if (SuppliedInput.IsNullOrEmptyInput())
+            if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
                 var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
                 if (!string.IsNullOrWhiteSpace(environmentApiKey))

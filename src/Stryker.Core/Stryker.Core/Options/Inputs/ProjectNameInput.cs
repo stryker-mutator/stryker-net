@@ -14,7 +14,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             if (dashboardEnabled.IsNotNullAndTrue())
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
+                if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {
                     throw new InputException("When the stryker dashboard is enabled the project name is required.");
                 }

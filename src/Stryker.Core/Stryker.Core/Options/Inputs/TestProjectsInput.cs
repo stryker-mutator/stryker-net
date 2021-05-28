@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is not null)
             {
-                return SuppliedInput.Where(path => !path.IsNullOrEmptyInput()).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
+                return SuppliedInput.Where(path => !string.IsNullOrWhiteSpace(path)).Select(path => FilePathUtils.NormalizePathSeparators(Path.GetFullPath(path)));
             }
             return Default;
         }

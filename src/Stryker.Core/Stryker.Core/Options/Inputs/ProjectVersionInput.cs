@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (reporters.Contains(Reporter.Dashboard))
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
+                if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {
                     throw new InputException("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
                 }

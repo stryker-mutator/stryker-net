@@ -10,11 +10,11 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate()
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
-                if (SuppliedInput.IsNullOrEmptyInput())
+                if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new InputException("Project under test name filter cannot be empty.");
+                    throw new InputException("Project file cannot be empty.");
                 }
 
                 return SuppliedInput;
