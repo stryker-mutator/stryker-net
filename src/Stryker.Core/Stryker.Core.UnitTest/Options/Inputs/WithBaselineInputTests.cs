@@ -17,13 +17,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldNotBeEnabledWhenNull()
+        public void ShouldProvideDefaultWhenNull()
         {
             var target = new WithBaselineInput { SuppliedInput = null };
 
             var result = target.Validate();
 
-            result.ShouldBeFalse();
+            result.ShouldBe(target.Default.Value);
         }
 
         [Fact]
