@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.Options
             ReportersInput = new ReportersInput(),
             SinceInput = new SinceInput(),
             SinceTargetInput = new SinceTargetInput(),
-            SolutionPathInput = new SolutionPathInput(),
+            SolutionInput = new SolutionInput(),
             TestProjectsInput = new TestProjectsInput(),
             ThresholdBreakInput = new ThresholdBreakInput(),
             ThresholdHighInput = new ThresholdHighInput(),

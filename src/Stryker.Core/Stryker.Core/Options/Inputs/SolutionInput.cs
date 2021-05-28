@@ -3,7 +3,7 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class SolutionPathInput : InputDefinition<string>
+    public class SolutionInput : InputDefinition<string>
     {
         public override string Default => null;
 
@@ -11,11 +11,15 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(IFileSystem fileSystem)
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
-                if (!fileSystem.File.Exists(SuppliedInput))  //validate file existance and maintain moq
+                if(!SuppliedInput.EndsWith(".sln"))
                 {
-                    throw new InputException("Given solution path does not exist: {0}", SuppliedInput);
+                    throw new InputException($"Given path is not a solution file: {SuppliedInput}");
+                }
+                if (!fileSystem.File.Exists(SuppliedInput))
+                {
+                    throw new InputException($"Given path does not exist: {SuppliedInput}");
                 }
 
                 return SuppliedInput;

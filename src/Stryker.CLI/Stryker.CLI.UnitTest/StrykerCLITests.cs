@@ -182,7 +182,7 @@ namespace Stryker.CLI.UnitTest
 
             strykerRunnerMock.VerifyAll();
 
-            inputs.SolutionPathInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
+            inputs.SolutionInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
         }
 
         [Theory]
