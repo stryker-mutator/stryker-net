@@ -54,5 +54,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var options = new ThresholdLowInput { SuppliedInput = input }.Validate(@break: 0, high: 60);
             options.ShouldBe(input);
         }
+
+        [Fact]
+        public void ShouldBeDefaultValueWhenNull()
+        {
+            var input = new ThresholdLowInput { SuppliedInput = null };
+            var options = input.Validate(@break: 0, high: 80);
+            options.ShouldBe(input.Default.Value);
+        }
     }
 }

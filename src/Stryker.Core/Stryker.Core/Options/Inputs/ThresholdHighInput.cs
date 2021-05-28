@@ -21,7 +21,7 @@ namespace Stryker.Core.Options.Inputs
 
                 if (low > high)
                 {
-                    throw new InputException($"Threshold high must be higher than or equal to threshold low. Current low: {low}, high: {high}.");
+                    throw new InputException($"Threshold high must be higher than or equal to threshold low. Current high: {high}, low: {low}.");
                 }
 
                 return high;
