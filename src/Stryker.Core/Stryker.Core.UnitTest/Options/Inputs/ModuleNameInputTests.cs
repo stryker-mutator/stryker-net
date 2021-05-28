@@ -1,12 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Options.Inputs;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    class ModuleNameInputTests
+    public class ModuleNameInputTests
     {
+        [Fact]
+        public void ShouldHaveDefault()
+        {
+            var target = new ModuleNameInput { SuppliedInput = null };
+
+            var result = target.Validate();
+
+            result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ShouldReturnName()
+        {
+            var target = new ModuleNameInput { SuppliedInput = "TestName" };
+
+            var result = target.Validate();
+
+            result.ShouldBe("TestName");
+        }
+
+        [Fact]
+        public void ShouldThrowOnNull()
+        {
+            var target = new ModuleNameInput { SuppliedInput = string.Empty };
+
+            var exception = Should.Throw<InputException>(() => target.Validate());
+
+            exception.Message.ShouldBe("Module name cannot be empty. Either fill the option or leave it out.");
+        }
     }
 }

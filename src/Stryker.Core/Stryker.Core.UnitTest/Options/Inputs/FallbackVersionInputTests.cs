@@ -10,25 +10,21 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void FallbackVersionCannotBeProjectVersion()
         {
-            var input = new FallbackVersionInput();
-            input.SuppliedInput = "master";
+            var input = new FallbackVersionInput { SuppliedInput = "master" };
 
-            var exception = Should.Throw<InputException>(() => {
-                input.Validate("master", true);
-            });
+            var exception = Should.Throw<InputException>(() => input.Validate("master", true));
 
             exception.Message.ShouldBe("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
         }
 
-        //[Fact]
-        //public void ShouldSetFallbackToBranchWhenNull()
-        //{
-        // I think this is not wanted behaviour
-        //    var input = new FallbackVersionInput { SuppliedInput = null };
+        [Fact]
+        public void ShouldAllowDevelopment()
+        {
+            var input = new FallbackVersionInput { SuppliedInput = "development" };
 
-        //    var validatedInput = input.Validate("development");
+            var validatedInput = input.Validate("master", true);
 
-        //    validatedInput.ShouldBe("development");
-        //}
+            validatedInput.ShouldBe("development");
+        }
     }
 }
