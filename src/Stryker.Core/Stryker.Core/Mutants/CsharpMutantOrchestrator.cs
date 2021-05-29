@@ -97,17 +97,14 @@ namespace Stryker.Core.Mutants
                     var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
                         mutation.ReplacementNode, mutator.GetType());
-                    var mutantIgnored = context.Disable;
-                    if (context.FilteredMutators!= null &&  context.FilteredMutators.Any(m => m.Contains(mutation.Type.ToString())))
-                    {
-                        // TODO: add proper logic
-                    }
+                    var mutantIgnored = context.FilteredMutators!= null &&  context.FilteredMutators.Contains(mutation.Type);
                     var newMutant = new Mutant
                     {
                         Id = id,
                         Mutation = mutation,
                         ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
-                        IsStaticValue = context.InStaticValue
+                        IsStaticValue = context.InStaticValue,
+                        ResultStatusReason = mutantIgnored ? context.FilterComment : "not run"
                     };
                     var duplicate = false;
                     // check if we have a duplicate

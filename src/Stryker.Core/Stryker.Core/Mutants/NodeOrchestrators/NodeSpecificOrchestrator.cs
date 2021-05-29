@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -23,7 +24,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         private static Regex Pattern =
             new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*(\\w+)\\s*$", RegexOptions.Compiled|RegexOptions.IgnoreCase);
+        private static Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled|RegexOptions.IgnoreCase);
 
         private static ILogger _logger;
 
@@ -110,7 +111,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 var match = Parser.Match(commentTrivia);
                 if (match.Success)
                 {
+                    // this is a Stryker comments, now we parse it
                     bool mode;
+                    // get the ignore comment
+                    var comment = match.Groups[4].Value?.Trim();
+                    if (string.IsNullOrEmpty(comment))
+                    {
+                        comment = "Ignored via Stryker comment.";
+                    }
                     switch (match.Groups[1].Value.ToLower())
                     {
                         case "disable":
@@ -122,28 +130,34 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                             break;
                     }
 
+                    Mutator[] filteredMutators = null;
                     if (match.Groups[3].Value.ToLower() == "all")
                     {
+                        filteredMutators = Enum.GetValues<Mutator>();
+                    }
+                    else
+                    {
+                        var labels = match.Groups[3].Value.ToLower().Split(',');
+                        filteredMutators = new Mutator[labels.Length];
+                        for (var i = 0; i < labels.Length; i++)
+                        {
+                            if (Enum.TryParse<Mutator>(labels[i], true, out var value))
+                            {
+                                filteredMutators[i] = value;
+                            }
+                            else
+                            {
+                                _logger.LogWarning(
+                                    $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
+                            }
+                        }
+                    }
 
-                    }
-                    else
-                    {
-                        context.FilteredMutators = match.Groups[3].Value.ToLower().Split(',');
-                    }
-                    if (match.Groups[2].Value.ToLower() == "once")
-                    {
-                        // do not mutate this node ONLY
-                        context = context.DisableMutation(mode);
-                    }
-                    else
-                    {
-                        // do not mutate this statement and the next ones
-                        context.Disable = mode;
-                    }
+                    context = context.FilterMutators(mode, filteredMutators, match.Groups[2].Value.ToLower() == "once", comment);
                     break;
                 }
 
-                _logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}");
+                _logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
             }return context;
         }
 

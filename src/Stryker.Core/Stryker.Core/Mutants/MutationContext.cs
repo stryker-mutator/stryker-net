@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants.NodeOrchestrators;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants
 {
@@ -22,8 +24,9 @@ namespace Stryker.Core.Mutants
         {
             _mainOrchestrator = parent._mainOrchestrator;
             InStaticValue = parent.InStaticValue;
-            Disable = parent.Disable;
             Store = parent.Store;
+            FilteredMutators = parent.FilteredMutators;
+            FilterComment = parent.FilterComment;
         }
 
         public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node) => _mainOrchestrator.GenerateMutationsForNode(node, this);
@@ -34,14 +37,14 @@ namespace Stryker.Core.Mutants
         ///  True when inside a static initializer, fields or accessor.
         /// </summary>
         public bool InStaticValue { get; set; }
-        public bool Disable { get; set; }
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
-        public string[] FilteredMutators { get; set; }
+
+        public Mutator[] FilteredMutators { get; private set; }
+
+        public string FilterComment { get; set; }
 
         public MutationContext EnterStatic() => new(this) {InStaticValue = true};
-
-        public MutationContext DisableMutation(bool mode = true) => new(this){Disable = mode};
 
         public MutationContext Enter(MutationControl control)
         {
@@ -56,6 +59,26 @@ namespace Stryker.Core.Mutants
             }
 
             return this;
+        }
+
+        public MutationContext FilterMutators(bool mode, Mutator[] filteredMutators, bool newContext,
+            string comment)
+        {
+            var result = newContext ? new MutationContext(this) : this;
+            if (mode)
+            {
+                result.FilteredMutators = filteredMutators;
+            }
+            else if (result.FilteredMutators != null)
+            {
+                result.FilteredMutators = result.FilteredMutators.Where(t => !filteredMutators.Contains(t)).ToArray();
+            }
+
+            if (mode)
+            {
+                result.FilterComment = comment;
+            }
+            return result;
         }
 
         public void Leave(MutationControl control)

@@ -678,6 +678,31 @@ if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
         }
 
         [Fact]
+        public void ShouldNotMutateOneLineIfSpecificMutatorDisabled()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable Update,Statement: comment
+    x++;
+// Stryker restore all
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable Update,Statement: comment
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+
+            _target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.Ignored);
+            _target.Mutants.ElementAt(0).ResultStatusReason.ShouldBe("comment");
+        }
+
+        [Fact]
         public void ShouldNotMutateASubExpressionIfDisabledByComment()
         {
             string source = @"public void SomeMethod() {
