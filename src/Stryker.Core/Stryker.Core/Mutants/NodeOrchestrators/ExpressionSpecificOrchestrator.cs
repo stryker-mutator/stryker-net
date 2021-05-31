@@ -5,7 +5,7 @@ using Stryker.Core.Helpers;
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     /// <summary>
-    /// Orchestrate mutations for expressions (and sub expressions-.
+    /// Orchestrate mutations for expressions (and sub expressions).
     /// </summary>
     /// <typeparam name="T">Node specific type, must inherit <see cref="ExpressionSyntax"/>.</typeparam>
     internal class ExpressionSpecificOrchestrator<T>: NodeSpecificOrchestrator<T, ExpressionSyntax> where T: ExpressionSyntax

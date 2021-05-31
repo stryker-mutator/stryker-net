@@ -678,6 +678,27 @@ if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
         }
 
         [Fact]
+        public void ShouldNotMutateOneLineIfDisabledOnce()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable once all
+    x++;
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable once all
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldNotMutateOneLineIfSpecificMutatorDisabled()
         {
             string source = @"public void SomeMethod() {

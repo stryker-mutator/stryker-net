@@ -57,12 +57,14 @@ namespace Stryker.Core.Helpers
             baseMethod.Keyword.Text == "get";
 
         /// <summary>
-        /// 
+        /// Build a mutated version of a <see cref="SyntaxNode"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="original"></param>
-        /// <param name="mutation"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of the node that hosts the mutation.</typeparam>
+        /// <param name="original">Original node.</param>
+        /// <param name="mutation">Mutation to apply to the node.</param>
+        /// <returns>A copy of <see cref="original"/> with the mutation applied.</returns>
+        /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
+        /// <remarks><paramref name="original"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
         public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
@@ -73,9 +75,19 @@ namespace Stryker.Core.Helpers
             return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }
 
+        /// <summary>
+        /// Get the gets accessor of a property, if any.
+        /// </summary>
+        /// <param name="propertyDeclaration">Property.</param>
+        /// <returns>Get accessor for the property, or null if none.</returns>
         public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
             => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
 
+        /// <summary>
+        /// Return a default(type) expression.
+        /// </summary>
+        /// <param name="type">Type used in the resulting default expression.</param>
+        /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
         public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrailingTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
     }
 }
