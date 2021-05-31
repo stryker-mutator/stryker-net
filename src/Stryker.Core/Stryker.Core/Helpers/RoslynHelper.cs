@@ -11,10 +11,10 @@ namespace Stryker.Core.Helpers
     {
 
         /// <summary>
-        /// gets the return type of a method (incl. constructor, destructor...)
+        /// Gets the return type of a method (incl. constructor, destructor...)
         /// </summary>
         /// <param name="baseMethod">method to analyze</param>
-        /// <returns>method returns type. Null if this not rele</returns>
+        /// <returns>method returns type. Null if this not relevant</returns>
         public static TypeSyntax ReturnType(this BaseMethodDeclarationSyntax baseMethod) =>
             baseMethod switch
             {
