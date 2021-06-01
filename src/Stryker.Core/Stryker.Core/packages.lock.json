@@ -23,9 +23,9 @@
       },
       "Crayon": {
         "type": "Direct",
-        "requested": "[2.0.60, )",
-        "resolved": "2.0.60",
-        "contentHash": "pqARvOP7vsCdTa/nMB115Ci0eSbkhKDqBbWxsVgLUoJUejgFE9qJ+N5j44nmqHCRP2ohuGgFQnCD9Iodhm+DSA=="
+        "requested": "[2.0.62, )",
+        "resolved": "2.0.62",
+        "contentHash": "cOICpzQn826x1SxSmxkweztCXHP1HcHP/VZJ55izMEpLyiS9l6sMk2Hx7m666ndQcEZ5COVyuvVRgbMUEcdEnw=="
       },
       "DotNet.Glob": {
         "type": "Direct",
