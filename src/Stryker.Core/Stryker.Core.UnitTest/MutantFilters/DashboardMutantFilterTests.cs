@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(
                 compareToDashboard: true,
-               dashboardApiKey: "Acces_Token",
+               dashboardApiKey: "Access_Token",
                projectName: "github.com/JohnDoe/project",
                projectVersion: "version/human/readable",
                reporters: reporters,
@@ -82,7 +82,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions(
                 compareToDashboard: true,
-               dashboardApiKey: "Acces_Token",
+               dashboardApiKey: "Access_Token",
                projectName: "github.com/JohnDoe/project",
                projectVersion: "version/human/readable",
                reporters: reporters,
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailabe()
+        public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailable()
         {
             // Arrange
             var baselineProvider = new Mock<IBaselineProvider>();

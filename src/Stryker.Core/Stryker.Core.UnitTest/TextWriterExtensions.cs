@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.UnitTest
 {
-    internal static class TextWriterExtenstions
+    internal static class TextWriterExtensions
     {
         private const string Escape = "\u001b";
 

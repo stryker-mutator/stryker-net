@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class InitializerMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new InitializerMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutators
         public void ShouldNotMutateStackallocArrayCreationExpressionSyntax()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 0 }") as StackAllocArrayCreationExpressionSyntax;
-            
+
             var target = new InitializerMutator();
 
             var result = target.ApplyMutations(arrayCreationExpression.Initializer);

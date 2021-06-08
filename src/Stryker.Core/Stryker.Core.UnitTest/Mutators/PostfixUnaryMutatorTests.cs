@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class PostfixUnaryMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new PostfixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

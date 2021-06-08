@@ -59,7 +59,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                 .First(x => x is IfStatementSyntax);
             var annotatedSyntaxTree = syntaxTree.GetRoot()
                 .ReplaceNode(
-                    ifStatement, 
+                    ifStatement,
                     ifStatement.WithAdditionalAnnotations(GetMutationMarker(1), _ifEngineMarker)
                 ).SyntaxTree;
 
@@ -78,7 +78,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                 var compileResult = compiler.Emit(ms);
 
                 var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
-                
+
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
@@ -101,7 +101,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
            {
                var list = new List<List<double>>();
                int[] listProjected = list.Select(l => l.Count()).ToArray();
-           }   
+           }
        }
     }");
        var mutator = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString(), devMode:true));
@@ -170,7 +170,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                     while (first.Length > 2)
                     {
                         return first - second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return second + first;
@@ -180,7 +180,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                     while (first.Length > 2)
                     {
                         return first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return (System.Environment.GetEnvironmentVariable(""ActiveMutation"") == ""7"" ? second - first : second + first);
@@ -239,31 +239,31 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
         {
             public string AddTwoStrings(string first, string second)
             {
-                if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+                if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){
                     while (first.Length > 2)
                     {
                         return first - second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return second + first;
                     }
                     return null;
-                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){
                     while (first.Length > 2)
                     {
                         return first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return second - first;
                     }
                     return null;
-                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){
                     while (first.Length == 2)
                     {
                         return first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return second + first;
@@ -273,7 +273,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
                     while (first.Length == 2)
                     {
                         return first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         return second + first;
@@ -335,29 +335,29 @@ namespace ExampleProject
         public string AddTwoStrings(string first, string second, out string third)
         {
             var dummy = """";
-            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){
                 while (first.Length > 2)
                 {
                     dummy = first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second - first;
                 }
-            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){
                 while (first.Length > 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second - first;
                 }
-            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){
                 while (first.Length == 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second + first;
@@ -367,7 +367,7 @@ namespace ExampleProject
                 while (first.Length == 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second + first;
@@ -426,7 +426,7 @@ namespace ExampleProject
 }
 
 [Fact]
-public void RollbackProcess_ShouldRollbackAcessorWhenLocalRollbackFails()
+public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
 {
     var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
@@ -442,29 +442,29 @@ namespace ExampleProject
                 string second = string.Empty;
                 string third;
                 var dummy = """";
-                if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+                if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){
                     while (first.Length > 2)
                     {
                         dummy = first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         dummy =  second - first;
                     }
-                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){
                     while (first.Length > 2)
                     {
                         dummy =  first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         dummy =  second - first;
                     }
-                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+                }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){
                     while (first.Length == 2)
                     {
                         dummy =  first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         dummy =  second + first;
@@ -474,7 +474,7 @@ namespace ExampleProject
                     while (first.Length == 2)
                     {
                         dummy =  first + second;
-                    } 
+                    }
                     while (first.Length < 2)
                     {
                         dummy =  second + first;
@@ -521,7 +521,7 @@ namespace ExampleProject
         var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-                
+
         rollbackedResult.Success.ShouldBeFalse();
         rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
@@ -546,29 +546,29 @@ namespace ExampleProject
         public string AddTwoStrings(string first, string second, out string third)
         {
             var dummy = """";
-            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){            
+            if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""8""){
                 while (first.Length > 2)
                 {
                     dummy = first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second - first;
                 }
-            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){            
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""7""){
                 while (first.Length > 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second - first;
                 }
-            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){            
+            }else{if(System.Environment.GetEnvironmentVariable(""ActiveMutation"")==""6""){
                 while (first.Length == 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second + first;
@@ -578,7 +578,7 @@ namespace ExampleProject
                 while (first.Length == 2)
                 {
                     dummy =  first + second;
-                } 
+                }
                 while (first.Length < 2)
                 {
                     dummy =  second + first;
@@ -623,7 +623,7 @@ namespace ExampleProject
         var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-                
+
         rollbackedResult.Success.ShouldBeFalse();
         rollbackedResult.Diagnostics.ShouldHaveSingleItem();
         Should.Throw<StrykerCompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
@@ -661,7 +661,7 @@ namespace ExampleProject
         .First(x => x is IfStatementSyntax);
     var annotatedSyntaxTree = syntaxTree.GetRoot()
         .ReplaceNode(
-            ifStatement, 
+            ifStatement,
             ifStatement.WithAdditionalAnnotations(GetMutationMarker(1), _ifEngineMarker)
         ).SyntaxTree;
 
@@ -681,11 +681,11 @@ namespace ExampleProject
         var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false,false);
 
         fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
-                
+
                 var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
-                
+
         // validate that only one of the compile errors marked the mutation as rollbacked.
         fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
     }

@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Logs_And_Returns_Null_On_Publish_Report_Does_Not_Return_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var target = new DashboardClient(new StrykerOptions(
                 dashboardUrl: "http://www.example.com/",
-                dashboardApiKey: "Acces_Token"
+                dashboardApiKey: "Access_Token"
                 ), httpClient, loggerMock.Object);
 
             // Act
@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -88,7 +88,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
+                dashboardApiKey: "Access_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters
@@ -116,7 +116,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL_With_Module_Appended()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -140,7 +140,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
+                dashboardApiKey: "Access_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters,
@@ -169,7 +169,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -178,7 +178,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
+                dashboardApiKey: "Access_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters
@@ -227,7 +227,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL_with_module_name()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -236,7 +236,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
+                dashboardApiKey: "Access_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters,
@@ -284,20 +284,20 @@ namespace Stryker.Core.UnitTest.Clients
         }
 
         [Fact]
-        public async Task DashboardClient_Get_Returns_Null_When_Statuscode_Not_200()
+        public async Task DashboardClient_Get_Returns_Null_When_StatusCode_Not_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
             var reporters = new string[] {
                 "dashboard"
             };
-            
+
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
+                dashboardApiKey: "Access_Token",
                 projectName: "github.com/JohnDoe/project",
                 projectVersion: "test/version",
                 reporters: reporters

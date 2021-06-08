@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
             MutationContext context)
         {
-            // find outparameters
+            // find out parameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
             if (targetNode.Body != null)
             {
@@ -55,7 +55,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                         Select( m => (m.Id, converter(m.Mutation))));
             context.BlockLevelControlledMutations.Clear();
             context.StatementLevelControlledMutations.Clear();
-            return targetNode.ReplaceNode(targetNode.Body!, 
+            return targetNode.ReplaceNode(targetNode.Body!,
                 SyntaxFactory.Block(mutatedBlock));
         }
 

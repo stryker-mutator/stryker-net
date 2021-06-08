@@ -41,12 +41,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage)
         {
-            _messages.Add("Test Dicovery Raw Message: " + rawMessage);
+            _messages.Add("Test Discovery Raw Message: " + rawMessage);
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            _messages.Add("Test Dicovery Message: " + message);
+            _messages.Add("Test Discovery Message: " + message);
         }
     }
 }

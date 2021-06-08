@@ -34,7 +34,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _availableRunners.Add(runner);
             }
 
-            Parallel.For(1, options.ConcurrentTestrunners, (i, loopState) =>
+            Parallel.For(1, options.ConcurrentTestRunners, (i, loopState) =>
             {
                 _availableRunners.Add(new VsTestRunner(options, _flags, projectInfo, _discoveredTests, helper: _helper));
             });
