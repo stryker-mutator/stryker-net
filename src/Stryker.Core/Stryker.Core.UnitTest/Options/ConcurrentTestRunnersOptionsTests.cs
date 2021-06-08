@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions(logger: _loggerMock.Object, maxConcurrentTestRunners: concurrentTestRunners);
 
-            options.ConcurrentTestrunners.ShouldBe(concurrentTestRunners);
+            options.ConcurrentTestRunners.ShouldBe(concurrentTestRunners);
 
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var options = new StrykerOptions(logger: _loggerMock.Object, maxConcurrentTestRunners: 1);
 
-            options.ConcurrentTestrunners.ShouldBe(1);
+            options.ConcurrentTestRunners.ShouldBe(1);
 
             _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to max concurrent testrunners being set to 1.", Times.Once);
 
@@ -63,7 +63,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
-            options.ConcurrentTestrunners.ShouldBe(safeProcessorCount);
+            options.ConcurrentTestRunners.ShouldBe(safeProcessorCount);
 
             _loggerMock.VerifyNoOtherCalls();
         }

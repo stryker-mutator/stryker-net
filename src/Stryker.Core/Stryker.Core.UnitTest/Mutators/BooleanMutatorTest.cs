@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class BooleanMutatorTest
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new BooleanMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -37,11 +37,11 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.CharacterLiteralExpression)]
         [InlineData(SyntaxKind.NullLiteralExpression)]
         [InlineData(SyntaxKind.DefaultLiteralExpression)]
-        public void ShouldNotMutate(SyntaxKind orginal)
+        public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new BooleanMutator();
 
-            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(orginal)).ToList();
+            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original)).ToList();
 
             Assert.Empty(result);
         }

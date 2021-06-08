@@ -12,9 +12,9 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<TimeoutValueCalculator>();
         }
 
-        public int CalculateTimeoutValue(int initialTestrunDurationMS, int extraMS)
+        public int CalculateTimeoutValue(int initialTestRunDurationMs, int extraMs)
         {
-            var timeout = (int)(initialTestrunDurationMS * 1.5) + extraMS;
+            var timeout = (int)(initialTestRunDurationMs * 1.5) + extraMs;
 
             _logger.LogInformation("Using {0} ms as testrun timeout", timeout);
             return timeout;

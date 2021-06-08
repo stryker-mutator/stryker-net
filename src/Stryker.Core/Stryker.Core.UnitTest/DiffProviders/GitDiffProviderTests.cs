@@ -32,11 +32,11 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
 
         /**
-         * Libgit2sharp has most of its contructors sealed. 
+         * Libgit2sharp has most of its constructors sealed.
          * Because of that we are unable to make the repository mock return a explicit object and are only able to use mocks.
         **/
         [Fact]
-        public void ScanDiffReturnsListofFiles()
+        public void ScanDiffReturnsListOfFiles()
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
@@ -97,7 +97,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_IgnoreFolderWithSameStartName()
+        public void ScanDiffReturnsListOfFiles_IgnoreFolderWithSameStartName()
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
@@ -199,7 +199,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
             var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/Tests/Test.cs" };
@@ -271,7 +271,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
             var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/*/Test.cs" };
@@ -343,7 +343,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
             var diffIgnoreFiles = new string[1];
@@ -416,7 +416,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
             var diffIgnoreFiles = new string[1];

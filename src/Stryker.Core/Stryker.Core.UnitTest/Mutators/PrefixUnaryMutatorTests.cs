@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class PrefixUnaryMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new PrefixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -74,15 +74,15 @@ namespace Stryker.Core.UnitTest.Mutators
                 mutation.Type.ShouldBe(Mutator.Boolean);
             }
         }
-        
+
         [Theory]
         [InlineData(SyntaxKind.AddressOfExpression)]
         [InlineData(SyntaxKind.PointerIndirectionExpression)]
-        public void ShouldNotMutate(SyntaxKind orginal)
+        public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new PrefixUnaryMutator();
-            
-            var originalNode = SyntaxFactory.PrefixUnaryExpression(orginal, SyntaxFactory.IdentifierName("a"));
+
+            var originalNode = SyntaxFactory.PrefixUnaryExpression(original, SyntaxFactory.IdentifierName("a"));
             var result = target.ApplyMutations(originalNode).ToList();
 
             result.ShouldBeEmpty();

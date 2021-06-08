@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class RegexMutatorTest
     {
         [Fact]
-        public void ShouldBeMutationlevelAdvanced()
+        public void ShouldBeMutationLevelAdvanced()
         {
             var target = new RegexMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Advanced);

@@ -13,7 +13,7 @@ namespace Stryker.Core.Options
     {
         int AdditionalTimeoutMS { get; }
         string BasePath { get; }
-        int ConcurrentTestrunners { get; }
+        int ConcurrentTestRunners { get; }
         bool DevMode { get; }
         IEnumerable<Mutator> ExcludedMutations { get; }
         IEnumerable<FilePattern> FilePatterns { get; }

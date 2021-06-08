@@ -248,14 +248,14 @@ private bool Out(int test, Func<int, bool>lambda )
         {
             string SomeLocalFunction()
             {
-                return string.Empty?.All(x => !string.IsEmpty(x)); 
+                return string.Empty?.All(x => !string.IsEmpty(x));
             };
         }";
             string expected = @"void TestMethod()
         {
             string SomeLocalFunction()
             {
-                return (StrykerNamespace.MutantControl.IsActive(0)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(2)?string.IsEmpty(x):!string.IsEmpty(x)))); 
+                return (StrykerNamespace.MutantControl.IsActive(0)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(2)?string.IsEmpty(x):!string.IsEmpty(x))));
         };
     }";
 
@@ -793,7 +793,7 @@ public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
         {
             yield return value;
         }
-      } 
+      }
 public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
       {
         yield break;
@@ -930,7 +930,7 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
         }
 
         [Fact]
-        public void ShouldMarkStaticMutationStarticInPropertiesInitializer()
+        public void ShouldMarkStaticMutationStaticInPropertiesInitializer()
         {
             var source = @"class Test {
 static string Value {get;} = """";}";
@@ -994,7 +994,7 @@ return default(string);}}";
 
         [Fact]
         // test for issue #1386
-        public void ShouldNotLeakMutationsAccrossDefinitions()
+        public void ShouldNotLeakMutationsAcrossDefinitions()
         {
             var source = @"class Test {
 int GetId(string input) => int.TryParse(input, out var result) ? result : 0;

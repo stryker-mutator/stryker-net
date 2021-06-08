@@ -9,11 +9,11 @@ namespace Stryker.Core.Mutants
         private static readonly TestDescription AllTestsDescription;
         private static readonly string AllTestsGuid = "-1";
 
-        public TestDescription(string guid, string name, string testfilePath)
+        public TestDescription(string guid, string name, string testFilePath)
         {
             Guid = guid;
             Name = name;
-            TestfilePath = testfilePath;
+            TestFilePath = testFilePath;
         }
 
         static TestDescription()
@@ -35,7 +35,7 @@ namespace Stryker.Core.Mutants
 
         public bool IsAllTests => Guid == AllTestsGuid;
 
-        public string TestfilePath { get; }
+        public string TestFilePath { get; }
 
 
 

@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporters[0] = "dashboard";
 
             var options = new StrykerOptions(
-               dashboardApiKey: "Acces_Token",
+               dashboardApiKey: "Access_Token",
                projectName: "github.com/JohnDoe/project",
                projectVersion: "version/human/readable",
                reporters: reporters

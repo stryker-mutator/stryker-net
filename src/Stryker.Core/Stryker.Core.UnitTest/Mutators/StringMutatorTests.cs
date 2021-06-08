@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class StringMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new StringMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

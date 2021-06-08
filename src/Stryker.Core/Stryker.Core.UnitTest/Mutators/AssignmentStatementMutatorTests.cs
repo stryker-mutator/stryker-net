@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class AssignmentStatementMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new AssignmentExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

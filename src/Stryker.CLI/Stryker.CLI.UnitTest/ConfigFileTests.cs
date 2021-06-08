@@ -76,7 +76,7 @@ namespace Stryker.CLI.UnitTest
             actualOptions.ProjectUnderTestNameFilter.ShouldBe("ExampleProject.csproj");
             actualOptions.Reporters.ShouldHaveSingleItem();
             actualOptions.Reporters.ShouldContain(Reporter.ConsoleReport);
-            actualOptions.ConcurrentTestrunners.ShouldBe(1);
+            actualOptions.ConcurrentTestRunners.ShouldBe(1);
             actualOptions.Thresholds.Break.ShouldBe(20);
             actualOptions.Thresholds.Low.ShouldBe(30);
             actualOptions.Thresholds.High.ShouldBe(40);
