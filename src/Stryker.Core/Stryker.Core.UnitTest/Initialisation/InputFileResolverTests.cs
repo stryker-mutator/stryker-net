@@ -76,6 +76,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("net452", Framework.DotNetClassic, 4, 5, 2)]
         [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
         [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
+        [InlineData("net5", Framework.DotNet, 5, 0, null)]
         public void ProjectAnalyzerShouldDecodeFramework(string version, Framework framework, int major, int minor, int? patch)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
