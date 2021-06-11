@@ -176,15 +176,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 var version = analysis.Groups["version"].Value;
                 if (!version.Contains('.'))
                 {
-                    if (version.Length == 2)
-                    // we have a aggregated version id
+                    version = version.Length switch
                     {
-                        version = $"{version[0]}.{version.Substring(1)}";
-                    }
-                    else if (version.Length == 3)
-                    {
-                        version = $"{version[0]}.{version[1]}.{version[2]}";
-                    }
+                        1 => $"{version}.0",
+                        2 => $"{version[0]}.{version.Substring(1)}",
+                        3 => $"{version[0]}.{version[1]}.{version[2]}",
+                        _ => throw new ArgumentException("invalid version")
+                    };
                 }
                 return new Version(version);
             }
