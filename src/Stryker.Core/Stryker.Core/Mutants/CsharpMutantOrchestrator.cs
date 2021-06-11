@@ -97,7 +97,7 @@ namespace Stryker.Core.Mutants
                     var id = MutantCount;
                     Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
                         mutation.ReplacementNode, mutator.GetType());
-                    var mutantIgnored = context.FilteredMutators!= null &&  context.FilteredMutators.Contains(mutation.Type);
+                    var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
                     var newMutant = new Mutant
                     {
                         Id = id,
