@@ -167,7 +167,7 @@ namespace Stryker.DataCollector
                         }
                     }
                 }
-                if (mutations.Count==1)
+                if (mutations.Count == 1)
                 {
                     _singleMutant = mutations.First();
                 }

@@ -679,9 +679,8 @@ namespace ExampleProject
 
     using (var ms = new MemoryStream())
     {
-                var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false,false);
-
-                fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false,false);
+        fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
                 
         // validate that only one of the compile errors marked the mutation as rollbacked.
         fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });

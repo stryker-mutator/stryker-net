@@ -15,7 +15,7 @@ namespace Stryker.Core.Initialisation
 
         public ProjectInfo(IFileSystem fileSystem)
         {
-            _fileSystem = fileSystem ?? new FileSystem();;
+            _fileSystem = fileSystem ?? new FileSystem();
         }
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }

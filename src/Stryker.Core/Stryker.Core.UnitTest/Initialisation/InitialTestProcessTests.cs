@@ -27,10 +27,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldThrowExceptionOnFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            var test1 = Guid.NewGuid();
-            var test2 = Guid.NewGuid();
-            var ranTests = new TestsGuidList(new[] {test1, test2});
-            var failedTests = new TestsGuidList(new[] {test1});
+            var failedTest = Guid.NewGuid();
+            var successfulTest = Guid.NewGuid();
+            var ranTests = new TestsGuidList(new[] {failedTest, successfulTest});
+            var failedTests = new TestsGuidList(new[] {failedTest});
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));

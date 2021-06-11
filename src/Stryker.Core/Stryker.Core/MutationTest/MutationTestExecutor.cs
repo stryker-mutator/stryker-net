@@ -77,11 +77,11 @@ namespace Stryker.Core.MutationTest
         {
             TestRunResult result;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (forceSingle && mutantsToTest.Count>1)
+            if (forceSingle && mutantsToTest.Count > 1)
             {
                 foreach (var mutant in mutantsToTest)
                 {
-                    var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] {mutant}, updateHandler);
+                    var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
                     mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests);
                 }
 

@@ -363,8 +363,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
                         { "Language", "C#" }
-                    }).Object
-                    ,
+                    }).Object,
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
@@ -427,8 +426,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
                         { "Language", "C#" }
-                    }).Object
-                    ,
+                    }).Object,
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,

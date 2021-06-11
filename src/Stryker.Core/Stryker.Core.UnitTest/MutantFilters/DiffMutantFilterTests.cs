@@ -95,20 +95,20 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             // If a file inside the test project is changed, a test has been changed
-            var myTest = Path.Combine(testProjectPath, "myTest.cs"); ;
+            var myTestPath = Path.Combine(testProjectPath, "myTest.cs"); ;
             var tests = new TestSet();
-            var test = new TestDescription(Guid.NewGuid(), "name", myTest);
+            var test = new TestDescription(Guid.NewGuid(), "name", myTestPath);
             tests.RegisterTests(new[] {test});
             diffProvider.SetupGet(x => x.Tests).Returns(tests);
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
                 ChangedSourceFiles = new Collection<string>
                 {
-                    myTest
+                    myTestPath
                 },
                 ChangedTestFiles = new Collection<string>
                 {
-                    myTest
+                    myTestPath
                 }
             });
             var target = new DiffMutantFilter(diffProvider.Object);

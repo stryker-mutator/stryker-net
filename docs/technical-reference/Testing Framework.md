@@ -24,7 +24,7 @@ a specific implementation but in practice, this identifier is derived from the(t
 ## xUnit
 
 ### Theories
-xUnit's theory is a pattern where some test is executed multiple time with varying input data (like NUnit's TestCase). 
+xUnit's theory is a pattern where some test is executed multiple times with varying input data (like NUnit's TestCase). 
 These test mesthods accept one or more parameters and bear one of this attributes: `InlineData`, `MemberData` or `ClassData`.
 There are differences
 between compile time theories (data is fixed at build time) and run time theories (data is discovered at run time).
@@ -34,7 +34,7 @@ Static discoveries are seen and processed as different test cases.
 
 #### Run time theories
 Run time theories are discovered as one test, disregarding the number of underlying data set.
-There is one test result per dataset, all associated with the unique test id.
+There is one test result per dataset, all associated with the same test.
 
 Here is a summarized timeline of tests execution:
 ```
@@ -51,18 +51,22 @@ TestCase end event
 TestCase start event
    ...
 ```
-The difficulty here is that a lot happens between 'testcase end' and 'testcase start' event. 
-At coverage capture it is a problem, because there is a risk of spilling coverage information to the next tests.
-And during execution phase, it is impossible to predict when the test will really be over. 
+The difficulty here is that a lot happens between `testcase end` and `testcase start` events. 
+At coverage capture it is a problem, because there is a risk of spilling coverage information to the next tests: Stryker
+can only capture coverage information on `testcase end` events, and only in association with the current running test.
+So, every mutants covered between `testcase end` and `testcase start` will be associated with the **next** test.
 
-Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, this
-testcase will only run when running **all tests** and can no longer be executed in isolation.
+And during execution phase, it is impossible to predict when the test will really be over, so it is diffult to
+establish is the test was succesful.  
 
+Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, it will change the
+test identifier so this testcase will only run when running **all tests** and can no longer be executed in isolation, as
+Stryker can't anticipate the test name.
 
 ### NUnit
 
 ### TestCases
-NUnit's TestCases is a pattern where some test is executed multiple time with varying input data (like xUnit's TestCase).
+NUnit's TestCases is a pattern where some test is executed multiple times with varying input data (like xUnit's TestCase).
 These test methods accept one or more parameters and bear one of these attributes (on top of the `[Test]` attribute):
  `TestCase` or `TestCaseSource`.
 

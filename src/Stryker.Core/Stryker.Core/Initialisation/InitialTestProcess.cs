@@ -7,18 +7,6 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation
 {
-    public class InitialTestRun
-    {
-        public InitialTestRun(TestRunResult result, ITimeoutValueCalculator timeoutValueCalculator)
-        {
-            Result = result;
-            TimeoutValueCalculator = timeoutValueCalculator;
-        }
-
-        public TestRunResult Result { get; }
-        public ITimeoutValueCalculator TimeoutValueCalculator { get;}
-    }
-
     public interface IInitialTestProcess
     {
         InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner);
@@ -34,7 +22,6 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialTestProcess>();
         }
 
-        public TestRunResult InitialTestRun => _initTestRunResult;
         public ITimeoutValueCalculator TimeoutValueCalculator { get; private set; }
 
         /// <summary>
@@ -45,7 +32,7 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial testrun</returns>
         public InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner)
         {
-            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : $"{total.Count}";
+            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : total.Count.ToString();
 
             _logger.LogInformation("Total number of tests found: {0}.", message);
 
@@ -64,7 +51,7 @@ namespace Stryker.Core.Initialisation
             if (!_initTestRunResult.FailingTests.IsEmpty)
             {
                 var failingTestsCount = _initTestRunResult.FailingTests.Count;
-                _logger.LogWarning($"{failingTestsCount} tests are failing.");
+                _logger.LogWarning($"{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.");
                 if (((double)failingTestsCount) / _initTestRunResult.RanTests.Count > .1)
                 {
                     throw new StrykerInputException("Initial testrun has more han 10% failing tests.", _initTestRunResult.ResultMessage);
@@ -72,7 +59,7 @@ namespace Stryker.Core.Initialisation
             }
 
             TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeoutMS,
-                (int)stopwatch.ElapsedMilliseconds-(int)_initTestRunResult.Duration.TotalMilliseconds ,
+                (int)stopwatch.ElapsedMilliseconds - (int)_initTestRunResult.Duration.TotalMilliseconds ,
                 (int)stopwatch.ElapsedMilliseconds);
 
             return new InitialTestRun(_initTestRunResult, TimeoutValueCalculator);

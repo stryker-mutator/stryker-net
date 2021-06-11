@@ -193,7 +193,7 @@ namespace Stryker.Core.MutationTest
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
-                var usedTests =  mutantsToGroup[i].CoveringTests;
+                var usedTests = mutantsToGroup[i].CoveringTests;
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
