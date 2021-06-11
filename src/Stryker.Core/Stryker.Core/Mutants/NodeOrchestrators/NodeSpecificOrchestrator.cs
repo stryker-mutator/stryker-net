@@ -101,6 +101,10 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         protected virtual MutationContext PrepareContext(TNode node, MutationContext context)
         {
+            const int modeGroup = 1;
+            const int onceGroup = 2;
+            const int mutatorsGroup = 3;
+            const int commentGroup = 4;
             foreach (var commentTrivia in node.GetLeadingTrivia().Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) || t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
             {
                 // perform a quick pattern check to see if it is a 'Stryker comment'
@@ -112,32 +116,32 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 if (match.Success)
                 {
                     // this is a Stryker comments, now we parse it
-                    bool mode;
+                    bool disable;
                     // get the ignore comment
-                    var comment = match.Groups[4].Value?.Trim();
+                    var comment = match.Groups[commentGroup].Value.Trim();
                     if (string.IsNullOrEmpty(comment))
                     {
-                        comment = "Ignored via Stryker comment.";
+                        comment = "Ignored via code comment.";
                     }
-                    switch (match.Groups[1].Value.ToLower())
+                    switch (match.Groups[modeGroup].Value.ToLower())
                     {
                         case "disable":
-                            mode = true;
+                            disable = true;
                             break;
                         default:
                         case "restore":
-                            mode = false;
+                            disable = false;
                             break;
                     }
 
-                    Mutator[] filteredMutators = null;
-                    if (match.Groups[3].Value.ToLower() == "all")
+                    Mutator[] filteredMutators;
+                    if (match.Groups[mutatorsGroup].Value.ToLower() == "all")
                     {
                         filteredMutators = Enum.GetValues<Mutator>();
                     }
                     else
                     {
-                        var labels = match.Groups[3].Value.ToLower().Split(',');
+                        var labels = match.Groups[mutatorsGroup].Value.ToLower().Split(',');
                         filteredMutators = new Mutator[labels.Length];
                         for (var i = 0; i < labels.Length; i++)
                         {
@@ -147,13 +151,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                             }
                             else
                             {
-                                _logger.LogWarning(
+                                _logger.LogError(
                                     $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
                             }
                         }
                     }
 
-                    context = context.FilterMutators(mode, filteredMutators, match.Groups[2].Value.ToLower() == "once", comment);
+                    context = context.FilterMutators(disable, filteredMutators, match.Groups[onceGroup].Value.ToLower() == "once", comment);
                     break;
                 }
 

@@ -56,7 +56,7 @@ namespace Stryker.Core.Mutants
                     if (_blockMutants.Count == 0)
                     {
                         // we have mutations that are going to be lost
-                        _logger.LogInformation($"{mutations.Count()} were generated but could not be injected as they cannot be controlled dynamically.");
+                        _logger.LogDebug($"{mutations.Count()} were generated but could not be injected as they cannot be controlled dynamically.");
                         foreach (var mutant in mutations)
                         {
                             _logger.LogDebug($"{mutant.Id}: {mutant.LongName}");
