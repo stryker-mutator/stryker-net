@@ -19,7 +19,9 @@ namespace Stryker.Core.Options.Inputs
                 throw new InputException("The basepath cannot be empty.");
             }
 
-            var outputPath = Path.Combine(basepath, "StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+            var strykerDir = string.IsNullOrWhiteSpace(SuppliedInput) ? "StrykerOutput" : SuppliedInput;
+
+            var outputPath = Path.Combine(basepath, strykerDir, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             // Create output dir with gitignore
