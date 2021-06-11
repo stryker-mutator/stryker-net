@@ -69,7 +69,7 @@ namespace Stryker.Core.Mutants
             {
                 result.FilteredMutators = filteredMutators;
             }
-            else if (result.FilteredMutators != null)
+            else if (result.FilteredMutators is not null)
             {
                 result.FilteredMutators = result.FilteredMutators.Where(t => !filteredMutators.Contains(t)).ToArray();
             }
