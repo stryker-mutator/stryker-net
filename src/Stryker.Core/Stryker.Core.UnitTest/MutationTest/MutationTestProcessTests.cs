@@ -1,18 +1,15 @@
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
@@ -27,7 +24,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
-
     public delegate bool UpdateHandler(IReadOnlyList<Mutant> mutants, TestListDescription ranTests,
         TestListDescription failedTests);
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -15,9 +15,6 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "mutation type filter";
 
         /// <inheritdoc />
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
-        {
-            return mutants.Where(mutant => !options.ExcludedMutations.Contains(mutant.Mutation.Type));
-        }
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options) => mutants.Where(mutant => !options.ExcludedMutations.Contains(mutant.Mutation.Type));
     }
 }
