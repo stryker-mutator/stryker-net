@@ -22,9 +22,9 @@
       },
       "NuGet.Versioning": {
         "type": "Direct",
-        "requested": "[5.9.1, )",
-        "resolved": "5.9.1",
-        "contentHash": "I/2Z/dAcV6tz8Bri9lYbcMoq6R9J1J8Vv23gDCAnWjwrIdwunhmnWgiZx/b7cmlEXaD1r0kxen18fXYoyqs4rg=="
+        "requested": "[5.10.0, )",
+        "resolved": "5.10.0",
+        "contentHash": "kXB4moY6JVjvv8InTlrDFpPEGZYLlK7e3bVrSn8NPbtrWhEdU3MlPagPjE2zsbjL7Oq80RNEnogNv6QkdUB+Rw=="
       },
       "Buildalyzer": {
         "type": "Transitive",
