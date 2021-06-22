@@ -1,3 +1,12 @@
+## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.4...dotnet-stryker@0.22.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **Ignore method:** Ignore method when not called on an object ([#1579](https://github.com/stryker-mutator/stryker-net/issues/1579)) ([eb87d07](https://github.com/stryker-mutator/stryker-net/commit/eb87d0702081848304cb679b6f1f9a2b85d3962a))
+
+
+
 ## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.2...dotnet-stryker@0.22.4) (2021-05-14)
 
 
