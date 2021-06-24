@@ -1,27 +1,19 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
+using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants.NodeOrchestrators;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants
 {
+
     /// <summary>
     /// Describe the (syntax tree) context during mutation
     /// </summary>
-    public class MutationContext: IDisposable
+    internal class MutationContext
     {
-        private static readonly ILogger _logger;
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
-        private readonly MutationContext _ancestor;
-        public readonly List<Mutant> ExpressionLevelMutations = new List<Mutant>();
-        public readonly List<Mutant> BlockLevelControlledMutations = new List<Mutant>();
-        public readonly List<Mutant> StatementLevelControlledMutations = new List<Mutant>();
-
-        static MutationContext()
-        {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationContext>();
-        }
+        public MutationStore Store = new();
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
@@ -30,10 +22,16 @@ namespace Stryker.Core.Mutants
 
         private MutationContext(MutationContext parent)
         {
-            _ancestor = parent;
             _mainOrchestrator = parent._mainOrchestrator;
             InStaticValue = parent.InStaticValue;
+            Store = parent.Store;
+            FilteredMutators = parent.FilteredMutators;
+            FilterComment = parent.FilterComment;
         }
+
+        public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node) => _mainOrchestrator.GenerateMutationsForNode(node, this);
+
+        public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 
         /// <summary>
         ///  True when inside a static initializer, fields or accessor.
@@ -42,47 +40,58 @@ namespace Stryker.Core.Mutants
 
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
-        public bool HasBlockLevelMutant => BlockLevelControlledMutations.Count > 0;
-        
-        public bool HasStatementLevelMutant => StatementLevelControlledMutations.Count > 0 || HasBlockLevelMutant;
+        public Mutator[] FilteredMutators { get; private set; }
 
-        public MutationContext EnterStatic()
-        {
-            return new MutationContext(this) {InStaticValue = true};
-        }
+        public string FilterComment { get; set; }
 
-        public MutationContext Clone()
-        {
-            return new MutationContext(this);
-        }
+        public MutationContext EnterStatic() => new(this) {InStaticValue = true};
 
-        public void Discard()
+        public MutationContext Enter(MutationControl control)
         {
-            if (HasStatementLevelMutant)
+            switch (control)
             {
-                // some mutants 
-                _logger.LogDebug($"{BlockLevelControlledMutations.Count+StatementLevelControlledMutations.Count} mutations were not injected.");
-                foreach (var mutant in BlockLevelControlledMutations.Union(StatementLevelControlledMutations))
-                {
-                    mutant.ResultStatus = MutantStatus.CompileError;
-                    mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
-                }
-                BlockLevelControlledMutations.Clear();
-                StatementLevelControlledMutations.Clear();
+                case MutationControl.Statement:
+                    Store.EnterStatement();
+                    return this;
+                case MutationControl.Block:
+                    Store.EnterBlock();
+                    return new MutationContext(this);
             }
 
+            return this;
         }
 
-        public void Dispose()
+        public MutationContext FilterMutators(bool mode, Mutator[] filteredMutators, bool newContext,
+            string comment)
         {
-            if (_ancestor == null)
+            var result = newContext ? new MutationContext(this) : this;
+            if (mode)
             {
-                Discard();
-                return;
+                result.FilteredMutators = filteredMutators;
             }
-            // copy the pending mutation to the enclosing context
-            _ancestor.StatementLevelControlledMutations.AddRange(StatementLevelControlledMutations);
-            _ancestor.BlockLevelControlledMutations.AddRange(BlockLevelControlledMutations);
+            else if (result.FilteredMutators is not null)
+            {
+                result.FilteredMutators = result.FilteredMutators.Where(t => !filteredMutators.Contains(t)).ToArray();
+            }
+
+            if (mode)
+            {
+                result.FilterComment = comment;
+            }
+            return result;
+        }
+
+        public void Leave(MutationControl control)
+        {
+            switch (control)
+            {
+                case MutationControl.Statement:
+                    Store.LeaveStatement();
+                    break;
+                case MutationControl.Block:
+                    Store.LeaveBlock();
+                    break;
+            }
         }
     }
 }

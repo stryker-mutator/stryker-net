@@ -27,6 +27,8 @@ namespace Stryker.Core.UnitTest
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
+        /// <remarks>Warning: this code tries to pinpoint the first different lines, but it will work on string comparison, so it may pinpoint spaces
+        /// or new line variations, hiding the real differences.</remarks>
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
             // for some reason, nodes can be different while being textually the same

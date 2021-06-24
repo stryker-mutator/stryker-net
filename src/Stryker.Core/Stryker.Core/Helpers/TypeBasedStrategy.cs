@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Helpers
@@ -26,10 +26,7 @@ namespace Stryker.Core.Helpers
             }
         }
 
-        public THandler FindHandler(T item)
-        {
-            return FindHandler(item, item.GetType());
-        }
+        public THandler FindHandler(T item) => FindHandler(item, item.GetType());
 
         private THandler FindHandler(T item, Type type)
         {

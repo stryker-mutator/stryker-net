@@ -394,9 +394,9 @@ for (var i = 0; i < 10; i++)
 { }
 }";
             string expected = @"public void SomeMethod() {
-if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = 0; i < 10; i--)
+if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = 0; i < 10; i--)
 { }
-}else{for (var i = 0; (StrykerNamespace.MutantControl.IsActive(2)?i <= 10:(StrykerNamespace.MutantControl.IsActive(1)?i > 10:i < 10)); i++)
+}else{for (var i = 0; (StrykerNamespace.MutantControl.IsActive(1)?i <= 10:(StrykerNamespace.MutantControl.IsActive(0)?i > 10:i < 10)); i++)
 { }
 }}";
             ShouldMutateSourceToExpected(source, expected);
@@ -426,9 +426,9 @@ for (var i = Method(true); ; i++)
 { }
 }";
             var expected = @"public void SomeMethod() {
-if(StrykerNamespace.MutantControl.IsActive(0)){for (var i = Method(true); ; i--)
+if(StrykerNamespace.MutantControl.IsActive(1)){for (var i = Method(true); ; i--)
 { }
-}else{for (var i = Method((StrykerNamespace.MutantControl.IsActive(1)?false:true)); ; i++)
+}else{for (var i = Method((StrykerNamespace.MutantControl.IsActive(0)?false:true)); ; i++)
 { }
 }}";
             ShouldMutateSourceToExpected(source, expected);
@@ -592,6 +592,154 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
         }
     }
 }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotMutateIfDisabledByComment()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+    x++;
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+     x++;
+     x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+            source = @"public void SomeMethod() {
+    var x = 0;
+    {
+    // Stryker disable all
+      x++;
+    }
+    x/=2;
+}";
+            expected = @"public void SomeMethod() {
+    var x = 0;
+    {
+    // Stryker disable all
+      x++;
+    }
+if(StrykerNamespace.MutantControl.IsActive(5)){    x*=2;
+}else{    x/=2;
+}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotMutateOneLineIfDisabledByComment()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable once all
+    x++;
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotMutateOneLineIfDisabledAndEnabledByComment()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+    x++;
+// Stryker restore all
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable all
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotMutateOneLineIfDisabledOnce()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable once all
+    x++;
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable once all
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotMutateOneLineIfSpecificMutatorDisabled()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable Update,Statement: comment
+    x++;
+// Stryker restore all
+    x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+// Stryker disable Update,Statement: comment
+     x++;
+if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
+}else{    x/=2;
+    }
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+
+            _target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.Ignored);
+            _target.Mutants.ElementAt(0).ResultStatusReason.ShouldBe("comment");
+        }
+
+        [Fact]
+        public void ShouldNotMutateASubExpressionIfDisabledByComment()
+        {
+            string source = @"public void SomeMethod() {
+    var x = 0;
+    x/=
+// Stryker disable once all
+x +2;
+}";
+            string expected = @"public void SomeMethod() {
+    var x = 0;
+if(StrykerNamespace.MutantControl.IsActive(0)){    x*=// Stryker disable once
+x +2;
+}else{    x/=
+// Stryker disable once all
+x +2;
+}}";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -979,7 +1127,8 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
 ";
 
             var expected = @"public static string FormatPrettyByte(Int64 value)
-{if(StrykerNamespace.MutantControl.IsActive(0))		{
+{ 
+if(StrykerNamespace.MutantControl.IsActive(0))		{
 			string[] SizeSuffixes = {};
 
 			int mag = (int)Math.Log(value, 1024);

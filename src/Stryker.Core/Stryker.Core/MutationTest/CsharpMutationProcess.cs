@@ -11,7 +11,6 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.MutationTest
 {
