@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.Mutants
@@ -9,16 +11,17 @@ namespace Stryker.Core.Mutants
         private static readonly TestDescription AllTestsDescription;
         private static readonly string AllTestsGuid = "-1";
 
-        public TestDescription(string guid, string name, string testfilePath)
+        public TestDescription(string guid, string name, string testfilePath, int lineNumber = -1)
         {
             Guid = guid;
             Name = name;
             TestfilePath = testfilePath;
+            LineNumber = lineNumber;
         }
 
         static TestDescription()
         {
-            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests", "");
+            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests", "", -1);
         }
 
         /// <summary>
@@ -36,8 +39,7 @@ namespace Stryker.Core.Mutants
         public bool IsAllTests => Guid == AllTestsGuid;
 
         public string TestfilePath { get; }
-
-
+        public int LineNumber { get; }
 
         private bool Equals(TestDescription other)
         {
@@ -45,8 +47,8 @@ namespace Stryker.Core.Mutants
         }
 
         public static implicit operator TestDescription(TestCase test)
-        {
-            return new TestDescription(test.Id.ToString(), test.FullyQualifiedName, test.CodeFilePath);
+        {            
+            return new TestDescription(test.Id.ToString(), test.FullyQualifiedName, test.CodeFilePath, test.LineNumber);
         }
 
         public override bool Equals(object obj)

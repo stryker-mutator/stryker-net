@@ -273,6 +273,7 @@ namespace Stryker.Core.TestRunners.VsTest
                         // register dynamic testcases
                         foreach (var mutant in mutants)
                         {
+
                             mutant.CoveringTests.Add(testResult.TestCase);
                         }
                         _logger.LogWarning($"{RunnerId}: Each mutant will be tested against {testResult.TestCase.DisplayName}), because we can't get coverage info for test case generated at run time");
@@ -301,6 +302,10 @@ namespace Stryker.Core.TestRunners.VsTest
                         {
                             if (coveredMutants.Contains(mutant.Id))
                             {
+                                if (testResult.TestCase.CodeFilePath != null)
+                                {
+                                    mutant.CoveringTests.Add(testResult.TestCase);
+                                }
                                 mutant.CoveringTests.Add(testResult.TestCase);
                             }
 
