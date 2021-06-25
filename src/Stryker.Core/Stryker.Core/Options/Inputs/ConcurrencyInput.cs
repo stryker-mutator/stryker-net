@@ -7,12 +7,12 @@ namespace Stryker.Core.Options.Inputs
     public class ConcurrencyInput : InputDefinition<int?>
     {
         protected override string Description => @"By default Stryker tries to make the most of your CPU, by spawning as many parallel processes as you have CPU cores.
-    This setting allows you to override this default behavior.
-    Reasons you might want to lower this setting:
-                                                                 
-        - Your test runner starts a browser (another CPU-intensive process)
-        - You're running on a shared server
-        - You are running stryker in the background while doing other work";
+This setting allows you to override this default behavior.
+Reasons you might want to lower this setting:
+
+    - Your test runner starts a browser (another CPU-intensive process)
+    - You're running on a shared server
+    - You are running stryker in the background while doing other work";
 
         public override int? Default => Environment.ProcessorCount / 2;
 

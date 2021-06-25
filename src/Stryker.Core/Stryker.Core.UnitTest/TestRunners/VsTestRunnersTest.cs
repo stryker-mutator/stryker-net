@@ -740,7 +740,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var options = new StrykerOptions
             {
-                OptimizationMode = OptimizationModes.CaptureCoveragePerTest
+                OptimizationMode = OptimizationModes.CoverageBasedTest
             };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))

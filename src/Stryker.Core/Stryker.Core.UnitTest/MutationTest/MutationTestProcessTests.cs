@@ -284,7 +284,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void ShouldCallExecutorForEveryCoveredMutant()
         {
             var scenario = new FullRunScenario();
-            scenario.CreateMutants(1,2);
+            scenario.CreateMutants(1, 2);
             // we need at least one test
             scenario.CreateTest(1);
             // and we need to declare that the mutant is covered
@@ -324,7 +324,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var options = new StrykerOptions()
             {
                 BasePath = basePath,
-                Concurrency = 1
+                Concurrency = 1,
+                OptimizationMode = OptimizationModes.CoverageBasedTest
             };
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -385,7 +386,9 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions
             {
-                BasePath = basePath
+                BasePath = basePath,
+                Concurrency = 1,
+                OptimizationMode = OptimizationModes.CoverageBasedTest
             };
 
             var target = new MutationTestProcess(input,
@@ -451,7 +454,9 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions
             {
-                BasePath = basePath
+                BasePath = basePath,
+                Concurrency = 1,
+                OptimizationMode = OptimizationModes.CoverageBasedTest
             };
 
             var target = new MutationTestProcess(input,
