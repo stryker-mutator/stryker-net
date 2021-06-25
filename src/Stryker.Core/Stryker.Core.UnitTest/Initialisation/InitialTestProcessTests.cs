@@ -29,8 +29,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var failedTest = Guid.NewGuid();
             var successfulTest = Guid.NewGuid();
-            var ranTests = new TestsGuidList(new[] {failedTest, successfulTest});
-            var failedTests = new TestsGuidList(new[] {failedTest});
+            var ranTests = new TestsGuidList(failedTest, successfulTest);
+            var failedTests = new TestsGuidList(failedTest);
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testList.Add(Guid.NewGuid());
             }
             var ranTests = new TestsGuidList(testList);
-            var failedTests = new TestsGuidList(new[] {test1});
+            var failedTests = new TestsGuidList(test1);
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
                 .Returns(new TestRunResult(true));

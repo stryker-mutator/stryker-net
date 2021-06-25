@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             node = actualNode.DescendantNodes().First(t => t is T {ContainsAnnotations: true}) as T;
             // Remove helper
-            var restored= MutantPlacer.RemoveMutant(node);
+            var restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
             actualNode.ToFullString().ShouldBeSemantically(sourceCode);
             // try to remove again

@@ -57,27 +57,49 @@ namespace Stryker.Core.InjectedHelpers
 
         public static IDictionary<string, string> MutantHelpers { get; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Get a SyntaxNode describing the creation of static tracking object
+        /// </summary>
+        /// <returns>Returns new Stryker.MutantContext() with proper namespace</returns>
         public static ObjectCreationExpressionSyntax GetContextClassConstructor() =>
-            SyntaxFactory.ObjectCreationExpression(SyntaxFactory.QualifiedName(
-                SyntaxFactory.IdentifierName(CodeInjection.HelperNamespace),
-                SyntaxFactory.IdentifierName(MutantContextClassName)).WithLeadingTrivia(SyntaxFactory.Space),
+            SyntaxFactory.ObjectCreationExpression(
+                SyntaxFactory.QualifiedName(
+                    SyntaxFactory.IdentifierName(CodeInjection.HelperNamespace),
+                    SyntaxFactory.IdentifierName(MutantContextClassName))
+                    .WithLeadingTrivia(SyntaxFactory.Space),
                 SyntaxFactory.ArgumentList(),
                 null);
         
 
+        /// <summary>
+        /// Get a SyntaxNode describing accessing a member of the mutant context class.
+        /// </summary>
+        /// <param name="member">Desired member</param>
+        /// <returns>Returns Stryker.MutantContext.<paramref name="member"/> with proper namespace </returns>
         public static MemberAccessExpressionSyntax GetContextClassAccessExpression(string member) =>
             SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
                     SyntaxFactory.IdentifierName(CodeInjection.HelperNamespace),
                     SyntaxFactory.IdentifierName(MutantContextClassName)),
                 SyntaxFactory.IdentifierName(member));
 
+
+        /// <summary>
+        /// Checks if an expression is describing accessing a member of the mutant context class.
+        /// </summary>
+        /// <param name="memberAccess">expression to analyze</param>
+        /// <param name="member">expected member name</param>
+        /// <returns>Returns true if the expression is Stryker.MutantContext.<paramref name="member"/> with proper namespace </returns>
         public static bool IsContextAccessExpression(ExpressionSyntax memberAccess, string member) =>
-            memberAccess is MemberAccessExpressionSyntax
-            {Expression: MemberAccessExpressionSyntax
-                    {Name: IdentifierNameSyntax {Identifier: {ValueText: MutantContextClassName}}},
-                Name: {Identifier: {ValueText: { } specificMember}}} && specificMember == member;
+            memberAccess is MemberAccessExpressionSyntax {
+                Expression: MemberAccessExpressionSyntax
+                {
+                    Name: IdentifierNameSyntax {Identifier: {ValueText: MutantContextClassName}}
+                },
+                Name: {Identifier: {ValueText: { } specificMember}}}
+            && specificMember == member;
 
         private static string GetSourceFromResource(string sourceResourceName)
         {
