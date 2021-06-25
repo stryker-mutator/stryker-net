@@ -18,7 +18,7 @@ This was done because the ```FindProjectFilesScanningProjectFolders``` has been 
 
 ### FsharpCoreOrchestrator
 
-The Orchestrators work in a similar fassion to those in the CsharpMutantOrchestrator.
+The Orchestrators works in a similar fashion to those in the CsharpMutantOrchestrator.
 This process starts with a method: ```Mutate(FSharpList<SynModuleOrNamespace>)``` inside the ```FsharpMutantOrchestrator```.
 The ```FsharpMutantOrchestrator``` is only used as a starting point, after that the ```FsharpCoreOrchestrator``` takes over.
 
