@@ -149,7 +149,7 @@ private bool Out(out string test)
     }";
             string expected = @"public static class ExampleExtension
     {
-        private static string[] tabs = { (StrykerNamespace.MutantControl.IsActive(1)?"""":""tab1""), (StrykerNamespace.MutantControl.IsActive(2)?"""":""tab2"")};
+        private static string[] tabs = {(StrykerNamespace.MutantControl.IsActive(1)?"""":""tab1""), (StrykerNamespace.MutantControl.IsActive(2)?"""":""tab2"")};
 
         private List<string> _collection;
 
@@ -789,7 +789,7 @@ static Mutator_Flag_MutatedStatics()
             int x = 0;
             var y = x++;
         }";
-            string expected = @"private static bool willMutateToFalse = (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+            string expected = @"private static bool willMutateToFalse = StrykerNamespace.MutantContext.TrackValue(()=> (StrykerNamespace.MutantControl.IsActive(0)?false:true));
 
         private static bool NoWorries => (StrykerNamespace.MutantControl.IsActive(1)?true:false);
         private static bool NoWorriesGetter
@@ -1096,7 +1096,7 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 static string Value {get;} = """";}";
 
             var expected = @"class Test {
-static string Value {get;} = (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");}";
+static string Value {get;} = StrykerNamespace.MutantContext.TrackValue(()=>(StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""));}}}";
             ShouldMutateSourceToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(1);
             _target.Mutants.First().IsStaticValue.ShouldBeTrue();

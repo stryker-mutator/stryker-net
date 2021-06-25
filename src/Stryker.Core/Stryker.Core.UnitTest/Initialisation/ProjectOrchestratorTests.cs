@@ -1,17 +1,17 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Buildalyzer;
 using Buildalyzer.Construction;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -31,15 +31,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new Mock<IMutationTestProcess>().Object);
 
-            var components = new Collection<IProjectComponent>() {
-                new CsharpFileLeaf() {
-                    Mutants = new List<Mutant> { new Mutant { Id = 1 } }
-                }
-            };
-
             _mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = new CsharpFolderComposite()
                 },
@@ -70,7 +64,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object);
 
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(5);
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)

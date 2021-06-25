@@ -28,48 +28,49 @@ namespace Stryker.Core.CoverageAnalysis
 
         public void DetermineTestCoverage()
         {
-            if (_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (!_options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+                !_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                var (targetFrameworkDoesNotSupportAppDomain, targetFrameworkDoesNotSupportPipe) = _input.ProjectInfo.ProjectUnderTestAnalyzerResult.CompatibilityModes();
-                var mutantsToScan =
-                    _input.ProjectInfo.ProjectContents.Mutants
-                        .Where(x => x.ResultStatus == MutantStatus.NotRun)
-                    .ToList();
-                foreach (var mutant in mutantsToScan)
-                {
-                    mutant.CoveringTests = new TestListDescription(null);
-                }
-                var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan, targetFrameworkDoesNotSupportPipe, targetFrameworkDoesNotSupportAppDomain);
-                if (testResult.FailingTests.Count == 0)
-                {
-                    SetCoveringTests(mutantsToScan);
-                    return;
-                }
-                _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
-                throw new InputException("No active mutant testrun was not successful.", testResult.ResultMessage);
+                return;
             }
+            var mutantsToScan =
+                _input.ProjectInfo.ProjectContents.Mutants
+                    .Where(x => x.ResultStatus == MutantStatus.NotRun)
+                    .ToList();
+            foreach (var mutant in mutantsToScan)
+            {
+                mutant.ResetCoverage();
+            }
+            var testResult = _mutationTestExecutor.TestRunner.CaptureCoverage(mutantsToScan);
+            if (testResult.FailingTests.Count == 0)
+            {
+                SetCoveringTests(mutantsToScan);
+                return;
+            }
+            _logger.LogWarning("Test run with no active mutation failed. Stryker failed to correctly generate the mutated assembly. Please report this issue on github with a logfile of this run.");
+            throw new InputException("No active mutant testrun was not successful.", testResult.ResultMessage);
         }
 
-        private void SetCoveringTests(List<Mutant> mutantsToScan)
+        private void SetCoveringTests(IReadOnlyCollection<Mutant> mutantsToScan)
         {
             // force static mutants to be tested against all tests.
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
                 {
-                    mutant.MustRunAgainstAllTests = true;
+                    mutant.CoveringTests = TestsGuidList.EveryTest();
                 }
             }
             foreach (var mutant in mutantsToScan)
             {
-                if (!mutant.MustRunAgainstAllTests && mutant.CoveringTests.IsEmpty)
+                if (mutant.CoveringTests.IsEmpty)
                 {
                     mutant.ResultStatus = MutantStatus.NoCoverage;
                     mutant.ResultStatusReason = "Mutant has no test coverage";
                 }
                 else if (!_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
                 {
-                    mutant.CoveringTests = TestListDescription.EveryTest();
+                    mutant.CoveringTests = TestsGuidList.EveryTest();
                 }
             }
         }

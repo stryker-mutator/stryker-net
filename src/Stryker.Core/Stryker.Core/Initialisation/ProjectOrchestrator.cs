@@ -130,8 +130,6 @@ namespace Stryker.Core.Initialisation
         private static bool IsSolutionContext(StrykerOptions options) =>
             options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.BasePath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
 
-
-
         private IEnumerable<IAnalyzerResult> FindProjectsUnderTest(IEnumerable<IAnalyzerResult> projectsAnalyzerResults)
         {
             foreach (var project in projectsAnalyzerResults)

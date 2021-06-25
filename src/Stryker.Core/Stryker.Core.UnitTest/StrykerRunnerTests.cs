@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest
 
             var projectInfo = Mock.Of<ProjectInfo>();
             projectInfo.ProjectContents = folder;
-            Mock.Get(projectInfo).Setup(p => p.RestoreOrginalAssembly());
+            Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
             var mutationTestInput = new MutationTestInput()
             {
                 ProjectInfo = projectInfo
@@ -64,6 +64,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.GetCoverage());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
+            mutationTestProcessMock.Setup(x => x.Restore());
 
             // Set up sequence-critical methods:
             // * FilterMutants must be called before OnMutantsCreated to get valid reports
@@ -100,7 +101,7 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder
                 }

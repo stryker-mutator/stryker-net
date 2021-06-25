@@ -14,6 +14,7 @@ namespace Stryker.Core.MutantFilters
         /// Filters the mutants.
         /// </summary>
         /// <param name="mutants">The mutants.</param>
+        /// <param name="set">test description set</param>
         /// <param name="file">The origin file of the mutants.</param>
         /// <param name="options">The stryker options.</param>
         /// <returns>Return only the mutants that made it through the filter.</returns>

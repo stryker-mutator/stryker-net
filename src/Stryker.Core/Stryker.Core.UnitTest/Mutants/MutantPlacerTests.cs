@@ -43,21 +43,20 @@ namespace Stryker.Core.UnitTest.Mutants
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
 
-
         private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T>(string sourceCode, string expectedCode,
-            Func<T, T> placer) where T : SyntaxNode
+            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode
         {
             var actualNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
-            var node = actualNode.DescendantNodes().First(t => t is T) as T;
+            var node = actualNode.DescendantNodes().First(t => t is T syntaxNode && (condition == null || condition(syntaxNode))) as T;
             // inject helper
-            actualNode = actualNode.ReplaceNode(node, placer(node));
+            var newNode = placer(node);
+            actualNode = actualNode.ReplaceNode(node, newNode);
             actualNode.ToFullString().ShouldBeSemantically(expectedCode);
 
-            node =
-                actualNode.DescendantNodes().First(t => t is T) as T;
+            node = actualNode.DescendantNodes().First(t => t is T {ContainsAnnotations: true}) as T;
             // Remove helper
-            var restored= MutantPlacer.RemoveMutant(node);
+            var restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
             actualNode.ToFullString().ShouldBeSemantically(sourceCode);
             // try to remove again
@@ -142,6 +141,16 @@ namespace Stryker.Core.UnitTest.Mutants
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected,
                 (n)=> MutantPlacer.AddDefaultInitialization(n, SyntaxFactory.Identifier("x"), SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
+        }
+
+        [Fact]
+        public void ShouldStaticMarkerInStaticFieldInitializers()
+        {
+            var source = "class Test {static int x = 2;}";
+            var expected = $"class Test {{static int x = {CodeInjection.HelperNamespace}.MutantContext.TrackValue(()=>2);}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<ExpressionSyntax>(source, expected,
+                MutantPlacer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
         }
 
         [Fact]

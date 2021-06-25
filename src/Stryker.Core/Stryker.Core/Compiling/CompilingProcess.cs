@@ -44,6 +44,7 @@ namespace Stryker.Core.Compiling
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
+        /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;

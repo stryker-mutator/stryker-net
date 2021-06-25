@@ -27,8 +27,14 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 return base.OrchestrateChildrenMutation(node, context);
             }
 
-            return node.ReplaceNodes(node.ChildNodes(), (original, _) =>
+            var children = node.ReplaceNodes(node.ChildNodes(), (original, _) =>
                 MutateSingleNode(original, original == node.Initializer ? context.EnterStatic() : context));
+            if (children.Initializer != null)
+            {
+                children = children.ReplaceNode(children.Initializer.Value,
+                    MutantPlacer.PlaceStaticContextMarker(children.Initializer.Value));
+            }
+            return children;
         }
 
         protected override BasePropertyDeclarationSyntax InjectMutations(PropertyDeclarationSyntax sourceNode,
@@ -45,6 +51,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             {
                 return result;
             }
+
             mutated = MutantPlacer.ConvertPropertyExpressionToBodyAccessor(mutated);
             var getter = mutated.GetAccessor();
 

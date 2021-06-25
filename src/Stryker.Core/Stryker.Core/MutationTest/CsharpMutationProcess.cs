@@ -40,7 +40,7 @@ namespace Stryker.Core.MutationTest
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
-            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options);
+            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options, _input);
         }
 
         public void Mutate()
@@ -58,8 +58,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
                 }
                 // Filter the mutants
-                var allMutants = _orchestrator.GetLatestMutantBatch();
-                file.Mutants = allMutants;
+                file.Mutants = _orchestrator.GetLatestMutantBatch();
             }
 
             _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
@@ -81,11 +80,7 @@ namespace Stryker.Core.MutationTest
                 {
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
                 }
-                if (_fileSystem.File.Exists(injectionPath))
-                {
-                    _fileSystem.File.Move(injectionPath, injectionPath + ".stryker-unchanged");
-                }
-                
+
                 // inject the mutated Assembly into the test project
                 using var fs = _fileSystem.File.Create(injectionPath);
                 ms.Position = 0;

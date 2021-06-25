@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -36,6 +37,7 @@ namespace Stryker.Core.MutationTest
         MutationTestInput Input { get; }
         void Mutate();
         StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
+        void Restore();
         void GetCoverage();
         void FilterMutants();
     }
@@ -72,6 +74,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
+            Input.ProjectInfo.BackupOriginalAssembly();
             _mutationProcess.Mutate();
         }
 
@@ -88,11 +91,12 @@ namespace Stryker.Core.MutationTest
             }
 
             TestMutants(mutantsToTest);
-
             _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(_options, _projectContents.ToReadOnlyInputComponent().GetMutationScore());
         }
+
+        public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
@@ -100,13 +104,22 @@ namespace Stryker.Core.MutationTest
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
+            var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
 
-                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestListDescription failedTests, ITestListDescription ranTests, ITestListDescription timedOutTest)
+                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
-                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
+                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationFlags.AbortTestOnKill);
+                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
+                    {
+                        // some of the failing tests where failing without any mutation
+                        // we discard those tests
+                        failedTests = new TestsGuidList(
+                            failedTests.GetGuids().Where(t => !testsFailingInitialy.Contains(t)));
+                    }
                     foreach (var mutant in testedMutants)
                     {
                         mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
@@ -121,13 +134,13 @@ namespace Stryker.Core.MutationTest
 
                     return continueTestRun;
                 }
-                _mutationTestExecutor.Test(mutants, Input.TimeoutMs, testUpdateHandler);
+                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, testUpdateHandler);
 
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
-        private void OnMutantsTested(List<Mutant> mutants, HashSet<Mutant> reportedMutants)
+        private void OnMutantsTested(IEnumerable<Mutant> mutants, HashSet<Mutant> reportedMutants)
         {
             foreach (var mutant in mutants)
             {
@@ -140,11 +153,11 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private void OnMutantTested(Mutant mutant, HashSet<Mutant> reportedMutants)
+        private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
             if (mutant.ResultStatus != MutantStatus.NotRun && !reportedMutants.Contains(mutant))
             {
-                _reporter.OnMutantTested(mutant);
+                _reporter?.OnMutantTested(mutant);
                 reportedMutants.Add(mutant);
             }
         }
@@ -176,23 +189,28 @@ namespace Stryker.Core.MutationTest
             // we deal with mutants needing full testing first
             blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
-            var testsCount = mutantsToGroup.SelectMany(m => m.CoveringTests.GetList()).Distinct().Count();
-            mutantsToGroup = mutantsToGroup.OrderByDescending(m => m.CoveringTests.Count).ToList();
+
+            var testsCount = mutantsToGroup.Sum(m => m.CoveringTests.Count);
+            mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
-                var usedTests = mutantsToGroup[i].CoveringTests.GetList().ToList();
+                var usedTests = mutantsToGroup[i].CoveringTests;
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
-                    if (mutantsToGroup[j].CoveringTests.Count + usedTests.Count > testsCount ||
-                        mutantsToGroup[j].CoveringTests.ContainsAny(usedTests))
+                    var currentMutant = mutantsToGroup[j];
+                    var nextSet = currentMutant.CoveringTests;
+                    if (nextSet.Count + usedTests.Count > testsCount ||
+                        nextSet.ContainsAny(usedTests))
                     {
                         continue;
                     }
-
-                    nextBlock.Add(mutantsToGroup[j]);
-                    usedTests.AddRange(mutantsToGroup[j].CoveringTests.GetList());
+                    // add this mutant to the block
+                    nextBlock.Add(currentMutant);
+                    // remove the mutant from the todo list
                     mutantsToGroup.RemoveAt(j--);
+                    // add this mutant tests
+                    usedTests = usedTests.Merge(nextSet);
                 }
 
                 blocks.Add(nextBlock);

@@ -35,7 +35,7 @@ namespace Stryker.Core.Initialisation
                 options: options);
 
             // initial test
-            input.TimeoutMs = initialisationProcess.InitialTest(options);
+            input.InitialTestRun = initialisationProcess.InitialTest(options);
 
             // mutate
             process.Mutate();

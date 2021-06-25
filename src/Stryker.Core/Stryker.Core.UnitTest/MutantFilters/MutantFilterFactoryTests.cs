@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
-            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public void Create_Throws_ArgumentNullException_When_Stryker_Options_Is_Null()
         {
-            var result = Should.Throw<ArgumentNullException>(() => MutantFilterFactory.Create(null));
+            var result = Should.Throw<ArgumentNullException>(() => MutantFilterFactory.Create(null, null));
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
             // Act
-            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -93,7 +93,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
 
-            var result = MutantFilterFactory.Create(options, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
 
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
