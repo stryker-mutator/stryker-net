@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Instrumentation
 {
+    /// <summary>
+    /// Injects a mutation controlled by a conditional operator.
+    /// </summary>
     internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
 
@@ -12,7 +15,14 @@ namespace Stryker.Core.Instrumentation
         {
         }
 
-        public ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
+        /// <summary>
+        /// Injects a conditional operator with the original code or the mutated one, depending on condition's result.
+        /// </summary>
+        /// <param name="condition">Expression for the condition.</param>
+        /// <param name="original">Original code</param>
+        /// <param name="mutated">Mutated code</param>
+        /// <returns>A new expression containing the expected construct.</returns>
+        public  ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
             SyntaxFactory.ParenthesizedExpression(
                     SyntaxFactory.ConditionalExpression(
                         condition: condition,

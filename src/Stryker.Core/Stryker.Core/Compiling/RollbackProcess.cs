@@ -1,14 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
+using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Compiling
 {
@@ -16,7 +17,7 @@ namespace Stryker.Core.Compiling
     {
         RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
-
+    
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>
@@ -35,14 +36,14 @@ namespace Stryker.Core.Compiling
         {
             // match the diagnostics with their syntax trees
             var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
-
+            
             foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
             {
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
             }
 
             // remove the broken mutations from the syntax trees
-            foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
+            foreach(var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
                 var originalTree = syntaxTreeMap.Key;
                 if (devMode)
@@ -71,44 +72,74 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return new RollbackProcessResult()
-            {
+            return new RollbackProcessResult() {
                 Compilation = compiler,
                 RollbackedIds = RolledBackIds
             };
         }
 
+        // search is this node is within a mutation
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
+            var id = ExtractMutationIfAndId(startNode);
+            if (id != null)
+            {
+                return (startNode, id.Value);
+            }
             for (var node = startNode; node != null; node = node.Parent)
             {
-                var id = ExtractMutationIfAndId(node);
-                if (id != null)
+                id = ExtractMutationIfAndId(node);
+                if (id != null) 
                 {
                     return (node, id.Value);
                 }
             }
 
-            return (null, 0);
+            // scan within the expression
+            return startNode is ExpressionSyntax ? FindMutationInChildren(startNode) : (null, -1);
+        }
+
+        // search the first mutation within the node
+        private (SyntaxNode, int) FindMutationInChildren(SyntaxNode startNode)
+        {
+            foreach (var node in startNode.ChildNodes())
+            {
+                var id = ExtractMutationIfAndId(node);
+                if (id != null) 
+                {
+                    return (node, id.Value);
+                }
+            }
+
+            foreach (var node in startNode.ChildNodes())
+            {
+                var (subNode, mutantId) = FindMutationInChildren(node);
+                if (subNode != null)
+                {
+                    return (subNode, mutantId);
+                }
+            }
+
+            return (null, -1);
         }
 
         private int? ExtractMutationIfAndId(SyntaxNode node)
         {
-            var first = node.GetAnnotations(MutantPlacer.MutationMarkers).FirstOrDefault();
-            if (first == null)
+            var (engine, id) = MutantPlacer.FindEngine(node);
+
+            if (engine == null)
             {
                 return null;
             }
 
-            var mutantId = int.Parse(first.Data);
-            Logger.LogDebug("Found id {0} in MutantIf annotation", mutantId);
-            return mutantId;
+            Logger.LogDebug(id == -1 ? $"Found a helper (engine:{engine})." : $"Found mutant {id} (controlled by {engine}).");
 
+            return id;
         }
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
         {
-            for (var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
+            for(var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
                 if (currentNode.Kind() == SyntaxKind.MethodDeclaration || currentNode.Kind() == SyntaxKind.GetAccessorDeclaration || currentNode.Kind() == SyntaxKind.SetAccessorDeclaration)
                 {
@@ -119,12 +150,12 @@ namespace Stryker.Core.Compiling
             return null;
         }
 
-        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IDictionary<SyntaxNode, int> scan)
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IList<(SyntaxNode, int)> scan)
         {
             var id = ExtractMutationIfAndId(node);
             if (id != null)
             {
-                scan[node] = id.Value;
+                scan.Add((node, id.Value));
             }
 
             foreach (var childNode in node.ChildNodes())
@@ -194,7 +225,7 @@ namespace Stryker.Core.Compiling
                     Logger.LogWarning(
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                     // backup, remove all mutations in the node
-                    var scan = new Dictionary<SyntaxNode, int>();
+                    var scan = new List<(SyntaxNode, int)>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
@@ -203,7 +234,10 @@ namespace Stryker.Core.Compiling
                         if (!brokenMutations.Contains(key))
                         {
                             brokenMutations.Add(key);
-                            RolledBackIds.Add(value);
+                            if (value != -1)
+                            {
+                                RolledBackIds.Add(value);
+                            }
                         }
                     }
                 }

@@ -1,7 +1,7 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
@@ -10,12 +10,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// </summary>
     internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator<ConstructorDeclarationSyntax>
     {
-        protected override bool NewContext => true;
-
-        protected override bool CanHandle(ConstructorDeclarationSyntax t)
-        {
-            return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
-        }
+        protected override bool CanHandle(ConstructorDeclarationSyntax t) => t.IsStatic();
 
         /// <inheritdoc/>
         /// <remarks>Injects a static marker used for coverage information; this implies converting
@@ -36,10 +31,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             }
 
             return mutated.ReplaceNode(mutated.Body!, MutantPlacer.PlaceStaticContextMarker(mutated.Body));
-        }
-
-        public StaticConstructorOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
         }
     }
 }

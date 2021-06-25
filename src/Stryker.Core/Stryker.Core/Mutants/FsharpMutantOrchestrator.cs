@@ -12,34 +12,18 @@ namespace Stryker.Core.Mutants
 {
     public class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>
     {
-        private ILogger Logger { get; }
         private readonly FsharpCoreOrchestrator _base;
 
         //the current implementation only has the orchestrators and does not keep track of mutants or mutators
         public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpMutantOrchestrator>();
             _base = new FsharpCoreOrchestrator();
         }
 
         public override FSharpList<SynModuleOrNamespace> Mutate(FSharpList<SynModuleOrNamespace> input)
         {
-            var mutationContext = new MutationContext(this);
-            var mutation = _base.Mutate(input);
-
-            if (mutationContext.HasStatementLevelMutant && _options?.DevMode == true)
-            {
-                // some mutants where not injected for some reason, they should be reviewed to understand why.
-                Logger.LogError($"Several mutants were not injected in the project : {mutationContext.BlockLevelControlledMutations.Count + mutationContext.StatementLevelControlledMutations.Count}");
-            }
-            // mark remaining mutants as CompileError
-            foreach (var mutant in mutationContext.StatementLevelControlledMutations.Union(mutationContext.BlockLevelControlledMutations))
-            {
-                mutant.ResultStatus = MutantStatus.CompileError;
-                mutant.ResultStatusReason = "Stryker was not able to inject mutation in code.";
-            }
-            return mutation;
+            return _base.Mutate(input);
         }
     }
 }

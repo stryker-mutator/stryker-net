@@ -10,7 +10,7 @@
     <RootNamespace>Stryker.Core</RootNamespace>
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>0.22.1</VersionPrefix>
+    <VersionPrefix>0.22.4</VersionPrefix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
-    <EmbeddedResource Include="InjectedHelpers\Coverage\CommunicationChannel.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
     <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
@@ -41,7 +40,7 @@
     <PackageReference Include="Buildalyzer" Version="3.2.0" />
     <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
-    <PackageReference Include="Buildalyzer" Version="3.2.0" />
+    <PackageReference Include="Buildalyzer" Version="3.2.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> 				<!-- From Directory.Build.props -->
@@ -51,7 +50,7 @@
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.113" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
@@ -70,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Mutants\CsharpMutantOrchestrator.cs.orig" />
     <None Remove="Stryker.Core.csproj.DotSettings" />
   </ItemGroup>
 

@@ -69,7 +69,6 @@ namespace Stryker.Core.Mutators
             {
                 return WillBeMutatedByOtherMutators(parenthesized.Expression);
             }
-
             if (node is BinaryExpressionSyntax binary)
             {
                 return binary.Kind() == SyntaxKind.EqualsExpression || binary.Kind() == SyntaxKind.NotEqualsExpression;

@@ -51,7 +51,7 @@ namespace Stryker.Core.Baseline.Providers
 
             _fileSystem.Directory.CreateDirectory(reportPath);
 
-            using StreamWriter outputWriter = _fileSystem.File.CreateText(Path.Combine(reportPath, $"stryker-report.json"));
+            await using StreamWriter outputWriter = _fileSystem.File.CreateText(Path.Combine(reportPath, $"stryker-report.json"));
 
             await outputWriter.WriteAsync(reportJson);
 

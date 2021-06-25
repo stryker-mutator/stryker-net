@@ -122,7 +122,7 @@ namespace Stryker.Core.UnitTest.Options
             {
                 var options = new StrykerOptions(excludedMutations: new[] { "gibberish" });
             });
-            ex.Details.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
+            ex.Details.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Statement, Bitwise, Initializer, Regex]");
         }
 
         [Fact]

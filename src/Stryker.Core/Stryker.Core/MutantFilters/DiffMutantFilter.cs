@@ -1,25 +1,18 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Baseline;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.MutantFilters
 {
     public class DiffMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
+        private readonly TestSet _tests;
         private readonly ILogger<DiffMutantFilter> _logger;
 
         public string DisplayName => "git diff file filter";
@@ -29,6 +22,7 @@ namespace Stryker.Core.MutantFilters
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
 
             _diffResult = diffProvider.ScanDiff();
+            _tests = diffProvider.Tests;
 
             if (_diffResult != null)
             {
@@ -123,11 +117,10 @@ namespace Stryker.Core.MutantFilters
 
             foreach (var mutant in mutants)
             {
-                var coveringTests = mutant.CoveringTests.Tests;
+                var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
 
                 if (coveringTests != null
-                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestfilePath == changedTestFile))
-                        || coveringTests.Any(coveringTest => coveringTest.IsAllTests)))
+                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile))))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
                     mutant.ResultStatusReason = "One or more covering tests changed";

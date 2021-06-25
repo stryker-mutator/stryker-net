@@ -47,7 +47,7 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public ProjectInfo ResolveInput(IStrykerOptions options)
         {
-            var projectInfo = new ProjectInfo();
+            var projectInfo = new ProjectInfo(_fileSystem);
             // Determine test projects
             var testProjectFiles = new List<string>();
             string projectUnderTest = null;

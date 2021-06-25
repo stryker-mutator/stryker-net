@@ -1,4 +1,4 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
-            Action act = () => new GitDiffProvider(options, gitInfoProvider.Object);
+            Action act = () => new GitDiffProvider(options, null, gitInfoProvider.Object);
 
             act.ShouldNotThrow();
 
@@ -86,7 +86,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -147,7 +147,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -193,7 +193,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.Setup(x => x.DetermineCommit()).Returns((Commit)null);
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             Should.Throw<StrykerInputException>(() => target.ScanDiff());
         }
@@ -260,7 +260,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -332,7 +332,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -405,7 +405,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns(FilePathUtils.NormalizePathSeparators("/c/Path/To/Repo"));
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();
@@ -473,7 +473,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             gitInfoMock.SetupGet(x => x.RepositoryPath).Returns("/c/Path/To/Repo");
-            var target = new GitDiffProvider(options, gitInfoMock.Object);
+            var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
             // Act
             var res = target.ScanDiff();

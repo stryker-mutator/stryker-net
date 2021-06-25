@@ -1,26 +1,24 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class StaticFieldDeclarationOrchestrator : NodeSpecificOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
     {
-        protected override bool CanHandle(FieldDeclarationSyntax t)
-        {
-            return t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
-        }
+        protected override bool CanHandle(FieldDeclarationSyntax t) => t.IsStatic();
+        protected override MutationContext PrepareContext(FieldDeclarationSyntax _, MutationContext context) => context.EnterStatic();
 
-        protected override BaseFieldDeclarationSyntax OrchestrateChildrenMutation(FieldDeclarationSyntax node, MutationContext context)
+        protected override BaseFieldDeclarationSyntax InjectMutations(FieldDeclarationSyntax sourceNode, BaseFieldDeclarationSyntax targetNode,
+            MutationContext context)
         {
-            using var newContext = context.EnterStatic();
-            // we need to signal we are in a static field
-            return base.OrchestrateChildrenMutation(node, newContext);
-        }
+            var result = base.InjectMutations(sourceNode, targetNode, context);
 
-        public StaticFieldDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
+            result = result.ReplaceNodes(result.Declaration.Variables.Where(v => v.Initializer != null).Select(v => v.Initializer.Value),
+                (syntax, _) => MutantPlacer.PlaceStaticContextMarker(syntax));
+
+            return result;
         }
     }
 }

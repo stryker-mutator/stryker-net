@@ -47,7 +47,6 @@ namespace Stryker.Core.UnitTest.Fsharp
 </Project>";
         }
 
-        [Fact(Skip ="F# is currently disabled")]
         public void Stryker_FsharpShouldRetrieveSourcefiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -62,13 +61,13 @@ namespace Stryker.Core.UnitTest.Fsharp
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp"))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences : new List<string>() { _projectUnderTestPath },
                     targetFramework : "netcoreapp2.1",
                     projectFilePath : _testProjectPath,
                     references : new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null, "fsharp"))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",

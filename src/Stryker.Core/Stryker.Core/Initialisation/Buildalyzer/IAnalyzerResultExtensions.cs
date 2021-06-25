@@ -50,20 +50,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         public static IList<string> GetDefineConstants(this IAnalyzerResult analyzerResult)
         {
-            var constants = analyzerResult?.GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
-
-            var (frameworkSupportsAppDomain, frameworkSupportsPipes) = CompatibilityModes(analyzerResult);
-
-            if (!frameworkSupportsAppDomain)
-            {
-                constants.Add("STRYKER_NO_DOMAIN");
-            }
-            if (!frameworkSupportsPipes)
-            {
-                constants.Add("STRYKER_NO_PIPE");
-            }
-
-            return constants;
+            return analyzerResult?.GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
         }
 
         public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult)

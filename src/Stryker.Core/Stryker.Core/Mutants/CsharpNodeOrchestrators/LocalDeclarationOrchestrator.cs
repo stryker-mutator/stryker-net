@@ -7,7 +7,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// </summary>
     internal class LocalDeclarationOrchestrator : StatementSpecificOrchestrator<LocalDeclarationStatementSyntax>
     {
-
         /// <inheritdoc/>
         /// <remarks>We cannot mutate constants (for the time being)</remarks>
         protected override StatementSyntax OrchestrateChildrenMutation(LocalDeclarationStatementSyntax node, MutationContext context)
@@ -20,13 +19,12 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             var result = base.OrchestrateChildrenMutation(node, context);
             // statement level mutations need to be changed to block level
-            context.BlockLevelControlledMutations.AddRange(context.StatementLevelControlledMutations);
-            context.StatementLevelControlledMutations.Clear();
             return result;
         }
-
-        public LocalDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
-        }
+        // we don't inject mutations here, we want them promoted at block level
+        protected override StatementSyntax InjectMutations(LocalDeclarationStatementSyntax sourceNode,
+            StatementSyntax targetNode,
+            MutationContext context) =>
+            targetNode;
     }
 }

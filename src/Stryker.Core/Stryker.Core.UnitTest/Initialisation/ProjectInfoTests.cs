@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -14,7 +15,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateInjectionPath()
         {
-            var target = new ProjectInfo()
+            var target = new ProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -37,7 +38,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
-            var target = new ProjectInfo()
+            var target = new ProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -68,7 +69,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
         public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
         {
-            var target = new ProjectInfo()
+            var target = new ProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -99,7 +100,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateTestBinariesPath()
         {
-            var target = new ProjectInfo()
+            var target = new ProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(

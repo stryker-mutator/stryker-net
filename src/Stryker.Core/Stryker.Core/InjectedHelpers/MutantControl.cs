@@ -1,4 +1,3 @@
-﻿using Stryker.Core.InjectedHelpers.Coverage;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +9,6 @@ namespace Stryker
         private static List<int> _coveredMutants;
         private static List<int> _coveredStaticdMutants;
         private static bool usePipe;
-        private static string pipeName;
         private static string envName;
         private static Object _coverageLock = new Object();
 
@@ -18,44 +16,14 @@ namespace Stryker
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
-#if !STRYKER_NO_PIPE
-        private static CommunicationChannel channel;
-#endif
-        public const string EnvironmentPipeName = "Coverage";
 
         static MutantControl()
         {
             InitCoverage();
-            if (usePipe)
-            {
-#if !STRYKER_NO_DOMAIN
-                AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-#endif
-            }
         }
 
         public static void InitCoverage()
         {
-            string coverageMode = Environment.GetEnvironmentVariable(EnvironmentPipeName) ?? string.Empty;
-#if !STRYKER_NO_PIPE
-
-            if (channel != null)
-            {
-                channel.Dispose();
-                channel = null;
-            }
-
-            if (coverageMode.StartsWith("pipe:"))
-            {
-                Log("Use pipe for data transmission");
-                pipeName = coverageMode.Substring(5);
-                usePipe = true;
-                CaptureCoverage = true;
-                channel = CommunicationChannel.Client(pipeName, 100);
-                channel.SetLogger(Log);
-                channel.Start();
-            }
-#endif
             ResetCoverage();
         }
 
@@ -74,25 +42,12 @@ namespace Stryker
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            DumpState();
             GC.KeepAlive(_coveredMutants);
         }
 
         private static string BuildReport()
         {
             return string.Format("{0};{1}", string.Join(",", _coveredMutants), string.Join(",", _coveredStaticdMutants));
-        }
-
-        public static void DumpState()
-        {
-            DumpState(BuildReport());
-        }
-
-        public static void DumpState(string report)
-        {
-#if !STRYKER_NO_PIPE
-            channel.SendText(report);
-#endif
         }
 
         private static void Log(string message)

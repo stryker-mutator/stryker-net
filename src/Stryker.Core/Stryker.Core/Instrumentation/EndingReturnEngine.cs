@@ -9,7 +9,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
-    /// Injects 'return' statement at the end of a method
+    /// Injects 'return default(...)' statement at the end of a method
     /// </summary>
     internal class EndingReturnEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
@@ -26,7 +26,7 @@ namespace Stryker.Core.Instrumentation
             }
 
             // we can also skip iterator methods, as they don't need to end with return
-            if (method.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement), false))
+            if (method.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
                 // not need to add yield return at the end of an enumeration method
                 return method;
@@ -50,21 +50,20 @@ namespace Stryker.Core.Instrumentation
                 }
             }
 
-            method = method.ReplaceNode(method.Body!, method.Body!.AddStatements(
-                    SyntaxFactory.ReturnStatement(SyntaxFactory.DefaultExpression(returnType.WithoutTrailingTrivia()).
-                        WithLeadingTrivia(SyntaxFactory.Space)))).WithAdditionalAnnotations(Marker);
+            method = method.WithBody(method.Body!.AddStatements(
+                    SyntaxFactory.ReturnStatement(returnType.BuildDefaultExpression()))).WithAdditionalAnnotations(Marker);
 
             return method;
         }
 
         protected override SyntaxNode Revert(BaseMethodDeclarationSyntax node)
         {
-            if (node.Body?.Statements.Last()?.IsKind(SyntaxKind.ReturnStatement) != true)
+            if (node.Body?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)
             {
                 throw new InvalidOperationException($"No return at the end of: {node.Body}");
             }
 
-            return node.ReplaceNode(node.Body, node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last())));
+            return node.WithBody(node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last()))).WithoutAnnotations(Marker);
         }
     }
 }
