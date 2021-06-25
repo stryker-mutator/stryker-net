@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
-using Stryker.Core.Mutants.NodeOrchestrators;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutants
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public class CsharpMutantOrchestrator : MutantOrchestrator<SyntaxNode>
+    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
@@ -27,7 +27,9 @@ namespace Stryker.Core.Mutants
         public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
+        /// <summary>
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
+        /// </summary>
         public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
         {
             Mutators = mutators ?? new List<IMutator>

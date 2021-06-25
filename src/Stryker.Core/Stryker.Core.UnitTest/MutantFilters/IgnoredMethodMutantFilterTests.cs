@@ -235,7 +235,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new []{ "M.ctor" });
+            var options = new StrykerOptions(ignoredMethods: new[] { "M.ctor" });
 
             var sut = new IgnoredMethodMutantFilter();
 

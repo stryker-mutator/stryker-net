@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutators
         public void ShouldNotMutateStackallocArrayCreationExpressionSyntax()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 0 }") as StackAllocArrayCreationExpressionSyntax;
-            
+
             var target = new InitializerMutator();
 
             var result = target.ApplyMutations(arrayCreationExpression.Initializer);

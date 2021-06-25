@@ -11,7 +11,7 @@ namespace Stryker.Core.Exceptions
     public class StrykerInputException : Exception
     {
         public string Details { get; }
-        
+
         public StrykerInputException(string message)
             : base(message)
         {

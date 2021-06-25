@@ -5,7 +5,7 @@ namespace Stryker.Core.Helpers
 {
     // type based strategy pattern implementation: finds the proper implementation according the type of a given object
     // keeping a cache for faster resolution
-    internal class TypeBasedStrategy<T, THandler> where THandler: class, ITypeHandler<T>
+    internal class TypeBasedStrategy<T, THandler> where THandler : class, ITypeHandler<T>
     {
         private readonly IDictionary<Type, IList<THandler>> _handlerMapping = new Dictionary<Type, IList<THandler>>();
 
@@ -22,7 +22,7 @@ namespace Stryker.Core.Helpers
         {
             foreach (var handler in handlers)
             {
-                RegisterHandler(handler);   
+                RegisterHandler(handler);
             }
         }
 
@@ -30,7 +30,7 @@ namespace Stryker.Core.Helpers
 
         private THandler FindHandler(T item, Type type)
         {
-            for (; item != null && type!= null; type = type.BaseType)
+            for (; item != null && type != null; type = type.BaseType)
             {
                 if (_handlerMapping.TryGetValue(type, out var handlers))
                 {

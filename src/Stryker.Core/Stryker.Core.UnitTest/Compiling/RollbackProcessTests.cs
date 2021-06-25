@@ -147,7 +147,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
 
        var rollbackProcess = new RollbackProcess();
 
-       var target = new CompilingProcess(input, rollbackProcess);
+       var target = new CsharpCompilingProcess(input, rollbackProcess);
 
        using (var ms = new MemoryStream())
        {

@@ -7,7 +7,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -293,7 +292,7 @@ namespace Stryker.Core.UnitTest.Clients
             var reporters = new string[] {
                 "dashboard"
             };
-            
+
 
             var options = new StrykerOptions(
                 dashboardUrl: "http://www.example.com",

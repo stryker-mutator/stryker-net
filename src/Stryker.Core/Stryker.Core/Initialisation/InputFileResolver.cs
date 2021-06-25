@@ -1,3 +1,9 @@
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,14 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners;
-
 
 namespace Stryker.Core.Initialisation
 {
@@ -84,6 +83,7 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
 
+            //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
@@ -103,7 +103,7 @@ namespace Stryker.Core.Initialisation
 
         private string FindProjectFile(string path)
         {
-            if (_fileSystem.File.Exists(path) && _fileSystem.Path.HasExtension(".csproj"))
+            if (_fileSystem.File.Exists(path) && (_fileSystem.Path.HasExtension(".csproj") || _fileSystem.Path.HasExtension(".fsproj")))
             {
                 return path;
             }
@@ -111,7 +111,7 @@ namespace Stryker.Core.Initialisation
             string[] projectFiles;
             try
             {
-                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.ToLower().EndsWith("csproj")).ToArray();
+                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
             catch (DirectoryNotFoundException)
             {
@@ -189,7 +189,7 @@ namespace Stryker.Core.Initialisation
             var stringBuilder = new StringBuilder();
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.ToLower().Contains(projectUnderTestNameFilter.ToLower()));
+            var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
                 stringBuilder.Append("No project reference matched your --project-file=");

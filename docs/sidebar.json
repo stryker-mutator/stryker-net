@@ -11,7 +11,10 @@
       "stryker-net/technical-reference/Introduction",
       "stryker-net/technical-reference/Research",
       "stryker-net/technical-reference/Mutant-schemata",
-      "stryker-net/technical-reference/ProjectComponents"
+      "stryker-net/technical-reference/ProjectComponents",
+      "stryker-net/technical-reference/fsharp/Classes.md",
+      "stryker-net/technical-reference/fsharp/CurrentState.md",
+      "stryker-net/technical-reference/fsharp/Packages.md"
     ]
   }
 ]

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
-using System.Text.RegularExpressions;
-using DotNet.Globbing;
+﻿using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Core.ProjectComponents;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Options
 {
@@ -61,7 +60,7 @@ namespace Stryker.Core.Options
             if (!textSpanGroupMatch.Success)
             {
                 // If there are no spans specified, we add one that will cover the whole file.
-                textSpans = new[] {_textSpanMaxValue};
+                textSpans = new[] { _textSpanMaxValue };
             }
             else
             {
@@ -125,7 +124,7 @@ namespace Stryker.Core.Options
                 return false;
             }
 
-            return Equals((FilePattern) obj);
+            return Equals((FilePattern)obj);
         }
 
         public override int GetHashCode()

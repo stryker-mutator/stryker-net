@@ -23,8 +23,8 @@ namespace Stryker.Core.Instrumentation
         /// <remarks>This method works with statement and block.</remarks>
         public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
         {
-            return SyntaxFactory.IfStatement(condition, 
-                AsBlock(mutatedNode), 
+            return SyntaxFactory.IfStatement(condition,
+                AsBlock(mutatedNode),
                 SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
         }
 
