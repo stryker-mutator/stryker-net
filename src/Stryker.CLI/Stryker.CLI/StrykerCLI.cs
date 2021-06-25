@@ -50,7 +50,7 @@ namespace Stryker.CLI
             app.OnExecute(() =>
             {
                 // app started
-                PrintStykerASCIIName();
+                PrintStrykerASCIIName();
                 PrintStrykerVersionInformationAsync();
 
                 var inputs = InputBuilder.Build(args, app, cmdConfigHandler);
@@ -88,7 +88,7 @@ namespace Stryker.CLI
             }
         }
 
-        private static void PrintStykerASCIIName()
+        private static void PrintStrykerASCIIName()
         {
             Console.WriteLine(Output.Yellow(@"
    _____ _              _               _   _ ______ _______  
