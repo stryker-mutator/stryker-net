@@ -25,7 +25,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
-
     public delegate bool UpdateHandler(IReadOnlyList<Mutant> mutants, TestListDescription ranTests,
         TestListDescription failedTests);
 

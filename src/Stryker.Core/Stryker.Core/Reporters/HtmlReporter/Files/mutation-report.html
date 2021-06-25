@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
@@ -16,7 +16,7 @@
             app.report = ##REPORT_JSON##;
 
             function updateTheme() {
-              document.body.style.backgroundColor = app.theme === 'dark' ? '#222' : '#fff';
+                document.body.style.backgroundColor = app.themeBackgroundColor;
             }
             app.addEventListener('theme-changed', updateTheme);
             updateTheme();

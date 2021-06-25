@@ -198,7 +198,10 @@ namespace Stryker.Core.MutationTest
                 blocks.Add(nextBlock);
             }
 
-            _logger.LogDebug($"Mutations will be tested in {blocks.Count} test runs, instead of {mutantsNotRun.Count}.");
+            _logger.LogDebug(
+                $"Mutations will be tested in {blocks.Count} test runs" +
+                (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
+
             return blocks;
         }
 

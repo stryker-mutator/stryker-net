@@ -16,7 +16,6 @@ namespace Stryker.Core.Mutants
     public static class MutantPlacer
     {
         private const string MutationMarker = "Mutation";
-        private const string MutationHelper = "Helper";
         private const string Injector = "Injector";
 
         private static readonly StaticInstrumentationEngine StaticEngine;
@@ -26,12 +25,13 @@ namespace Stryker.Core.Mutants
         private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine;
         private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine;
         private static readonly EndingReturnEngine endingReturnEngine;
+        private static readonly DefaultInitializationEngine defaultInitializationEngine;
         private static ExpressionSyntax _binaryExpression;
         private static SyntaxNode _placeHolderNode;
         
         private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
-        public static IEnumerable<string> MutationMarkers => new[] { MutationMarker, MutationHelper};
+        public static IEnumerable<string> MutationMarkers => new[] { MutationMarker, Injector};
 
         static MutantPlacer()
         {
@@ -49,6 +49,8 @@ namespace Stryker.Core.Mutants
             RegisterEngine(propertyExpressionToBodyEngine);
             endingReturnEngine = new EndingReturnEngine(Injector);
             RegisterEngine(endingReturnEngine);
+            defaultInitializationEngine = new DefaultInitializationEngine(Injector);
+            RegisterEngine(defaultInitializationEngine);
         }
 
         /// <summary>
@@ -61,12 +63,10 @@ namespace Stryker.Core.Mutants
         }
 
         public static T ConvertExpressionToBody<T>(T method) where T: BaseMethodDeclarationSyntax =>
-            expressionMethodEngine.ConvertToBody(method)
-                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+            expressionMethodEngine.ConvertToBody(method);
 
         public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
-            accessorExpressionToBodyEngine.ConvertExpressionToBody(method)
-                .WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+            accessorExpressionToBodyEngine.ConvertExpressionToBody(method);
 
         public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
             propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
@@ -74,8 +74,13 @@ namespace Stryker.Core.Mutants
         public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax node) => endingReturnEngine.InjectReturn(node);
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
-            StaticEngine.PlaceStaticContextMarker(block).
-            WithAdditionalAnnotations(new SyntaxAnnotation(MutationHelper));
+            StaticEngine.PlaceStaticContextMarker(block);
+
+        public static BaseMethodDeclarationSyntax AddDefaultInitialization(BaseMethodDeclarationSyntax node, SyntaxToken outParameterParameterName, TypeSyntax outParameterParameterType)
+        {
+            return defaultInitializationEngine.AddDefaultInitializer(node, outParameterParameterName,
+                outParameterParameterType);
+        }
 
         public static StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
             IEnumerable<(int mutantId, StatementSyntax mutated)> mutations)
@@ -107,6 +112,26 @@ namespace Stryker.Core.Mutants
             throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}' ");
         }
 
+        public static (string engine, int id) FindEngine(SyntaxNode node)
+        {
+            string engine = null;
+            var id = -1;
+            var first = node.GetAnnotations(MutantPlacer.MutationMarkers);
+            foreach (var annotation in first)
+            {
+                if (annotation.Kind == MutationMarker)
+                {
+                    id = int.Parse(annotation.Data);
+                }
+                else if (annotation.Kind == Injector)
+                {
+                    engine = annotation.Data;
+                }
+            }
+
+            return (engine, id);
+        }
+
         /// <summary>
         /// Builds a syntax for the expression to check if a mutation is active
         /// Example for mutationId 1: Stryker.Helper.ActiveMutation == 1
@@ -124,5 +149,6 @@ namespace Stryker.Core.Mutants
             return _binaryExpression.ReplaceNode(_placeHolderNode,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
         }
+
     }
 }

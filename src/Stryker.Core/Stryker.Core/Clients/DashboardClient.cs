@@ -39,7 +39,7 @@ namespace Stryker.Core.Clients
             }
 
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
@@ -47,7 +47,7 @@ namespace Stryker.Core.Clients
             requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
 
             _logger.LogDebug("Sending POST to {0}", url);
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
             {
@@ -72,12 +72,12 @@ namespace Stryker.Core.Clients
                 url = new Uri(url, $"?module={_options.ModuleName}");
             }
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
             requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
 
             _logger.LogDebug("Sending GET to {0}", url);
-            var response = await _httpClient.SendAsync(requestMessage);
+            using var response = await _httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
             {

@@ -6,12 +6,21 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation
 {
+    /// <summary>
+    /// Helper that converts a property from expression body to statement body form (or arrow to curly braces).
+    /// </summary>
     internal class PropertyExpressionToBodyEngine : BaseEngine<PropertyDeclarationSyntax>
     {
         public PropertyExpressionToBodyEngine(string markerId) : base(markerId)
         {
         }
 
+        /// <summary>
+        /// Convert a property from arrow form to the body form.
+        /// </summary>
+        /// <param name="accessor">Accessor to be converted</param>
+        /// <returns>a property with a getter in body form</returns>
+        /// <remarks>No conversion happens it is already in body form or if it is virtual.</remarks>
         public PropertyDeclarationSyntax ConvertExpressionToBody(PropertyDeclarationSyntax propertyDeclaration)
         {
             if (propertyDeclaration.ExpressionBody == null)

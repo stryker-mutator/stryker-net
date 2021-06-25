@@ -41,6 +41,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                EnvironmentVariables =
+                {
+                    // Disable DiffEngine so that approval tests frameworks such as https://github.com/VerifyTests/Verify
+                    // or https://github.com/approvals/ApprovalTests.Net (which both use DiffEngine under the hood)
+                    // don't launch a diffing tool GUI on each failed test.
+                    // See https://github.com/VerifyTests/DiffEngine/blob/6.6.1/src/DiffEngine/DisabledChecker.cs#L8
+                    ["DiffEngine_Disabled"] = "true",
+                },
             };
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -39,24 +39,6 @@ namespace Stryker.Core
                 }
                 return true;
             } ).Any(predicate);
-        }
-
-        public static bool CanBeMutated(SyntaxNode node)
-        {
-            switch (node)
-            {
-                // don't mutate attributes or their arguments
-                case AttributeListSyntax _:
-                // don't mutate parameters
-                case ParameterSyntax _:
-                // don't mutate constant fields
-                case FieldDeclarationSyntax field when field.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword):
-                case RecursivePatternSyntax _:
-                case EnumMemberDeclarationSyntax _:
-                    return false;
-                default:
-                    return true;
-            }
         }
     }
 }
