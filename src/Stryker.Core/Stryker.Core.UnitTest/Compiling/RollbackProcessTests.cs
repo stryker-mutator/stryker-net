@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
@@ -25,12 +26,12 @@ namespace Stryker.Core.UnitTest.Compiling
 {
     public class RollbackProcessTests
     {
-        private readonly SyntaxAnnotation _ifEngineMarker = new SyntaxAnnotation("Injector", "IfInstrumentationEngine");
-        private readonly SyntaxAnnotation _conditionalEngineMarker = new SyntaxAnnotation("Injector", "ConditionalInstrumentationEngine");
+        private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
+        private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
 
         private SyntaxAnnotation GetMutationMarker(int id)
         {
-            return new SyntaxAnnotation("Mutation", id.ToString());
+            return new("Mutation", id.ToString());
         }
 
         [Fact]
@@ -124,7 +125,7 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
 
        var input = new MutationTestInput()
        {
-           ProjectInfo = new ProjectInfo()
+           ProjectInfo = new ProjectInfo(new MockFileSystem())
            {
                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                    {
@@ -679,12 +680,7 @@ namespace ExampleProject
     using (var ms = new MemoryStream())
     {
         var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false,false);
-
         fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
-                
-                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-                rollbackedResult.Success.ShouldBeTrue();
                 
         // validate that only one of the compile errors marked the mutation as rollbacked.
         fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });

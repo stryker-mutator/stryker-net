@@ -28,7 +28,7 @@ namespace Stryker.CLI
         }
 
         /// <summary>
-        /// Analyses the arguments and displays an interface to the user. Kicks off the program.
+        /// Analyzes the arguments and displays an interface to the user. Kicks off the program.
         /// </summary>
         /// <param name="args">User input</param>
         public int Run(string[] args)
@@ -160,7 +160,8 @@ namespace Stryker.CLI
 
         private void PrintStykerASCIIName()
         {
-            Console.WriteLine(Output.Yellow(@"
+            // Crayon does not support background coloring (yet)
+            Console.WriteLine(Output.Yellow().Text(@"
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    

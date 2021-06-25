@@ -11,7 +11,7 @@ using Stryker.Core.Mutators;
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
     /// <summary>
-    /// This purpose of ech implementation of this class is to support one specific C# code construct during the mutation process.
+    /// This purpose of each implementation of this class is to support one specific C# code construct during the mutation process.
     /// Indeed some constructs need to be handled specifically to ensure successful mutations.
     /// Others are used to inject the need mutation control logic. It is strongly suggested to review each of those classes to
     /// get a grasp of how they work before adding a new one.

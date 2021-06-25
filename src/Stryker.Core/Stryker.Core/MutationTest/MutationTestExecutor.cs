@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Initialisation;
 
 namespace Stryker.Core.MutationTest
 {
@@ -13,7 +14,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(IList<Mutant> mutant, int timeoutMs, TestUpdateHandler updateHandler);
+        void Test(IList<Mutant> mutant, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
@@ -27,7 +28,7 @@ namespace Stryker.Core.MutationTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler)
+        public void Test(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler)
         {
             var forceSingle = false;
             while (mutantsToTest.Any())
@@ -58,6 +59,7 @@ namespace Stryker.Core.MutationTest
                     }
                     else
                     {
+                        // we don't know which tests timed out, we rerun all tests in dedicated sessions
                         forceSingle = true;
                     }
                 }
@@ -70,36 +72,30 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, int timeoutMs, TestUpdateHandler updateHandler,
-            bool forceSingle)
+        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+            TestUpdateHandler updateHandler, bool forceSingle)
         {
-            TestRunResult result = null;
+            TestRunResult result;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (TestRunner is IMultiTestRunner multi && !forceSingle)
+            if (forceSingle && mutantsToTest.Count > 1)
             {
-                result = multi.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+                foreach (var mutant in mutantsToTest)
+                {
+                    var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
+                    mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests);
+                }
+
+                return new TestRunResult(true);
             }
             else
             {
-                foreach (var mutant in mutantsToTest)
+                result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+                if (updateHandler == null)
                 {
-                    var testRunResult = TestRunner.RunAll(timeoutMs, mutant, updateHandler);
-                    if (result == null)
+                    foreach (var mutant in mutantsToTest)
                     {
-                        result = testRunResult;
+                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
                     }
-                    else
-                    {
-                        result.Merge(testRunResult);
-                    }
-                }
-            }
-
-            if (updateHandler == null)
-            {
-                foreach (var mutant in mutantsToTest)
-                {
-                    mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
                 }
             }
 

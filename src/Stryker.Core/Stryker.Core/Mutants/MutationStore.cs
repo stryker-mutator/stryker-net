@@ -59,7 +59,7 @@ namespace Stryker.Core.Mutants
                         _logger.LogDebug($"{mutations.Count()} were generated but could not be injected as they cannot be controlled dynamically.");
                         foreach (var mutant in mutations)
                         {
-                            _logger.LogDebug($"{mutant.Id}: {mutant.LongName}");
+                            _logger.LogDebug($"{mutant.Id}: {mutant.DisplayName}");
                             mutant.ResultStatus = MutantStatus.Ignored;
                             mutant.ResultStatusReason = "Unable to inject back mutations in source code.";
                         }

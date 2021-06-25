@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System.Collections.Generic;
@@ -8,14 +8,14 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
     {
-        private AutoResetEvent waitHandle;
+        private readonly AutoResetEvent _waitHandle;
         private readonly List<string> _messages;
         public List<TestCase> DiscoveredTestCases { get; private set; }
         public bool Aborted { get; private set; }
 
         public DiscoveryEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
-            this.waitHandle = waitHandle;
+            this._waitHandle = waitHandle;
             DiscoveredTestCases = new List<TestCase>();
             _messages = messages;
         }
@@ -36,17 +36,17 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             Aborted = isAborted;
-            waitHandle.Set();
+            _waitHandle.Set();
         }
 
         public void HandleRawMessage(string rawMessage)
         {
-            _messages.Add("Test Dicovery Raw Message: " + rawMessage);
+            _messages.Add("Test Discovery Raw Message: " + rawMessage);
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            _messages.Add("Test Dicovery Message: " + message);
+            _messages.Add("Test Discovery Message: " + message);
         }
     }
 }

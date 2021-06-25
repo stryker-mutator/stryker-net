@@ -5,16 +5,19 @@ using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
+        public TestSet Tests { get; }
         private readonly IStrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(IStrykerOptions options, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(IStrykerOptions options, TestSet tests, IGitInfoProvider gitInfoProvider = null)
         {
+            Tests = tests;
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }

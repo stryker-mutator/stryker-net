@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
 {
@@ -12,7 +12,6 @@ namespace Stryker.Core.Mutants
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
         ITestListDescription CoveringTests { get; }
-        string LongName { get; }
         int? Line { get; }
         bool CountForStats { get; }
         bool MustRunAgainstAllTests { get; }
@@ -23,36 +22,34 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class Mutant : IReadOnlyMutant
     {
-        private bool _mustRunAllTests;
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = new TestListDescription();
+        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
         public string ResultStatusReason { get; set; }
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
         public bool MustRunAgainstAllTests
         {
-            get => CoveringTests.IsEveryTest || _mustRunAllTests;
-            set => _mustRunAllTests = value;
+            get => CoveringTests.IsEveryTest;
         }
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
-
-        public string LongName =>
-            $"{Mutation?.DisplayName} on line {Line}: '{Mutation?.OriginalNode}' ==> '{Mutation?.ReplacementNode}'";
-
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-
         public bool IsStaticValue { get; set; }
 
-        public void AnalyzeTestRun(ITestListDescription failedTests, ITestListDescription resultRanTests, ITestListDescription timedOutTests)
+        public void ResetCoverage()
         {
-            if (!failedTests.IsEmpty && MustRunAgainstAllTests || failedTests.ContainsAny(CoveringTests))
+            CoveringTests = TestsGuidList.NoTest();
+        }
+
+        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
+        {
+            if (CoveringTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.GetList().All(x => resultRanTests.Contains(x.Guid))))
+            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.IsIncluded(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }

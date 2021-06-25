@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.MutantFilters
@@ -13,14 +14,16 @@ namespace Stryker.Core.MutantFilters
         private static IGitInfoProvider _gitInfoProvider;
         private static IBaselineProvider _baselineProvider;
 
-        public static IMutantFilter Create(IStrykerOptions options, IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public static IMutantFilter Create(IStrykerOptions options, MutationTestInput mutationTestInput,
+            IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null,
+            IGitInfoProvider gitInfoProvider = null)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _diffProvider = diffProvider ?? new GitDiffProvider(options);
+            _diffProvider = diffProvider ?? new GitDiffProvider(options, mutationTestInput.TestRunner.DiscoverTests());
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
 
