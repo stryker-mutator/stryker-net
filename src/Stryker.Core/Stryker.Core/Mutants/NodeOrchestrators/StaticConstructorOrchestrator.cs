@@ -1,7 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// </summary>
     internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator<ConstructorDeclarationSyntax>
     {
-        protected override bool CanHandle(ConstructorDeclarationSyntax t) => t.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
+        protected override bool CanHandle(ConstructorDeclarationSyntax t) => t.IsStatic();
 
         /// <inheritdoc/>
         /// <remarks>Injects a static marker used for coverage information; this implies converting

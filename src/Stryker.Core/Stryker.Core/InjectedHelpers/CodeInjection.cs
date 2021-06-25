@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.InjectedHelpers
 {
@@ -11,6 +14,8 @@ namespace Stryker.Core.InjectedHelpers
         private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
             "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
+        private const string MutantContextClassName = "MutantContext";
+        private const string StrykerNamespace = "Stryker";
 
         static CodeInjection()
         {
@@ -23,12 +28,11 @@ namespace Stryker.Core.InjectedHelpers
             }
 
             HelperNamespace = GetRandomNamespace();
-            SelectorExpression = result.Groups[1].Value.Replace("Stryker", HelperNamespace);
-            StaticMarker = $"new {HelperNamespace}.MutantContext()";
+            SelectorExpression = result.Groups[1].Value.Replace(StrykerNamespace, HelperNamespace);
 
             foreach (var file in Files)
             {
-                var fileContents = GetSourceFromResource(file).Replace("Stryker", HelperNamespace);
+                var fileContents = GetSourceFromResource(file).Replace(StrykerNamespace, HelperNamespace);
                 MutantHelpers.Add(file, fileContents);
             }
         }
@@ -36,8 +40,6 @@ namespace Stryker.Core.InjectedHelpers
         public static string SelectorExpression { get; }
 
         public static string HelperNamespace { get; }
-
-        public static string StaticMarker { get; set; }
 
         private static string GetRandomNamespace()
         {
@@ -50,16 +52,37 @@ namespace Stryker.Core.InjectedHelpers
             {
                 chars[i] = validChars[random.Next(0, validChars.Length)];
             }
-            return "Stryker" + new string(chars);
+            return StrykerNamespace + new string(chars);
         }
 
         public static IDictionary<string, string> MutantHelpers { get; } = new Dictionary<string, string>();
+
+        public static ObjectCreationExpressionSyntax GetContextClassConstructor() =>
+            SyntaxFactory.ObjectCreationExpression(SyntaxFactory.QualifiedName(
+                SyntaxFactory.IdentifierName(CodeInjection.HelperNamespace),
+                SyntaxFactory.IdentifierName(MutantContextClassName)).WithLeadingTrivia(SyntaxFactory.Space),
+                SyntaxFactory.ArgumentList(),
+                null);
+        
+
+        public static MemberAccessExpressionSyntax GetContextClassAccessExpression(string member) =>
+            SyntaxFactory.MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    SyntaxFactory.IdentifierName(CodeInjection.HelperNamespace),
+                    SyntaxFactory.IdentifierName(MutantContextClassName)),
+                SyntaxFactory.IdentifierName(member));
+
+        public static bool IsContextAccessExpression(ExpressionSyntax memberAccess, string member) =>
+            memberAccess is MemberAccessExpressionSyntax
+            {Expression: MemberAccessExpressionSyntax
+                    {Name: IdentifierNameSyntax {Identifier: {ValueText: MutantContextClassName}}},
+                Name: {Identifier: {ValueText: { } specificMember}}} && specificMember == member;
 
         private static string GetSourceFromResource(string sourceResourceName)
         {
             using var stream = typeof(CodeInjection).Assembly.GetManifestResourceStream(sourceResourceName);
             using var reader = new StreamReader(stream);
-
             return reader.ReadToEnd();
         }
     }
