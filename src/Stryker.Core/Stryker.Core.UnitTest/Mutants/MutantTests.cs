@@ -45,10 +45,8 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.CountForStats.ShouldBe(doesCount);
         }
 
-        [Theory]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        public void ShouldSetTimedoutState(bool coversEveryTest, bool coveringTestsContainTimedoutTests)
+        [Fact]
+        public void ShouldSetTimedoutState()
         {
             var failedTestsMock = new Mock<ITestListDescription>();
             var resultTestsMock = new Mock<ITestListDescription>();
@@ -57,7 +55,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
             timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);
-            coveringTestsMock.Setup(x => x.IsEveryTest).Returns(coversEveryTest);
+            coveringTestsMock.Setup(x => x.IsEveryTest).Returns(true);
 
             var mutant = new Mutant();
 
