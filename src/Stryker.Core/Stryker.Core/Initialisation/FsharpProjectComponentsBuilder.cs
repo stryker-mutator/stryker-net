@@ -6,14 +6,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Xml.Linq;
 using static FSharp.Compiler.SyntaxTree.ParsedInput;
 using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
@@ -22,15 +20,13 @@ namespace Stryker.Core.Initialisation
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly ProjectInfo _projectInfo;
-        private readonly IStrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
         {
             _projectInfo = projectInfo;
-            _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
             _fileSystem = fileSystem;

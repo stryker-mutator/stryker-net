@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         private readonly Predicate<T> _validator;
 
         /// <inheritdoc />
-        public override SyntaxNode Mutate(SyntaxNode node, MutationContext _) => node;
+        public override SyntaxNode Mutate(SyntaxNode node, MutationContext context) => node;
         /// <summary>
         /// Constructor
         /// </summary>

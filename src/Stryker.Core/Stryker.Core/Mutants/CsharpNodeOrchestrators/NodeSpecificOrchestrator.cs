@@ -22,16 +22,11 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase> : INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
-        private static Regex Pattern =
+        private static readonly Regex _pattern =
             new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static ILogger _logger;
-
-        static NodeSpecificOrchestrator()
-        {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
-        }
+        private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
 
         /// <summary>
         /// Get the Roslyn type handled by this class
@@ -108,11 +103,11 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             foreach (var commentTrivia in node.GetLeadingTrivia().Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) || t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
             {
                 // perform a quick pattern check to see if it is a 'Stryker comment'
-                if (!Pattern.Match(commentTrivia).Success)
+                if (!_pattern.Match(commentTrivia).Success)
                 {
                     continue;
                 }
-                var match = Parser.Match(commentTrivia);
+                var match = _parser.Match(commentTrivia);
                 if (match.Success)
                 {
                     // this is a Stryker comments, now we parse it
@@ -129,7 +124,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                             disable = true;
                             break;
                         default:
-                        case "restore":
                             disable = false;
                             break;
                     }
