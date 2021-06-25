@@ -49,14 +49,13 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            fileContents.ShouldSatisfyAllConditions(
-                () => fileContents.ShouldNotContain("##REPORT_JS##"),
-                () => fileContents.ShouldNotContain("##REPORT_TITLE##"),
-                () => fileContents.ShouldNotContain("##REPORT_JSON##"));
+            fileContents.ShouldNotContain("##REPORT_JS##");
+            fileContents.ShouldNotContain("##REPORT_TITLE##");
+            fileContents.ShouldNotContain("##REPORT_JSON##");
         }
 
         [Fact]
-        public void ShouldContainJsonReport()
+        public void ShouldContainJsonInHtmlReportFile()
         {
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions {
@@ -64,13 +63,14 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory()
             };
             var reporter = new HtmlReporter(options, mockFileSystem);
+            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(mutationTree);
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            JsonReport.Build(options, null).ToJson().ShouldBeSubsetOf(fileContents);
+            JsonReport.ReportCache.ToJson().ShouldBeSubsetOf(fileContents);
         }
     }
 }
