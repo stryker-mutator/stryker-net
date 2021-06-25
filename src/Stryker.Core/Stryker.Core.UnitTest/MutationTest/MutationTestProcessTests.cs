@@ -383,7 +383,10 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(basePath: basePath, fileSystem: new MockFileSystem());
+            var options = new StrykerOptions
+            {
+                BasePath = basePath
+            };
 
             var target = new MutationTestProcess(input,
                 null,
@@ -446,7 +449,10 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(basePath: basePath, fileSystem: new MockFileSystem());
+            var options = new StrykerOptions
+            {
+                BasePath = basePath
+            };
 
             var target = new MutationTestProcess(input,
                 null,

@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     },
                     ProjectContents = folder
                 });
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
@@ -93,7 +93,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
@@ -111,7 +111,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
-            initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<IStrykerOptions>(),testRunnerMock.Object), Times.Once);
+            initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(),testRunnerMock.Object), Times.Once);
         }
     }
 }

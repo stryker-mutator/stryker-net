@@ -109,13 +109,13 @@ namespace Stryker.Core.TestRunners.VsTest
             if (mutants != null)
             {
                 // if we optimize the number of tests to run
-                if (_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+                if (_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
                 {
                     needAll = false;
                     foreach (var mutant in mutants)
                     {
                         ITestListDescription tests;
-                        if ((mutant.IsStaticValue && !_options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                        if ((mutant.IsStaticValue && !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
                         {
                             tests = TestsGuidList.EveryTest();
                             needAll = true;
@@ -358,7 +358,7 @@ namespace Stryker.Core.TestRunners.VsTest
                             ? Enumerable.Empty<int>()
                             : parts[0].Split(',').Select(int.Parse);
                         // we identify mutants that are part of static code, unless we performed pertest capture
-                        var staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+                        var staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) || _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
                             ? Enumerable.Empty<int>()
                             : parts[1].Split(',').Select(int.Parse);
 
@@ -518,7 +518,7 @@ $@"<RunSettings>
 
         private bool NeedCoverage()
         {
-            return _options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants);
+            return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()

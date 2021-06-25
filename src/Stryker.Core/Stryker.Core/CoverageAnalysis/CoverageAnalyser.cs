@@ -28,8 +28,8 @@ namespace Stryker.Core.CoverageAnalysis
 
         public void DetermineTestCoverage()
         {
-            if (!_options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
-                !_options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+                !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return;
             }

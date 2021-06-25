@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// Handles Methods/properties' accessors/constructors and finalizers.
     /// </summary>
     /// <typeparam name="T">Type of the syntax node, must be derived from <see cref="BaseMethodDeclarationSyntax"/>.</typeparam>
-    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T: BaseMethodDeclarationSyntax
+    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T : BaseMethodDeclarationSyntax
     {
         protected override MutationContext PrepareContext(T node, MutationContext context)
         {
@@ -48,13 +48,13 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             StatementSyntax mutatedBlock = targetNode.Body;
 
             var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
+                ? (Func<Mutation, StatementSyntax>)((toConvert) =>
+                   SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
 
             mutatedBlock = context.Store.PlaceBlockMutations(mutatedBlock, converter);
-            return targetNode.ReplaceNode(targetNode.Body!, 
+            return targetNode.ReplaceNode(targetNode.Body!,
                 SyntaxFactory.Block(mutatedBlock));
         }
     }

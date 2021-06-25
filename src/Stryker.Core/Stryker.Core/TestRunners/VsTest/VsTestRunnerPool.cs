@@ -72,8 +72,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
-            var needCoverage = _options.Optimizations.HasFlag(OptimizationModes.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationModes.SkipUncoveredMutants);
-            if (needCoverage && _options.Optimizations.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+            var needCoverage = _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
+            if (needCoverage && _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 return CaptureCoveragePerIsolatedTests(mutants);
             }

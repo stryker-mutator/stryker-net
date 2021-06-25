@@ -44,7 +44,7 @@ namespace Stryker.Core.Mutants
 
         public string FilterComment { get; set; }
 
-        public MutationContext EnterStatic() => new(this) {InStaticValue = true};
+        public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
         public MutationContext Enter(MutationControl control)
         {

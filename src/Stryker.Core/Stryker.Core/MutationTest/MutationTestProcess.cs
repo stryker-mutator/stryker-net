@@ -112,7 +112,7 @@ namespace Stryker.Core.MutationTest
 
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
-                    var continueTestRun = !_options.OptimizationMode.HasFlag(OptimizationFlags.AbortTestOnKill);
+                    var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
                     if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
                     {
                         // some of the failing tests where failing without any mutation

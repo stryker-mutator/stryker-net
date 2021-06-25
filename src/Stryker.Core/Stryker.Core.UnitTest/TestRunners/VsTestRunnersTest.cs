@@ -738,7 +738,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void MarkSuspiciousCoverage()
         {
-            var options = new StrykerOptions(coverageAnalysis:"pertest");
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CaptureCoveragePerTest
+            };
 
             using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
             {

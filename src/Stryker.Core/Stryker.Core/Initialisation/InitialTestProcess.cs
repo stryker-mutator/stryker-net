@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
-        InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner);
+        InitialTestRun InitialTest(StrykerOptions options, ITestRunner testRunner);
     }
 
     public class InitialTestProcess : IInitialTestProcess
@@ -30,7 +30,7 @@ namespace Stryker.Core.Initialisation
         /// <param name="testRunner"></param>
         /// <param name="options">Stryker options</param>
         /// <returns>The duration of the initial testrun</returns>
-        public InitialTestRun InitialTest(IStrykerOptions options, ITestRunner testRunner)
+        public InitialTestRun InitialTest(StrykerOptions options, ITestRunner testRunner)
         {
             var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : total.Count.ToString();
 

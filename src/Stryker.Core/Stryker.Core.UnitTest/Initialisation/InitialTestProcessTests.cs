@@ -20,7 +20,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         public InitialTestProcessTests()
         {
             _target = new InitialTestProcess();
-            _options = new StrykerOptions(additionalTimeoutMS:0);
+            _options = new StrykerOptions
+            {
+                AdditionalTimeoutMS = 0
+            };
         }
 
         [Fact]
