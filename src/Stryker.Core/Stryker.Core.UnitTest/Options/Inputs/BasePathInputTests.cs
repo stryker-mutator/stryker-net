@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
@@ -13,6 +9,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class BasePathInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new BasePathInput();
+            target.HelpText.ShouldBe(@$"The path from which stryker is started. | default: {Directory.GetCurrentDirectory()}");
+        }
+
         [Fact]
         public void ShouldAllowExistingDir()
         {

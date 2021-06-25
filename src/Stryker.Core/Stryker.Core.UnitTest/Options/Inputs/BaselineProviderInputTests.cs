@@ -15,6 +15,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var result = target.Validate(new Reporter[] { });
 
+            target.Default.ShouldBe("disk");
             result.ShouldBe(BaselineProvider.Disk);
         }
 
