@@ -15,33 +15,35 @@ namespace Stryker.Core.Initialisation
 {
     public abstract class ProjectComponentsBuilder
     {
+        protected readonly IFileSystem FileSystem;
         public abstract IProjectComponent Build();
 
-        protected IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult, IFileSystem _fileSystem)
+        protected ProjectComponentsBuilder(IFileSystem fileSystem) => FileSystem = fileSystem;
+
+        protected IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
-            var projectFile = _fileSystem.File.OpenText(projectFilePath);
+            var projectFile = FileSystem.File.OpenText(projectFilePath);
             var xDocument = XDocument.Load(projectFile);
             var folders = new List<string>();
-            var projectDirectory = _fileSystem.Path.GetDirectoryName(projectFilePath);
+            var projectDirectory = FileSystem.Path.GetDirectoryName(projectFilePath);
             folders.Add(projectDirectory);
 
             foreach (var sharedProject in FindSharedProjects(xDocument))
             {
                 var sharedProjectName = ReplaceMsbuildProperties(sharedProject, projectAnalyzerResult);
 
-                if (!_fileSystem.File.Exists(_fileSystem.Path.Combine(projectDirectory, sharedProjectName)))
+                if (!FileSystem.File.Exists(FileSystem.Path.Combine(projectDirectory, sharedProjectName)))
                 {
                     throw new FileNotFoundException($"Missing shared project {sharedProjectName}");
                 }
 
-                var directoryName = _fileSystem.Path.GetDirectoryName(sharedProjectName);
-                folders.Add(_fileSystem.Path.Combine(projectDirectory, directoryName));
+                var directoryName = FileSystem.Path.GetDirectoryName(sharedProjectName);
+                folders.Add(FileSystem.Path.Combine(projectDirectory, directoryName));
             }
 
             return folders;
         }
-
 
         private IEnumerable<string> FindSharedProjects(XDocument document)
         {

@@ -22,14 +22,12 @@ namespace Stryker.Core.Initialisation
         private readonly ProjectInfo _projectInfo;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
 
-        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
-            _fileSystem = fileSystem;
         }
         
         public override IProjectComponent Build()
@@ -45,6 +43,7 @@ namespace Stryker.Core.Initialisation
             }
             return inputFiles;
         }
+
         private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
@@ -78,8 +77,8 @@ namespace Stryker.Core.Initialisation
 
                 var file = new FsharpFileLeaf()
                 {
-                    SourceCode = _fileSystem.File.ReadAllText(sourceFile),
-                    RelativePath = _fileSystem.Path.Combine(folderComposite.RelativePath, fileName),
+                    SourceCode = FileSystem.File.ReadAllText(sourceFile),
+                    RelativePath = FileSystem.Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = sourceFile
                 };
 
@@ -120,7 +119,7 @@ namespace Stryker.Core.Initialisation
                 {
                     // we have not scanned this folder yet
                     var sub = Path.GetFileName(folder);
-                    var fullPath = _fileSystem.Path.Combine(projectUnderTestDir, sub);
+                    var fullPath = FileSystem.Path.Combine(projectUnderTestDir, sub);
                     var newComposite = new FsharpFolderComposite
                     {
                         FullPath = fullPath,
@@ -154,12 +153,12 @@ namespace Stryker.Core.Initialisation
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-            foreach (var dir in ExtractProjectFolders(analyzerResult, _fileSystem))
+            foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
-                var folder = _fileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
+                var folder = FileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
 
                 _logger.LogDebug($"Scanning {folder}");
-                if (!_fileSystem.Directory.Exists(folder))
+                if (!FileSystem.Directory.Exists(folder))
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
@@ -200,18 +199,18 @@ namespace Stryker.Core.Initialisation
                 RelativePath = Path.Combine(parentFolder, lastPathComponent),
             };
 
-            foreach (var folder in _fileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
+            foreach (var folder in FileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
                 folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
             }
             var fSharpChecker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
-            foreach (var file in _fileSystem.Directory.GetFiles(folderComposite.FullPath, "*.fs", SearchOption.TopDirectoryOnly))
+            foreach (var file in FileSystem.Directory.GetFiles(folderComposite.FullPath, "*.fs", SearchOption.TopDirectoryOnly))
             {
                 var fileName = Path.GetFileName(file);
 
                 var fileLeaf = new FsharpFileLeaf()
                 {
-                    SourceCode = _fileSystem.File.ReadAllText(file),
+                    SourceCode = FileSystem.File.ReadAllText(file),
                     RelativePath = Path.Combine(folderComposite.RelativePath, fileName),
                     FullPath = file,
                 };
