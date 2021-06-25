@@ -62,7 +62,7 @@ namespace Stryker.Core.Compiling
             }
             if (!pathlist.Any())
             {
-                throw new GeneralStrykerException("no ProjectUnderTest");
+                throw new GeneralStrykerException("Could not find project under test.");
             }
 
             //rollback still needs to be implemented
