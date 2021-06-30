@@ -1,3 +1,13 @@
+## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.4...stryker@0.22.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **Dotnet 5 support:** net5.0 version parsing ([#1592](https://github.com/stryker-mutator/stryker-net/issues/1592)) ([a92fa86](https://github.com/stryker-mutator/stryker-net/commit/a92fa86b65402cdcdb6a27cf1c55d2f0c8f0b684))
+* **Ignore method:** Ignore method when not called on an object ([#1579](https://github.com/stryker-mutator/stryker-net/issues/1579)) ([eb87d07](https://github.com/stryker-mutator/stryker-net/commit/eb87d0702081848304cb679b6f1f9a2b85d3962a))
+
+
+
 ## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.4) (2021-05-14)
 
 
