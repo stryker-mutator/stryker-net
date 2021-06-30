@@ -749,6 +749,19 @@ namespace TestApp
         }
 
         [Fact]
+        public void ShouldAddReturnDefaultToConversion()
+        {
+            string source = @"public static explicit operator string(TestClass value)
+{;
+}";
+            string expected = @"public static explicit operator string(TestClass value)
+{;
+return default(string);
+}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldNotMutateConstDeclaration()
         {
             var source = @"void Test(){
