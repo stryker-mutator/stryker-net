@@ -86,7 +86,7 @@ namespace Stryker.Core.MutantFilters
 
         private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
         {
-            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun))
+            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun || m.ResultStatus == MutantStatus.NoCoverage))
             {
                 mutant.ResultStatus = MutantStatus.Ignored;
                 mutant.ResultStatusReason = "Mutant not changed compared to target commit";
