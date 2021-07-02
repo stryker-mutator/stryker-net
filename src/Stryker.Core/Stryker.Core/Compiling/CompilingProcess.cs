@@ -56,6 +56,16 @@ namespace Stryker.Core.Compiling
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult;
 
+            // C# source generators must be executed before compilation
+            var generators = analyzerResult.GetSourceGenerators();
+            if (generators.Any())
+            {
+                _ = CSharpGeneratorDriver
+                    .Create(generators)
+                    .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+                compilation = outputCompilation as CSharpCompilation;
+            }
+
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;

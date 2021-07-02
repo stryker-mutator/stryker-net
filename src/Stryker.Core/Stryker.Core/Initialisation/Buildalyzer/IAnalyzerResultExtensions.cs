@@ -103,6 +103,32 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
         }
 
+        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult)
+        {
+            var generators = new List<ISourceGenerator>();
+            foreach (var analyzer in analyzerResult.AnalyzerReferences)
+            {
+                try
+                {
+                    var assembly = System.Reflection.Assembly.LoadFile(analyzer);
+                    foreach (var type in assembly.ExportedTypes)
+                    {
+                        if (type.GetInterface("ISourceGenerator") != null)
+                        {
+                            var generator = type.GetConstructor(Type.EmptyTypes).Invoke(null);
+                            generators.Add(generator as ISourceGenerator);
+                        }
+                    }
+                }
+                catch
+                {
+                    // many framework analyzers won't be loadable
+                    continue;
+                }
+            }
+            return generators;
+        }
+
         public static Framework GetTargetFramework(this IAnalyzerResult analyzerResult)
         {
             try
