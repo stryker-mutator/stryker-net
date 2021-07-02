@@ -129,9 +129,9 @@
       },
       "Mono.Cecil": {
         "type": "Direct",
-        "requested": "[0.11.3, )",
-        "resolved": "0.11.3",
-        "contentHash": "DNYE+io5XfEE8+E+5padThTPHJARJHbz1mhbhMPNrrWGKVKKqj/KEeLvbawAmbIcT73NuxLV7itHZaYCZcVWGg=="
+        "requested": "[0.11.4, )",
+        "resolved": "0.11.4",
+        "contentHash": "IC1h5g0NeJGHIUgzM1P82ld57knhP0IcQfrYITDPXlNpMYGUrsG5TxuaWTjaeqDNQMBDNZkB8L0rBnwsY6JHuQ=="
       },
       "Newtonsoft.Json": {
         "type": "Direct",
