@@ -15,7 +15,7 @@ namespace Stryker.Core.Helpers
             return baseMethod switch
             {
                 ConstructorDeclarationSyntax _ => null,
-                ConversionOperatorDeclarationSyntax _ => null,
+                ConversionOperatorDeclarationSyntax conversion => conversion.Type,
                 DestructorDeclarationSyntax _ => null,
                 MethodDeclarationSyntax method => method.ReturnType,
                 OperatorDeclarationSyntax operatorSyntax => operatorSyntax.ReturnType,

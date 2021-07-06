@@ -1,6 +1,6 @@
 {
     "private": true,
-    "version": "0.22.4",
+    "version": "0.22.6",
     "scripts": {
         "prepare-release": "node prepare-release.js"
     }
