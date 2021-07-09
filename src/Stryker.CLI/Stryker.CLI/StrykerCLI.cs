@@ -1,12 +1,10 @@
 using System;
-using System.IO;
 using System.Reflection;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Versioning;
-using Stryker.CLI.NuGet;
+using Stryker.CLI.Clients;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -16,12 +14,14 @@ namespace Stryker.CLI
     public class StrykerCLI
     {
         private readonly IStrykerRunner _stryker;
+        private readonly IStrykerNugetFeedClient _nugetClient;
         private readonly LogBuffer _logBuffer;
         public int ExitCode { get; private set; }
 
-        public StrykerCLI(IStrykerRunner stryker)
+        public StrykerCLI(IStrykerRunner stryker = null, IStrykerNugetFeedClient nugetClient = null)
         {
-            _stryker = stryker;
+            _stryker = stryker ?? new StrykerRunner();
+            _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
             // Create a log buffer to buffer log messages until the logging is configured.
             _logBuffer = new LogBuffer();
             ExitCode = 0;
@@ -104,7 +104,7 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
-        private static async void PrintStrykerVersionInformationAsync()
+        private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
@@ -113,8 +113,7 @@ namespace Stryker.CLI
             Console.WriteLine($" Version: {Output.Green(currentVersion.ToString())} (beta)");
             Console.WriteLine();
 
-            var nugetInfo = await StrykerNugetFeedInfo.Create();
-            var latestVersion = nugetInfo?.LatestVersion;
+            var latestVersion = await _nugetClient.GetMaxVersion();
 
             if (latestVersion != null && latestVersion != currentVersion)
             {

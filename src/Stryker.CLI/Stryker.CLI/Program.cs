@@ -11,8 +11,7 @@ namespace Stryker.CLI
         {
             try
             {
-                var stryker = new StrykerRunner();
-                var app = new StrykerCLI(stryker);
+                var app = new StrykerCLI();
                 return app.Run(args);
             }
             catch (InputException strEx)

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
+using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
+using Stryker.CLI.Clients;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
@@ -30,6 +34,66 @@ namespace Stryker.CLI.UnitTest
                 .Returns(runResults)
                 .Verifiable();
             target = new StrykerCLI(strykerRunnerMock.Object);
+        }
+
+        [Fact]
+        public void ShouldDisplayInfoOnHelp()
+        {
+            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            var target = new StrykerCLI(mock.Object);
+
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                target.Run(new string[] { "--help" });
+
+                string expected = @"Stryker: Stryker mutator for .Net
+
+Stryker mutator for .Net
+
+Usage: Stryker [options]
+
+Options:";
+                sw.ToString().ShouldStartWith(expected);
+            }
+        }
+
+        [Fact]
+        public void ShouldDisplayLogo()
+        {
+            var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+            var nugetClientMock = new Mock<IStrykerNugetFeedClient>(MockBehavior.Strict);
+            var strykerRunResult = new StrykerRunResult(options, 0.3);
+
+            strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Returns(strykerRunResult)
+                .Verifiable();
+            nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
+
+            var target = new StrykerCLI(strykerRunnerMock.Object, nugetClientMock.Object);
+
+            using (var sw = new StringWriter())
+            {
+                Console.SetOut(sw);
+
+                target.Run(new string[] { });
+
+                string expected = @"
+   _____ _              _               _   _ ______ _______  
+  / ____| |            | |             | \ | |  ____|__   __| 
+ | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
+  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |    
+  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |    
+ |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    
+                   __/ |                                      
+                  |___/                                       
+";
+
+                sw.ToString().ShouldContain(expected);
+                sw.ToString().ShouldContain("Version:");
+                sw.ToString().ShouldContain("A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker");
+            }
         }
 
         [Fact]
